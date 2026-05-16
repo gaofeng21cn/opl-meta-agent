@@ -1,0 +1,102 @@
+{
+  "surface_kind": "stage_control_plane",
+  "schema_version": 1,
+  "domain_id": "meta-agent",
+  "stages": [
+    {
+      "stage_id": "intent-intake",
+      "purpose": "Understand target agent goal, delivery bar, authority boundary, and non-goals",
+      "outputs": [
+        "intent_brief_ref",
+        "acceptance_criteria_ref",
+        "authority_boundary_ref"
+      ]
+    },
+    {
+      "stage_id": "web-experience-research",
+      "purpose": "Research public patterns, tools, data needs, workflow decomposition, and quality gates",
+      "outputs": [
+        "research_brief_ref",
+        "source_refs",
+        "pattern_disposition_refs"
+      ]
+    },
+    {
+      "stage_id": "stage-decomposition",
+      "purpose": "Turn target work into OPL stage descriptors, action metadata, memory refs, and artifact locators",
+      "outputs": [
+        "stage_control_plane_ref",
+        "action_catalog_ref",
+        "memory_descriptor_ref"
+      ]
+    },
+    {
+      "stage_id": "agent-skeleton-build",
+      "purpose": "Generate an OPL-compatible candidate agent repo/package using OPL scaffold surfaces",
+      "outputs": [
+        "domain_descriptor_ref",
+        "skill_refs",
+        "prompt_refs",
+        "sidecar_contract_refs",
+        "candidate_agent_package_ref"
+      ]
+    },
+    {
+      "stage_id": "eval-suite-build",
+      "purpose": "Create Agent Lab task manifests, recovery probes, scorecard refs, and promotion gates",
+      "outputs": [
+        "agent_lab_task_manifest_refs",
+        "scorecard_refs",
+        "promotion_gate_refs"
+      ]
+    },
+    {
+      "stage_id": "baseline-run",
+      "purpose": "Run the candidate agent through OPL Agent Lab and collect trajectories, receipts, and failure taxonomy",
+      "outputs": [
+        "trajectory_refs",
+        "receipt_refs",
+        "failure_taxonomy_refs"
+      ]
+    },
+    {
+      "stage_id": "optimizer-iteration",
+      "purpose": "Generate prompt, skill, stage-policy, tool-policy, few-shot, or rubric-gap candidates and rerun gated suites",
+      "outputs": [
+        "improvement_candidate_refs",
+        "candidate_branch_refs",
+        "regression_result_refs"
+      ]
+    },
+    {
+      "stage_id": "baseline-delivery",
+      "purpose": "Deliver a versioned baseline agent with docs, contracts, tests, runbook, and boundary receipt",
+      "outputs": [
+        "baseline_agent_package_ref",
+        "delivery_receipt_ref",
+        "operator_runbook_ref"
+      ]
+    },
+    {
+      "stage_id": "online-learning",
+      "purpose": "Convert real trajectories into reviewed datasets and future candidate refs",
+      "outputs": [
+        "online_learning_dataset_refs",
+        "human_review_refs",
+        "future_candidate_refs"
+      ]
+    }
+  ],
+  "opl_runtime_dependency": {
+    "agent_lab_complete_control_plane": true,
+    "standard_domain_agent_scaffold": true,
+    "stage_attempt_ledger": true,
+    "promotion_gate_refs": true
+  },
+  "authority_boundary": {
+    "meta_agent_owns_agent_building_semantics": true,
+    "opl_owns_generic_runtime": true,
+    "target_domain_owner_keeps_truth_quality_artifact_memory": true
+  },
+  "marker": "generated_by_opl_standard_domain_agent_scaffold_v1"
+}

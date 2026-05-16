@@ -1,0 +1,82 @@
+{
+  "surface_kind": "functional_privatization_audit",
+  "schema_version": 1,
+  "domain_id": "meta-agent",
+  "marker": "generated_by_opl_standard_domain_agent_scaffold_v1",
+  "classification_policy": "domain_declares_non_knowledge_functional_modules_for_opl_unified_audit",
+  "opl_owned_replacement_surfaces": [
+    "scheduler_supervision_cadence",
+    "provider_slo_and_wakeup_transport",
+    "queue_attempt_ledger",
+    "generic_transition_runner",
+    "workspace_source_intake_shell",
+    "memory_locator_writeback_transport",
+    "artifact_package_lifecycle_shell",
+    "operator_workbench_drilldown_shell",
+    "observability_repair_projection",
+    "generic_persistence_store",
+    "runtime_lifecycle_sqlite_index_contract",
+    "native_helper_generic_envelope",
+    "review_repair_transport",
+    "functional_privatization_audit_read_model"
+  ],
+  "domain_allowed_roles": [
+    "domain_truth",
+    "domain_transition_spec",
+    "domain_stage_descriptors",
+    "domain_action_metadata",
+    "quality_or_export_verdict",
+    "artifact_authority",
+    "memory_body",
+    "owner_receipt",
+    "typed_blocker",
+    "sidecar_or_projection_adapter",
+    "domain_entry_and_tests"
+  ],
+  "forbidden_generic_owner_roles": [
+    "generic_scheduler_owner",
+    "generic_daemon_owner",
+    "generic_lifecycle_owner",
+    "generic_queue_owner",
+    "generic_attempt_ledger_owner",
+    "generic_state_machine_runner_owner",
+    "generic_workspace_source_intake_owner",
+    "generic_memory_transport_owner",
+    "generic_artifact_gallery_owner",
+    "generic_operator_workbench_owner",
+    "generic_observability_slo_owner",
+    "generic_persistence_engine_owner",
+    "generic_sqlite_lifecycle_owner",
+    "generic_native_helper_envelope_owner",
+    "generic_review_repair_transport_owner"
+  ],
+  "modules": [
+    {
+      "module_id": "agent_goal_interpreter",
+      "classification": "domain_authority",
+      "owner": "meta-agent"
+    },
+    {
+      "module_id": "agent_pattern_researcher",
+      "classification": "domain_authority",
+      "owner": "meta-agent"
+    },
+    {
+      "module_id": "candidate_agent_package_builder",
+      "classification": "domain_authority",
+      "owner": "meta-agent"
+    },
+    {
+      "module_id": "opl_agent_lab_adapter",
+      "classification": "domain_thin_adapter",
+      "owner": "meta-agent",
+      "consumes_opl_surface": "opl_agent_lab_complete_control_plane"
+    }
+  ],
+  "authority_boundary": {
+    "opl_can_write_domain_truth": false,
+    "opl_can_write_memory_body": false,
+    "opl_can_authorize_quality_or_export": false,
+    "domain_can_claim_generic_runtime_owner": false
+  }
+}

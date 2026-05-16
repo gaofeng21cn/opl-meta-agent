@@ -1,0 +1,71 @@
+{
+  "surface_kind": "family_action_catalog",
+  "schema_version": 1,
+  "domain_id": "meta-agent",
+  "actions": [
+    {
+      "action_id": "intake-agent-goal",
+      "stage_id": "intent-intake",
+      "owner": "meta-agent",
+      "output_refs": [
+        "intent_brief_ref",
+        "acceptance_criteria_ref"
+      ]
+    },
+    {
+      "action_id": "research-agent-patterns",
+      "stage_id": "web-experience-research",
+      "owner": "meta-agent",
+      "output_refs": [
+        "research_brief_ref",
+        "source_refs",
+        "pattern_disposition_refs"
+      ]
+    },
+    {
+      "action_id": "build-agent-baseline",
+      "stage_id": "agent-skeleton-build",
+      "owner": "meta-agent",
+      "output_refs": [
+        "candidate_agent_package_ref",
+        "domain_descriptor_ref"
+      ]
+    },
+    {
+      "action_id": "generate-agent-lab-suite",
+      "stage_id": "eval-suite-build",
+      "owner": "meta-agent",
+      "output_refs": [
+        "agent_lab_task_manifest_refs",
+        "promotion_gate_refs"
+      ]
+    },
+    {
+      "action_id": "generate-optimizer-candidate",
+      "stage_id": "optimizer-iteration",
+      "owner": "meta-agent",
+      "output_refs": [
+        "improvement_candidate_refs",
+        "candidate_branch_refs"
+      ]
+    }
+  ],
+  "forbidden_generic_owner_roles": [
+    "generic_scheduler_owner",
+    "generic_daemon_owner",
+    "generic_lifecycle_owner",
+    "generic_queue_owner",
+    "generic_attempt_ledger_owner",
+    "generic_state_machine_runner_owner",
+    "generic_workspace_source_intake_owner",
+    "generic_memory_transport_owner",
+    "generic_artifact_gallery_owner",
+    "generic_operator_workbench_owner",
+    "generic_observability_slo_owner",
+    "generic_persistence_engine_owner",
+    "generic_sqlite_lifecycle_owner",
+    "generic_native_helper_envelope_owner",
+    "generic_review_repair_transport_owner"
+  ],
+  "marker": "generated_by_opl_standard_domain_agent_scaffold_v1"
+}
