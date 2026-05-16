@@ -1,7 +1,7 @@
 {
   "surface_kind": "stage_control_plane",
   "schema_version": 1,
-  "domain_id": "meta-agent",
+  "domain_id": "opl-meta-agent",
   "stages": [
     {
       "stage_id": "intent-intake",
@@ -94,7 +94,7 @@
     "promotion_gate_refs": true
   },
   "authority_boundary": {
-    "meta_agent_owns_agent_building_semantics": true,
+    "opl_meta_agent_owns_agent_building_semantics": true,
     "opl_owns_generic_runtime": true,
     "target_domain_owner_keeps_truth_quality_artifact_memory": true
   },

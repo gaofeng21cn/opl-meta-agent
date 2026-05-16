@@ -1,12 +1,12 @@
 {
   "surface_kind": "family_action_catalog",
   "schema_version": 1,
-  "domain_id": "meta-agent",
+  "domain_id": "opl-meta-agent",
   "actions": [
     {
       "action_id": "intake-agent-goal",
       "stage_id": "intent-intake",
-      "owner": "meta-agent",
+      "owner": "opl-meta-agent",
       "output_refs": [
         "intent_brief_ref",
         "acceptance_criteria_ref"
@@ -15,7 +15,7 @@
     {
       "action_id": "research-agent-patterns",
       "stage_id": "web-experience-research",
-      "owner": "meta-agent",
+      "owner": "opl-meta-agent",
       "output_refs": [
         "research_brief_ref",
         "source_refs",
@@ -25,7 +25,7 @@
     {
       "action_id": "build-agent-baseline",
       "stage_id": "agent-skeleton-build",
-      "owner": "meta-agent",
+      "owner": "opl-meta-agent",
       "output_refs": [
         "candidate_agent_package_ref",
         "domain_descriptor_ref"
@@ -34,7 +34,7 @@
     {
       "action_id": "generate-agent-lab-suite",
       "stage_id": "eval-suite-build",
-      "owner": "meta-agent",
+      "owner": "opl-meta-agent",
       "output_refs": [
         "agent_lab_task_manifest_refs",
         "promotion_gate_refs"
@@ -43,7 +43,7 @@
     {
       "action_id": "generate-optimizer-candidate",
       "stage_id": "optimizer-iteration",
-      "owner": "meta-agent",
+      "owner": "opl-meta-agent",
       "output_refs": [
         "improvement_candidate_refs",
         "candidate_branch_refs"

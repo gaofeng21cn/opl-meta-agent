@@ -1,7 +1,7 @@
 {
   "surface_kind": "owner_receipt_contract",
   "schema_version": 1,
-  "domain_id": "meta-agent",
+  "domain_id": "opl-meta-agent",
   "allowed_receipt_classes": [
     "intent_receipt",
     "research_receipt",
@@ -17,12 +17,12 @@
     "opl_authorized_quality_or_export_verdict",
     "opl_wrote_domain_truth",
     "opl_wrote_memory_body",
-    "meta_agent_wrote_target_domain_truth",
-    "meta_agent_wrote_target_domain_memory_body",
-    "meta_agent_mutated_target_domain_artifact_body",
-    "meta_agent_authorized_target_domain_quality_or_export",
-    "meta_agent_promoted_default_agent_without_gate",
-    "meta_agent_trained_or_deployed_model_weights"
+    "opl_meta_agent_wrote_target_domain_truth",
+    "opl_meta_agent_wrote_target_domain_memory_body",
+    "opl_meta_agent_mutated_target_domain_artifact_body",
+    "opl_meta_agent_authorized_target_domain_quality_or_export",
+    "opl_meta_agent_promoted_default_agent_without_gate",
+    "opl_meta_agent_trained_or_deployed_model_weights"
   ],
   "marker": "generated_by_opl_standard_domain_agent_scaffold_v1",
   "baseline_acceptance_gates": [

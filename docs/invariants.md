@@ -1,4 +1,4 @@
-# meta-agent 硬约束
+# opl-meta-agent 硬约束
 
 - Do not store runtime artifacts in repo source.
 - Do not implement generic OPL runtime primitives in this domain repo.
