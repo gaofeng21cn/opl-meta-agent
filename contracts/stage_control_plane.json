@@ -65,7 +65,8 @@
       "outputs": [
         "agent_lab_external_suite_ref",
         "testing_takeover_receipt_ref",
-        "gated_self_evolution_candidate_ref"
+        "gated_self_evolution_candidate_ref",
+        "mechanism_patch_proposal_ref"
       ]
     },
     {
@@ -88,10 +89,11 @@
     },
     {
       "stage_id": "online-learning",
-      "purpose": "Convert real trajectories into reviewed datasets and future candidate refs",
+      "purpose": "Convert real trajectories into reviewed datasets, mechanism patch proposals, and future candidate refs",
       "outputs": [
         "online_learning_dataset_refs",
         "human_review_refs",
+        "mechanism_patch_proposal_refs",
         "future_candidate_refs"
       ]
     }

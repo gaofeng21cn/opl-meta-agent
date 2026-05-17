@@ -46,15 +46,25 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
     assert.equal(payload.opl_agent_lab.suite_result.suite_kind, 'agent_lab_external_suite');
     assert.equal(payload.learning_loop.online_learning_policy.can_promote_without_gate, false);
     assert.equal(payload.learning_loop.online_learning_policy.can_train_or_deploy_model_weights, false);
+    assert.equal(payload.learning_loop.mechanism_patch_proposal.status, 'proposal_recorded_requires_explicit_gate');
+    assert.equal(payload.learning_loop.mechanism_patch_proposal.observe.segment_run_ref, payload.opl_agent_lab.suite_result.result_id);
+    assert.equal(payload.learning_loop.mechanism_patch_proposal.diagnose.evidence_delta_ref, 'evidence-delta:opl-meta-agent/sample-brief-agent/baseline');
+    assert.equal(payload.learning_loop.mechanism_patch_proposal.edit.next_mechanism_candidate_ref, payload.learning_loop.online_learning_candidate.candidate_id);
+    assert.equal(payload.learning_loop.mechanism_patch_proposal.authority_boundary.can_write_target_domain_truth, false);
+    assert.equal(payload.learning_loop.mechanism_patch_proposal.authority_boundary.can_write_target_domain_memory_body, false);
+    assert.equal(payload.learning_loop.mechanism_patch_proposal.authority_boundary.can_mutate_target_domain_artifact_body, false);
+    assert.equal(payload.learning_loop.mechanism_patch_proposal.authority_boundary.can_promote_default_agent_without_gate, false);
 
     const targetDir = path.join(outputRoot, 'sample-brief-agent');
     const suitePath = path.join(outputRoot, 'agent-lab-suite.json');
     const receiptPath = path.join(outputRoot, 'baseline-delivery-receipt.json');
     const learningPath = path.join(outputRoot, 'online-learning-candidate.json');
+    const mechanismPath = path.join(outputRoot, 'mechanism-patch-proposal.json');
     assert.equal(fs.existsSync(path.join(targetDir, 'contracts/domain_descriptor.json')), true);
     assert.equal(fs.existsSync(suitePath), true);
     assert.equal(fs.existsSync(receiptPath), true);
     assert.equal(fs.existsSync(learningPath), true);
+    assert.equal(fs.existsSync(mechanismPath), true);
 
     const suite = readJson(suitePath);
     assert.equal(suite.suite_id, 'opl-meta-agent-self-bootstrap-suite');
@@ -72,6 +82,16 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
       payload.opl_agent_lab.suite_result.result_id,
       receipt.receipt_id,
     ]);
+
+    const mechanism = readJson(mechanismPath);
+    assert.equal(mechanism.surface_kind, 'opl_meta_agent_mechanism_patch_proposal');
+    assert.equal(mechanism.mechanism_ref, 'mechanism:opl-meta-agent/sample-brief-agent/self-learning-loop');
+    assert.equal(mechanism.version, 'opl-meta-agent.mechanism-patch-proposal.v1');
+    assert.ok(mechanism.editable_surfaces.includes('prompt_policy_ref'));
+    assert.ok(mechanism.editable_surfaces.includes('quality_gate_policy_ref'));
+    assert.equal(mechanism.segment_run_ref, payload.opl_agent_lab.suite_result.result_id);
+    assert.equal(mechanism.evidence_delta_ref, 'evidence-delta:opl-meta-agent/sample-brief-agent/baseline');
+    assert.equal(mechanism.next_mechanism_candidate_ref, learning.candidate_id);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }

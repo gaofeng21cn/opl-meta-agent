@@ -5,6 +5,7 @@ import path from 'node:path';
 import {
   buildAgentLabSuite,
   buildLearningCandidate,
+  buildMechanismPatchProposal,
   buildOwnerReceipt,
   readTargetAgent,
   resolveOplBin,
@@ -100,6 +101,23 @@ function buildTakeoverSuite(targetAgent, targetAgentDir) {
   });
 }
 
+function buildTakeoverMechanismPatchProposal(suiteResult, takeoverReceipt, learningCandidate, targetAgent) {
+  return buildMechanismPatchProposal({
+    suiteResult,
+    receipt: takeoverReceipt,
+    learningCandidate,
+    mechanismRef: `mechanism:opl-meta-agent/${targetAgent.domain_id}/testing-takeover-loop`,
+    editableSurfaces: [
+      'agent_lab_suite_policy_ref',
+      'takeover_review_policy_ref',
+      'optimizer_candidate_policy_ref',
+      'prompt_policy_ref',
+      'quality_gate_policy_ref',
+    ],
+    evidenceDeltaRef: `evidence-delta:opl-meta-agent/${targetAgent.domain_id}/takeover`,
+  });
+}
+
 function main() {
   const { targetAgentDir, outputDir, oplBin } = parseArgs(process.argv.slice(2));
   fs.mkdirSync(outputDir, { recursive: true });
@@ -116,6 +134,7 @@ function main() {
   const suitePath = path.join(outputDir, 'agent-lab-takeover-suite.json');
   const receiptPath = path.join(outputDir, 'takeover-receipt.json');
   const learningPath = path.join(outputDir, 'takeover-online-learning-candidate.json');
+  const mechanismPath = path.join(outputDir, 'takeover-mechanism-patch-proposal.json');
 
   const suite = buildTakeoverSuite(targetAgent, targetAgentDir);
   writeJson(suitePath, suite);
@@ -146,9 +165,16 @@ function main() {
     proposedChangeRefs: [`candidate-ref:${targetAgent.domain_id}/gated-optimizer-policy-adjustment`],
     promotionGateRef: `promotion-gate:opl-meta-agent/${targetAgent.domain_id}/takeover`,
   });
+  const mechanismPatchProposal = buildTakeoverMechanismPatchProposal(
+    suiteResult,
+    takeoverReceipt,
+    learningCandidate,
+    targetAgent,
+  );
 
   writeJson(receiptPath, takeoverReceipt);
   writeJson(learningPath, learningCandidate);
+  writeJson(mechanismPath, mechanismPatchProposal);
 
   const payload = {
     surface_kind: 'opl_meta_agent_takeover_loop_result',
@@ -174,12 +200,14 @@ function main() {
       suite_path: suitePath,
       takeover_receipt_path: receiptPath,
       online_learning_candidate_path: learningPath,
+      mechanism_patch_proposal_path: mechanismPath,
     },
     opl_agent_lab: agentLabRun.agent_lab_run,
     learning_loop: {
       takeover_receipt: takeoverReceipt,
       online_learning_candidate: learningCandidate,
       online_learning_policy: learningCandidate.online_learning_policy,
+      mechanism_patch_proposal: mechanismPatchProposal,
     },
   };
 

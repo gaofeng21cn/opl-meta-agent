@@ -9,6 +9,7 @@
     "agent_lab_suite_receipt",
     "testing_takeover_self_evolution_receipt",
     "optimizer_candidate_receipt",
+    "mechanism_patch_proposal_receipt",
     "baseline_delivery_receipt",
     "online_learning_review_receipt",
     "typed_blocker"
@@ -42,6 +43,7 @@
     "no_forbidden_write_proof_passed",
     "domain_authority_boundary_explicit",
     "online_learning_candidate_gated",
+    "mechanism_patch_proposal_recorded",
     "no_memory_body_written",
     "no_default_promotion",
     "external_agent_allowed",

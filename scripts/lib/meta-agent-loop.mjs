@@ -206,6 +206,7 @@ export function buildOwnerReceipt({
       no_forbidden_write_proof_passed: suiteResult.summary.forbidden_authority_flag_count === 0,
       domain_authority_boundary_explicit: true,
       online_learning_candidate_gated: true,
+      mechanism_patch_proposal_recorded: true,
       no_memory_body_written: true,
       no_default_promotion: true,
       ...extraAcceptanceGates,
@@ -245,6 +246,72 @@ export function buildLearningCandidate({
       can_train_or_deploy_model_weights: false,
       can_write_domain_memory_body: false,
       reward_authority: 'domain_owned_scorecard_or_human_owner_label',
+    },
+  };
+}
+
+export function buildMechanismPatchProposal({
+  suiteResult,
+  receipt,
+  learningCandidate,
+  mechanismRef,
+  editableSurfaces,
+  evidenceDeltaRef,
+  segmentRunRef = suiteResult.result_id,
+  nextMechanismCandidateRef = learningCandidate.candidate_id,
+  observeRefs = [],
+  diagnoseRefs = [],
+  editRefs = [],
+}) {
+  return {
+    surface_kind: 'opl_meta_agent_mechanism_patch_proposal',
+    version: 'opl-meta-agent.mechanism-patch-proposal.v1',
+    proposal_id: stableId('oma_mechanism_patch', [
+      mechanismRef,
+      segmentRunRef,
+      evidenceDeltaRef,
+      nextMechanismCandidateRef,
+      receipt.receipt_id,
+    ]),
+    status: 'proposal_recorded_requires_explicit_gate',
+    mechanism_ref: mechanismRef,
+    editable_surfaces: editableSurfaces,
+    observe: {
+      segment_run_ref: segmentRunRef,
+      source_refs: [
+        suiteResult.result_id,
+        receipt.receipt_id,
+        learningCandidate.candidate_id,
+        ...observeRefs,
+      ],
+    },
+    diagnose: {
+      evidence_delta_ref: evidenceDeltaRef,
+      source_refs: [
+        suiteResult.result_id,
+        ...diagnoseRefs,
+      ],
+    },
+    edit: {
+      next_mechanism_candidate_ref: nextMechanismCandidateRef,
+      proposed_change_refs: learningCandidate.proposed_change_refs,
+      editable_surfaces: editableSurfaces,
+      source_refs: [
+        learningCandidate.candidate_id,
+        ...editRefs,
+      ],
+    },
+    segment_run_ref: segmentRunRef,
+    evidence_delta_ref: evidenceDeltaRef,
+    next_mechanism_candidate_ref: nextMechanismCandidateRef,
+    promotion_gate_ref: learningCandidate.promotion_gate_ref,
+    authority_boundary: {
+      can_write_target_domain_truth: false,
+      can_write_target_domain_memory_body: false,
+      can_mutate_target_domain_artifact_body: false,
+      can_authorize_target_domain_quality_or_export: false,
+      can_promote_default_agent_without_gate: false,
+      can_train_or_deploy_model_weights: false,
     },
   };
 }
