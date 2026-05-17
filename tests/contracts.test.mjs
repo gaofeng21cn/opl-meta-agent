@@ -34,6 +34,7 @@ test('opl-meta-agent stage plan covers research, build, eval, optimization, deli
     'agent-skeleton-build',
     'eval-suite-build',
     'baseline-run',
+    'external-agent-takeover',
     'optimizer-iteration',
     'baseline-delivery',
     'online-learning',
@@ -41,6 +42,7 @@ test('opl-meta-agent stage plan covers research, build, eval, optimization, deli
   assert.equal(stageControl.opl_runtime_dependency.agent_lab_complete_control_plane, true);
   assert.equal(stageControl.opl_runtime_dependency.standard_domain_agent_scaffold, true);
   assert.equal(stageControl.authority_boundary.opl_meta_agent_owns_agent_building_semantics, true);
+  assert.equal(stageControl.authority_boundary.opl_meta_agent_can_take_over_external_agent_testing, true);
   assert.equal(stageControl.authority_boundary.opl_owns_generic_runtime, true);
 });
 
@@ -49,8 +51,12 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   const ownerReceipt = readJson('contracts/owner_receipt_contract.json');
 
   assert.ok(actionCatalog.actions.some((action) => action.action_id === 'build-agent-baseline'));
+  assert.ok(actionCatalog.actions.some((action) => action.action_id === 'takeover-external-agent-test'));
   assert.ok(actionCatalog.actions.some((action) => action.action_id === 'generate-optimizer-candidate'));
   assert.ok(actionCatalog.forbidden_generic_owner_roles.includes('generic_scheduler_owner'));
+  assert.ok(ownerReceipt.allowed_receipt_classes.includes('testing_takeover_self_evolution_receipt'));
   assert.ok(ownerReceipt.forbidden_claims.includes('opl_meta_agent_wrote_target_domain_truth'));
   assert.ok(ownerReceipt.forbidden_claims.includes('opl_meta_agent_promoted_default_agent_without_gate'));
+  assert.ok(ownerReceipt.testing_takeover_acceptance_gates.includes('no_memory_body_written'));
+  assert.ok(ownerReceipt.testing_takeover_acceptance_gates.includes('no_default_promotion'));
 });

@@ -60,6 +60,15 @@
       ]
     },
     {
+      "stage_id": "external-agent-takeover",
+      "purpose": "Read an existing OPL-compatible agent descriptor/contracts, generate an Agent Lab external suite, run gated testing takeover, and record a self-evolution candidate without assuming target-domain authority",
+      "outputs": [
+        "agent_lab_external_suite_ref",
+        "testing_takeover_receipt_ref",
+        "gated_self_evolution_candidate_ref"
+      ]
+    },
+    {
       "stage_id": "optimizer-iteration",
       "purpose": "Generate prompt, skill, stage-policy, tool-policy, few-shot, or rubric-gap candidates and rerun gated suites",
       "outputs": [
@@ -95,6 +104,7 @@
   },
   "authority_boundary": {
     "opl_meta_agent_owns_agent_building_semantics": true,
+    "opl_meta_agent_can_take_over_external_agent_testing": true,
     "opl_owns_generic_runtime": true,
     "target_domain_owner_keeps_truth_quality_artifact_memory": true
   },

@@ -12,13 +12,14 @@ It is a standalone domain agent repo. OPL Framework owns the generic runtime, Ag
 - Build an agent skeleton or candidate repo using OPL scaffold surfaces.
 - Build Agent Lab eval suites and recovery probes.
 - Run baseline evaluation through OPL Agent Lab.
+- Take over testing for an existing OPL-compatible external agent by reading its descriptor/contracts, generating an Agent Lab external suite, and recording a gated self-evolution candidate.
 - Generate prompt, skill, stage-policy, tool-policy, few-shot, and rubric-gap candidates.
 - Deliver a versioned baseline agent package and runbook.
 - Convert real trajectories into reviewed future candidate refs.
 
 ## Boundary
 
-`opl-meta-agent` does not own OPL Framework runtime, Agent Lab, model training, weight deployment, or ungated default-agent promotion. It consumes OPL refs and returns agent-building receipts, candidate package refs, typed blockers, and review records.
+`opl-meta-agent` does not own OPL Framework runtime, Agent Lab, model training, weight deployment, or ungated default-agent promotion. It consumes OPL refs and returns agent-building receipts, candidate package refs, typed blockers, and review records. For agents it did not create, it may take over testing and propose gated optimizer/online-learning candidates; it still cannot take over the target agent's domain truth, quality verdict, artifact authority, memory body, or default promotion authority.
 
 ## Verification
 
@@ -33,3 +34,11 @@ npm run bootstrap:sample -- --output-dir /tmp/opl-meta-agent-demo --opl-bin /Use
 ```
 
 This generates a `sample-brief-agent` package with the OPL scaffold, writes an Agent Lab external suite, runs `opl agent-lab run --suite`, and records a baseline delivery receipt plus a gated online-learning candidate.
+
+## External Agent Takeover Smoke
+
+```bash
+npm run takeover:test -- --agent-dir /tmp/opl-meta-agent-demo/sample-brief-agent --output-dir /tmp/opl-meta-agent-takeover --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl
+```
+
+This reads an existing OPL-compatible agent descriptor/contracts, writes `agent-lab-takeover-suite.json`, runs `opl agent-lab run --suite`, and records `takeover-receipt.json` plus `takeover-online-learning-candidate.json`. The receipt class is `testing_takeover_self_evolution_receipt`; promotion remains gated, and no memory body or target-domain authority surface is written.
