@@ -25,7 +25,8 @@
     "agent_lab_task_manifest_refs",
     "improvement_candidate_refs",
     "baseline_delivery_receipt_ref",
-    "online_learning_dataset_refs"
+    "online_learning_dataset_refs",
+    "mechanism_patch_proposal_ref"
   ],
   "marker": "generated_by_opl_standard_domain_agent_scaffold_v1",
   "authority_boundary": {

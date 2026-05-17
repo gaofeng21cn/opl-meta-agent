@@ -1,44 +1,63 @@
-# opl-meta-agent
+# OPL Meta Agent
 
-`opl-meta-agent` is an OPL-based Foundry Agent for building other OPL-compatible high-value knowledge-work agents.
+<p align="center">
+  <a href="./README.md"><strong>English</strong></a> | <a href="./README.zh-CN.md">中文</a>
+</p>
 
-It is a standalone domain agent repo. OPL Framework owns the generic runtime, Agent Lab, scaffolding, queue, attempt ledger, observability, optimizer candidate refs, and promotion gates. This repo owns the agent-building domain semantics: intent interpretation, research synthesis, stage decomposition, agent package generation policy, baseline acceptance, and online-learning review policy.
+**A Foundry Agent for building OPL-compatible high-value knowledge-work agents**
 
-## Scope
+`opl-meta-agent` is an independent OPL-compatible domain agent. It designs, tests, and packages new domain agents while the OPL Framework owns the generic runtime, Agent Lab, scaffold surface, queue, attempt ledger, observability, optimizer transition refs, and promotion gates.
 
-- Understand the user's target agent goal, delivery bar, authority boundary, and non-goals.
-- Research public patterns for the target domain and record source refs.
-- Produce OPL-compatible descriptor, stage, action, memory, artifact, quality, sidecar, and receipt contracts.
-- Build an agent skeleton or candidate repo using OPL scaffold surfaces.
-- Build Agent Lab eval suites and recovery probes.
-- Run baseline evaluation through OPL Agent Lab.
-- Take over testing for an existing OPL-compatible external agent by reading its descriptor/contracts, generating an Agent Lab external suite, and recording a gated self-evolution candidate.
-- Generate prompt, skill, stage-policy, tool-policy, few-shot, and rubric-gap candidates.
-- Deliver a versioned baseline agent package and runbook.
-- Convert real trajectories into reviewed future candidate refs.
+Branding assets are intentionally left for `assets/branding/`. This README does not reference image files until the main thread provides the actual assets.
 
-## Boundary
+## What It Helps With
 
-`opl-meta-agent` does not own OPL Framework runtime, Agent Lab, model training, weight deployment, or ungated default-agent promotion. It consumes OPL refs and returns agent-building receipts, candidate package refs, typed blockers, and review records. For agents it did not create, it may take over testing and propose gated optimizer/online-learning candidates; it still cannot take over the target agent's domain truth, quality verdict, artifact authority, memory body, or default promotion authority.
+- Turn a target agent idea into OPL-compatible descriptors, stage plans, action metadata, memory locators, artifact locators, quality gates, and owner receipts.
+- Generate a baseline agent package through OPL scaffold surfaces.
+- Build Agent Lab external suites, recovery probes, scorecard refs, and promotion gates.
+- Take over testing for an existing OPL-compatible external agent without taking over its truth, memory, artifacts, quality verdict, or default promotion authority.
+- Record gated online-learning candidates and mechanism patch proposals from observed runs.
 
-## Verification
+## Current Boundary
+
+`opl-meta-agent` owns agent-building semantics: intent interpretation, public pattern research, stage decomposition, agent package policy, Agent Lab suite specs, baseline delivery receipts, optimizer candidate organization, online-learning review policy, and mechanism patch proposal records.
+
+It does not implement a second OPL runtime, scheduler, queue, attempt ledger, memory transport, artifact lifecycle shell, operator workbench, model training path, weight deployment path, or ungated default promotion path.
+
+For target agents, it may observe an Agent Lab segment run, diagnose an evidence delta, and propose edits to editable mechanism surfaces. The proposal remains a gated candidate reference. It cannot write target-domain truth, memory body, artifact body, quality/export verdict, or promote a default agent without an explicit OPL gate.
+
+## Commands
 
 ```bash
 npm test
 ```
 
-## Self-Learning Loop Smoke
+Bootstrap a sample agent and record a baseline receipt, online-learning candidate, and mechanism patch proposal:
 
 ```bash
 npm run bootstrap:sample -- --output-dir /tmp/opl-meta-agent-demo --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl
 ```
 
-This generates a `sample-brief-agent` package with the OPL scaffold, writes an Agent Lab external suite, runs `opl agent-lab run --suite`, and records a baseline delivery receipt plus a gated online-learning candidate.
-
-## External Agent Takeover Smoke
+Take over testing for an existing OPL-compatible agent and record the takeover receipt, gated self-evolution candidate, and mechanism patch proposal:
 
 ```bash
 npm run takeover:test -- --agent-dir /tmp/opl-meta-agent-demo/sample-brief-agent --output-dir /tmp/opl-meta-agent-takeover --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl
 ```
 
-This reads an existing OPL-compatible agent descriptor/contracts, writes `agent-lab-takeover-suite.json`, runs `opl agent-lab run --suite`, and records `takeover-receipt.json` plus `takeover-online-learning-candidate.json`. The receipt class is `testing_takeover_self_evolution_receipt`; promotion remains gated, and no memory body or target-domain authority surface is written.
+## Mechanism Patch Proposal
+
+Both smoke paths now write `mechanism-patch-proposal.json` surfaces. Each proposal carries:
+
+- `mechanism_ref` and `version`
+- `editable_surfaces`
+- `observe.segment_run_ref`
+- `diagnose.evidence_delta_ref`
+- `edit.next_mechanism_candidate_ref`
+- top-level `segment_run_ref`, `evidence_delta_ref`, and `next_mechanism_candidate_ref`
+- authority flags proving proposal-only behavior
+
+## How To Read This Repository
+
+1. Start with [中文 README](./README.zh-CN.md) for the primary product and operator wording.
+2. Technical readers should read [Project](./docs/project.md), [Status](./docs/status.md), [Architecture](./docs/architecture.md), [Invariants](./docs/invariants.md), and [Decisions](./docs/decisions.md).
+3. Machine-readable surfaces live under [`contracts/`](./contracts/), while smoke scripts live under [`scripts/`](./scripts/).

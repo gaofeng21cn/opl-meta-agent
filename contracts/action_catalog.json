@@ -51,7 +51,24 @@
       "output_refs": [
         "agent_lab_external_suite_ref",
         "testing_takeover_receipt_ref",
-        "gated_self_evolution_candidate_ref"
+        "gated_self_evolution_candidate_ref",
+        "mechanism_patch_proposal_ref"
+      ]
+    },
+    {
+      "action_id": "generate-mechanism-patch-proposal",
+      "stage_id": "online-learning",
+      "owner": "opl-meta-agent",
+      "input_refs": [
+        "mechanism_ref",
+        "segment_run_ref",
+        "evidence_delta_ref",
+        "next_mechanism_candidate_ref"
+      ],
+      "output_refs": [
+        "mechanism_patch_proposal_ref",
+        "editable_surface_refs",
+        "proposal_gate_ref"
       ]
     },
     {

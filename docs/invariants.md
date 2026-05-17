@@ -6,3 +6,4 @@
 - Do not train or deploy model weights from this repo.
 - Do not promote a generated target agent as default without an explicit OPL gate.
 - Do not write target-domain truth, memory body, artifact body, quality verdict, or export verdict.
+- Mechanism patch proposals are proposal-only surfaces: they may reference editable mechanism surfaces, observed segment runs, evidence deltas, and next candidate refs, but they must not apply edits or promote defaults without an explicit gate.
