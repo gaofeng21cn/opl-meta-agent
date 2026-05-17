@@ -1,30 +1,112 @@
-# OPL Meta Agent
+<p align="center">
+  <img src="assets/branding/opl-meta-agent-logo.png" alt="OPL Meta Agent logo" width="132" />
+</p>
 
 <p align="center">
   <a href="./README.md"><strong>English</strong></a> | <a href="./README.zh-CN.md">中文</a>
 </p>
 
-**A Foundry Agent for building OPL-compatible high-value knowledge-work agents**
+<h1 align="center">OPL Meta Agent</h1>
 
-`opl-meta-agent` is an independent OPL-compatible domain agent. It designs, tests, and packages new domain agents while the OPL Framework owns the generic runtime, Agent Lab, scaffold surface, queue, attempt ledger, observability, optimizer transition refs, and promotion gates.
+<p align="center"><strong>A Foundry Agent for building, testing, and delivering new high-value knowledge-work agents on OPL Framework</strong></p>
+<p align="center">Agent Building · Agent Lab Evaluation · Mechanism Evolution</p>
 
-Branding assets are intentionally left for `assets/branding/`. This README does not reference image files until the main thread provides the actual assets.
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <strong>Who It Serves</strong><br/>
+      Developers, maintainers, and operators who want to turn a high-value knowledge workflow into an OPL-compatible domain agent
+    </td>
+    <td width="33%" valign="top">
+      <strong>What It Organizes</strong><br/>
+      User intent, public patterns, stage plans, agent skeletons, Agent Lab suites, baseline receipts, and mechanism patch proposals
+    </td>
+    <td width="33%" valign="top">
+      <strong>How To Start</strong><br/>
+      Describe the target agent deliverable, authority boundary, quality bar, and runtime constraints, then generate a tested baseline
+    </td>
+  </tr>
+</table>
+
+<p align="center">
+  <img src="assets/branding/opl-meta-agent-overview.png" alt="OPL Meta Agent overview" width="100%" />
+</p>
+
+> `opl-meta-agent` is an independent OPL-compatible domain agent. It owns agent-building domain semantics; OPL Framework owns the generic runtime, Agent Lab, scaffold surface, queue, attempt ledger, observability, optimizer / RL transition refs, and promotion gates.
+
+## One-Sentence Quick Start
+
+You can start with prompts like:
+
+- "Turn this high-value knowledge workflow into an OPL-compatible agent, and first define the deliverable, boundary, and quality bar."
+- "Take over testing for this existing agent repo, generate an Agent Lab suite, takeover receipt, and self-evolution candidate, but keep its domain truth with the owner."
+- "After an Agent Lab run, convert the failure evidence into a mechanism patch proposal and wait for an explicit gate before adopting it."
 
 ## What It Helps With
 
-- Turn a target agent idea into OPL-compatible descriptors, stage plans, action metadata, memory locators, artifact locators, quality gates, and owner receipts.
-- Generate a baseline agent package through OPL scaffold surfaces.
-- Build Agent Lab external suites, recovery probes, scorecard refs, and promotion gates.
-- Take over testing for an existing OPL-compatible external agent without taking over its truth, memory, artifacts, quality verdict, or default promotion authority.
-- Record gated online-learning candidates and mechanism patch proposals from observed runs.
+- Decomposing a new agent idea into intent analysis, public-pattern research, stage planning, agent skeletons, eval suites, baseline runs, delivery, and online learning.
+- Generating OPL-compatible descriptors, stage/action metadata, memory/artifact locators, quality gates, and owner receipts through OPL scaffold surfaces.
+- Building Agent Lab external suites, recovery probes, scorecard refs, and promotion gates for new or existing external agents.
+- Producing baseline delivery receipts, gated online-learning candidates, and mechanism patch proposals.
+- Turning real Agent Lab evidence into reviewable, rollback-friendly, gate-controlled next mechanism candidates.
 
-## Current Boundary
+## How It Works
 
-`opl-meta-agent` owns agent-building semantics: intent interpretation, public pattern research, stage decomposition, agent package policy, Agent Lab suite specs, baseline delivery receipts, optimizer candidate organization, online-learning review policy, and mechanism patch proposal records.
+- The user provides the target domain, deliverable, quality bar, non-goals, and runtime constraints.
+- `opl-meta-agent` organizes public patterns, decomposes stages, generates a candidate agent package, and runs suites through OPL Agent Lab.
+- Agent Lab returns refs-only suite results; this repo turns them into baseline receipts, online-learning candidates, and mechanism patch proposals.
+- Mechanism changes, default-agent promotion, quality adoption, and real delivery authority require an explicit gate or the target domain owner.
 
-It does not implement a second OPL runtime, scheduler, queue, attempt ledger, memory transport, artifact lifecycle shell, operator workbench, model training path, weight deployment path, or ungated default promotion path.
+## Agent Lab Self-Evolution Loop
 
-For target agents, it may observe an Agent Lab segment run, diagnose an evidence delta, and propose edits to editable mechanism surfaces. The proposal remains a gated candidate reference. It cannot write target-domain truth, memory body, artifact body, quality/export verdict, or promote a default agent without an explicit OPL gate.
+<p align="center">
+  <img src="assets/branding/opl-meta-agent-evolution-loop.png" alt="OPL Meta Agent Agent Lab self-evolution loop" width="100%" />
+</p>
+
+The loop does not directly rewrite final answers. It turns each run into an auditable mechanism-improvement object:
+
+- `observe`: read Agent Lab segment runs, trajectory refs, failure refs, and candidate refs.
+- `diagnose`: produce an `evidence_delta_ref` for repeated failures, wasted budget, validator gaps, or stage drift.
+- `edit`: emit only a `next_mechanism_candidate_ref` covering prompt policy, skill policy, stage policy, Agent Lab suite policy, takeover review policy, optimizer candidate policy, or quality gate policy.
+- `gate`: mechanism patches remain proposal-only surfaces. They cannot write target truth, memory bodies, artifact bodies, quality verdicts, or bypass explicit promotion gates.
+
+## Current Position And Boundary
+
+- `opl-meta-agent` is an agent-building `Foundry Agent`: an independent domain agent that turns target-agent requirements into a tested, deliverable, continuously improvable baseline agent package.
+- `opl-meta-agent` is an OPL-compatible package built on OPL Framework. It consumes OPL scaffold, Agent Lab, queue/projection, and promotion gates without rebuilding generic runtime.
+- OPL Framework owns generic runtime, Agent Lab, standard scaffold, queue, attempt ledger, provider receipts, observability, optimizer/RL transition refs, and promotion gates.
+- The target domain agent owns its own domain truth, quality verdict, artifact authority, memory body, and owner receipt.
+- For agents that were not created by `opl-meta-agent`, this repo can still take over testing orchestration and self-evolution candidate generation. It still only emits Agent Lab suites, takeover receipts, gated candidates, and mechanism patch proposals.
+- This repo does not train or deploy model weights, promote default agents without gates, or write target memory bodies, artifact bodies, quality/export verdicts, or domain truth.
+
+<details>
+  <summary><strong>Technical boundary for operators</strong></summary>
+
+- The bootstrap path is `npm run bootstrap:sample -- --output-dir <dir> --opl-bin <opl>`: generate `sample-brief-agent`, call OPL scaffold validation, generate an Agent Lab external suite, run `opl agent-lab run --suite`, and write a baseline receipt, online-learning candidate, and `mechanism-patch-proposal.json`.
+- The takeover path is `npm run takeover:test -- --agent-dir <existing-agent-dir> --output-dir <dir> --opl-bin <opl>`: read target agent descriptors/contracts, generate a takeover suite, run Agent Lab, and write a takeover receipt, gated self-evolution candidate, and `takeover-mechanism-patch-proposal.json`.
+- A mechanism patch proposal records `mechanism_ref/version`, `editable_surfaces`, `observe/diagnose/edit`, `segment_run_ref`, `evidence_delta_ref`, `next_mechanism_candidate_ref`, and proposal-only authority flags.
+- OPL Agent Lab's mechanism surface is a refs-only control plane. It can expose `opl agent-lab mechanism --json` and `opl agent-lab evolve --suite <suite.json> --json`, but it cannot upgrade suite pass, mechanism candidate, or evolution segment into a domain verdict.
+
+</details>
+
+## How To Read This Repository
+
+1. Start here, then continue to [Project](./docs/project.md) and [Status](./docs/status.md).
+2. Technical readers should read [Architecture](./docs/architecture.md), [Invariants](./docs/invariants.md), and [Decisions](./docs/decisions.md).
+3. Machine-readable surfaces live under [`contracts/`](./contracts/), smoke scripts live under [`scripts/`](./scripts/), and the test entry is `npm test`.
+
+## Agent And Operator Quick Start
+
+<details>
+  <summary><strong>Start here if you are handing this repo to Codex or another agent</strong></summary>
+
+- Read this README plus [Project](./docs/project.md), [Status](./docs/status.md), [Architecture](./docs/architecture.md), [Invariants](./docs/invariants.md), and [Decisions](./docs/decisions.md).
+- When changing contracts, README, docs, or smoke scripts, update `tests/*.test.mjs` so boundary flags still prove proposal-only / refs-only behavior.
+- This repo owns agent-building semantics and testing/self-evolution orchestration. Use OPL Agent Lab for real runs, longline suites, mechanism read models, and evolution segments.
+- Do not treat `mechanism_patch_proposal` as an adopted mechanism. It is only a candidate that may enter a gate.
+- Do not treat takeover as ownership of the target agent's domain truth, memory body, artifact authority, or quality verdict.
+
+</details>
 
 ## Commands
 
@@ -32,32 +114,19 @@ For target agents, it may observe an Agent Lab segment run, diagnose an evidence
 npm test
 ```
 
-Bootstrap a sample agent and record a baseline receipt, online-learning candidate, and mechanism patch proposal:
-
 ```bash
 npm run bootstrap:sample -- --output-dir /tmp/opl-meta-agent-demo --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl
 ```
-
-Take over testing for an existing OPL-compatible agent and record the takeover receipt, gated self-evolution candidate, and mechanism patch proposal:
 
 ```bash
 npm run takeover:test -- --agent-dir /tmp/opl-meta-agent-demo/sample-brief-agent --output-dir /tmp/opl-meta-agent-takeover --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl
 ```
 
-## Mechanism Patch Proposal
+## Further Reading
 
-Both smoke paths now write `mechanism-patch-proposal.json` surfaces. Each proposal carries:
-
-- `mechanism_ref` and `version`
-- `editable_surfaces`
-- `observe.segment_run_ref`
-- `diagnose.evidence_delta_ref`
-- `edit.next_mechanism_candidate_ref`
-- top-level `segment_run_ref`, `evidence_delta_ref`, and `next_mechanism_candidate_ref`
-- authority flags proving proposal-only behavior
-
-## How To Read This Repository
-
-1. Start with [中文 README](./README.zh-CN.md) for the primary product and operator wording.
-2. Technical readers should read [Project](./docs/project.md), [Status](./docs/status.md), [Architecture](./docs/architecture.md), [Invariants](./docs/invariants.md), and [Decisions](./docs/decisions.md).
-3. Machine-readable surfaces live under [`contracts/`](./contracts/), while smoke scripts live under [`scripts/`](./scripts/).
+- [Project](./docs/project.md)
+- [Status](./docs/status.md)
+- [Architecture](./docs/architecture.md)
+- [Invariants](./docs/invariants.md)
+- [Decisions](./docs/decisions.md)
+- [Contracts](./contracts/)
