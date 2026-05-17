@@ -42,6 +42,14 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
     assert.equal(payload.product_id, 'opl-meta-agent');
     assert.equal(payload.meta_agent_kind, 'opl_compatible_meta_agent');
     assert.equal(payload.target_agent.domain_id, 'sample-brief-agent');
+    assert.equal(payload.target_agent.generated_interface_status, 'ready');
+    assert.equal(payload.opl_generated_interfaces.surface_kind, 'opl_generated_agent_interface_bundle');
+    assert.equal(payload.opl_generated_interfaces.owner, 'one-person-lab');
+    assert.equal(payload.opl_generated_interfaces.domain_repo_can_own_generated_surface, false);
+    assert.equal(payload.opl_generated_interfaces.cli.descriptors[0].action_id, 'draft-brief');
+    assert.equal(payload.opl_generated_interfaces.mcp.descriptors[0].descriptor_only, true);
+    assert.equal(payload.opl_generated_interfaces.skill.descriptors[0].command_contract_id, 'sample-brief-agent.draft-brief');
+    assert.equal(payload.opl_generated_interfaces.product_entry.descriptors[0].action_key, 'draft-brief');
     assert.equal(payload.opl_agent_lab.suite_result.status, 'passed');
     assert.equal(payload.opl_agent_lab.suite_result.suite_kind, 'agent_lab_external_suite');
     assert.equal(payload.learning_loop.online_learning_policy.can_promote_without_gate, false);
@@ -61,6 +69,8 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
     const learningPath = path.join(outputRoot, 'online-learning-candidate.json');
     const mechanismPath = path.join(outputRoot, 'mechanism-patch-proposal.json');
     assert.equal(fs.existsSync(path.join(targetDir, 'contracts/domain_descriptor.json')), true);
+    assert.equal(fs.existsSync(path.join(targetDir, 'contracts/action_catalog.json')), true);
+    assert.equal(fs.existsSync(path.join(targetDir, 'contracts/stage_control_plane.json')), true);
     assert.equal(fs.existsSync(suitePath), true);
     assert.equal(fs.existsSync(receiptPath), true);
     assert.equal(fs.existsSync(learningPath), true);

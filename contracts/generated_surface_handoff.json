@@ -1,0 +1,59 @@
+{
+  "surface_kind": "opl_generated_surface_handoff",
+  "schema_version": 1,
+  "domain_id": "opl-meta-agent",
+  "generated_surface_owner": "one-person-lab",
+  "domain_repo_can_own_generated_surface": false,
+  "source_contract_ref": "contracts/pack_compiler_input.json",
+  "generated_surfaces": [
+    {
+      "surface_id": "cli",
+      "owner": "one-person-lab",
+      "source_contract": "contracts/pack_compiler_input.json",
+      "domain_policy": "domain_repo_declares_actions_stages_and_authority_receipts_only"
+    },
+    {
+      "surface_id": "mcp",
+      "owner": "one-person-lab",
+      "source_contract": "contracts/pack_compiler_input.json",
+      "domain_policy": "domain_repo_does_not_handwrite_generic_tool_shell"
+    },
+    {
+      "surface_id": "product_entry_manifest",
+      "owner": "one-person-lab",
+      "source_contract": "contracts/pack_compiler_input.json",
+      "domain_policy": "domain_repo_declares_product_entry_refs_and_domain_authority_refs"
+    },
+    {
+      "surface_id": "sidecar_export_dispatch",
+      "owner": "one-person-lab",
+      "source_contract": "contracts/pack_compiler_input.json",
+      "domain_policy": "domain_repo_implements_only_domain_authority_function_targets"
+    },
+    {
+      "surface_id": "status_read_model",
+      "owner": "one-person-lab",
+      "source_contract": "contracts/generated_surface_handoff.json",
+      "domain_policy": "domain_repo_returns_receipts_refs_and_typed_blockers"
+    },
+    {
+      "surface_id": "workbench_drilldown",
+      "owner": "one-person-lab",
+      "source_contract": "contracts/generated_surface_handoff.json",
+      "domain_policy": "domain_repo_does_not_own_generic_operator_workbench"
+    },
+    {
+      "surface_id": "functional_harness_cases",
+      "owner": "one-person-lab",
+      "source_contract": "contracts/pack_compiler_input.json",
+      "domain_policy": "domain_repo_supplies_fixtures_expected_receipts_and_forbidden_write_assertions"
+    }
+  ],
+  "required_domain_handoff": [
+    "owner_receipt_schema",
+    "typed_blocker_schema",
+    "minimal_authority_function_refs",
+    "no_forbidden_write_evidence"
+  ],
+  "marker": "generated_by_opl_standard_domain_agent_scaffold_v1"
+}

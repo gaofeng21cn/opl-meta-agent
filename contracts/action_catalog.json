@@ -1,84 +1,185 @@
 {
   "surface_kind": "family_action_catalog",
-  "schema_version": 1,
-  "domain_id": "opl-meta-agent",
+  "version": "family-action-catalog.v1",
+  "catalog_id": "opl_meta_agent_action_catalog",
+  "target_domain_id": "opl-meta-agent",
+  "owner": "opl-meta-agent",
+  "authority_boundary": {
+    "opl_role": "generated_interface_projection_only",
+    "domain_truth_owner": "opl-meta-agent",
+    "opl_can_write_domain_truth": false,
+    "opl_can_write_memory_body": false,
+    "opl_can_authorize_quality_or_export": false,
+    "domain_repo_can_own_generated_surface": false
+  },
   "actions": [
     {
-      "action_id": "intake-agent-goal",
-      "stage_id": "intent-intake",
-      "owner": "opl-meta-agent",
-      "output_refs": [
-        "intent_brief_ref",
-        "acceptance_criteria_ref"
-      ]
-    },
-    {
-      "action_id": "research-agent-patterns",
-      "stage_id": "web-experience-research",
-      "owner": "opl-meta-agent",
-      "output_refs": [
-        "research_brief_ref",
-        "source_refs",
-        "pattern_disposition_refs"
-      ]
-    },
-    {
       "action_id": "build-agent-baseline",
-      "stage_id": "agent-skeleton-build",
+      "title": "Build Agent Baseline",
+      "summary": "Generate an OPL-compatible candidate agent package, validate its standard scaffold, run an Agent Lab baseline suite, and emit baseline delivery and learning refs.",
       "owner": "opl-meta-agent",
-      "output_refs": [
-        "candidate_agent_package_ref",
-        "domain_descriptor_ref"
-      ]
-    },
-    {
-      "action_id": "generate-agent-lab-suite",
-      "stage_id": "eval-suite-build",
-      "owner": "opl-meta-agent",
-      "output_refs": [
-        "agent_lab_task_manifest_refs",
-        "promotion_gate_refs"
-      ]
+      "effect": "mutating",
+      "source_command": {
+        "command": "npm run bootstrap:sample -- --output-dir <output_dir> --opl-bin <opl_bin>",
+        "surface_kind": "domain_smoke_cli"
+      },
+      "input_schema_ref": "contracts/schemas/build-agent-baseline.input.schema.json",
+      "output_schema_ref": "contracts/schemas/build-agent-baseline.output.schema.json",
+      "workspace_locator_fields": [
+        "output_dir",
+        "opl_bin"
+      ],
+      "human_gate_ids": [
+        "baseline_delivery_owner_review"
+      ],
+      "supported_surfaces": {
+        "cli": {
+          "command": "npm run bootstrap:sample -- --output-dir <output_dir> --opl-bin <opl_bin>",
+          "surface_kind": "domain_smoke_cli"
+        },
+        "mcp": {
+          "tool_name": "opl_meta_agent_build_agent_baseline",
+          "surface_kind": "opl_generated_mcp_descriptor",
+          "descriptor_only": true,
+          "public_runtime": false
+        },
+        "skill": {
+          "command_contract_id": "opl-meta-agent.build-agent-baseline",
+          "surface_kind": "opl_generated_skill_contract"
+        },
+        "product_entry": {
+          "action_key": "build-agent-baseline",
+          "command": "npm run bootstrap:sample -- --output-dir <output_dir> --opl-bin <opl_bin>",
+          "surface_kind": "domain_product_entry_action"
+        },
+        "openai": {
+          "tool_name": "opl_meta_agent_build_agent_baseline"
+        },
+        "ai_sdk": {
+          "tool_name": "opl_meta_agent_build_agent_baseline"
+        }
+      },
+      "authority_boundary": {
+        "can_write_target_domain_truth": false,
+        "can_write_target_domain_memory_body": false,
+        "can_mutate_target_domain_artifact_body": false,
+        "can_authorize_target_domain_quality_or_export": false,
+        "can_promote_default_agent_without_gate": false,
+        "can_train_or_deploy_model_weights": false
+      }
     },
     {
       "action_id": "takeover-external-agent-test",
-      "stage_id": "external-agent-takeover",
+      "title": "Take Over External Agent Test",
+      "summary": "Read an existing OPL-compatible agent repo, generate an Agent Lab takeover suite, run it, and emit takeover receipt plus gated self-evolution refs.",
       "owner": "opl-meta-agent",
-      "input_refs": [
-        "target_agent_descriptor_ref",
-        "target_agent_contract_refs"
+      "effect": "mutating",
+      "source_command": {
+        "command": "npm run takeover:test -- --agent-dir <agent_dir> --output-dir <output_dir> --opl-bin <opl_bin>",
+        "surface_kind": "domain_smoke_cli"
+      },
+      "input_schema_ref": "contracts/schemas/takeover-external-agent-test.input.schema.json",
+      "output_schema_ref": "contracts/schemas/takeover-external-agent-test.output.schema.json",
+      "workspace_locator_fields": [
+        "agent_dir",
+        "output_dir",
+        "opl_bin"
       ],
-      "output_refs": [
-        "agent_lab_external_suite_ref",
-        "testing_takeover_receipt_ref",
-        "gated_self_evolution_candidate_ref",
-        "mechanism_patch_proposal_ref"
-      ]
+      "human_gate_ids": [
+        "testing_takeover_owner_review"
+      ],
+      "supported_surfaces": {
+        "cli": {
+          "command": "npm run takeover:test -- --agent-dir <agent_dir> --output-dir <output_dir> --opl-bin <opl_bin>",
+          "surface_kind": "domain_smoke_cli"
+        },
+        "mcp": {
+          "tool_name": "opl_meta_agent_takeover_external_agent_test",
+          "surface_kind": "opl_generated_mcp_descriptor",
+          "descriptor_only": true,
+          "public_runtime": false
+        },
+        "skill": {
+          "command_contract_id": "opl-meta-agent.takeover-external-agent-test",
+          "surface_kind": "opl_generated_skill_contract"
+        },
+        "product_entry": {
+          "action_key": "takeover-external-agent-test",
+          "command": "npm run takeover:test -- --agent-dir <agent_dir> --output-dir <output_dir> --opl-bin <opl_bin>",
+          "surface_kind": "domain_product_entry_action"
+        },
+        "openai": {
+          "tool_name": "opl_meta_agent_takeover_external_agent_test"
+        },
+        "ai_sdk": {
+          "tool_name": "opl_meta_agent_takeover_external_agent_test"
+        }
+      },
+      "authority_boundary": {
+        "can_write_target_domain_truth": false,
+        "can_write_target_domain_memory_body": false,
+        "can_mutate_target_domain_artifact_body": false,
+        "can_authorize_target_domain_quality_or_export": false,
+        "can_promote_default_agent_without_gate": false,
+        "can_train_or_deploy_model_weights": false
+      }
     },
     {
       "action_id": "generate-mechanism-patch-proposal",
-      "stage_id": "online-learning",
+      "title": "Generate Mechanism Patch Proposal",
+      "summary": "Convert Agent Lab run evidence and a gated learning candidate into a proposal-only mechanism patch record.",
       "owner": "opl-meta-agent",
-      "input_refs": [
+      "effect": "mutating",
+      "source_command": {
+        "command": "opl-meta-agent authority-function generate-mechanism-patch-proposal",
+        "surface_kind": "minimal_authority_function"
+      },
+      "input_schema_ref": "contracts/schemas/generate-mechanism-patch-proposal.input.schema.json",
+      "output_schema_ref": "contracts/schemas/generate-mechanism-patch-proposal.output.schema.json",
+      "workspace_locator_fields": [
         "mechanism_ref",
         "segment_run_ref",
         "evidence_delta_ref",
         "next_mechanism_candidate_ref"
       ],
-      "output_refs": [
-        "mechanism_patch_proposal_ref",
-        "editable_surface_refs",
-        "proposal_gate_ref"
-      ]
-    },
-    {
-      "action_id": "generate-optimizer-candidate",
-      "stage_id": "optimizer-iteration",
-      "owner": "opl-meta-agent",
-      "output_refs": [
-        "improvement_candidate_refs",
-        "candidate_branch_refs"
-      ]
+      "human_gate_ids": [
+        "mechanism_patch_owner_review"
+      ],
+      "supported_surfaces": {
+        "cli": {
+          "command": "opl-meta-agent authority-function generate-mechanism-patch-proposal",
+          "surface_kind": "minimal_authority_function"
+        },
+        "mcp": {
+          "tool_name": "opl_meta_agent_generate_mechanism_patch_proposal",
+          "surface_kind": "opl_generated_mcp_descriptor",
+          "descriptor_only": true,
+          "public_runtime": false
+        },
+        "skill": {
+          "command_contract_id": "opl-meta-agent.generate-mechanism-patch-proposal",
+          "surface_kind": "opl_generated_skill_contract"
+        },
+        "product_entry": {
+          "action_key": "generate-mechanism-patch-proposal",
+          "command": "opl-meta-agent authority-function generate-mechanism-patch-proposal",
+          "surface_kind": "domain_product_entry_action"
+        },
+        "openai": {
+          "tool_name": "opl_meta_agent_generate_mechanism_patch_proposal"
+        },
+        "ai_sdk": {
+          "tool_name": "opl_meta_agent_generate_mechanism_patch_proposal"
+        }
+      },
+      "authority_boundary": {
+        "can_write_target_domain_truth": false,
+        "can_write_target_domain_memory_body": false,
+        "can_mutate_target_domain_artifact_body": false,
+        "can_authorize_target_domain_quality_or_export": false,
+        "can_promote_default_agent_without_gate": false,
+        "can_train_or_deploy_model_weights": false
+      }
     }
   ],
   "forbidden_generic_owner_roles": [
@@ -88,6 +189,10 @@
     "generic_queue_owner",
     "generic_attempt_ledger_owner",
     "generic_state_machine_runner_owner",
+    "generic_cli_mcp_product_wrapper_owner",
+    "generic_sidecar_owner",
+    "generic_session_store_owner",
+    "generic_status_workbench_owner",
     "generic_workspace_source_intake_owner",
     "generic_memory_transport_owner",
     "generic_artifact_gallery_owner",
@@ -96,7 +201,12 @@
     "generic_persistence_engine_owner",
     "generic_sqlite_lifecycle_owner",
     "generic_native_helper_envelope_owner",
-    "generic_review_repair_transport_owner"
+    "generic_review_repair_transport_owner",
+    "generated_surface_owner_in_domain_repo"
+  ],
+  "notes": [
+    "OPL Framework generates CLI/MCP/Skill/product-entry/tool descriptors from this catalog.",
+    "This repo retains only agent-building domain semantics and minimal authority outputs."
   ],
   "marker": "generated_by_opl_standard_domain_agent_scaffold_v1"
 }

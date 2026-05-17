@@ -1,114 +1,425 @@
 {
-  "surface_kind": "stage_control_plane",
-  "schema_version": 1,
-  "domain_id": "opl-meta-agent",
+  "surface_kind": "family_stage_control_plane",
+  "version": "family-stage-control-plane.v1",
+  "plane_id": "opl_meta_agent_stage_plane",
+  "target_domain_id": "opl-meta-agent",
+  "owner": "opl-meta-agent",
+  "authority_boundary": {
+    "domain_truth_owner": "opl-meta-agent",
+    "opl_role": "stage_runtime_projection_and_generated_interface_owner",
+    "opl_can_write_domain_truth": false,
+    "opl_can_write_memory_body": false,
+    "opl_can_authorize_quality_or_export": false
+  },
   "stages": [
     {
       "stage_id": "intent-intake",
-      "purpose": "Understand target agent goal, delivery bar, authority boundary, and non-goals",
+      "stage_kind": "intake",
+      "title": "Intent Intake",
+      "summary": "Understand target agent goal, delivery bar, authority boundary, and non-goals.",
+      "goal": "Produce intent and acceptance-criteria refs for a target OPL-compatible agent.",
+      "owner": "opl-meta-agent",
+      "domain_stage_refs": [
+        "intent-intake"
+      ],
+      "inputs": [],
+      "knowledge_refs": [
+        {
+          "ref_kind": "domain_memory_ref",
+          "ref": "opl-meta-agent.agent-building-memory"
+        }
+      ],
+      "skills": [],
+      "prompt_refs": [
+        {
+          "ref_kind": "domain_prompt_ref",
+          "ref": "agent/prompts/intent-intake.md"
+        }
+      ],
+      "allowed_action_refs": [],
       "outputs": [
-        "intent_brief_ref",
-        "acceptance_criteria_ref",
-        "authority_boundary_ref"
-      ]
+        {
+          "ref_kind": "domain_ref",
+          "ref": [
+            "intent_brief_ref",
+            "acceptance_criteria_ref",
+            "authority_boundary_ref"
+          ]
+        }
+      ],
+      "evaluation": [],
+      "handoff": null,
+      "source_refs": [],
+      "authority_boundary": {
+        "domain_truth_owner": "opl-meta-agent",
+        "opl_role": "projection_only"
+      }
     },
     {
       "stage_id": "web-experience-research",
-      "purpose": "Research public patterns, tools, data needs, workflow decomposition, and quality gates",
+      "stage_kind": "source_preparation",
+      "title": "Web Experience Research",
+      "summary": "Research public patterns, tools, data needs, workflow decomposition, and quality gates.",
+      "goal": "Produce source refs and reusable pattern dispositions for target agent design.",
+      "owner": "opl-meta-agent",
+      "domain_stage_refs": [
+        "web-experience-research"
+      ],
+      "inputs": [],
+      "knowledge_refs": [],
+      "skills": [],
+      "prompt_refs": [
+        {
+          "ref_kind": "domain_prompt_ref",
+          "ref": "agent/prompts/web-experience-research.md"
+        }
+      ],
+      "allowed_action_refs": [],
       "outputs": [
-        "research_brief_ref",
-        "source_refs",
-        "pattern_disposition_refs"
-      ]
+        {
+          "ref_kind": "domain_ref",
+          "ref": [
+            "research_brief_ref",
+            "source_refs",
+            "pattern_disposition_refs"
+          ]
+        }
+      ],
+      "evaluation": [],
+      "handoff": null,
+      "source_refs": [],
+      "authority_boundary": {
+        "domain_truth_owner": "opl-meta-agent",
+        "opl_role": "projection_only"
+      }
     },
     {
       "stage_id": "stage-decomposition",
-      "purpose": "Turn target work into OPL stage descriptors, action metadata, memory refs, and artifact locators",
+      "stage_kind": "planning",
+      "title": "Stage Decomposition",
+      "summary": "Turn target work into OPL stage descriptors, action metadata, memory refs, and artifact locators.",
+      "goal": "Produce a declarative domain pack for a candidate target agent.",
+      "owner": "opl-meta-agent",
+      "domain_stage_refs": [
+        "stage-decomposition"
+      ],
+      "inputs": [],
+      "knowledge_refs": [],
+      "skills": [],
+      "prompt_refs": [
+        {
+          "ref_kind": "domain_prompt_ref",
+          "ref": "agent/prompts/stage-decomposition.md"
+        }
+      ],
+      "allowed_action_refs": [],
       "outputs": [
-        "stage_control_plane_ref",
-        "action_catalog_ref",
-        "memory_descriptor_ref"
-      ]
+        {
+          "ref_kind": "domain_ref",
+          "ref": [
+            "stage_control_plane_ref",
+            "action_catalog_ref",
+            "memory_descriptor_ref"
+          ]
+        }
+      ],
+      "evaluation": [],
+      "handoff": null,
+      "source_refs": [],
+      "authority_boundary": {
+        "domain_truth_owner": "opl-meta-agent",
+        "opl_role": "projection_only"
+      }
     },
     {
       "stage_id": "agent-skeleton-build",
-      "purpose": "Generate an OPL-compatible candidate agent repo/package using OPL scaffold surfaces",
+      "stage_kind": "creation",
+      "title": "Agent Skeleton Build",
+      "summary": "Generate an OPL-compatible candidate agent repo/package using OPL scaffold surfaces.",
+      "goal": "Generate a baseline candidate agent package and validate its scaffold.",
+      "owner": "opl-meta-agent",
+      "domain_stage_refs": [
+        "agent-skeleton-build"
+      ],
+      "inputs": [],
+      "knowledge_refs": [],
+      "skills": [],
+      "prompt_refs": [
+        {
+          "ref_kind": "domain_prompt_ref",
+          "ref": "agent/prompts/agent-skeleton-build.md"
+        }
+      ],
+      "allowed_action_refs": [
+        "build-agent-baseline"
+      ],
       "outputs": [
-        "domain_descriptor_ref",
-        "skill_refs",
-        "prompt_refs",
-        "sidecar_contract_refs",
-        "candidate_agent_package_ref"
-      ]
+        {
+          "ref_kind": "domain_ref",
+          "ref": [
+            "domain_descriptor_ref",
+            "skill_refs",
+            "prompt_refs",
+            "candidate_agent_package_ref"
+          ]
+        }
+      ],
+      "evaluation": [],
+      "handoff": null,
+      "source_refs": [],
+      "authority_boundary": {
+        "domain_truth_owner": "opl-meta-agent",
+        "opl_role": "projection_only"
+      }
     },
     {
       "stage_id": "eval-suite-build",
-      "purpose": "Create Agent Lab task manifests, recovery probes, scorecard refs, and promotion gates",
+      "stage_kind": "creation",
+      "title": "Eval Suite Build",
+      "summary": "Create Agent Lab task manifests, recovery probes, scorecard refs, and promotion gates.",
+      "goal": "Create an OPL Agent Lab suite for the candidate or external agent.",
+      "owner": "opl-meta-agent",
+      "domain_stage_refs": [
+        "eval-suite-build"
+      ],
+      "inputs": [],
+      "knowledge_refs": [],
+      "skills": [],
+      "prompt_refs": [
+        {
+          "ref_kind": "domain_prompt_ref",
+          "ref": "agent/prompts/eval-suite-build.md"
+        }
+      ],
+      "allowed_action_refs": [],
       "outputs": [
-        "agent_lab_task_manifest_refs",
-        "scorecard_refs",
-        "promotion_gate_refs"
-      ]
+        {
+          "ref_kind": "domain_ref",
+          "ref": [
+            "agent_lab_task_manifest_refs",
+            "scorecard_refs",
+            "promotion_gate_refs"
+          ]
+        }
+      ],
+      "evaluation": [],
+      "handoff": null,
+      "source_refs": [],
+      "authority_boundary": {
+        "domain_truth_owner": "opl-meta-agent",
+        "opl_role": "projection_only"
+      }
     },
     {
       "stage_id": "baseline-run",
-      "purpose": "Run the candidate agent through OPL Agent Lab and collect trajectories, receipts, and failure taxonomy",
+      "stage_kind": "review",
+      "title": "Baseline Run",
+      "summary": "Run the candidate agent through OPL Agent Lab and collect trajectories, receipts, and failure taxonomy.",
+      "goal": "Turn Agent Lab results into auditable baseline run refs.",
+      "owner": "opl-meta-agent",
+      "domain_stage_refs": [
+        "baseline-run"
+      ],
+      "inputs": [],
+      "knowledge_refs": [],
+      "skills": [],
+      "prompt_refs": [],
+      "allowed_action_refs": [
+        "build-agent-baseline"
+      ],
       "outputs": [
-        "trajectory_refs",
-        "receipt_refs",
-        "failure_taxonomy_refs"
-      ]
+        {
+          "ref_kind": "domain_ref",
+          "ref": [
+            "trajectory_refs",
+            "receipt_refs",
+            "failure_taxonomy_refs"
+          ]
+        }
+      ],
+      "evaluation": [],
+      "handoff": null,
+      "source_refs": [],
+      "authority_boundary": {
+        "domain_truth_owner": "opl-meta-agent",
+        "opl_role": "projection_only"
+      }
     },
     {
       "stage_id": "external-agent-takeover",
-      "purpose": "Read an existing OPL-compatible agent descriptor/contracts, generate an Agent Lab external suite, run gated testing takeover, and record a self-evolution candidate without assuming target-domain authority",
+      "stage_kind": "review",
+      "title": "External Agent Takeover",
+      "summary": "Read an existing OPL-compatible agent descriptor/contracts, generate an Agent Lab external suite, run gated testing takeover, and record a self-evolution candidate without assuming target-domain authority.",
+      "goal": "Take over testing orchestration for an existing compatible agent while preserving its owner authority.",
+      "owner": "opl-meta-agent",
+      "domain_stage_refs": [
+        "external-agent-takeover"
+      ],
+      "inputs": [
+        {
+          "ref_kind": "domain_ref",
+          "ref": [
+            "target_agent_descriptor_ref",
+            "target_agent_contract_refs"
+          ]
+        }
+      ],
+      "knowledge_refs": [],
+      "skills": [],
+      "prompt_refs": [
+        {
+          "ref_kind": "domain_prompt_ref",
+          "ref": "agent/prompts/external-agent-takeover.md"
+        }
+      ],
+      "allowed_action_refs": [
+        "takeover-external-agent-test"
+      ],
       "outputs": [
-        "agent_lab_external_suite_ref",
-        "testing_takeover_receipt_ref",
-        "gated_self_evolution_candidate_ref",
-        "mechanism_patch_proposal_ref"
-      ]
+        {
+          "ref_kind": "domain_ref",
+          "ref": [
+            "agent_lab_external_suite_ref",
+            "testing_takeover_receipt_ref",
+            "gated_self_evolution_candidate_ref",
+            "mechanism_patch_proposal_ref"
+          ]
+        }
+      ],
+      "evaluation": [],
+      "handoff": null,
+      "source_refs": [],
+      "authority_boundary": {
+        "domain_truth_owner": "opl-meta-agent",
+        "target_domain_truth_owner_preserved": true,
+        "opl_role": "projection_only"
+      }
     },
     {
       "stage_id": "optimizer-iteration",
-      "purpose": "Generate prompt, skill, stage-policy, tool-policy, few-shot, or rubric-gap candidates and rerun gated suites",
+      "stage_kind": "revision",
+      "title": "Optimizer Iteration",
+      "summary": "Generate prompt, skill, stage-policy, tool-policy, few-shot, or rubric-gap candidates and rerun gated suites.",
+      "goal": "Produce candidate refs for gated mechanism improvement.",
+      "owner": "opl-meta-agent",
+      "domain_stage_refs": [
+        "optimizer-iteration"
+      ],
+      "inputs": [],
+      "knowledge_refs": [],
+      "skills": [],
+      "prompt_refs": [
+        {
+          "ref_kind": "domain_prompt_ref",
+          "ref": "agent/prompts/optimizer-iteration.md"
+        }
+      ],
+      "allowed_action_refs": [],
       "outputs": [
-        "improvement_candidate_refs",
-        "candidate_branch_refs",
-        "regression_result_refs"
-      ]
+        {
+          "ref_kind": "domain_ref",
+          "ref": [
+            "improvement_candidate_refs",
+            "candidate_branch_refs",
+            "regression_result_refs"
+          ]
+        }
+      ],
+      "evaluation": [],
+      "handoff": null,
+      "source_refs": [],
+      "authority_boundary": {
+        "domain_truth_owner": "opl-meta-agent",
+        "opl_role": "projection_only"
+      }
     },
     {
       "stage_id": "baseline-delivery",
-      "purpose": "Deliver a versioned baseline agent with docs, contracts, tests, runbook, and boundary receipt",
+      "stage_kind": "packaging",
+      "title": "Baseline Delivery",
+      "summary": "Deliver a versioned baseline agent with docs, contracts, tests, runbook, and boundary receipt.",
+      "goal": "Package a baseline target agent and its owner receipt refs.",
+      "owner": "opl-meta-agent",
+      "domain_stage_refs": [
+        "baseline-delivery"
+      ],
+      "inputs": [],
+      "knowledge_refs": [],
+      "skills": [],
+      "prompt_refs": [],
+      "allowed_action_refs": [
+        "build-agent-baseline"
+      ],
       "outputs": [
-        "baseline_agent_package_ref",
-        "delivery_receipt_ref",
-        "operator_runbook_ref"
-      ]
+        {
+          "ref_kind": "domain_ref",
+          "ref": [
+            "baseline_agent_package_ref",
+            "delivery_receipt_ref",
+            "operator_runbook_ref"
+          ]
+        }
+      ],
+      "evaluation": [],
+      "handoff": null,
+      "source_refs": [],
+      "authority_boundary": {
+        "domain_truth_owner": "opl-meta-agent",
+        "opl_role": "projection_only"
+      }
     },
     {
       "stage_id": "online-learning",
-      "purpose": "Convert real trajectories into reviewed datasets, mechanism patch proposals, and future candidate refs",
+      "stage_kind": "revision",
+      "title": "Online Learning",
+      "summary": "Convert real trajectories into reviewed datasets, mechanism patch proposals, and future candidate refs.",
+      "goal": "Produce gated online-learning candidate and mechanism patch proposal refs.",
+      "owner": "opl-meta-agent",
+      "domain_stage_refs": [
+        "online-learning"
+      ],
+      "inputs": [],
+      "knowledge_refs": [],
+      "skills": [],
+      "prompt_refs": [
+        {
+          "ref_kind": "domain_prompt_ref",
+          "ref": "agent/prompts/online-learning.md"
+        }
+      ],
+      "allowed_action_refs": [
+        "generate-mechanism-patch-proposal"
+      ],
       "outputs": [
-        "online_learning_dataset_refs",
-        "human_review_refs",
-        "mechanism_patch_proposal_refs",
-        "future_candidate_refs"
-      ]
+        {
+          "ref_kind": "domain_ref",
+          "ref": [
+            "online_learning_dataset_refs",
+            "human_review_refs",
+            "mechanism_patch_proposal_refs",
+            "future_candidate_refs"
+          ]
+        }
+      ],
+      "evaluation": [],
+      "handoff": null,
+      "source_refs": [],
+      "authority_boundary": {
+        "domain_truth_owner": "opl-meta-agent",
+        "opl_role": "projection_only"
+      }
     }
   ],
   "opl_runtime_dependency": {
     "agent_lab_complete_control_plane": true,
     "standard_domain_agent_scaffold": true,
     "stage_attempt_ledger": true,
-    "promotion_gate_refs": true
+    "promotion_gate_refs": true,
+    "generated_interface_bundle": true
   },
-  "authority_boundary": {
-    "opl_meta_agent_owns_agent_building_semantics": true,
-    "opl_meta_agent_can_take_over_external_agent_testing": true,
-    "opl_owns_generic_runtime": true,
-    "target_domain_owner_keeps_truth_quality_artifact_memory": true
-  },
+  "notes": [
+    "OPL Framework owns generated CLI/MCP/Skill/product-entry/tool descriptors for this stage plane.",
+    "This repo owns agent-building stage semantics and owner receipt refs only."
+  ],
   "marker": "generated_by_opl_standard_domain_agent_scaffold_v1"
 }

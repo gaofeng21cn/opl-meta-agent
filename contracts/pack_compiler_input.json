@@ -1,0 +1,45 @@
+{
+  "surface_kind": "opl_domain_pack_compiler_input",
+  "schema_version": 1,
+  "domain_id": "opl-meta-agent",
+  "domain_pack_owner": "opl-meta-agent",
+  "generated_surface_owner": "one-person-lab",
+  "declarative_domain_pack": [
+    "domain_truth_schema",
+    "stage_descriptors",
+    "transition_table",
+    "action_metadata",
+    "knowledge_refs",
+    "prompt_refs",
+    "skill_refs",
+    "policy_tables",
+    "quality_rubric_refs",
+    "artifact_authority_contract",
+    "memory_policy",
+    "owner_receipt_schema",
+    "domain_fixtures"
+  ],
+  "minimal_authority_functions": [
+    "mechanism_patch_proposal_authorizer",
+    "owner_receipt_signer",
+    "target_agent_boundary_verdict",
+    "online_learning_candidate_reviewer"
+  ],
+  "generated_surfaces_requested": [
+    "cli",
+    "mcp",
+    "product_entry_manifest",
+    "sidecar_export_dispatch",
+    "status_read_model",
+    "workbench_drilldown",
+    "functional_harness_cases"
+  ],
+  "domain_repo_can_own_generated_surface": false,
+  "authority_boundary": {
+    "opl_can_write_domain_truth": false,
+    "opl_can_write_memory_body": false,
+    "opl_can_authorize_quality_or_export": false,
+    "domain_can_claim_generated_surface_owner": false
+  },
+  "marker": "generated_by_opl_standard_domain_agent_scaffold_v1"
+}

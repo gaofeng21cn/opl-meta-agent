@@ -40,6 +40,10 @@
     "generic_queue_owner",
     "generic_attempt_ledger_owner",
     "generic_state_machine_runner_owner",
+    "generic_cli_mcp_product_wrapper_owner",
+    "generic_sidecar_owner",
+    "generic_session_store_owner",
+    "generic_status_workbench_owner",
     "generic_workspace_source_intake_owner",
     "generic_memory_transport_owner",
     "generic_artifact_gallery_owner",
@@ -48,29 +52,79 @@
     "generic_persistence_engine_owner",
     "generic_sqlite_lifecycle_owner",
     "generic_native_helper_envelope_owner",
-    "generic_review_repair_transport_owner"
+    "generic_review_repair_transport_owner",
+    "generated_surface_owner_in_domain_repo"
   ],
   "modules": [
     {
       "module_id": "agent_goal_interpreter",
-      "classification": "domain_authority",
-      "owner": "opl-meta-agent"
+      "classification": "declarative_pack",
+      "owner": "opl-meta-agent",
+      "code_paths": [
+        "agent/prompts",
+        "agent/knowledge"
+      ],
+      "active_callers": [
+        "OPL generated interface bundle"
+      ],
+      "active_caller_status": "declarative_pack_active"
     },
     {
       "module_id": "agent_pattern_researcher",
-      "classification": "domain_authority",
-      "owner": "opl-meta-agent"
+      "classification": "declarative_pack",
+      "owner": "opl-meta-agent",
+      "code_paths": [
+        "agent/prompts",
+        "agent/knowledge"
+      ],
+      "active_callers": [
+        "OPL generated interface bundle"
+      ],
+      "active_caller_status": "declarative_pack_active"
     },
     {
       "module_id": "candidate_agent_package_builder",
-      "classification": "domain_authority",
-      "owner": "opl-meta-agent"
+      "classification": "minimal_authority_function",
+      "owner": "opl-meta-agent",
+      "code_paths": [
+        "scripts/bootstrap-sample-agent.mjs",
+        "scripts/lib/meta-agent-loop.mjs"
+      ],
+      "active_callers": [
+        "build-agent-baseline action"
+      ],
+      "active_caller_status": "domain_authority_active",
+      "cannot_absorb_reason": "OPL can generate the generic scaffold and interface bundle, but opl-meta-agent owns target-agent construction semantics and owner receipts."
     },
     {
       "module_id": "opl_agent_lab_adapter",
-      "classification": "domain_thin_adapter",
+      "classification": "refs_only_domain_adapter",
       "owner": "opl-meta-agent",
-      "consumes_opl_surface": "opl_agent_lab_complete_control_plane"
+      "code_paths": [
+        "scripts/bootstrap-sample-agent.mjs",
+        "scripts/takeover-agent.mjs",
+        "scripts/lib/meta-agent-loop.mjs"
+      ],
+      "active_callers": [
+        "build-agent-baseline action",
+        "takeover-external-agent-test action"
+      ],
+      "active_caller_status": "refs_only_adapter_active",
+      "consumes_opl_surface": "opl_agent_lab_complete_control_plane",
+      "retention_reason": "The adapter assembles Agent Lab suite refs and reads suite results; OPL owns the runner."
+    },
+    {
+      "module_id": "mechanism_patch_proposal_authorizer",
+      "classification": "minimal_authority_function",
+      "owner": "opl-meta-agent",
+      "code_paths": [
+        "scripts/lib/meta-agent-loop.mjs"
+      ],
+      "active_callers": [
+        "generate-mechanism-patch-proposal action"
+      ],
+      "active_caller_status": "domain_authority_active",
+      "cannot_absorb_reason": "OPL cannot decide the agent-building mechanism semantics or sign proposal-only owner receipts."
     }
   ],
   "authority_boundary": {

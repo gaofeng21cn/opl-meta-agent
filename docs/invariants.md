@@ -2,6 +2,7 @@
 
 - Do not store runtime artifacts in repo source.
 - Do not implement generic OPL runtime primitives in this domain repo.
+- Do not implement repo-owned generic CLI, MCP, Skill, product-entry, sidecar, status, or workbench wrappers; OPL Framework generates or hosts those surfaces from contracts.
 - Do not let OPL write domain truth, memory body, or quality/export verdicts.
 - Do not train or deploy model weights from this repo.
 - Do not promote a generated target agent as default without an explicit OPL gate.
