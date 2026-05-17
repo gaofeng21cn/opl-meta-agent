@@ -41,6 +41,20 @@
       ]
     },
     {
+      "action_id": "takeover-external-agent-test",
+      "stage_id": "external-agent-takeover",
+      "owner": "opl-meta-agent",
+      "input_refs": [
+        "target_agent_descriptor_ref",
+        "target_agent_contract_refs"
+      ],
+      "output_refs": [
+        "agent_lab_external_suite_ref",
+        "testing_takeover_receipt_ref",
+        "gated_self_evolution_candidate_ref"
+      ]
+    },
+    {
       "action_id": "generate-optimizer-candidate",
       "stage_id": "optimizer-iteration",
       "owner": "opl-meta-agent",

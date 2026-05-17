@@ -7,6 +7,7 @@
     "research_receipt",
     "candidate_agent_package_receipt",
     "agent_lab_suite_receipt",
+    "testing_takeover_self_evolution_receipt",
     "optimizer_candidate_receipt",
     "baseline_delivery_receipt",
     "online_learning_review_receipt",
@@ -33,5 +34,20 @@
     "no_forbidden_write_proof_passed",
     "domain_authority_boundary_explicit",
     "operator_runbook_present"
+  ],
+  "testing_takeover_acceptance_gates": [
+    "descriptor_valid",
+    "agent_lab_suite_passed",
+    "recovery_probes_passed",
+    "no_forbidden_write_proof_passed",
+    "domain_authority_boundary_explicit",
+    "online_learning_candidate_gated",
+    "no_memory_body_written",
+    "no_default_promotion",
+    "external_agent_allowed",
+    "target_domain_truth_authority_preserved",
+    "target_quality_authority_preserved",
+    "target_artifact_authority_preserved",
+    "target_memory_authority_preserved"
   ]
 }

@@ -5,6 +5,7 @@
 ## Owner Split
 
 - `opl-meta-agent` owns：agent-building semantics、intent brief、research brief、stage decomposition、candidate agent package policy、Agent Lab suite specs、baseline delivery receipt、online learning review policy。
+- `opl-meta-agent` can take over：既有 OPL-compatible agent 的测试编排、自进化候选组织和 takeover receipt。
 - `OPL Framework` owns：generic runtime、Agent Lab、standard scaffold、queue、attempt ledger、provider receipt、observability projection、optimizer/RL transition refs、promotion gates。
 - target domain agent owns：domain truth、quality verdict、artifact authority、memory body、owner receipt。
 
@@ -25,3 +26,9 @@
 3. `baseline-run`：调用 OPL `agent-lab run --suite`，由 OPL Agent Lab 返回 suite result。
 4. `baseline-delivery`：写入 `baseline-delivery-receipt.json`，只声明 baseline package refs 和 acceptance gates。
 5. `online-learning`：写入 `online-learning-candidate.json`，候选保持 gated，不自动推广默认 agent、不训练或部署模型权重。
+
+## External Agent Testing Takeover
+
+`external-agent-takeover` 读取目标 agent repo/package 的 descriptor/contracts，生成 `agent_lab_external_suite`，调用 OPL `agent-lab run`，再写入 `testing_takeover_self_evolution_receipt` 和 gated online-learning candidate。
+
+该 takeover 只覆盖测试接管和候选生成。target domain truth、quality verdict、artifact body、memory body、默认 agent promotion authority 继续由目标 domain owner 持有；receipt 和 candidate 必须显式声明 `can_write_target_domain_memory_body=false`、`can_promote_default_agent_without_gate=false`。
