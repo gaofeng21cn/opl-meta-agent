@@ -5,6 +5,9 @@
   "generated_surface_owner": "one-person-lab",
   "domain_repo_can_own_generated_surface": false,
   "source_contract_ref": "contracts/pack_compiler_input.json",
+  "domain_pack_root": "agent",
+  "domain_pack_role": "domain_truth_prompt_skill_stage_quality_refs_only",
+  "generated_interface_role": "invoke_and_project_without_domain_authority_escalation",
   "generated_surfaces": [
     {
       "surface_id": "cli",
@@ -50,6 +53,8 @@
     }
   ],
   "required_domain_handoff": [
+    "domain_pack_paths_exist_and_are_non_empty",
+    "stage_prompt_refs_resolve_to_domain_pack_files",
     "owner_receipt_schema",
     "typed_blocker_schema",
     "minimal_authority_function_refs",

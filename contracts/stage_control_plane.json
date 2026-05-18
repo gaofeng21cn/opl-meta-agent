@@ -33,7 +33,7 @@
       "prompt_refs": [
         {
           "ref_kind": "domain_prompt_ref",
-          "ref": "agent/prompts/intent-intake.md"
+          "ref": "agent/prompts/README.md"
         }
       ],
       "allowed_action_refs": [],
@@ -71,7 +71,7 @@
       "prompt_refs": [
         {
           "ref_kind": "domain_prompt_ref",
-          "ref": "agent/prompts/web-experience-research.md"
+          "ref": "agent/prompts/README.md"
         }
       ],
       "allowed_action_refs": [],
@@ -109,7 +109,7 @@
       "prompt_refs": [
         {
           "ref_kind": "domain_prompt_ref",
-          "ref": "agent/prompts/stage-decomposition.md"
+          "ref": "agent/prompts/README.md"
         }
       ],
       "allowed_action_refs": [],
@@ -147,7 +147,7 @@
       "prompt_refs": [
         {
           "ref_kind": "domain_prompt_ref",
-          "ref": "agent/prompts/agent-skeleton-build.md"
+          "ref": "agent/prompts/README.md"
         }
       ],
       "allowed_action_refs": [
@@ -188,7 +188,7 @@
       "prompt_refs": [
         {
           "ref_kind": "domain_prompt_ref",
-          "ref": "agent/prompts/eval-suite-build.md"
+          "ref": "agent/prompts/README.md"
         }
       ],
       "allowed_action_refs": [],
@@ -269,7 +269,7 @@
       "prompt_refs": [
         {
           "ref_kind": "domain_prompt_ref",
-          "ref": "agent/prompts/external-agent-takeover.md"
+          "ref": "agent/prompts/README.md"
         }
       ],
       "allowed_action_refs": [
@@ -311,7 +311,7 @@
       "prompt_refs": [
         {
           "ref_kind": "domain_prompt_ref",
-          "ref": "agent/prompts/optimizer-iteration.md"
+          "ref": "agent/prompts/README.md"
         }
       ],
       "allowed_action_refs": [
@@ -390,7 +390,7 @@
       "prompt_refs": [
         {
           "ref_kind": "domain_prompt_ref",
-          "ref": "agent/prompts/online-learning.md"
+          "ref": "agent/prompts/README.md"
         }
       ],
       "allowed_action_refs": [

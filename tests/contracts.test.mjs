@@ -8,9 +8,22 @@ import { spawnSync } from 'node:child_process';
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const oplBin = process.env.OPL_BIN
   ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
+const placeholderPattern = new RegExp(`\\b(?:TO${'DO'}|T${'BD'})\\b`, 'i');
 
 function readJson(relativePath) {
   return JSON.parse(fs.readFileSync(path.join(repoRoot, relativePath), 'utf8'));
+}
+
+function readText(relativePath) {
+  return fs.readFileSync(path.join(repoRoot, relativePath), 'utf8');
+}
+
+function assertUsablePackFile(relativePath) {
+  const absolutePath = path.join(repoRoot, relativePath);
+  assert.equal(fs.existsSync(absolutePath), true, `${relativePath} should exist`);
+  const content = fs.readFileSync(absolutePath, 'utf8');
+  assert.ok(content.trim().length > 0, `${relativePath} should not be empty`);
+  assert.equal(placeholderPattern.test(content), false, `${relativePath} should not contain placeholder markers`);
 }
 
 test('opl-meta-agent descriptor keeps OPL runtime authority outside the repo', () => {
@@ -26,6 +39,54 @@ test('opl-meta-agent descriptor keeps OPL runtime authority outside the repo', (
   assert.equal(descriptor.authority_boundary.opl_meta_agent_can_train_or_deploy_model_weights, false);
   assert.equal(descriptor.authority_boundary.opl_meta_agent_can_promote_default_agent_without_gate, false);
   assert.ok(descriptor.outputs.includes('mechanism_patch_proposal_ref'));
+});
+
+test('domain pack files and stage prompt refs resolve to usable repo files', () => {
+  const stageControl = readJson('contracts/stage_control_plane.json');
+  const packCompilerInput = readJson('contracts/pack_compiler_input.json');
+  const generatedSurfaceHandoff = readJson('contracts/generated_surface_handoff.json');
+
+  assert.equal(packCompilerInput.domain_pack_owner, 'opl-meta-agent');
+  assert.equal(packCompilerInput.domain_pack_root, 'agent');
+  assert.equal(generatedSurfaceHandoff.domain_pack_root, 'agent');
+  assert.equal(generatedSurfaceHandoff.domain_pack_role, 'domain_truth_prompt_skill_stage_quality_refs_only');
+  assert.equal(
+    generatedSurfaceHandoff.generated_interface_role,
+    'invoke_and_project_without_domain_authority_escalation',
+  );
+  assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('domain_pack_paths_exist_and_are_non_empty'));
+  assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('stage_prompt_refs_resolve_to_domain_pack_files'));
+
+  assert.deepEqual(packCompilerInput.required_domain_pack_paths, [
+    'agent/knowledge/README.md',
+    'agent/prompts/README.md',
+    'agent/quality_gates/README.md',
+    'agent/skills/README.md',
+    'agent/stages/README.md',
+  ]);
+  packCompilerInput.required_domain_pack_paths.forEach(assertUsablePackFile);
+
+  const promptRefs = stageControl.stages.flatMap((stage) =>
+    stage.prompt_refs.map((promptRef) => ({
+      stage_id: stage.stage_id,
+      ref_kind: promptRef.ref_kind,
+      ref: promptRef.ref,
+    }))
+  );
+  assert.ok(promptRefs.length > 0);
+  promptRefs.forEach((promptRef) => {
+    assert.equal(promptRef.ref_kind, 'domain_prompt_ref');
+    assert.match(promptRef.ref, /^agent\/prompts\/.+\.md$/);
+    assertUsablePackFile(promptRef.ref);
+  });
+
+  const generatedInterfaceBoundary = packCompilerInput.authority_boundary;
+  assert.equal(generatedInterfaceBoundary.domain_pack_can_supply_domain_truth_refs, true);
+  assert.equal(generatedInterfaceBoundary.domain_pack_can_supply_prompt_skill_stage_quality_refs, true);
+  assert.equal(generatedInterfaceBoundary.generated_interface_can_invoke_minimal_authority_functions, true);
+  assert.equal(generatedInterfaceBoundary.generated_interface_can_write_domain_truth, false);
+  assert.equal(generatedInterfaceBoundary.generated_interface_can_write_memory_body, false);
+  assert.equal(generatedInterfaceBoundary.generated_interface_can_authorize_quality_or_export, false);
 });
 
 test('opl-meta-agent stage plan covers research, build, eval, optimization, delivery, and learning', () => {
@@ -117,11 +178,31 @@ test('OPL owns generated interface surfaces for opl-meta-agent contract pack', (
   const privatePolicy = readJson('contracts/private_functional_surface_policy.json');
 
   assert.equal(packCompilerInput.generated_surface_owner, 'one-person-lab');
+  assert.equal(packCompilerInput.domain_pack_root, 'agent');
   assert.equal(packCompilerInput.domain_repo_can_own_generated_surface, false);
   assert.equal(generatedSurfaceHandoff.generated_surface_owner, 'one-person-lab');
+  assert.equal(generatedSurfaceHandoff.domain_pack_root, 'agent');
   assert.equal(generatedSurfaceHandoff.domain_repo_can_own_generated_surface, false);
   assert.equal(privatePolicy.default_posture, 'forbidden_until_classified_and_receipted');
   assert.ok(privatePolicy.forbidden_private_surface_classes.includes('generic_cli_mcp_product_wrapper'));
+});
+
+test('tracked contract, test, and docs surfaces do not carry placeholder markers', () => {
+  const scannedDirs = ['contracts', 'tests', 'docs'];
+  const scannedFiles = [
+    'README.md',
+    'README.zh-CN.md',
+    ...scannedDirs.flatMap((dir) =>
+      fs.readdirSync(path.join(repoRoot, dir))
+        .filter((entry) => entry.endsWith('.json') || entry.endsWith('.mjs') || entry.endsWith('.md'))
+        .map((entry) => `${dir}/${entry}`)
+    ),
+  ];
+
+  scannedFiles.forEach((relativePath) => {
+    const content = readText(relativePath);
+    assert.equal(placeholderPattern.test(content), false, `${relativePath} should not contain placeholder markers`);
+  });
 });
 
 test('OPL generated interfaces expose CLI, MCP, Skill, and product-entry descriptors for this repo', () => {

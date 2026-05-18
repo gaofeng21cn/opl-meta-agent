@@ -5,6 +5,7 @@
 ## Owner Split
 
 - `opl-meta-agent` owns：agent-building semantics、intent brief、research brief、stage decomposition、candidate agent package policy、Agent Lab suite specs、baseline delivery receipt、online learning review policy 和 mechanism patch proposal 记录。
+- `opl-meta-agent` owns as domain pack：`agent/knowledge`、`agent/prompts`、`agent/quality_gates`、`agent/skills`、`agent/stages` 下的领域引用文件，以及 `contracts/` 中声明这些文件、阶段、动作、handoff 和 authority boundary 的机器合同。
 - `opl-meta-agent` can take over：既有 OPL-compatible agent 的测试编排、自进化候选组织、mechanism patch proposal 产出和 takeover receipt。
 - `OPL Framework` owns：generic runtime、Agent Lab、standard scaffold、queue、attempt ledger、provider receipt、observability projection、optimizer/RL transition refs、promotion gates。
 - target domain agent owns：domain truth、quality verdict、artifact authority、memory body、owner receipt。
@@ -15,7 +16,11 @@
 
 ## Generated Interfaces
 
-CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framework 通过 `opl agents interfaces --repo-dir <repo>` 从 `contracts/action_catalog.json` 与 `contracts/stage_control_plane.json` 统一生成。本仓不实现私有 MCP server、通用 CLI wrapper、product-entry shell 或 Skill 包装层；仓内脚本只作为领域 smoke / minimal authority action 的可调用目标。
+CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framework 通过 `opl agents interfaces --repo-dir <repo>` 从 `contracts/action_catalog.json` 与 `contracts/stage_control_plane.json` 统一生成。本仓不实现私有 MCP server、通用 CLI wrapper、product-entry shell 或 Skill 包装层；仓内脚本只作为领域 smoke / minimal authority action 的可调用目标。生成接口的权限上限写入 `contracts/pack_compiler_input.json` 与 `contracts/generated_surface_handoff.json`：它可以 invoke/project 已声明 action 与 minimal authority function，不能写 domain truth、memory body、artifact body、quality/export verdict，也不能成为 generated surface owner。
+
+## Domain Pack Structure
+
+`agent/` 当前是可验证 domain pack，而不是占位目录。`contracts/pack_compiler_input.json` 的 `required_domain_pack_paths` 列出必须存在的文件；`tests/contracts.test.mjs` 校验这些文件非空、无占位，并校验 `stage_control_plane.prompt_refs` 解析到真实 `agent/prompts/*.md` 文件。后续若把 README 级 locator 拆成分阶段 prompt 文件，应先新增对应 `agent/prompts/*.md` 文件，再更新 stage control plane refs 和测试。
 
 ## Optimization
 

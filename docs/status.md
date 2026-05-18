@@ -5,14 +5,17 @@
 已落地：
 
 - 标准目录：`agent/`、`contracts/`、`runtime/`、`docs/`。
+- 可验证 domain pack：`agent/knowledge/README.md`、`agent/prompts/README.md`、`agent/quality_gates/README.md`、`agent/skills/README.md`、`agent/stages/README.md` 是当前合同列出的真实 pack 文件；测试会检查这些文件存在、非空、无占位。
 - 合同：descriptor、stage control plane、action catalog、memory descriptor、artifact locator、owner receipt、functional privatization audit。
 - OPL generated interface 合同：pack compiler input、generated surface handoff、private functional surface policy。
+- `stage_control_plane.prompt_refs` 路径解析：当前所有 prompt locator 均解析到 repo-tracked `agent/prompts/README.md`；后续分阶段 prompt 文件出现时，应先落 `agent/prompts/*.md` 文件，再更新 refs。
 - 九阶段 meta-agent plan：intent intake、web research、stage decomposition、agent skeleton build、eval suite build、baseline run、optimizer iteration、baseline delivery、online learning。
 - 最小 repo-local test：`npm test`。
 - 自举闭环脚本：`npm run bootstrap:sample -- --output-dir <dir> --opl-bin <opl>`。
 - 外部 agent 测试接管脚本：`npm run takeover:test -- --agent-dir <existing-agent-dir> --output-dir <dir> --opl-bin <opl>`。
 - 外部 Agent Lab suite 自进化入口：`npm run improve:external-suite -- --suite <suite.json> --target-agent-dir <agent-dir> --output-dir <dir> --opl-bin <opl>`；用于把目标 domain 的 blocked suite 转为 developer patch work order、机制补丁、online-learning candidate 和目标 agent capability improvement candidate。`opl-meta-agent` 可以据此作为开发者修改目标 agent 的源码、测试和文档，但不能写目标 domain truth、quality verdict、memory body 或 artifact body。
 - OPL 统一接口投影：`opl agents interfaces --repo-dir <this-repo> --json` 可从本仓 contracts 生成 CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述；本仓不持有私有通用入口包装层。
+- 生成接口权限边界：`pack_compiler_input` 与 `generated_surface_handoff` 明确 domain pack 只供应领域 refs，OPL Framework 生成接口只负责 invoke/project，不写 domain truth、memory body、artifact body、quality/export verdict，也不能由本仓声明 generated surface ownership。
 - Self-learning loop smoke：生成 `sample-brief-agent`，补齐最小 action/stage domain pack，调用 OPL scaffold validate，调用 `opl agents interfaces --repo-dir <sample-agent>` 生成统一接口包，写入 Agent Lab external suite，通过 `opl agent-lab run --suite` 得到 `passed`，再产出 baseline delivery receipt、gated online-learning candidate 与 `mechanism-patch-proposal.json`。
 - Testing takeover smoke：读取既有 OPL-compatible agent descriptor/contracts，生成 `agent_lab_external_suite`，调用 OPL Agent Lab，通过后产出 `testing_takeover_self_evolution_receipt`、gated self-evolution online-learning candidate 与 `takeover-mechanism-patch-proposal.json`；不写 target memory body，不接管 target domain truth / quality / artifact authority，不无 gate promote default agent。
 - External-suite self-evolution smoke：读取目标 domain 已生成的 Agent Lab suite，调用 OPL Agent Lab，若 suite blocked 则产出 `meta-agent-improvement-receipt.json`、`online-learning-candidate.json`、`mechanism-patch-proposal.json`、`mas-capability-improvement-candidate.json` 与 `developer-patch-work-order.json`；该 work order 管理目标 agent 源码补丁、测试、文档、吸收回主线和临时 worktree 清理要求，同时保持 domain truth / quality / artifact authority 不越权。
@@ -25,3 +28,4 @@
 - OPL domain manifest registration。
 - App/workbench projection。
 - 真实线上目标领域 agent package delivery。
+- 分阶段 prompt/skill/stage/quality gate 文件细化；当前 pack 已有真实文件与 locator 约束，但还没有把 README 级 locator 拆成每个 stage 的独立正文文件。
