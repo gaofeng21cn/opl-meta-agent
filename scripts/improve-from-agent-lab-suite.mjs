@@ -2,6 +2,11 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import {
+  domainPackReceiptFields,
+  readDomainPackSummary,
+} from './lib/domain-pack.mjs';
 import {
   buildLearningCandidate,
   buildMechanismPatchProposal,
@@ -13,6 +18,8 @@ import {
   stableId,
   writeJson,
 } from './lib/meta-agent-loop.mjs';
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const MAS_MEDICAL_MANUSCRIPT_CHANGE_REFS = [
   {
@@ -315,6 +322,7 @@ function buildCapabilityCandidate({
   suiteRefs,
   feedbackRef,
   patchTraceabilityMatrix,
+  domainPackSummary,
 }) {
   return {
     surface_kind: 'opl_meta_agent_target_agent_capability_improvement_candidate',
@@ -354,6 +362,8 @@ function buildCapabilityCandidate({
     traceability_status: patchTraceabilityMatrix.length
       ? 'gap_to_patch_refs_mapped'
       : 'generic_patch_refs_only',
+    ...domainPackReceiptFields(domainPackSummary),
+    source_domain_pack: domainPackSummary,
     target_editable_surface_refs: [
       'stage_policy_ref',
       'skill_ref',
@@ -496,6 +506,7 @@ function buildDeveloperPatchWorkOrder({ targetAgent, suite, suiteResult, receipt
 function main() {
   const { suitePath, targetAgentDir, outputDir, feedbackRef, oplBin } = parseArgs(process.argv.slice(2));
   fs.mkdirSync(outputDir, { recursive: true });
+  const domainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
 
   const suite = readJson(suitePath);
   const targetAgent = readTargetAgent(targetAgentDir, {
@@ -517,22 +528,26 @@ function main() {
     proposedChangeRefs,
   });
 
-  const receipt = buildOwnerReceipt({
-    receiptClass: 'external_suite_quality_failure_self_evolution_receipt',
-    status: suiteResult.status === 'passed'
-      ? 'external_suite_passed_no_mechanism_patch_required'
-      : 'external_suite_blocked_mechanism_candidate_recorded',
-    targetAgent,
-    suiteResult,
-    extraAcceptanceGates: {
-      external_suite_consumed: true,
-      blocked_suite_can_generate_proposal_only_candidate: suiteResult.status !== 'passed',
-      target_domain_truth_authority_preserved: true,
-      target_quality_authority_preserved: true,
-      target_artifact_authority_preserved: true,
-      target_memory_authority_preserved: true,
-    },
-  });
+  const receipt = {
+    ...buildOwnerReceipt({
+      receiptClass: 'external_suite_quality_failure_self_evolution_receipt',
+      status: suiteResult.status === 'passed'
+        ? 'external_suite_passed_no_mechanism_patch_required'
+        : 'external_suite_blocked_mechanism_candidate_recorded',
+      targetAgent,
+      suiteResult,
+      extraAcceptanceGates: {
+        external_suite_consumed: true,
+        blocked_suite_can_generate_proposal_only_candidate: suiteResult.status !== 'passed',
+        target_domain_truth_authority_preserved: true,
+        target_quality_authority_preserved: true,
+        target_artifact_authority_preserved: true,
+        target_memory_authority_preserved: true,
+      },
+    }),
+    ...domainPackReceiptFields(domainPackSummary),
+    source_domain_pack: domainPackSummary,
+  };
   const learningCandidate = buildLearningCandidate({
     suiteResult,
     receipt,
@@ -569,6 +584,7 @@ function main() {
     suiteRefs,
     feedbackRef,
     patchTraceabilityMatrix,
+    domainPackSummary,
   });
   const developerPatchWorkOrder = buildDeveloperPatchWorkOrder({
     targetAgent,
@@ -599,6 +615,8 @@ function main() {
     product_id: 'opl-meta-agent',
     target_agent: capabilityCandidate.target_agent,
     authority_boundary: capabilityCandidate.authority_boundary,
+    ...domainPackReceiptFields(domainPackSummary),
+    source_domain_pack: domainPackSummary,
     artifacts: {
       suite_path: suitePath,
       external_agent_lab_suite_run_path: runPath,

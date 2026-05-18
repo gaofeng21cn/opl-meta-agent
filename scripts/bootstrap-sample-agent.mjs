@@ -2,6 +2,12 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import {
+  domainPackReceiptFields,
+  readDomainPackSummary,
+  writeMinimalAgentDomainPack,
+} from './lib/domain-pack.mjs';
 import {
   buildAgentLabSuite as buildExternalSuite,
   buildLearningCandidate as buildGatedLearningCandidate,
@@ -11,6 +17,8 @@ import {
   runOpl,
   writeJson,
 } from './lib/meta-agent-loop.mjs';
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 function parseArgs(argv) {
   const parsed = {
@@ -213,8 +221,8 @@ function writeSampleAgentDomainPack(targetAgentDir) {
   });
 }
 
-function buildBaselineReceipt(targetAgent, suiteResult, scaffoldValidation) {
-  return {
+function buildBaselineReceipt(targetAgent, suiteResult, scaffoldValidation, domainPackSummary, targetDomainPackSummary) {
+  const receipt = {
     ...buildOwnerReceipt({
       receiptClass: 'baseline_delivery_receipt',
       status: 'baseline_delivered',
@@ -227,7 +235,11 @@ function buildBaselineReceipt(targetAgent, suiteResult, scaffoldValidation) {
     }),
     target_agent: targetAgent,
     scaffold_validation_status: scaffoldValidation.standard_domain_agent_scaffold.validation.status,
+    ...domainPackReceiptFields(domainPackSummary),
+    source_domain_pack: domainPackSummary,
+    target_agent_domain_pack: targetDomainPackSummary,
   };
+  return receipt;
 }
 
 function buildLearningCandidate(suiteResult, baselineReceipt) {
@@ -262,6 +274,7 @@ function buildBaselineMechanismPatchProposal(suiteResult, baselineReceipt, learn
 function main() {
   const { outputDir, oplBin } = parseArgs(process.argv.slice(2));
   fs.mkdirSync(outputDir, { recursive: true });
+  const domainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
 
   const targetAgent = {
     domain_id: 'sample-brief-agent',
@@ -287,6 +300,10 @@ function main() {
     '--json',
   ]);
   writeSampleAgentDomainPack(targetAgentDir);
+  writeMinimalAgentDomainPack(targetAgentDir, targetAgent);
+  const targetDomainPackSummary = readDomainPackSummary(targetAgentDir, {
+    domainId: targetAgent.domain_id,
+  });
   const scaffoldValidation = runOpl(oplBin, [
     'agents',
     'scaffold',
@@ -307,7 +324,13 @@ function main() {
   const agentLabRun = runOpl(oplBin, ['agent-lab', 'run', '--suite', suitePath, '--json']);
   const suiteResult = agentLabRun.agent_lab_run.suite_result;
 
-  const baselineReceipt = buildBaselineReceipt(targetAgent, suiteResult, scaffoldValidation);
+  const baselineReceipt = buildBaselineReceipt(
+    targetAgent,
+    suiteResult,
+    scaffoldValidation,
+    domainPackSummary,
+    targetDomainPackSummary,
+  );
   const learningCandidate = buildLearningCandidate(suiteResult, baselineReceipt);
   const mechanismPatchProposal = buildBaselineMechanismPatchProposal(suiteResult, baselineReceipt, learningCandidate);
   writeJson(receiptPath, baselineReceipt);
@@ -326,7 +349,11 @@ function main() {
       scaffold_status: scaffold.standard_domain_agent_scaffold.state,
       scaffold_validation_status: scaffoldValidation.standard_domain_agent_scaffold.validation.status,
       generated_interface_status: generatedInterfaces.generated_agent_interfaces.status,
+      domain_pack_status: targetDomainPackSummary.status,
     },
+    ...domainPackReceiptFields(domainPackSummary),
+    source_domain_pack: domainPackSummary,
+    target_agent_domain_pack: targetDomainPackSummary,
     artifacts: {
       suite_path: suitePath,
       baseline_delivery_receipt_path: receiptPath,
