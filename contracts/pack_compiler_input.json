@@ -3,7 +3,15 @@
   "schema_version": 1,
   "domain_id": "opl-meta-agent",
   "domain_pack_owner": "opl-meta-agent",
+  "domain_pack_root": "agent",
   "generated_surface_owner": "one-person-lab",
+  "required_domain_pack_paths": [
+    "agent/knowledge/README.md",
+    "agent/prompts/README.md",
+    "agent/quality_gates/README.md",
+    "agent/skills/README.md",
+    "agent/stages/README.md"
+  ],
   "declarative_domain_pack": [
     "domain_truth_schema",
     "stage_descriptors",
@@ -39,6 +47,12 @@
     "opl_can_write_domain_truth": false,
     "opl_can_write_memory_body": false,
     "opl_can_authorize_quality_or_export": false,
+    "domain_pack_can_supply_domain_truth_refs": true,
+    "domain_pack_can_supply_prompt_skill_stage_quality_refs": true,
+    "generated_interface_can_invoke_minimal_authority_functions": true,
+    "generated_interface_can_write_domain_truth": false,
+    "generated_interface_can_write_memory_body": false,
+    "generated_interface_can_authorize_quality_or_export": false,
     "domain_can_claim_generated_surface_owner": false
   },
   "marker": "generated_by_opl_standard_domain_agent_scaffold_v1"

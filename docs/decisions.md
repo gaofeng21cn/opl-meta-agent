@@ -2,9 +2,11 @@
 
 - Adopt OPL standard domain-agent scaffold v1.
 - Keep this repo as a declarative domain pack plus minimal authority functions.
+- Treat `agent/` as the authoritative repo-tracked domain pack root. Pack file paths and stage prompt refs must be machine-checkable paths, not Markdown heading names or prose-only references.
 - Use `opl-meta-agent` as the repo/product wording; use `meta-agent` only as a capability type.
 - Keep `opl-meta-agent` outside the OPL Framework repo; OPL provides Agent Lab, scaffold surfaces, and generated interface bundles.
 - Do not implement repo-local generic CLI/MCP/Skill/product-entry wrappers. OPL Framework derives those descriptors from standard action / stage contracts.
+- Generated interface availability is accepted only with authority boundaries: OPL may generate CLI/MCP/Skill/product-entry/OpenAI/AI SDK descriptors from this repo's contracts and may invoke declared minimal authority functions, but generated surfaces remain OPL-owned and cannot claim target truth, memory, artifact, quality/export, or default-promotion authority.
 - Prove the minimum self-learning loop with a generated fixture agent and OPL Agent Lab external suite before adding live domain delivery.
 - Treat mechanism patch proposal as a proposal-only self-learning output beside gated candidates. It must carry observe/diagnose/edit refs and explicit authority flags, then wait for an OPL gate before any promoted mechanism change.
 - Add an external-suite self-evolution path: when a domain owner projects a blocked Agent Lab suite, `opl-meta-agent` may consume the suite run, create a developer patch work order, and act as the developer that changes the target agent source repo. Source-level stage, skill, prompt, rubric, quality-contract, test, and documentation patches are allowed after the target-agent patch gate; target domain truth, memory body, artifacts, publication quality verdicts, and default agent promotion state remain forbidden.
