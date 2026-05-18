@@ -53,6 +53,10 @@ test('opl-meta-agent stage plan covers research, build, eval, optimization, deli
     stageControl.stages.find((stage) => stage.stage_id === 'external-agent-takeover').allowed_action_refs,
     ['takeover-external-agent-test'],
   );
+  assert.deepEqual(
+    stageControl.stages.find((stage) => stage.stage_id === 'optimizer-iteration').allowed_action_refs,
+    ['improve-from-external-agent-lab-suite'],
+  );
   assert.equal(stageControl.opl_runtime_dependency.agent_lab_complete_control_plane, true);
   assert.equal(stageControl.opl_runtime_dependency.standard_domain_agent_scaffold, true);
   assert.equal(stageControl.opl_runtime_dependency.generated_interface_bundle, true);
@@ -73,6 +77,17 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   assert.equal(takeoverAction.supported_surfaces.mcp.public_runtime, false);
   assert.equal(takeoverAction.authority_boundary.can_write_target_domain_truth, false);
   assert.equal(takeoverAction.authority_boundary.can_promote_default_agent_without_gate, false);
+  const externalSuiteAction = actionCatalog.actions.find(
+    (action) => action.action_id === 'improve-from-external-agent-lab-suite',
+  );
+  assert.ok(externalSuiteAction);
+  assert.equal(externalSuiteAction.supported_surfaces.mcp.descriptor_only, true);
+  assert.equal(externalSuiteAction.supported_surfaces.product_entry.action_key, 'improve-from-external-agent-lab-suite');
+  assert.equal(externalSuiteAction.authority_boundary.can_write_target_domain_truth, false);
+  assert.equal(externalSuiteAction.authority_boundary.can_modify_target_agent_source_repo, true);
+  assert.equal(externalSuiteAction.authority_boundary.can_modify_target_agent_tests, true);
+  assert.equal(externalSuiteAction.authority_boundary.can_modify_target_agent_docs, true);
+  assert.equal(externalSuiteAction.authority_boundary.can_authorize_target_domain_quality_or_export, false);
   const mechanismAction = actionCatalog.actions.find((action) => action.action_id === 'generate-mechanism-patch-proposal');
   assert.ok(mechanismAction);
   assert.deepEqual(mechanismAction.workspace_locator_fields, [
@@ -144,7 +159,17 @@ test('OPL generated interfaces expose CLI, MCP, Skill, and product-entry descrip
     true,
   );
   assert.equal(
+    bundle.skill.descriptors.some((entry) =>
+      entry.command_contract_id === 'opl-meta-agent.improve-from-external-agent-lab-suite'
+    ),
+    true,
+  );
+  assert.equal(
     bundle.product_entry.descriptors.some((entry) => entry.action_key === 'takeover-external-agent-test'),
+    true,
+  );
+  assert.equal(
+    bundle.product_entry.descriptors.some((entry) => entry.action_key === 'improve-from-external-agent-lab-suite'),
     true,
   );
   assert.equal(bundle.authority_boundary.generated_interface_can_write_domain_truth, false);
