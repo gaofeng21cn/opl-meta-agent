@@ -2,6 +2,11 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import {
+  domainPackReceiptFields,
+  readDomainPackSummary,
+} from './lib/domain-pack.mjs';
 import {
   buildAgentLabSuite,
   buildLearningCandidate,
@@ -12,6 +17,8 @@ import {
   runOpl,
   writeJson,
 } from './lib/meta-agent-loop.mjs';
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 function parseArgs(argv) {
   const parsed = {
@@ -121,6 +128,7 @@ function buildTakeoverMechanismPatchProposal(suiteResult, takeoverReceipt, learn
 function main() {
   const { targetAgentDir, outputDir, oplBin } = parseArgs(process.argv.slice(2));
   fs.mkdirSync(outputDir, { recursive: true });
+  const domainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
 
   const targetAgent = readTargetAgent(targetAgentDir, {
     domain_id: path.basename(targetAgentDir),
@@ -142,19 +150,23 @@ function main() {
   const agentLabRun = runOpl(oplBin, ['agent-lab', 'run', '--suite', suitePath, '--json']);
   const suiteResult = agentLabRun.agent_lab_run.suite_result;
 
-  const takeoverReceipt = buildOwnerReceipt({
-    receiptClass: 'testing_takeover_self_evolution_receipt',
-    status: suiteResult.status === 'passed' ? 'testing_takeover_recorded' : 'testing_takeover_blocked',
-    targetAgent,
-    suiteResult,
-    extraAcceptanceGates: {
-      external_agent_allowed: true,
-      target_domain_truth_authority_preserved: true,
-      target_quality_authority_preserved: true,
-      target_artifact_authority_preserved: true,
-      target_memory_authority_preserved: true,
-    },
-  });
+  const takeoverReceipt = {
+    ...buildOwnerReceipt({
+      receiptClass: 'testing_takeover_self_evolution_receipt',
+      status: suiteResult.status === 'passed' ? 'testing_takeover_recorded' : 'testing_takeover_blocked',
+      targetAgent,
+      suiteResult,
+      extraAcceptanceGates: {
+        external_agent_allowed: true,
+        target_domain_truth_authority_preserved: true,
+        target_quality_authority_preserved: true,
+        target_artifact_authority_preserved: true,
+        target_memory_authority_preserved: true,
+      },
+    }),
+    ...domainPackReceiptFields(domainPackSummary),
+    source_domain_pack: domainPackSummary,
+  };
 
   const learningCandidate = buildLearningCandidate({
     suiteResult,
@@ -196,6 +208,8 @@ function main() {
       repo_dir: targetAgent.repo_dir,
       descriptor_ref: targetAgent.descriptor_ref,
     },
+    ...domainPackReceiptFields(domainPackSummary),
+    source_domain_pack: domainPackSummary,
     artifacts: {
       suite_path: suitePath,
       takeover_receipt_path: receiptPath,
