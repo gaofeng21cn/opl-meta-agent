@@ -224,6 +224,27 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     assert.equal(workOrder.implementation_controls.patch_must_be_limited_to_traceable_surfaces, true);
     assert.equal(workOrder.implementation_controls.developer_patch_receipt_required, true);
     assert.equal(workOrder.implementation_controls.no_target_domain_truth_write_proof_required, true);
+    assert.equal(workOrder.implementation_controls.target_runtime_consumption_verification_required, true);
+    assert.ok(
+      workOrder.implementation_controls.required_closeout_evidence.includes(
+        'target runtime/read-model consumed patched capability',
+      ),
+    );
+    assert.ok(
+      workOrder.runtime_consumption_verification.required_surface_refs.includes('study_runtime_status'),
+    );
+    assert.ok(
+      workOrder.runtime_consumption_verification.required_surface_refs.includes('domain_transition'),
+    );
+    assert.ok(
+      workOrder.runtime_consumption_verification.required_surface_refs.includes('default_executor_dispatch_execution'),
+    );
+    assert.ok(
+      workOrder.runtime_consumption_verification.expected_outcomes.includes(
+        'blocked suite redrive no longer parks as stale human handoff when target owner work remains',
+      ),
+    );
+    assert.equal(workOrder.runtime_consumption_verification.can_write_target_domain_truth, false);
     assert.ok(workOrder.implementation_controls.forbidden_target_paths_or_surfaces.includes('publication_eval/latest.json'));
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });

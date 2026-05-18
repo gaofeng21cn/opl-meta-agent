@@ -402,6 +402,7 @@ function buildDeveloperPatchWorkOrder({ targetAgent, suite, suiteResult, receipt
       developer_must_read_target_repo_context_before_editing: true,
       developer_patch_receipt_required: true,
       target_repo_test_receipt_required: true,
+      target_runtime_consumption_verification_required: true,
       no_target_domain_truth_write_proof_required: true,
       no_quality_verdict_or_submission_readiness_authority: true,
       forbidden_target_paths_or_surfaces: [
@@ -415,16 +416,36 @@ function buildDeveloperPatchWorkOrder({ targetAgent, suite, suiteResult, receipt
       required_closeout_evidence: [
         'patch_traceability_matrix addressed',
         'target agent tests passed',
+        'target runtime/read-model consumed patched capability',
         'developer patch receipt recorded',
         'target agent status or decision docs updated',
         'temporary worktree cleaned after absorb',
       ],
+    },
+    runtime_consumption_verification: {
+      verification_mode: 'read_only_target_domain_runtime_projection',
+      required_surface_refs: [
+        'study_runtime_status',
+        'domain_transition',
+        'publication_supervisor_state',
+        'default_executor_dispatch_execution',
+        'target_agent_status_or_progress_projection',
+      ],
+      expected_outcomes: [
+        'patched quality contract or owner route is visible in target runtime/read-model projection',
+        'blocked suite redrive no longer parks as stale human handoff when target owner work remains',
+        'no forbidden target domain truth, artifact, memory, quality verdict, or submission readiness surface is written by opl-meta-agent',
+      ],
+      can_write_target_domain_truth: false,
+      can_mutate_target_domain_artifact_body: false,
+      can_authorize_target_domain_quality_or_export: false,
     },
     version_management: {
       target_agent_version_owner: 'target_agent_repo',
       required_version_artifacts: [
         'git_commit',
         'test_receipt',
+        'runtime_consumption_verification_receipt',
         'developer_patch_receipt',
         'target_agent_status_or_decision_doc_update',
       ],
