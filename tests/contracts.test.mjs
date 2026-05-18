@@ -18,6 +18,19 @@ function readText(relativePath) {
   return fs.readFileSync(path.join(repoRoot, relativePath), 'utf8');
 }
 
+function listMarkdownFiles(relativeDir) {
+  const absoluteDir = path.join(repoRoot, relativeDir);
+  return fs.readdirSync(absoluteDir, { withFileTypes: true })
+    .flatMap((entry) => {
+      const entryRelativePath = path.join(relativeDir, entry.name);
+      if (entry.isDirectory()) {
+        return listMarkdownFiles(entryRelativePath);
+      }
+      return entry.name.endsWith('.md') ? [entryRelativePath] : [];
+    })
+    .sort();
+}
+
 function assertUsablePackFile(relativePath) {
   const absolutePath = path.join(repoRoot, relativePath);
   assert.equal(fs.existsSync(absolutePath), true, `${relativePath} should exist`);
@@ -57,13 +70,8 @@ test('domain pack files and stage prompt refs resolve to usable repo files', () 
   assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('domain_pack_paths_exist_and_are_non_empty'));
   assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('stage_prompt_refs_resolve_to_domain_pack_files'));
 
-  assert.deepEqual(packCompilerInput.required_domain_pack_paths, [
-    'agent/knowledge/README.md',
-    'agent/prompts/README.md',
-    'agent/quality_gates/README.md',
-    'agent/skills/README.md',
-    'agent/stages/README.md',
-  ]);
+  const actualDomainPackPaths = listMarkdownFiles('agent');
+  assert.deepEqual(packCompilerInput.required_domain_pack_paths, actualDomainPackPaths);
   packCompilerInput.required_domain_pack_paths.forEach(assertUsablePackFile);
 
   const promptRefs = stageControl.stages.flatMap((stage) =>
@@ -188,14 +196,16 @@ test('OPL owns generated interface surfaces for opl-meta-agent contract pack', (
 });
 
 test('tracked contract, test, and docs surfaces do not carry placeholder markers', () => {
-  const scannedDirs = ['contracts', 'tests', 'docs'];
+  const scannedDirs = ['agent', 'contracts', 'tests', 'docs'];
   const scannedFiles = [
     'README.md',
     'README.zh-CN.md',
     ...scannedDirs.flatMap((dir) =>
-      fs.readdirSync(path.join(repoRoot, dir))
-        .filter((entry) => entry.endsWith('.json') || entry.endsWith('.mjs') || entry.endsWith('.md'))
-        .map((entry) => `${dir}/${entry}`)
+      listMarkdownFiles(dir).concat(
+        fs.readdirSync(path.join(repoRoot, dir))
+          .filter((entry) => entry.endsWith('.json') || entry.endsWith('.mjs'))
+          .map((entry) => `${dir}/${entry}`),
+      )
     ),
   ];
 

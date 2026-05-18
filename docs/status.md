@@ -5,10 +5,10 @@
 已落地：
 
 - 标准目录：`agent/`、`contracts/`、`runtime/`、`docs/`。
-- 可验证 domain pack：`agent/knowledge/README.md`、`agent/prompts/README.md`、`agent/quality_gates/README.md`、`agent/skills/README.md`、`agent/stages/README.md` 是当前合同列出的真实 pack 文件；测试会检查这些文件存在、非空、无占位。
+- 可验证 domain pack：`agent/knowledge/`、`agent/prompts/`、`agent/quality_gates/`、`agent/skills/`、`agent/stages/` 下的 README 与分项文件均为当前合同列出的真实 pack 文件；测试会检查这些文件存在、非空、无占位。
 - 合同：descriptor、stage control plane、action catalog、memory descriptor、artifact locator、owner receipt、functional privatization audit。
 - OPL generated interface 合同：pack compiler input、generated surface handoff、private functional surface policy。
-- `stage_control_plane.prompt_refs` 路径解析：当前所有 prompt locator 均解析到 repo-tracked `agent/prompts/README.md`；后续分阶段 prompt 文件出现时，应先落 `agent/prompts/*.md` 文件，再更新 refs。
+- `stage_control_plane.prompt_refs` 路径解析：当前 prompt locator 已拆到 repo-tracked `agent/prompts/*.md` 分阶段文件；测试会确认每个 locator 指向真实文件。
 - 九阶段 meta-agent plan：intent intake、web research、stage decomposition、agent skeleton build、eval suite build、baseline run、optimizer iteration、baseline delivery、online learning。
 - 最小 repo-local test：`npm test`。
 - 自举闭环脚本：`npm run bootstrap:sample -- --output-dir <dir> --opl-bin <opl>`。
@@ -27,5 +27,4 @@
 
 - OPL domain manifest registration。
 - App/workbench projection。
-- 真实线上目标领域 agent package delivery。
-- 分阶段 prompt/skill/stage/quality gate 文件细化；当前 pack 已有真实文件与 locator 约束，但还没有把 README 级 locator 拆成每个 stage 的独立正文文件。
+- 真实线上目标领域 agent package delivery；当前完成的是可直接运行的 Foundry Agent baseline build、testing takeover、external-suite improvement 和 proposal-only mechanism loop。
