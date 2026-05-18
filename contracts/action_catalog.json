@@ -125,6 +125,69 @@
       }
     },
     {
+      "action_id": "improve-from-external-agent-lab-suite",
+      "title": "Improve From External Agent Lab Suite",
+      "summary": "Consume a target-domain Agent Lab suite result, create a versioned developer patch work order, and drive target-agent source changes while preserving target truth and quality authority.",
+      "owner": "opl-meta-agent",
+      "effect": "mutating",
+      "source_command": {
+        "command": "npm run improve:external-suite -- --suite <suite_path> --target-agent-dir <agent_dir> --output-dir <output_dir> --opl-bin <opl_bin>",
+        "surface_kind": "domain_smoke_cli"
+      },
+      "input_schema_ref": "contracts/schemas/improve-from-external-agent-lab-suite.input.schema.json",
+      "output_schema_ref": "contracts/schemas/improve-from-external-agent-lab-suite.output.schema.json",
+      "workspace_locator_fields": [
+        "suite_path",
+        "agent_dir",
+        "output_dir",
+        "opl_bin",
+        "feedback_ref"
+      ],
+      "human_gate_ids": [
+        "external_suite_self_evolution_owner_review",
+        "target_agent_owner_patch_gate",
+        "target_agent_version_absorb_gate"
+      ],
+      "supported_surfaces": {
+        "cli": {
+          "command": "npm run improve:external-suite -- --suite <suite_path> --target-agent-dir <agent_dir> --output-dir <output_dir> --opl-bin <opl_bin>",
+          "surface_kind": "domain_smoke_cli"
+        },
+        "mcp": {
+          "tool_name": "opl_meta_agent_improve_from_external_agent_lab_suite",
+          "surface_kind": "opl_generated_mcp_descriptor",
+          "descriptor_only": true,
+          "public_runtime": false
+        },
+        "skill": {
+          "command_contract_id": "opl-meta-agent.improve-from-external-agent-lab-suite",
+          "surface_kind": "opl_generated_skill_contract"
+        },
+        "product_entry": {
+          "action_key": "improve-from-external-agent-lab-suite",
+          "command": "npm run improve:external-suite -- --suite <suite_path> --target-agent-dir <agent_dir> --output-dir <output_dir> --opl-bin <opl_bin>",
+          "surface_kind": "domain_product_entry_action"
+        },
+        "openai": {
+          "tool_name": "opl_meta_agent_improve_from_external_agent_lab_suite"
+        },
+        "ai_sdk": {
+          "tool_name": "opl_meta_agent_improve_from_external_agent_lab_suite"
+        }
+      },
+      "authority_boundary": {
+        "can_write_target_domain_truth": false,
+        "can_write_target_domain_memory_body": false,
+        "can_modify_target_agent_source_repo": true,
+        "can_modify_target_agent_tests": true,
+        "can_modify_target_agent_docs": true,
+        "can_mutate_target_domain_artifact_body": false,
+        "can_authorize_target_domain_quality_or_export": false,
+        "can_promote_default_agent_without_gate": false,
+        "can_train_or_deploy_model_weights": false
+      }
+    },
+    {
       "action_id": "generate-mechanism-patch-proposal",
       "title": "Generate Mechanism Patch Proposal",
       "summary": "Convert Agent Lab run evidence and a gated learning candidate into a proposal-only mechanism patch record.",

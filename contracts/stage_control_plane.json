@@ -299,8 +299,8 @@
       "stage_id": "optimizer-iteration",
       "stage_kind": "revision",
       "title": "Optimizer Iteration",
-      "summary": "Generate prompt, skill, stage-policy, tool-policy, few-shot, or rubric-gap candidates and rerun gated suites.",
-      "goal": "Produce candidate refs for gated mechanism improvement.",
+      "summary": "Generate prompt, skill, stage-policy, tool-policy, few-shot, or rubric-gap candidates, patch target agent source when gated, and rerun suites.",
+      "goal": "Produce and execute gated target-agent mechanism improvements while preserving target domain truth authority.",
       "owner": "opl-meta-agent",
       "domain_stage_refs": [
         "optimizer-iteration"
@@ -314,12 +314,18 @@
           "ref": "agent/prompts/optimizer-iteration.md"
         }
       ],
-      "allowed_action_refs": [],
+      "allowed_action_refs": [
+        "improve-from-external-agent-lab-suite"
+      ],
       "outputs": [
         {
           "ref_kind": "domain_ref",
           "ref": [
             "improvement_candidate_refs",
+            "target_capability_improvement_candidate_refs",
+            "mechanism_patch_proposal_refs",
+            "developer_patch_work_order_refs",
+            "target_agent_version_receipt_refs",
             "candidate_branch_refs",
             "regression_result_refs"
           ]
