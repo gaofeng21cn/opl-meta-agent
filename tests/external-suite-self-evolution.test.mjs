@@ -186,6 +186,20 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
       ),
     );
     assert.ok(candidate.external_learning_refs.includes('external-source:equator-network/tripod-reporting-guideline'));
+    assert.equal(candidate.traceability_status, 'gap_to_patch_refs_mapped');
+    const hdlTrace = candidate.patch_traceability_matrix.find((item) => item.gap_token === 'hdl');
+    assert.ok(hdlTrace);
+    assert.ok(
+      hdlTrace.required_patch_refs.includes(
+        'quality_contract_ref:mas/prediction_model_first_draft_quality/variable_unit_harmonization',
+      ),
+    );
+    assert.ok(hdlTrace.editable_surface_refs.includes('quality_contract_ref'));
+    assert.ok(
+      hdlTrace.target_repo_file_hints.includes(
+        'src/med_autoscience/policies/medical_reporting_checklist.py',
+      ),
+    );
 
     const mechanism = readJson(payload.artifacts.mechanism_patch_proposal_path);
     assert.equal(mechanism.surface_kind, 'opl_meta_agent_mechanism_patch_proposal');
@@ -204,6 +218,13 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     assert.equal(workOrder.version_management.temporary_worktree_cleanup_required, true);
     assert.equal(workOrder.authority_boundary.can_modify_target_agent_source_repo, true);
     assert.equal(workOrder.authority_boundary.can_write_target_domain_truth, false);
+    assert.ok(
+      workOrder.patch_traceability_matrix.some((item) => item.gap_token === 'internal-quality-language-purge'),
+    );
+    assert.equal(workOrder.implementation_controls.patch_must_be_limited_to_traceable_surfaces, true);
+    assert.equal(workOrder.implementation_controls.developer_patch_receipt_required, true);
+    assert.equal(workOrder.implementation_controls.no_target_domain_truth_write_proof_required, true);
+    assert.ok(workOrder.implementation_controls.forbidden_target_paths_or_surfaces.includes('publication_eval/latest.json'));
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }

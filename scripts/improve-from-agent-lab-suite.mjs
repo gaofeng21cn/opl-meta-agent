@@ -16,6 +16,14 @@ import {
 
 const MAS_MEDICAL_MANUSCRIPT_CHANGE_REFS = [
   {
+    token: 'medical_journal_prose_quality',
+    refs: [
+      'rubric_ref:ai_reviewer/high_quality_medical_manuscript',
+      'prompt_ref:ai_reviewer_medical_prose_quality_review',
+      'prompt_ref:medical-research-write/formal_manuscript_voice_no_internal_qc_language',
+    ],
+  },
+  {
     token: 'hdl',
     refs: [
       'quality_contract_ref:mas/prediction_model_first_draft_quality/variable_unit_harmonization',
@@ -98,6 +106,35 @@ const EXTERNAL_LEARNING_REFS = [
   'external-source:tripod-statement/scope-and-checklist',
   'external-source:tripod-ai/clinical-prediction-model-reporting',
 ];
+
+const PATCH_SURFACE_HINTS_BY_DOMAIN = {
+  'med-autoscience': {
+    quality_contract_ref: [
+      'src/med_autoscience/policies/medical_reporting_checklist.py',
+      'src/med_autoscience/study_charter.py',
+    ],
+    skill_ref: [
+      'src/med_autoscience/overlay/templates/medical-research-write.SKILL.md',
+    ],
+    rubric_ref: [
+      'src/med_autoscience/policies/publication_critique.py',
+      'src/med_autoscience/policies/medical_manuscript_draft_quality.py',
+    ],
+    prompt_ref: [
+      'src/med_autoscience/policies/medical_manuscript_draft_quality.py',
+      'src/med_autoscience/overlay/templates/medical-research-write.SKILL.md',
+    ],
+    stage_policy_ref: [
+      'src/med_autoscience/controllers/pre_draft_quality_runtime.py',
+      'src/med_autoscience/controllers/agent_lab_medical_manuscript_quality.py',
+    ],
+    regression_suite_ref: [
+      'tests/test_prediction_model_first_draft_quality.py',
+      'tests/test_medical_reporting_audit.py',
+      'tests/test_medical_publication_surface.py',
+    ],
+  },
+};
 
 function parseArgs(argv) {
   const parsed = {
@@ -215,7 +252,70 @@ function inferProposedChangeRefs({ suite, suiteRefs }) {
   return [...inferred].sort();
 }
 
-function buildCapabilityCandidate({ targetAgent, suite, suiteResult, receipt, proposedChangeRefs, suiteRefs, feedbackRef }) {
+function buildPatchTraceabilityMatrix({ targetAgent, suiteRefs, proposedChangeRefs }) {
+  const combined = suiteRefs.join('\n').toLowerCase();
+  const sourceFailureRefs = suiteRefs.filter((ref) =>
+    ref.includes('rubric-gap:')
+    || ref.includes('metric-ref:')
+    || ref.includes('quality-scorecard:')
+  );
+  const matrix = [];
+  for (const mapping of MAS_MEDICAL_MANUSCRIPT_CHANGE_REFS) {
+    if (!combined.includes(mapping.token)) {
+      continue;
+    }
+    const requiredPatchRefs = mapping.refs.filter((ref) => proposedChangeRefs.includes(ref));
+    matrix.push({
+      gap_token: mapping.token,
+      source_failure_refs: sourceFailureRefs.filter((ref) => ref.toLowerCase().includes(mapping.token)),
+      required_patch_refs: requiredPatchRefs,
+      editable_surface_refs: surfaceRefsForPatchRefs(requiredPatchRefs),
+      target_repo_file_hints: fileHintsForPatchRefs({
+        domainId: targetAgent.domain_id,
+        patchRefs: requiredPatchRefs,
+      }),
+      required_verification_refs: [
+        'target_repo_test_receipt',
+        'no_target_domain_truth_write_proof',
+        'developer_patch_receipt',
+      ],
+    });
+  }
+  return matrix;
+}
+
+function surfaceRefsForPatchRefs(patchRefs) {
+  const surfaces = new Set();
+  for (const ref of patchRefs) {
+    const prefix = String(ref).split(':')[0];
+    if (prefix) {
+      surfaces.add(prefix);
+    }
+  }
+  return [...surfaces].sort();
+}
+
+function fileHintsForPatchRefs({ domainId, patchRefs }) {
+  const hints = PATCH_SURFACE_HINTS_BY_DOMAIN[domainId] ?? {};
+  const files = new Set();
+  for (const surfaceRef of surfaceRefsForPatchRefs(patchRefs)) {
+    for (const filePath of hints[surfaceRef] ?? []) {
+      files.add(filePath);
+    }
+  }
+  return [...files].sort();
+}
+
+function buildCapabilityCandidate({
+  targetAgent,
+  suite,
+  suiteResult,
+  receipt,
+  proposedChangeRefs,
+  suiteRefs,
+  feedbackRef,
+  patchTraceabilityMatrix,
+}) {
   return {
     surface_kind: 'opl_meta_agent_target_agent_capability_improvement_candidate',
     version: 'opl-meta-agent.target-capability-improvement-candidate.v1',
@@ -250,6 +350,10 @@ function buildCapabilityCandidate({ targetAgent, suite, suiteResult, receipt, pr
       || ref.includes('repair-ref:')
     ),
     proposed_change_refs: proposedChangeRefs,
+    patch_traceability_matrix: patchTraceabilityMatrix,
+    traceability_status: patchTraceabilityMatrix.length
+      ? 'gap_to_patch_refs_mapped'
+      : 'generic_patch_refs_only',
     target_editable_surface_refs: [
       'stage_policy_ref',
       'skill_ref',
@@ -292,6 +396,30 @@ function buildDeveloperPatchWorkOrder({ targetAgent, suite, suiteResult, receipt
     owner_receipt_ref: receipt.receipt_id,
     required_patch_surfaces: capabilityCandidate.target_editable_surface_refs,
     proposed_change_refs: capabilityCandidate.proposed_change_refs,
+    patch_traceability_matrix: capabilityCandidate.patch_traceability_matrix,
+    implementation_controls: {
+      patch_must_be_limited_to_traceable_surfaces: true,
+      developer_must_read_target_repo_context_before_editing: true,
+      developer_patch_receipt_required: true,
+      target_repo_test_receipt_required: true,
+      no_target_domain_truth_write_proof_required: true,
+      no_quality_verdict_or_submission_readiness_authority: true,
+      forbidden_target_paths_or_surfaces: [
+        'study truth surfaces',
+        'paper artifacts',
+        'publication_eval/latest.json',
+        'controller_decisions/latest.json',
+        'manuscript/current_package',
+        'submission readiness verdicts',
+      ],
+      required_closeout_evidence: [
+        'patch_traceability_matrix addressed',
+        'target agent tests passed',
+        'developer patch receipt recorded',
+        'target agent status or decision docs updated',
+        'temporary worktree cleaned after absorb',
+      ],
+    },
     version_management: {
       target_agent_version_owner: 'target_agent_repo',
       required_version_artifacts: [
@@ -335,6 +463,11 @@ function main() {
   const suiteResult = agentLabRun.agent_lab_run.suite_result;
   const suiteRefs = collectSuiteRefs(suite);
   const proposedChangeRefs = inferProposedChangeRefs({ suite, suiteRefs });
+  const patchTraceabilityMatrix = buildPatchTraceabilityMatrix({
+    targetAgent,
+    suiteRefs,
+    proposedChangeRefs,
+  });
 
   const receipt = buildOwnerReceipt({
     receiptClass: 'external_suite_quality_failure_self_evolution_receipt',
@@ -387,6 +520,7 @@ function main() {
     proposedChangeRefs,
     suiteRefs,
     feedbackRef,
+    patchTraceabilityMatrix,
   });
   const developerPatchWorkOrder = buildDeveloperPatchWorkOrder({
     targetAgent,
