@@ -225,9 +225,28 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     assert.equal(workOrder.implementation_controls.developer_patch_receipt_required, true);
     assert.equal(workOrder.implementation_controls.no_target_domain_truth_write_proof_required, true);
     assert.equal(workOrder.implementation_controls.target_runtime_consumption_verification_required, true);
+    assert.equal(workOrder.implementation_controls.target_workspace_environment_consumption_proof_required, true);
+    assert.equal(workOrder.implementation_controls.dependency_lock_or_profile_migration_proof_required, true);
+    assert.equal(workOrder.implementation_controls.owner_entry_redrive_required, true);
+    assert.equal(workOrder.implementation_controls.repo_hygiene_no_checkout_venv_proof_required, true);
     assert.ok(
       workOrder.implementation_controls.required_closeout_evidence.includes(
         'target runtime/read-model consumed patched capability',
+      ),
+    );
+    assert.ok(
+      workOrder.implementation_controls.required_closeout_evidence.includes(
+        'target workspace dependency lock/profile migrated when runtime extras are required',
+      ),
+    );
+    assert.ok(
+      workOrder.implementation_controls.required_closeout_evidence.includes(
+        'target owner entry redrive consumed the migrated workspace environment',
+      ),
+    );
+    assert.ok(
+      workOrder.implementation_controls.required_closeout_evidence.includes(
+        'repo hygiene proof shows no target checkout .venv or generated egg-info pollution',
       ),
     );
     assert.ok(
@@ -245,6 +264,26 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
       ),
     );
     assert.equal(workOrder.runtime_consumption_verification.can_write_target_domain_truth, false);
+    assert.equal(
+      workOrder.target_workspace_environment_verification.verification_mode,
+      'read_only_target_workspace_environment_and_owner_entry_redrive',
+    );
+    assert.ok(
+      workOrder.target_workspace_environment_verification.required_surface_refs.includes(
+        'target_workspace_pyproject_or_lock',
+      ),
+    );
+    assert.ok(
+      workOrder.target_workspace_environment_verification.required_surface_refs.includes(
+        'study_runtime_analysis_bundle',
+      ),
+    );
+    assert.ok(
+      workOrder.target_workspace_environment_verification.expected_outcomes.includes(
+        'owner runtime entry uses the target workspace interpreter rather than target repo checkout .venv',
+      ),
+    );
+    assert.equal(workOrder.target_workspace_environment_verification.can_write_target_domain_truth, false);
     assert.ok(workOrder.implementation_controls.forbidden_target_paths_or_surfaces.includes('publication_eval/latest.json'));
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
