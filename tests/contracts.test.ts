@@ -393,8 +393,8 @@ test('minimal authority functions are explicit refs, not generic runtime owners'
       moduleId: 'candidate_agent_package_builder',
       authorityRef: 'authority-function-ref:opl-meta-agent/candidate-agent-package-builder',
       implementationRefs: [
-        'scripts/bootstrap-sample-agent.mjs',
-        'scripts/lib/meta-agent-loop.mjs',
+        'scripts/bootstrap-sample-agent.ts',
+        'scripts/lib/meta-agent-loop.ts',
       ],
       invokedByRefs: ['action-ref:build-agent-baseline'],
     },
@@ -402,7 +402,7 @@ test('minimal authority functions are explicit refs, not generic runtime owners'
       moduleId: 'mechanism_patch_proposal_authorizer',
       authorityRef: 'authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer',
       implementationRefs: [
-        'scripts/lib/meta-agent-loop.mjs',
+        'scripts/lib/meta-agent-loop.ts',
       ],
       invokedByRefs: ['action-ref:generate-mechanism-patch-proposal'],
     },
@@ -439,7 +439,7 @@ test('minimal authority functions are explicit refs, not generic runtime owners'
 test('script physical morphology stays limited to authority refs and helpers', () => {
   const privatePolicy = readJson('contracts/private_functional_surface_policy.json');
   const authorityFunctions = readJson('runtime/authority_functions/meta-agent-authority-functions.json');
-  const scripts = listFilesByExtension('scripts', '.mjs');
+  const scripts = listFilesByExtension('scripts', '.ts');
   const morphologyPolicy = authorityFunctions.script_morphology_policy;
 
   assert.equal(morphologyPolicy.policy_ref, 'contracts/private_functional_surface_policy.json');
@@ -521,7 +521,7 @@ test('tracked contract, test, and docs surfaces do not carry placeholder markers
     ...scannedDirs.flatMap((dir) =>
       listMarkdownFiles(dir).concat(
         fs.readdirSync(path.join(repoRoot, dir))
-          .filter((entry) => entry.endsWith('.json') || entry.endsWith('.mjs'))
+          .filter((entry) => entry.endsWith('.json') || entry.endsWith('.ts'))
           .map((entry) => `${dir}/${entry}`),
       )
     ),

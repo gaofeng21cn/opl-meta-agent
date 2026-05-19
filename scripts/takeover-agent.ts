@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import {
   domainPackReceiptFields,
   readDomainPackSummary,
-} from './lib/domain-pack.mjs';
+} from './lib/domain-pack.ts';
 import {
   buildAgentLabSuite,
   buildLearningCandidate,
@@ -16,7 +16,7 @@ import {
   resolveOplBin,
   runOpl,
   writeJson,
-} from './lib/meta-agent-loop.mjs';
+} from './lib/meta-agent-loop.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 

@@ -133,7 +133,7 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     const result = spawnSync(
       process.execPath,
       [
-        path.join(repoRoot, 'scripts/improve-from-agent-lab-suite.mjs'),
+        path.join(repoRoot, 'scripts/improve-from-agent-lab-suite.ts'),
         '--suite',
         suitePath,
         '--target-agent-dir',

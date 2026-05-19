@@ -15,7 +15,7 @@ function resolveDefaultRepoRoot() {
 }
 
 function usage() {
-  process.stdout.write('Usage: node scripts/install-codex-plugin.mjs [--repo-root /abs/path/to/repo] [--home /abs/path/to/home]\n');
+  process.stdout.write('Usage: node scripts/install-codex-plugin.ts [--repo-root /abs/path/to/repo] [--home /abs/path/to/home]\n');
 }
 
 function parseArgs(argv = process.argv.slice(2)) {

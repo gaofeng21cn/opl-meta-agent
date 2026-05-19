@@ -19,7 +19,7 @@ test('Codex plugin installer registers OPL Meta Agent marketplace metadata', () 
     const output = execFileSync(
       process.execPath,
       [
-        path.join(repoRoot, 'scripts', 'install-codex-plugin.mjs'),
+        path.join(repoRoot, 'scripts', 'install-codex-plugin.ts'),
         '--repo-root',
         repoRoot,
         '--home',

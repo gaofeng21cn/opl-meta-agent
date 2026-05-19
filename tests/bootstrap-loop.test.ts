@@ -21,7 +21,7 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
     const result = spawnSync(
       process.execPath,
       [
-        path.join(repoRoot, 'scripts/bootstrap-sample-agent.mjs'),
+        path.join(repoRoot, 'scripts/bootstrap-sample-agent.ts'),
         '--output-dir',
         outputRoot,
         '--opl-bin',

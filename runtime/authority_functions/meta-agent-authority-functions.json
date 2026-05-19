@@ -28,7 +28,7 @@
     ],
     "script_classifications": [
       {
-        "script_ref": "scripts/bootstrap-sample-agent.mjs",
+        "script_ref": "scripts/bootstrap-sample-agent.ts",
         "classes": [
           "authority_function_implementation_ref",
           "smoke_helper",
@@ -51,7 +51,7 @@
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/takeover-agent.mjs",
+        "script_ref": "scripts/takeover-agent.ts",
         "classes": [
           "smoke_helper",
           "fixture_or_proof_helper"
@@ -69,7 +69,7 @@
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/improve-from-agent-lab-suite.mjs",
+        "script_ref": "scripts/improve-from-agent-lab-suite.ts",
         "classes": [
           "smoke_helper",
           "developer_work_order_materializer",
@@ -88,7 +88,7 @@
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/install-codex-plugin.mjs",
+        "script_ref": "scripts/install-codex-plugin.ts",
         "classes": [
           "developer_work_order_materializer"
         ],
@@ -100,7 +100,7 @@
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/lib/domain-pack.mjs",
+        "script_ref": "scripts/lib/domain-pack.ts",
         "classes": [
           "fixture_or_proof_helper"
         ],
@@ -113,7 +113,7 @@
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/lib/meta-agent-loop.mjs",
+        "script_ref": "scripts/lib/meta-agent-loop.ts",
         "classes": [
           "authority_function_implementation_ref",
           "smoke_helper",
@@ -144,8 +144,8 @@
       "classification": "minimal_authority_function",
       "authority_ref": "authority-function-ref:opl-meta-agent/candidate-agent-package-builder",
       "implementation_refs": [
-        "scripts/bootstrap-sample-agent.mjs",
-        "scripts/lib/meta-agent-loop.mjs"
+        "scripts/bootstrap-sample-agent.ts",
+        "scripts/lib/meta-agent-loop.ts"
       ],
       "invoked_by_refs": [
         "action-ref:build-agent-baseline"
@@ -168,7 +168,7 @@
       "classification": "minimal_authority_function",
       "authority_ref": "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer",
       "implementation_refs": [
-        "scripts/lib/meta-agent-loop.mjs"
+        "scripts/lib/meta-agent-loop.ts"
       ],
       "invoked_by_refs": [
         "action-ref:generate-mechanism-patch-proposal"

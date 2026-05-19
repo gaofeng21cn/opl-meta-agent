@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "bootstrap:sample": "node scripts/bootstrap-sample-agent.mjs",
-    "improve:external-suite": "node scripts/improve-from-agent-lab-suite.mjs",
-    "takeover:test": "node scripts/takeover-agent.mjs",
-    "test": "node --test tests/*.test.mjs"
+    "bootstrap:sample": "node scripts/bootstrap-sample-agent.ts",
+    "improve:external-suite": "node scripts/improve-from-agent-lab-suite.ts",
+    "takeover:test": "node scripts/takeover-agent.ts",
+    "test": "node --test tests/*.test.ts"
   },
   "license": "Apache-2.0"
 }

@@ -33,7 +33,7 @@ test('opl-meta-agent takes over testing for an existing external agent without a
 
   try {
     const bootstrap = runNode([
-      path.join(repoRoot, 'scripts/bootstrap-sample-agent.mjs'),
+      path.join(repoRoot, 'scripts/bootstrap-sample-agent.ts'),
       '--output-dir',
       bootstrapRoot,
       '--opl-bin',
@@ -43,7 +43,7 @@ test('opl-meta-agent takes over testing for an existing external agent without a
 
     const targetDir = path.join(bootstrapRoot, 'sample-brief-agent');
     const takeover = runNode([
-      path.join(repoRoot, 'scripts/takeover-agent.mjs'),
+      path.join(repoRoot, 'scripts/takeover-agent.ts'),
       '--agent-dir',
       targetDir,
       '--output-dir',

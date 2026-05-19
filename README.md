@@ -105,7 +105,7 @@ The loop does not directly rewrite final answers. It turns each run into an audi
   <summary><strong>Start here if you are handing this repo to Codex or another agent</strong></summary>
 
 - Read this README plus [Project](./docs/project.md), [Status](./docs/status.md), [Architecture](./docs/architecture.md), [Invariants](./docs/invariants.md), and [Decisions](./docs/decisions.md).
-- When changing contracts, README, docs, or smoke scripts, update `tests/*.test.mjs` so boundary flags still prove proposal-only / refs-only behavior.
+- When changing contracts, README, docs, or smoke scripts, update `tests/*.test.ts` so boundary flags still prove proposal-only / refs-only behavior.
 - This repo owns agent-building semantics and testing/self-evolution orchestration. Use OPL Agent Lab for real runs, longline suites, mechanism read models, and evolution segments.
 - Do not treat `mechanism_patch_proposal` as an adopted mechanism. It is only a candidate that may enter a gate.
 - Do not treat takeover as ownership of the target agent's domain truth, memory body, artifact authority, or quality verdict.

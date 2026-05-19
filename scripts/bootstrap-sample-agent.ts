@@ -7,7 +7,7 @@ import {
   domainPackReceiptFields,
   readDomainPackSummary,
   writeMinimalAgentDomainPack,
-} from './lib/domain-pack.mjs';
+} from './lib/domain-pack.ts';
 import {
   buildAgentLabSuite as buildExternalSuite,
   buildLearningCandidate as buildGatedLearningCandidate,
@@ -16,7 +16,7 @@ import {
   resolveOplBin,
   runOpl,
   writeJson,
-} from './lib/meta-agent-loop.mjs';
+} from './lib/meta-agent-loop.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 

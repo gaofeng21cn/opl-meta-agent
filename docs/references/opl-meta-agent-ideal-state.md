@@ -61,8 +61,8 @@ CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framewo
 
 | Authority function | Implementation refs | 允许输出 | 禁止事项 |
 | --- | --- | --- | --- |
-| `candidate_agent_package_builder` | `scripts/bootstrap-sample-agent.mjs`, `scripts/lib/meta-agent-loop.mjs` | candidate agent package ref、owner receipt ref | generic runtime owner、target truth write、target quality/export verdict |
-| `mechanism_patch_proposal_authorizer` | `scripts/lib/meta-agent-loop.mjs` | mechanism patch proposal ref、owner receipt ref | target memory body write、artifact body write、default promotion |
+| `candidate_agent_package_builder` | `scripts/bootstrap-sample-agent.ts`, `scripts/lib/meta-agent-loop.ts` | candidate agent package ref、owner receipt ref | generic runtime owner、target truth write、target quality/export verdict |
+| `mechanism_patch_proposal_authorizer` | `scripts/lib/meta-agent-loop.ts` | mechanism patch proposal ref、owner receipt ref | target memory body write、artifact body write、default promotion |
 
 这些函数可以持有 agent-building semantics，但只能以 refs-only / receipt / blocker 方式工作。它们不能成为第二套 OPL runtime，也不能替目标 domain owner 作 truth、memory、artifact、quality/export 或 promotion 决策。
 
