@@ -11,6 +11,7 @@
 - OPL domain manifest registration 合同：`contracts/opl_domain_manifest_registration.json` 把 domain descriptor、stage/action contracts、pack compiler input、generated surface handoff、authority function refs、App workbench projection 和 scaleout evidence contract 汇成 refs-only registration surface；OPL domain registry / discovery / generated interface bundle 是消费方，本仓不持有 registry owner 或 generated surface owner。
 - App/workbench projection 合同：`contracts/app_workbench_projection.json` 只投影 target brief、candidate package、Agent Lab result、developer work order、mechanism patch proposal、scaleout evidence 的 refs/status/receipt/blocker；OPL App/workbench 持有展示 shell，本仓不能写 App runtime state、target truth、memory body、artifact body、quality/export verdict 或默认 promotion。
 - Real target agent scaleout evidence 合同：`contracts/real_target_agent_scaleout_evidence.json` 定义真实目标 agent delivery、blocked suite -> developer work order、多目标 scaleout 的必需 refs 和 no-forbidden-write proofs；当前状态是 contract-ready，不把 sample smoke、testing takeover smoke 或 suite pass 写成真实线上交付完成。
+- Production acceptance evidence：`contracts/production_acceptance/meta-agent-production-acceptance.json` 已把 `production_live_soak_not_claimed_by_conformance` / `domain_ready_not_claimed_by_conformance` 收口为 external-agent takeover/improve loop 的 domain-owned acceptance receipt。它记录 structural/physical conformance 已通过、intake/test handoff/proposal materializer/review-audit receipt chain 已存在、promotion 仍受 gate 约束，并要求默认生成的新 agent 携带 morphology/conformance fixture。
 - `stage_control_plane` 路径解析：当前每个 stage 的 prompt、skill、knowledge、evaluation refs 都指向 repo-tracked `agent/prompts/*.md`、`agent/skills/*.md`、`agent/knowledge/*.md`、`agent/quality_gates/*.md` 文件；测试会确认每个 locator 指向真实文件。
 - 十阶段 meta-agent plan：intent intake、web experience research、stage decomposition、agent skeleton build、eval suite build、baseline run、external agent takeover、optimizer iteration、baseline delivery、online learning。
 - 最小 repo-local test：`npm test`。
@@ -32,4 +33,4 @@
 
 - OPL domain manifest registration 的 OPL registry 侧接入与实测 discovery receipt；本仓 machine contract 已落地。
 - App/workbench projection 的 OPL App 侧实际渲染与 drilldown receipt；本仓 projection contract 已落地。
-- 真实线上目标领域 agent package delivery；当前完成的是可直接运行的 Foundry Agent baseline build、testing takeover、external-suite improvement 和 proposal-only mechanism loop。
+- 真实线上目标领域 agent package delivery；当前完成的是可直接运行的 Foundry Agent baseline build、testing takeover、external-suite improvement、proposal-only mechanism loop，以及 external-agent takeover/improve loop production acceptance evidence。该 evidence 关闭的是 conformance 后的本仓 acceptance tail，不授权默认 promotion。

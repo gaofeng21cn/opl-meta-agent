@@ -1,0 +1,121 @@
+{
+  "surface_kind": "opl_meta_agent_production_acceptance_evidence",
+  "schema_version": 1,
+  "domain_id": "opl-meta-agent",
+  "owner": "opl-meta-agent",
+  "evidence_status": "closed_by_domain_owned_acceptance_receipt",
+  "role": "refs_only_external_agent_takeover_improve_loop_acceptance",
+  "acceptance_scope": [
+    "production_live_soak_not_claimed_by_conformance",
+    "domain_ready_not_claimed_by_conformance",
+    "external_agent_takeover_improve_loop_acceptance"
+  ],
+  "conformance_state": {
+    "structural_conformance": "passed",
+    "physical_source_morphology": "passed",
+    "conformance_refs": [
+      "contracts/pack_compiler_input.json",
+      "contracts/generated_surface_handoff.json",
+      "runtime/authority_functions/meta-agent-authority-functions.json",
+      "contracts/private_functional_surface_policy.json",
+      "tests/contracts.test.mjs"
+    ],
+    "not_domain_ready_authority_source": true,
+    "not_production_soak_authority_source": true
+  },
+  "external_agent_acceptance_chain": {
+    "chain_status": "receipt_chain_present",
+    "intake_refs": [
+      "agent/prompts/intent-intake.md",
+      "agent/stages/intent-intake.md",
+      "contracts/domain_descriptor.json",
+      "contracts/stage_control_plane.json"
+    ],
+    "test_handoff_refs": [
+      "agent/prompts/eval-suite-build.md",
+      "agent/stages/eval-suite-build.md",
+      "agent/prompts/external-agent-takeover.md",
+      "agent/stages/external-agent-takeover.md",
+      "scripts/takeover-agent.mjs",
+      "tests/takeover-loop.test.mjs"
+    ],
+    "proposal_materializer_refs": [
+      "agent/prompts/optimizer-iteration.md",
+      "agent/stages/optimizer-iteration.md",
+      "scripts/improve-from-agent-lab-suite.mjs",
+      "scripts/lib/meta-agent-loop.mjs",
+      "tests/external-suite-self-evolution.test.mjs"
+    ],
+    "review_audit_receipt_refs": [
+      "contracts/owner_receipt_contract.json",
+      "contracts/functional_privatization_audit.json",
+      "contracts/real_target_agent_scaleout_evidence.json",
+      "docs/status.md",
+      "docs/active/opl-meta-agent-ideal-state-gap-plan.md"
+    ],
+    "typed_blocker_refs": []
+  },
+  "acceptance_receipt": {
+    "receipt_class": "external_agent_takeover_improve_loop_acceptance_receipt",
+    "receipt_ref": "production-acceptance-receipt:opl-meta-agent/external-agent-takeover-improve-loop/2026-05-19",
+    "status": "accepted_with_gated_promotion",
+    "source_refs": [
+      "contracts/production_acceptance/meta-agent-production-acceptance.json",
+      "tests/takeover-loop.test.mjs",
+      "tests/external-suite-self-evolution.test.mjs",
+      "tests/contracts.test.mjs"
+    ],
+    "accepted_evidence_tail": [
+      "external agent intake refs present",
+      "Agent Lab test handoff refs present",
+      "proposal and materializer refs present",
+      "review and audit receipt refs present",
+      "no target-domain authority writes allowed",
+      "new-agent morphology and conformance fixture required"
+    ]
+  },
+  "promotion_gate": {
+    "promotion_status": "gated",
+    "promotion_gate_ref": "promotion-gate:opl-meta-agent/external-agent-takeover-improve-loop",
+    "required_next_verification_command_refs": [
+      "cmd:rtk npm test",
+      "cmd:rtk node --test tests/contracts.test.mjs tests/bootstrap-loop.test.mjs tests/takeover-loop.test.mjs tests/external-suite-self-evolution.test.mjs",
+      "cmd:rtk git diff --check"
+    ],
+    "cannot_promote_default_agent_without_gate": true
+  },
+  "generated_agent_fixture_requirement": {
+    "fixture_status": "required_by_default_generated_agent",
+    "fixture_ref": "contracts/production_acceptance/morphology_conformance_fixture.json",
+    "required_check_refs": [
+      "check-ref:generated-agent/domain-pack-files-present",
+      "check-ref:generated-agent/stage-action-contracts-present",
+      "check-ref:generated-agent/OPL-generated-interface-owner",
+      "check-ref:generated-agent/no-target-domain-truth-write",
+      "check-ref:generated-agent/no-default-promotion-without-gate"
+    ],
+    "verified_by_refs": [
+      "tests/bootstrap-loop.test.mjs",
+      "tests/contracts.test.mjs"
+    ]
+  },
+  "authority_boundary": {
+    "refs_only": true,
+    "not_generic_runtime_owner": true,
+    "can_write_target_domain_truth": false,
+    "can_write_target_domain_memory_body": false,
+    "can_mutate_target_domain_artifact_body": false,
+    "can_authorize_target_domain_quality_or_export": false,
+    "can_promote_default_agent_without_gate": false,
+    "can_train_or_deploy_model_weights": false,
+    "target_domain_authority_writes_forbidden": true
+  },
+  "forbidden_claims": [
+    "structural_conformance_equals_production_live_soak",
+    "structural_conformance_equals_domain_ready",
+    "suite_pass_equals_default_agent_promotion",
+    "proposal_equals_adopted_runtime_change",
+    "meta_agent_wrote_target_domain_truth",
+    "meta_agent_authorized_target_domain_quality_or_export"
+  ]
+}

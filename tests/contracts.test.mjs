@@ -377,6 +377,50 @@ test('registration, projection, and evidence contracts are represented in functi
   });
 });
 
+test('production acceptance evidence closes conformance evidence tail through refs-only acceptance receipt', () => {
+  const acceptance = readJson('contracts/production_acceptance/meta-agent-production-acceptance.json');
+
+  assert.equal(acceptance.surface_kind, 'opl_meta_agent_production_acceptance_evidence');
+  assert.equal(acceptance.domain_id, 'opl-meta-agent');
+  assert.equal(acceptance.evidence_status, 'closed_by_domain_owned_acceptance_receipt');
+  assert.equal(acceptance.role, 'refs_only_external_agent_takeover_improve_loop_acceptance');
+  assert.ok(acceptance.acceptance_scope.includes('production_live_soak_not_claimed_by_conformance'));
+  assert.ok(acceptance.acceptance_scope.includes('domain_ready_not_claimed_by_conformance'));
+  assert.equal(acceptance.conformance_state.structural_conformance, 'passed');
+  assert.equal(acceptance.conformance_state.physical_source_morphology, 'passed');
+  assert.equal(acceptance.conformance_state.not_domain_ready_authority_source, true);
+  assert.equal(acceptance.conformance_state.not_production_soak_authority_source, true);
+  assert.equal(acceptance.external_agent_acceptance_chain.chain_status, 'receipt_chain_present');
+  assert.ok(acceptance.external_agent_acceptance_chain.intake_refs.length > 0);
+  assert.ok(acceptance.external_agent_acceptance_chain.test_handoff_refs.length > 0);
+  assert.ok(acceptance.external_agent_acceptance_chain.proposal_materializer_refs.length > 0);
+  assert.ok(acceptance.external_agent_acceptance_chain.review_audit_receipt_refs.length > 0);
+  assert.deepEqual(acceptance.external_agent_acceptance_chain.typed_blocker_refs, []);
+  assert.equal(
+    acceptance.acceptance_receipt.receipt_class,
+    'external_agent_takeover_improve_loop_acceptance_receipt',
+  );
+  assert.equal(acceptance.promotion_gate.promotion_status, 'gated');
+  assert.ok(acceptance.promotion_gate.required_next_verification_command_refs.includes('cmd:rtk npm test'));
+  assert.ok(
+    acceptance.generated_agent_fixture_requirement.required_check_refs.includes(
+      'check-ref:generated-agent/no-target-domain-truth-write',
+    ),
+  );
+  assertNoForbiddenAuthority(acceptance, 'productionAcceptance');
+  assert.equal(acceptance.authority_boundary.target_domain_authority_writes_forbidden, true);
+
+  [
+    ...acceptance.conformance_state.conformance_refs,
+    ...acceptance.external_agent_acceptance_chain.intake_refs,
+    ...acceptance.external_agent_acceptance_chain.test_handoff_refs,
+    ...acceptance.external_agent_acceptance_chain.proposal_materializer_refs,
+    ...acceptance.external_agent_acceptance_chain.review_audit_receipt_refs,
+    ...acceptance.acceptance_receipt.source_refs,
+    ...acceptance.generated_agent_fixture_requirement.verified_by_refs,
+  ].forEach(assertRepoRefExists);
+});
+
 test('minimal authority functions are explicit refs, not generic runtime owners', () => {
   const audit = readJson('contracts/functional_privatization_audit.json');
   const authorityFunctions = readJson('runtime/authority_functions/meta-agent-authority-functions.json');

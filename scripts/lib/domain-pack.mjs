@@ -154,4 +154,50 @@ export function writeMinimalAgentDomainPack(targetAgentDir, targetAgent) {
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     fs.writeFileSync(filePath, body);
   }
+
+  const fixturePath = path.join(
+    targetAgentDir,
+    'contracts',
+    'production_acceptance',
+    'morphology_conformance_fixture.json',
+  );
+  fs.mkdirSync(path.dirname(fixturePath), { recursive: true });
+  fs.writeFileSync(
+    fixturePath,
+    `${JSON.stringify({
+      surface_kind: 'generated_agent_morphology_conformance_fixture',
+      schema_version: 1,
+      domain_id: domainId,
+      owner: domainId,
+      fixture_status: 'required_by_default_generated_agent',
+      canonical_semantic_pack_root: 'agent/',
+      required_check_refs: [
+        'check-ref:generated-agent/domain-pack-files-present',
+        'check-ref:generated-agent/stage-action-contracts-present',
+        'check-ref:generated-agent/OPL-generated-interface-owner',
+        'check-ref:generated-agent/no-target-domain-truth-write',
+        'check-ref:generated-agent/no-default-promotion-without-gate',
+      ],
+      conformance_refs: [
+        'contracts/domain_descriptor.json',
+        'contracts/action_catalog.json',
+        'contracts/stage_control_plane.json',
+        'agent/prompts/README.md',
+        'agent/stages/README.md',
+        'agent/skills/README.md',
+        'agent/quality_gates/README.md',
+        'agent/knowledge/README.md',
+      ],
+      authority_boundary: {
+        refs_only: true,
+        generated_interface_owner: 'one-person-lab',
+        domain_repo_can_own_generated_surface: false,
+        can_write_target_domain_truth: false,
+        can_write_target_domain_memory_body: false,
+        can_mutate_target_domain_artifact_body: false,
+        can_authorize_target_domain_quality_or_export: false,
+        can_promote_default_agent_without_gate: false,
+      },
+    }, null, 2)}\n`,
+  );
 }

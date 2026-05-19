@@ -68,13 +68,39 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
     const receiptPath = path.join(outputRoot, 'baseline-delivery-receipt.json');
     const learningPath = path.join(outputRoot, 'online-learning-candidate.json');
     const mechanismPath = path.join(outputRoot, 'mechanism-patch-proposal.json');
+    const fixturePath = path.join(
+      targetDir,
+      'contracts',
+      'production_acceptance',
+      'morphology_conformance_fixture.json',
+    );
     assert.equal(fs.existsSync(path.join(targetDir, 'contracts/domain_descriptor.json')), true);
     assert.equal(fs.existsSync(path.join(targetDir, 'contracts/action_catalog.json')), true);
     assert.equal(fs.existsSync(path.join(targetDir, 'contracts/stage_control_plane.json')), true);
+    assert.equal(fs.existsSync(fixturePath), true);
     assert.equal(fs.existsSync(suitePath), true);
     assert.equal(fs.existsSync(receiptPath), true);
     assert.equal(fs.existsSync(learningPath), true);
     assert.equal(fs.existsSync(mechanismPath), true);
+
+    const fixture = readJson(fixturePath);
+    assert.equal(fixture.surface_kind, 'generated_agent_morphology_conformance_fixture');
+    assert.equal(fixture.domain_id, 'sample-brief-agent');
+    assert.equal(fixture.fixture_status, 'required_by_default_generated_agent');
+    assert.equal(fixture.canonical_semantic_pack_root, 'agent/');
+    assert.ok(fixture.required_check_refs.includes('check-ref:generated-agent/domain-pack-files-present'));
+    assert.ok(fixture.required_check_refs.includes('check-ref:generated-agent/stage-action-contracts-present'));
+    assert.ok(fixture.required_check_refs.includes('check-ref:generated-agent/OPL-generated-interface-owner'));
+    assert.ok(fixture.required_check_refs.includes('check-ref:generated-agent/no-target-domain-truth-write'));
+    assert.ok(fixture.required_check_refs.includes('check-ref:generated-agent/no-default-promotion-without-gate'));
+    assert.equal(fixture.authority_boundary.refs_only, true);
+    assert.equal(fixture.authority_boundary.generated_interface_owner, 'one-person-lab');
+    assert.equal(fixture.authority_boundary.domain_repo_can_own_generated_surface, false);
+    assert.equal(fixture.authority_boundary.can_write_target_domain_truth, false);
+    assert.equal(fixture.authority_boundary.can_write_target_domain_memory_body, false);
+    assert.equal(fixture.authority_boundary.can_mutate_target_domain_artifact_body, false);
+    assert.equal(fixture.authority_boundary.can_authorize_target_domain_quality_or_export, false);
+    assert.equal(fixture.authority_boundary.can_promote_default_agent_without_gate, false);
 
     const suite = readJson(suitePath);
     assert.equal(suite.suite_id, 'opl-meta-agent-self-bootstrap-suite');
