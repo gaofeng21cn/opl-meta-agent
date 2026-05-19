@@ -85,7 +85,7 @@ The loop does not directly rewrite final answers. It turns each run into an audi
 <details>
   <summary><strong>Technical boundary for operators</strong></summary>
 
-- The bootstrap path is `npm run bootstrap:sample -- --output-dir <dir> --opl-bin <opl>`: generate `sample-brief-agent`, call OPL scaffold validation, generate an Agent Lab external suite, run `opl agent-lab run --suite`, and write a baseline receipt, online-learning candidate, and `mechanism-patch-proposal.json`.
+- The bootstrap path is `npm run bootstrap:sample -- --output-dir <dir> --opl-bin <opl> --ai-reviewer-evaluation <reviewer-eval.json>`: generate `sample-brief-agent`, call OPL scaffold validation, generate an Agent Lab external suite, run `opl agent-lab run --suite`, consume a structured AI reviewer evaluation, and write a baseline receipt, online-learning candidate, and `mechanism-patch-proposal.json`.
 - The takeover path is `npm run takeover:test -- --agent-dir <existing-agent-dir> --output-dir <dir> --opl-bin <opl>`: read target agent descriptors/contracts, generate a takeover suite, run Agent Lab, and write a takeover receipt, gated self-evolution candidate, and `takeover-mechanism-patch-proposal.json`.
 - The unified interface path is `opl agents interfaces --repo-dir <this-repo> --json`: OPL reads the standard contracts and emits CLI, MCP, Skill, product-entry, OpenAI tool, and AI SDK descriptors.
 - A mechanism patch proposal records `mechanism_ref/version`, `editable_surfaces`, `observe/diagnose/edit`, `segment_run_ref`, `evidence_delta_ref`, `next_mechanism_candidate_ref`, and proposal-only authority flags.
@@ -122,7 +122,7 @@ npm test
 `typecheck` runs TypeScript's compiler gate over `scripts/**/*.ts` and `tests/**/*.ts`. The test suite verifies contract fields, the OPL-generated interface bundle, real `agent/` domain pack files, stage prompt/skill/knowledge/evaluation ref path resolution, non-empty files, and placeholder absence.
 
 ```bash
-npm run bootstrap:sample -- --output-dir /tmp/opl-meta-agent-demo --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl
+npm run bootstrap:sample -- --output-dir /tmp/opl-meta-agent-demo --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl --ai-reviewer-evaluation /tmp/reviewer-eval.json
 ```
 
 ```bash

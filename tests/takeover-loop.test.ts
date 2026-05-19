@@ -13,6 +13,29 @@ function readJson(filePath: string): JsonObject {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
+function writeAiReviewerEvaluation(filePath: string): void {
+  const evaluation = {
+    reviewer_kind: 'ai_reviewer',
+    model_or_provider: 'gpt-5.5',
+    run_ref: 'run:ai-reviewer/opl-meta-agent/takeover-fixture',
+    critique: 'The fixture baseline is suitable for takeover testing with explicit source and runbook coverage.',
+    suggestions: [
+      'Keep takeover fixture source coverage visible in baseline delivery receipts.',
+    ],
+    source_refs: [
+      'review-ref:opl-meta-agent/takeover-fixture/ai-reviewer',
+      'evidence-ref:sample-brief-agent/scaffold-validation',
+    ],
+    verdict: 'baseline_ready_with_owner_gate',
+    provenance: {
+      artifact_ref: 'artifact-ref:ai-reviewer/takeover-fixture',
+      created_by: 'test-fixture',
+    },
+  };
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(evaluation, null, 2)}\n`);
+}
+
 function runNode(args: string[], oplBin: string) {
   return spawnSync(process.execPath, args, {
     cwd: repoRoot,
@@ -29,16 +52,20 @@ test('opl-meta-agent takes over testing for an existing external agent without a
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-takeover-'));
   const bootstrapRoot = path.join(outputRoot, 'bootstrap');
   const takeoverRoot = path.join(outputRoot, 'takeover');
+  const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
   const oplBin = process.env.OPL_BIN
     ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
 
   try {
+    writeAiReviewerEvaluation(reviewerEvaluationPath);
     const bootstrap = runNode([
       path.join(repoRoot, 'scripts/bootstrap-sample-agent.ts'),
       '--output-dir',
       bootstrapRoot,
       '--opl-bin',
       oplBin,
+      '--ai-reviewer-evaluation',
+      reviewerEvaluationPath,
     ], oplBin);
     assert.equal(bootstrap.status, 0, bootstrap.stderr);
 

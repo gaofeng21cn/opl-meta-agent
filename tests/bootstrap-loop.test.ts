@@ -13,8 +13,38 @@ function readJson(filePath: string): JsonObject {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
+function writeAiReviewerEvaluation(filePath: string, overrides: JsonObject = {}): JsonObject {
+  const evaluation = {
+    reviewer_kind: 'ai_reviewer',
+    model_or_provider: 'gpt-5.5',
+    run_ref: 'run:ai-reviewer/opl-meta-agent/sample-brief-agent/baseline',
+    critique: 'The baseline is structurally valid but needs explicit source coverage and operator handoff evidence.',
+    suggestions: [
+      'Add source coverage checks to the baseline delivery scorecard.',
+      'Require operator handoff evidence before signing the baseline receipt.',
+    ],
+    source_refs: [
+      'review-ref:opl-meta-agent/sample-brief-agent/ai-reviewer',
+      'evidence-ref:sample-brief-agent/scaffold-validation',
+      'scorecard-ref:opl-meta-agent/baseline-acceptance',
+    ],
+    verdict: 'baseline_ready_with_owner_gate',
+    provenance: {
+      artifact_ref: 'artifact-ref:ai-reviewer/sample-brief-agent-baseline',
+      reviewer_prompt_ref: 'agent/prompts/baseline-delivery.md',
+      created_by: 'test-fixture',
+    },
+    ...overrides,
+  };
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(evaluation, null, 2)}\n`);
+  return evaluation;
+}
+
 test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agent Lab', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-loop-'));
+  const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+  const reviewerEvaluation = writeAiReviewerEvaluation(reviewerEvaluationPath);
   const oplBin = process.env.OPL_BIN
     ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
 
@@ -27,6 +57,8 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
         outputRoot,
         '--opl-bin',
         oplBin,
+        '--ai-reviewer-evaluation',
+        reviewerEvaluationPath,
       ],
       {
         cwd: repoRoot,
@@ -63,6 +95,27 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
     assert.equal(payload.learning_loop.mechanism_patch_proposal.authority_boundary.can_write_target_domain_memory_body, false);
     assert.equal(payload.learning_loop.mechanism_patch_proposal.authority_boundary.can_mutate_target_domain_artifact_body, false);
     assert.equal(payload.learning_loop.mechanism_patch_proposal.authority_boundary.can_promote_default_agent_without_gate, false);
+    assert.equal(payload.learning_loop.baseline_receipt.ai_reviewer_evaluation_ref, reviewerEvaluationPath);
+    assert.equal(payload.learning_loop.baseline_receipt.ai_reviewer_review.critique, reviewerEvaluation.critique);
+    assert.deepEqual(payload.learning_loop.baseline_receipt.ai_reviewer_review.suggestions, reviewerEvaluation.suggestions);
+    assert.deepEqual(payload.learning_loop.baseline_receipt.ai_reviewer_evidence.source_refs, reviewerEvaluation.source_refs);
+    assert.equal(payload.learning_loop.baseline_receipt.ai_reviewer_scorecard.verdict, reviewerEvaluation.verdict);
+    assert.equal(
+      payload.learning_loop.baseline_receipt.acceptance_gates.ai_reviewer_critique_present,
+      true,
+    );
+    assert.equal(
+      payload.learning_loop.baseline_receipt.acceptance_gates.ai_reviewer_suggestions_present,
+      true,
+    );
+    assert.equal(
+      payload.learning_loop.baseline_receipt.acceptance_gates.ai_reviewer_source_refs_valid,
+      true,
+    );
+    assert.equal(
+      payload.learning_loop.baseline_receipt.acceptance_gates.ai_reviewer_provenance_present,
+      true,
+    );
 
     const targetDir = path.join(outputRoot, 'sample-brief-agent');
     const suitePath = path.join(outputRoot, 'agent-lab-suite.json');
@@ -81,11 +134,17 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
     assert.equal(suite.suite_id, 'opl-meta-agent-self-bootstrap-suite');
     assert.equal(suite.tasks[0].domain_id, 'opl-meta-agent');
     assert.equal(suite.tasks[0].trajectory.memory_body, undefined);
+    assert.ok(suite.tasks[0].scorecard.evidence_refs.includes(reviewerEvaluationPath));
+    assert.ok(suite.tasks[0].scorecard.review_refs.includes(reviewerEvaluationPath));
+    assert.deepEqual(suite.tasks[0].ai_reviewer_evaluation.source_refs, reviewerEvaluation.source_refs);
 
     const receipt = readJson(receiptPath);
     assert.equal(receipt.receipt_class, 'baseline_delivery_receipt');
     assert.equal(receipt.target_agent.domain_id, 'sample-brief-agent');
     assert.equal(receipt.agent_lab_result_ref, payload.opl_agent_lab.suite_result.result_id);
+    assert.equal(receipt.status, 'baseline_delivered');
+    assert.equal(receipt.ai_reviewer_evaluation_ref, reviewerEvaluationPath);
+    assert.equal(receipt.ai_reviewer_review.critique, reviewerEvaluation.critique);
 
     const learning = readJson(learningPath);
     assert.equal(learning.candidate_kind, 'rubric_gap');
@@ -103,6 +162,74 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
     assert.equal(mechanism.segment_run_ref, payload.opl_agent_lab.suite_result.result_id);
     assert.equal(mechanism.evidence_delta_ref, 'evidence-delta:opl-meta-agent/sample-brief-agent/baseline');
     assert.equal(mechanism.next_mechanism_candidate_ref, learning.candidate_id);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
+test('baseline delivery fails closed when AI reviewer evaluation is missing', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-loop-missing-reviewer-'));
+  const oplBin = process.env.OPL_BIN
+    ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
+
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [
+        path.join(repoRoot, 'scripts/bootstrap-sample-agent.ts'),
+        '--output-dir',
+        outputRoot,
+        '--opl-bin',
+        oplBin,
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        maxBuffer: 16 * 1024 * 1024,
+      },
+    );
+
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /ai reviewer evaluation/i);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'baseline-delivery-receipt.json')), false);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
+test('baseline delivery rejects empty AI reviewer critique and suggestions without signing receipt', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-loop-empty-reviewer-'));
+  const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+  writeAiReviewerEvaluation(reviewerEvaluationPath, {
+    critique: ' ',
+    suggestions: [],
+  });
+  const oplBin = process.env.OPL_BIN
+    ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
+
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [
+        path.join(repoRoot, 'scripts/bootstrap-sample-agent.ts'),
+        '--output-dir',
+        outputRoot,
+        '--opl-bin',
+        oplBin,
+        '--ai-reviewer-evaluation',
+        reviewerEvaluationPath,
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        maxBuffer: 16 * 1024 * 1024,
+      },
+    );
+
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /critique/i);
+    assert.match(result.stderr, /suggestions/i);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'baseline-delivery-receipt.json')), false);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }

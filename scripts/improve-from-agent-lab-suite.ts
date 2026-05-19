@@ -10,13 +10,17 @@ import {
   readDomainPackSummary,
 } from './lib/domain-pack.ts';
 import {
+  type AiReviewerEvaluation,
   type LearningCandidate,
   type OwnerReceipt,
   type SuiteResult,
   type TargetAgent,
+  aiReviewerAcceptanceGates,
+  aiReviewerReceiptFields,
   buildLearningCandidate,
   buildMechanismPatchProposal,
   buildOwnerReceipt,
+  loadAiReviewerEvaluation,
   readJson,
   readTargetAgent,
   resolveOplBin,
@@ -33,6 +37,7 @@ type ImproveArgs = {
   outputDir: string;
   feedbackRef: string | null;
   oplBin: string;
+  aiReviewerEvaluationPath: string;
 };
 
 type PatchTraceabilityEntry = JsonObject & {
@@ -42,6 +47,8 @@ type PatchTraceabilityEntry = JsonObject & {
   editable_surface_refs: string[];
   target_repo_file_hints: string[];
   required_verification_refs: string[];
+  ai_reviewer_suggestions: string[];
+  ai_reviewer_source_refs: string[];
 };
 
 type CapabilityCandidate = JsonObject & {
@@ -184,12 +191,14 @@ function parseArgs(argv: string[]): ImproveArgs {
     outputDir: string | null;
     feedbackRef: string | null;
     oplBin: string;
+    aiReviewerEvaluationPath: string | null;
   } = {
     suitePath: null,
     targetAgentDir: null,
     outputDir: null,
     feedbackRef: null,
     oplBin: resolveOplBin(),
+    aiReviewerEvaluationPath: null,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -227,6 +236,14 @@ function parseArgs(argv: string[]): ImproveArgs {
       index += 1;
       continue;
     }
+    if (token === '--ai-reviewer-evaluation') {
+      if (!value) {
+        throw new Error('Missing value for --ai-reviewer-evaluation.');
+      }
+      parsed.aiReviewerEvaluationPath = path.resolve(value);
+      index += 1;
+      continue;
+    }
     if (token === '--opl-bin') {
       if (!value) {
         throw new Error('Missing value for --opl-bin.');
@@ -250,6 +267,11 @@ function parseArgs(argv: string[]): ImproveArgs {
   if (!fs.existsSync(parsed.targetAgentDir)) {
     throw new Error(`Target agent path does not exist: ${parsed.targetAgentDir}`);
   }
+  if (!parsed.aiReviewerEvaluationPath) {
+    throw new Error(
+      'Missing required --ai-reviewer-evaluation <path>; external-suite improvement fails closed without structured AI reviewer evaluation.',
+    );
+  }
 
   parsed.outputDir ??= fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-external-suite-'));
   return {
@@ -258,6 +280,7 @@ function parseArgs(argv: string[]): ImproveArgs {
     outputDir: parsed.outputDir,
     feedbackRef: parsed.feedbackRef,
     oplBin: parsed.oplBin,
+    aiReviewerEvaluationPath: parsed.aiReviewerEvaluationPath,
   };
 }
 
@@ -284,8 +307,35 @@ function arrayOfStrings(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item) => typeof item === 'string') : [];
 }
 
-function inferProposedChangeRefs({ suite, suiteRefs }: { suite: JsonObject; suiteRefs: string[] }): string[] {
-  const combined = suiteRefs.join('\n').toLowerCase();
+function textMatchesToken(text: string, token: string): boolean {
+  const normalizedText = text.toLowerCase();
+  const normalizedToken = token.toLowerCase();
+  if (normalizedText.includes(normalizedToken)) {
+    return true;
+  }
+  const tokenWords = normalizedToken.split(/[-_]/).filter((word) => word.length > 2);
+  return tokenWords.length > 0 && tokenWords.every((word) => normalizedText.includes(word));
+}
+
+function reviewerEvidenceText(aiReviewerEvaluation: AiReviewerEvaluation): string[] {
+  return [
+    aiReviewerEvaluation.critique,
+    ...aiReviewerEvaluation.suggestions,
+    ...aiReviewerEvaluation.source_refs,
+    aiReviewerEvaluation.verdict,
+  ];
+}
+
+function inferProposedChangeRefs({
+  suite,
+  suiteRefs,
+  aiReviewerEvaluation,
+}: {
+  suite: JsonObject;
+  suiteRefs: string[];
+  aiReviewerEvaluation: AiReviewerEvaluation;
+}): string[] {
+  const combined = [...suiteRefs, ...reviewerEvidenceText(aiReviewerEvaluation)].join('\n').toLowerCase();
   const inferred = new Set<string>();
   if (
     String(suite.suite_id || '').includes('medical-manuscript')
@@ -311,26 +361,34 @@ function buildPatchTraceabilityMatrix({
   targetAgent,
   suiteRefs,
   proposedChangeRefs,
+  aiReviewerEvaluation,
 }: {
   targetAgent: TargetAgent;
   suiteRefs: string[];
   proposedChangeRefs: string[];
+  aiReviewerEvaluation: AiReviewerEvaluation;
 }): PatchTraceabilityEntry[] {
-  const combined = suiteRefs.join('\n').toLowerCase();
-  const sourceFailureRefs = suiteRefs.filter((ref) =>
+  const combined = [...suiteRefs, ...reviewerEvidenceText(aiReviewerEvaluation)].join('\n').toLowerCase();
+  const sourceFailureRefs = [...suiteRefs, ...aiReviewerEvaluation.source_refs].filter((ref) =>
     ref.includes('rubric-gap:')
     || ref.includes('metric-ref:')
     || ref.includes('quality-scorecard:')
+    || ref.includes('publication_eval')
+    || ref.includes('review_ledger')
   );
   const matrix = [];
   for (const mapping of MAS_MEDICAL_MANUSCRIPT_CHANGE_REFS) {
-    if (!combined.includes(mapping.token)) {
+    if (!textMatchesToken(combined, mapping.token)) {
       continue;
     }
     const requiredPatchRefs = mapping.refs.filter((ref: string) => proposedChangeRefs.includes(ref));
+    const reviewerSuggestions = aiReviewerEvaluation.suggestions.filter((suggestion) =>
+      textMatchesToken(suggestion, mapping.token)
+    );
+    const reviewerSourceRefs = aiReviewerEvaluation.source_refs.filter((ref) => textMatchesToken(ref, mapping.token));
     matrix.push({
       gap_token: mapping.token,
-      source_failure_refs: sourceFailureRefs.filter((ref) => ref.toLowerCase().includes(mapping.token)),
+      source_failure_refs: sourceFailureRefs.filter((ref) => textMatchesToken(ref, mapping.token)),
       required_patch_refs: requiredPatchRefs,
       editable_surface_refs: surfaceRefsForPatchRefs(requiredPatchRefs),
       target_repo_file_hints: fileHintsForPatchRefs({
@@ -342,6 +400,8 @@ function buildPatchTraceabilityMatrix({
         'no_target_domain_truth_write_proof',
         'developer_patch_receipt',
       ],
+      ai_reviewer_suggestions: reviewerSuggestions,
+      ai_reviewer_source_refs: reviewerSourceRefs,
     });
   }
   return matrix;
@@ -379,6 +439,8 @@ function buildCapabilityCandidate({
   feedbackRef,
   patchTraceabilityMatrix,
   domainPackSummary,
+  aiReviewerEvaluation,
+  aiReviewerEvaluationRef,
 }: {
   targetAgent: TargetAgent;
   suite: JsonObject;
@@ -389,6 +451,8 @@ function buildCapabilityCandidate({
   feedbackRef: string | null;
   patchTraceabilityMatrix: PatchTraceabilityEntry[];
   domainPackSummary: DomainPackSummary;
+  aiReviewerEvaluation: AiReviewerEvaluation;
+  aiReviewerEvaluationRef: string;
 }): CapabilityCandidate {
   return {
     surface_kind: 'opl_meta_agent_target_agent_capability_improvement_candidate',
@@ -416,13 +480,14 @@ function buildCapabilityCandidate({
       suite_passed: suiteResult.status === 'passed',
     },
     feedback_ref: feedbackRef,
+    ...aiReviewerReceiptFields(aiReviewerEvaluation, aiReviewerEvaluationRef),
     improvement_area: 'high_quality_medical_manuscript_first_draft_capability',
     failure_taxonomy_refs: suiteRefs.filter((ref) =>
       ref.includes('rubric-gap:')
       || ref.includes('metric-ref:')
       || ref.includes('quality-scorecard:')
       || ref.includes('repair-ref:')
-    ),
+    ).concat(aiReviewerEvaluation.source_refs),
     proposed_change_refs: proposedChangeRefs,
     patch_traceability_matrix: patchTraceabilityMatrix,
     traceability_status: patchTraceabilityMatrix.length
@@ -482,6 +547,10 @@ function buildDeveloperPatchWorkOrder({
     source_agent_lab_result_ref: suiteResult.result_id,
     target_capability_improvement_candidate_ref: capabilityCandidate.candidate_id,
     owner_receipt_ref: receipt.receipt_id,
+    ai_reviewer_evaluation_ref: capabilityCandidate.ai_reviewer_evaluation_ref,
+    ai_reviewer_review: capabilityCandidate.ai_reviewer_review,
+    ai_reviewer_evidence: capabilityCandidate.ai_reviewer_evidence,
+    review_provenance: capabilityCandidate.review_provenance,
     required_patch_surfaces: capabilityCandidate.target_editable_surface_refs,
     proposed_change_refs: capabilityCandidate.proposed_change_refs,
     patch_traceability_matrix: capabilityCandidate.patch_traceability_matrix,
@@ -582,9 +651,12 @@ function buildDeveloperPatchWorkOrder({
 }
 
 function main() {
-  const { suitePath, targetAgentDir, outputDir, feedbackRef, oplBin } = parseArgs(process.argv.slice(2));
+  const { suitePath, targetAgentDir, outputDir, feedbackRef, oplBin, aiReviewerEvaluationPath } = parseArgs(
+    process.argv.slice(2),
+  );
   fs.mkdirSync(outputDir, { recursive: true });
   const domainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
+  const aiReviewerEvaluation = loadAiReviewerEvaluation(aiReviewerEvaluationPath);
 
   const suite = readJson(suitePath);
   const targetAgent = readTargetAgent(targetAgentDir, {
@@ -599,11 +671,12 @@ function main() {
   const agentLabRun = runOpl(oplBin, ['agent-lab', 'run', '--suite', suitePath, '--json']);
   const suiteResult = agentLabRun.agent_lab_run.suite_result as SuiteResult;
   const suiteRefs = collectSuiteRefs(suite);
-  const proposedChangeRefs = inferProposedChangeRefs({ suite, suiteRefs });
+  const proposedChangeRefs = inferProposedChangeRefs({ suite, suiteRefs, aiReviewerEvaluation });
   const patchTraceabilityMatrix = buildPatchTraceabilityMatrix({
     targetAgent,
     suiteRefs,
     proposedChangeRefs,
+    aiReviewerEvaluation,
   });
 
   const receipt: OwnerReceipt = {
@@ -621,8 +694,10 @@ function main() {
         target_quality_authority_preserved: true,
         target_artifact_authority_preserved: true,
         target_memory_authority_preserved: true,
+        ...aiReviewerAcceptanceGates(),
       },
     }),
+    ...aiReviewerReceiptFields(aiReviewerEvaluation, aiReviewerEvaluationPath),
     ...domainPackReceiptFields(domainPackSummary),
     source_domain_pack: domainPackSummary,
   };
@@ -649,9 +724,12 @@ function main() {
       'target_agent_regression_suite_ref',
     ],
     evidenceDeltaRef: `evidence-delta:opl-meta-agent/${targetAgent.domain_id}/external-agent-lab-suite`,
-    observeRefs: [suitePath, ...EXTERNAL_LEARNING_REFS],
-    diagnoseRefs: suiteRefs,
-    editRefs: proposedChangeRefs,
+    observeRefs: [suitePath, aiReviewerEvaluationPath, ...EXTERNAL_LEARNING_REFS],
+    diagnoseRefs: [...suiteRefs, ...aiReviewerEvaluation.source_refs],
+    editRefs: [
+      ...proposedChangeRefs,
+      ...aiReviewerEvaluation.suggestions.map((suggestion) => `ai-reviewer-suggestion:${suggestion}`),
+    ],
   });
   const capabilityCandidate = buildCapabilityCandidate({
     targetAgent,
@@ -663,6 +741,8 @@ function main() {
     feedbackRef,
     patchTraceabilityMatrix,
     domainPackSummary,
+    aiReviewerEvaluation,
+    aiReviewerEvaluationRef: aiReviewerEvaluationPath,
   });
   const developerPatchWorkOrder = buildDeveloperPatchWorkOrder({
     targetAgent,
