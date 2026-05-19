@@ -1,0 +1,69 @@
+{
+  "surface_kind": "meta_agent_authority_function_refs",
+  "schema_version": 1,
+  "domain_id": "opl-meta-agent",
+  "owner": "opl-meta-agent",
+  "role": "refs_only_minimal_authority_functions",
+  "not_generic_runtime_owner": true,
+  "opl_runtime_owner": "one-person-lab",
+  "functions": [
+    {
+      "function_id": "candidate_agent_package_builder",
+      "classification": "minimal_authority_function",
+      "authority_ref": "authority-function-ref:opl-meta-agent/candidate-agent-package-builder",
+      "implementation_refs": [
+        "scripts/bootstrap-sample-agent.mjs",
+        "scripts/lib/meta-agent-loop.mjs"
+      ],
+      "invoked_by_refs": [
+        "action-ref:build-agent-baseline"
+      ],
+      "output_refs": [
+        "candidate_agent_package_ref",
+        "owner_receipt_ref"
+      ],
+      "boundary": {
+        "refs_only": true,
+        "can_own_agent_building_semantics": true,
+        "can_claim_generic_runtime_owner": false,
+        "can_write_target_domain_truth": false,
+        "can_write_target_memory_body": false,
+        "can_authorize_target_quality_or_export": false
+      }
+    },
+    {
+      "function_id": "mechanism_patch_proposal_authorizer",
+      "classification": "minimal_authority_function",
+      "authority_ref": "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer",
+      "implementation_refs": [
+        "scripts/lib/meta-agent-loop.mjs"
+      ],
+      "invoked_by_refs": [
+        "action-ref:generate-mechanism-patch-proposal"
+      ],
+      "output_refs": [
+        "mechanism_patch_proposal_ref",
+        "owner_receipt_ref"
+      ],
+      "boundary": {
+        "refs_only": true,
+        "can_own_agent_building_semantics": true,
+        "can_claim_generic_runtime_owner": false,
+        "can_write_target_domain_truth": false,
+        "can_write_target_memory_body": false,
+        "can_authorize_target_quality_or_export": false
+      }
+    }
+  ],
+  "forbidden_roles": [
+    "generic_scheduler_owner",
+    "generic_daemon_owner",
+    "generic_queue_owner",
+    "generic_attempt_ledger_owner",
+    "generic_state_machine_runner_owner",
+    "generic_cli_mcp_product_wrapper_owner",
+    "generic_sidecar_owner",
+    "generic_session_store_owner",
+    "generic_status_workbench_owner"
+  ]
+}

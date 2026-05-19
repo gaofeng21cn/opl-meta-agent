@@ -86,14 +86,20 @@
       "module_id": "candidate_agent_package_builder",
       "classification": "minimal_authority_function",
       "owner": "opl-meta-agent",
-      "code_paths": [
+      "authority_function_ref": "authority-function-ref:opl-meta-agent/candidate-agent-package-builder",
+      "authority_function_contract_ref": "runtime/authority_functions/meta-agent-authority-functions.json",
+      "implementation_refs": [
         "scripts/bootstrap-sample-agent.mjs",
         "scripts/lib/meta-agent-loop.mjs"
+      ],
+      "code_paths": [
+        "runtime/authority_functions/meta-agent-authority-functions.json"
       ],
       "active_callers": [
         "build-agent-baseline action"
       ],
       "active_caller_status": "domain_authority_active",
+      "role_scope": "refs_only_minimal_authority_function_not_generic_runtime_owner",
       "cannot_absorb_reason": "OPL can generate the generic scaffold and interface bundle, but opl-meta-agent owns target-agent construction semantics and owner receipts."
     },
     {
@@ -117,13 +123,19 @@
       "module_id": "mechanism_patch_proposal_authorizer",
       "classification": "minimal_authority_function",
       "owner": "opl-meta-agent",
-      "code_paths": [
+      "authority_function_ref": "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer",
+      "authority_function_contract_ref": "runtime/authority_functions/meta-agent-authority-functions.json",
+      "implementation_refs": [
         "scripts/lib/meta-agent-loop.mjs"
+      ],
+      "code_paths": [
+        "runtime/authority_functions/meta-agent-authority-functions.json"
       ],
       "active_callers": [
         "generate-mechanism-patch-proposal action"
       ],
       "active_caller_status": "domain_authority_active",
+      "role_scope": "refs_only_minimal_authority_function_not_generic_runtime_owner",
       "cannot_absorb_reason": "OPL cannot decide the agent-building mechanism semantics or sign proposal-only owner receipts."
     }
   ],

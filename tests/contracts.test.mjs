@@ -60,8 +60,9 @@ test('domain pack files and stage prompt refs resolve to usable repo files', () 
   const generatedSurfaceHandoff = readJson('contracts/generated_surface_handoff.json');
 
   assert.equal(packCompilerInput.domain_pack_owner, 'opl-meta-agent');
-  assert.equal(packCompilerInput.domain_pack_root, 'agent');
-  assert.equal(generatedSurfaceHandoff.domain_pack_root, 'agent');
+  assert.equal(packCompilerInput.canonical_semantic_pack_root, 'agent/');
+  assert.equal(packCompilerInput.canonical_semantic_pack_role, 'repo_source_declarative_meta_agent_pack');
+  assert.equal(generatedSurfaceHandoff.canonical_semantic_pack_root, 'agent/');
   assert.equal(generatedSurfaceHandoff.domain_pack_role, 'domain_truth_prompt_skill_stage_quality_refs_only');
   assert.equal(
     generatedSurfaceHandoff.generated_interface_role,
@@ -70,8 +71,12 @@ test('domain pack files and stage prompt refs resolve to usable repo files', () 
   assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('domain_pack_paths_exist_and_are_non_empty'));
   assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('stage_prompt_refs_resolve_to_domain_pack_files'));
 
-  const actualDomainPackPaths = listMarkdownFiles('agent');
+  const actualDomainPackPaths = listMarkdownFiles('agent')
+    .filter((relativePath) => !relativePath.endsWith('/README.md'));
   assert.deepEqual(packCompilerInput.required_domain_pack_paths, actualDomainPackPaths);
+  assert.equal(packCompilerInput.required_domain_pack_paths.some((relativePath) => (
+    relativePath.endsWith('/README.md')
+  )), false);
   packCompilerInput.required_domain_pack_paths.forEach(assertUsablePackFile);
 
   const stageRefSpecs = [
@@ -208,13 +213,72 @@ test('OPL owns generated interface surfaces for opl-meta-agent contract pack', (
   const privatePolicy = readJson('contracts/private_functional_surface_policy.json');
 
   assert.equal(packCompilerInput.generated_surface_owner, 'one-person-lab');
-  assert.equal(packCompilerInput.domain_pack_root, 'agent');
+  assert.equal(packCompilerInput.canonical_semantic_pack_root, 'agent/');
   assert.equal(packCompilerInput.domain_repo_can_own_generated_surface, false);
   assert.equal(generatedSurfaceHandoff.generated_surface_owner, 'one-person-lab');
-  assert.equal(generatedSurfaceHandoff.domain_pack_root, 'agent');
+  assert.equal(generatedSurfaceHandoff.canonical_semantic_pack_root, 'agent/');
   assert.equal(generatedSurfaceHandoff.domain_repo_can_own_generated_surface, false);
   assert.equal(privatePolicy.default_posture, 'forbidden_until_classified_and_receipted');
   assert.ok(privatePolicy.forbidden_private_surface_classes.includes('generic_cli_mcp_product_wrapper'));
+});
+
+test('minimal authority functions are explicit refs, not generic runtime owners', () => {
+  const audit = readJson('contracts/functional_privatization_audit.json');
+  const authorityFunctions = readJson('runtime/authority_functions/meta-agent-authority-functions.json');
+
+  assert.equal(authorityFunctions.surface_kind, 'meta_agent_authority_function_refs');
+  assert.equal(authorityFunctions.role, 'refs_only_minimal_authority_functions');
+  assert.equal(authorityFunctions.not_generic_runtime_owner, true);
+  assert.equal(authorityFunctions.opl_runtime_owner, 'one-person-lab');
+  assert.ok(authorityFunctions.forbidden_roles.includes('generic_scheduler_owner'));
+  assert.ok(authorityFunctions.forbidden_roles.includes('generic_cli_mcp_product_wrapper_owner'));
+
+  const expectedAuthorityFunctions = [
+    {
+      moduleId: 'candidate_agent_package_builder',
+      authorityRef: 'authority-function-ref:opl-meta-agent/candidate-agent-package-builder',
+      implementationRefs: [
+        'scripts/bootstrap-sample-agent.mjs',
+        'scripts/lib/meta-agent-loop.mjs',
+      ],
+      invokedByRefs: ['action-ref:build-agent-baseline'],
+    },
+    {
+      moduleId: 'mechanism_patch_proposal_authorizer',
+      authorityRef: 'authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer',
+      implementationRefs: [
+        'scripts/lib/meta-agent-loop.mjs',
+      ],
+      invokedByRefs: ['action-ref:generate-mechanism-patch-proposal'],
+    },
+  ];
+
+  expectedAuthorityFunctions.forEach((expected) => {
+    const functionRef = authorityFunctions.functions.find((entry) => entry.function_id === expected.moduleId);
+    assert.ok(functionRef, `${expected.moduleId} should have an authority function ref`);
+    assert.equal(functionRef.classification, 'minimal_authority_function');
+    assert.equal(functionRef.authority_ref, expected.authorityRef);
+    assert.deepEqual(functionRef.implementation_refs, expected.implementationRefs);
+    assert.deepEqual(functionRef.invoked_by_refs, expected.invokedByRefs);
+    assert.equal(functionRef.boundary.refs_only, true);
+    assert.equal(functionRef.boundary.can_claim_generic_runtime_owner, false);
+    assert.equal(functionRef.boundary.can_write_target_domain_truth, false);
+    functionRef.implementation_refs.forEach((relativePath) => {
+      assert.equal(fs.existsSync(path.join(repoRoot, relativePath)), true, `${relativePath} should exist`);
+    });
+
+    const auditModule = audit.modules.find((entry) => entry.module_id === expected.moduleId);
+    assert.ok(auditModule, `${expected.moduleId} should be represented in functional privatization audit`);
+    assert.equal(auditModule.classification, 'minimal_authority_function');
+    assert.equal(auditModule.authority_function_ref, expected.authorityRef);
+    assert.equal(
+      auditModule.authority_function_contract_ref,
+      'runtime/authority_functions/meta-agent-authority-functions.json',
+    );
+    assert.deepEqual(auditModule.implementation_refs, expected.implementationRefs);
+    assert.deepEqual(auditModule.code_paths, ['runtime/authority_functions/meta-agent-authority-functions.json']);
+    assert.equal(auditModule.role_scope, 'refs_only_minimal_authority_function_not_generic_runtime_owner');
+  });
 });
 
 test('tracked contract, test, and docs surfaces do not carry placeholder markers', () => {

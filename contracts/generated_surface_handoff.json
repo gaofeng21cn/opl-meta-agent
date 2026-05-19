@@ -5,7 +5,6 @@
   "generated_surface_owner": "one-person-lab",
   "domain_repo_can_own_generated_surface": false,
   "source_contract_ref": "contracts/pack_compiler_input.json",
-  "domain_pack_root": "agent",
   "domain_pack_role": "domain_truth_prompt_skill_stage_quality_refs_only",
   "generated_interface_role": "invoke_and_project_without_domain_authority_escalation",
   "generated_surfaces": [
@@ -60,5 +59,6 @@
     "minimal_authority_function_refs",
     "no_forbidden_write_evidence"
   ],
-  "marker": "generated_by_opl_standard_domain_agent_scaffold_v1"
+  "marker": "generated_by_opl_standard_domain_agent_scaffold_v1",
+  "canonical_semantic_pack_root": "agent/"
 }

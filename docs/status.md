@@ -5,7 +5,7 @@
 已落地：
 
 - 标准目录：`agent/`、`contracts/`、`runtime/`、`docs/`。
-- 可验证 domain pack：`agent/knowledge/`、`agent/prompts/`、`agent/quality_gates/`、`agent/skills/`、`agent/stages/` 下的 README 与分项文件均为当前合同列出的真实 pack 文件；测试会检查这些文件存在、非空、无占位。
+- 可验证 domain pack：`agent/knowledge/`、`agent/prompts/`、`agent/quality_gates/`、`agent/skills/`、`agent/stages/` 下的分项语义文件均为当前合同列出的真实 pack 文件；README 只作为人读入口，不作为 `required_domain_pack_paths`。测试会检查这些 required files 存在、非空、无占位。
 - 合同：descriptor、stage control plane、action catalog、memory descriptor、artifact locator、owner receipt、functional privatization audit。
 - OPL generated interface 合同：pack compiler input、generated surface handoff、private functional surface policy。
 - `stage_control_plane` 路径解析：当前每个 stage 的 prompt、skill、knowledge、evaluation refs 都指向 repo-tracked `agent/prompts/*.md`、`agent/skills/*.md`、`agent/knowledge/*.md`、`agent/quality_gates/*.md` 文件；测试会确认每个 locator 指向真实文件。

@@ -3,14 +3,11 @@
   "schema_version": 1,
   "domain_id": "opl-meta-agent",
   "domain_pack_owner": "opl-meta-agent",
-  "domain_pack_root": "agent",
   "generated_surface_owner": "one-person-lab",
   "required_domain_pack_paths": [
-    "agent/knowledge/README.md",
     "agent/knowledge/opl-boundary-policy.md",
     "agent/knowledge/project-maturity-signals.md",
     "agent/knowledge/transferable-agent-practices.md",
-    "agent/prompts/README.md",
     "agent/prompts/agent-skeleton-build.md",
     "agent/prompts/baseline-delivery.md",
     "agent/prompts/baseline-run.md",
@@ -21,16 +18,13 @@
     "agent/prompts/optimizer-iteration.md",
     "agent/prompts/stage-decomposition.md",
     "agent/prompts/web-experience-research.md",
-    "agent/quality_gates/README.md",
     "agent/quality_gates/baseline-delivery.md",
     "agent/quality_gates/external-suite-self-evolution.md",
     "agent/quality_gates/mechanism-patch-adoption.md",
     "agent/quality_gates/takeover.md",
-    "agent/skills/README.md",
     "agent/skills/agent-baseline-build.md",
     "agent/skills/external-suite-improvement.md",
     "agent/skills/opl-meta-agent-domain-skill.md",
-    "agent/stages/README.md",
     "agent/stages/agent-skeleton-build.md",
     "agent/stages/baseline-delivery.md",
     "agent/stages/baseline-run.md",
@@ -85,5 +79,7 @@
     "generated_interface_can_authorize_quality_or_export": false,
     "domain_can_claim_generated_surface_owner": false
   },
-  "marker": "generated_by_opl_standard_domain_agent_scaffold_v1"
+  "marker": "generated_by_opl_standard_domain_agent_scaffold_v1",
+  "canonical_semantic_pack_root": "agent/",
+  "canonical_semantic_pack_role": "repo_source_declarative_meta_agent_pack"
 }
