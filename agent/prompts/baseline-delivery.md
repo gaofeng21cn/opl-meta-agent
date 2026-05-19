@@ -9,6 +9,7 @@
 - scaffold validation passed ref。
 - generated interface bundle ref。
 - Agent Lab baseline suite result passed ref。
+- 结构化 AI reviewer evaluation ref/path，必须包含 reviewer_kind、model_or_provider、run_ref、critique、suggestions、source_refs、verdict 和 provenance。
 - baseline delivery quality gate ref。
 - candidate package locator、operator runbook ref 和 owner boundary receipt ref。
 
@@ -16,10 +17,11 @@
 
 1. 读取 candidate package 的 domain descriptor、stage control plane、action catalog、memory descriptor、artifact locator 和 owner receipt schema。
 2. 确认 `agent/` pack 文件、contracts、tests 和 runbook 在 package 中齐全且非空。
-3. 对照 baseline delivery gate 检查 scaffold validation、generated interface、Agent Lab evidence、forbidden writes 和 rollback path。
-4. 签发 baseline delivery receipt，声明版本、artifact refs、open risks、owner review gate 和 adoption boundary。
-5. 记录 promotion gate 状态；未通过 owner review 时保持 candidate/baseline-ready，不提升为 default agent。
-6. 输出 operator handoff refs 和后续 optimizer/online-learning candidate refs。
+3. 校验 AI reviewer evaluation：critique 和 suggestions 不能为空，source_refs 不能只有 suite/scaffold refs，provenance 必须可追溯。
+4. 对照 baseline delivery gate 检查 scaffold validation、generated interface、Agent Lab evidence、AI reviewer critique/suggestions/source refs、forbidden writes 和 rollback path。
+5. 签发 baseline delivery receipt，声明版本、artifact refs、review provenance、open risks、owner review gate 和 adoption boundary。
+6. 记录 promotion gate 状态；未通过 owner review 时保持 candidate/baseline-ready，不提升为 default agent。
+7. 输出 operator handoff refs 和后续 optimizer/online-learning candidate refs。
 
 ## 输出
 
@@ -33,12 +35,14 @@
 
 - package 可被 OPL scaffold validation 和 generated interface projection 消费。
 - delivery receipt 的证据链覆盖 stage/action/memory/artifact/gate refs。
+- delivery receipt 必须引用 AI reviewer critique、suggestions、source refs 和 provenance。
 - operator runbook 可执行，并指向真实验证命令与 artifact locator。
 - default promotion 需要独立 owner gate。
 
 ## 禁止事项
 
 - 禁止在 gate 证据缺失时签发 delivery receipt。
+- 禁止在 AI reviewer evaluation 缺失、critique/suggestions 为空或 source refs 只有 suite/scaffold refs 时签发 delivery receipt。
 - 禁止把 baseline-ready 写成 production default。
 - 禁止把本仓的交付 receipt 写成 target domain quality verdict。
 - 禁止把 runtime artifact 或本机路径固化进长期 contracts。

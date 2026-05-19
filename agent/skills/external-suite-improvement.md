@@ -10,16 +10,18 @@
 - `target-agent-dir`
 - `output_dir`
 - `opl_bin`
+- `ai_reviewer_evaluation`
 - 可选 `feedback_ref`
 
 ## 流程
 
-1. 读取 suite result、rubric gaps、trajectory refs 和 receipts。
-2. 分类 failure，并建立 patch traceability matrix。
-3. 判断可编辑面：source、tests、docs、prompt policy、skill policy、stage policy、suite policy 或 quality gate policy。
-4. 在 target owner gate 允许时执行最小源码/测试/文档补丁。
-5. 运行目标 agent 验证和 Agent Lab regression。
-6. 写入 developer patch work order、target version receipt、online-learning candidate 和 mechanism patch proposal。
+1. 读取 suite result、rubric gaps、trajectory refs、receipts 和结构化 AI reviewer evaluation。
+2. 校验 AI reviewer critique、suggestions、source refs 和 provenance；缺失或为空时 fail closed。
+3. 分类 failure，并把 AI reviewer suggestions 映射进 patch traceability matrix。
+4. 判断可编辑面：source、tests、docs、prompt policy、skill policy、stage policy、suite policy 或 quality gate policy。
+5. 在 target owner gate 允许时执行最小源码/测试/文档补丁。
+6. 运行目标 agent 验证和 Agent Lab regression。
+7. 写入 developer patch work order、target version receipt、online-learning candidate 和 mechanism patch proposal。
 
 ## 输出
 
@@ -32,6 +34,7 @@
 ## 质量门槛
 
 - 每个 patch 都追溯到 suite failure 或 owner feedback。
+- 每个 AI reviewer suggestion 都保留 source refs/provenance，并映射到 developer work order 或明确说明不产生 patch。
 - receipt 证明目标 domain truth、memory body、artifact body、quality verdict 未被写入。
 - 修复被目标 runtime/read-model 消费，而不仅是源码测试通过。
 

@@ -201,8 +201,12 @@ test('opl-meta-agent stage plan covers research, build, eval, optimization, deli
 test('action catalog and owner receipts forbid target-domain authority writes', () => {
   const actionCatalog = readJson('contracts/action_catalog.json');
   const ownerReceipt = readJson('contracts/owner_receipt_contract.json');
+  const packageJson = readJson('package.json');
 
   assert.equal(actionCatalog.version, 'family-action-catalog.v1');
+  assert.match(packageJson.scripts['bootstrap:sample'], /--experimental-strip-types/);
+  assert.match(packageJson.scripts['improve:external-suite'], /--experimental-strip-types/);
+  assert.match(packageJson.scripts['takeover:test'], /--experimental-strip-types/);
   const actions = asObjects(actionCatalog.actions);
   assert.ok(actions.some((action) => action.action_id === 'build-agent-baseline'));
   const takeoverAction = actions.find((action) => action.action_id === 'takeover-external-agent-test');
@@ -222,6 +226,10 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   assert.equal(externalSuiteAction.authority_boundary.can_modify_target_agent_tests, true);
   assert.equal(externalSuiteAction.authority_boundary.can_modify_target_agent_docs, true);
   assert.equal(externalSuiteAction.authority_boundary.can_authorize_target_domain_quality_or_export, false);
+  assert.ok(externalSuiteAction.workspace_locator_fields.includes('ai_reviewer_evaluation'));
+  const baselineAction = actions.find((action) => action.action_id === 'build-agent-baseline');
+  assert.ok(baselineAction);
+  assert.ok(baselineAction.workspace_locator_fields.includes('ai_reviewer_evaluation'));
   const mechanismAction = actions.find((action) => action.action_id === 'generate-mechanism-patch-proposal');
   assert.ok(mechanismAction);
   assert.deepEqual(mechanismAction.workspace_locator_fields, [
@@ -243,6 +251,13 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   assert.ok(ownerReceipt.testing_takeover_acceptance_gates.includes('mechanism_patch_proposal_recorded'));
   assert.ok(ownerReceipt.testing_takeover_acceptance_gates.includes('no_memory_body_written'));
   assert.ok(ownerReceipt.testing_takeover_acceptance_gates.includes('no_default_promotion'));
+  assert.ok(ownerReceipt.baseline_acceptance_gates.includes('ai_reviewer_critique_present'));
+  assert.ok(ownerReceipt.baseline_acceptance_gates.includes('ai_reviewer_suggestions_present'));
+  assert.ok(ownerReceipt.baseline_acceptance_gates.includes('ai_reviewer_source_refs_valid'));
+  assert.ok(ownerReceipt.baseline_acceptance_gates.includes('ai_reviewer_provenance_present'));
+  assert.ok(ownerReceipt.testing_takeover_acceptance_gates.includes('ai_reviewer_critique_present'));
+  assert.ok(ownerReceipt.testing_takeover_acceptance_gates.includes('ai_reviewer_suggestions_present'));
+  assert.ok(ownerReceipt.testing_takeover_acceptance_gates.includes('ai_reviewer_source_refs_valid'));
 });
 
 test('OPL owns generated interface surfaces for opl-meta-agent contract pack', () => {

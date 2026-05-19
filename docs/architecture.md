@@ -41,7 +41,7 @@ CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framewo
 1. `agent-skeleton-build`：调用 OPL `agents scaffold` 生成 `sample-brief-agent`。
 2. `eval-suite-build`：写入 `agent-lab-suite.json`，只包含 refs、recovery probes、scorecard refs 和 promotion gate。
 3. `baseline-run`：调用 OPL `agent-lab run --suite`，由 OPL Agent Lab 返回 suite result。
-4. `baseline-delivery`：写入 `baseline-delivery-receipt.json`，只声明 baseline package refs 和 acceptance gates。
+4. `baseline-delivery`：消费结构化 AI reviewer evaluation，写入 `baseline-delivery-receipt.json`，只声明 baseline package refs、review provenance 和 acceptance gates；缺 reviewer evaluation、空 critique/suggestions 或 source refs 只有 suite/scaffold refs 时 fail closed。
 5. `online-learning`：写入 `online-learning-candidate.json` 与 `mechanism-patch-proposal.json`，候选保持 gated，不自动推广默认 agent、不训练或部署模型权重。
 
 自举闭环还会调用 `opl agents interfaces --repo-dir <sample-agent>`，证明由 `OPL Meta Agent` 生成的目标智能体也能被 OPL 统一投影出 CLI / MCP / Skill / product-entry 接口包。
@@ -49,6 +49,8 @@ CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framewo
 ## External Agent Testing Takeover
 
 `external-agent-takeover` 读取目标 agent repo/package 的 descriptor/contracts，生成 `agent_lab_external_suite`，调用 OPL `agent-lab run`，再写入 `testing_takeover_self_evolution_receipt`、gated online-learning candidate 和 mechanism patch proposal。
+
+`improve-from-external-agent-lab-suite` 读取目标 domain 的 Agent Lab suite/result，并消费与 baseline delivery 相同 schema 的 AI reviewer evaluation。reviewer critique、suggestions、source refs 和 provenance 会进入 target capability improvement candidate、developer patch work order 和 mechanism patch proposal refs；可识别 suggestion 会映射到 `patch_traceability_matrix` 的 required patch refs、editable surfaces 和 target repo file hints。
 
 该 takeover 只覆盖测试接管和候选生成。target domain truth、quality verdict、artifact body、memory body、默认 agent promotion authority 继续由目标 domain owner 持有；receipt 和 candidate 必须显式声明 `can_write_target_domain_memory_body=false`、`can_promote_default_agent_without_gate=false`。
 

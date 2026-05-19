@@ -34,7 +34,11 @@
     "recovery_probes_passed",
     "no_forbidden_write_proof_passed",
     "domain_authority_boundary_explicit",
-    "operator_runbook_present"
+    "operator_runbook_present",
+    "ai_reviewer_critique_present",
+    "ai_reviewer_suggestions_present",
+    "ai_reviewer_source_refs_valid",
+    "ai_reviewer_provenance_present"
   ],
   "testing_takeover_acceptance_gates": [
     "descriptor_valid",
@@ -50,6 +54,10 @@
     "target_domain_truth_authority_preserved",
     "target_quality_authority_preserved",
     "target_artifact_authority_preserved",
-    "target_memory_authority_preserved"
+    "target_memory_authority_preserved",
+    "ai_reviewer_critique_present",
+    "ai_reviewer_suggestions_present",
+    "ai_reviewer_source_refs_valid",
+    "ai_reviewer_provenance_present"
   ]
 }

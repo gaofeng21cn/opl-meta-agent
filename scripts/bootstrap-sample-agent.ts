@@ -11,14 +11,18 @@ import {
   writeMinimalAgentDomainPack,
 } from './lib/domain-pack.ts';
 import {
+  type AiReviewerEvaluation,
   type LearningCandidate,
   type OwnerReceipt,
   type SuiteResult,
   type TargetAgent,
+  aiReviewerAcceptanceGates,
+  aiReviewerReceiptFields,
   buildAgentLabSuite as buildExternalSuite,
   buildLearningCandidate as buildGatedLearningCandidate,
   buildMechanismPatchProposal,
   buildOwnerReceipt,
+  loadAiReviewerEvaluation,
   resolveOplBin,
   runOpl,
   writeJson,
@@ -29,15 +33,18 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'
 type BootstrapArgs = {
   outputDir: string;
   oplBin: string;
+  aiReviewerEvaluationPath: string;
 };
 
 function parseArgs(argv: string[]): BootstrapArgs {
   const parsed: {
     outputDir: string | null;
     oplBin: string;
+    aiReviewerEvaluationPath: string | null;
   } = {
     outputDir: null,
     oplBin: resolveOplBin(),
+    aiReviewerEvaluationPath: null,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -59,17 +66,39 @@ function parseArgs(argv: string[]): BootstrapArgs {
       index += 1;
       continue;
     }
+    if (token === '--ai-reviewer-evaluation') {
+      if (!value) {
+        throw new Error('Missing value for --ai-reviewer-evaluation.');
+      }
+      parsed.aiReviewerEvaluationPath = path.resolve(value);
+      index += 1;
+      continue;
+    }
     throw new Error(`Unknown argument: ${token}.`);
   }
 
+  if (!parsed.aiReviewerEvaluationPath) {
+    throw new Error(
+      'Missing required --ai-reviewer-evaluation <path>; baseline delivery fails closed without structured AI reviewer evaluation.',
+    );
+  }
   parsed.outputDir ??= fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-bootstrap-'));
   return {
     outputDir: parsed.outputDir,
     oplBin: parsed.oplBin,
+    aiReviewerEvaluationPath: parsed.aiReviewerEvaluationPath,
   };
 }
 
-function buildAgentLabSuite(targetAgentDir: string): JsonObject {
+function buildAgentLabSuite({
+  targetAgentDir,
+  aiReviewerEvaluation,
+  aiReviewerEvaluationRef,
+}: {
+  targetAgentDir: string;
+  aiReviewerEvaluation: AiReviewerEvaluation;
+  aiReviewerEvaluationRef: string;
+}): JsonObject {
   return buildExternalSuite({
     suiteId: 'opl-meta-agent-self-bootstrap-suite',
     taskId: 'agent-lab-task:opl-meta-agent/sample-brief-agent-baseline',
@@ -100,6 +129,8 @@ function buildAgentLabSuite(targetAgentDir: string): JsonObject {
     improvementTargetRef: 'quality-gate:opl-meta-agent/baseline-owner',
     promotionGateRef: 'promotion-gate:opl-meta-agent/sample-brief-agent',
     regressionSuiteRefs: ['regression-suite:opl-meta-agent/self-bootstrap'],
+    aiReviewerEvaluation,
+    aiReviewerEvaluationRef,
   });
 }
 
@@ -244,6 +275,8 @@ function buildBaselineReceipt(
   scaffoldValidation: JsonObject,
   domainPackSummary: DomainPackSummary,
   targetDomainPackSummary: DomainPackSummary,
+  aiReviewerEvaluation: AiReviewerEvaluation,
+  aiReviewerEvaluationRef: string,
 ): OwnerReceipt {
   const receipt = {
     ...buildOwnerReceipt({
@@ -254,10 +287,12 @@ function buildBaselineReceipt(
       extraAcceptanceGates: {
         direct_and_hosted_path_declared: true,
         operator_runbook_present: true,
+        ...aiReviewerAcceptanceGates(),
       },
     }),
     target_agent: targetAgent,
     scaffold_validation_status: scaffoldValidation.standard_domain_agent_scaffold.validation.status,
+    ...aiReviewerReceiptFields(aiReviewerEvaluation, aiReviewerEvaluationRef),
     ...domainPackReceiptFields(domainPackSummary),
     source_domain_pack: domainPackSummary,
     target_agent_domain_pack: targetDomainPackSummary,
@@ -281,6 +316,8 @@ function buildBaselineMechanismPatchProposal(
   suiteResult: SuiteResult,
   baselineReceipt: OwnerReceipt,
   learningCandidate: LearningCandidate,
+  aiReviewerEvaluation: AiReviewerEvaluation,
+  aiReviewerEvaluationRef: string,
 ): JsonObject {
   return buildMechanismPatchProposal({
     suiteResult,
@@ -295,13 +332,17 @@ function buildBaselineMechanismPatchProposal(
       'agent_lab_suite_policy_ref',
     ],
     evidenceDeltaRef: 'evidence-delta:opl-meta-agent/sample-brief-agent/baseline',
+    observeRefs: [aiReviewerEvaluationRef],
+    diagnoseRefs: aiReviewerEvaluation.source_refs,
+    editRefs: aiReviewerEvaluation.suggestions.map((suggestion) => `ai-reviewer-suggestion:${suggestion}`),
   });
 }
 
 function main() {
-  const { outputDir, oplBin } = parseArgs(process.argv.slice(2));
+  const { outputDir, oplBin, aiReviewerEvaluationPath } = parseArgs(process.argv.slice(2));
   fs.mkdirSync(outputDir, { recursive: true });
   const domainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
+  const aiReviewerEvaluation = loadAiReviewerEvaluation(aiReviewerEvaluationPath);
 
   const targetAgent: TargetAgent = {
     domain_id: 'sample-brief-agent',
@@ -347,7 +388,11 @@ function main() {
     '--json',
   ]);
 
-  const suite = buildAgentLabSuite(targetAgentDir);
+  const suite = buildAgentLabSuite({
+    targetAgentDir,
+    aiReviewerEvaluation,
+    aiReviewerEvaluationRef: aiReviewerEvaluationPath,
+  });
   writeJson(suitePath, suite);
   const agentLabRun = runOpl(oplBin, ['agent-lab', 'run', '--suite', suitePath, '--json']);
   const suiteResult = agentLabRun.agent_lab_run.suite_result as SuiteResult;
@@ -358,9 +403,17 @@ function main() {
     scaffoldValidation,
     domainPackSummary,
     targetDomainPackSummary,
+    aiReviewerEvaluation,
+    aiReviewerEvaluationPath,
   );
   const learningCandidate = buildLearningCandidate(suiteResult, baselineReceipt);
-  const mechanismPatchProposal = buildBaselineMechanismPatchProposal(suiteResult, baselineReceipt, learningCandidate);
+  const mechanismPatchProposal = buildBaselineMechanismPatchProposal(
+    suiteResult,
+    baselineReceipt,
+    learningCandidate,
+    aiReviewerEvaluation,
+    aiReviewerEvaluationPath,
+  );
   writeJson(receiptPath, baselineReceipt);
   writeJson(learningPath, learningCandidate);
   writeJson(mechanismPath, mechanismPatchProposal);

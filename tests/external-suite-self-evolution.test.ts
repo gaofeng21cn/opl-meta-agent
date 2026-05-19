@@ -20,6 +20,36 @@ function readJson(filePath: string): JsonObject {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
+function writeAiReviewerEvaluation(filePath: string, overrides: JsonObject = {}): JsonObject {
+  const evaluation = {
+    reviewer_kind: 'ai_reviewer',
+    model_or_provider: 'gpt-5.5',
+    run_ref: 'run:ai-reviewer/mas/002/high-quality-medical-manuscript',
+    critique: 'The blocked suite shows reporting gaps in HDL harmonization, model reproducibility, and internal quality-control language.',
+    suggestions: [
+      'Map HDL unit harmonization to the prediction model quality contract and pre-draft reporting stage policy.',
+      'Add reproducibility checks for model methods and baseline survival outputs.',
+      'Purge internal-quality language from manuscript writing prompts and reviewer rubrics.',
+    ],
+    source_refs: [
+      'artifacts/publication_eval/latest.json',
+      'paper/review/review_ledger.json',
+      'rubric-gap:mas/002/hdl-harmonization-and-sensitivity',
+      'rubric-gap:mas/002/internal-quality-language-purge',
+    ],
+    verdict: 'blocked_requires_developer_patch',
+    provenance: {
+      artifact_ref: 'artifact-ref:ai-reviewer/mas/002/high-quality-medical-manuscript',
+      reviewer_prompt_ref: 'instructions:mas/high-quality-medical-manuscript-ai-reviewer',
+      created_by: 'test-fixture',
+    },
+    ...overrides,
+  };
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(evaluation, null, 2)}\n`);
+  return evaluation;
+}
+
 function buildBlockedMedicalManuscriptSuite(suitePath: string): JsonObject {
   return {
     suite_id: 'mas-agent-lab-suite:002-dm-china-us-mortality-attribution:high-quality-medical-manuscript',
@@ -130,6 +160,8 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     });
     const suitePath = path.join(outputRoot, 'medical-manuscript-quality-suite.json');
     writeJson(suitePath, buildBlockedMedicalManuscriptSuite(suitePath));
+    const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+    const reviewerEvaluation = writeAiReviewerEvaluation(reviewerEvaluationPath);
 
     const result = spawnSync(
       process.execPath,
@@ -143,6 +175,8 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
         outputRoot,
         '--feedback-ref',
         'manual-review:gpt-5.5/high-quality-medical-paper-style',
+        '--ai-reviewer-evaluation',
+        reviewerEvaluationPath,
         '--opl-bin',
         oplBin,
       ],
@@ -167,6 +201,11 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     const candidate = payload.learning_loop.target_capability_improvement_candidate;
     assert.equal(candidate.status, 'candidate_recorded_requires_target_owner_gate');
     assert.equal(candidate.feedback_ref, 'manual-review:gpt-5.5/high-quality-medical-paper-style');
+    assert.equal(candidate.ai_reviewer_evaluation_ref, reviewerEvaluationPath);
+    assert.equal(candidate.ai_reviewer_review.critique, reviewerEvaluation.critique);
+    assert.deepEqual(candidate.ai_reviewer_review.suggestions, reviewerEvaluation.suggestions);
+    assert.deepEqual(candidate.ai_reviewer_evidence.source_refs, reviewerEvaluation.source_refs);
+    assert.equal(candidate.review_provenance.run_ref, reviewerEvaluation.run_ref);
     assert.ok(candidate.proposed_change_refs.includes('quality_contract_ref:prediction_model_first_draft_quality'));
     assert.ok(candidate.proposed_change_refs.includes('skill_ref:medical-research-write'));
     assert.ok(candidate.proposed_change_refs.includes('rubric_ref:ai_reviewer/high_quality_medical_manuscript'));
@@ -201,26 +240,46 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
         'src/med_autoscience/policies/medical_reporting_checklist.py',
       ),
     );
+    assert.ok(
+      hdlTrace.ai_reviewer_suggestions.includes(
+        'Map HDL unit harmonization to the prediction model quality contract and pre-draft reporting stage policy.',
+      ),
+    );
+    assert.ok(hdlTrace.ai_reviewer_source_refs.includes('rubric-gap:mas/002/hdl-harmonization-and-sensitivity'));
 
     const mechanism = readJson(payload.artifacts.mechanism_patch_proposal_path);
     assert.equal(mechanism.surface_kind, 'opl_meta_agent_mechanism_patch_proposal');
     assert.equal(mechanism.authority_boundary.can_mutate_target_domain_artifact_body, false);
     assert.ok(mechanism.editable_surfaces.includes('target_agent_stage_policy_ref'));
     assert.ok(mechanism.edit.proposed_change_refs.includes('quality_contract_ref:prediction_model_first_draft_quality'));
+    assert.ok(mechanism.observe.source_refs.includes(reviewerEvaluationPath));
+    assert.ok(mechanism.diagnose.source_refs.includes('artifacts/publication_eval/latest.json'));
 
     const receipt = readJson(payload.artifacts.meta_agent_improvement_receipt_path);
     assert.equal(receipt.receipt_class, 'external_suite_quality_failure_self_evolution_receipt');
     assert.equal(receipt.acceptance_gates.target_domain_truth_authority_preserved, true);
+    assert.equal(receipt.acceptance_gates.ai_reviewer_critique_present, true);
+    assert.equal(receipt.acceptance_gates.ai_reviewer_suggestions_present, true);
+    assert.equal(receipt.acceptance_gates.ai_reviewer_source_refs_valid, true);
 
     const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
     assert.equal(workOrder.surface_kind, 'opl_meta_agent_developer_patch_work_order');
     assert.equal(workOrder.status, 'ready_for_target_agent_source_patch');
+    assert.equal(workOrder.ai_reviewer_evaluation_ref, reviewerEvaluationPath);
+    assert.deepEqual(workOrder.ai_reviewer_review.suggestions, reviewerEvaluation.suggestions);
     assert.equal(workOrder.version_management.absorb_back_required, true);
     assert.equal(workOrder.version_management.temporary_worktree_cleanup_required, true);
     assert.equal(workOrder.authority_boundary.can_modify_target_agent_source_repo, true);
     assert.equal(workOrder.authority_boundary.can_write_target_domain_truth, false);
     assert.ok(
       (workOrder.patch_traceability_matrix as JsonObject[]).some((item) => item.gap_token === 'internal-quality-language-purge'),
+    );
+    assert.ok(
+      (workOrder.patch_traceability_matrix as JsonObject[]).some((item) =>
+        item.ai_reviewer_suggestions.includes(
+          'Purge internal-quality language from manuscript writing prompts and reviewer rubrics.',
+        )
+      ),
     );
     assert.equal(workOrder.implementation_controls.patch_must_be_limited_to_traceable_surfaces, true);
     assert.equal(workOrder.implementation_controls.developer_patch_receipt_required, true);
@@ -286,6 +345,47 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     );
     assert.equal(workOrder.target_workspace_environment_verification.can_write_target_domain_truth, false);
     assert.ok(workOrder.implementation_controls.forbidden_target_paths_or_surfaces.includes('publication_eval/latest.json'));
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
+test('external suite improvement fails closed when AI reviewer evaluation is missing', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-external-suite-missing-reviewer-'));
+  try {
+    const targetAgentDir = path.join(outputRoot, 'med-autoscience');
+    writeJson(path.join(targetAgentDir, 'contracts/domain_descriptor.json'), {
+      domain_id: 'med-autoscience',
+      domain_label: 'MedAutoScience',
+      delivery_domain: 'medical_research',
+    });
+    const suitePath = path.join(outputRoot, 'medical-manuscript-quality-suite.json');
+    writeJson(suitePath, buildBlockedMedicalManuscriptSuite(suitePath));
+
+    const result = spawnSync(
+      process.execPath,
+      [
+        path.join(repoRoot, 'scripts/improve-from-agent-lab-suite.ts'),
+        '--suite',
+        suitePath,
+        '--target-agent-dir',
+        targetAgentDir,
+        '--output-dir',
+        outputRoot,
+        '--opl-bin',
+        oplBin,
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        maxBuffer: 16 * 1024 * 1024,
+      },
+    );
+
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /ai reviewer evaluation/i);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'developer-patch-work-order.json')), false);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'meta-agent-improvement-receipt.json')), false);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }

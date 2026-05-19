@@ -21,25 +21,26 @@
     {
       "action_id": "build-agent-baseline",
       "title": "Build Agent Baseline",
-      "summary": "Generate an OPL-compatible candidate agent package, validate its standard scaffold, run an Agent Lab baseline suite, and emit baseline delivery and learning refs.",
+      "summary": "Generate an OPL-compatible candidate agent package, validate its standard scaffold, run an Agent Lab baseline suite, consume a structured AI reviewer evaluation, and emit baseline delivery and learning refs.",
       "owner": "opl-meta-agent",
       "effect": "mutating",
       "source_command": {
-        "command": "npm run bootstrap:sample -- --output-dir <output_dir> --opl-bin <opl_bin>",
+        "command": "npm run bootstrap:sample -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation>",
         "surface_kind": "domain_smoke_cli"
       },
       "input_schema_ref": "contracts/schemas/build-agent-baseline.input.schema.json",
       "output_schema_ref": "contracts/schemas/build-agent-baseline.output.schema.json",
       "workspace_locator_fields": [
         "output_dir",
-        "opl_bin"
+        "opl_bin",
+        "ai_reviewer_evaluation"
       ],
       "human_gate_ids": [
         "baseline_delivery_owner_review"
       ],
       "supported_surfaces": {
         "cli": {
-          "command": "npm run bootstrap:sample -- --output-dir <output_dir> --opl-bin <opl_bin>",
+          "command": "npm run bootstrap:sample -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation>",
           "surface_kind": "domain_smoke_cli"
         },
         "mcp": {
@@ -54,7 +55,7 @@
         },
         "product_entry": {
           "action_key": "build-agent-baseline",
-          "command": "npm run bootstrap:sample -- --output-dir <output_dir> --opl-bin <opl_bin>",
+          "command": "npm run bootstrap:sample -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation>",
           "surface_kind": "domain_product_entry_action"
         },
         "openai": {
@@ -132,11 +133,11 @@
     {
       "action_id": "improve-from-external-agent-lab-suite",
       "title": "Improve From External Agent Lab Suite",
-      "summary": "Consume a target-domain Agent Lab suite result, create a versioned developer patch work order, and drive target-agent source changes while preserving target truth and quality authority.",
+      "summary": "Consume a target-domain Agent Lab suite result and the same structured AI reviewer evaluation, create a versioned developer patch work order, and drive target-agent source changes while preserving target truth and quality authority.",
       "owner": "opl-meta-agent",
       "effect": "mutating",
       "source_command": {
-        "command": "npm run improve:external-suite -- --suite <suite_path> --target-agent-dir <agent_dir> --output-dir <output_dir> --opl-bin <opl_bin>",
+        "command": "npm run improve:external-suite -- --suite <suite_path> --target-agent-dir <agent_dir> --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation>",
         "surface_kind": "domain_smoke_cli"
       },
       "input_schema_ref": "contracts/schemas/improve-from-external-agent-lab-suite.input.schema.json",
@@ -146,7 +147,8 @@
         "agent_dir",
         "output_dir",
         "opl_bin",
-        "feedback_ref"
+        "feedback_ref",
+        "ai_reviewer_evaluation"
       ],
       "human_gate_ids": [
         "external_suite_self_evolution_owner_review",
@@ -155,7 +157,7 @@
       ],
       "supported_surfaces": {
         "cli": {
-          "command": "npm run improve:external-suite -- --suite <suite_path> --target-agent-dir <agent_dir> --output-dir <output_dir> --opl-bin <opl_bin>",
+          "command": "npm run improve:external-suite -- --suite <suite_path> --target-agent-dir <agent_dir> --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation>",
           "surface_kind": "domain_smoke_cli"
         },
         "mcp": {
@@ -170,7 +172,7 @@
         },
         "product_entry": {
           "action_key": "improve-from-external-agent-lab-suite",
-          "command": "npm run improve:external-suite -- --suite <suite_path> --target-agent-dir <agent_dir> --output-dir <output_dir> --opl-bin <opl_bin>",
+          "command": "npm run improve:external-suite -- --suite <suite_path> --target-agent-dir <agent_dir> --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation>",
           "surface_kind": "domain_product_entry_action"
         },
         "openai": {

@@ -37,6 +37,17 @@ export type LearningCandidate = JsonObject & {
   promotion_gate_ref: string;
 };
 
+export type AiReviewerEvaluation = JsonObject & {
+  reviewer_kind: string;
+  model_or_provider: string;
+  run_ref: string;
+  critique: string;
+  suggestions: string[];
+  source_refs: string[];
+  verdict: string;
+  provenance: JsonObject;
+};
+
 type AgentLabSuiteOptions = {
   suiteId: string;
   taskId: string;
@@ -62,6 +73,8 @@ type AgentLabSuiteOptions = {
   improvementTargetRef: string;
   promotionGateRef: string;
   regressionSuiteRefs: string[];
+  aiReviewerEvaluation?: AiReviewerEvaluation;
+  aiReviewerEvaluationRef?: string;
 };
 
 type OwnerReceiptOptions = {
@@ -136,6 +149,106 @@ export function readJson(filePath: string): JsonObject {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
+function nonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function nonEmptyStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.length > 0 && value.every(nonEmptyString);
+}
+
+function suiteOrScaffoldOnlyRef(ref: string): boolean {
+  const normalized = ref.toLowerCase();
+  return normalized.includes('suite') || normalized.includes('scaffold');
+}
+
+export function validateAiReviewerEvaluation(
+  payload: JsonObject,
+  sourceRef: string,
+): AiReviewerEvaluation {
+  const errors: string[] = [];
+  for (const field of ['reviewer_kind', 'model_or_provider', 'run_ref', 'critique', 'verdict']) {
+    if (!nonEmptyString(payload[field])) {
+      errors.push(`${field} must be a non-empty string`);
+    }
+  }
+  if (!nonEmptyStringArray(payload.suggestions)) {
+    errors.push('suggestions must be a non-empty string array');
+  }
+  if (!nonEmptyStringArray(payload.source_refs)) {
+    errors.push('source_refs must be a non-empty string array');
+  } else if ((payload.source_refs as string[]).every(suiteOrScaffoldOnlyRef)) {
+    errors.push('source_refs must include reviewer evidence beyond suite/scaffold refs');
+  }
+  if (!payload.provenance || typeof payload.provenance !== 'object' || Array.isArray(payload.provenance)) {
+    errors.push('provenance must be a non-empty object');
+  } else if (Object.keys(payload.provenance).length === 0) {
+    errors.push('provenance must be a non-empty object');
+  }
+
+  if (errors.length > 0) {
+    throw new Error(`Invalid AI reviewer evaluation ${sourceRef}: ${errors.join('; ')}`);
+  }
+
+  return {
+    ...payload,
+    reviewer_kind: payload.reviewer_kind.trim(),
+    model_or_provider: payload.model_or_provider.trim(),
+    run_ref: payload.run_ref.trim(),
+    critique: payload.critique.trim(),
+    suggestions: (payload.suggestions as string[]).map((suggestion) => suggestion.trim()),
+    source_refs: (payload.source_refs as string[]).map((ref) => ref.trim()),
+    verdict: payload.verdict.trim(),
+    provenance: payload.provenance,
+  };
+}
+
+export function loadAiReviewerEvaluation(filePath: string): AiReviewerEvaluation {
+  const resolvedPath = path.resolve(filePath);
+  if (!fs.existsSync(resolvedPath)) {
+    throw new Error(`AI reviewer evaluation path does not exist: ${resolvedPath}`);
+  }
+  return validateAiReviewerEvaluation(readJson(resolvedPath), resolvedPath);
+}
+
+export function aiReviewerReceiptFields(
+  aiReviewerEvaluation: AiReviewerEvaluation,
+  aiReviewerEvaluationRef: string,
+): JsonObject {
+  return {
+    ai_reviewer_evaluation_ref: aiReviewerEvaluationRef,
+    ai_reviewer_review: {
+      reviewer_kind: aiReviewerEvaluation.reviewer_kind,
+      model_or_provider: aiReviewerEvaluation.model_or_provider,
+      run_ref: aiReviewerEvaluation.run_ref,
+      critique: aiReviewerEvaluation.critique,
+      suggestions: aiReviewerEvaluation.suggestions,
+    },
+    ai_reviewer_evidence: {
+      source_refs: aiReviewerEvaluation.source_refs,
+    },
+    ai_reviewer_scorecard: {
+      verdict: aiReviewerEvaluation.verdict,
+    },
+    review_provenance: {
+      reviewer_kind: aiReviewerEvaluation.reviewer_kind,
+      model_or_provider: aiReviewerEvaluation.model_or_provider,
+      run_ref: aiReviewerEvaluation.run_ref,
+      ...aiReviewerEvaluation.provenance,
+    },
+  };
+}
+
+export function aiReviewerAcceptanceGates(): JsonObject {
+  return {
+    ai_reviewer_evaluation_present: true,
+    ai_reviewer_critique_present: true,
+    ai_reviewer_suggestions_present: true,
+    ai_reviewer_source_refs_valid: true,
+    ai_reviewer_provenance_present: true,
+  };
+}
+
 export function readTargetAgent(targetAgentDir: string, fallback: Partial<TargetAgent> = {}): TargetAgent {
   const descriptorPath = path.join(targetAgentDir, 'contracts', 'domain_descriptor.json');
   const descriptor = fs.existsSync(descriptorPath) ? readJson(descriptorPath) : null;
@@ -175,7 +288,12 @@ export function buildAgentLabSuite({
   improvementTargetRef,
   promotionGateRef,
   regressionSuiteRefs,
+  aiReviewerEvaluation,
+  aiReviewerEvaluationRef,
 }: AgentLabSuiteOptions): JsonObject {
+  const reviewerEvidenceRefs = aiReviewerEvaluation && aiReviewerEvaluationRef
+    ? [aiReviewerEvaluationRef, ...aiReviewerEvaluation.source_refs]
+    : [];
   return {
     suite_id: suiteId,
     suite_kind: 'agent_lab_external_suite',
@@ -236,10 +354,16 @@ export function buildAgentLabSuite({
           opl_scorecard_role: 'scorecard_ref_projection_only',
           passed: true,
           metric_refs: metricRefs,
-          evidence_refs: evidenceRefs,
-          review_refs: reviewRefs,
+          evidence_refs: [...evidenceRefs, ...reviewerEvidenceRefs],
+          review_refs: [...reviewRefs, ...(aiReviewerEvaluationRef ? [aiReviewerEvaluationRef] : [])],
           quality_gate_refs: qualityGateRefs,
         },
+        ...(aiReviewerEvaluation && aiReviewerEvaluationRef
+          ? {
+              ai_reviewer_evaluation_ref: aiReviewerEvaluationRef,
+              ai_reviewer_evaluation: aiReviewerEvaluation,
+            }
+          : {}),
         improvement_candidate: {
           candidate_ref: improvementCandidateRef,
           candidate_kind: improvementCandidateKind,
