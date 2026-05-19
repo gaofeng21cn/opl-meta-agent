@@ -20,6 +20,11 @@
     "review_repair_transport",
     "functional_privatization_audit_read_model"
   ],
+  "registration_projection_evidence_contract_refs": {
+    "opl_domain_manifest_registration_ref": "contracts/opl_domain_manifest_registration.json",
+    "app_workbench_projection_ref": "contracts/app_workbench_projection.json",
+    "real_target_agent_scaleout_evidence_ref": "contracts/real_target_agent_scaleout_evidence.json"
+  },
   "domain_allowed_roles": [
     "domain_truth",
     "domain_transition_spec",
@@ -137,6 +142,50 @@
       "active_caller_status": "domain_authority_active",
       "role_scope": "refs_only_minimal_authority_function_not_generic_runtime_owner",
       "cannot_absorb_reason": "OPL cannot decide the agent-building mechanism semantics or sign proposal-only owner receipts."
+    },
+    {
+      "module_id": "opl_domain_manifest_registration",
+      "classification": "refs_only_domain_adapter",
+      "owner": "opl-meta-agent",
+      "code_paths": [
+        "contracts/opl_domain_manifest_registration.json"
+      ],
+      "active_callers": [
+        "OPL domain registry",
+        "OPL discovery",
+        "OPL generated interface bundle"
+      ],
+      "active_caller_status": "contract_ready",
+      "role_scope": "refs_only_registration_metadata_not_generic_runtime_owner"
+    },
+    {
+      "module_id": "app_workbench_projection",
+      "classification": "refs_only_domain_adapter",
+      "owner": "opl-meta-agent",
+      "code_paths": [
+        "contracts/app_workbench_projection.json"
+      ],
+      "active_callers": [
+        "OPL App workbench",
+        "OPL generated interface bundle"
+      ],
+      "active_caller_status": "refs_only_projection_contract_ready",
+      "role_scope": "refs_status_receipts_candidates_and_blockers_only_not_operator_workbench_owner"
+    },
+    {
+      "module_id": "real_target_agent_scaleout_evidence",
+      "classification": "refs_only_domain_adapter",
+      "owner": "opl-meta-agent",
+      "code_paths": [
+        "contracts/real_target_agent_scaleout_evidence.json"
+      ],
+      "active_callers": [
+        "OPL App workbench",
+        "OPL promotion gate review",
+        "OPL family conformance review"
+      ],
+      "active_caller_status": "contract_ready_no_real_scaleout_claim_yet",
+      "role_scope": "refs_only_scaleout_evidence_gate_not_target_domain_truth_writer"
     }
   ],
   "authority_boundary": {

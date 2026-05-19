@@ -5,48 +5,81 @@
   "generated_surface_owner": "one-person-lab",
   "domain_repo_can_own_generated_surface": false,
   "source_contract_ref": "contracts/pack_compiler_input.json",
+  "registration_contract_ref": "contracts/opl_domain_manifest_registration.json",
+  "app_workbench_projection_ref": "contracts/app_workbench_projection.json",
+  "scaleout_evidence_contract_ref": "contracts/real_target_agent_scaleout_evidence.json",
   "domain_pack_role": "domain_truth_prompt_skill_stage_quality_refs_only",
   "generated_interface_role": "invoke_and_project_without_domain_authority_escalation",
   "generated_surfaces": [
     {
       "surface_id": "cli",
       "owner": "one-person-lab",
+      "target_role": "opl_generated_surface",
+      "status": "descriptor_source_available",
       "source_contract": "contracts/pack_compiler_input.json",
       "domain_policy": "domain_repo_declares_actions_stages_and_authority_receipts_only"
     },
     {
       "surface_id": "mcp",
       "owner": "one-person-lab",
+      "target_role": "opl_generated_surface",
+      "status": "descriptor_source_available",
       "source_contract": "contracts/pack_compiler_input.json",
       "domain_policy": "domain_repo_does_not_handwrite_generic_tool_shell"
     },
     {
+      "surface_id": "skill",
+      "owner": "one-person-lab",
+      "target_role": "opl_generated_surface",
+      "status": "descriptor_source_available",
+      "source_contract": "contracts/pack_compiler_input.json",
+      "domain_policy": "domain_repo_declares_skill_command_contract_refs_only"
+    },
+    {
       "surface_id": "product_entry_manifest",
       "owner": "one-person-lab",
-      "source_contract": "contracts/pack_compiler_input.json",
-      "domain_policy": "domain_repo_declares_product_entry_refs_and_domain_authority_refs"
+      "target_role": "opl_generated_surface",
+      "status": "descriptor_source_available",
+      "source_contract": "contracts/opl_domain_manifest_registration.json",
+      "domain_policy": "domain_repo_declares_registration_product_entry_refs_and_domain_authority_refs"
     },
     {
       "surface_id": "sidecar_export_dispatch",
       "owner": "one-person-lab",
+      "target_role": "opl_generated_surface",
+      "status": "descriptor_source_available",
       "source_contract": "contracts/pack_compiler_input.json",
       "domain_policy": "domain_repo_implements_only_domain_authority_function_targets"
     },
     {
       "surface_id": "status_read_model",
       "owner": "one-person-lab",
+      "target_role": "opl_generated_surface",
+      "status": "descriptor_source_available",
       "source_contract": "contracts/generated_surface_handoff.json",
       "domain_policy": "domain_repo_returns_receipts_refs_and_typed_blockers"
     },
     {
       "surface_id": "workbench_drilldown",
       "owner": "one-person-lab",
-      "source_contract": "contracts/generated_surface_handoff.json",
-      "domain_policy": "domain_repo_does_not_own_generic_operator_workbench"
+      "target_role": "opl_hosted_surface",
+      "status": "descriptor_source_available",
+      "source_contract": "contracts/app_workbench_projection.json",
+      "domain_policy": "domain_repo_supplies_refs_status_receipts_candidates_and_blockers_only"
+    },
+    {
+      "surface_id": "scaleout_evidence_projection",
+      "owner": "one-person-lab",
+      "target_role": "opl_generated_surface",
+      "status": "descriptor_source_available",
+      "source_contract": "contracts/real_target_agent_scaleout_evidence.json",
+      "domain_policy": "domain_repo_supplies_evidence_refs_without_target_domain_authority"
     },
     {
       "surface_id": "functional_harness_cases",
       "owner": "one-person-lab",
+      "target_role": "opl_generated_surface",
+      "status": "descriptor_source_available",
       "source_contract": "contracts/pack_compiler_input.json",
       "domain_policy": "domain_repo_supplies_fixtures_expected_receipts_and_forbidden_write_assertions"
     }
@@ -57,7 +90,10 @@
     "owner_receipt_schema",
     "typed_blocker_schema",
     "minimal_authority_function_refs",
-    "no_forbidden_write_evidence"
+    "no_forbidden_write_evidence",
+    "opl_domain_manifest_registration_contract",
+    "app_workbench_projection_contract",
+    "real_target_agent_scaleout_evidence_contract"
   ],
   "marker": "generated_by_opl_standard_domain_agent_scaffold_v1",
   "canonical_semantic_pack_root": "agent/"

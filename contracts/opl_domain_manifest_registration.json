@@ -1,0 +1,69 @@
+{
+  "surface_kind": "opl_domain_manifest_registration",
+  "schema_version": 1,
+  "domain_id": "opl-meta-agent",
+  "owner": "opl-meta-agent",
+  "registry_owner": "one-person-lab",
+  "registration_status": "contract_ready",
+  "role": "domain_registration_metadata_refs_only",
+  "domain_manifest": {
+    "domain_label": "OPL Meta Agent",
+    "agent_role": "opl_based_foundry_agent",
+    "delivery_domain": "agent_development",
+    "canonical_semantic_pack_root": "agent/",
+    "canonical_semantic_pack_role": "repo_source_declarative_meta_agent_pack",
+    "domain_descriptor_ref": "contracts/domain_descriptor.json",
+    "stage_control_plane_ref": "contracts/stage_control_plane.json",
+    "action_catalog_ref": "contracts/action_catalog.json",
+    "pack_compiler_input_ref": "contracts/pack_compiler_input.json",
+    "generated_surface_handoff_ref": "contracts/generated_surface_handoff.json",
+    "authority_functions_ref": "runtime/authority_functions/meta-agent-authority-functions.json",
+    "owner_receipt_contract_ref": "contracts/owner_receipt_contract.json",
+    "app_workbench_projection_ref": "contracts/app_workbench_projection.json",
+    "scaleout_evidence_contract_ref": "contracts/real_target_agent_scaleout_evidence.json"
+  },
+  "human_doc_refs": [
+    "docs/status.md",
+    "docs/architecture.md",
+    "docs/active/opl-meta-agent-ideal-state-gap-plan.md",
+    "docs/references/opl-meta-agent-ideal-state.md"
+  ],
+  "consumed_by": [
+    "OPL domain registry",
+    "OPL discovery",
+    "OPL generated interface bundle",
+    "OPL App workbench"
+  ],
+  "provided_outputs": [
+    "domain_registration_ref",
+    "domain_descriptor_ref",
+    "stage_control_plane_ref",
+    "action_catalog_ref",
+    "generated_surface_handoff_ref",
+    "app_workbench_projection_ref",
+    "scaleout_evidence_contract_ref"
+  ],
+  "authority_boundary": {
+    "refs_only": true,
+    "not_generic_runtime_owner": true,
+    "registry_owner_is_opl_framework": true,
+    "domain_repo_can_own_generated_surface": false,
+    "domain_repo_can_own_generic_runtime": false,
+    "domain_repo_can_own_generic_scheduler": false,
+    "domain_repo_can_own_generic_queue": false,
+    "domain_repo_can_own_generic_attempt_ledger": false,
+    "domain_repo_can_own_generic_operator_workbench": false,
+    "can_write_target_domain_truth": false,
+    "can_write_target_domain_memory_body": false,
+    "can_mutate_target_domain_artifact_body": false,
+    "can_authorize_target_domain_quality_or_export": false,
+    "can_promote_default_agent_without_gate": false
+  },
+  "forbidden_claims": [
+    "opl_meta_agent_is_opl_framework_builtin_module",
+    "opl_meta_agent_owns_generic_runtime",
+    "opl_meta_agent_owns_operator_workbench",
+    "opl_meta_agent_writes_target_domain_truth",
+    "opl_meta_agent_promotes_target_agent_without_gate"
+  ]
+}

@@ -12,6 +12,11 @@
     "opl_can_authorize_quality_or_export": false,
     "domain_repo_can_own_generated_surface": false
   },
+  "registration_projection_evidence_contract_refs": {
+    "opl_domain_manifest_registration_ref": "contracts/opl_domain_manifest_registration.json",
+    "app_workbench_projection_ref": "contracts/app_workbench_projection.json",
+    "real_target_agent_scaleout_evidence_ref": "contracts/real_target_agent_scaleout_evidence.json"
+  },
   "actions": [
     {
       "action_id": "build-agent-baseline",

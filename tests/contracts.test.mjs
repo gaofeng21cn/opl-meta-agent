@@ -39,6 +39,21 @@ function assertUsablePackFile(relativePath) {
   assert.equal(placeholderPattern.test(content), false, `${relativePath} should not contain placeholder markers`);
 }
 
+function assertRepoRefExists(relativePath) {
+  assert.equal(fs.existsSync(path.join(repoRoot, relativePath)), true, `${relativePath} should exist`);
+}
+
+function assertNoForbiddenAuthority(surface, label) {
+  assert.equal(surface.owner, 'opl-meta-agent', `${label}.owner`);
+  assert.equal(surface.authority_boundary.refs_only, true, `${label} should be refs-only`);
+  assert.equal(surface.authority_boundary.not_generic_runtime_owner, true, `${label} should not own generic runtime`);
+  assert.equal(surface.authority_boundary.can_write_target_domain_truth, false);
+  assert.equal(surface.authority_boundary.can_write_target_domain_memory_body, false);
+  assert.equal(surface.authority_boundary.can_mutate_target_domain_artifact_body, false);
+  assert.equal(surface.authority_boundary.can_authorize_target_domain_quality_or_export, false);
+  assert.equal(surface.authority_boundary.can_promote_default_agent_without_gate, false);
+}
+
 test('opl-meta-agent descriptor keeps OPL runtime authority outside the repo', () => {
   const descriptor = readJson('contracts/domain_descriptor.json');
 
@@ -220,6 +235,133 @@ test('OPL owns generated interface surfaces for opl-meta-agent contract pack', (
   assert.equal(generatedSurfaceHandoff.domain_repo_can_own_generated_surface, false);
   assert.equal(privatePolicy.default_posture, 'forbidden_until_classified_and_receipted');
   assert.ok(privatePolicy.forbidden_private_surface_classes.includes('generic_cli_mcp_product_wrapper'));
+});
+
+test('registration, App workbench projection, and scaleout evidence contracts are consumable refs-only surfaces', () => {
+  const registration = readJson('contracts/opl_domain_manifest_registration.json');
+  const appProjection = readJson('contracts/app_workbench_projection.json');
+  const scaleoutEvidence = readJson('contracts/real_target_agent_scaleout_evidence.json');
+  const generatedSurfaceHandoff = readJson('contracts/generated_surface_handoff.json');
+  const actionCatalog = readJson('contracts/action_catalog.json');
+  const audit = readJson('contracts/functional_privatization_audit.json');
+
+  assert.equal(registration.surface_kind, 'opl_domain_manifest_registration');
+  assert.equal(registration.registry_owner, 'one-person-lab');
+  assert.equal(registration.registration_status, 'contract_ready');
+  assert.equal(registration.role, 'domain_registration_metadata_refs_only');
+  assertNoForbiddenAuthority(registration, 'registration');
+  assert.equal(registration.authority_boundary.registry_owner_is_opl_framework, true);
+  assert.equal(registration.authority_boundary.domain_repo_can_own_generated_surface, false);
+  assert.equal(registration.authority_boundary.domain_repo_can_own_generic_operator_workbench, false);
+  Object.entries(registration.domain_manifest)
+    .filter(([key]) => key.endsWith('_ref'))
+    .map(([, value]) => value)
+    .forEach(assertRepoRefExists);
+
+  assert.equal(appProjection.surface_kind, 'opl_app_workbench_projection_contract');
+  assert.equal(appProjection.projection_owner, 'one-person-lab');
+  assert.equal(appProjection.projection_status, 'contract_ready');
+  assert.equal(appProjection.role, 'refs_status_receipts_candidates_and_blockers_only');
+  assertNoForbiddenAuthority(appProjection, 'appProjection');
+  assert.equal(appProjection.authority_boundary.projection_owner_is_opl_framework, true);
+  assert.equal(appProjection.authority_boundary.domain_repo_can_own_generic_operator_workbench, false);
+  assert.equal(appProjection.workbench_sections.length, 6);
+  assert.equal(
+    appProjection.workbench_sections.some((section) => section.section_id === 'scaleout_evidence'),
+    true,
+  );
+  Object.values(appProjection.source_refs).forEach(assertRepoRefExists);
+
+  assert.equal(scaleoutEvidence.surface_kind, 'real_target_agent_scaleout_evidence_contract');
+  assert.equal(scaleoutEvidence.evidence_status, 'contract_ready_no_real_scaleout_claim_yet');
+  assert.equal(scaleoutEvidence.role, 'refs_only_scaleout_evidence_gate');
+  assertNoForbiddenAuthority(scaleoutEvidence, 'scaleoutEvidence');
+  assert.equal(scaleoutEvidence.authority_boundary.not_target_domain_truth_writer, true);
+  assert.equal(scaleoutEvidence.authority_boundary.can_treat_sample_smoke_as_real_delivery, false);
+  assert.equal(scaleoutEvidence.authority_boundary.can_treat_suite_pass_as_default_promotion, false);
+  assert.deepEqual(
+    scaleoutEvidence.required_evidence_classes.map((entry) => entry.evidence_class),
+    [
+      'real_target_agent_delivery',
+      'blocked_suite_to_developer_work_order',
+      'multi_target_scaleout',
+    ],
+  );
+  Object.values(scaleoutEvidence.source_refs).forEach(assertRepoRefExists);
+
+  [
+    registration,
+    appProjection,
+    scaleoutEvidence,
+  ].forEach((surface) => {
+    surface.human_doc_refs.forEach(assertRepoRefExists);
+  });
+
+  assert.equal(
+    generatedSurfaceHandoff.registration_contract_ref,
+    'contracts/opl_domain_manifest_registration.json',
+  );
+  assert.equal(
+    generatedSurfaceHandoff.app_workbench_projection_ref,
+    'contracts/app_workbench_projection.json',
+  );
+  assert.equal(
+    generatedSurfaceHandoff.scaleout_evidence_contract_ref,
+    'contracts/real_target_agent_scaleout_evidence.json',
+  );
+  assert.equal(
+    generatedSurfaceHandoff.generated_surfaces.some((surface) =>
+      surface.surface_id === 'scaleout_evidence_projection'
+    ),
+    true,
+  );
+  assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('opl_domain_manifest_registration_contract'));
+  assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('app_workbench_projection_contract'));
+  assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('real_target_agent_scaleout_evidence_contract'));
+  assert.deepEqual(actionCatalog.registration_projection_evidence_contract_refs, {
+    opl_domain_manifest_registration_ref: 'contracts/opl_domain_manifest_registration.json',
+    app_workbench_projection_ref: 'contracts/app_workbench_projection.json',
+    real_target_agent_scaleout_evidence_ref: 'contracts/real_target_agent_scaleout_evidence.json',
+  });
+  assert.deepEqual(audit.registration_projection_evidence_contract_refs, {
+    opl_domain_manifest_registration_ref: 'contracts/opl_domain_manifest_registration.json',
+    app_workbench_projection_ref: 'contracts/app_workbench_projection.json',
+    real_target_agent_scaleout_evidence_ref: 'contracts/real_target_agent_scaleout_evidence.json',
+  });
+});
+
+test('registration, projection, and evidence contracts are represented in functional audit', () => {
+  const audit = readJson('contracts/functional_privatization_audit.json');
+  const expectedModules = [
+    {
+      moduleId: 'opl_domain_manifest_registration',
+      classification: 'refs_only_domain_adapter',
+      codePath: 'contracts/opl_domain_manifest_registration.json',
+      roleScope: 'refs_only_registration_metadata_not_generic_runtime_owner',
+    },
+    {
+      moduleId: 'app_workbench_projection',
+      classification: 'refs_only_domain_adapter',
+      codePath: 'contracts/app_workbench_projection.json',
+      roleScope: 'refs_status_receipts_candidates_and_blockers_only_not_operator_workbench_owner',
+    },
+    {
+      moduleId: 'real_target_agent_scaleout_evidence',
+      classification: 'refs_only_domain_adapter',
+      codePath: 'contracts/real_target_agent_scaleout_evidence.json',
+      roleScope: 'refs_only_scaleout_evidence_gate_not_target_domain_truth_writer',
+    },
+  ];
+
+  expectedModules.forEach((expected) => {
+    const module = audit.modules.find((entry) => entry.module_id === expected.moduleId);
+    assert.ok(module, `${expected.moduleId} should be represented in functional audit`);
+    assert.equal(module.owner, 'opl-meta-agent');
+    assert.equal(module.classification, expected.classification);
+    assert.deepEqual(module.code_paths, [expected.codePath]);
+    assert.equal(module.role_scope, expected.roleScope);
+    assertRepoRefExists(expected.codePath);
+  });
 });
 
 test('minimal authority functions are explicit refs, not generic runtime owners', () => {

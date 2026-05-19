@@ -8,6 +8,9 @@
 - 可验证 domain pack：`agent/knowledge/`、`agent/prompts/`、`agent/quality_gates/`、`agent/skills/`、`agent/stages/` 下的分项语义文件均为当前合同列出的真实 pack 文件；README 只作为人读入口，不作为 `required_domain_pack_paths`。测试会检查这些 required files 存在、非空、无占位。
 - 合同：descriptor、stage control plane、action catalog、memory descriptor、artifact locator、owner receipt、functional privatization audit。
 - OPL generated interface 合同：pack compiler input、generated surface handoff、private functional surface policy。
+- OPL domain manifest registration 合同：`contracts/opl_domain_manifest_registration.json` 把 domain descriptor、stage/action contracts、pack compiler input、generated surface handoff、authority function refs、App workbench projection 和 scaleout evidence contract 汇成 refs-only registration surface；OPL domain registry / discovery / generated interface bundle 是消费方，本仓不持有 registry owner 或 generated surface owner。
+- App/workbench projection 合同：`contracts/app_workbench_projection.json` 只投影 target brief、candidate package、Agent Lab result、developer work order、mechanism patch proposal、scaleout evidence 的 refs/status/receipt/blocker；OPL App/workbench 持有展示 shell，本仓不能写 App runtime state、target truth、memory body、artifact body、quality/export verdict 或默认 promotion。
+- Real target agent scaleout evidence 合同：`contracts/real_target_agent_scaleout_evidence.json` 定义真实目标 agent delivery、blocked suite -> developer work order、多目标 scaleout 的必需 refs 和 no-forbidden-write proofs；当前状态是 contract-ready，不把 sample smoke、testing takeover smoke 或 suite pass 写成真实线上交付完成。
 - `stage_control_plane` 路径解析：当前每个 stage 的 prompt、skill、knowledge、evaluation refs 都指向 repo-tracked `agent/prompts/*.md`、`agent/skills/*.md`、`agent/knowledge/*.md`、`agent/quality_gates/*.md` 文件；测试会确认每个 locator 指向真实文件。
 - 九阶段 meta-agent plan：intent intake、web research、stage decomposition、agent skeleton build、eval suite build、baseline run、optimizer iteration、baseline delivery、online learning。
 - 最小 repo-local test：`npm test`。
@@ -16,6 +19,7 @@
 - 外部 Agent Lab suite 自进化入口：`npm run improve:external-suite -- --suite <suite.json> --target-agent-dir <agent-dir> --output-dir <dir> --opl-bin <opl>`；用于把目标 domain 的 blocked suite 转为 developer patch work order、机制补丁、online-learning candidate 和目标 agent capability improvement candidate。`opl-meta-agent` 可以据此作为开发者修改目标 agent 的源码、测试和文档，但不能写目标 domain truth、quality verdict、memory body 或 artifact body。
 - OPL 统一接口投影：`opl agents interfaces --repo-dir <this-repo> --json` 可从本仓 contracts 生成 CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述；本仓不持有私有通用入口包装层。
 - 生成接口权限边界：`pack_compiler_input` 与 `generated_surface_handoff` 明确 domain pack 只供应领域 refs，OPL Framework 生成接口只负责 invoke/project，不写 domain truth、memory body、artifact body、quality/export verdict，也不能由本仓声明 generated surface ownership。
+- Registration / App / evidence handoff：`generated_surface_handoff`、`action_catalog` 和 `functional_privatization_audit` 已引用 domain manifest registration、App workbench projection 与 real target agent scaleout evidence contract，作为后续 OPL registration、product projection 和 evidence review 的稳定消费面。
 - Self-learning loop smoke：生成 `sample-brief-agent`，补齐最小 action/stage domain pack，调用 OPL scaffold validate，调用 `opl agents interfaces --repo-dir <sample-agent>` 生成统一接口包，写入 Agent Lab external suite，通过 `opl agent-lab run --suite` 得到 `passed`，再产出 baseline delivery receipt、gated online-learning candidate 与 `mechanism-patch-proposal.json`。
 - Testing takeover smoke：读取既有 OPL-compatible agent descriptor/contracts，生成 `agent_lab_external_suite`，调用 OPL Agent Lab，通过后产出 `testing_takeover_self_evolution_receipt`、gated self-evolution online-learning candidate 与 `takeover-mechanism-patch-proposal.json`；不写 target memory body，不接管 target domain truth / quality / artifact authority，不无 gate promote default agent。
 - External-suite self-evolution smoke：读取目标 domain 已生成的 Agent Lab suite，调用 OPL Agent Lab，若 suite blocked 则产出 `meta-agent-improvement-receipt.json`、`online-learning-candidate.json`、`mechanism-patch-proposal.json`、`mas-capability-improvement-candidate.json` 与 `developer-patch-work-order.json`；该 work order 管理目标 agent 源码补丁、测试、文档、吸收回主线和临时 worktree 清理要求，同时保持 domain truth / quality / artifact authority 不越权。
@@ -25,6 +29,6 @@
 
 未完成：
 
-- OPL domain manifest registration。
-- App/workbench projection。
+- OPL domain manifest registration 的 OPL registry 侧接入与实测 discovery receipt；本仓 machine contract 已落地。
+- App/workbench projection 的 OPL App 侧实际渲染与 drilldown receipt；本仓 projection contract 已落地。
 - 真实线上目标领域 agent package delivery；当前完成的是可直接运行的 Foundry Agent baseline build、testing takeover、external-suite improvement 和 proposal-only mechanism loop。

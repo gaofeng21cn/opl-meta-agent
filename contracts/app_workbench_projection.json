@@ -1,0 +1,107 @@
+{
+  "surface_kind": "opl_app_workbench_projection_contract",
+  "schema_version": 1,
+  "domain_id": "opl-meta-agent",
+  "owner": "opl-meta-agent",
+  "projection_owner": "one-person-lab",
+  "projection_status": "contract_ready",
+  "role": "refs_status_receipts_candidates_and_blockers_only",
+  "source_refs": {
+    "domain_manifest_registration_ref": "contracts/opl_domain_manifest_registration.json",
+    "domain_descriptor_ref": "contracts/domain_descriptor.json",
+    "stage_control_plane_ref": "contracts/stage_control_plane.json",
+    "action_catalog_ref": "contracts/action_catalog.json",
+    "owner_receipt_contract_ref": "contracts/owner_receipt_contract.json",
+    "scaleout_evidence_contract_ref": "contracts/real_target_agent_scaleout_evidence.json"
+  },
+  "human_doc_refs": [
+    "docs/status.md",
+    "docs/architecture.md",
+    "docs/active/opl-meta-agent-ideal-state-gap-plan.md",
+    "docs/references/opl-meta-agent-ideal-state.md"
+  ],
+  "workbench_sections": [
+    {
+      "section_id": "target_brief",
+      "projection_fields": [
+        "intent_brief_ref",
+        "research_brief_ref",
+        "target_agent_boundary_ref",
+        "baseline_acceptance_policy_ref"
+      ],
+      "write_boundary": "display_refs_only"
+    },
+    {
+      "section_id": "candidate_package",
+      "projection_fields": [
+        "candidate_agent_package_ref",
+        "pack_validation_ref",
+        "generated_interface_bundle_ref",
+        "baseline_delivery_receipt_ref"
+      ],
+      "write_boundary": "display_refs_only"
+    },
+    {
+      "section_id": "agent_lab_results",
+      "projection_fields": [
+        "agent_lab_suite_ref",
+        "agent_lab_result_ref",
+        "scorecard_ref",
+        "recovery_probe_refs",
+        "typed_blocker_refs"
+      ],
+      "write_boundary": "display_refs_only"
+    },
+    {
+      "section_id": "developer_work_order",
+      "projection_fields": [
+        "developer_patch_work_order_ref",
+        "patch_traceability_matrix_ref",
+        "target_workspace_environment_verification_ref",
+        "target_owner_entry_redrive_ref"
+      ],
+      "write_boundary": "display_refs_only"
+    },
+    {
+      "section_id": "mechanism_patch_proposal",
+      "projection_fields": [
+        "online_learning_candidate_ref",
+        "mechanism_patch_proposal_ref",
+        "promotion_gate_ref",
+        "owner_review_receipt_ref"
+      ],
+      "write_boundary": "proposal_status_only"
+    },
+    {
+      "section_id": "scaleout_evidence",
+      "projection_fields": [
+        "target_agent_delivery_receipt_refs",
+        "multi_target_scaleout_receipt_refs",
+        "no_forbidden_write_proof_refs",
+        "remaining_blocker_refs"
+      ],
+      "write_boundary": "display_refs_only"
+    }
+  ],
+  "authority_boundary": {
+    "refs_only": true,
+    "not_generic_runtime_owner": true,
+    "projection_owner_is_opl_framework": true,
+    "domain_repo_can_own_generic_operator_workbench": false,
+    "domain_repo_can_write_app_runtime_state": false,
+    "can_write_target_domain_truth": false,
+    "can_write_target_domain_memory_body": false,
+    "can_mutate_target_domain_artifact_body": false,
+    "can_authorize_target_domain_quality_or_export": false,
+    "can_promote_default_agent_without_gate": false
+  },
+  "forbidden_projection_upgrades": [
+    "target_domain_truth_writer",
+    "target_memory_body_writer",
+    "target_artifact_body_writer",
+    "target_quality_or_export_verdict_authority",
+    "default_agent_promotion_authority",
+    "generic_operator_workbench_owner",
+    "generic_runtime_owner"
+  ]
+}
