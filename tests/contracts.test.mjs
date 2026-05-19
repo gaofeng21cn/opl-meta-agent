@@ -31,6 +31,19 @@ function listMarkdownFiles(relativeDir) {
     .sort();
 }
 
+function listFilesByExtension(relativeDir, extension) {
+  const absoluteDir = path.join(repoRoot, relativeDir);
+  return fs.readdirSync(absoluteDir, { withFileTypes: true })
+    .flatMap((entry) => {
+      const entryRelativePath = path.join(relativeDir, entry.name);
+      if (entry.isDirectory()) {
+        return listFilesByExtension(entryRelativePath, extension);
+      }
+      return entry.name.endsWith(extension) ? [entryRelativePath] : [];
+    })
+    .sort();
+}
+
 function assertUsablePackFile(relativePath) {
   const absolutePath = path.join(repoRoot, relativePath);
   assert.equal(fs.existsSync(absolutePath), true, `${relativePath} should exist`);
@@ -420,6 +433,83 @@ test('minimal authority functions are explicit refs, not generic runtime owners'
     assert.deepEqual(auditModule.implementation_refs, expected.implementationRefs);
     assert.deepEqual(auditModule.code_paths, ['runtime/authority_functions/meta-agent-authority-functions.json']);
     assert.equal(auditModule.role_scope, 'refs_only_minimal_authority_function_not_generic_runtime_owner');
+  });
+});
+
+test('script physical morphology stays limited to authority refs and helpers', () => {
+  const privatePolicy = readJson('contracts/private_functional_surface_policy.json');
+  const authorityFunctions = readJson('runtime/authority_functions/meta-agent-authority-functions.json');
+  const scripts = listFilesByExtension('scripts', '.mjs');
+  const morphologyPolicy = authorityFunctions.script_morphology_policy;
+
+  assert.equal(morphologyPolicy.policy_ref, 'contracts/private_functional_surface_policy.json');
+  assert.deepEqual(
+    privatePolicy.allowed_script_morphology_classes.map((entry) => entry.class_id),
+    [
+      'authority_function_implementation_ref',
+      'smoke_helper',
+      'fixture_or_proof_helper',
+      'developer_work_order_materializer',
+    ],
+  );
+  assert.deepEqual(morphologyPolicy.allowed_classes, [
+    'authority_function_implementation_ref',
+    'smoke_helper',
+    'fixture_or_proof_helper',
+    'developer_work_order_materializer',
+  ]);
+  assert.ok(morphologyPolicy.forbidden_roles.includes('generic_runtime_owner'));
+  assert.ok(morphologyPolicy.forbidden_roles.includes('generic_registry_owner'));
+  assert.ok(morphologyPolicy.forbidden_roles.includes('app_shell_owner'));
+  assert.ok(morphologyPolicy.forbidden_roles.includes('agent_lab_execution_owner'));
+  assert.ok(morphologyPolicy.forbidden_roles.includes('promotion_gate_owner'));
+  assert.ok(morphologyPolicy.forbidden_roles.includes('target_domain_truth_writer'));
+
+  const implementationRefs = new Map();
+  authorityFunctions.functions.forEach((functionRef) => {
+    functionRef.implementation_refs.forEach((scriptRef) => {
+      const refs = implementationRefs.get(scriptRef) ?? [];
+      refs.push(functionRef.authority_ref);
+      implementationRefs.set(scriptRef, refs);
+    });
+  });
+
+  const classifiedScripts = morphologyPolicy.script_classifications.map((entry) => entry.script_ref).sort();
+  assert.deepEqual(classifiedScripts, scripts);
+
+  morphologyPolicy.script_classifications.forEach((entry) => {
+    assertRepoRefExists(entry.script_ref);
+    assert.ok(entry.classes.length > 0, `${entry.script_ref} should have at least one script class`);
+    entry.classes.forEach((classId) => {
+      assert.ok(
+        morphologyPolicy.allowed_classes.includes(classId),
+        `${entry.script_ref} uses unsupported script morphology class ${classId}`,
+      );
+    });
+    assert.deepEqual(entry.forbidden_roles, [], `${entry.script_ref} must not carry forbidden script roles`);
+    assert.ok(entry.writes_only.length > 0, `${entry.script_ref} should declare refs-only writes`);
+
+    const declaredAuthorityRefs = entry.authority_function_refs ?? [];
+    const expectedAuthorityRefs = implementationRefs.get(entry.script_ref) ?? [];
+    if (entry.classes.includes('authority_function_implementation_ref')) {
+      assert.deepEqual(
+        declaredAuthorityRefs.sort(),
+        expectedAuthorityRefs.sort(),
+        `${entry.script_ref} authority refs must match runtime authority implementation_refs`,
+      );
+      assert.ok(expectedAuthorityRefs.length > 0, `${entry.script_ref} should be listed by a runtime authority function`);
+    } else {
+      assert.deepEqual(
+        declaredAuthorityRefs,
+        [],
+        `${entry.script_ref} should not declare authority refs unless it is an implementation ref`,
+      );
+      assert.equal(
+        implementationRefs.has(entry.script_ref),
+        false,
+        `${entry.script_ref} is referenced by authority functions but not classified as implementation ref`,
+      );
+    }
   });
 });
 

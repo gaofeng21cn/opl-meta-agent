@@ -25,6 +25,28 @@
       "interface_shape": "history/tombstone reference or deterministic fixture with no runtime owner claim"
     }
   ],
+  "allowed_script_morphology_classes": [
+    {
+      "class_id": "authority_function_implementation_ref",
+      "long_term_allowed": true,
+      "interface_shape": "script path must be listed by runtime/authority_functions/<manifest>.implementation_refs"
+    },
+    {
+      "class_id": "smoke_helper",
+      "long_term_allowed": true,
+      "interface_shape": "script may invoke OPL-owned validation, generated interface, or Agent Lab surfaces and emit refs-only smoke receipts"
+    },
+    {
+      "class_id": "fixture_or_proof_helper",
+      "long_term_allowed": true,
+      "interface_shape": "script may materialize deterministic fixtures, proof refs, receipts, or no-forbidden-write evidence without owning runtime state"
+    },
+    {
+      "class_id": "developer_work_order_materializer",
+      "long_term_allowed": true,
+      "interface_shape": "script may convert blocked evidence or developer setup intent into explicit work-order/setup materialization, without becoming a generic runtime or registry owner"
+    }
+  ],
   "forbidden_private_surface_classes": [
     "generic_scheduler_or_daemon",
     "generic_queue_or_attempt_ledger",
@@ -39,6 +61,17 @@
     "generic_review_repair_transport",
     "generic_native_helper_execution_envelope",
     "generic_observability_slo_runtime"
+  ],
+  "forbidden_script_roles": [
+    "generic_runtime_owner",
+    "generic_registry_owner",
+    "app_shell_owner",
+    "agent_lab_execution_owner",
+    "promotion_gate_owner",
+    "target_domain_truth_writer",
+    "generic_cli_mcp_product_wrapper_owner",
+    "generic_scheduler_or_daemon_owner",
+    "generic_queue_or_attempt_ledger_owner"
   ],
   "required_interfaces_for_private_surface_request": [
     "functional_privatization_audit.modules[]",

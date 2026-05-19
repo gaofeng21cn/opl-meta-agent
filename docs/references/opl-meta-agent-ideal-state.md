@@ -66,6 +66,8 @@ CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framewo
 
 这些函数可以持有 agent-building semantics，但只能以 refs-only / receipt / blocker 方式工作。它们不能成为第二套 OPL runtime，也不能替目标 domain owner 作 truth、memory、artifact、quality/export 或 promotion 决策。
 
+理想物理源码形态应让这条边界在目录层面可见：`agent/` 保存 agent-building prompts、stages、skills、knowledge 和 quality gates；`contracts/` 保存 registration、generated surface handoff、App projection、scaleout evidence 和 no-forbidden-write contracts；`runtime/authority_functions/` 保存 authority manifest；`scripts/` 只保存 authority implementation refs、smoke action targets、fixture/proof helper 或 developer work-order materializer。随着功能成熟，可声明的 agent-building policy 应迁回 `agent/` 或 `contracts/`，不让 scripts 增长成私有 meta-runtime、promotion engine、registry owner 或 App/workbench shell。
+
 ## 理想完成门槛
 
 - `agent/` pack、`contracts/pack_compiler_input.json`、`contracts/generated_surface_handoff.json` 和 `contracts/stage_control_plane.json` 全部采用 OPL standard pack shape，并由 OPL scaffold validation 通过。

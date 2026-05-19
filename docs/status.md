@@ -12,7 +12,7 @@
 - App/workbench projection 合同：`contracts/app_workbench_projection.json` 只投影 target brief、candidate package、Agent Lab result、developer work order、mechanism patch proposal、scaleout evidence 的 refs/status/receipt/blocker；OPL App/workbench 持有展示 shell，本仓不能写 App runtime state、target truth、memory body、artifact body、quality/export verdict 或默认 promotion。
 - Real target agent scaleout evidence 合同：`contracts/real_target_agent_scaleout_evidence.json` 定义真实目标 agent delivery、blocked suite -> developer work order、多目标 scaleout 的必需 refs 和 no-forbidden-write proofs；当前状态是 contract-ready，不把 sample smoke、testing takeover smoke 或 suite pass 写成真实线上交付完成。
 - `stage_control_plane` 路径解析：当前每个 stage 的 prompt、skill、knowledge、evaluation refs 都指向 repo-tracked `agent/prompts/*.md`、`agent/skills/*.md`、`agent/knowledge/*.md`、`agent/quality_gates/*.md` 文件；测试会确认每个 locator 指向真实文件。
-- 九阶段 meta-agent plan：intent intake、web research、stage decomposition、agent skeleton build、eval suite build、baseline run、optimizer iteration、baseline delivery、online learning。
+- 十阶段 meta-agent plan：intent intake、web experience research、stage decomposition、agent skeleton build、eval suite build、baseline run、external agent takeover、optimizer iteration、baseline delivery、online learning。
 - 最小 repo-local test：`npm test`。
 - 自举闭环脚本：`npm run bootstrap:sample -- --output-dir <dir> --opl-bin <opl>`。
 - 外部 agent 测试接管脚本：`npm run takeover:test -- --agent-dir <existing-agent-dir> --output-dir <dir> --opl-bin <opl>`。
@@ -26,6 +26,7 @@
 - Developer work-order traceability：blocked suite 的 rubric gap 会被映射为 `patch_traceability_matrix`，包含 source failure refs、required patch refs、editable surfaces、目标仓文件提示、测试/receipt/禁止写入证明、runtime/read-model consumption verification 和版本 closeout 要求，避免 self-evolution 退化成泛泛 proposal 或前台开发者自由发挥。
 - Workspace environment consumption proof：当目标 agent 修复依赖 runtime extras、workspace lock/profile 或 owner-entry 环境迁移时，developer work order 会要求 `target_workspace_environment_verification`、dependency lock/profile migration proof、owner-entry redrive proof 和 repo hygiene proof，避免只在源码测试通过而真实 study runtime 没有消费到新能力。
 - Mechanism patch proposal：记录 `mechanism_ref/version`、`editable_surfaces`、`observe/diagnose/edit`、`segment_run_ref`、`evidence_delta_ref`、`next_mechanism_candidate_ref` 和 proposal-only authority boundary。
+- Physical source morphology：`agent/` 是 agent-building semantic pack，`contracts/` 是 registration / generated handoff / App projection / scaleout evidence 机器面，`runtime/authority_functions/` 是最小 authority refs，`scripts/` 只是 authority implementation refs、smoke helpers、fixture/proof helper 或 developer work-order materializer。本仓不持有 generic runtime、registry owner、App shell、Agent Lab execution、promotion gate 或 target domain truth。
 
 未完成：
 

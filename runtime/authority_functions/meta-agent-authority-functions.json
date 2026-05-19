@@ -6,6 +6,138 @@
   "role": "refs_only_minimal_authority_functions",
   "not_generic_runtime_owner": true,
   "opl_runtime_owner": "one-person-lab",
+  "script_morphology_policy": {
+    "policy_ref": "contracts/private_functional_surface_policy.json",
+    "scripts_root": "scripts/",
+    "allowed_classes": [
+      "authority_function_implementation_ref",
+      "smoke_helper",
+      "fixture_or_proof_helper",
+      "developer_work_order_materializer"
+    ],
+    "forbidden_roles": [
+      "generic_runtime_owner",
+      "generic_registry_owner",
+      "app_shell_owner",
+      "agent_lab_execution_owner",
+      "promotion_gate_owner",
+      "target_domain_truth_writer",
+      "generic_cli_mcp_product_wrapper_owner",
+      "generic_scheduler_or_daemon_owner",
+      "generic_queue_or_attempt_ledger_owner"
+    ],
+    "script_classifications": [
+      {
+        "script_ref": "scripts/bootstrap-sample-agent.mjs",
+        "classes": [
+          "authority_function_implementation_ref",
+          "smoke_helper",
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [
+          "authority-function-ref:opl-meta-agent/candidate-agent-package-builder"
+        ],
+        "consumes_opl_surfaces": [
+          "standard_domain_agent_scaffold",
+          "generated_interface_bundle",
+          "opl_agent_lab_complete_control_plane"
+        ],
+        "writes_only": [
+          "candidate_agent_package_ref",
+          "owner_receipt_ref",
+          "agent_lab_suite_ref",
+          "mechanism_patch_proposal_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
+        "script_ref": "scripts/takeover-agent.mjs",
+        "classes": [
+          "smoke_helper",
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [
+          "opl_agent_lab_complete_control_plane"
+        ],
+        "writes_only": [
+          "agent_lab_suite_ref",
+          "testing_takeover_self_evolution_receipt",
+          "online_learning_candidate_ref",
+          "mechanism_patch_proposal_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
+        "script_ref": "scripts/improve-from-agent-lab-suite.mjs",
+        "classes": [
+          "smoke_helper",
+          "developer_work_order_materializer",
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [
+          "opl_agent_lab_complete_control_plane"
+        ],
+        "writes_only": [
+          "developer_patch_work_order_ref",
+          "target_capability_improvement_candidate_ref",
+          "owner_receipt_ref",
+          "mechanism_patch_proposal_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
+        "script_ref": "scripts/install-codex-plugin.mjs",
+        "classes": [
+          "developer_work_order_materializer"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": [
+          "local_codex_plugin_marketplace_entry"
+        ],
+        "forbidden_roles": []
+      },
+      {
+        "script_ref": "scripts/lib/domain-pack.mjs",
+        "classes": [
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": [
+          "domain_pack_summary_ref",
+          "domain_pack_fixture_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
+        "script_ref": "scripts/lib/meta-agent-loop.mjs",
+        "classes": [
+          "authority_function_implementation_ref",
+          "smoke_helper",
+          "fixture_or_proof_helper",
+          "developer_work_order_materializer"
+        ],
+        "authority_function_refs": [
+          "authority-function-ref:opl-meta-agent/candidate-agent-package-builder",
+          "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer"
+        ],
+        "consumes_opl_surfaces": [
+          "opl_agent_lab_complete_control_plane"
+        ],
+        "writes_only": [
+          "agent_lab_suite_ref",
+          "owner_receipt_ref",
+          "online_learning_candidate_ref",
+          "mechanism_patch_proposal_ref",
+          "developer_patch_work_order_ref"
+        ],
+        "forbidden_roles": []
+      }
+    ]
+  },
   "functions": [
     {
       "function_id": "candidate_agent_package_builder",
