@@ -408,6 +408,18 @@ test('production acceptance evidence closes conformance evidence tail through re
   assert.equal(acceptance.surface_kind, 'opl_meta_agent_production_acceptance_evidence');
   assert.equal(acceptance.domain_id, 'opl-meta-agent');
   assert.equal(acceptance.evidence_status, 'closed_by_domain_owned_acceptance_receipt');
+  assert.equal(acceptance.evidence_tail_status, 'closed_by_domain_owned_acceptance_receipt');
+  assert.equal(
+    acceptance.receipt_ref,
+    'production-acceptance-receipt:opl-meta-agent/external-agent-takeover-improve-loop/2026-05-19',
+  );
+  assert.equal(acceptance.doc_ref, 'docs/status.md');
+  assert.ok(acceptance.next_verification_command_refs.includes('cmd:rtk npm test'));
+  assert.ok(acceptance.next_verification_command_refs.includes('cmd:rtk npm run typecheck'));
+  assert.ok(acceptance.refs.acceptance_receipt_refs.includes(acceptance.receipt_ref));
+  assert.ok(acceptance.refs.doc_refs.includes('docs/status.md'));
+  assert.ok(acceptance.refs.next_verification_command_refs.includes('cmd:rtk git diff --check'));
+  assert.deepEqual(acceptance.refs.typed_blocker_refs, []);
   assert.equal(acceptance.role, 'refs_only_external_agent_takeover_improve_loop_acceptance');
   assert.ok(acceptance.acceptance_scope.includes('production_live_soak_not_claimed_by_conformance'));
   assert.ok(acceptance.acceptance_scope.includes('domain_ready_not_claimed_by_conformance'));
@@ -444,6 +456,8 @@ test('production acceptance evidence closes conformance evidence tail through re
     ...asStrings(acceptance.external_agent_acceptance_chain.review_audit_receipt_refs),
     ...asStrings(acceptance.acceptance_receipt.source_refs),
     ...asStrings(acceptance.generated_agent_fixture_requirement.verified_by_refs),
+    acceptance.doc_ref,
+    ...asStrings(acceptance.refs.doc_refs),
   ].forEach(assertRepoRefExists);
 });
 

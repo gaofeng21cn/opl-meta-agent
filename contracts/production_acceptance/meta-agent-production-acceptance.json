@@ -4,6 +4,31 @@
   "domain_id": "opl-meta-agent",
   "owner": "opl-meta-agent",
   "evidence_status": "closed_by_domain_owned_acceptance_receipt",
+  "evidence_tail_status": "closed_by_domain_owned_acceptance_receipt",
+  "receipt_ref": "production-acceptance-receipt:opl-meta-agent/external-agent-takeover-improve-loop/2026-05-19",
+  "doc_ref": "docs/status.md",
+  "next_verification_command_refs": [
+    "cmd:rtk npm test",
+    "cmd:rtk node --test tests/contracts.test.ts tests/bootstrap-loop.test.ts tests/takeover-loop.test.ts tests/external-suite-self-evolution.test.ts",
+    "cmd:rtk npm run typecheck",
+    "cmd:rtk git diff --check"
+  ],
+  "refs": {
+    "acceptance_receipt_refs": [
+      "production-acceptance-receipt:opl-meta-agent/external-agent-takeover-improve-loop/2026-05-19"
+    ],
+    "doc_refs": [
+      "docs/status.md",
+      "docs/active/opl-meta-agent-ideal-state-gap-plan.md"
+    ],
+    "next_verification_command_refs": [
+      "cmd:rtk npm test",
+      "cmd:rtk node --test tests/contracts.test.ts tests/bootstrap-loop.test.ts tests/takeover-loop.test.ts tests/external-suite-self-evolution.test.ts",
+      "cmd:rtk npm run typecheck",
+      "cmd:rtk git diff --check"
+    ],
+    "typed_blocker_refs": []
+  },
   "role": "refs_only_external_agent_takeover_improve_loop_acceptance",
   "acceptance_scope": [
     "production_live_soak_not_claimed_by_conformance",
