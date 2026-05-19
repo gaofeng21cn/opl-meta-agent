@@ -2,14 +2,105 @@ import fs from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
+import type { JsonObject } from './domain-pack.ts';
 
 export const DEFAULT_OPL_BIN = '/Users/gaofeng/workspace/one-person-lab/bin/opl';
 
-export function resolveOplBin(value = process.env.OPL_BIN ?? DEFAULT_OPL_BIN) {
+export type TargetAgent = {
+  domain_id: string;
+  domain_label?: string | null;
+  delivery_domain?: string | null;
+  descriptor_ref?: string;
+  repo_dir?: string;
+  descriptor?: JsonObject | null;
+};
+
+export type SuiteResult = {
+  result_id: string;
+  status: string;
+  summary: {
+    recovery_probe_count: number;
+    recovery_passed_count: number;
+    forbidden_authority_flag_count: number;
+    [key: string]: any;
+  };
+  [key: string]: any;
+};
+
+export type OwnerReceipt = JsonObject & {
+  receipt_id: string;
+};
+
+export type LearningCandidate = JsonObject & {
+  candidate_id: string;
+  proposed_change_refs: string[];
+  promotion_gate_ref: string;
+};
+
+type AgentLabSuiteOptions = {
+  suiteId: string;
+  taskId: string;
+  taskFamily: string;
+  targetAgent: TargetAgent;
+  targetAgentDir: string;
+  instructionsRef: string;
+  agentEntryRef: string;
+  stageRefs: string[];
+  oracleRefs: string[];
+  scorerRefs: string[];
+  trajectoryRef: string;
+  runRef: string;
+  artifactRefs: string[];
+  receiptRefs: string[];
+  scorecardRef: string;
+  metricRefs: string[];
+  evidenceRefs: string[];
+  reviewRefs: string[];
+  qualityGateRefs: string[];
+  improvementCandidateRef: string;
+  improvementCandidateKind: string;
+  improvementTargetRef: string;
+  promotionGateRef: string;
+  regressionSuiteRefs: string[];
+};
+
+type OwnerReceiptOptions = {
+  receiptClass: string;
+  status: string;
+  targetAgent: TargetAgent;
+  suiteResult: SuiteResult;
+  extraAcceptanceGates?: JsonObject;
+};
+
+type LearningCandidateOptions = {
+  suiteResult: SuiteResult;
+  receipt: OwnerReceipt;
+  targetAgent: TargetAgent;
+  candidateKind: string;
+  targetRef: string;
+  proposedChangeRefs: string[];
+  promotionGateRef: string;
+};
+
+type MechanismPatchProposalOptions = {
+  suiteResult: SuiteResult;
+  receipt: OwnerReceipt;
+  learningCandidate: LearningCandidate;
+  mechanismRef: string;
+  editableSurfaces: string[];
+  evidenceDeltaRef: string;
+  segmentRunRef?: string;
+  nextMechanismCandidateRef?: string;
+  observeRefs?: string[];
+  diagnoseRefs?: string[];
+  editRefs?: string[];
+};
+
+export function resolveOplBin(value = process.env.OPL_BIN ?? DEFAULT_OPL_BIN): string {
   return path.resolve(value);
 }
 
-export function runOpl(oplBin, args) {
+export function runOpl(oplBin: string, args: string[]): JsonObject {
   const result = spawnSync(oplBin, args, {
     encoding: 'utf8',
     maxBuffer: 16 * 1024 * 1024,
@@ -26,25 +117,26 @@ export function runOpl(oplBin, args) {
   try {
     return JSON.parse(result.stdout);
   } catch (error) {
-    throw new Error(`OPL command did not return JSON: ${oplBin} ${args.join(' ')}\n${result.stdout}\n${error.message}`);
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`OPL command did not return JSON: ${oplBin} ${args.join(' ')}\n${result.stdout}\n${message}`);
   }
 }
 
-export function stableId(prefix, payload) {
+export function stableId(prefix: string, payload: unknown): string {
   const hash = createHash('sha256').update(JSON.stringify(payload)).digest('hex').slice(0, 12);
   return `${prefix}_${hash}`;
 }
 
-export function writeJson(filePath, payload) {
+export function writeJson(filePath: string, payload: unknown): void {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`);
 }
 
-export function readJson(filePath) {
+export function readJson(filePath: string): JsonObject {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
-export function readTargetAgent(targetAgentDir, fallback = {}) {
+export function readTargetAgent(targetAgentDir: string, fallback: Partial<TargetAgent> = {}): TargetAgent {
   const descriptorPath = path.join(targetAgentDir, 'contracts', 'domain_descriptor.json');
   const descriptor = fs.existsSync(descriptorPath) ? readJson(descriptorPath) : null;
 
@@ -83,7 +175,7 @@ export function buildAgentLabSuite({
   improvementTargetRef,
   promotionGateRef,
   regressionSuiteRefs,
-}) {
+}: AgentLabSuiteOptions): JsonObject {
   return {
     suite_id: suiteId,
     suite_kind: 'agent_lab_external_suite',
@@ -174,7 +266,7 @@ export function buildOwnerReceipt({
   targetAgent,
   suiteResult,
   extraAcceptanceGates = {},
-}) {
+}: OwnerReceiptOptions): OwnerReceipt {
   const receiptSeed = {
     targetAgent: {
       domain_id: targetAgent.domain_id,
@@ -231,7 +323,7 @@ export function buildLearningCandidate({
   targetRef,
   proposedChangeRefs,
   promotionGateRef,
-}) {
+}: LearningCandidateOptions): LearningCandidate {
   return {
     surface_kind: 'opl_meta_agent_online_learning_candidate',
     candidate_id: stableId('oma_candidate', [suiteResult.result_id, receipt.receipt_id, targetAgent.domain_id]),
@@ -262,7 +354,7 @@ export function buildMechanismPatchProposal({
   observeRefs = [],
   diagnoseRefs = [],
   editRefs = [],
-}) {
+}: MechanismPatchProposalOptions): JsonObject {
   return {
     surface_kind: 'opl_meta_agent_mechanism_patch_proposal',
     version: 'opl-meta-agent.mechanism-patch-proposal.v1',

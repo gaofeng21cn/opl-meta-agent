@@ -115,10 +115,11 @@ The loop does not directly rewrite final answers. It turns each run into an audi
 ## Commands
 
 ```bash
+npm run typecheck
 npm test
 ```
 
-The test suite verifies contract fields, the OPL-generated interface bundle, real `agent/` domain pack files, stage prompt/skill/knowledge/evaluation ref path resolution, non-empty files, and placeholder absence.
+`typecheck` runs TypeScript's compiler gate over `scripts/**/*.ts` and `tests/**/*.ts`. The test suite verifies contract fields, the OPL-generated interface bundle, real `agent/` domain pack files, stage prompt/skill/knowledge/evaluation ref path resolution, non-empty files, and placeholder absence.
 
 ```bash
 npm run bootstrap:sample -- --output-dir /tmp/opl-meta-agent-demo --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl

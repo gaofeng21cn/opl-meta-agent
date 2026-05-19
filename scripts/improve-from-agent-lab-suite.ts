@@ -4,10 +4,16 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  type DomainPackSummary,
+  type JsonObject,
   domainPackReceiptFields,
   readDomainPackSummary,
 } from './lib/domain-pack.ts';
 import {
+  type LearningCandidate,
+  type OwnerReceipt,
+  type SuiteResult,
+  type TargetAgent,
   buildLearningCandidate,
   buildMechanismPatchProposal,
   buildOwnerReceipt,
@@ -20,6 +26,34 @@ import {
 } from './lib/meta-agent-loop.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+type ImproveArgs = {
+  suitePath: string;
+  targetAgentDir: string;
+  outputDir: string;
+  feedbackRef: string | null;
+  oplBin: string;
+};
+
+type PatchTraceabilityEntry = JsonObject & {
+  gap_token: string;
+  source_failure_refs: string[];
+  required_patch_refs: string[];
+  editable_surface_refs: string[];
+  target_repo_file_hints: string[];
+  required_verification_refs: string[];
+};
+
+type CapabilityCandidate = JsonObject & {
+  candidate_id: string;
+  target_agent: JsonObject;
+  authority_boundary: JsonObject;
+  target_editable_surface_refs: string[];
+  proposed_change_refs: string[];
+  patch_traceability_matrix: PatchTraceabilityEntry[];
+};
+
+type PatchSurfaceHintsByDomain = Record<string, Record<string, string[]>>;
 
 const MAS_MEDICAL_MANUSCRIPT_CHANGE_REFS = [
   {
@@ -114,7 +148,7 @@ const EXTERNAL_LEARNING_REFS = [
   'external-source:tripod-ai/clinical-prediction-model-reporting',
 ];
 
-const PATCH_SURFACE_HINTS_BY_DOMAIN = {
+const PATCH_SURFACE_HINTS_BY_DOMAIN: PatchSurfaceHintsByDomain = {
   'med-autoscience': {
     quality_contract_ref: [
       'src/med_autoscience/policies/medical_reporting_checklist.py',
@@ -143,8 +177,14 @@ const PATCH_SURFACE_HINTS_BY_DOMAIN = {
   },
 };
 
-function parseArgs(argv) {
-  const parsed = {
+function parseArgs(argv: string[]): ImproveArgs {
+  const parsed: {
+    suitePath: string | null;
+    targetAgentDir: string | null;
+    outputDir: string | null;
+    feedbackRef: string | null;
+    oplBin: string;
+  } = {
     suitePath: null,
     targetAgentDir: null,
     outputDir: null,
@@ -212,11 +252,17 @@ function parseArgs(argv) {
   }
 
   parsed.outputDir ??= fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-external-suite-'));
-  return parsed;
+  return {
+    suitePath: parsed.suitePath,
+    targetAgentDir: parsed.targetAgentDir,
+    outputDir: parsed.outputDir,
+    feedbackRef: parsed.feedbackRef,
+    oplBin: parsed.oplBin,
+  };
 }
 
-function collectSuiteRefs(suite) {
-  const refs = [];
+function collectSuiteRefs(suite: JsonObject): string[] {
+  const refs: unknown[] = [];
   for (const task of Array.isArray(suite.tasks) ? suite.tasks : []) {
     refs.push(task.task_id, task.task_family, task.instructions_ref, task.agent_entry_ref);
     refs.push(...arrayOfStrings(task.stage_refs));
@@ -229,16 +275,18 @@ function collectSuiteRefs(suite) {
     refs.push(...arrayOfStrings(task.improvement_candidate?.evidence_refs));
     refs.push(task.improvement_candidate?.target_ref, task.improvement_candidate?.candidate_kind);
   }
-  return refs.filter((ref) => typeof ref === 'string' && ref.trim()).map((ref) => ref.trim());
+  return refs
+    .filter((ref): ref is string => typeof ref === 'string' && ref.trim().length > 0)
+    .map((ref) => ref.trim());
 }
 
-function arrayOfStrings(value) {
+function arrayOfStrings(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item) => typeof item === 'string') : [];
 }
 
-function inferProposedChangeRefs({ suite, suiteRefs }) {
+function inferProposedChangeRefs({ suite, suiteRefs }: { suite: JsonObject; suiteRefs: string[] }): string[] {
   const combined = suiteRefs.join('\n').toLowerCase();
-  const inferred = new Set();
+  const inferred = new Set<string>();
   if (
     String(suite.suite_id || '').includes('medical-manuscript')
     || combined.includes('medical-manuscript')
@@ -259,7 +307,15 @@ function inferProposedChangeRefs({ suite, suiteRefs }) {
   return [...inferred].sort();
 }
 
-function buildPatchTraceabilityMatrix({ targetAgent, suiteRefs, proposedChangeRefs }) {
+function buildPatchTraceabilityMatrix({
+  targetAgent,
+  suiteRefs,
+  proposedChangeRefs,
+}: {
+  targetAgent: TargetAgent;
+  suiteRefs: string[];
+  proposedChangeRefs: string[];
+}): PatchTraceabilityEntry[] {
   const combined = suiteRefs.join('\n').toLowerCase();
   const sourceFailureRefs = suiteRefs.filter((ref) =>
     ref.includes('rubric-gap:')
@@ -271,7 +327,7 @@ function buildPatchTraceabilityMatrix({ targetAgent, suiteRefs, proposedChangeRe
     if (!combined.includes(mapping.token)) {
       continue;
     }
-    const requiredPatchRefs = mapping.refs.filter((ref) => proposedChangeRefs.includes(ref));
+    const requiredPatchRefs = mapping.refs.filter((ref: string) => proposedChangeRefs.includes(ref));
     matrix.push({
       gap_token: mapping.token,
       source_failure_refs: sourceFailureRefs.filter((ref) => ref.toLowerCase().includes(mapping.token)),
@@ -291,8 +347,8 @@ function buildPatchTraceabilityMatrix({ targetAgent, suiteRefs, proposedChangeRe
   return matrix;
 }
 
-function surfaceRefsForPatchRefs(patchRefs) {
-  const surfaces = new Set();
+function surfaceRefsForPatchRefs(patchRefs: string[]): string[] {
+  const surfaces = new Set<string>();
   for (const ref of patchRefs) {
     const prefix = String(ref).split(':')[0];
     if (prefix) {
@@ -302,9 +358,9 @@ function surfaceRefsForPatchRefs(patchRefs) {
   return [...surfaces].sort();
 }
 
-function fileHintsForPatchRefs({ domainId, patchRefs }) {
+function fileHintsForPatchRefs({ domainId, patchRefs }: { domainId: string; patchRefs: string[] }): string[] {
   const hints = PATCH_SURFACE_HINTS_BY_DOMAIN[domainId] ?? {};
-  const files = new Set();
+  const files = new Set<string>();
   for (const surfaceRef of surfaceRefsForPatchRefs(patchRefs)) {
     for (const filePath of hints[surfaceRef] ?? []) {
       files.add(filePath);
@@ -323,7 +379,17 @@ function buildCapabilityCandidate({
   feedbackRef,
   patchTraceabilityMatrix,
   domainPackSummary,
-}) {
+}: {
+  targetAgent: TargetAgent;
+  suite: JsonObject;
+  suiteResult: SuiteResult;
+  receipt: OwnerReceipt;
+  proposedChangeRefs: string[];
+  suiteRefs: string[];
+  feedbackRef: string | null;
+  patchTraceabilityMatrix: PatchTraceabilityEntry[];
+  domainPackSummary: DomainPackSummary;
+}): CapabilityCandidate {
   return {
     surface_kind: 'opl_meta_agent_target_agent_capability_improvement_candidate',
     version: 'opl-meta-agent.target-capability-improvement-candidate.v1',
@@ -386,7 +452,19 @@ function buildCapabilityCandidate({
   };
 }
 
-function buildDeveloperPatchWorkOrder({ targetAgent, suite, suiteResult, receipt, capabilityCandidate }) {
+function buildDeveloperPatchWorkOrder({
+  targetAgent,
+  suite,
+  suiteResult,
+  receipt,
+  capabilityCandidate,
+}: {
+  targetAgent: TargetAgent;
+  suite: JsonObject;
+  suiteResult: SuiteResult;
+  receipt: OwnerReceipt;
+  capabilityCandidate: CapabilityCandidate;
+}): JsonObject {
   return {
     surface_kind: 'opl_meta_agent_developer_patch_work_order',
     version: 'opl-meta-agent.developer-patch-work-order.v1',
@@ -519,7 +597,7 @@ function main() {
   }
 
   const agentLabRun = runOpl(oplBin, ['agent-lab', 'run', '--suite', suitePath, '--json']);
-  const suiteResult = agentLabRun.agent_lab_run.suite_result;
+  const suiteResult = agentLabRun.agent_lab_run.suite_result as SuiteResult;
   const suiteRefs = collectSuiteRefs(suite);
   const proposedChangeRefs = inferProposedChangeRefs({ suite, suiteRefs });
   const patchTraceabilityMatrix = buildPatchTraceabilityMatrix({
@@ -528,7 +606,7 @@ function main() {
     proposedChangeRefs,
   });
 
-  const receipt = {
+  const receipt: OwnerReceipt = {
     ...buildOwnerReceipt({
       receiptClass: 'external_suite_quality_failure_self_evolution_receipt',
       status: suiteResult.status === 'passed'

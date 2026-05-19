@@ -32,5 +32,6 @@ OPL Framework 持有通用 runtime、Agent Lab、queue、stage attempt ledger、
 默认验证入口：
 
 ```bash
+npm run typecheck
 npm test
 ```

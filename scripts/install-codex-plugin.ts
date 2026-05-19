@@ -3,6 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
+import type { JsonObject } from './lib/domain-pack.ts';
 
 const PLUGIN_NAME = 'opl-meta-agent';
 const MARKETPLACE_NAME = 'opl-meta-agent-local';
@@ -50,27 +51,41 @@ function parseArgs(argv = process.argv.slice(2)) {
   return parsed;
 }
 
-function loadJson(filePath) {
+type MarketplacePluginEntry = JsonObject & {
+  name?: string;
+};
+
+type InstallArgs = {
+  repoRoot: string;
+  home: string;
+};
+
+function loadJson(filePath: string): JsonObject {
   if (!fs.existsSync(filePath)) return {};
   const payload = JSON.parse(fs.readFileSync(filePath, 'utf8'));
   return payload && typeof payload === 'object' && !Array.isArray(payload) ? payload : {};
 }
 
-function writeJson(filePath, payload) {
+function writeJson(filePath: string, payload: unknown): void {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
 }
 
-function repoMarketplacePath(repoRoot) {
+function repoMarketplacePath(repoRoot: string): string {
   return path.join(repoRoot, '.agents', 'plugins', 'marketplace.json');
 }
 
-function removeLegacyEntry(payload) {
+function removeLegacyEntry(payload: JsonObject): MarketplacePluginEntry[] {
   const plugins = Array.isArray(payload.plugins) ? payload.plugins : [];
-  return plugins.filter((item) => item && typeof item === 'object' && !LEGACY_PLUGIN_NAMES.includes(item.name));
+  return plugins.filter((item): item is MarketplacePluginEntry => (
+    item
+    && typeof item === 'object'
+    && !Array.isArray(item)
+    && !LEGACY_PLUGIN_NAMES.includes((item as MarketplacePluginEntry).name ?? '')
+  ));
 }
 
-function upsertMarketplace(marketplacePath) {
+function upsertMarketplace(marketplacePath: string): void {
   const payload = loadJson(marketplacePath);
   const pluginEntry = {
     name: PLUGIN_NAME,
@@ -86,7 +101,7 @@ function upsertMarketplace(marketplacePath) {
   };
   const existingPlugins = removeLegacyEntry(payload);
   let replaced = false;
-  const plugins = existingPlugins.map((item) => {
+  const plugins = existingPlugins.map((item: MarketplacePluginEntry) => {
     if (item.name !== PLUGIN_NAME) return item;
     replaced = true;
     return pluginEntry;
@@ -105,13 +120,13 @@ function upsertMarketplace(marketplacePath) {
   });
 }
 
-function assertDirectory(dirPath, label) {
+function assertDirectory(dirPath: string, label: string): void {
   if (!fs.existsSync(dirPath) || !fs.statSync(dirPath).isDirectory()) {
     throw new Error(`${label} not found: ${dirPath}`);
   }
 }
 
-function installCodexPlugin({ repoRoot, home }) {
+function installCodexPlugin({ repoRoot, home }: InstallArgs): JsonObject {
   const resolvedRepoRoot = path.resolve(repoRoot);
   const resolvedHome = path.resolve(home);
   const repoPluginRoot = path.join(resolvedRepoRoot, 'plugins', PLUGIN_NAME);

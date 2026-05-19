@@ -4,11 +4,17 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  type DomainPackSummary,
+  type JsonObject,
   domainPackReceiptFields,
   readDomainPackSummary,
   writeMinimalAgentDomainPack,
 } from './lib/domain-pack.ts';
 import {
+  type LearningCandidate,
+  type OwnerReceipt,
+  type SuiteResult,
+  type TargetAgent,
   buildAgentLabSuite as buildExternalSuite,
   buildLearningCandidate as buildGatedLearningCandidate,
   buildMechanismPatchProposal,
@@ -20,8 +26,16 @@ import {
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-function parseArgs(argv) {
-  const parsed = {
+type BootstrapArgs = {
+  outputDir: string;
+  oplBin: string;
+};
+
+function parseArgs(argv: string[]): BootstrapArgs {
+  const parsed: {
+    outputDir: string | null;
+    oplBin: string;
+  } = {
     outputDir: null,
     oplBin: resolveOplBin(),
   };
@@ -49,10 +63,13 @@ function parseArgs(argv) {
   }
 
   parsed.outputDir ??= fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-bootstrap-'));
-  return parsed;
+  return {
+    outputDir: parsed.outputDir,
+    oplBin: parsed.oplBin,
+  };
 }
 
-function buildAgentLabSuite(targetAgentDir) {
+function buildAgentLabSuite(targetAgentDir: string): JsonObject {
   return buildExternalSuite({
     suiteId: 'opl-meta-agent-self-bootstrap-suite',
     taskId: 'agent-lab-task:opl-meta-agent/sample-brief-agent-baseline',
@@ -86,7 +103,7 @@ function buildAgentLabSuite(targetAgentDir) {
   });
 }
 
-function writeSampleAgentDomainPack(targetAgentDir) {
+function writeSampleAgentDomainPack(targetAgentDir: string): void {
   writeJson(path.join(targetAgentDir, 'contracts', 'action_catalog.json'), {
     surface_kind: 'family_action_catalog',
     version: 'family-action-catalog.v1',
@@ -221,7 +238,13 @@ function writeSampleAgentDomainPack(targetAgentDir) {
   });
 }
 
-function buildBaselineReceipt(targetAgent, suiteResult, scaffoldValidation, domainPackSummary, targetDomainPackSummary) {
+function buildBaselineReceipt(
+  targetAgent: TargetAgent,
+  suiteResult: SuiteResult,
+  scaffoldValidation: JsonObject,
+  domainPackSummary: DomainPackSummary,
+  targetDomainPackSummary: DomainPackSummary,
+): OwnerReceipt {
   const receipt = {
     ...buildOwnerReceipt({
       receiptClass: 'baseline_delivery_receipt',
@@ -242,7 +265,7 @@ function buildBaselineReceipt(targetAgent, suiteResult, scaffoldValidation, doma
   return receipt;
 }
 
-function buildLearningCandidate(suiteResult, baselineReceipt) {
+function buildLearningCandidate(suiteResult: SuiteResult, baselineReceipt: OwnerReceipt): LearningCandidate {
   return buildGatedLearningCandidate({
     suiteResult,
     receipt: baselineReceipt,
@@ -254,7 +277,11 @@ function buildLearningCandidate(suiteResult, baselineReceipt) {
   });
 }
 
-function buildBaselineMechanismPatchProposal(suiteResult, baselineReceipt, learningCandidate) {
+function buildBaselineMechanismPatchProposal(
+  suiteResult: SuiteResult,
+  baselineReceipt: OwnerReceipt,
+  learningCandidate: LearningCandidate,
+): JsonObject {
   return buildMechanismPatchProposal({
     suiteResult,
     receipt: baselineReceipt,
@@ -276,11 +303,12 @@ function main() {
   fs.mkdirSync(outputDir, { recursive: true });
   const domainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
 
-  const targetAgent = {
+  const targetAgent: TargetAgent = {
     domain_id: 'sample-brief-agent',
     domain_label: 'Sample Brief Agent',
     delivery_domain: 'knowledge_briefing',
   };
+  const targetAgentLabel = targetAgent.domain_label ?? targetAgent.domain_id;
   const targetAgentDir = path.join(outputDir, targetAgent.domain_id);
   const suitePath = path.join(outputDir, 'agent-lab-suite.json');
   const receiptPath = path.join(outputDir, 'baseline-delivery-receipt.json');
@@ -295,7 +323,7 @@ function main() {
     '--domain-id',
     targetAgent.domain_id,
     '--domain-label',
-    targetAgent.domain_label,
+    targetAgentLabel,
     '--force',
     '--json',
   ]);
@@ -322,7 +350,7 @@ function main() {
   const suite = buildAgentLabSuite(targetAgentDir);
   writeJson(suitePath, suite);
   const agentLabRun = runOpl(oplBin, ['agent-lab', 'run', '--suite', suitePath, '--json']);
-  const suiteResult = agentLabRun.agent_lab_run.suite_result;
+  const suiteResult = agentLabRun.agent_lab_run.suite_result as SuiteResult;
 
   const baselineReceipt = buildBaselineReceipt(
     targetAgent,

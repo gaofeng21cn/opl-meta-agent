@@ -5,21 +5,22 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import type { JsonObject } from '../scripts/lib/domain-pack.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const oplBin = process.env.OPL_BIN
   ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
 
-function writeJson(filePath, payload) {
+function writeJson(filePath: string, payload: unknown): void {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`);
 }
 
-function readJson(filePath) {
+function readJson(filePath: string): JsonObject {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
-function buildBlockedMedicalManuscriptSuite(suitePath) {
+function buildBlockedMedicalManuscriptSuite(suitePath: string): JsonObject {
   return {
     suite_id: 'mas-agent-lab-suite:002-dm-china-us-mortality-attribution:high-quality-medical-manuscript',
     suite_kind: 'agent_lab_external_suite',
@@ -153,7 +154,7 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     );
 
     assert.equal(result.status, 0, result.stderr);
-    const payload = JSON.parse(result.stdout);
+    const payload = JSON.parse(result.stdout) as JsonObject;
     assert.equal(payload.surface_kind, 'opl_meta_agent_external_suite_self_evolution_result');
     assert.equal(payload.status, 'blocked_with_developer_patch_work_order');
     assert.equal(payload.target_agent.domain_id, 'med-autoscience');
@@ -187,7 +188,7 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     );
     assert.ok(candidate.external_learning_refs.includes('external-source:equator-network/tripod-reporting-guideline'));
     assert.equal(candidate.traceability_status, 'gap_to_patch_refs_mapped');
-    const hdlTrace = candidate.patch_traceability_matrix.find((item) => item.gap_token === 'hdl');
+    const hdlTrace = (candidate.patch_traceability_matrix as JsonObject[]).find((item) => item.gap_token === 'hdl');
     assert.ok(hdlTrace);
     assert.ok(
       hdlTrace.required_patch_refs.includes(
@@ -219,7 +220,7 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     assert.equal(workOrder.authority_boundary.can_modify_target_agent_source_repo, true);
     assert.equal(workOrder.authority_boundary.can_write_target_domain_truth, false);
     assert.ok(
-      workOrder.patch_traceability_matrix.some((item) => item.gap_token === 'internal-quality-language-purge'),
+      (workOrder.patch_traceability_matrix as JsonObject[]).some((item) => item.gap_token === 'internal-quality-language-purge'),
     );
     assert.equal(workOrder.implementation_controls.patch_must_be_limited_to_traceable_surfaces, true);
     assert.equal(workOrder.implementation_controls.developer_patch_receipt_required, true);

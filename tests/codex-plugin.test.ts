@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import type { JsonObject } from '../scripts/lib/domain-pack.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const pluginRoot = path.join(repoRoot, 'plugins', 'opl-meta-agent');
@@ -27,18 +28,18 @@ test('Codex plugin installer registers OPL Meta Agent marketplace metadata', () 
       ],
       { cwd: repoRoot, encoding: 'utf8' },
     );
-    const result = JSON.parse(output);
+    const result = JSON.parse(output) as JsonObject;
     assert.equal(result.ok, true);
     assert.equal(result.plugin_name, 'opl-meta-agent');
 
     const marketplacePath = path.join(repoRoot, '.agents', 'plugins', 'marketplace.json');
-    const marketplace = JSON.parse(fs.readFileSync(marketplacePath, 'utf8'));
-    const plugin = marketplace.plugins.find((entry) => entry.name === 'opl-meta-agent');
+    const marketplace = JSON.parse(fs.readFileSync(marketplacePath, 'utf8')) as JsonObject;
+    const plugin = (marketplace.plugins as JsonObject[]).find((entry) => entry.name === 'opl-meta-agent');
     assert.ok(plugin);
     assert.equal(plugin.source.path, './plugins/opl-meta-agent');
     assert.equal(marketplace.interface.displayName, 'OPL Meta Agent Local');
 
-    const pluginManifest = JSON.parse(fs.readFileSync(pluginManifestPath, 'utf8'));
+    const pluginManifest = JSON.parse(fs.readFileSync(pluginManifestPath, 'utf8')) as JsonObject;
     assert.equal(pluginManifest.name, 'opl-meta-agent');
     assert.equal(pluginManifest.skills, './skills/');
     assert.equal(pluginManifest.interface.composerIcon, './assets/icon.png');

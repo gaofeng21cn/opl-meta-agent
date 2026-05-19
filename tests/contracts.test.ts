@@ -4,21 +4,30 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
+import type { JsonObject } from '../scripts/lib/domain-pack.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const oplBin = process.env.OPL_BIN
   ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
 const placeholderPattern = new RegExp(`\\b(?:TO${'DO'}|T${'BD'})\\b`, 'i');
 
-function readJson(relativePath) {
+function asObjects(value: unknown): JsonObject[] {
+  return value as JsonObject[];
+}
+
+function asStrings(value: unknown): string[] {
+  return value as string[];
+}
+
+function readJson(relativePath: string): JsonObject {
   return JSON.parse(fs.readFileSync(path.join(repoRoot, relativePath), 'utf8'));
 }
 
-function readText(relativePath) {
+function readText(relativePath: string): string {
   return fs.readFileSync(path.join(repoRoot, relativePath), 'utf8');
 }
 
-function listMarkdownFiles(relativeDir) {
+function listMarkdownFiles(relativeDir: string): string[] {
   const absoluteDir = path.join(repoRoot, relativeDir);
   return fs.readdirSync(absoluteDir, { withFileTypes: true })
     .flatMap((entry) => {
@@ -31,7 +40,7 @@ function listMarkdownFiles(relativeDir) {
     .sort();
 }
 
-function listFilesByExtension(relativeDir, extension) {
+function listFilesByExtension(relativeDir: string, extension: string): string[] {
   const absoluteDir = path.join(repoRoot, relativeDir);
   return fs.readdirSync(absoluteDir, { withFileTypes: true })
     .flatMap((entry) => {
@@ -44,7 +53,7 @@ function listFilesByExtension(relativeDir, extension) {
     .sort();
 }
 
-function assertUsablePackFile(relativePath) {
+function assertUsablePackFile(relativePath: string): void {
   const absolutePath = path.join(repoRoot, relativePath);
   assert.equal(fs.existsSync(absolutePath), true, `${relativePath} should exist`);
   const content = fs.readFileSync(absolutePath, 'utf8');
@@ -52,11 +61,11 @@ function assertUsablePackFile(relativePath) {
   assert.equal(placeholderPattern.test(content), false, `${relativePath} should not contain placeholder markers`);
 }
 
-function assertRepoRefExists(relativePath) {
+function assertRepoRefExists(relativePath: string): void {
   assert.equal(fs.existsSync(path.join(repoRoot, relativePath)), true, `${relativePath} should exist`);
 }
 
-function assertNoForbiddenAuthority(surface, label) {
+function assertNoForbiddenAuthority(surface: JsonObject, label: string): void {
   assert.equal(surface.owner, 'opl-meta-agent', `${label}.owner`);
   assert.equal(surface.authority_boundary.refs_only, true, `${label} should be refs-only`);
   assert.equal(surface.authority_boundary.not_generic_runtime_owner, true, `${label} should not own generic runtime`);
@@ -130,7 +139,7 @@ test('domain pack files and stage prompt refs resolve to usable repo files', () 
     },
   ];
 
-  stageControl.stages.forEach((stage) => {
+  asObjects(stageControl.stages).forEach((stage) => {
     stageRefSpecs.forEach((spec) => {
       const refs = stage[spec.field];
       assert.ok(Array.isArray(refs), `${stage.stage_id}.${spec.field} should be an array`);
@@ -157,7 +166,7 @@ test('opl-meta-agent stage plan covers research, build, eval, optimization, deli
 
   assert.equal(stageControl.surface_kind, 'family_stage_control_plane');
   assert.equal(stageControl.version, 'family-stage-control-plane.v1');
-  assert.deepEqual(stageControl.stages.map((stage) => stage.stage_id), [
+  assert.deepEqual(asObjects(stageControl.stages).map((stage) => stage.stage_id), [
     'intent-intake',
     'web-experience-research',
     'stage-decomposition',
@@ -170,15 +179,15 @@ test('opl-meta-agent stage plan covers research, build, eval, optimization, deli
     'online-learning',
   ]);
   assert.deepEqual(
-    stageControl.stages.find((stage) => stage.stage_id === 'agent-skeleton-build').allowed_action_refs,
+    asObjects(stageControl.stages).find((stage) => stage.stage_id === 'agent-skeleton-build')?.allowed_action_refs,
     ['build-agent-baseline'],
   );
   assert.deepEqual(
-    stageControl.stages.find((stage) => stage.stage_id === 'external-agent-takeover').allowed_action_refs,
+    asObjects(stageControl.stages).find((stage) => stage.stage_id === 'external-agent-takeover')?.allowed_action_refs,
     ['takeover-external-agent-test'],
   );
   assert.deepEqual(
-    stageControl.stages.find((stage) => stage.stage_id === 'optimizer-iteration').allowed_action_refs,
+    asObjects(stageControl.stages).find((stage) => stage.stage_id === 'optimizer-iteration')?.allowed_action_refs,
     ['improve-from-external-agent-lab-suite'],
   );
   assert.equal(stageControl.opl_runtime_dependency.agent_lab_complete_control_plane, true);
@@ -194,14 +203,15 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   const ownerReceipt = readJson('contracts/owner_receipt_contract.json');
 
   assert.equal(actionCatalog.version, 'family-action-catalog.v1');
-  assert.ok(actionCatalog.actions.some((action) => action.action_id === 'build-agent-baseline'));
-  const takeoverAction = actionCatalog.actions.find((action) => action.action_id === 'takeover-external-agent-test');
+  const actions = asObjects(actionCatalog.actions);
+  assert.ok(actions.some((action) => action.action_id === 'build-agent-baseline'));
+  const takeoverAction = actions.find((action) => action.action_id === 'takeover-external-agent-test');
   assert.ok(takeoverAction);
   assert.equal(takeoverAction.supported_surfaces.mcp.descriptor_only, true);
   assert.equal(takeoverAction.supported_surfaces.mcp.public_runtime, false);
   assert.equal(takeoverAction.authority_boundary.can_write_target_domain_truth, false);
   assert.equal(takeoverAction.authority_boundary.can_promote_default_agent_without_gate, false);
-  const externalSuiteAction = actionCatalog.actions.find(
+  const externalSuiteAction = actions.find(
     (action) => action.action_id === 'improve-from-external-agent-lab-suite',
   );
   assert.ok(externalSuiteAction);
@@ -212,7 +222,7 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   assert.equal(externalSuiteAction.authority_boundary.can_modify_target_agent_tests, true);
   assert.equal(externalSuiteAction.authority_boundary.can_modify_target_agent_docs, true);
   assert.equal(externalSuiteAction.authority_boundary.can_authorize_target_domain_quality_or_export, false);
-  const mechanismAction = actionCatalog.actions.find((action) => action.action_id === 'generate-mechanism-patch-proposal');
+  const mechanismAction = actions.find((action) => action.action_id === 'generate-mechanism-patch-proposal');
   assert.ok(mechanismAction);
   assert.deepEqual(mechanismAction.workspace_locator_fields, [
     'mechanism_ref',
@@ -268,7 +278,7 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
   assert.equal(registration.authority_boundary.domain_repo_can_own_generic_operator_workbench, false);
   Object.entries(registration.domain_manifest)
     .filter(([key]) => key.endsWith('_ref'))
-    .map(([, value]) => value)
+    .map(([, value]) => value as string)
     .forEach(assertRepoRefExists);
 
   assert.equal(appProjection.surface_kind, 'opl_app_workbench_projection_contract');
@@ -280,10 +290,10 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
   assert.equal(appProjection.authority_boundary.domain_repo_can_own_generic_operator_workbench, false);
   assert.equal(appProjection.workbench_sections.length, 6);
   assert.equal(
-    appProjection.workbench_sections.some((section) => section.section_id === 'scaleout_evidence'),
+    asObjects(appProjection.workbench_sections).some((section) => section.section_id === 'scaleout_evidence'),
     true,
   );
-  Object.values(appProjection.source_refs).forEach(assertRepoRefExists);
+  asStrings(Object.values(appProjection.source_refs)).forEach(assertRepoRefExists);
 
   assert.equal(scaleoutEvidence.surface_kind, 'real_target_agent_scaleout_evidence_contract');
   assert.equal(scaleoutEvidence.evidence_status, 'contract_ready_no_real_scaleout_claim_yet');
@@ -293,20 +303,20 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
   assert.equal(scaleoutEvidence.authority_boundary.can_treat_sample_smoke_as_real_delivery, false);
   assert.equal(scaleoutEvidence.authority_boundary.can_treat_suite_pass_as_default_promotion, false);
   assert.deepEqual(
-    scaleoutEvidence.required_evidence_classes.map((entry) => entry.evidence_class),
+    asObjects(scaleoutEvidence.required_evidence_classes).map((entry) => entry.evidence_class),
     [
       'real_target_agent_delivery',
       'blocked_suite_to_developer_work_order',
       'multi_target_scaleout',
     ],
   );
-  Object.values(scaleoutEvidence.source_refs).forEach(assertRepoRefExists);
+  asStrings(Object.values(scaleoutEvidence.source_refs)).forEach(assertRepoRefExists);
 
   [
     registration,
     appProjection,
     scaleoutEvidence,
-  ].forEach((surface) => {
+  ].forEach((surface: JsonObject) => {
     surface.human_doc_refs.forEach(assertRepoRefExists);
   });
 
@@ -323,7 +333,7 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
     'contracts/real_target_agent_scaleout_evidence.json',
   );
   assert.equal(
-    generatedSurfaceHandoff.generated_surfaces.some((surface) =>
+    asObjects(generatedSurfaceHandoff.generated_surfaces).some((surface) =>
       surface.surface_id === 'scaleout_evidence_projection'
     ),
     true,
@@ -367,7 +377,7 @@ test('registration, projection, and evidence contracts are represented in functi
   ];
 
   expectedModules.forEach((expected) => {
-    const module = audit.modules.find((entry) => entry.module_id === expected.moduleId);
+    const module = asObjects(audit.modules).find((entry) => entry.module_id === expected.moduleId);
     assert.ok(module, `${expected.moduleId} should be represented in functional audit`);
     assert.equal(module.owner, 'opl-meta-agent');
     assert.equal(module.classification, expected.classification);
@@ -409,7 +419,7 @@ test('minimal authority functions are explicit refs, not generic runtime owners'
   ];
 
   expectedAuthorityFunctions.forEach((expected) => {
-    const functionRef = authorityFunctions.functions.find((entry) => entry.function_id === expected.moduleId);
+    const functionRef = asObjects(authorityFunctions.functions).find((entry) => entry.function_id === expected.moduleId);
     assert.ok(functionRef, `${expected.moduleId} should have an authority function ref`);
     assert.equal(functionRef.classification, 'minimal_authority_function');
     assert.equal(functionRef.authority_ref, expected.authorityRef);
@@ -418,11 +428,11 @@ test('minimal authority functions are explicit refs, not generic runtime owners'
     assert.equal(functionRef.boundary.refs_only, true);
     assert.equal(functionRef.boundary.can_claim_generic_runtime_owner, false);
     assert.equal(functionRef.boundary.can_write_target_domain_truth, false);
-    functionRef.implementation_refs.forEach((relativePath) => {
+    asStrings(functionRef.implementation_refs).forEach((relativePath) => {
       assert.equal(fs.existsSync(path.join(repoRoot, relativePath)), true, `${relativePath} should exist`);
     });
 
-    const auditModule = audit.modules.find((entry) => entry.module_id === expected.moduleId);
+    const auditModule = asObjects(audit.modules).find((entry) => entry.module_id === expected.moduleId);
     assert.ok(auditModule, `${expected.moduleId} should be represented in functional privatization audit`);
     assert.equal(auditModule.classification, 'minimal_authority_function');
     assert.equal(auditModule.authority_function_ref, expected.authorityRef);
@@ -444,7 +454,7 @@ test('script physical morphology stays limited to authority refs and helpers', (
 
   assert.equal(morphologyPolicy.policy_ref, 'contracts/private_functional_surface_policy.json');
   assert.deepEqual(
-    privatePolicy.allowed_script_morphology_classes.map((entry) => entry.class_id),
+    asObjects(privatePolicy.allowed_script_morphology_classes).map((entry) => entry.class_id),
     [
       'authority_function_implementation_ref',
       'smoke_helper',
@@ -465,22 +475,22 @@ test('script physical morphology stays limited to authority refs and helpers', (
   assert.ok(morphologyPolicy.forbidden_roles.includes('promotion_gate_owner'));
   assert.ok(morphologyPolicy.forbidden_roles.includes('target_domain_truth_writer'));
 
-  const implementationRefs = new Map();
-  authorityFunctions.functions.forEach((functionRef) => {
-    functionRef.implementation_refs.forEach((scriptRef) => {
+  const implementationRefs = new Map<string, string[]>();
+  asObjects(authorityFunctions.functions).forEach((functionRef) => {
+    asStrings(functionRef.implementation_refs).forEach((scriptRef) => {
       const refs = implementationRefs.get(scriptRef) ?? [];
       refs.push(functionRef.authority_ref);
       implementationRefs.set(scriptRef, refs);
     });
   });
 
-  const classifiedScripts = morphologyPolicy.script_classifications.map((entry) => entry.script_ref).sort();
+  const classifiedScripts = asObjects(morphologyPolicy.script_classifications).map((entry) => entry.script_ref as string).sort();
   assert.deepEqual(classifiedScripts, scripts);
 
-  morphologyPolicy.script_classifications.forEach((entry) => {
+  asObjects(morphologyPolicy.script_classifications).forEach((entry) => {
     assertRepoRefExists(entry.script_ref);
     assert.ok(entry.classes.length > 0, `${entry.script_ref} should have at least one script class`);
-    entry.classes.forEach((classId) => {
+    asStrings(entry.classes).forEach((classId) => {
       assert.ok(
         morphologyPolicy.allowed_classes.includes(classId),
         `${entry.script_ref} uses unsupported script morphology class ${classId}`,
@@ -547,7 +557,7 @@ test('OPL generated interfaces expose CLI, MCP, Skill, and product-entry descrip
   });
 
   assert.equal(result.status, 0, result.stderr);
-  const payload = JSON.parse(result.stdout);
+  const payload = JSON.parse(result.stdout) as JsonObject;
   const bundle = payload.generated_agent_interfaces;
   assert.equal(bundle.surface_kind, 'opl_generated_agent_interface_bundle');
   assert.equal(bundle.owner, 'one-person-lab');
@@ -555,30 +565,30 @@ test('OPL generated interfaces expose CLI, MCP, Skill, and product-entry descrip
   assert.equal(bundle.repo_dir, repoRoot);
   assert.equal(bundle.domain_repo_can_own_generated_surface, false);
   assert.equal(bundle.status, 'ready');
-  assert.equal(bundle.cli.descriptors.some((entry) => entry.action_id === 'build-agent-baseline'), true);
+  assert.equal(asObjects(bundle.cli.descriptors).some((entry) => entry.action_id === 'build-agent-baseline'), true);
   assert.equal(
-    bundle.mcp.descriptors.find((entry) => entry.name === 'opl_meta_agent_takeover_external_agent_test')
-      .descriptor_only,
+    asObjects(bundle.mcp.descriptors).find((entry) => entry.name === 'opl_meta_agent_takeover_external_agent_test')
+      ?.descriptor_only,
     true,
   );
   assert.equal(
-    bundle.skill.descriptors.some((entry) =>
+    asObjects(bundle.skill.descriptors).some((entry) =>
       entry.command_contract_id === 'opl-meta-agent.build-agent-baseline'
     ),
     true,
   );
   assert.equal(
-    bundle.skill.descriptors.some((entry) =>
+    asObjects(bundle.skill.descriptors).some((entry) =>
       entry.command_contract_id === 'opl-meta-agent.improve-from-external-agent-lab-suite'
     ),
     true,
   );
   assert.equal(
-    bundle.product_entry.descriptors.some((entry) => entry.action_key === 'takeover-external-agent-test'),
+    asObjects(bundle.product_entry.descriptors).some((entry) => entry.action_key === 'takeover-external-agent-test'),
     true,
   );
   assert.equal(
-    bundle.product_entry.descriptors.some((entry) => entry.action_key === 'improve-from-external-agent-lab-suite'),
+    asObjects(bundle.product_entry.descriptors).some((entry) => entry.action_key === 'improve-from-external-agent-lab-suite'),
     true,
   );
   assert.equal(bundle.authority_boundary.generated_interface_can_write_domain_truth, false);

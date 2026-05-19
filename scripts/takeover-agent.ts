@@ -4,10 +4,16 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  type DomainPackSummary,
+  type JsonObject,
   domainPackReceiptFields,
   readDomainPackSummary,
 } from './lib/domain-pack.ts';
 import {
+  type LearningCandidate,
+  type OwnerReceipt,
+  type SuiteResult,
+  type TargetAgent,
   buildAgentLabSuite,
   buildLearningCandidate,
   buildMechanismPatchProposal,
@@ -20,8 +26,18 @@ import {
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-function parseArgs(argv) {
-  const parsed = {
+type TakeoverArgs = {
+  targetAgentDir: string;
+  outputDir: string;
+  oplBin: string;
+};
+
+function parseArgs(argv: string[]): TakeoverArgs {
+  const parsed: {
+    targetAgentDir: string | null;
+    outputDir: string | null;
+    oplBin: string;
+  } = {
     targetAgentDir: null,
     outputDir: null,
     oplBin: resolveOplBin(),
@@ -65,10 +81,14 @@ function parseArgs(argv) {
   }
 
   parsed.outputDir ??= fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-takeover-'));
-  return parsed;
+  return {
+    targetAgentDir: parsed.targetAgentDir,
+    outputDir: parsed.outputDir,
+    oplBin: parsed.oplBin,
+  };
 }
 
-function buildTakeoverSuite(targetAgent, targetAgentDir) {
+function buildTakeoverSuite(targetAgent: TargetAgent, targetAgentDir: string): JsonObject {
   return buildAgentLabSuite({
     suiteId: `opl-meta-agent-takeover-suite:${targetAgent.domain_id}`,
     taskId: `agent-lab-task:opl-meta-agent/${targetAgent.domain_id}/takeover`,
@@ -108,7 +128,12 @@ function buildTakeoverSuite(targetAgent, targetAgentDir) {
   });
 }
 
-function buildTakeoverMechanismPatchProposal(suiteResult, takeoverReceipt, learningCandidate, targetAgent) {
+function buildTakeoverMechanismPatchProposal(
+  suiteResult: SuiteResult,
+  takeoverReceipt: OwnerReceipt,
+  learningCandidate: LearningCandidate,
+  targetAgent: TargetAgent,
+): JsonObject {
   return buildMechanismPatchProposal({
     suiteResult,
     receipt: takeoverReceipt,
@@ -128,7 +153,7 @@ function buildTakeoverMechanismPatchProposal(suiteResult, takeoverReceipt, learn
 function main() {
   const { targetAgentDir, outputDir, oplBin } = parseArgs(process.argv.slice(2));
   fs.mkdirSync(outputDir, { recursive: true });
-  const domainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
+  const domainPackSummary: DomainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
 
   const targetAgent = readTargetAgent(targetAgentDir, {
     domain_id: path.basename(targetAgentDir),
@@ -148,9 +173,9 @@ function main() {
   writeJson(suitePath, suite);
 
   const agentLabRun = runOpl(oplBin, ['agent-lab', 'run', '--suite', suitePath, '--json']);
-  const suiteResult = agentLabRun.agent_lab_run.suite_result;
+  const suiteResult = agentLabRun.agent_lab_run.suite_result as SuiteResult;
 
-  const takeoverReceipt = {
+  const takeoverReceipt: OwnerReceipt = {
     ...buildOwnerReceipt({
       receiptClass: 'testing_takeover_self_evolution_receipt',
       status: suiteResult.status === 'passed' ? 'testing_takeover_recorded' : 'testing_takeover_blocked',

@@ -115,10 +115,11 @@
 ## 常用命令
 
 ```bash
+npm run typecheck
 npm test
 ```
 
-验证内容包括合同字段、OPL 生成接口 bundle、`agent/` domain pack 文件存在性、stage prompt/skill/knowledge/evaluation refs 真实路径、非空文件与占位符检查。
+`typecheck` 会用 TypeScript compiler 检查 `scripts/**/*.ts` 和 `tests/**/*.ts`。测试内容包括合同字段、OPL 生成接口 bundle、`agent/` domain pack 文件存在性、stage prompt/skill/knowledge/evaluation refs 真实路径、非空文件与占位符检查。
 
 ```bash
 npm run bootstrap:sample -- --output-dir /tmp/opl-meta-agent-demo --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl

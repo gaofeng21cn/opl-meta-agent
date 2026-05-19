@@ -1,7 +1,62 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const DOMAIN_PACK_SECTIONS = [
+export type JsonObject = Record<string, any>;
+
+type DomainPackRefsField =
+  | 'prompt_policy_refs'
+  | 'stage_policy_refs'
+  | 'skill_policy_refs'
+  | 'quality_gate_refs'
+  | 'knowledge_policy_refs';
+
+type DomainPackSection = {
+  section: string;
+  dir: string;
+  refsField: DomainPackRefsField;
+  refKind: string;
+};
+
+type DomainPackFileSummary = {
+  section: string;
+  path: string;
+  ref: string;
+  byte_length: number;
+  non_empty: true;
+};
+
+export type DomainPackSummary = {
+  status: 'ready';
+  domain_id: string;
+  pack_root: 'agent';
+  required_section_count: number;
+  required_file_count: number;
+  verified_file_count: number;
+  required_files: DomainPackFileSummary[];
+  section_file_counts: Record<string, number>;
+  prompt_policy_refs: string[];
+  stage_policy_refs: string[];
+  skill_policy_refs: string[];
+  quality_gate_refs: string[];
+  knowledge_policy_refs: string[];
+};
+
+export type DomainPackSummaryRefsField = DomainPackRefsField;
+
+export type DomainPackReceiptFields = {
+  domain_pack_status: DomainPackSummary['status'];
+  prompt_policy_refs: string[];
+  skill_policy_refs: string[];
+  quality_gate_refs: string[];
+  knowledge_policy_refs: string[];
+};
+
+export type MinimalTargetAgent = {
+  domain_id: string;
+  domain_label?: string | null;
+};
+
+const DOMAIN_PACK_SECTIONS: DomainPackSection[] = [
   {
     section: 'prompts',
     dir: 'agent/prompts',
@@ -36,14 +91,25 @@ const DOMAIN_PACK_SECTIONS = [
 
 const placeholderPattern = new RegExp(`\\b(?:TO${'DO'}|T${'BD'})\\b`, 'i');
 
-function policyRef({ domainId, refKind, relPath }) {
+function policyRef({
+  domainId,
+  refKind,
+  relPath,
+}: {
+  domainId: string;
+  refKind: string;
+  relPath: string;
+}): string {
   return `${refKind}:${domainId}/${relPath}`;
 }
 
-export function readDomainPackSummary(repoDir, { domainId } = {}) {
+export function readDomainPackSummary(
+  repoDir: string,
+  { domainId }: { domainId?: string } = {},
+): DomainPackSummary {
   const resolvedRepoDir = path.resolve(repoDir);
   const resolvedDomainId = domainId ?? path.basename(resolvedRepoDir);
-  const summary = {
+  const summary: DomainPackSummary = {
     status: 'ready',
     domain_id: resolvedDomainId,
     pack_root: 'agent',
@@ -103,7 +169,7 @@ export function readDomainPackSummary(repoDir, { domainId } = {}) {
   return summary;
 }
 
-export function domainPackReceiptFields(summary) {
+export function domainPackReceiptFields(summary: DomainPackSummary): DomainPackReceiptFields {
   return {
     domain_pack_status: summary.status,
     prompt_policy_refs: summary.prompt_policy_refs,
@@ -113,7 +179,7 @@ export function domainPackReceiptFields(summary) {
   };
 }
 
-export function writeMinimalAgentDomainPack(targetAgentDir, targetAgent) {
+export function writeMinimalAgentDomainPack(targetAgentDir: string, targetAgent: MinimalTargetAgent): void {
   const domainId = targetAgent.domain_id;
   const domainLabel = targetAgent.domain_label ?? domainId;
   const files = {
