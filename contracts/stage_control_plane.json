@@ -25,11 +25,20 @@
       "inputs": [],
       "knowledge_refs": [
         {
-          "ref_kind": "domain_memory_ref",
-          "ref": "opl-meta-agent.agent-building-memory"
+          "ref_kind": "domain_knowledge_ref",
+          "ref": "agent/knowledge/opl-boundary-policy.md"
+        },
+        {
+          "ref_kind": "domain_knowledge_ref",
+          "ref": "agent/knowledge/project-maturity-signals.md"
         }
       ],
-      "skills": [],
+      "skills": [
+        {
+          "ref_kind": "domain_skill_ref",
+          "ref": "agent/skills/opl-meta-agent-domain-skill.md"
+        }
+      ],
       "prompt_refs": [
         {
           "ref_kind": "domain_prompt_ref",
@@ -47,7 +56,12 @@
           ]
         }
       ],
-      "evaluation": [],
+      "evaluation": [
+        {
+          "ref_kind": "domain_quality_gate_ref",
+          "ref": "agent/quality_gates/baseline-delivery.md"
+        }
+      ],
       "handoff": null,
       "source_refs": [],
       "authority_boundary": {
@@ -66,8 +80,22 @@
         "web-experience-research"
       ],
       "inputs": [],
-      "knowledge_refs": [],
-      "skills": [],
+      "knowledge_refs": [
+        {
+          "ref_kind": "domain_knowledge_ref",
+          "ref": "agent/knowledge/transferable-agent-practices.md"
+        },
+        {
+          "ref_kind": "domain_knowledge_ref",
+          "ref": "agent/knowledge/project-maturity-signals.md"
+        }
+      ],
+      "skills": [
+        {
+          "ref_kind": "domain_skill_ref",
+          "ref": "agent/skills/opl-meta-agent-domain-skill.md"
+        }
+      ],
       "prompt_refs": [
         {
           "ref_kind": "domain_prompt_ref",
@@ -85,7 +113,12 @@
           ]
         }
       ],
-      "evaluation": [],
+      "evaluation": [
+        {
+          "ref_kind": "domain_quality_gate_ref",
+          "ref": "agent/quality_gates/baseline-delivery.md"
+        }
+      ],
       "handoff": null,
       "source_refs": [],
       "authority_boundary": {
@@ -104,8 +137,22 @@
         "stage-decomposition"
       ],
       "inputs": [],
-      "knowledge_refs": [],
-      "skills": [],
+      "knowledge_refs": [
+        {
+          "ref_kind": "domain_knowledge_ref",
+          "ref": "agent/knowledge/opl-boundary-policy.md"
+        },
+        {
+          "ref_kind": "domain_knowledge_ref",
+          "ref": "agent/knowledge/transferable-agent-practices.md"
+        }
+      ],
+      "skills": [
+        {
+          "ref_kind": "domain_skill_ref",
+          "ref": "agent/skills/opl-meta-agent-domain-skill.md"
+        }
+      ],
       "prompt_refs": [
         {
           "ref_kind": "domain_prompt_ref",
@@ -123,7 +170,12 @@
           ]
         }
       ],
-      "evaluation": [],
+      "evaluation": [
+        {
+          "ref_kind": "domain_quality_gate_ref",
+          "ref": "agent/quality_gates/baseline-delivery.md"
+        }
+      ],
       "handoff": null,
       "source_refs": [],
       "authority_boundary": {
@@ -142,8 +194,26 @@
         "agent-skeleton-build"
       ],
       "inputs": [],
-      "knowledge_refs": [],
-      "skills": [],
+      "knowledge_refs": [
+        {
+          "ref_kind": "domain_knowledge_ref",
+          "ref": "agent/knowledge/opl-boundary-policy.md"
+        },
+        {
+          "ref_kind": "domain_knowledge_ref",
+          "ref": "agent/knowledge/transferable-agent-practices.md"
+        }
+      ],
+      "skills": [
+        {
+          "ref_kind": "domain_skill_ref",
+          "ref": "agent/skills/agent-baseline-build.md"
+        },
+        {
+          "ref_kind": "domain_skill_ref",
+          "ref": "agent/skills/opl-meta-agent-domain-skill.md"
+        }
+      ],
       "prompt_refs": [
         {
           "ref_kind": "domain_prompt_ref",
@@ -164,7 +234,12 @@
           ]
         }
       ],
-      "evaluation": [],
+      "evaluation": [
+        {
+          "ref_kind": "domain_quality_gate_ref",
+          "ref": "agent/quality_gates/baseline-delivery.md"
+        }
+      ],
       "handoff": null,
       "source_refs": [],
       "authority_boundary": {
@@ -183,8 +258,26 @@
         "eval-suite-build"
       ],
       "inputs": [],
-      "knowledge_refs": [],
-      "skills": [],
+      "knowledge_refs": [
+        {
+          "ref_kind": "domain_knowledge_ref",
+          "ref": "agent/knowledge/project-maturity-signals.md"
+        },
+        {
+          "ref_kind": "domain_knowledge_ref",
+          "ref": "agent/knowledge/transferable-agent-practices.md"
+        }
+      ],
+      "skills": [
+        {
+          "ref_kind": "domain_skill_ref",
+          "ref": "agent/skills/agent-baseline-build.md"
+        },
+        {
+          "ref_kind": "domain_skill_ref",
+          "ref": "agent/skills/opl-meta-agent-domain-skill.md"
+        }
+      ],
       "prompt_refs": [
         {
           "ref_kind": "domain_prompt_ref",
@@ -202,7 +295,12 @@
           ]
         }
       ],
-      "evaluation": [],
+      "evaluation": [
+        {
+          "ref_kind": "domain_quality_gate_ref",
+          "ref": "agent/quality_gates/baseline-delivery.md"
+        }
+      ],
       "handoff": null,
       "source_refs": [],
       "authority_boundary": {
@@ -221,9 +319,28 @@
         "baseline-run"
       ],
       "inputs": [],
-      "knowledge_refs": [],
-      "skills": [],
-      "prompt_refs": [],
+      "knowledge_refs": [
+        {
+          "ref_kind": "domain_knowledge_ref",
+          "ref": "agent/knowledge/opl-boundary-policy.md"
+        },
+        {
+          "ref_kind": "domain_knowledge_ref",
+          "ref": "agent/knowledge/project-maturity-signals.md"
+        }
+      ],
+      "skills": [
+        {
+          "ref_kind": "domain_skill_ref",
+          "ref": "agent/skills/agent-baseline-build.md"
+        }
+      ],
+      "prompt_refs": [
+        {
+          "ref_kind": "domain_prompt_ref",
+          "ref": "agent/prompts/baseline-run.md"
+        }
+      ],
       "allowed_action_refs": [
         "build-agent-baseline"
       ],
@@ -237,7 +354,12 @@
           ]
         }
       ],
-      "evaluation": [],
+      "evaluation": [
+        {
+          "ref_kind": "domain_quality_gate_ref",
+          "ref": "agent/quality_gates/baseline-delivery.md"
+        }
+      ],
       "handoff": null,
       "source_refs": [],
       "authority_boundary": {
@@ -264,8 +386,26 @@
           ]
         }
       ],
-      "knowledge_refs": [],
-      "skills": [],
+      "knowledge_refs": [
+        {
+          "ref_kind": "domain_knowledge_ref",
+          "ref": "agent/knowledge/opl-boundary-policy.md"
+        },
+        {
+          "ref_kind": "domain_knowledge_ref",
+          "ref": "agent/knowledge/project-maturity-signals.md"
+        }
+      ],
+      "skills": [
+        {
+          "ref_kind": "domain_skill_ref",
+          "ref": "agent/skills/external-suite-improvement.md"
+        },
+        {
+          "ref_kind": "domain_skill_ref",
+          "ref": "agent/skills/opl-meta-agent-domain-skill.md"
+        }
+      ],
       "prompt_refs": [
         {
           "ref_kind": "domain_prompt_ref",
@@ -286,7 +426,16 @@
           ]
         }
       ],
-      "evaluation": [],
+      "evaluation": [
+        {
+          "ref_kind": "domain_quality_gate_ref",
+          "ref": "agent/quality_gates/takeover.md"
+        },
+        {
+          "ref_kind": "domain_quality_gate_ref",
+          "ref": "agent/quality_gates/external-suite-self-evolution.md"
+        }
+      ],
       "handoff": null,
       "source_refs": [],
       "authority_boundary": {
@@ -306,8 +455,22 @@
         "optimizer-iteration"
       ],
       "inputs": [],
-      "knowledge_refs": [],
-      "skills": [],
+      "knowledge_refs": [
+        {
+          "ref_kind": "domain_knowledge_ref",
+          "ref": "agent/knowledge/transferable-agent-practices.md"
+        },
+        {
+          "ref_kind": "domain_knowledge_ref",
+          "ref": "agent/knowledge/project-maturity-signals.md"
+        }
+      ],
+      "skills": [
+        {
+          "ref_kind": "domain_skill_ref",
+          "ref": "agent/skills/external-suite-improvement.md"
+        }
+      ],
       "prompt_refs": [
         {
           "ref_kind": "domain_prompt_ref",
@@ -331,7 +494,16 @@
           ]
         }
       ],
-      "evaluation": [],
+      "evaluation": [
+        {
+          "ref_kind": "domain_quality_gate_ref",
+          "ref": "agent/quality_gates/external-suite-self-evolution.md"
+        },
+        {
+          "ref_kind": "domain_quality_gate_ref",
+          "ref": "agent/quality_gates/mechanism-patch-adoption.md"
+        }
+      ],
       "handoff": null,
       "source_refs": [],
       "authority_boundary": {
@@ -350,9 +522,32 @@
         "baseline-delivery"
       ],
       "inputs": [],
-      "knowledge_refs": [],
-      "skills": [],
-      "prompt_refs": [],
+      "knowledge_refs": [
+        {
+          "ref_kind": "domain_knowledge_ref",
+          "ref": "agent/knowledge/opl-boundary-policy.md"
+        },
+        {
+          "ref_kind": "domain_knowledge_ref",
+          "ref": "agent/knowledge/project-maturity-signals.md"
+        }
+      ],
+      "skills": [
+        {
+          "ref_kind": "domain_skill_ref",
+          "ref": "agent/skills/agent-baseline-build.md"
+        },
+        {
+          "ref_kind": "domain_skill_ref",
+          "ref": "agent/skills/opl-meta-agent-domain-skill.md"
+        }
+      ],
+      "prompt_refs": [
+        {
+          "ref_kind": "domain_prompt_ref",
+          "ref": "agent/prompts/baseline-delivery.md"
+        }
+      ],
       "allowed_action_refs": [
         "build-agent-baseline"
       ],
@@ -366,7 +561,12 @@
           ]
         }
       ],
-      "evaluation": [],
+      "evaluation": [
+        {
+          "ref_kind": "domain_quality_gate_ref",
+          "ref": "agent/quality_gates/baseline-delivery.md"
+        }
+      ],
       "handoff": null,
       "source_refs": [],
       "authority_boundary": {
@@ -385,8 +585,26 @@
         "online-learning"
       ],
       "inputs": [],
-      "knowledge_refs": [],
-      "skills": [],
+      "knowledge_refs": [
+        {
+          "ref_kind": "domain_knowledge_ref",
+          "ref": "agent/knowledge/opl-boundary-policy.md"
+        },
+        {
+          "ref_kind": "domain_knowledge_ref",
+          "ref": "agent/knowledge/transferable-agent-practices.md"
+        }
+      ],
+      "skills": [
+        {
+          "ref_kind": "domain_skill_ref",
+          "ref": "agent/skills/external-suite-improvement.md"
+        },
+        {
+          "ref_kind": "domain_skill_ref",
+          "ref": "agent/skills/opl-meta-agent-domain-skill.md"
+        }
+      ],
       "prompt_refs": [
         {
           "ref_kind": "domain_prompt_ref",
@@ -407,7 +625,12 @@
           ]
         }
       ],
-      "evaluation": [],
+      "evaluation": [
+        {
+          "ref_kind": "domain_quality_gate_ref",
+          "ref": "agent/quality_gates/mechanism-patch-adoption.md"
+        }
+      ],
       "handoff": null,
       "source_refs": [],
       "authority_boundary": {

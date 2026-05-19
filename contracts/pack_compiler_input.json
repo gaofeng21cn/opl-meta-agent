@@ -12,6 +12,8 @@
     "agent/knowledge/transferable-agent-practices.md",
     "agent/prompts/README.md",
     "agent/prompts/agent-skeleton-build.md",
+    "agent/prompts/baseline-delivery.md",
+    "agent/prompts/baseline-run.md",
     "agent/prompts/eval-suite-build.md",
     "agent/prompts/external-agent-takeover.md",
     "agent/prompts/intent-intake.md",

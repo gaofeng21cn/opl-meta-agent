@@ -9,8 +9,8 @@
 - `agent/prompts/stage-decomposition.md`
 - `agent/prompts/agent-skeleton-build.md`
 - `agent/prompts/eval-suite-build.md`
+- `agent/prompts/baseline-run.md`
 - `agent/prompts/external-agent-takeover.md`
 - `agent/prompts/optimizer-iteration.md`
+- `agent/prompts/baseline-delivery.md`
 - `agent/prompts/online-learning.md`
-
-`baseline-run` 与 `baseline-delivery` 当前没有 prompt ref；它们的操作策略放在 `agent/stages/`，质量判定放在 `agent/quality_gates/`。

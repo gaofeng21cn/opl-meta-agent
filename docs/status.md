@@ -8,7 +8,7 @@
 - 可验证 domain pack：`agent/knowledge/`、`agent/prompts/`、`agent/quality_gates/`、`agent/skills/`、`agent/stages/` 下的 README 与分项文件均为当前合同列出的真实 pack 文件；测试会检查这些文件存在、非空、无占位。
 - 合同：descriptor、stage control plane、action catalog、memory descriptor、artifact locator、owner receipt、functional privatization audit。
 - OPL generated interface 合同：pack compiler input、generated surface handoff、private functional surface policy。
-- `stage_control_plane.prompt_refs` 路径解析：当前 prompt locator 已拆到 repo-tracked `agent/prompts/*.md` 分阶段文件；测试会确认每个 locator 指向真实文件。
+- `stage_control_plane` 路径解析：当前每个 stage 的 prompt、skill、knowledge、evaluation refs 都指向 repo-tracked `agent/prompts/*.md`、`agent/skills/*.md`、`agent/knowledge/*.md`、`agent/quality_gates/*.md` 文件；测试会确认每个 locator 指向真实文件。
 - 九阶段 meta-agent plan：intent intake、web research、stage decomposition、agent skeleton build、eval suite build、baseline run、optimizer iteration、baseline delivery、online learning。
 - 最小 repo-local test：`npm test`。
 - 自举闭环脚本：`npm run bootstrap:sample -- --output-dir <dir> --opl-bin <opl>`。

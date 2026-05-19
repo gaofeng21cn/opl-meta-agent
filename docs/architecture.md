@@ -20,7 +20,7 @@ CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framewo
 
 ## Domain Pack Structure
 
-`agent/` 当前是可验证 domain pack，而不是占位目录。`contracts/pack_compiler_input.json` 的 `required_domain_pack_paths` 列出 README、分阶段 prompts、stage policies、skills、quality gates 和 knowledge policies；`tests/contracts.test.mjs` 校验这些文件非空、无占位，并校验 `stage_control_plane.prompt_refs` 解析到真实 `agent/prompts/*.md` 文件。
+`agent/` 当前是可验证 domain pack，而不是占位目录。`contracts/pack_compiler_input.json` 的 `required_domain_pack_paths` 列出 README、分阶段 prompts、stage policies、skills、quality gates 和 knowledge policies；`tests/contracts.test.mjs` 校验这些文件非空、无占位，并校验 `stage_control_plane` 的 prompt、skill、knowledge、evaluation refs 解析到真实 `agent/` pack 文件。
 
 ## Optimization
 

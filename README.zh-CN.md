@@ -73,7 +73,7 @@
 ## 当前定位与边界
 
 - `OPL Meta Agent` 面向“开发智能体的智能体”：它把目标智能体需求推进成可测试、可交付、可持续优化的基线包。
-- `agent/` 是本仓真实 domain pack 入口：`knowledge/`、`prompts/`、`quality_gates/`、`skills/`、`stages/` 至少提供可解析、非空、无占位的 domain-owned 文件，`contracts/stage_control_plane.json` 的 `prompt_refs` 必须指向这些真实文件。
+- `agent/` 是本仓真实 domain pack 入口：`knowledge/`、`prompts/`、`quality_gates/`、`skills/`、`stages/` 至少提供可解析、非空、无占位的 domain-owned 文件，`contracts/stage_control_plane.json` 的 stage prompt、skill、knowledge、evaluation refs 必须指向这些真实文件。
 - 本仓复用 OPL Framework 的脚手架、Agent Lab、队列、状态投影和采用门槛，不在本仓重建通用运行框架。
 - CLI、MCP、Skill、product-entry 和工具描述由 OPL Framework 根据本仓的 action / stage 合同统一生成；本仓不维护私有通用入口包装层。
 - 生成接口可以调用本仓声明的 minimal authority functions 和 domain smoke action，但只能投影 refs、回执、blocker 与候选，不能写领域事实、记忆正文、产物正文、质量/导出裁决或无 gate 推广默认 agent。
@@ -118,7 +118,7 @@
 npm test
 ```
 
-验证内容包括合同字段、OPL 生成接口 bundle、`agent/` domain pack 文件存在性、`stage_control_plane.prompt_refs` 真实路径、非空文件与占位符检查。
+验证内容包括合同字段、OPL 生成接口 bundle、`agent/` domain pack 文件存在性、stage prompt/skill/knowledge/evaluation refs 真实路径、非空文件与占位符检查。
 
 ```bash
 npm run bootstrap:sample -- --output-dir /tmp/opl-meta-agent-demo --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl

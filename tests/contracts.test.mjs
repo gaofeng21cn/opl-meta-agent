@@ -74,18 +74,40 @@ test('domain pack files and stage prompt refs resolve to usable repo files', () 
   assert.deepEqual(packCompilerInput.required_domain_pack_paths, actualDomainPackPaths);
   packCompilerInput.required_domain_pack_paths.forEach(assertUsablePackFile);
 
-  const promptRefs = stageControl.stages.flatMap((stage) =>
-    stage.prompt_refs.map((promptRef) => ({
-      stage_id: stage.stage_id,
-      ref_kind: promptRef.ref_kind,
-      ref: promptRef.ref,
-    }))
-  );
-  assert.ok(promptRefs.length > 0);
-  promptRefs.forEach((promptRef) => {
-    assert.equal(promptRef.ref_kind, 'domain_prompt_ref');
-    assert.match(promptRef.ref, /^agent\/prompts\/.+\.md$/);
-    assertUsablePackFile(promptRef.ref);
+  const stageRefSpecs = [
+    {
+      field: 'prompt_refs',
+      refKind: 'domain_prompt_ref',
+      pathPattern: /^agent\/prompts\/.+\.md$/,
+    },
+    {
+      field: 'skills',
+      refKind: 'domain_skill_ref',
+      pathPattern: /^agent\/skills\/.+\.md$/,
+    },
+    {
+      field: 'knowledge_refs',
+      refKind: 'domain_knowledge_ref',
+      pathPattern: /^agent\/knowledge\/.+\.md$/,
+    },
+    {
+      field: 'evaluation',
+      refKind: 'domain_quality_gate_ref',
+      pathPattern: /^agent\/quality_gates\/.+\.md$/,
+    },
+  ];
+
+  stageControl.stages.forEach((stage) => {
+    stageRefSpecs.forEach((spec) => {
+      const refs = stage[spec.field];
+      assert.ok(Array.isArray(refs), `${stage.stage_id}.${spec.field} should be an array`);
+      assert.ok(refs.length > 0, `${stage.stage_id}.${spec.field} should not be empty`);
+      refs.forEach((stageRef) => {
+        assert.equal(stageRef.ref_kind, spec.refKind);
+        assert.match(stageRef.ref, spec.pathPattern);
+        assertUsablePackFile(stageRef.ref);
+      });
+    });
   });
 
   const generatedInterfaceBoundary = packCompilerInput.authority_boundary;
