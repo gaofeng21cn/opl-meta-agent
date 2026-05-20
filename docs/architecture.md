@@ -24,7 +24,7 @@ Agent Lab 与 `opl-meta-agent` 是标准消费者。目标 agent 兼容它们，
 
 ## Codex-Attempt-Native Landing
 
-下一目标是 usable landing，而不是继续停留在 contract-ready。`opl-meta-agent` 的 stage launch 应以真实 target agent 为输入，读取 allowed editable surfaces、blocked evidence、verification refs、owner route、no-forbidden-write refs 和 rollback/version refs，输出 stage attempt refs、developer patch work order、mechanism proposal 或 typed blocker。Codex 可以在 developer work order 授权的文件范围内实施 patch，但不能越权写 target truth、memory body、artifact body、quality/export verdict 或 owner receipt。
+当前 usable landing 机器面已经从 contract-ready 推进到 developer work order / patch-loop 控制面。`opl-meta-agent` 的 `improve:external-suite` 与 `agent:evidence` 以真实 target agent handoff 为输入，读取 allowed editable surfaces、blocked evidence、verification refs、owner route、no-forbidden-write refs 和 rollback/version refs，输出 stage attempt refs、developer patch work order、mechanism proposal 或 typed blocker。developer work order 必须包含 AHE-style failure evidence、root cause、targeted fix、predicted impact 四字段，以及 target repo file hints、required verification refs、rollback/version refs、owner route refs、no-forbidden-write proof 和 target runtime/read-model consumption verification。Codex 可以在 developer work order 授权的文件范围内实施 patch，但不能越权写 target truth、memory body、artifact body、quality/export verdict 或 owner receipt。
 
 独立 Codex reviewer attempt 是采用门槛的一部分。reviewer 必须基于 direct evidence、无共享执行上下文、带 reviewer provenance、source refs、critique/suggestions/verdict 和 rollback/canary/version refs；generated surface proof、suite pass、schema completeness 或 contract completeness 只能作为输入证据，不能替代 reviewer / owner verdict。
 
@@ -70,7 +70,7 @@ CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framewo
 
 `agent:evidence` 读取目标 agent 的 standard production evidence handoff，生成 `agent_production_evidence_suite`、Agent Lab run result、developer patch work order、target capability improvement candidate、mechanism patch proposal 或 typed blocker。MAS/MAG 等目标 agent 只通过 domain refs 出现在输入与 owner route 中；命令、suite kind、输出文件和 OMA surface kind 保持 target-agent generic。
 
-Usable landing 要求至少一个真实 blocked target 完成 patch loop：blocked suite 进入 developer patch work order，Codex 只改 allowed editable surfaces，目标仓验证重跑，owner 签 receipt，并留下 no-forbidden-write proof、patch absorption 和 cleanup closeout。没有这个闭环时，generated-surface readiness 只能算消费面 proof。
+Usable landing 的剩余证据要求至少一个真实 blocked target 完成 patch loop：blocked suite 进入带 AHE 四字段的 developer patch work order，Codex 只改 allowed editable surfaces，目标仓验证重跑，target runtime/read-model consumption 被只读确认，owner 签 receipt，并留下 no-forbidden-write proof、patch absorption 和 cleanup closeout。没有这个闭环时，work order、generated-surface readiness 和 suite pass 都只能算消费面 proof，不能写成 target domain ready、quality verdict、artifact readiness 或 default promotion。
 
 该 takeover 只覆盖测试接管和候选生成。target domain truth、quality verdict、artifact body、memory body、默认 agent promotion authority 继续由目标 domain owner 持有；receipt 和 candidate 必须显式声明 `can_write_target_domain_memory_body=false`、`can_promote_default_agent_without_gate=false`。
 
