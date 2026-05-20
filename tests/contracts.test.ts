@@ -93,6 +93,19 @@ function assertNoForbiddenDesignCenterVocabulary(relativePath: string): void {
   });
 }
 
+const opl10PrincipleRefs = [
+  'opl10:codex_cli_first_class_executor',
+  'opl10:stage_led_execution',
+  'opl10:declarative_domain_pack',
+  'opl10:explicit_prompt_tools_knowledge',
+  'opl10:refs_only_domain_truth_boundary',
+  'opl10:receipted_handoff',
+  'opl10:independent_ai_review_gate',
+  'opl10:runtime_enforced_no_forbidden_writes',
+  'opl10:generated_surfaces_from_contracts',
+  'opl10:blockers_before_quality_or_promotion_claims',
+];
+
 test('opl-meta-agent descriptor keeps OPL runtime authority outside the repo', () => {
   const descriptor = readJson('contracts/domain_descriptor.json');
 
@@ -258,6 +271,131 @@ test('opl-meta-agent stage plan covers research, build, eval, optimization, deli
   assert.equal(stageControl.authority_boundary.opl_can_write_domain_truth, false);
   assert.equal(stageControl.authority_boundary.opl_can_write_memory_body, false);
   assert.equal(stageControl.authority_boundary.opl_can_authorize_quality_or_export, false);
+});
+
+test('stage launch contract is Codex-first, receipted, and OPL-10 bounded', () => {
+  const stageControl = readJson('contracts/stage_control_plane.json');
+
+  asObjects(stageControl.stages).forEach((stage) => {
+    const label = String(stage.stage_id);
+    assert.equal(stage.selected_executor, 'codex_cli', `${label}.selected_executor`);
+    assert.equal(
+      stage.executor_binding.binding_kind,
+      'codex_cli_first_class_stage_executor',
+      `${label}.executor_binding.binding_kind`,
+    );
+    assert.equal(stage.executor_binding.executor_ref, 'executor:codex-cli', `${label}.executor_ref`);
+    assert.equal(stage.executor_binding.executor_owner, 'OPL Framework', `${label}.executor_owner`);
+    assert.equal(stage.executor_binding.launch_surface_owner, 'one-person-lab', `${label}.launch_surface_owner`);
+    assert.equal(stage.executor_binding.domain_pack_owner, 'opl-meta-agent', `${label}.domain_pack_owner`);
+    assert.equal(stage.executor_binding.adapter_required, false, `${label}.adapter_required`);
+    assert.equal(
+      stage.executor_binding.non_codex_executor_requires_explicit_adapter,
+      true,
+      `${label}.non_codex_executor_requires_explicit_adapter`,
+    );
+    assert.equal(
+      stage.executor_binding.codex_first_expert_judgment_required,
+      true,
+      `${label}.codex_first_expert_judgment_required`,
+    );
+
+    const requires = asStrings(stage.requires);
+    const ensures = asStrings(stage.ensures);
+    const expectedReceiptRefs = asStrings(stage.expected_receipt_refs);
+    const hardBlockerRefs = asStrings(stage.hard_blocker_refs);
+
+    assert.ok(requires.includes(`stage:${label}`), `${label}.requires should include stage ref`);
+    assert.ok(requires.includes('runtime-ref:stage-attempt-ledger'), `${label}.requires should include stage ledger`);
+    assert.ok(
+      requires.includes('runtime-ref:generated-interface-bundle'),
+      `${label}.requires should include generated interface bundle`,
+    );
+    assert.ok(ensures.includes(`stage-attempt-receipt-ref:${label}`), `${label}.ensures stage receipt`);
+    assert.ok(ensures.includes(`executor-receipt-ref:${label}/codex-cli`), `${label}.ensures executor receipt`);
+    assert.ok(ensures.includes(`no-forbidden-write-proof-ref:${label}`), `${label}.ensures boundary proof`);
+    assert.ok(ensures.includes(`independent-ai-review-ref:${label}`), `${label}.ensures AI review`);
+    assert.ok(
+      expectedReceiptRefs.includes(`boundary-receipt-ref:${label}/refs-only`),
+      `${label}.expected_receipt_refs boundary receipt`,
+    );
+    assert.ok(
+      expectedReceiptRefs.includes(`independent-ai-review-ref:${label}`),
+      `${label}.expected_receipt_refs AI review`,
+    );
+
+    asObjects(stage.prompt_refs).forEach((entry) => {
+      assert.ok(requires.includes(`prompt-ref:${entry.ref}`), `${label}.requires prompt ref ${entry.ref}`);
+    });
+    asObjects(stage.skills).forEach((entry) => {
+      assert.ok(requires.includes(`skill-ref:${entry.ref}`), `${label}.requires skill ref ${entry.ref}`);
+    });
+    asObjects(stage.knowledge_refs).forEach((entry) => {
+      assert.ok(requires.includes(`knowledge-ref:${entry.ref}`), `${label}.requires knowledge ref ${entry.ref}`);
+    });
+    asObjects(stage.evaluation).forEach((entry) => {
+      assert.ok(requires.includes(`quality-gate-ref:${entry.ref}`), `${label}.requires quality gate ref ${entry.ref}`);
+    });
+    asStrings(stage.allowed_action_refs).forEach((actionRef) => {
+      assert.ok(requires.includes(`action-ref:${actionRef}`), `${label}.requires action ref ${actionRef}`);
+    });
+
+    assert.equal(stage.verified_static_core.status, 'required_before_launch', `${label}.verified_static_core.status`);
+    [
+      'prompt_refs_resolve_to_domain_pack_files',
+      'skill_refs_resolve_to_domain_pack_files',
+      'knowledge_refs_resolve_to_domain_pack_files',
+      'quality_gate_refs_resolve_to_domain_pack_files',
+      'allowed_action_refs_resolve_to_action_catalog_when_present',
+      'authority_boundary_forbids_domain_truth_memory_quality_and_promotion_writes',
+    ].forEach((checkRef) => {
+      assert.ok(stage.verified_static_core.checks.includes(checkRef), `${label}.verified_static_core ${checkRef}`);
+    });
+
+    assert.deepEqual(stage.runtime_enforced_boundary.opl_10_principle_refs, opl10PrincipleRefs);
+    assert.equal(stage.runtime_enforced_boundary.codex_first, true, `${label}.codex_first`);
+    assert.equal(
+      stage.runtime_enforced_boundary.selected_executor_must_match_binding,
+      true,
+      `${label}.selected_executor_must_match_binding`,
+    );
+    assert.equal(stage.runtime_enforced_boundary.stage_attempt_ledger_required, true, `${label}.ledger_required`);
+    assert.equal(stage.runtime_enforced_boundary.receipt_refs_required, true, `${label}.receipt_refs_required`);
+    assert.equal(
+      stage.runtime_enforced_boundary.independent_ai_review_required_before_promotion,
+      true,
+      `${label}.independent_review_required`,
+    );
+    assert.equal(stage.runtime_enforced_boundary.no_shared_context_review_required, true, `${label}.no_shared_context`);
+    assert.equal(stage.runtime_enforced_boundary.generated_surface_owner, 'one-person-lab', `${label}.generated owner`);
+    assert.equal(stage.runtime_enforced_boundary.domain_truth_owner, 'opl-meta-agent', `${label}.truth owner`);
+    assert.equal(stage.runtime_enforced_boundary.can_write_domain_truth, false, `${label}.truth write`);
+    assert.equal(stage.runtime_enforced_boundary.can_write_memory_body, false, `${label}.memory write`);
+    assert.equal(
+      stage.runtime_enforced_boundary.can_mutate_target_domain_artifact_body,
+      false,
+      `${label}.artifact write`,
+    );
+    assert.equal(stage.runtime_enforced_boundary.can_authorize_quality_or_export, false, `${label}.quality authority`);
+    assert.equal(
+      stage.runtime_enforced_boundary.can_promote_default_agent_without_gate,
+      false,
+      `${label}.default promotion`,
+    );
+    assert.equal(stage.runtime_enforced_boundary.suite_pass_claims_domain_ready, false, `${label}.suite pass claim`);
+    [
+      'blocker:missing_prompt_ref',
+      'blocker:missing_tool_or_skill_ref',
+      'blocker:missing_knowledge_or_memory_ref',
+      'blocker:missing_quality_gate_ref',
+      'blocker:missing_expected_receipt_ref',
+      'blocker:forbidden_domain_truth_or_memory_write',
+      'blocker:quality_or_promotion_claim_without_independent_ai_review',
+      'blocker:contract_completeness_claimed_as_quality_verdict',
+    ].forEach((blockerRef) => {
+      assert.ok(hardBlockerRefs.includes(blockerRef), `${label}.hard_blocker_refs ${blockerRef}`);
+    });
+  });
 });
 
 test('action catalog and owner receipts forbid target-domain authority writes', () => {
