@@ -41,9 +41,14 @@ export type AiReviewerEvaluation = JsonObject & {
   reviewer_kind: string;
   model_or_provider: string;
   run_ref: string;
+  execution_attempt_ref: string;
+  review_attempt_ref: string;
+  no_shared_context: boolean;
+  independent_attempt: boolean;
   critique: string;
   suggestions: string[];
   source_refs: string[];
+  direct_evidence_refs: string[];
   verdict: string;
   provenance: JsonObject;
 };
@@ -186,10 +191,31 @@ export function validateAiReviewerEvaluation(
   sourceRef: string,
 ): AiReviewerEvaluation {
   const errors: string[] = [];
-  for (const field of ['reviewer_kind', 'model_or_provider', 'run_ref', 'critique', 'verdict']) {
+  for (const field of [
+    'reviewer_kind',
+    'model_or_provider',
+    'run_ref',
+    'execution_attempt_ref',
+    'review_attempt_ref',
+    'critique',
+    'verdict',
+  ]) {
     if (!nonEmptyString(payload[field])) {
       errors.push(`${field} must be a non-empty string`);
     }
+  }
+  if (payload.no_shared_context !== true) {
+    errors.push('no_shared_context must be true');
+  }
+  if (payload.independent_attempt !== true) {
+    errors.push('independent_attempt must be true');
+  }
+  if (
+    nonEmptyString(payload.execution_attempt_ref)
+    && nonEmptyString(payload.review_attempt_ref)
+    && payload.execution_attempt_ref.trim() === payload.review_attempt_ref.trim()
+  ) {
+    errors.push('execution_attempt_ref and review_attempt_ref must be different');
   }
   if (!nonEmptyStringArray(payload.suggestions)) {
     errors.push('suggestions must be a non-empty string array');
@@ -198,6 +224,9 @@ export function validateAiReviewerEvaluation(
     errors.push('source_refs must be a non-empty string array');
   } else if ((payload.source_refs as string[]).every(suiteOrScaffoldOnlyRef)) {
     errors.push('source_refs must include reviewer evidence beyond suite/scaffold refs');
+  }
+  if (!nonEmptyStringArray(payload.direct_evidence_refs)) {
+    errors.push('direct_evidence_refs must be a non-empty string array');
   }
   if (!payload.provenance || typeof payload.provenance !== 'object' || Array.isArray(payload.provenance)) {
     errors.push('provenance must be a non-empty object');
@@ -214,9 +243,14 @@ export function validateAiReviewerEvaluation(
     reviewer_kind: payload.reviewer_kind.trim(),
     model_or_provider: payload.model_or_provider.trim(),
     run_ref: payload.run_ref.trim(),
+    execution_attempt_ref: payload.execution_attempt_ref.trim(),
+    review_attempt_ref: payload.review_attempt_ref.trim(),
+    no_shared_context: true,
+    independent_attempt: true,
     critique: payload.critique.trim(),
     suggestions: (payload.suggestions as string[]).map((suggestion) => suggestion.trim()),
     source_refs: (payload.source_refs as string[]).map((ref) => ref.trim()),
+    direct_evidence_refs: (payload.direct_evidence_refs as string[]).map((ref) => ref.trim()),
     verdict: payload.verdict.trim(),
     provenance: payload.provenance,
   };
@@ -240,11 +274,21 @@ export function aiReviewerReceiptFields(
       reviewer_kind: aiReviewerEvaluation.reviewer_kind,
       model_or_provider: aiReviewerEvaluation.model_or_provider,
       run_ref: aiReviewerEvaluation.run_ref,
+      execution_attempt_ref: aiReviewerEvaluation.execution_attempt_ref,
+      review_attempt_ref: aiReviewerEvaluation.review_attempt_ref,
       critique: aiReviewerEvaluation.critique,
       suggestions: aiReviewerEvaluation.suggestions,
     },
+    ai_reviewer_independence: {
+      no_shared_context: aiReviewerEvaluation.no_shared_context,
+      independent_attempt: aiReviewerEvaluation.independent_attempt,
+      execution_attempt_ref: aiReviewerEvaluation.execution_attempt_ref,
+      review_attempt_ref: aiReviewerEvaluation.review_attempt_ref,
+      direct_evidence_refs: aiReviewerEvaluation.direct_evidence_refs,
+    },
     ai_reviewer_evidence: {
       source_refs: aiReviewerEvaluation.source_refs,
+      direct_evidence_refs: aiReviewerEvaluation.direct_evidence_refs,
     },
     ai_reviewer_scorecard: {
       verdict: aiReviewerEvaluation.verdict,
@@ -253,6 +297,8 @@ export function aiReviewerReceiptFields(
       reviewer_kind: aiReviewerEvaluation.reviewer_kind,
       model_or_provider: aiReviewerEvaluation.model_or_provider,
       run_ref: aiReviewerEvaluation.run_ref,
+      execution_attempt_ref: aiReviewerEvaluation.execution_attempt_ref,
+      review_attempt_ref: aiReviewerEvaluation.review_attempt_ref,
       ...aiReviewerEvaluation.provenance,
     },
   };
@@ -264,7 +310,11 @@ export function aiReviewerAcceptanceGates(): JsonObject {
     ai_reviewer_critique_present: true,
     ai_reviewer_suggestions_present: true,
     ai_reviewer_source_refs_valid: true,
+    ai_reviewer_direct_evidence_refs_present: true,
     ai_reviewer_provenance_present: true,
+    ai_reviewer_no_shared_context: true,
+    ai_reviewer_independent_attempt_present: true,
+    ai_reviewer_attempt_refs_distinct: true,
   };
 }
 
@@ -311,7 +361,7 @@ export function buildAgentLabSuite({
   aiReviewerEvaluationRef,
 }: AgentLabSuiteOptions): JsonObject {
   const reviewerEvidenceRefs = aiReviewerEvaluation && aiReviewerEvaluationRef
-    ? [aiReviewerEvaluationRef, ...aiReviewerEvaluation.source_refs]
+    ? [aiReviewerEvaluationRef, ...aiReviewerEvaluation.source_refs, ...aiReviewerEvaluation.direct_evidence_refs]
     : [];
   return {
     suite_id: suiteId,

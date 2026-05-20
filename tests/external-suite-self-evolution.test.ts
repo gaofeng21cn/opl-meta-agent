@@ -25,6 +25,10 @@ function writeAiReviewerEvaluation(filePath: string, overrides: JsonObject = {})
     reviewer_kind: 'ai_reviewer',
     model_or_provider: 'gpt-5.5',
     run_ref: 'run:ai-reviewer/mas/002/high-quality-medical-manuscript',
+    execution_attempt_ref: 'attempt:executor/mas/002/high-quality-medical-manuscript',
+    review_attempt_ref: 'attempt:ai-reviewer/mas/002/high-quality-medical-manuscript',
+    no_shared_context: true,
+    independent_attempt: true,
     critique: 'The blocked suite shows reporting gaps in HDL harmonization, model reproducibility, and internal quality-control language.',
     suggestions: [
       'Map HDL unit harmonization to the prediction model quality contract and pre-draft reporting stage policy.',
@@ -36,6 +40,10 @@ function writeAiReviewerEvaluation(filePath: string, overrides: JsonObject = {})
       'paper/review/review_ledger.json',
       'rubric-gap:mas/002/hdl-harmonization-and-sensitivity',
       'rubric-gap:mas/002/internal-quality-language-purge',
+    ],
+    direct_evidence_refs: [
+      'paper/evidence_ledger.json',
+      'artifacts/publication_eval/latest.json',
     ],
     verdict: 'blocked_requires_developer_patch',
     provenance: {
@@ -305,6 +313,10 @@ function writeOwnerReceiptAiReviewerEvaluation(filePath: string, overrides: Json
     reviewer_kind: 'ai_reviewer',
     model_or_provider: 'gpt-5.5',
     run_ref: 'run:ai-reviewer/target-agent/owner-receipt-consumption',
+    execution_attempt_ref: 'attempt:executor/target-agent/owner-receipt-consumption',
+    review_attempt_ref: 'attempt:ai-reviewer/target-agent/owner-receipt-consumption',
+    no_shared_context: true,
+    independent_attempt: true,
     critique: 'The target-agent owner receipt evidence contains a domain_owner_receipt shape and keeps quality or export readiness under target owner authority.',
     suggestions: [
       'Keep production acceptance closure tied to target owner receipt refs rather than OPL provider completion.',
@@ -316,6 +328,10 @@ function writeOwnerReceiptAiReviewerEvaluation(filePath: string, overrides: Json
       'contract-ref:target-agent/owner_receipt_contract.json',
       'owner-receipt:target-agent/live-acceptance/2026-05-20',
       'quality-gate:target-agent/owner',
+    ],
+    direct_evidence_refs: [
+      'owner-receipt:target-agent/live-acceptance/2026-05-20',
+      'contract-ref:target-agent/owner_receipt_contract.json',
     ],
     verdict: 'accepted_no_patch_required',
     provenance: {
@@ -550,6 +566,11 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     assert.equal(candidate.ai_reviewer_review.critique, reviewerEvaluation.critique);
     assert.deepEqual(candidate.ai_reviewer_review.suggestions, reviewerEvaluation.suggestions);
     assert.deepEqual(candidate.ai_reviewer_evidence.source_refs, reviewerEvaluation.source_refs);
+    assert.deepEqual(candidate.ai_reviewer_evidence.direct_evidence_refs, reviewerEvaluation.direct_evidence_refs);
+    assert.equal(candidate.ai_reviewer_independence.no_shared_context, true);
+    assert.equal(candidate.ai_reviewer_independence.independent_attempt, true);
+    assert.equal(candidate.ai_reviewer_independence.execution_attempt_ref, reviewerEvaluation.execution_attempt_ref);
+    assert.equal(candidate.ai_reviewer_independence.review_attempt_ref, reviewerEvaluation.review_attempt_ref);
     assert.equal(candidate.review_provenance.run_ref, reviewerEvaluation.run_ref);
     assert.ok(candidate.proposed_change_refs.includes('quality_contract_ref:prediction_model_first_draft_quality'));
     assert.ok(candidate.proposed_change_refs.includes('skill_ref:medical-research-write'));
@@ -606,12 +627,17 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     assert.equal(receipt.acceptance_gates.ai_reviewer_critique_present, true);
     assert.equal(receipt.acceptance_gates.ai_reviewer_suggestions_present, true);
     assert.equal(receipt.acceptance_gates.ai_reviewer_source_refs_valid, true);
+    assert.equal(receipt.acceptance_gates.ai_reviewer_direct_evidence_refs_present, true);
+    assert.equal(receipt.acceptance_gates.ai_reviewer_no_shared_context, true);
+    assert.equal(receipt.acceptance_gates.ai_reviewer_independent_attempt_present, true);
+    assert.equal(receipt.acceptance_gates.ai_reviewer_attempt_refs_distinct, true);
 
     const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
     assert.equal(workOrder.surface_kind, 'opl_meta_agent_developer_patch_work_order');
     assert.equal(workOrder.status, 'ready_for_target_agent_source_patch');
     assert.equal(workOrder.ai_reviewer_evaluation_ref, reviewerEvaluationPath);
     assert.deepEqual(workOrder.ai_reviewer_review.suggestions, reviewerEvaluation.suggestions);
+    assert.deepEqual(workOrder.ai_reviewer_independence.direct_evidence_refs, reviewerEvaluation.direct_evidence_refs);
     assert.equal(workOrder.version_management.absorb_back_required, true);
     assert.equal(workOrder.version_management.temporary_worktree_cleanup_required, true);
     assert.equal(workOrder.authority_boundary.can_modify_target_agent_source_repo, true);
@@ -753,6 +779,7 @@ test('target-agent owner receipt Agent Lab suite becomes a no-patch result-consu
     assert.ok(candidate.proposed_change_refs.includes('target_agent_owner_receipt_contract_ref:target_agent/live-acceptance'));
     assert.ok(candidate.target_editable_surface_refs.includes('target_agent_production_acceptance_contract_ref'));
     assert.equal(candidate.ai_reviewer_review.critique, reviewerEvaluation.critique);
+    assert.equal(candidate.ai_reviewer_independence.no_shared_context, true);
     assert.equal(path.basename(payload.artifacts.target_capability_improvement_candidate_path), 'target-capability-improvement-candidate.json');
     const candidateFromFile = readJson(payload.artifacts.target_capability_improvement_candidate_path);
     assert.equal(candidateFromFile.candidate_id, candidate.candidate_id);

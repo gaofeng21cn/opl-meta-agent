@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {
   type AiReviewerEvaluation,
+  aiReviewerReceiptFields,
   loadAiReviewerEvaluation,
   readJson,
   resolveOplBin,
@@ -458,6 +459,9 @@ function buildAgentLabSuite({
   const receiptRefs = productionAcceptanceEvidenceRefs(contracts.productionAcceptance);
   const nextVerificationRefs = verificationRefs(contracts.productionAcceptance);
   const noForbiddenRefs = noForbiddenWriteProofRefs(contracts, targetAgent);
+  const reviewerEvidenceRefs = aiReviewerEvaluation && aiReviewerEvaluationPath
+    ? [aiReviewerEvaluationPath, ...aiReviewerEvaluation.source_refs, ...aiReviewerEvaluation.direct_evidence_refs]
+    : [];
   const suiteSeed = [
     agentRepo,
     contracts.productionAcceptanceRef,
@@ -558,6 +562,7 @@ function buildAgentLabSuite({
             `metric-ref:${targetAgent.domainId}/editable-surfaces-limited`,
             `metric-ref:${targetAgent.domainId}/verification-command-refs-present`,
             `metric-ref:${targetAgent.domainId}/ai-reviewer-evaluation-present`,
+            `metric-ref:${targetAgent.domainId}/ai-reviewer-independent-attempt-present`,
           ],
           evidence_refs: [
             contracts.productionAcceptanceRef,
@@ -565,7 +570,7 @@ function buildAgentLabSuite({
             'contracts/owner_receipt_contract.json',
             ...receiptRefs,
             ...nextVerificationRefs,
-            ...(aiReviewerEvaluationPath ? [aiReviewerEvaluationPath] : []),
+            ...reviewerEvidenceRefs,
           ],
           review_refs: aiReviewerEvaluationPath ? [aiReviewerEvaluationPath] : [],
           quality_gate_refs: [
@@ -686,6 +691,9 @@ function buildCapabilityCandidate({
     verification_command_refs: verificationRefs(contracts.productionAcceptance),
     ai_reviewer_evaluation_ref: aiReviewerEvaluationPath,
     ai_reviewer_status: aiReviewerEvaluation ? 'present' : 'missing_typed_blocker_required',
+    ...(aiReviewerEvaluation && aiReviewerEvaluationPath
+      ? aiReviewerReceiptFields(aiReviewerEvaluation, aiReviewerEvaluationPath)
+      : {}),
   };
 }
 
@@ -720,6 +728,16 @@ function buildDeveloperWorkOrder({
     target_owner_route: capabilityCandidate.target_owner_route,
     editable_surface_limits: capabilityCandidate.editable_surface_limits,
     proposed_change_refs: capabilityCandidate.proposed_change_refs,
+    ai_reviewer_evaluation_ref: capabilityCandidate.ai_reviewer_evaluation_ref,
+    ai_reviewer_status: capabilityCandidate.ai_reviewer_status,
+    ...(capabilityCandidate.ai_reviewer_status === 'present'
+      ? {
+          ai_reviewer_review: capabilityCandidate.ai_reviewer_review,
+          ai_reviewer_independence: capabilityCandidate.ai_reviewer_independence,
+          ai_reviewer_evidence: capabilityCandidate.ai_reviewer_evidence,
+          review_provenance: capabilityCandidate.review_provenance,
+        }
+      : {}),
     implementation_controls: {
       proposal_only: true,
       refs_only: true,
@@ -817,11 +835,19 @@ function buildTypedBlocker({
     version: 'opl-meta-agent.agent-evidence-takeover-typed-blocker.v1',
     blocker_id: stableId('oma_agent_evidence_blocker', [suite.suite_id, suiteResult.result_id, workOrder.work_order_id]),
     status: 'blocked_missing_ai_reviewer_evaluation',
-    blocked_reason: 'ai_reviewer_evaluation_required_before_mechanism_patch_proposal_or_delivery_receipt',
+    blocked_reason: 'independent_ai_reviewer_attempt_required_before_mechanism_patch_proposal_or_delivery_receipt',
     next_owner: 'opl-meta-agent',
     target_owner_route: targetOwnerRoute(contracts),
     work_order_ref: workOrder.work_order_id,
     required_input_refs: ['--ai-reviewer-evaluation <json>'],
+    required_ai_reviewer_independence_fields: [
+      'no_shared_context=true',
+      'independent_attempt=true',
+      'direct_evidence_refs[]',
+      'execution_attempt_ref',
+      'review_attempt_ref',
+      'execution_attempt_ref != review_attempt_ref',
+    ],
     no_forbidden_write: workOrder.no_forbidden_write,
     verification_command_refs: verificationRefs(contracts.productionAcceptance),
     authority_boundary: {

@@ -673,6 +673,7 @@ function buildDeveloperPatchWorkOrder({
     owner_receipt_ref: receipt.receipt_id,
     ai_reviewer_evaluation_ref: capabilityCandidate.ai_reviewer_evaluation_ref,
     ai_reviewer_review: capabilityCandidate.ai_reviewer_review,
+    ai_reviewer_independence: capabilityCandidate.ai_reviewer_independence,
     ai_reviewer_evidence: capabilityCandidate.ai_reviewer_evidence,
     review_provenance: capabilityCandidate.review_provenance,
     required_patch_surfaces: noPatchRequired ? [] : capabilityCandidate.target_editable_surface_refs,

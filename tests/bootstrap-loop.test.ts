@@ -18,6 +18,10 @@ function writeAiReviewerEvaluation(filePath: string, overrides: JsonObject = {})
     reviewer_kind: 'ai_reviewer',
     model_or_provider: 'gpt-5.5',
     run_ref: 'run:ai-reviewer/opl-meta-agent/sample-brief-agent/baseline',
+    execution_attempt_ref: 'attempt:executor/opl-meta-agent/sample-brief-agent/baseline',
+    review_attempt_ref: 'attempt:ai-reviewer/opl-meta-agent/sample-brief-agent/baseline',
+    no_shared_context: true,
+    independent_attempt: true,
     critique: 'The baseline is structurally valid but needs explicit source coverage and operator handoff evidence.',
     suggestions: [
       'Add source coverage checks to the baseline delivery scorecard.',
@@ -27,6 +31,10 @@ function writeAiReviewerEvaluation(filePath: string, overrides: JsonObject = {})
       'review-ref:opl-meta-agent/sample-brief-agent/ai-reviewer',
       'evidence-ref:sample-brief-agent/scaffold-validation',
       'scorecard-ref:opl-meta-agent/baseline-acceptance',
+    ],
+    direct_evidence_refs: [
+      'artifact-ref:sample-brief-agent/package',
+      'receipt-ref:opl-meta-agent/baseline-delivery',
     ],
     verdict: 'baseline_ready_with_owner_gate',
     provenance: {
@@ -99,6 +107,24 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
     assert.equal(payload.learning_loop.baseline_receipt.ai_reviewer_review.critique, reviewerEvaluation.critique);
     assert.deepEqual(payload.learning_loop.baseline_receipt.ai_reviewer_review.suggestions, reviewerEvaluation.suggestions);
     assert.deepEqual(payload.learning_loop.baseline_receipt.ai_reviewer_evidence.source_refs, reviewerEvaluation.source_refs);
+    assert.deepEqual(
+      payload.learning_loop.baseline_receipt.ai_reviewer_evidence.direct_evidence_refs,
+      reviewerEvaluation.direct_evidence_refs,
+    );
+    assert.equal(payload.learning_loop.baseline_receipt.ai_reviewer_independence.no_shared_context, true);
+    assert.equal(payload.learning_loop.baseline_receipt.ai_reviewer_independence.independent_attempt, true);
+    assert.equal(
+      payload.learning_loop.baseline_receipt.ai_reviewer_independence.execution_attempt_ref,
+      reviewerEvaluation.execution_attempt_ref,
+    );
+    assert.equal(
+      payload.learning_loop.baseline_receipt.ai_reviewer_independence.review_attempt_ref,
+      reviewerEvaluation.review_attempt_ref,
+    );
+    assert.notEqual(
+      payload.learning_loop.baseline_receipt.ai_reviewer_independence.execution_attempt_ref,
+      payload.learning_loop.baseline_receipt.ai_reviewer_independence.review_attempt_ref,
+    );
     assert.equal(payload.learning_loop.baseline_receipt.ai_reviewer_scorecard.verdict, reviewerEvaluation.verdict);
     assert.equal(
       payload.learning_loop.baseline_receipt.acceptance_gates.ai_reviewer_critique_present,
@@ -116,6 +142,10 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
       payload.learning_loop.baseline_receipt.acceptance_gates.ai_reviewer_provenance_present,
       true,
     );
+    assert.equal(payload.learning_loop.baseline_receipt.acceptance_gates.ai_reviewer_no_shared_context, true);
+    assert.equal(payload.learning_loop.baseline_receipt.acceptance_gates.ai_reviewer_independent_attempt_present, true);
+    assert.equal(payload.learning_loop.baseline_receipt.acceptance_gates.ai_reviewer_attempt_refs_distinct, true);
+    assert.equal(payload.learning_loop.baseline_receipt.acceptance_gates.ai_reviewer_direct_evidence_refs_present, true);
 
     const targetDir = path.join(outputRoot, 'sample-brief-agent');
     const suitePath = path.join(outputRoot, 'agent-lab-suite.json');
@@ -165,6 +195,7 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
     assert.equal(suite.tasks[0].domain_id, 'opl-meta-agent');
     assert.equal(suite.tasks[0].trajectory.memory_body, undefined);
     assert.ok(suite.tasks[0].scorecard.evidence_refs.includes(reviewerEvaluationPath));
+    assert.ok(suite.tasks[0].scorecard.evidence_refs.includes(reviewerEvaluation.direct_evidence_refs[0]));
     assert.ok(suite.tasks[0].scorecard.review_refs.includes(reviewerEvaluationPath));
     assert.deepEqual(suite.tasks[0].ai_reviewer_evaluation.source_refs, reviewerEvaluation.source_refs);
 
@@ -175,6 +206,7 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
     assert.equal(receipt.status, 'baseline_delivered');
     assert.equal(receipt.ai_reviewer_evaluation_ref, reviewerEvaluationPath);
     assert.equal(receipt.ai_reviewer_review.critique, reviewerEvaluation.critique);
+    assert.deepEqual(receipt.ai_reviewer_independence.direct_evidence_refs, reviewerEvaluation.direct_evidence_refs);
 
     const learning = readJson(learningPath);
     assert.equal(learning.candidate_kind, 'rubric_gap');
@@ -243,6 +275,49 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
     assert.equal(scaleoutLedger.target_truth, undefined);
     assert.equal(scaleoutLedger.memory_body, undefined);
     assert.equal(scaleoutLedger.artifact_body, undefined);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
+test('baseline delivery rejects AI reviewer evaluation without independent attempt evidence', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-loop-non-independent-reviewer-'));
+  const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+  writeAiReviewerEvaluation(reviewerEvaluationPath, {
+    no_shared_context: false,
+    independent_attempt: false,
+    direct_evidence_refs: [],
+    execution_attempt_ref: 'attempt:shared/context',
+    review_attempt_ref: 'attempt:shared/context',
+  });
+  const oplBin = process.env.OPL_BIN
+    ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
+
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [
+        path.join(repoRoot, 'scripts/bootstrap-sample-agent.ts'),
+        '--output-dir',
+        outputRoot,
+        '--opl-bin',
+        oplBin,
+        '--ai-reviewer-evaluation',
+        reviewerEvaluationPath,
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        maxBuffer: 16 * 1024 * 1024,
+      },
+    );
+
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /no_shared_context/i);
+    assert.match(result.stderr, /independent_attempt/i);
+    assert.match(result.stderr, /direct_evidence_refs/i);
+    assert.match(result.stderr, /execution_attempt_ref and review_attempt_ref/i);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'baseline-delivery-receipt.json')), false);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }
