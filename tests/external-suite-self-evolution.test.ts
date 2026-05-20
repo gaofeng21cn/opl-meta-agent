@@ -149,6 +149,199 @@ function buildBlockedMedicalManuscriptSuite(suitePath: string): JsonObject {
   };
 }
 
+function writeMagAiReviewerEvaluation(filePath: string, overrides: JsonObject = {}): JsonObject {
+  const evaluation = {
+    reviewer_kind: 'ai_reviewer',
+    model_or_provider: 'gpt-5.5',
+    run_ref: 'run:ai-reviewer/mag/production-live-acceptance-owner-receipt',
+    critique: 'The MAG live acceptance evidence now contains a domain_owner_receipt shape and keeps fundability readiness under MAG owner authority.',
+    suggestions: [
+      'Keep production acceptance closure tied to MAG owner receipt refs rather than OPL provider completion.',
+      'Preserve fundability and submission-ready verdict authority in MAG gates.',
+      'Expose Agent Lab and opl-meta-agent coordination as source refs for the MAG owner receipt projection.',
+    ],
+    source_refs: [
+      'contracts/production_acceptance/mag-production-acceptance.json',
+      'contracts/owner_receipt_contract.json',
+      'owner-receipt:mag/production-live-acceptance/2026-05-20',
+      'quality-gate:mag/fundability-owner',
+    ],
+    verdict: 'accepted_no_patch_required',
+    provenance: {
+      artifact_ref: 'artifact-ref:ai-reviewer/mag/production-live-acceptance-owner-receipt',
+      reviewer_prompt_ref: 'instructions:mag/production-live-acceptance-owner-receipt-reviewer',
+      created_by: 'test-fixture',
+    },
+    ...overrides,
+  };
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(evaluation, null, 2)}\n`);
+  return evaluation;
+}
+
+function buildPassedMagLiveAcceptanceSuite(): JsonObject {
+  return {
+    suite_id: 'mag-agent-lab-suite:production-live-acceptance-owner-receipt-scaleout',
+    suite_kind: 'agent_lab_mag_live_acceptance_suite',
+    authority_boundary: {
+      can_write_domain_truth: false,
+      can_write_memory_body: false,
+      can_authorize_quality_verdict: false,
+      can_promote_default_agent_without_gate: false,
+    },
+    tasks: [
+      {
+        task_id: 'agent-lab-task:mag/production-live-acceptance-owner-receipt-scaleout',
+        domain_id: 'med-autogrant',
+        task_family: 'grant_owner_live_acceptance_receipt_scaleout',
+        environment: {
+          environment_kind: 'provider_hosted',
+          workspace_locator_ref: 'workspace-locator:mag/live-grant-owner-acceptance',
+          sandbox_policy: 'refs_only_no_grant_artifact_or_memory_mutation',
+          network_policy: 'domain_owner_policy',
+        },
+        instructions_ref: 'instructions:mag/production-live-acceptance-owner-receipt-scaleout',
+        agent_entry_ref: 'domain-agent-entry:med-autogrant',
+        stage_refs: ['stage:mag/fundability-strategy', 'stage:mag/package-and-submit-ready'],
+        oracle_refs: ['oracle:mag/production-acceptance-authority-boundary'],
+        scorer_refs: ['scorer:mag/grant-owner-live-acceptance-ref-projection'],
+        recovery_probes: [
+          {
+            probe_ref: 'recovery-probe:mag/live-owner-receipt-redrive',
+            probe_kind: 'human_gate_resume',
+            expected_status: 'passed',
+            observed_status: 'passed',
+            source_refs: ['owner-gate:mag/production-live-acceptance'],
+          },
+        ],
+        trajectory: {
+          trajectory_ref: 'trajectory:mag/production-live-acceptance-owner-receipt-scaleout',
+          run_ref: 'run:mag/production-live-acceptance-owner-receipt-scaleout',
+          agent_executor: 'codex_cli',
+          stage_attempt_refs: ['stage-attempt:mag/production-live-acceptance-owner-receipt-scaleout'],
+          tool_call_refs: ['tool-call:mag/product-owner-receipt-evidence'],
+          artifact_refs: ['contract-ref:mag/contracts/production_acceptance/mag-production-acceptance.json'],
+          receipt_refs: ['owner-receipt:mag/production-live-acceptance/2026-05-20'],
+          repair_refs: [],
+        },
+        scorecard: {
+          scorecard_ref: 'quality-scorecard:mag/production-live-acceptance-owner-receipt',
+          domain_owned: true,
+          opl_scorecard_role: 'scorecard_ref_projection_only',
+          passed: true,
+          metric_refs: [
+            'metric-ref:mag/live-acceptance-owner-receipt-shape',
+            'metric-ref:mag/no-opl-provider-completion-fundability-claim',
+          ],
+          evidence_refs: ['receipt:mag/production-live-acceptance/2026-05-20'],
+          review_refs: ['review-ref:mag/domain-owner-live-acceptance-review'],
+          quality_gate_refs: ['quality-gate:mag/fundability-owner'],
+        },
+        improvement_candidate: {
+          candidate_ref: 'improvement-candidate:mag/owner-live-acceptance-receipt-scaleout',
+          candidate_kind: 'owner_receipt_scaleout',
+          target_ref: 'owner-receipt-contract:mag/production-live-acceptance',
+          evidence_refs: [
+            'evidence-delta:mag/domain-owner-live-acceptance-receipt-scaleout-closed',
+            'typed-blocker:mag/domain-owner-live-acceptance-receipt-scaleout-required',
+          ],
+          allowed_change_scope: 'manual_review_required',
+          promotion_gate_ref: 'promotion-gate:mag/production-live-acceptance-owner-receipt',
+        },
+        promotion_gate: {
+          gate_ref: 'promotion-gate:mag/production-live-acceptance-owner-receipt',
+          gate_status: 'passed',
+          required_refs: ['owner-receipt-contract:mag/production-live-acceptance'],
+          regression_suite_refs: ['regression-suite:mag/production-acceptance-owner-boundary'],
+          no_forbidden_write_proof_refs: ['no-forbidden-write:mag/live-acceptance-owner-receipt'],
+          failure_delta_refs: ['evidence-delta:mag/domain-owner-live-acceptance-receipt-scaleout-closed'],
+          owner_or_human_gate_refs: ['owner-gate:mag/production-live-acceptance'],
+          promotion_receipt_refs: ['receipt:mag/production-live-acceptance/2026-05-20'],
+        },
+      },
+    ],
+  };
+}
+
+function buildPassedGenericOwnerReceiptSuite(): JsonObject {
+  return {
+    suite_id: 'external-agent-suite:owner-receipt-coordination',
+    suite_kind: 'agent_lab_external_suite',
+    authority_boundary: {
+      can_write_domain_truth: false,
+      can_write_memory_body: false,
+      can_authorize_quality_verdict: false,
+      can_promote_default_agent_without_gate: false,
+    },
+    tasks: [
+      {
+        task_id: 'agent-lab-task:external/owner-receipt-coordination',
+        domain_id: 'external-agent',
+        task_family: 'owner_receipt_coordination',
+        environment: {
+          environment_kind: 'local_workspace',
+          workspace_locator_ref: 'workspace-locator:external/owner-receipt',
+          sandbox_policy: 'refs_only_no_artifact_mutation',
+          network_policy: 'domain_owner_policy',
+        },
+        instructions_ref: 'instructions:external/owner-receipt-coordination',
+        agent_entry_ref: 'domain-agent-entry:external-agent',
+        stage_refs: ['stage:external/review'],
+        oracle_refs: ['oracle:external/owner-receipt-boundary'],
+        scorer_refs: ['scorer:external/owner-receipt-ref-projection'],
+        recovery_probes: [
+          {
+            probe_ref: 'recovery-probe:external/owner-receipt-redrive',
+            probe_kind: 'resume_after_interruption',
+            expected_status: 'passed',
+            observed_status: 'passed',
+            source_refs: ['owner-receipt:external/live-acceptance'],
+          },
+        ],
+        trajectory: {
+          trajectory_ref: 'trajectory:external/owner-receipt-coordination',
+          run_ref: 'run:external/owner-receipt-coordination',
+          agent_executor: 'codex_cli',
+          stage_attempt_refs: ['stage-attempt:external/owner-receipt-coordination'],
+          tool_call_refs: ['tool-call:external/owner-receipt-evidence'],
+          artifact_refs: ['contract-ref:external/owner-receipt-contract.json'],
+          receipt_refs: ['owner-receipt:external/live-acceptance'],
+          repair_refs: [],
+          trace_refs: ['trace-ref:agent-lab/external-owner-receipt'],
+        },
+        scorecard: {
+          scorecard_ref: 'quality-scorecard:external/owner-receipt',
+          domain_owned: true,
+          opl_scorecard_role: 'scorecard_ref_projection_only',
+          passed: true,
+          metric_refs: ['metric-ref:external/owner-receipt-shape'],
+          evidence_refs: ['owner-receipt:external/live-acceptance'],
+          review_refs: ['review-ref:external/owner-receipt'],
+          quality_gate_refs: ['quality-gate:external/owner'],
+        },
+        improvement_candidate: {
+          candidate_ref: 'improvement-candidate:external/owner-receipt',
+          candidate_kind: 'owner_receipt_scaleout',
+          target_ref: 'owner-receipt-contract:external/live-acceptance',
+          evidence_refs: ['evidence-delta:external/owner-receipt-closed'],
+          allowed_change_scope: 'manual_review_required',
+          promotion_gate_ref: 'promotion-gate:external/owner-receipt',
+        },
+        promotion_gate: {
+          gate_ref: 'promotion-gate:external/owner-receipt',
+          gate_status: 'passed',
+          required_refs: ['owner-receipt-contract:external/live-acceptance'],
+          regression_suite_refs: ['regression-suite:external/owner-boundary'],
+          no_forbidden_write_proof_refs: ['no-forbidden-write:external/owner-receipt'],
+          failure_delta_refs: ['evidence-delta:external/owner-receipt-closed'],
+          owner_or_human_gate_refs: ['owner-gate:external/owner-receipt'],
+          promotion_receipt_refs: ['owner-receipt:external/live-acceptance'],
+        },
+      },
+    ],
+  };
+}
+
 test('external blocked Agent Lab suite becomes a MAS developer patch work order', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-external-suite-'));
   try {
@@ -345,6 +538,167 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     );
     assert.equal(workOrder.target_workspace_environment_verification.can_write_target_domain_truth, false);
     assert.ok(workOrder.implementation_controls.forbidden_target_paths_or_surfaces.includes('publication_eval/latest.json'));
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
+test('MAG live acceptance Agent Lab suite becomes a no-patch owner receipt coordination record', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-mag-live-acceptance-'));
+  try {
+    const targetAgentDir = path.join(outputRoot, 'med-autogrant');
+    writeJson(path.join(targetAgentDir, 'contracts/domain_descriptor.json'), {
+      domain_id: 'med-autogrant',
+      domain_label: 'Med Auto Grant',
+      delivery_domain: 'grant_authoring',
+    });
+    const suitePath = path.join(outputRoot, 'mag-live-acceptance-suite.json');
+    writeJson(suitePath, buildPassedMagLiveAcceptanceSuite());
+    const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+    const reviewerEvaluation = writeMagAiReviewerEvaluation(reviewerEvaluationPath);
+
+    const result = spawnSync(
+      process.execPath,
+      [
+        path.join(repoRoot, 'scripts/improve-from-agent-lab-suite.ts'),
+        '--suite',
+        suitePath,
+        '--target-agent-dir',
+        targetAgentDir,
+        '--output-dir',
+        outputRoot,
+        '--feedback-ref',
+        'manual-review:gpt-5.5/mag-live-acceptance-owner-receipt',
+        '--ai-reviewer-evaluation',
+        reviewerEvaluationPath,
+        '--opl-bin',
+        oplBin,
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        maxBuffer: 16 * 1024 * 1024,
+      },
+    );
+
+    assert.equal(result.status, 0, result.stderr);
+    const payload = JSON.parse(result.stdout) as JsonObject;
+    assert.equal(payload.surface_kind, 'opl_meta_agent_external_suite_self_evolution_result');
+    assert.equal(payload.status, 'passed');
+    assert.equal(payload.target_agent.domain_id, 'med-autogrant');
+    assert.equal(payload.authority_boundary.can_write_target_domain_truth, false);
+    assert.equal(payload.authority_boundary.can_authorize_target_domain_quality_or_export, false);
+    assert.equal(payload.opl_agent_lab.suite_result.status, 'passed');
+
+    const candidate = payload.learning_loop.target_capability_improvement_candidate;
+    assert.equal(candidate.improvement_area, 'grant_owner_live_acceptance_receipt_scaleout_capability');
+    assert.equal(candidate.status, 'candidate_recorded_requires_target_owner_gate');
+    assert.ok(
+      candidate.proposed_change_refs.includes(
+        'production_acceptance_contract_ref:mag/contracts/production_acceptance/mag-production-acceptance.json',
+      ),
+    );
+    assert.ok(candidate.proposed_change_refs.includes('owner_receipt_contract_ref:mag/production-live-acceptance'));
+    assert.ok(candidate.target_editable_surface_refs.includes('production_acceptance_contract_ref'));
+    assert.equal(candidate.ai_reviewer_review.critique, reviewerEvaluation.critique);
+    assert.equal(path.basename(payload.artifacts.target_capability_improvement_candidate_path), 'target-capability-improvement-candidate.json');
+    const candidateFromFile = readJson(payload.artifacts.target_capability_improvement_candidate_path);
+    assert.equal(candidateFromFile.candidate_id, candidate.candidate_id);
+    const liveTrace = (candidate.patch_traceability_matrix as JsonObject[]).find((item) =>
+      item.gap_token === 'live-acceptance'
+    );
+    assert.ok(liveTrace);
+    assert.ok(liveTrace.target_repo_file_hints.includes('contracts/production_acceptance/mag-production-acceptance.json'));
+    assert.ok(liveTrace.required_patch_refs.includes('owner_receipt_contract_ref:mag/production-live-acceptance'));
+
+    const mechanism = readJson(payload.artifacts.mechanism_patch_proposal_path);
+    assert.ok(mechanism.editable_surfaces.includes('target_agent_owner_receipt_contract_ref'));
+    assert.equal(mechanism.authority_boundary.can_authorize_target_domain_quality_or_export, false);
+
+    const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
+    assert.equal(workOrder.status, 'no_patch_required');
+    assert.deepEqual(workOrder.required_patch_surfaces, []);
+    assert.deepEqual(workOrder.patch_traceability_matrix, []);
+    assert.equal(workOrder.implementation_controls.coordination_record_only, true);
+    assert.equal(workOrder.implementation_controls.source_patch_required, false);
+    assert.equal(workOrder.implementation_controls.developer_patch_receipt_required, false);
+    assert.ok(
+      workOrder.implementation_controls.required_closeout_evidence.includes(
+        'target owner receipt projection consumed Agent Lab suite result',
+      ),
+    );
+    assert.ok(workOrder.implementation_controls.forbidden_target_paths_or_surfaces.includes('fundability verdict bodies'));
+    assert.ok(workOrder.runtime_consumption_verification.required_surface_refs.includes('owner_receipt_contract'));
+    assert.ok(workOrder.runtime_consumption_verification.required_surface_refs.includes('production_acceptance_contract'));
+    assert.equal(workOrder.version_management.absorb_back_required, false);
+    assert.equal(workOrder.version_management.temporary_worktree_cleanup_required, false);
+    assert.equal(workOrder.authority_boundary.can_modify_target_agent_source_repo, false);
+    assert.equal(workOrder.authority_boundary.can_modify_target_agent_tests, false);
+    assert.equal(workOrder.authority_boundary.can_modify_target_agent_docs, false);
+    assert.equal(workOrder.authority_boundary.can_write_target_domain_truth, false);
+    assert.equal(workOrder.authority_boundary.can_authorize_target_domain_quality_or_export, false);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
+test('owner-receipt wording in a non-MAG suite does not inject MAG live acceptance refs', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-external-owner-receipt-'));
+  try {
+    const targetAgentDir = path.join(outputRoot, 'external-agent');
+    writeJson(path.join(targetAgentDir, 'contracts/domain_descriptor.json'), {
+      domain_id: 'external-agent',
+      domain_label: 'External Agent',
+      delivery_domain: 'external_opl_compatible_agent',
+    });
+    const suitePath = path.join(outputRoot, 'owner-receipt-suite.json');
+    writeJson(suitePath, buildPassedGenericOwnerReceiptSuite());
+    const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+    writeMagAiReviewerEvaluation(reviewerEvaluationPath, {
+      run_ref: 'run:ai-reviewer/external/owner-receipt',
+      critique: 'The owner-receipt coordination record is accepted for the external target agent.',
+      suggestions: ['Keep owner-receipt source refs available for external owner projection.'],
+      source_refs: ['owner-receipt:external/live-acceptance'],
+      verdict: 'accepted_no_patch_required',
+    });
+
+    const result = spawnSync(
+      process.execPath,
+      [
+        '--experimental-strip-types',
+        path.join(repoRoot, 'scripts/improve-from-agent-lab-suite.ts'),
+        '--suite',
+        suitePath,
+        '--target-agent-dir',
+        targetAgentDir,
+        '--output-dir',
+        outputRoot,
+        '--feedback-ref',
+        'manual-review:gpt-5.5/external-owner-receipt',
+        '--opl-bin',
+        oplBin,
+        '--ai-reviewer-evaluation',
+        reviewerEvaluationPath,
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        maxBuffer: 16 * 1024 * 1024,
+      },
+    );
+
+    assert.equal(result.status, 0, result.stderr);
+    const payload = JSON.parse(result.stdout) as JsonObject;
+    const candidate = payload.learning_loop.target_capability_improvement_candidate;
+    assert.equal(payload.target_agent.domain_id, 'external-agent');
+    assert.equal(
+      candidate.proposed_change_refs.some((ref: string) => ref.startsWith('production_acceptance_contract_ref:mag/')),
+      false,
+    );
+    assert.equal(
+      candidate.proposed_change_refs.some((ref: string) => ref.startsWith('owner_receipt_contract_ref:mag/')),
+      false,
+    );
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }

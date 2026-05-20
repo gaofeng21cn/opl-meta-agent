@@ -149,6 +149,53 @@ const MAS_DEFAULT_CHANGE_REFS = [
   'regression_suite_ref:mas/agent_lab_medical_manuscript_self_evolution',
 ];
 
+const MAG_LIVE_ACCEPTANCE_CHANGE_REFS = [
+  {
+    token: 'live-acceptance',
+    refs: [
+      'production_acceptance_contract_ref:mag/contracts/production_acceptance/mag-production-acceptance.json',
+      'owner_receipt_contract_ref:mag/production-live-acceptance',
+    ],
+  },
+  {
+    token: 'owner-receipt',
+    refs: [
+      'owner_receipt_contract_ref:mag/production-live-acceptance',
+      'product_entry_surface_ref:mag/product-owner-receipt-evidence',
+    ],
+  },
+  {
+    token: 'fundability',
+    refs: [
+      'quality_gate_ref:mag/fundability-owner',
+      'stage_policy_ref:mag/fundability-strategy/owner-gated-readiness',
+    ],
+  },
+  {
+    token: 'package',
+    refs: [
+      'stage_policy_ref:mag/package-and-submit-ready/owner-receipt-closeout',
+      'quality_gate_ref:mag/package-and-submit-ready-export-owner',
+    ],
+  },
+  {
+    token: 'typed-blocker',
+    refs: [
+      'production_acceptance_contract_ref:mag/contracts/production_acceptance/mag-production-acceptance.json',
+      'regression_suite_ref:mag/production-acceptance-owner-boundary',
+    ],
+  },
+];
+
+const MAG_DEFAULT_CHANGE_REFS = [
+  'production_acceptance_contract_ref:mag/contracts/production_acceptance/mag-production-acceptance.json',
+  'owner_receipt_contract_ref:mag/production-live-acceptance',
+  'product_entry_surface_ref:mag/product-owner-receipt-evidence',
+  'stage_policy_ref:mag/package-and-submit-ready/owner-receipt-closeout',
+  'quality_gate_ref:mag/fundability-owner',
+  'regression_suite_ref:mag/production-acceptance-owner-boundary',
+];
+
 const EXTERNAL_LEARNING_REFS = [
   'external-source:equator-network/tripod-reporting-guideline',
   'external-source:tripod-statement/scope-and-checklist',
@@ -180,6 +227,33 @@ const PATCH_SURFACE_HINTS_BY_DOMAIN: PatchSurfaceHintsByDomain = {
       'tests/test_prediction_model_first_draft_quality.py',
       'tests/test_medical_reporting_audit.py',
       'tests/test_medical_publication_surface.py',
+    ],
+  },
+  'med-autogrant': {
+    production_acceptance_contract_ref: [
+      'contracts/production_acceptance/mag-production-acceptance.json',
+      'tests/test_production_acceptance.py',
+    ],
+    owner_receipt_contract_ref: [
+      'contracts/owner_receipt_contract.json',
+      'src/med_autogrant/product_entry_parts/owner_receipts.py',
+    ],
+    product_entry_surface_ref: [
+      'src/med_autogrant/product_entry_parts/entry.py',
+      'src/med_autogrant/cli_parts/handlers.py',
+    ],
+    stage_policy_ref: [
+      'agent/stages/package_and_submit_ready.json',
+      'agent/quality_gates/package_and_submit_ready.md',
+      'src/med_autogrant/stage_control_plane.py',
+    ],
+    quality_gate_ref: [
+      'agent/quality_gates/fundability.md',
+      'agent/quality_gates/review_and_rebuttal.md',
+    ],
+    regression_suite_ref: [
+      'tests/test_production_acceptance.py',
+      'tests/product_entry_cases/test_controlled_soak.py',
     ],
   },
 };
@@ -327,16 +401,19 @@ function reviewerEvidenceText(aiReviewerEvaluation: AiReviewerEvaluation): strin
 }
 
 function inferProposedChangeRefs({
+  targetAgent,
   suite,
   suiteRefs,
   aiReviewerEvaluation,
 }: {
+  targetAgent: TargetAgent;
   suite: JsonObject;
   suiteRefs: string[];
   aiReviewerEvaluation: AiReviewerEvaluation;
 }): string[] {
   const combined = [...suiteRefs, ...reviewerEvidenceText(aiReviewerEvaluation)].join('\n').toLowerCase();
   const inferred = new Set<string>();
+  const isMagTarget = targetAgent.domain_id === 'med-autogrant';
   if (
     String(suite.suite_id || '').includes('medical-manuscript')
     || combined.includes('medical-manuscript')
@@ -344,9 +421,28 @@ function inferProposedChangeRefs({
   ) {
     MAS_DEFAULT_CHANGE_REFS.forEach((ref) => inferred.add(ref));
   }
+  if (
+    isMagTarget
+    && (
+      String(suite.suite_id || '').includes('mag-agent-lab-suite')
+      || combined.includes('med-autogrant')
+      || combined.includes('grant_owner_live_acceptance')
+      || combined.includes('live-acceptance')
+      || combined.includes('owner-receipt')
+    )
+  ) {
+    MAG_DEFAULT_CHANGE_REFS.forEach((ref) => inferred.add(ref));
+  }
   for (const mapping of MAS_MEDICAL_MANUSCRIPT_CHANGE_REFS) {
     if (combined.includes(mapping.token)) {
       mapping.refs.forEach((ref) => inferred.add(ref));
+    }
+  }
+  if (isMagTarget) {
+    for (const mapping of MAG_LIVE_ACCEPTANCE_CHANGE_REFS) {
+      if (combined.includes(mapping.token)) {
+        mapping.refs.forEach((ref) => inferred.add(ref));
+      }
     }
   }
   if (inferred.size === 0) {
@@ -373,11 +469,14 @@ function buildPatchTraceabilityMatrix({
     ref.includes('rubric-gap:')
     || ref.includes('metric-ref:')
     || ref.includes('quality-scorecard:')
+    || ref.includes('evidence-delta:')
+    || ref.includes('owner-receipt')
+    || ref.includes('production-acceptance')
     || ref.includes('publication_eval')
     || ref.includes('review_ledger')
   );
   const matrix = [];
-  for (const mapping of MAS_MEDICAL_MANUSCRIPT_CHANGE_REFS) {
+  for (const mapping of [...MAS_MEDICAL_MANUSCRIPT_CHANGE_REFS, ...MAG_LIVE_ACCEPTANCE_CHANGE_REFS]) {
     if (!textMatchesToken(combined, mapping.token)) {
       continue;
     }
@@ -427,6 +526,117 @@ function fileHintsForPatchRefs({ domainId, patchRefs }: { domainId: string; patc
     }
   }
   return [...files].sort();
+}
+
+function improvementAreaForTarget(targetAgent: TargetAgent): string {
+  if (targetAgent.domain_id === 'med-autogrant') {
+    return 'grant_owner_live_acceptance_receipt_scaleout_capability';
+  }
+  return 'high_quality_medical_manuscript_first_draft_capability';
+}
+
+function targetCapabilityRef(targetAgent: TargetAgent): string {
+  if (targetAgent.domain_id === 'med-autogrant') {
+    return `domain-agent:${targetAgent.domain_id}/grant-owner-live-acceptance-receipt-scaleout-capability`;
+  }
+  return `domain-agent:${targetAgent.domain_id}/high-quality-medical-manuscript-first-draft-capability`;
+}
+
+function targetEditableSurfaceRefs(targetAgent: TargetAgent): string[] {
+  if (targetAgent.domain_id === 'med-autogrant') {
+    return [
+      'production_acceptance_contract_ref',
+      'owner_receipt_contract_ref',
+      'product_entry_surface_ref',
+      'stage_policy_ref',
+      'quality_gate_ref',
+      'regression_suite_ref',
+    ];
+  }
+  return [
+    'stage_policy_ref',
+    'skill_ref',
+    'rubric_ref',
+    'prompt_ref',
+    'quality_contract_ref',
+    'regression_suite_ref',
+  ];
+}
+
+function mechanismEditableSurfaces(targetAgent: TargetAgent): string[] {
+  if (targetAgent.domain_id === 'med-autogrant') {
+    return [
+      'target_agent_production_acceptance_contract_ref',
+      'target_agent_owner_receipt_contract_ref',
+      'target_agent_product_entry_surface_ref',
+      'target_agent_stage_policy_ref',
+      'target_agent_quality_gate_ref',
+      'target_agent_regression_suite_ref',
+    ];
+  }
+  return [
+    'target_agent_stage_policy_ref',
+    'target_agent_skill_ref',
+    'target_agent_rubric_ref',
+    'target_agent_prompt_ref',
+    'target_agent_quality_contract_ref',
+    'target_agent_regression_suite_ref',
+  ];
+}
+
+function forbiddenTargetPathsOrSurfaces(targetAgent: TargetAgent): string[] {
+  if (targetAgent.domain_id === 'med-autogrant') {
+    return [
+      'grant truth surfaces',
+      'grant strategy memory body',
+      'proposal or package artifact body',
+      'fundability verdict bodies',
+      'quality verdict bodies',
+      'submission readiness export verdicts',
+    ];
+  }
+  return [
+    'study truth surfaces',
+    'paper artifacts',
+    'publication_eval/latest.json',
+    'controller_decisions/latest.json',
+    'manuscript/current_package',
+    'submission readiness verdicts',
+  ];
+}
+
+function runtimeRequiredSurfaceRefs(targetAgent: TargetAgent): string[] {
+  if (targetAgent.domain_id === 'med-autogrant') {
+    return [
+      'product_entry_manifest',
+      'owner_receipt_contract',
+      'production_acceptance_contract',
+      'grant_authoring_readiness',
+      'focused_hosted_receipt_verification',
+    ];
+  }
+  return [
+    'study_runtime_status',
+    'domain_transition',
+    'publication_supervisor_state',
+    'default_executor_dispatch_execution',
+    'target_agent_status_or_progress_projection',
+  ];
+}
+
+function runtimeExpectedOutcomes(targetAgent: TargetAgent): string[] {
+  if (targetAgent.domain_id === 'med-autogrant') {
+    return [
+      'patched owner receipt or production acceptance contract is visible in MAG product-entry/read-model projection',
+      'MAG owner receipt closeout returns domain_owner_receipt or typed blocker without OPL granting fundability readiness',
+      'no forbidden target domain truth, artifact, memory, fundability verdict, or submission readiness surface is written by opl-meta-agent',
+    ];
+  }
+  return [
+    'patched quality contract or owner route is visible in target runtime/read-model projection',
+    'blocked suite redrive no longer parks as stale human handoff when target owner work remains',
+    'no forbidden target domain truth, artifact, memory, quality verdict, or submission readiness surface is written by opl-meta-agent',
+  ];
 }
 
 function buildCapabilityCandidate({
@@ -481,7 +691,7 @@ function buildCapabilityCandidate({
     },
     feedback_ref: feedbackRef,
     ...aiReviewerReceiptFields(aiReviewerEvaluation, aiReviewerEvaluationRef),
-    improvement_area: 'high_quality_medical_manuscript_first_draft_capability',
+    improvement_area: improvementAreaForTarget(targetAgent),
     failure_taxonomy_refs: suiteRefs.filter((ref) =>
       ref.includes('rubric-gap:')
       || ref.includes('metric-ref:')
@@ -495,18 +705,11 @@ function buildCapabilityCandidate({
       : 'generic_patch_refs_only',
     ...domainPackReceiptFields(domainPackSummary),
     source_domain_pack: domainPackSummary,
-    target_editable_surface_refs: [
-      'stage_policy_ref',
-      'skill_ref',
-      'rubric_ref',
-      'prompt_ref',
-      'quality_contract_ref',
-      'regression_suite_ref',
-    ],
+    target_editable_surface_refs: targetEditableSurfaceRefs(targetAgent),
     external_learning_refs: EXTERNAL_LEARNING_REFS,
     owner_receipt_ref: receipt.receipt_id,
     authority_boundary: {
-      source_patch_allowed_after_owner_gate: true,
+      source_patch_allowed_after_owner_gate: suiteResult.status !== 'passed',
       can_write_target_domain_truth: false,
       can_write_target_domain_memory_body: false,
       can_mutate_target_domain_artifact_body: false,
@@ -530,6 +733,7 @@ function buildDeveloperPatchWorkOrder({
   receipt: OwnerReceipt;
   capabilityCandidate: CapabilityCandidate;
 }): JsonObject {
+  const noPatchRequired = suiteResult.status === 'passed';
   return {
     surface_kind: 'opl_meta_agent_developer_patch_work_order',
     version: 'opl-meta-agent.developer-patch-work-order.v1',
@@ -539,9 +743,7 @@ function buildDeveloperPatchWorkOrder({
       suiteResult.result_id,
       capabilityCandidate.candidate_id,
     ]),
-    status: suiteResult.status === 'passed'
-      ? 'no_patch_required'
-      : 'ready_for_target_agent_source_patch',
+    status: noPatchRequired ? 'no_patch_required' : 'ready_for_target_agent_source_patch',
     product_id: 'opl-meta-agent',
     target_agent: capabilityCandidate.target_agent,
     source_agent_lab_result_ref: suiteResult.result_id,
@@ -551,55 +753,48 @@ function buildDeveloperPatchWorkOrder({
     ai_reviewer_review: capabilityCandidate.ai_reviewer_review,
     ai_reviewer_evidence: capabilityCandidate.ai_reviewer_evidence,
     review_provenance: capabilityCandidate.review_provenance,
-    required_patch_surfaces: capabilityCandidate.target_editable_surface_refs,
+    required_patch_surfaces: noPatchRequired ? [] : capabilityCandidate.target_editable_surface_refs,
     proposed_change_refs: capabilityCandidate.proposed_change_refs,
-    patch_traceability_matrix: capabilityCandidate.patch_traceability_matrix,
+    patch_traceability_matrix: noPatchRequired ? [] : capabilityCandidate.patch_traceability_matrix,
     implementation_controls: {
-      patch_must_be_limited_to_traceable_surfaces: true,
-      developer_must_read_target_repo_context_before_editing: true,
-      developer_patch_receipt_required: true,
-      target_repo_test_receipt_required: true,
-      target_runtime_consumption_verification_required: true,
-      target_workspace_environment_consumption_proof_required: true,
-      dependency_lock_or_profile_migration_proof_required: true,
-      owner_entry_redrive_required: true,
-      repo_hygiene_no_checkout_venv_proof_required: true,
+      coordination_record_only: noPatchRequired,
+      source_patch_required: !noPatchRequired,
+      patch_must_be_limited_to_traceable_surfaces: !noPatchRequired,
+      developer_must_read_target_repo_context_before_editing: !noPatchRequired,
+      developer_patch_receipt_required: !noPatchRequired,
+      target_repo_test_receipt_required: !noPatchRequired,
+      target_runtime_consumption_verification_required: !noPatchRequired,
+      target_workspace_environment_consumption_proof_required: !noPatchRequired,
+      dependency_lock_or_profile_migration_proof_required: !noPatchRequired,
+      owner_entry_redrive_required: !noPatchRequired,
+      repo_hygiene_no_checkout_venv_proof_required: !noPatchRequired,
+      target_owner_receipt_projection_required: noPatchRequired,
       no_target_domain_truth_write_proof_required: true,
       no_quality_verdict_or_submission_readiness_authority: true,
-      forbidden_target_paths_or_surfaces: [
-        'study truth surfaces',
-        'paper artifacts',
-        'publication_eval/latest.json',
-        'controller_decisions/latest.json',
-        'manuscript/current_package',
-        'submission readiness verdicts',
-      ],
-      required_closeout_evidence: [
-        'patch_traceability_matrix addressed',
-        'target agent tests passed',
-        'target runtime/read-model consumed patched capability',
-        'target workspace dependency lock/profile migrated when runtime extras are required',
-        'target owner entry redrive consumed the migrated workspace environment',
-        'repo hygiene proof shows no target checkout .venv or generated egg-info pollution',
-        'developer patch receipt recorded',
-        'target agent status or decision docs updated',
-        'temporary worktree cleaned after absorb',
-      ],
+      forbidden_target_paths_or_surfaces: forbiddenTargetPathsOrSurfaces(targetAgent),
+      required_closeout_evidence: noPatchRequired
+        ? [
+          'target owner receipt projection consumed Agent Lab suite result',
+          'target owner receipt projection consumed opl-meta-agent coordination result',
+          'no target source patch was requested',
+          'no target domain truth, memory body, artifact body, quality verdict, or export verdict was written',
+        ]
+        : [
+          'patch_traceability_matrix addressed',
+          'target agent tests passed',
+          'target runtime/read-model consumed patched capability',
+          'target workspace dependency lock/profile migrated when runtime extras are required',
+          'target owner entry redrive consumed the migrated workspace environment',
+          'repo hygiene proof shows no target checkout .venv or generated egg-info pollution',
+          'developer patch receipt recorded',
+          'target agent status or decision docs updated',
+          'temporary worktree cleaned after absorb',
+        ],
     },
     runtime_consumption_verification: {
       verification_mode: 'read_only_target_domain_runtime_projection',
-      required_surface_refs: [
-        'study_runtime_status',
-        'domain_transition',
-        'publication_supervisor_state',
-        'default_executor_dispatch_execution',
-        'target_agent_status_or_progress_projection',
-      ],
-      expected_outcomes: [
-        'patched quality contract or owner route is visible in target runtime/read-model projection',
-        'blocked suite redrive no longer parks as stale human handoff when target owner work remains',
-        'no forbidden target domain truth, artifact, memory, quality verdict, or submission readiness surface is written by opl-meta-agent',
-      ],
+      required_surface_refs: runtimeRequiredSurfaceRefs(targetAgent),
+      expected_outcomes: runtimeExpectedOutcomes(targetAgent),
       can_write_target_domain_truth: false,
       can_mutate_target_domain_artifact_body: false,
       can_authorize_target_domain_quality_or_export: false,
@@ -625,21 +820,26 @@ function buildDeveloperPatchWorkOrder({
     },
     version_management: {
       target_agent_version_owner: 'target_agent_repo',
-      required_version_artifacts: [
-        'git_commit',
-        'test_receipt',
-        'runtime_consumption_verification_receipt',
-        'workspace_environment_consumption_receipt',
-        'developer_patch_receipt',
-        'target_agent_status_or_decision_doc_update',
-      ],
-      absorb_back_required: true,
-      temporary_worktree_cleanup_required: true,
+      required_version_artifacts: noPatchRequired
+        ? [
+          'owner_receipt_coordination_record',
+          'target_owner_receipt_projection_ref',
+        ]
+        : [
+          'git_commit',
+          'test_receipt',
+          'runtime_consumption_verification_receipt',
+          'workspace_environment_consumption_receipt',
+          'developer_patch_receipt',
+          'target_agent_status_or_decision_doc_update',
+        ],
+      absorb_back_required: !noPatchRequired,
+      temporary_worktree_cleanup_required: !noPatchRequired,
     },
     authority_boundary: {
-      can_modify_target_agent_source_repo: true,
-      can_modify_target_agent_tests: true,
-      can_modify_target_agent_docs: true,
+      can_modify_target_agent_source_repo: !noPatchRequired,
+      can_modify_target_agent_tests: !noPatchRequired,
+      can_modify_target_agent_docs: !noPatchRequired,
       can_write_target_domain_truth: false,
       can_write_target_domain_memory_body: false,
       can_mutate_target_domain_artifact_body: false,
@@ -671,7 +871,7 @@ function main() {
   const agentLabRun = runOpl(oplBin, ['agent-lab', 'run', '--suite', suitePath, '--json']);
   const suiteResult = agentLabRun.agent_lab_run.suite_result as SuiteResult;
   const suiteRefs = collectSuiteRefs(suite);
-  const proposedChangeRefs = inferProposedChangeRefs({ suite, suiteRefs, aiReviewerEvaluation });
+  const proposedChangeRefs = inferProposedChangeRefs({ targetAgent, suite, suiteRefs, aiReviewerEvaluation });
   const patchTraceabilityMatrix = buildPatchTraceabilityMatrix({
     targetAgent,
     suiteRefs,
@@ -706,7 +906,7 @@ function main() {
     receipt,
     targetAgent,
     candidateKind: 'target_agent_capability_gap',
-    targetRef: `domain-agent:${targetAgent.domain_id}/high-quality-medical-manuscript-first-draft-capability`,
+    targetRef: targetCapabilityRef(targetAgent),
     proposedChangeRefs,
     promotionGateRef: `promotion-gate:opl-meta-agent/${targetAgent.domain_id}/external-suite-self-evolution`,
   });
@@ -715,14 +915,7 @@ function main() {
     receipt,
     learningCandidate,
     mechanismRef: `mechanism:opl-meta-agent/${targetAgent.domain_id}/external-suite-self-evolution-loop`,
-    editableSurfaces: [
-      'target_agent_stage_policy_ref',
-      'target_agent_skill_ref',
-      'target_agent_rubric_ref',
-      'target_agent_prompt_ref',
-      'target_agent_quality_contract_ref',
-      'target_agent_regression_suite_ref',
-    ],
+    editableSurfaces: mechanismEditableSurfaces(targetAgent),
     evidenceDeltaRef: `evidence-delta:opl-meta-agent/${targetAgent.domain_id}/external-agent-lab-suite`,
     observeRefs: [suitePath, aiReviewerEvaluationPath, ...EXTERNAL_LEARNING_REFS],
     diagnoseRefs: [...suiteRefs, ...aiReviewerEvaluation.source_refs],
@@ -755,7 +948,7 @@ function main() {
   const receiptPath = path.join(outputDir, 'meta-agent-improvement-receipt.json');
   const learningPath = path.join(outputDir, 'online-learning-candidate.json');
   const mechanismPath = path.join(outputDir, 'mechanism-patch-proposal.json');
-  const capabilityPath = path.join(outputDir, 'mas-capability-improvement-candidate.json');
+  const capabilityPath = path.join(outputDir, 'target-capability-improvement-candidate.json');
   const workOrderPath = path.join(outputDir, 'developer-patch-work-order.json');
   const runPath = path.join(outputDir, 'external-agent-lab-suite-run.json');
 
