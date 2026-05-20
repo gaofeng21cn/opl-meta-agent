@@ -53,21 +53,21 @@ process.stdout.write(JSON.stringify(output, null, 2) + '\\n');
   fs.chmodSync(filePath, 0o755);
 }
 
-function writeMasFixture(masRepo: string): void {
-  writeJson(path.join(masRepo, 'contracts/domain_descriptor.json'), {
+function writeTargetAgentFixture(agentRepo: string): void {
+  writeJson(path.join(agentRepo, 'contracts/domain_descriptor.json'), {
     surface_kind: 'domain_agent_descriptor',
     domain_id: 'med-autoscience',
     domain_label: 'Med Auto Science',
     generated_surface_owner: 'one-person-lab',
   });
-  writeJson(path.join(masRepo, 'contracts/generated_surface_handoff.json'), {
+  writeJson(path.join(agentRepo, 'contracts/generated_surface_handoff.json'), {
     surface_kind: 'opl_generated_surface_handoff',
     domain_id: 'med-autoscience',
     generated_surface_owner: 'one-person-lab',
     generated_surface_policy: {
       must_not_write: [
-        'MAS study truth',
-        'publication verdict',
+        'target study truth',
+        'target quality verdict',
         'current_package',
       ],
     },
@@ -77,7 +77,7 @@ function writeMasFixture(masRepo: string): void {
       'no_forbidden_write_evidence',
     ],
   });
-  writeJson(path.join(masRepo, 'contracts/owner_receipt_contract.json'), {
+  writeJson(path.join(agentRepo, 'contracts/owner_receipt_contract.json'), {
     surface_kind: 'owner_receipt_contract',
     domain_id: 'med-autoscience',
     allowed_receipt_classes: [
@@ -86,14 +86,14 @@ function writeMasFixture(masRepo: string): void {
       'agent_capability_evolution_receipt',
     ],
   });
-  writeJson(path.join(masRepo, 'contracts/agent_lab_handoff.json'), {
-    surface_kind: 'mas_agent_lab_production_evidence_handoff',
+  writeJson(path.join(agentRepo, 'contracts/agent_lab_handoff.json'), {
+    surface_kind: 'domain_agent_lab_production_evidence_handoff',
     domain_id: 'med-autoscience',
     owner: 'MedAutoScience',
     handoff_status: 'ready_for_opl_meta_agent_and_agent_lab_execution',
     external_suite_seed: {
       suite_id: 'mas-production-evidence-tail-suite',
-      suite_kind: 'mas_production_evidence_suite',
+      suite_kind: 'agent_production_evidence_suite',
       required_task_ids: [
         'agent-lab-task:mas/real-paper-line-provider-canary',
         'agent-lab-task:mas/memory-artifact-human-gate-scaleout',
@@ -104,24 +104,24 @@ function writeMasFixture(masRepo: string): void {
           task_id: 'agent-lab-task:mas/real-paper-line-provider-canary',
           gate_id: 'real_paper_line_provider_canary',
           owner_route: 'MedAutoScience',
-          required_mas_return_shapes: ['owner_receipt', 'typed_blocker'],
+          required_return_shapes: ['owner_receipt', 'typed_blocker'],
         },
         {
           task_id: 'agent-lab-task:mas/memory-artifact-human-gate-scaleout',
           gate_id: 'memory_artifact_human_gate_scaleout',
           owner_route: 'MedAutoScience',
-          required_mas_return_shapes: ['artifact_lifecycle_receipt_or_typed_blocker'],
+          required_return_shapes: ['artifact_lifecycle_receipt_or_typed_blocker'],
         },
         {
           task_id: 'agent-lab-task:mas/provider-slo-long-soak',
           gate_id: 'provider_slo_long_soak',
-          owner_route: 'one-person-lab',
-          required_mas_return_shapes: ['owner_receipt_ref', 'stable_typed_blocker_ref'],
+          owner_route: 'owner-route:one-person-lab/provider-runtime',
+          required_return_shapes: ['owner_receipt_ref', 'stable_typed_blocker_ref'],
         },
       ],
     },
   });
-  writeJson(path.join(masRepo, 'contracts/production_acceptance/mas-production-acceptance.json'), {
+  writeJson(path.join(agentRepo, 'contracts/production_acceptance/production-acceptance.json'), {
     surface_kind: 'mas_domain_owned_production_acceptance',
     schema_version: 1,
     domain_id: 'med-autoscience',
@@ -190,9 +190,9 @@ function writeMasFixture(masRepo: string): void {
       },
     },
     authority_boundary: {
-      domain_ready_requires_mas_owner_receipt_or_typed_blocker: true,
-      publication_ready_requires_mas_quality_publication_gate: true,
-      artifact_mutation_requires_mas_owner_receipt: true,
+      domain_ready_requires_owner_receipt_or_typed_blocker: true,
+      quality_or_export_ready_requires_target_owner_gate: true,
+      artifact_mutation_requires_owner_receipt: true,
       opl_can_write_domain_truth: false,
       opl_can_write_publication_verdict: false,
       opl_can_write_memory_body: false,
@@ -206,9 +206,9 @@ function writeAiReviewerEvaluation(filePath: string): void {
     reviewer_kind: 'ai_reviewer',
     model_or_provider: 'gpt-5.5',
     run_ref: 'run:ai-reviewer/mas/production-evidence-tail',
-    critique: 'MAS production evidence tail still needs owner-route and no-forbidden-write proof materialized as refs.',
+    critique: 'domain agent production evidence tail still needs owner-route and no-forbidden-write proof materialized as refs.',
     suggestions: [
-      'Generate a refs-only Agent Lab suite from the MAS production acceptance contract.',
+      'Generate a refs-only Agent Lab suite from the target production acceptance contract.',
       'Emit developer work order refs without writing MAS domain truth or publication verdicts.',
     ],
     source_refs: [
@@ -224,23 +224,23 @@ function writeAiReviewerEvaluation(filePath: string): void {
   });
 }
 
-test('mas:evidence generates MAS Agent Lab suite and proposal artifacts from MAS contracts', () => {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-mas-evidence-'));
+test('agent:evidence generates domain Agent Lab suite and proposal artifacts from target agent contracts', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-agent-evidence-'));
   try {
-    const masRepo = path.join(outputRoot, 'med-autoscience');
+    const agentRepo = path.join(outputRoot, 'med-autoscience');
     const outputDir = path.join(outputRoot, 'out');
     const fakeOplBin = path.join(outputRoot, 'fake-opl.js');
     const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
-    writeMasFixture(masRepo);
+    writeTargetAgentFixture(agentRepo);
     writeFakeOplBin(fakeOplBin);
     writeAiReviewerEvaluation(reviewerEvaluationPath);
 
     const result = spawnSync(
       process.execPath,
       [
-        path.join(repoRoot, 'scripts/mas-evidence-takeover.ts'),
-        '--mas-repo',
-        masRepo,
+        path.join(repoRoot, 'scripts/agent-evidence-takeover.ts'),
+        '--agent-repo',
+        agentRepo,
         '--output-dir',
         outputDir,
         '--opl-bin',
@@ -257,66 +257,67 @@ test('mas:evidence generates MAS Agent Lab suite and proposal artifacts from MAS
 
     assert.equal(result.status, 0, result.stderr);
     const payload = JSON.parse(result.stdout) as JsonObject;
-    assert.equal(payload.surface_kind, 'opl_meta_agent_mas_evidence_takeover_result');
-    assert.equal(payload.status, 'proposal_recorded_requires_mas_owner_gate');
-    assert.equal(payload.authority_boundary.can_write_mas_domain_truth, false);
-    assert.equal(payload.authority_boundary.can_authorize_mas_publication_or_export_verdict, false);
-    assert.equal(payload.authority_boundary.can_update_current_package, false);
+    assert.equal(payload.surface_kind, 'opl_meta_agent_agent_evidence_takeover_result');
+    assert.equal(payload.status, 'proposal_recorded_requires_target_owner_gate');
+    assert.equal(payload.authority_boundary.can_write_target_domain_truth, false);
+    assert.equal(payload.authority_boundary.can_authorize_target_quality_or_export, false);
+    assert.equal(payload.authority_boundary.can_promote_default_agent_without_gate, false);
+    assert.equal(fs.existsSync(path.join(outputDir, 'agent-lab-run-result.json')), true);
 
-    const suite = readJson(path.join(outputDir, 'mas-agent-lab-suite.json'));
-    assert.equal(suite.suite_kind, 'mas_production_evidence_suite');
-    assert.equal(suite.suite_role, 'mas_production_evidence_tail_testing_takeover');
+    const suite = readJson(path.join(outputDir, 'agent-lab-suite.json'));
+    assert.equal(suite.suite_kind, 'agent_production_evidence_suite');
+    assert.equal(suite.suite_role, 'target_agent_production_evidence_tail_testing_takeover');
     assert.ok(suite.source_contract_refs.includes('contracts/agent_lab_handoff.json'));
-    assert.deepEqual(suite.mas_production_evidence_gate.gate_ids, [
+    assert.deepEqual(suite.production_evidence_gate.gate_ids, [
       'real_paper_line_provider_canary',
       'memory_artifact_human_gate_scaleout',
       'provider_slo_long_soak',
     ]);
-    assert.deepEqual(suite.mas_production_evidence_gate.owner_route_refs, [
-      'owner-route:mas/MedAutoScience',
-      'owner-route:opl/one-person-lab',
+    assert.deepEqual(suite.production_evidence_gate.owner_route_refs, [
+      'owner-route:med-autoscience/MedAutoScience',
+      'owner-route:one-person-lab/provider-runtime',
     ]);
-    assert.equal(suite.mas_production_evidence_gate.domain_verdict_claimed, false);
+    assert.equal(suite.production_evidence_gate.domain_verdict_claimed, false);
     assert.ok(
-      suite.mas_production_evidence_gate.no_forbidden_write_proof_refs.includes(
-        'no-forbidden-write:mas/production-evidence-tail',
+      suite.production_evidence_gate.no_forbidden_write_proof_refs.includes(
+        'no-forbidden-write:med-autoscience/production-evidence-tail',
       ),
     );
     assert.equal(suite.authority_boundary.refs_only, true);
-    assert.equal(suite.authority_boundary.can_write_domain_truth, false);
-    assert.equal(suite.authority_boundary.can_mutate_artifact_body, false);
-    assert.ok(suite.authority_boundary.forbidden_write_surfaces.includes('publication_eval/latest.json'));
+    assert.equal(suite.authority_boundary.can_write_target_domain_truth, false);
+    assert.equal(suite.authority_boundary.can_mutate_target_artifact_body, false);
+    assert.ok(suite.authority_boundary.forbidden_write_surfaces.includes('target quality verdict'));
     assert.ok(suite.tasks[0].scorecard.evidence_refs.includes('contracts/owner_receipt_contract.json'));
     assert.ok(
       suite.tasks[0].scorecard.evidence_refs.includes(
         'scripts/run-pytest-clean.sh -q tests/test_mas_production_acceptance.py',
       ),
     );
-    assert.ok(suite.tasks[0].promotion_gate.no_forbidden_write_proof_refs.includes('no-forbidden-write:mas/production-evidence-tail'));
+    assert.ok(suite.tasks[0].promotion_gate.no_forbidden_write_proof_refs.includes('no-forbidden-write:med-autoscience/production-evidence-tail'));
 
     const workOrder = readJson(path.join(outputDir, 'developer-patch-work-order.json'));
-    assert.equal(workOrder.status, 'ready_for_mas_source_patch_proposal');
-    assert.equal(workOrder.target_owner_route.domain_ready_requires_mas_owner_receipt_or_typed_blocker, true);
+    assert.equal(workOrder.status, 'ready_for_target_agent_source_patch_proposal');
+    assert.equal(workOrder.target_owner_route.domain_ready_requires_owner_receipt_or_typed_blocker, true);
     assert.equal(workOrder.implementation_controls.proposal_only, true);
     assert.equal(workOrder.implementation_controls.refs_only, true);
     assert.equal(workOrder.implementation_controls.no_forbidden_write_proof_required, true);
     assert.ok(workOrder.editable_surface_limits.editable_surfaces.includes('agent/prompts'));
-    assert.ok(workOrder.editable_surface_limits.forbidden_write_surfaces.includes('manuscript/current_package'));
+    assert.ok(workOrder.editable_surface_limits.forbidden_write_surfaces.includes('current_package'));
     assert.ok(workOrder.verification_command_refs.includes('scripts/verify.sh'));
 
-    const candidate = readJson(path.join(outputDir, 'mas-capability-improvement-candidate.json'));
-    assert.equal(candidate.status, 'candidate_recorded_requires_mas_owner_gate');
-    assert.equal(candidate.target_owner_route.publication_ready_requires_mas_quality_publication_gate, true);
-    assert.ok(candidate.proposed_change_refs.includes('mas:evidence-tail/no-forbidden-write-proof'));
-    assert.equal(candidate.no_forbidden_write.can_write_publication_verdict, false);
+    const candidate = readJson(path.join(outputDir, 'target-capability-improvement-candidate.json'));
+    assert.equal(candidate.status, 'candidate_recorded_requires_target_owner_gate');
+    assert.equal(candidate.target_owner_route.quality_or_export_ready_requires_target_owner_gate, true);
+    assert.ok(candidate.proposed_change_refs.includes('agent:evidence-tail/med-autoscience/no-forbidden-write-proof'));
+    assert.equal(candidate.no_forbidden_write.can_authorize_target_quality_or_export, false);
     assert.ok(candidate.verification_command_refs.includes('scripts/verify.sh'));
 
     const mechanism = readJson(path.join(outputDir, 'mechanism-patch-proposal.json'));
     assert.equal(mechanism.surface_kind, 'opl_meta_agent_mechanism_patch_proposal');
-    assert.equal(mechanism.status, 'proposal_recorded_requires_mas_owner_gate');
-    assert.ok(mechanism.editable_surfaces.includes('mas_no_forbidden_write_proof_refs'));
+    assert.equal(mechanism.status, 'proposal_recorded_requires_target_owner_gate');
+    assert.ok(mechanism.editable_surfaces.includes('target_no_forbidden_write_proof_refs'));
     assert.equal(mechanism.authority_boundary.can_authorize_target_domain_quality_or_export, false);
-    assert.equal(mechanism.authority_boundary.can_update_current_package, false);
+    assert.equal(mechanism.authority_boundary.can_promote_default_agent_without_gate, false);
 
     const ownerRefs = readJson(path.join(outputDir, 'owner-receipt-refs.json'));
     assert.equal(ownerRefs.status, 'refs_only_no_owner_receipt_signed_by_meta_agent');
@@ -332,21 +333,21 @@ test('mas:evidence generates MAS Agent Lab suite and proposal artifacts from MAS
   }
 });
 
-test('mas:evidence emits typed blocker and no delivery receipt when reviewer evaluation is missing', () => {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-mas-evidence-blocked-'));
+test('agent:evidence emits typed blocker and no delivery receipt when reviewer evaluation is missing', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-agent-evidence-blocked-'));
   try {
-    const masRepo = path.join(outputRoot, 'med-autoscience');
+    const agentRepo = path.join(outputRoot, 'med-autoscience');
     const outputDir = path.join(outputRoot, 'out');
     const fakeOplBin = path.join(outputRoot, 'fake-opl.js');
-    writeMasFixture(masRepo);
+    writeTargetAgentFixture(agentRepo);
     writeFakeOplBin(fakeOplBin);
 
     const result = spawnSync(
       process.execPath,
       [
-        path.join(repoRoot, 'scripts/mas-evidence-takeover.ts'),
-        '--mas-repo',
-        masRepo,
+        path.join(repoRoot, 'scripts/agent-evidence-takeover.ts'),
+        '--agent-repo',
+        agentRepo,
         '--output-dir',
         outputDir,
         '--opl-bin',
@@ -368,15 +369,15 @@ test('mas:evidence emits typed blocker and no delivery receipt when reviewer eva
     const typedBlocker = readJson(path.join(outputDir, 'typed-blocker.json'));
     assert.equal(typedBlocker.status, 'blocked_missing_ai_reviewer_evaluation');
     assert.equal(typedBlocker.authority_boundary.no_delivery_receipt_signed, true);
-    assert.equal(typedBlocker.authority_boundary.can_write_mas_domain_truth, false);
+    assert.equal(typedBlocker.authority_boundary.can_write_target_domain_truth, false);
     assert.ok(typedBlocker.required_input_refs.includes('--ai-reviewer-evaluation <json>'));
     assert.ok(typedBlocker.verification_command_refs.includes('scripts/verify.sh'));
 
     const workOrder = readJson(path.join(outputDir, 'developer-patch-work-order.json'));
     assert.equal(workOrder.status, 'blocked_missing_ai_reviewer_evaluation');
-    assert.equal(workOrder.no_forbidden_write.can_write_mas_domain_truth, false);
-    assert.equal(workOrder.implementation_controls.mas_owner_receipt_or_typed_blocker_required, true);
-    assert.ok(workOrder.editable_surface_limits.forbidden_write_surfaces.includes('publication_eval/latest.json'));
+    assert.equal(workOrder.no_forbidden_write.can_write_target_domain_truth, false);
+    assert.equal(workOrder.implementation_controls.target_owner_receipt_or_typed_blocker_required, true);
+    assert.ok(workOrder.editable_surface_limits.forbidden_write_surfaces.includes('target quality verdict'));
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }
