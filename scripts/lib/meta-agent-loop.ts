@@ -52,6 +52,9 @@ export type AiReviewerEvaluation = JsonObject & {
   verdict: string;
   predicted_impact: string;
   provenance: JsonObject;
+  canary_refs?: string[];
+  rollback_refs?: string[];
+  version_refs?: string[];
 };
 
 type AgentLabSuiteOptions = {
@@ -229,11 +232,18 @@ export function validateAiReviewerEvaluation(
   }
   if (!nonEmptyStringArray(payload.direct_evidence_refs)) {
     errors.push('direct_evidence_refs must be a non-empty string array');
+  } else if ((payload.direct_evidence_refs as string[]).every(suiteOrScaffoldOnlyRef)) {
+    errors.push('direct_evidence_refs must include direct evidence beyond suite/scaffold refs');
   }
   if (!payload.provenance || typeof payload.provenance !== 'object' || Array.isArray(payload.provenance)) {
     errors.push('provenance must be a non-empty object');
   } else if (Object.keys(payload.provenance).length === 0) {
     errors.push('provenance must be a non-empty object');
+  }
+  for (const field of ['canary_refs', 'rollback_refs', 'version_refs']) {
+    if (payload[field] !== undefined && !nonEmptyStringArray(payload[field])) {
+      errors.push(`${field} must be a non-empty string array when present`);
+    }
   }
 
   if (errors.length > 0) {
@@ -256,6 +266,15 @@ export function validateAiReviewerEvaluation(
     verdict: payload.verdict.trim(),
     predicted_impact: payload.predicted_impact.trim(),
     provenance: payload.provenance,
+    ...(payload.canary_refs !== undefined
+      ? { canary_refs: (payload.canary_refs as string[]).map((ref) => ref.trim()) }
+      : {}),
+    ...(payload.rollback_refs !== undefined
+      ? { rollback_refs: (payload.rollback_refs as string[]).map((ref) => ref.trim()) }
+      : {}),
+    ...(payload.version_refs !== undefined
+      ? { version_refs: (payload.version_refs as string[]).map((ref) => ref.trim()) }
+      : {}),
   };
 }
 
@@ -298,6 +317,11 @@ export function aiReviewerReceiptFields(
       verdict: aiReviewerEvaluation.verdict,
       predicted_impact: aiReviewerEvaluation.predicted_impact,
     },
+    ai_reviewer_recovery_refs: {
+      canary_refs: aiReviewerEvaluation.canary_refs ?? [],
+      rollback_refs: aiReviewerEvaluation.rollback_refs ?? [],
+      version_refs: aiReviewerEvaluation.version_refs ?? [],
+    },
     review_provenance: {
       reviewer_kind: aiReviewerEvaluation.reviewer_kind,
       model_or_provider: aiReviewerEvaluation.model_or_provider,
@@ -316,6 +340,7 @@ export function aiReviewerAcceptanceGates(): JsonObject {
     ai_reviewer_suggestions_present: true,
     ai_reviewer_source_refs_valid: true,
     ai_reviewer_direct_evidence_refs_present: true,
+    ai_reviewer_direct_evidence_refs_valid: true,
     ai_reviewer_provenance_present: true,
     ai_reviewer_no_shared_context: true,
     ai_reviewer_independent_attempt_present: true,

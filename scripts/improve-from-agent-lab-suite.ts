@@ -64,6 +64,16 @@ type CapabilityCandidate = JsonObject & {
   patch_traceability_matrix: PatchTraceabilityEntry[];
 };
 
+type WorkOrderCompletenessInput = {
+  suiteResult: SuiteResult;
+  aiReviewerEvaluation: AiReviewerEvaluation;
+  capabilityCandidate: CapabilityCandidate;
+  workOrderId: string;
+  requiredVerificationRefs: string[];
+  noForbiddenWriteProofRefs: string[];
+  noPatchRequired: boolean;
+};
+
 type ChangeRefMapping = {
   token: string;
   refs: string[];
@@ -611,6 +621,87 @@ function buildTargetPatchLoopMachineRefs({
   };
 }
 
+function workOrderCompleteness({
+  suiteResult,
+  aiReviewerEvaluation,
+  capabilityCandidate,
+  workOrderId,
+  requiredVerificationRefs,
+  noForbiddenWriteProofRefs,
+  noPatchRequired,
+}: WorkOrderCompletenessInput): JsonObject {
+  const patchTraceabilityMatrixRef = `${workOrderId}#/patch_traceability_matrix`;
+  const targetVerificationRefs = unique([
+    ...requiredVerificationRefs,
+    'target_owner_receipt_or_typed_blocker',
+    noPatchRequired ? 'target_owner_receipt_projection_ref' : 'target_repo_test_receipt',
+  ]);
+  const canaryRefs = unique([
+    ...(aiReviewerEvaluation.canary_refs ?? []),
+    `agent-lab-canary:${suiteResult.result_id}`,
+  ]);
+  const rollbackRefs = unique([
+    ...(aiReviewerEvaluation.rollback_refs ?? []),
+    ...noForbiddenWriteProofRefs,
+    noPatchRequired ? 'owner_receipt_coordination_record' : 'target_agent_previous_head_ref',
+  ]);
+  const versionRefs = unique([
+    ...(aiReviewerEvaluation.version_refs ?? []),
+    noPatchRequired ? 'owner_receipt_coordination_record' : 'git_commit',
+  ]);
+  return {
+    required_fields_present: true,
+    reviewer_refs: unique([
+      String(capabilityCandidate.ai_reviewer_evaluation_ref),
+      ...capabilityCandidate.ai_reviewer_evidence.source_refs,
+      ...capabilityCandidate.ai_reviewer_evidence.direct_evidence_refs,
+    ]),
+    executor_aperture: {
+      executor_first: true,
+      codex_first: true,
+      executor: 'codex_cli',
+      allowed_scope: noPatchRequired ? 'coordination_record_only' : 'target_agent_owner_gated_patch',
+      allowed_write_surfaces: noPatchRequired ? [] : capabilityCandidate.target_editable_surface_refs,
+      forbidden_write_surfaces: [
+        'target_domain_truth',
+        'target_domain_memory_body',
+        'target_domain_artifact_body',
+        'target_quality_or_export_verdict',
+        'default_agent_promotion_without_gate',
+      ],
+    },
+    patch_traceability: {
+      matrix_ref: patchTraceabilityMatrixRef,
+      traceability_status: noPatchRequired ? 'no_source_patch_required' : capabilityCandidate.traceability_status,
+      proposed_change_refs: capabilityCandidate.proposed_change_refs,
+    },
+    target_verification: {
+      required_refs: targetVerificationRefs,
+      requires_target_owner_receipt_or_typed_blocker: true,
+      requires_no_forbidden_write_proof: true,
+    },
+    owner_route: {
+      target_owner_required: true,
+      route_refs: [
+        `target-agent-owner:${capabilityCandidate.target_agent.domain_id}`,
+        `target-owner-receipt-or-typed-blocker:${capabilityCandidate.target_agent.domain_id}/${workOrderId}`,
+      ],
+    },
+    no_forbidden_write_proof: {
+      required: true,
+      proof_refs: noForbiddenWriteProofRefs,
+      can_write_target_domain_truth: false,
+      can_write_target_domain_memory_body: false,
+      can_mutate_target_domain_artifact_body: false,
+      can_authorize_target_domain_quality_or_export: false,
+    },
+    canary_refs: canaryRefs,
+    rollback_refs: rollbackRefs,
+    version_refs: versionRefs,
+    fail_closed_blocker_ref: `typed-blocker:opl-meta-agent/${capabilityCandidate.target_agent.domain_id}/${workOrderId}/missing-required-work-order-field`,
+  };
+}
+
 function buildCapabilityCandidate({
   targetAgent,
   suite,
@@ -664,6 +755,7 @@ function buildCapabilityCandidate({
       suite_passed: suiteResult.status === 'passed',
     },
     feedback_ref: feedbackRef,
+    ai_reviewer_evaluation: aiReviewerEvaluation,
     ...aiReviewerReceiptFields(aiReviewerEvaluation, aiReviewerEvaluationRef),
     improvement_area: improvementAreaForTarget(targetAgent),
     failure_taxonomy_refs: suiteRefs.filter((ref) =>
@@ -752,7 +844,18 @@ function buildDeveloperPatchWorkOrder({
     ai_reviewer_review: capabilityCandidate.ai_reviewer_review,
     ai_reviewer_independence: capabilityCandidate.ai_reviewer_independence,
     ai_reviewer_evidence: capabilityCandidate.ai_reviewer_evidence,
+    ai_reviewer_scorecard: capabilityCandidate.ai_reviewer_scorecard,
+    ai_reviewer_recovery_refs: capabilityCandidate.ai_reviewer_recovery_refs,
     review_provenance: capabilityCandidate.review_provenance,
+    work_order_completeness: workOrderCompleteness({
+      suiteResult,
+      aiReviewerEvaluation: capabilityCandidate.ai_reviewer_evaluation,
+      capabilityCandidate,
+      workOrderId,
+      requiredVerificationRefs,
+      noForbiddenWriteProofRefs,
+      noPatchRequired,
+    }),
     ahe_developer_work_order: {
       failure_evidence: failureEvidence,
       root_cause: noPatchRequired
@@ -900,6 +1003,8 @@ function requireNonEmptyString(value: unknown, fieldName: string): void {
 
 function validateDeveloperPatchWorkOrder(workOrder: JsonObject): void {
   requireNonEmptyStringArray(workOrder.ai_reviewer_evidence?.source_refs, 'ai_reviewer_evidence.source_refs');
+  requireNonEmptyStringArray(workOrder.ai_reviewer_evidence?.direct_evidence_refs, 'ai_reviewer_evidence.direct_evidence_refs');
+  requireNonEmptyString(workOrder.ai_reviewer_scorecard?.verdict, 'ai_reviewer_scorecard.verdict');
   requireNonEmptyString(workOrder.ai_reviewer_review?.predicted_impact, 'ai_reviewer_review.predicted_impact');
   requireNonEmptyStringArray(workOrder.ahe_developer_work_order?.failure_evidence, 'ahe_developer_work_order.failure_evidence');
   requireNonEmptyString(workOrder.ahe_developer_work_order?.root_cause, 'ahe_developer_work_order.root_cause');
@@ -909,6 +1014,14 @@ function validateDeveloperPatchWorkOrder(workOrder: JsonObject): void {
   requireNonEmptyStringArray(workOrder.owner_route_refs, 'owner_route_refs');
   requireNonEmptyStringArray(workOrder.rollback_version_refs, 'rollback_version_refs');
   requireNonEmptyStringArray(workOrder.no_forbidden_write_proof?.proof_refs, 'no_forbidden_write_proof.proof_refs');
+  requireNonEmptyStringArray(workOrder.work_order_completeness?.reviewer_refs, 'work_order_completeness.reviewer_refs');
+  requireNonEmptyString(workOrder.work_order_completeness?.patch_traceability?.matrix_ref, 'work_order_completeness.patch_traceability.matrix_ref');
+  requireNonEmptyStringArray(workOrder.work_order_completeness?.target_verification?.required_refs, 'work_order_completeness.target_verification.required_refs');
+  requireNonEmptyStringArray(workOrder.work_order_completeness?.owner_route?.route_refs, 'work_order_completeness.owner_route.route_refs');
+  requireNonEmptyStringArray(workOrder.work_order_completeness?.no_forbidden_write_proof?.proof_refs, 'work_order_completeness.no_forbidden_write_proof.proof_refs');
+  requireNonEmptyStringArray(workOrder.work_order_completeness?.canary_refs, 'work_order_completeness.canary_refs');
+  requireNonEmptyStringArray(workOrder.work_order_completeness?.rollback_refs, 'work_order_completeness.rollback_refs');
+  requireNonEmptyStringArray(workOrder.work_order_completeness?.version_refs, 'work_order_completeness.version_refs');
 }
 
 function main() {
