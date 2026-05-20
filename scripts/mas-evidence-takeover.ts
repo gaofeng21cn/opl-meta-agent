@@ -22,6 +22,7 @@ type MasEvidenceArgs = {
 
 type MasContracts = {
   productionAcceptance: JsonObject;
+  agentLabHandoff: JsonObject;
   domainDescriptor: JsonObject;
   generatedSurfaceHandoff: JsonObject;
   ownerReceiptContract: JsonObject;
@@ -32,6 +33,7 @@ const MAS_EDITABLE_SURFACES = [
   'agent/skills',
   'agent/knowledge',
   'agent/quality_gates',
+  'contracts/agent_lab_handoff.json',
   'contracts/stage_control_plane.json',
   'contracts/owner_receipt_contract.json',
   'contracts/generated_surface_handoff.json',
@@ -121,6 +123,7 @@ function parseArgs(argv: string[]): MasEvidenceArgs {
 function loadMasContracts(masRepo: string): MasContracts {
   const refs = {
     productionAcceptance: 'contracts/production_acceptance/mas-production-acceptance.json',
+    agentLabHandoff: 'contracts/agent_lab_handoff.json',
     domainDescriptor: 'contracts/domain_descriptor.json',
     generatedSurfaceHandoff: 'contracts/generated_surface_handoff.json',
     ownerReceiptContract: 'contracts/owner_receipt_contract.json',
@@ -133,6 +136,7 @@ function loadMasContracts(masRepo: string): MasContracts {
   }
   return {
     productionAcceptance: readJson(path.join(masRepo, refs.productionAcceptance)),
+    agentLabHandoff: readJson(path.join(masRepo, refs.agentLabHandoff)),
     domainDescriptor: readJson(path.join(masRepo, refs.domainDescriptor)),
     generatedSurfaceHandoff: readJson(path.join(masRepo, refs.generatedSurfaceHandoff)),
     ownerReceiptContract: readJson(path.join(masRepo, refs.ownerReceiptContract)),
@@ -170,6 +174,73 @@ function ownerRouteRefs(productionAcceptance: JsonObject): string[] {
   ];
 }
 
+function unique(values: string[]): string[] {
+  return [...new Set(values.filter((value) => value.trim().length > 0))];
+}
+
+function textList(value: unknown): string[] {
+  return Array.isArray(value)
+    ? unique(value.filter((entry): entry is string => typeof entry === 'string'))
+    : [];
+}
+
+function records(value: unknown): JsonObject[] {
+  return Array.isArray(value)
+    ? value.filter((entry): entry is JsonObject => Boolean(entry) && typeof entry === 'object' && !Array.isArray(entry))
+    : [];
+}
+
+function handoffTasks(agentLabHandoff: JsonObject): JsonObject[] {
+  return records(agentLabHandoff.external_suite_seed?.tasks);
+}
+
+function ownerRouteRef(ownerRoute: unknown): string | null {
+  if (typeof ownerRoute !== 'string' || ownerRoute.trim().length === 0) {
+    return null;
+  }
+  const normalized = ownerRoute.trim();
+  if (normalized === 'MedAutoScience') {
+    return 'owner-route:mas/MedAutoScience';
+  }
+  if (normalized === 'one-person-lab') {
+    return 'owner-route:opl/one-person-lab';
+  }
+  return normalized.startsWith('owner-route:') ? normalized : `owner-route:${normalized}`;
+}
+
+function productionEvidenceGate(contracts: MasContracts): JsonObject {
+  const tasks = handoffTasks(contracts.agentLabHandoff);
+  const handoffGateIds = tasks
+    .map((task) => (typeof task.gate_id === 'string' ? task.gate_id : null))
+    .filter((gateId): gateId is string => Boolean(gateId));
+  const routeRefs = unique(
+    tasks.map((task) => ownerRouteRef(task.owner_route)).filter((ref): ref is string => Boolean(ref)),
+  );
+  const requiredReceiptRefs = unique([
+    ...ownerRouteRefs(contracts.productionAcceptance),
+    ...tasks.flatMap((task) => textList(task.required_mas_return_shapes).map((shape) => `required-mas-return-shape:${shape}`)),
+  ]);
+  return {
+    surface_kind: 'mas_production_evidence_gate_refs',
+    gate_ids: handoffGateIds.length > 0
+      ? handoffGateIds
+      : [
+          'real_paper_line_provider_canary',
+          'memory_artifact_human_gate_scaleout',
+          'provider_slo_long_soak',
+        ],
+    owner_route_refs: routeRefs.length > 0 ? routeRefs : ['owner-route:mas/MedAutoScience'],
+    no_forbidden_write_proof_refs: ['no-forbidden-write:mas/production-evidence-tail'],
+    typed_blocker_refs: ['typed-blocker-ref:mas/production-evidence-tail/owner-receipt-required'],
+    required_owner_receipt_refs: requiredReceiptRefs.length > 0
+      ? requiredReceiptRefs
+      : ['required-owner-receipt-ref:mas/production-evidence-tail'],
+    gate_result_refs: ['gate-result-ref:opl-agent-lab/mas-production-evidence-tail'],
+    domain_verdict_claimed: false,
+    source_handoff_ref: 'contracts/agent_lab_handoff.json',
+  };
+}
+
 function buildMasAgentLabSuite({
   masRepo,
   contracts,
@@ -189,17 +260,22 @@ function buildMasAgentLabSuite({
   ];
   const receiptRefs = ownerRouteRefs(contracts.productionAcceptance);
   const nextVerificationRefs = verificationRefs(contracts.productionAcceptance);
+  const suiteKind = typeof contracts.agentLabHandoff.external_suite_seed?.suite_kind === 'string'
+    ? contracts.agentLabHandoff.external_suite_seed.suite_kind
+    : 'mas_production_evidence_suite';
   const suiteId = stableId('mas_agent_lab_suite', suiteSeed);
   return {
     suite_id: suiteId,
-    suite_kind: 'agent_lab_external_suite',
+    suite_kind: suiteKind,
     suite_role: 'mas_production_evidence_tail_testing_takeover',
     source_contract_refs: [
       'contracts/production_acceptance/mas-production-acceptance.json',
+      'contracts/agent_lab_handoff.json',
       'contracts/domain_descriptor.json',
       'contracts/generated_surface_handoff.json',
       'contracts/owner_receipt_contract.json',
     ],
+    mas_production_evidence_gate: productionEvidenceGate(contracts),
     authority_boundary: {
       refs_only: true,
       can_write_domain_truth: false,

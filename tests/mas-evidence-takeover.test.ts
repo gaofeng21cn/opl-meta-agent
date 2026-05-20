@@ -86,6 +86,41 @@ function writeMasFixture(masRepo: string): void {
       'agent_capability_evolution_receipt',
     ],
   });
+  writeJson(path.join(masRepo, 'contracts/agent_lab_handoff.json'), {
+    surface_kind: 'mas_agent_lab_production_evidence_handoff',
+    domain_id: 'med-autoscience',
+    owner: 'MedAutoScience',
+    handoff_status: 'ready_for_opl_meta_agent_and_agent_lab_execution',
+    external_suite_seed: {
+      suite_id: 'mas-production-evidence-tail-suite',
+      suite_kind: 'mas_production_evidence_suite',
+      required_task_ids: [
+        'agent-lab-task:mas/real-paper-line-provider-canary',
+        'agent-lab-task:mas/memory-artifact-human-gate-scaleout',
+        'agent-lab-task:mas/provider-slo-long-soak',
+      ],
+      tasks: [
+        {
+          task_id: 'agent-lab-task:mas/real-paper-line-provider-canary',
+          gate_id: 'real_paper_line_provider_canary',
+          owner_route: 'MedAutoScience',
+          required_mas_return_shapes: ['owner_receipt', 'typed_blocker'],
+        },
+        {
+          task_id: 'agent-lab-task:mas/memory-artifact-human-gate-scaleout',
+          gate_id: 'memory_artifact_human_gate_scaleout',
+          owner_route: 'MedAutoScience',
+          required_mas_return_shapes: ['artifact_lifecycle_receipt_or_typed_blocker'],
+        },
+        {
+          task_id: 'agent-lab-task:mas/provider-slo-long-soak',
+          gate_id: 'provider_slo_long_soak',
+          owner_route: 'one-person-lab',
+          required_mas_return_shapes: ['owner_receipt_ref', 'stable_typed_blocker_ref'],
+        },
+      ],
+    },
+  });
   writeJson(path.join(masRepo, 'contracts/production_acceptance/mas-production-acceptance.json'), {
     surface_kind: 'mas_domain_owned_production_acceptance',
     schema_version: 1,
@@ -229,8 +264,24 @@ test('mas:evidence generates MAS Agent Lab suite and proposal artifacts from MAS
     assert.equal(payload.authority_boundary.can_update_current_package, false);
 
     const suite = readJson(path.join(outputDir, 'mas-agent-lab-suite.json'));
-    assert.equal(suite.suite_kind, 'agent_lab_external_suite');
+    assert.equal(suite.suite_kind, 'mas_production_evidence_suite');
     assert.equal(suite.suite_role, 'mas_production_evidence_tail_testing_takeover');
+    assert.ok(suite.source_contract_refs.includes('contracts/agent_lab_handoff.json'));
+    assert.deepEqual(suite.mas_production_evidence_gate.gate_ids, [
+      'real_paper_line_provider_canary',
+      'memory_artifact_human_gate_scaleout',
+      'provider_slo_long_soak',
+    ]);
+    assert.deepEqual(suite.mas_production_evidence_gate.owner_route_refs, [
+      'owner-route:mas/MedAutoScience',
+      'owner-route:opl/one-person-lab',
+    ]);
+    assert.equal(suite.mas_production_evidence_gate.domain_verdict_claimed, false);
+    assert.ok(
+      suite.mas_production_evidence_gate.no_forbidden_write_proof_refs.includes(
+        'no-forbidden-write:mas/production-evidence-tail',
+      ),
+    );
     assert.equal(suite.authority_boundary.refs_only, true);
     assert.equal(suite.authority_boundary.can_write_domain_truth, false);
     assert.equal(suite.authority_boundary.can_mutate_artifact_body, false);
