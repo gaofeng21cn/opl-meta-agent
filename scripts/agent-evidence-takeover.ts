@@ -236,18 +236,42 @@ function refsFromEntries(entries: unknown): string[] {
 }
 
 function verificationRefs(productionAcceptance: JsonObject): string[] {
-  return refsFromEntries(productionAcceptance.domain_acceptance_receipt?.next_verification_command_refs);
+  return unique([
+    ...refsFromEntries(productionAcceptance.domain_acceptance_receipt?.next_verification_command_refs),
+    ...refsFromEntries(productionAcceptance.refs?.next_verification_command_refs),
+    ...refsFromEntries(productionAcceptance.closure_evidence?.next_verification_ref ? [
+      productionAcceptance.closure_evidence.next_verification_ref,
+    ] : []),
+  ]);
+}
+
+function refsFromRecord(value: unknown): string[] {
+  if (typeof value === 'string') {
+    return [value];
+  }
+  if (!value || typeof value !== 'object') {
+    return [];
+  }
+  if (Array.isArray(value)) {
+    return value.flatMap(refsFromRecord);
+  }
+  const record = value as JsonObject;
+  return [
+    ...(typeof record.ref === 'string' ? [record.ref] : []),
+    ...Object.entries(record)
+      .filter(([key]) => key !== 'ref')
+      .flatMap(([, nested]) => refsFromRecord(nested)),
+  ];
 }
 
 function productionAcceptanceEvidenceRefs(productionAcceptance: JsonObject): string[] {
-  return [
-    ...refsFromEntries(productionAcceptance.domain_acceptance_receipt?.owner_receipt_refs),
-    ...refsFromEntries(productionAcceptance.domain_acceptance_receipt?.progress_delta_refs),
-    ...refsFromEntries(productionAcceptance.domain_acceptance_receipt?.quality_gate_refs),
-    ...refsFromEntries(productionAcceptance.domain_acceptance_receipt?.quality_publication_gate_refs),
-    ...refsFromEntries(productionAcceptance.domain_acceptance_receipt?.export_gate_refs),
-    ...refsFromEntries(productionAcceptance.domain_acceptance_receipt?.typed_blocker_refs),
-  ];
+  return unique([
+    ...refsFromRecord(productionAcceptance.domain_acceptance_receipt),
+    ...refsFromRecord(productionAcceptance.refs),
+    ...refsFromEntries(productionAcceptance.closure_evidence?.owner_receipt_ref ? [
+      productionAcceptance.closure_evidence.owner_receipt_ref,
+    ] : []),
+  ]);
 }
 
 function unique(values: string[]): string[] {

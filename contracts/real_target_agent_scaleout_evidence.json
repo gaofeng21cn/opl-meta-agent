@@ -3,7 +3,7 @@
   "schema_version": 1,
   "domain_id": "opl-meta-agent",
   "owner": "opl-meta-agent",
-  "evidence_status": "real_target_delivery_minimum_supported_scaleout_pending",
+  "evidence_status": "multi_target_scaleout_closed_by_refs_only_receipts",
   "role": "refs_only_scaleout_evidence_gate",
   "source_refs": {
     "domain_manifest_registration_ref": "contracts/opl_domain_manifest_registration.json",
@@ -73,7 +73,85 @@
     ],
     "sample_smoke_counted_as_real_target_delivery": false,
     "real_target_agent_delivery_count_min_supported": true,
-    "multi_target_scaleout_pending": true
+    "multi_target_scaleout_pending": false,
+    "multi_target_scaleout_closed": true,
+    "multi_target_scaleout_verified_by_real_targets": [
+      "med-autoscience",
+      "med-autogrant"
+    ]
+  },
+  "multi_target_scaleout_closeout": {
+    "surface_kind": "opl_meta_agent_real_target_agent_scaleout_closeout",
+    "status": "closed_by_two_real_target_refs_only_receipts",
+    "target_agent_count": 2,
+    "target_agents": [
+      {
+        "domain_id": "med-autoscience",
+        "target_agent_delivery_receipt_ref": "receipt:oma/med-autoscience/agent-evidence/2026-05-20",
+        "target_agent_owner_receipt_refs": [
+          "contracts/owner_receipt_contract.json",
+          "contracts/production_acceptance/mas-production-acceptance.json#/domain_acceptance_receipt"
+        ],
+        "agent_lab_result_refs": [
+          "agent-lab-run-result:oma/med-autoscience/agent-evidence/2026-05-20"
+        ],
+        "typed_blocker_refs": [],
+        "no_forbidden_write_proof_refs": [
+          "contracts/generated_surface_handoff.json#/generated_surface_policy/must_not_write",
+          "no-forbidden-write:med-autoscience/production-evidence-tail"
+        ],
+        "cleanup_closeout_refs": [
+          "worktree-cleanup:med-autoscience/codex/oma-handoff-refs",
+          "branch-cleanup:med-autoscience/codex/mas-oma-handoff-refs"
+        ],
+        "domain_ready_claimed": false,
+        "default_promotion_claimed": false
+      },
+      {
+        "domain_id": "med-autogrant",
+        "target_agent_delivery_receipt_ref": "receipt:oma/med-autogrant/agent-evidence/2026-05-20",
+        "target_agent_owner_receipt_refs": [
+          "receipt:mag/production-live-acceptance/2026-05-20",
+          "receipt-projection:mag/production-live-acceptance-owner-receipt"
+        ],
+        "agent_lab_result_refs": [
+          "agent-lab-run-result:oma/med-autogrant/agent-evidence/2026-05-20"
+        ],
+        "typed_blocker_refs": [
+          "contracts/external_evidence/mag-evidence-receipt-ledger.json#/domain_owned_typed_blocker_request_ids"
+        ],
+        "no_forbidden_write_proof_refs": [
+          "contracts/generated_surface_handoff.json#/required_domain_handoff/3",
+          "contracts/external_evidence/mag-evidence-receipt-ledger.json#/request_closures/4"
+        ],
+        "cleanup_closeout_refs": [
+          "worktree-cleanup:med-autogrant/codex/oma-handoff-refs",
+          "branch-cleanup:med-autogrant/codex/mag-oma-handoff-refs"
+        ],
+        "domain_ready_claimed": false,
+        "default_promotion_claimed": false
+      }
+    ],
+    "minimum_completion_gate": {
+      "multi_target_scaleout_delivery_count_min": 2,
+      "multi_target_scaleout_delivery_count": 2,
+      "multi_target_scaleout_delivery_count_met": true,
+      "requires_owner_receipt_or_typed_blocker_refs": true,
+      "requires_agent_lab_result_refs": true,
+      "requires_no_forbidden_write_proof_refs": true,
+      "requires_cleanup_closeout_refs": true,
+      "suite_pass_claims_domain_ready": false,
+      "provider_completion_claims_domain_ready": false,
+      "proposal_claims_default_promotion": false
+    },
+    "authority_boundary": {
+      "refs_only": true,
+      "can_write_target_domain_truth": false,
+      "can_write_target_domain_memory_body": false,
+      "can_mutate_target_domain_artifact_body": false,
+      "can_authorize_target_domain_quality_or_export": false,
+      "can_promote_default_agent_without_gate": false
+    }
   },
   "authority_boundary": {
     "refs_only": true,

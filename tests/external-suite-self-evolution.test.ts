@@ -149,6 +149,157 @@ function buildBlockedMedicalManuscriptSuite(suitePath: string): JsonObject {
   };
 }
 
+function writeMedicalTargetImprovementPolicy(targetAgentDir: string): void {
+  writeJson(path.join(targetAgentDir, 'contracts/agent_lab_handoff.json'), {
+    surface_kind: 'domain_agent_lab_production_evidence_handoff',
+    domain_id: 'med-autoscience',
+    owner: 'MedAutoScience',
+    handoff_status: 'ready_for_opl_meta_agent_and_agent_lab_execution',
+    external_suite_improvement_policy: {
+      default_change_ref_triggers: [
+        'medical-manuscript',
+        'medical_journal_prose_quality',
+      ],
+      default_change_refs: [
+        'stage_policy_ref:mas/write/pre_draft_prediction_model_reporting',
+        'skill_ref:medical-research-write',
+        'rubric_ref:ai_reviewer/high_quality_medical_manuscript',
+        'prompt_ref:ai_reviewer_medical_prose_quality_review',
+        'quality_contract_ref:prediction_model_first_draft_quality',
+        'regression_suite_ref:mas/agent_lab_medical_manuscript_self_evolution',
+      ],
+      change_ref_mappings: [
+        {
+          token: 'medical_journal_prose_quality',
+          refs: [
+            'rubric_ref:ai_reviewer/high_quality_medical_manuscript',
+            'prompt_ref:ai_reviewer_medical_prose_quality_review',
+            'prompt_ref:medical-research-write/formal_manuscript_voice_no_internal_qc_language',
+          ],
+        },
+        {
+          token: 'hdl',
+          refs: [
+            'quality_contract_ref:mas/prediction_model_first_draft_quality/variable_unit_harmonization',
+            'stage_policy_ref:mas/write/pre_draft_prediction_model_reporting/hdl_unit_sensitivity',
+          ],
+        },
+        {
+          token: 'model-reproducibility',
+          refs: [
+            'quality_contract_ref:mas/prediction_model_first_draft_quality/model_reproducibility',
+            'skill_ref:medical-research-write/prediction_model_methods_reproducibility',
+          ],
+        },
+        {
+          token: 'baseline-survival',
+          refs: [
+            'quality_contract_ref:mas/prediction_model_first_draft_quality/baseline_survival_and_absolute_risk',
+          ],
+        },
+        {
+          token: 'table1-table2',
+          refs: [
+            'quality_contract_ref:mas/prediction_model_first_draft_quality/visible_table1_table2',
+            'stage_policy_ref:mas/write/pre_draft_prediction_model_reporting/baseline_and_performance_tables',
+          ],
+        },
+        {
+          token: 'uncertainty-intervals',
+          refs: [
+            'quality_contract_ref:mas/prediction_model_first_draft_quality/uncertainty_intervals',
+            'rubric_ref:ai_reviewer/high_quality_medical_manuscript/statistical_uncertainty',
+          ],
+        },
+        {
+          token: 'validation-metrics',
+          refs: [
+            'quality_contract_ref:mas/prediction_model_first_draft_quality/validation_metrics',
+          ],
+        },
+        {
+          token: 'nhanes',
+          refs: [
+            'quality_contract_ref:mas/prediction_model_first_draft_quality/survey_weighting_or_unweighted_framing',
+            'prompt_ref:ai_reviewer_medical_prose_quality_review/nhanes_population_framing',
+          ],
+        },
+        {
+          token: 'calibration-risk-collapse',
+          refs: [
+            'quality_contract_ref:mas/prediction_model_first_draft_quality/calibration_and_risk_distribution_figures',
+            'stage_policy_ref:mas/figure-polish/prediction_model_calibration_and_risk_distribution',
+          ],
+        },
+        {
+          token: 'figure-quality',
+          refs: [
+            'stage_policy_ref:mas/figure-polish/high_quality_medical_journal_figures',
+          ],
+        },
+        {
+          token: 'internal-quality-language-purge',
+          refs: [
+            'rubric_ref:ai_reviewer/high_quality_medical_manuscript/internal_quality_language_purge',
+            'prompt_ref:medical-research-write/formal_manuscript_voice_no_internal_qc_language',
+          ],
+        },
+      ],
+      patch_surface_hints: {
+        quality_contract_ref: [
+          'src/med_autoscience/policies/medical_reporting_checklist.py',
+          'src/med_autoscience/study_charter.py',
+        ],
+        skill_ref: [
+          'src/med_autoscience/overlay/templates/medical-research-write.SKILL.md',
+        ],
+        rubric_ref: [
+          'src/med_autoscience/policies/publication_critique.py',
+          'src/med_autoscience/policies/medical_manuscript_draft_quality.py',
+        ],
+        prompt_ref: [
+          'src/med_autoscience/policies/medical_manuscript_draft_quality.py',
+          'src/med_autoscience/overlay/templates/medical-research-write.SKILL.md',
+        ],
+        stage_policy_ref: [
+          'src/med_autoscience/controllers/pre_draft_quality_runtime.py',
+          'src/med_autoscience/controllers/agent_lab_medical_manuscript_quality.py',
+        ],
+        regression_suite_ref: [
+          'tests/test_prediction_model_first_draft_quality.py',
+          'tests/test_medical_reporting_audit.py',
+          'tests/test_medical_publication_surface.py',
+        ],
+      },
+      external_learning_refs: [
+        'external-source:equator-network/tripod-reporting-guideline',
+        'external-source:tripod-statement/scope-and-checklist',
+        'external-source:tripod-ai/clinical-prediction-model-reporting',
+      ],
+      forbidden_target_paths_or_surfaces: [
+        'study truth surfaces',
+        'paper artifacts',
+        'publication_eval/latest.json',
+        'controller_decisions/latest.json',
+        'manuscript/current_package',
+        'submission readiness verdicts',
+      ],
+      runtime_required_surface_refs: [
+        'study_runtime_status',
+        'domain_transition',
+        'publication_supervisor_state',
+        'default_executor_dispatch_execution',
+        'target_agent_status_or_progress_projection',
+      ],
+      runtime_expected_outcomes: [
+        'patched quality contract or owner route is visible in target runtime/read-model projection',
+        'blocked suite redrive no longer parks as stale human handoff when target owner work remains',
+        'no forbidden target domain truth, artifact, memory, quality verdict, or submission readiness surface is written by opl-meta-agent',
+      ],
+    },
+  });
+}
+
 function writeOwnerReceiptAiReviewerEvaluation(filePath: string, overrides: JsonObject = {}): JsonObject {
   const evaluation = {
     reviewer_kind: 'ai_reviewer',
@@ -351,6 +502,7 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
       domain_label: 'MedAutoScience',
       delivery_domain: 'medical_research',
     });
+    writeMedicalTargetImprovementPolicy(targetAgentDir);
     const suitePath = path.join(outputRoot, 'medical-manuscript-quality-suite.json');
     writeJson(suitePath, buildBlockedMedicalManuscriptSuite(suitePath));
     const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
@@ -713,6 +865,7 @@ test('external suite improvement fails closed when AI reviewer evaluation is mis
       domain_label: 'MedAutoScience',
       delivery_domain: 'medical_research',
     });
+    writeMedicalTargetImprovementPolicy(targetAgentDir);
     const suitePath = path.join(outputRoot, 'medical-manuscript-quality-suite.json');
     writeJson(suitePath, buildBlockedMedicalManuscriptSuite(suitePath));
 

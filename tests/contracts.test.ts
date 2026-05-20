@@ -76,6 +76,23 @@ function assertNoForbiddenAuthority(surface: JsonObject, label: string): void {
   assert.equal(surface.authority_boundary.can_promote_default_agent_without_gate, false);
 }
 
+function assertNoForbiddenDesignCenterVocabulary(relativePath: string): void {
+  const content = readText(relativePath).toLowerCase();
+  [
+    /\bmed-autoscience\b/,
+    /\bmed-autogrant\b/,
+    /(?:^|[:/_.-])mas(?:$|[:/_.-])/,
+    /(?:^|[:/_.-])mag(?:$|[:/_.-])/,
+    /\bmedical\b/,
+    /\bgrant\b/,
+    /\bmanuscript\b/,
+    /\bpublication\b/,
+    /\bfundability\b/,
+  ].forEach((pattern) => {
+    assert.equal(pattern.test(content), false, `${relativePath} should not match ${pattern}`);
+  });
+}
+
 test('opl-meta-agent descriptor keeps OPL runtime authority outside the repo', () => {
   const descriptor = readJson('contracts/domain_descriptor.json');
 
@@ -377,7 +394,7 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
   asStrings(Object.values(appProjection.source_refs)).forEach(assertRepoRefExists);
 
   assert.equal(scaleoutEvidence.surface_kind, 'real_target_agent_scaleout_evidence_contract');
-  assert.equal(scaleoutEvidence.evidence_status, 'real_target_delivery_minimum_supported_scaleout_pending');
+  assert.equal(scaleoutEvidence.evidence_status, 'multi_target_scaleout_closed_by_refs_only_receipts');
   assert.equal(scaleoutEvidence.role, 'refs_only_scaleout_evidence_gate');
   assertNoForbiddenAuthority(scaleoutEvidence, 'scaleoutEvidence');
   assert.equal(scaleoutEvidence.authority_boundary.not_target_domain_truth_writer, true);
@@ -386,7 +403,37 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
   assert.equal(scaleoutEvidence.implemented_receipt_surfaces.real_target_delivery_receipt_surface_kind, 'opl_meta_agent_real_target_agent_delivery_receipt');
   assert.equal(scaleoutEvidence.implemented_receipt_surfaces.scaleout_evidence_ledger_surface_kind, 'opl_meta_agent_real_target_agent_scaleout_evidence_ledger');
   assert.equal(scaleoutEvidence.implemented_receipt_surfaces.real_target_agent_delivery_count_min_supported, true);
-  assert.equal(scaleoutEvidence.implemented_receipt_surfaces.multi_target_scaleout_pending, true);
+  assert.equal(scaleoutEvidence.implemented_receipt_surfaces.multi_target_scaleout_pending, false);
+  assert.equal(scaleoutEvidence.implemented_receipt_surfaces.multi_target_scaleout_closed, true);
+  assert.deepEqual(scaleoutEvidence.implemented_receipt_surfaces.multi_target_scaleout_verified_by_real_targets, [
+    'med-autoscience',
+    'med-autogrant',
+  ]);
+  assert.equal(scaleoutEvidence.multi_target_scaleout_closeout.status, 'closed_by_two_real_target_refs_only_receipts');
+  assert.equal(scaleoutEvidence.multi_target_scaleout_closeout.target_agent_count, 2);
+  assert.equal(
+    scaleoutEvidence.multi_target_scaleout_closeout.minimum_completion_gate.multi_target_scaleout_delivery_count_met,
+    true,
+  );
+  assert.equal(
+    scaleoutEvidence.multi_target_scaleout_closeout.minimum_completion_gate.requires_owner_receipt_or_typed_blocker_refs,
+    true,
+  );
+  assert.equal(
+    scaleoutEvidence.multi_target_scaleout_closeout.minimum_completion_gate.requires_cleanup_closeout_refs,
+    true,
+  );
+  assert.equal(scaleoutEvidence.multi_target_scaleout_closeout.minimum_completion_gate.suite_pass_claims_domain_ready, false);
+  assert.equal(scaleoutEvidence.multi_target_scaleout_closeout.minimum_completion_gate.provider_completion_claims_domain_ready, false);
+  assert.equal(scaleoutEvidence.multi_target_scaleout_closeout.minimum_completion_gate.proposal_claims_default_promotion, false);
+  asObjects(scaleoutEvidence.multi_target_scaleout_closeout.target_agents).forEach((target) => {
+    assert.ok(asStrings(target.target_agent_owner_receipt_refs).length + asStrings(target.typed_blocker_refs).length > 0);
+    assert.ok(asStrings(target.agent_lab_result_refs).length > 0);
+    assert.ok(asStrings(target.no_forbidden_write_proof_refs).length > 0);
+    assert.ok(asStrings(target.cleanup_closeout_refs).length > 0);
+    assert.equal(target.domain_ready_claimed, false);
+    assert.equal(target.default_promotion_claimed, false);
+  });
   asStrings(scaleoutEvidence.implemented_receipt_surfaces.verified_by_refs).forEach(assertRepoRefExists);
   assert.deepEqual(
     asObjects(scaleoutEvidence.required_evidence_classes).map((entry) => entry.evidence_class),
@@ -447,6 +494,28 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
     app_workbench_projection_ref: 'contracts/app_workbench_projection.json',
     real_target_agent_scaleout_evidence_ref: 'contracts/real_target_agent_scaleout_evidence.json',
   });
+});
+
+test('top-level OMA commands and materializers stay target-agent generic', () => {
+  [
+    'package.json',
+    'contracts/action_catalog.json',
+    'contracts/stage_control_plane.json',
+    'contracts/app_workbench_projection.json',
+    'contracts/opl_domain_manifest_registration.json',
+    'scripts/agent-evidence-takeover.ts',
+    'scripts/improve-from-agent-lab-suite.ts',
+  ].forEach(assertNoForbiddenDesignCenterVocabulary);
+
+  const actionCatalog = readJson('contracts/action_catalog.json');
+  const actionIds = asObjects(actionCatalog.actions).map((action) => action.action_id);
+  assert.ok(actionIds.includes('improve-from-external-agent-lab-suite'));
+  assert.equal(actionIds.some((actionId) => /mas|mag|medical|grant|manuscript|publication|fundability/i.test(actionId)), false);
+
+  const statusDoc = readText('docs/references/opl-meta-agent-ideal-state.md');
+  assert.match(statusDoc, /target-agent generic artifacts/);
+  assert.match(statusDoc, /MAS 或 MAG/);
+  assert.match(statusDoc, /输出机制本身仍是通用 target-agent mechanism/);
 });
 
 test('registration, projection, and evidence contracts are represented in functional audit', () => {

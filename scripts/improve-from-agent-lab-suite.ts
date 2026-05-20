@@ -60,96 +60,23 @@ type CapabilityCandidate = JsonObject & {
   patch_traceability_matrix: PatchTraceabilityEntry[];
 };
 
-type PatchSurfaceHintsByDomain = Record<string, Record<string, string[]>>;
+type ChangeRefMapping = {
+  token: string;
+  refs: string[];
+};
 
-const MAS_MEDICAL_MANUSCRIPT_CHANGE_REFS = [
-  {
-    token: 'medical_journal_prose_quality',
-    refs: [
-      'rubric_ref:ai_reviewer/high_quality_medical_manuscript',
-      'prompt_ref:ai_reviewer_medical_prose_quality_review',
-      'prompt_ref:medical-research-write/formal_manuscript_voice_no_internal_qc_language',
-    ],
-  },
-  {
-    token: 'hdl',
-    refs: [
-      'quality_contract_ref:mas/prediction_model_first_draft_quality/variable_unit_harmonization',
-      'stage_policy_ref:mas/write/pre_draft_prediction_model_reporting/hdl_unit_sensitivity',
-    ],
-  },
-  {
-    token: 'model-reproducibility',
-    refs: [
-      'quality_contract_ref:mas/prediction_model_first_draft_quality/model_reproducibility',
-      'skill_ref:medical-research-write/prediction_model_methods_reproducibility',
-    ],
-  },
-  {
-    token: 'baseline-survival',
-    refs: [
-      'quality_contract_ref:mas/prediction_model_first_draft_quality/baseline_survival_and_absolute_risk',
-    ],
-  },
-  {
-    token: 'table1-table2',
-    refs: [
-      'quality_contract_ref:mas/prediction_model_first_draft_quality/visible_table1_table2',
-      'stage_policy_ref:mas/write/pre_draft_prediction_model_reporting/baseline_and_performance_tables',
-    ],
-  },
-  {
-    token: 'uncertainty-intervals',
-    refs: [
-      'quality_contract_ref:mas/prediction_model_first_draft_quality/uncertainty_intervals',
-      'rubric_ref:ai_reviewer/high_quality_medical_manuscript/statistical_uncertainty',
-    ],
-  },
-  {
-    token: 'validation-metrics',
-    refs: [
-      'quality_contract_ref:mas/prediction_model_first_draft_quality/validation_metrics',
-    ],
-  },
-  {
-    token: 'nhanes',
-    refs: [
-      'quality_contract_ref:mas/prediction_model_first_draft_quality/survey_weighting_or_unweighted_framing',
-      'prompt_ref:ai_reviewer_medical_prose_quality_review/nhanes_population_framing',
-    ],
-  },
-  {
-    token: 'calibration-risk-collapse',
-    refs: [
-      'quality_contract_ref:mas/prediction_model_first_draft_quality/calibration_and_risk_distribution_figures',
-      'stage_policy_ref:mas/figure-polish/prediction_model_calibration_and_risk_distribution',
-    ],
-  },
-  {
-    token: 'figure-quality',
-    refs: [
-      'stage_policy_ref:mas/figure-polish/high_quality_medical_journal_figures',
-    ],
-  },
-  {
-    token: 'internal-quality-language-purge',
-    refs: [
-      'rubric_ref:ai_reviewer/high_quality_medical_manuscript/internal_quality_language_purge',
-      'prompt_ref:medical-research-write/formal_manuscript_voice_no_internal_qc_language',
-    ],
-  },
-];
+type TargetImprovementPolicy = {
+  defaultChangeRefs: string[];
+  defaultChangeRefTriggers: string[];
+  changeRefMappings: ChangeRefMapping[];
+  patchSurfaceHints: Record<string, string[]>;
+  externalLearningRefs: string[];
+  forbiddenTargetPathsOrSurfaces: string[];
+  runtimeRequiredSurfaceRefs: string[];
+  runtimeExpectedOutcomes: string[];
+};
 
-const MAS_DEFAULT_CHANGE_REFS = [
-  'stage_policy_ref:mas/write/pre_draft_prediction_model_reporting',
-  'skill_ref:medical-research-write',
-  'rubric_ref:ai_reviewer/high_quality_medical_manuscript',
-  'prompt_ref:ai_reviewer_medical_prose_quality_review',
-  'quality_contract_ref:prediction_model_first_draft_quality',
-  'regression_suite_ref:mas/agent_lab_medical_manuscript_self_evolution',
-];
-
-const TARGET_AGENT_OWNER_RECEIPT_CHANGE_REFS = [
+const OWNER_RECEIPT_CHANGE_REFS = [
   {
     token: 'live-acceptance',
     refs: [
@@ -180,7 +107,7 @@ const TARGET_AGENT_OWNER_RECEIPT_CHANGE_REFS = [
   },
 ];
 
-const TARGET_AGENT_OWNER_RECEIPT_DEFAULT_CHANGE_REFS = [
+const OWNER_RECEIPT_DEFAULT_CHANGE_REFS = [
   'target_agent_production_acceptance_contract_ref:target_agent/production_acceptance',
   'target_agent_owner_receipt_contract_ref:target_agent/live-acceptance',
   'target_agent_owner_route_ref:target_agent/owner-receipt-projection',
@@ -188,39 +115,37 @@ const TARGET_AGENT_OWNER_RECEIPT_DEFAULT_CHANGE_REFS = [
   'target_agent_regression_suite_ref:target_agent/owner-boundary',
 ];
 
-const EXTERNAL_LEARNING_REFS = [
-  'external-source:equator-network/tripod-reporting-guideline',
-  'external-source:tripod-statement/scope-and-checklist',
-  'external-source:tripod-ai/clinical-prediction-model-reporting',
-];
-
-const PATCH_SURFACE_HINTS_BY_DOMAIN: PatchSurfaceHintsByDomain = {
-  'med-autoscience': {
-    quality_contract_ref: [
-      'src/med_autoscience/policies/medical_reporting_checklist.py',
-      'src/med_autoscience/study_charter.py',
-    ],
-    skill_ref: [
-      'src/med_autoscience/overlay/templates/medical-research-write.SKILL.md',
-    ],
-    rubric_ref: [
-      'src/med_autoscience/policies/publication_critique.py',
-      'src/med_autoscience/policies/medical_manuscript_draft_quality.py',
-    ],
-    prompt_ref: [
-      'src/med_autoscience/policies/medical_manuscript_draft_quality.py',
-      'src/med_autoscience/overlay/templates/medical-research-write.SKILL.md',
-    ],
-    stage_policy_ref: [
-      'src/med_autoscience/controllers/pre_draft_quality_runtime.py',
-      'src/med_autoscience/controllers/agent_lab_medical_manuscript_quality.py',
-    ],
-    regression_suite_ref: [
-      'tests/test_prediction_model_first_draft_quality.py',
-      'tests/test_medical_reporting_audit.py',
-      'tests/test_medical_publication_surface.py',
-    ],
-  },
+const GENERIC_IMPROVEMENT_POLICY: TargetImprovementPolicy = {
+  defaultChangeRefs: [
+    'target_agent_stage_policy_ref:external_agent/failure_taxonomy_to_mechanism_candidate',
+    'target_agent_rubric_ref:external_agent/domain_quality_scorecard',
+    'target_agent_regression_suite_ref:external_agent/blocked_suite_replay',
+  ],
+  defaultChangeRefTriggers: [],
+  changeRefMappings: [],
+  patchSurfaceHints: {},
+  externalLearningRefs: [],
+  forbiddenTargetPathsOrSurfaces: [
+    'target domain truth surfaces',
+    'target domain memory body',
+    'target domain artifact body',
+    'target quality verdict bodies',
+    'submission readiness verdicts',
+    'export verdict bodies',
+  ],
+  runtimeRequiredSurfaceRefs: [
+    'target_agent_descriptor',
+    'target_agent_owner_route',
+    'target_agent_owner_receipt_contract',
+    'target_agent_quality_gate_projection',
+    'default_executor_dispatch_execution',
+    'target_agent_status_or_progress_projection',
+  ],
+  runtimeExpectedOutcomes: [
+    'patched quality contract, owner route, or owner receipt contract is visible in target runtime/read-model projection',
+    'blocked suite redrive no longer parks as stale human handoff when target owner work remains',
+    'no forbidden target domain truth, artifact, memory, quality verdict, or submission readiness surface is written by opl-meta-agent',
+  ],
 };
 
 function parseArgs(argv: string[]): ImproveArgs {
@@ -346,6 +271,133 @@ function arrayOfStrings(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item) => typeof item === 'string') : [];
 }
 
+function records(value: unknown): JsonObject[] {
+  return Array.isArray(value)
+    ? value.filter((entry): entry is JsonObject => Boolean(entry) && typeof entry === 'object' && !Array.isArray(entry))
+    : [];
+}
+
+function stringList(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((entry): entry is string => typeof entry === 'string' && entry.trim().length > 0)
+    : [];
+}
+
+function stringValue(value: unknown): string | null {
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
+}
+
+function unique(values: string[]): string[] {
+  return [...new Set(values.filter((value) => value.trim().length > 0))];
+}
+
+function optionalJson(targetAgentDir: string, relativePath: string): JsonObject | null {
+  const filePath = path.join(targetAgentDir, relativePath);
+  if (!fs.existsSync(filePath)) {
+    return null;
+  }
+  return readJson(filePath);
+}
+
+function mappingFromRecord(entry: JsonObject): ChangeRefMapping | null {
+  const token = stringValue(entry.token) ?? stringValue(entry.gap_token) ?? stringValue(entry.trigger_token);
+  const refs = unique([
+    ...stringList(entry.refs),
+    ...stringList(entry.required_patch_refs),
+    ...stringList(entry.change_refs),
+  ]);
+  if (!token || refs.length === 0) {
+    return null;
+  }
+  return { token, refs };
+}
+
+function collectPatchSurfaceHints(...sources: Array<JsonObject | null>): Record<string, string[]> {
+  const hints: Record<string, string[]> = {};
+  for (const source of sources) {
+    const raw = source?.meta_agent_work_order_contract?.patch_surface_hints
+      ?? source?.oma_handoff?.patch_surface_hints
+      ?? source?.external_suite_improvement_policy?.patch_surface_hints
+      ?? source?.patch_surface_hints
+      ?? {};
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+      continue;
+    }
+    for (const [surface, values] of Object.entries(raw as Record<string, unknown>)) {
+      hints[surface] = unique([...(hints[surface] ?? []), ...stringList(values)]);
+    }
+  }
+  return hints;
+}
+
+function collectMappings(...sources: Array<JsonObject | null>): ChangeRefMapping[] {
+  return sources.flatMap((source) => [
+    ...records(source?.external_suite_improvement_policy?.change_ref_mappings),
+    ...records(source?.meta_agent_work_order_contract?.change_ref_mappings),
+    ...records(source?.oma_handoff?.change_ref_mappings),
+    ...records(source?.change_ref_mappings),
+  ]).map(mappingFromRecord).filter((entry): entry is ChangeRefMapping => Boolean(entry));
+}
+
+function targetImprovementPolicy(targetAgentDir: string): TargetImprovementPolicy {
+  const agentLabHandoff = optionalJson(targetAgentDir, 'contracts/agent_lab_handoff.json');
+  const omaHandoff = optionalJson(targetAgentDir, 'contracts/oma_handoff_refs.json');
+  const generatedSurfaceHandoff = optionalJson(targetAgentDir, 'contracts/generated_surface_handoff.json');
+  const productionAcceptanceDir = path.join(targetAgentDir, 'contracts/production_acceptance');
+  const productionAcceptances = fs.existsSync(productionAcceptanceDir)
+    ? fs.readdirSync(productionAcceptanceDir, { withFileTypes: true })
+      .filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
+      .map((entry) => readJson(path.join(productionAcceptanceDir, entry.name)))
+    : [];
+  const sources = [agentLabHandoff, omaHandoff, generatedSurfaceHandoff, ...productionAcceptances];
+  const defaultChangeRefs = unique([
+    ...sources.flatMap((source) => stringList(source?.external_suite_improvement_policy?.default_change_refs)),
+    ...sources.flatMap((source) => stringList(source?.meta_agent_work_order_contract?.default_change_refs)),
+    ...sources.flatMap((source) => stringList(source?.oma_handoff?.default_change_refs)),
+  ]);
+  const defaultChangeRefTriggers = unique([
+    ...sources.flatMap((source) => stringList(source?.external_suite_improvement_policy?.default_change_ref_triggers)),
+    ...sources.flatMap((source) => stringList(source?.meta_agent_work_order_contract?.default_change_ref_triggers)),
+    ...sources.flatMap((source) => stringList(source?.oma_handoff?.default_change_ref_triggers)),
+  ]);
+  const externalLearningRefs = unique([
+    ...sources.flatMap((source) => stringList(source?.external_suite_improvement_policy?.external_learning_refs)),
+    ...sources.flatMap((source) => stringList(source?.meta_agent_work_order_contract?.external_learning_refs)),
+    ...sources.flatMap((source) => stringList(source?.oma_handoff?.external_learning_refs)),
+  ]);
+  const forbiddenTargetPathsOrSurfaces = unique([
+    ...sources.flatMap((source) => stringList(source?.meta_agent_work_order_contract?.forbidden_target_writes)),
+    ...sources.flatMap((source) => stringList(source?.external_suite_improvement_policy?.forbidden_target_paths_or_surfaces)),
+    ...stringList(generatedSurfaceHandoff?.generated_surface_policy?.must_not_write),
+  ]);
+  const runtimeRequiredSurfaceRefs = unique([
+    ...sources.flatMap((source) => stringList(source?.external_suite_improvement_policy?.runtime_required_surface_refs)),
+    ...sources.flatMap((source) => stringList(source?.meta_agent_work_order_contract?.runtime_required_surface_refs)),
+    ...sources.flatMap((source) => stringList(source?.oma_handoff?.runtime_required_surface_refs)),
+  ]);
+  const runtimeExpectedOutcomes = unique([
+    ...sources.flatMap((source) => stringList(source?.external_suite_improvement_policy?.runtime_expected_outcomes)),
+    ...sources.flatMap((source) => stringList(source?.meta_agent_work_order_contract?.runtime_expected_outcomes)),
+    ...sources.flatMap((source) => stringList(source?.oma_handoff?.runtime_expected_outcomes)),
+  ]);
+  return {
+    defaultChangeRefs: defaultChangeRefs.length ? defaultChangeRefs : GENERIC_IMPROVEMENT_POLICY.defaultChangeRefs,
+    defaultChangeRefTriggers,
+    changeRefMappings: collectMappings(...sources),
+    patchSurfaceHints: collectPatchSurfaceHints(...sources),
+    externalLearningRefs,
+    forbiddenTargetPathsOrSurfaces: forbiddenTargetPathsOrSurfaces.length
+      ? forbiddenTargetPathsOrSurfaces
+      : GENERIC_IMPROVEMENT_POLICY.forbiddenTargetPathsOrSurfaces,
+    runtimeRequiredSurfaceRefs: runtimeRequiredSurfaceRefs.length
+      ? runtimeRequiredSurfaceRefs
+      : GENERIC_IMPROVEMENT_POLICY.runtimeRequiredSurfaceRefs,
+    runtimeExpectedOutcomes: runtimeExpectedOutcomes.length
+      ? runtimeExpectedOutcomes
+      : GENERIC_IMPROVEMENT_POLICY.runtimeExpectedOutcomes,
+  };
+}
+
 function textMatchesToken(text: string, token: string): boolean {
   const normalizedText = text.toLowerCase();
   const normalizedToken = token.toLowerCase();
@@ -370,20 +422,21 @@ function inferProposedChangeRefs({
   suite,
   suiteRefs,
   aiReviewerEvaluation,
+  policy,
 }: {
   targetAgent: TargetAgent;
   suite: JsonObject;
   suiteRefs: string[];
   aiReviewerEvaluation: AiReviewerEvaluation;
+  policy: TargetImprovementPolicy;
 }): string[] {
   const combined = [...suiteRefs, ...reviewerEvidenceText(aiReviewerEvaluation)].join('\n').toLowerCase();
   const inferred = new Set<string>();
-  if (
-    String(suite.suite_id || '').includes('medical-manuscript')
-    || combined.includes('medical-manuscript')
-    || combined.includes('medical_journal_prose_quality')
-  ) {
-    MAS_DEFAULT_CHANGE_REFS.forEach((ref) => inferred.add(ref));
+  const triggeredByDefaultPolicy = policy.defaultChangeRefTriggers.length === 0
+    ? false
+    : policy.defaultChangeRefTriggers.some((token) => textMatchesToken(combined, token));
+  if (triggeredByDefaultPolicy) {
+    policy.defaultChangeRefs.forEach((ref) => inferred.add(ref));
   }
   if (
     combined.includes('owner-receipt')
@@ -392,22 +445,20 @@ function inferProposedChangeRefs({
     || combined.includes('production-acceptance')
     || combined.includes('production_acceptance')
   ) {
-    TARGET_AGENT_OWNER_RECEIPT_DEFAULT_CHANGE_REFS.forEach((ref) => inferred.add(ref));
+    OWNER_RECEIPT_DEFAULT_CHANGE_REFS.forEach((ref) => inferred.add(ref));
   }
-  for (const mapping of MAS_MEDICAL_MANUSCRIPT_CHANGE_REFS) {
+  for (const mapping of policy.changeRefMappings) {
     if (combined.includes(mapping.token)) {
       mapping.refs.forEach((ref) => inferred.add(ref));
     }
   }
-  for (const mapping of TARGET_AGENT_OWNER_RECEIPT_CHANGE_REFS) {
+  for (const mapping of OWNER_RECEIPT_CHANGE_REFS) {
     if (combined.includes(mapping.token)) {
       mapping.refs.forEach((ref) => inferred.add(ref));
     }
   }
   if (inferred.size === 0) {
-    inferred.add('target_agent_stage_policy_ref:external_agent/failure_taxonomy_to_mechanism_candidate');
-    inferred.add('target_agent_rubric_ref:external_agent/domain_quality_scorecard');
-    inferred.add('target_agent_regression_suite_ref:external_agent/blocked_suite_replay');
+    policy.defaultChangeRefs.forEach((ref) => inferred.add(ref));
   }
   return [...inferred].sort();
 }
@@ -417,11 +468,13 @@ function buildPatchTraceabilityMatrix({
   suiteRefs,
   proposedChangeRefs,
   aiReviewerEvaluation,
+  policy,
 }: {
   targetAgent: TargetAgent;
   suiteRefs: string[];
   proposedChangeRefs: string[];
   aiReviewerEvaluation: AiReviewerEvaluation;
+  policy: TargetImprovementPolicy;
 }): PatchTraceabilityEntry[] {
   const combined = [...suiteRefs, ...reviewerEvidenceText(aiReviewerEvaluation)].join('\n').toLowerCase();
   const sourceFailureRefs = [...suiteRefs, ...aiReviewerEvaluation.source_refs].filter((ref) =>
@@ -431,11 +484,11 @@ function buildPatchTraceabilityMatrix({
     || ref.includes('evidence-delta:')
     || ref.includes('owner-receipt')
     || ref.includes('production-acceptance')
-    || ref.includes('publication_eval')
-    || ref.includes('review_ledger')
+    || ref.includes('owner_receipt')
+    || ref.includes('typed-blocker')
   );
   const matrix = [];
-  for (const mapping of [...MAS_MEDICAL_MANUSCRIPT_CHANGE_REFS, ...TARGET_AGENT_OWNER_RECEIPT_CHANGE_REFS]) {
+  for (const mapping of [...policy.changeRefMappings, ...OWNER_RECEIPT_CHANGE_REFS]) {
     if (!textMatchesToken(combined, mapping.token)) {
       continue;
     }
@@ -450,8 +503,8 @@ function buildPatchTraceabilityMatrix({
       required_patch_refs: requiredPatchRefs,
       editable_surface_refs: surfaceRefsForPatchRefs(requiredPatchRefs),
       target_repo_file_hints: fileHintsForPatchRefs({
-        domainId: targetAgent.domain_id,
         patchRefs: requiredPatchRefs,
+        policy,
       }),
       required_verification_refs: [
         'target_repo_test_receipt',
@@ -476,11 +529,10 @@ function surfaceRefsForPatchRefs(patchRefs: string[]): string[] {
   return [...surfaces].sort();
 }
 
-function fileHintsForPatchRefs({ domainId, patchRefs }: { domainId: string; patchRefs: string[] }): string[] {
-  const hints = PATCH_SURFACE_HINTS_BY_DOMAIN[domainId] ?? {};
+function fileHintsForPatchRefs({ patchRefs, policy }: { patchRefs: string[]; policy: TargetImprovementPolicy }): string[] {
   const files = new Set<string>();
   for (const surfaceRef of surfaceRefsForPatchRefs(patchRefs)) {
-    for (const filePath of hints[surfaceRef] ?? []) {
+    for (const filePath of policy.patchSurfaceHints[surfaceRef] ?? []) {
       files.add(filePath);
     }
   }
@@ -505,62 +557,6 @@ function mechanismEditableSurfaces(proposedChangeRefs: string[]): string[] {
   );
 }
 
-function forbiddenTargetPathsOrSurfaces(targetAgent: TargetAgent): string[] {
-  if (targetAgent.domain_id === 'med-autoscience') {
-    return [
-      'study truth surfaces',
-      'paper artifacts',
-      'publication_eval/latest.json',
-      'controller_decisions/latest.json',
-      'manuscript/current_package',
-      'submission readiness verdicts',
-    ];
-  }
-  return [
-    'target domain truth surfaces',
-    'target domain memory body',
-    'target domain artifact body',
-    'target quality verdict bodies',
-    'submission readiness verdicts',
-    'export verdict bodies',
-  ];
-}
-
-function runtimeRequiredSurfaceRefs(targetAgent: TargetAgent): string[] {
-  if (targetAgent.domain_id === 'med-autoscience') {
-    return [
-      'study_runtime_status',
-      'domain_transition',
-      'publication_supervisor_state',
-      'default_executor_dispatch_execution',
-      'target_agent_status_or_progress_projection',
-    ];
-  }
-  return [
-    'target_agent_descriptor',
-    'target_agent_owner_route',
-    'target_agent_owner_receipt_contract',
-    'target_agent_quality_gate_projection',
-    'default_executor_dispatch_execution',
-    'target_agent_status_or_progress_projection',
-  ];
-}
-
-function runtimeExpectedOutcomes(targetAgent: TargetAgent): string[] {
-  if (targetAgent.domain_id === 'med-autoscience') {
-    return [
-      'patched quality contract or owner route is visible in target runtime/read-model projection',
-      'blocked suite redrive no longer parks as stale human handoff when target owner work remains',
-      'no forbidden target domain truth, artifact, memory, quality verdict, or submission readiness surface is written by opl-meta-agent',
-    ];
-  }
-  return [
-    'patched quality contract, owner route, or owner receipt contract is visible in target runtime/read-model projection',
-    'blocked suite redrive no longer parks as stale human handoff when target owner work remains',
-    'no forbidden target domain truth, artifact, memory, quality verdict, or submission readiness surface is written by opl-meta-agent',
-  ];
-}
-
 function buildCapabilityCandidate({
   targetAgent,
   suite,
@@ -573,6 +569,7 @@ function buildCapabilityCandidate({
   domainPackSummary,
   aiReviewerEvaluation,
   aiReviewerEvaluationRef,
+  policy,
 }: {
   targetAgent: TargetAgent;
   suite: JsonObject;
@@ -585,6 +582,7 @@ function buildCapabilityCandidate({
   domainPackSummary: DomainPackSummary;
   aiReviewerEvaluation: AiReviewerEvaluation;
   aiReviewerEvaluationRef: string;
+  policy: TargetImprovementPolicy;
 }): CapabilityCandidate {
   return {
     surface_kind: 'opl_meta_agent_target_agent_capability_improvement_candidate',
@@ -628,7 +626,7 @@ function buildCapabilityCandidate({
     ...domainPackReceiptFields(domainPackSummary),
     source_domain_pack: domainPackSummary,
     target_editable_surface_refs: targetEditableSurfaceRefs(proposedChangeRefs),
-    external_learning_refs: EXTERNAL_LEARNING_REFS,
+    external_learning_refs: policy.externalLearningRefs,
     owner_receipt_ref: receipt.receipt_id,
     authority_boundary: {
       source_patch_allowed_after_owner_gate: suiteResult.status !== 'passed',
@@ -648,12 +646,14 @@ function buildDeveloperPatchWorkOrder({
   suiteResult,
   receipt,
   capabilityCandidate,
+  policy,
 }: {
   targetAgent: TargetAgent;
   suite: JsonObject;
   suiteResult: SuiteResult;
   receipt: OwnerReceipt;
   capabilityCandidate: CapabilityCandidate;
+  policy: TargetImprovementPolicy;
 }): JsonObject {
   const noPatchRequired = suiteResult.status === 'passed';
   return {
@@ -693,7 +693,7 @@ function buildDeveloperPatchWorkOrder({
       target_owner_receipt_projection_required: noPatchRequired,
       no_target_domain_truth_write_proof_required: true,
       no_quality_verdict_or_submission_readiness_authority: true,
-      forbidden_target_paths_or_surfaces: forbiddenTargetPathsOrSurfaces(targetAgent),
+      forbidden_target_paths_or_surfaces: policy.forbiddenTargetPathsOrSurfaces,
       required_closeout_evidence: noPatchRequired
         ? [
           'target owner receipt projection consumed Agent Lab suite result',
@@ -715,8 +715,8 @@ function buildDeveloperPatchWorkOrder({
     },
     runtime_consumption_verification: {
       verification_mode: 'read_only_target_domain_runtime_projection',
-      required_surface_refs: runtimeRequiredSurfaceRefs(targetAgent),
-      expected_outcomes: runtimeExpectedOutcomes(targetAgent),
+      required_surface_refs: policy.runtimeRequiredSurfaceRefs,
+      expected_outcomes: policy.runtimeExpectedOutcomes,
       can_write_target_domain_truth: false,
       can_mutate_target_domain_artifact_body: false,
       can_authorize_target_domain_quality_or_export: false,
@@ -789,16 +789,24 @@ function main() {
   if (!targetAgent.domain_id) {
     throw new Error(`Target agent descriptor is missing domain_id: ${targetAgent.descriptor_ref}`);
   }
+  const policy = targetImprovementPolicy(targetAgentDir);
 
   const agentLabRun = runOpl(oplBin, ['agent-lab', 'run', '--suite', suitePath, '--json']);
   const suiteResult = agentLabRun.agent_lab_run.suite_result as SuiteResult;
   const suiteRefs = collectSuiteRefs(suite);
-  const proposedChangeRefs = inferProposedChangeRefs({ targetAgent, suite, suiteRefs, aiReviewerEvaluation });
+  const proposedChangeRefs = inferProposedChangeRefs({
+    targetAgent,
+    suite,
+    suiteRefs,
+    aiReviewerEvaluation,
+    policy,
+  });
   const patchTraceabilityMatrix = buildPatchTraceabilityMatrix({
     targetAgent,
     suiteRefs,
     proposedChangeRefs,
     aiReviewerEvaluation,
+    policy,
   });
 
   const receipt: OwnerReceipt = {
@@ -839,7 +847,7 @@ function main() {
     mechanismRef: `mechanism:opl-meta-agent/${targetAgent.domain_id}/external-suite-self-evolution-loop`,
     editableSurfaces: mechanismEditableSurfaces(proposedChangeRefs),
     evidenceDeltaRef: `evidence-delta:opl-meta-agent/${targetAgent.domain_id}/external-agent-lab-suite`,
-    observeRefs: [suitePath, aiReviewerEvaluationPath, ...EXTERNAL_LEARNING_REFS],
+    observeRefs: [suitePath, aiReviewerEvaluationPath, ...policy.externalLearningRefs],
     diagnoseRefs: [...suiteRefs, ...aiReviewerEvaluation.source_refs],
     editRefs: [
       ...proposedChangeRefs,
@@ -858,6 +866,7 @@ function main() {
     domainPackSummary,
     aiReviewerEvaluation,
     aiReviewerEvaluationRef: aiReviewerEvaluationPath,
+    policy,
   });
   const developerPatchWorkOrder = buildDeveloperPatchWorkOrder({
     targetAgent,
@@ -865,6 +874,7 @@ function main() {
     suiteResult,
     receipt,
     capabilityCandidate,
+    policy,
   });
 
   const receiptPath = path.join(outputDir, 'meta-agent-improvement-receipt.json');
@@ -872,7 +882,7 @@ function main() {
   const mechanismPath = path.join(outputDir, 'mechanism-patch-proposal.json');
   const capabilityPath = path.join(outputDir, 'target-capability-improvement-candidate.json');
   const workOrderPath = path.join(outputDir, 'developer-patch-work-order.json');
-  const runPath = path.join(outputDir, 'external-agent-lab-suite-run.json');
+  const runPath = path.join(outputDir, 'agent-lab-run-result.json');
 
   writeJson(receiptPath, receipt);
   writeJson(learningPath, learningCandidate);
@@ -892,7 +902,7 @@ function main() {
     source_domain_pack: domainPackSummary,
     artifacts: {
       suite_path: suitePath,
-      external_agent_lab_suite_run_path: runPath,
+      agent_lab_run_result_path: runPath,
       meta_agent_improvement_receipt_path: receiptPath,
       online_learning_candidate_path: learningPath,
       mechanism_patch_proposal_path: mechanismPath,
