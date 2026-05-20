@@ -149,51 +149,43 @@ const MAS_DEFAULT_CHANGE_REFS = [
   'regression_suite_ref:mas/agent_lab_medical_manuscript_self_evolution',
 ];
 
-const MAG_LIVE_ACCEPTANCE_CHANGE_REFS = [
+const TARGET_AGENT_OWNER_RECEIPT_CHANGE_REFS = [
   {
     token: 'live-acceptance',
     refs: [
-      'production_acceptance_contract_ref:mag/contracts/production_acceptance/mag-production-acceptance.json',
-      'owner_receipt_contract_ref:mag/production-live-acceptance',
+      'target_agent_production_acceptance_contract_ref:target_agent/production_acceptance',
+      'target_agent_owner_receipt_contract_ref:target_agent/live-acceptance',
     ],
   },
   {
     token: 'owner-receipt',
     refs: [
-      'owner_receipt_contract_ref:mag/production-live-acceptance',
-      'product_entry_surface_ref:mag/product-owner-receipt-evidence',
-    ],
-  },
-  {
-    token: 'fundability',
-    refs: [
-      'quality_gate_ref:mag/fundability-owner',
-      'stage_policy_ref:mag/fundability-strategy/owner-gated-readiness',
+      'target_agent_owner_receipt_contract_ref:target_agent/live-acceptance',
+      'target_agent_owner_route_ref:target_agent/owner-receipt-projection',
     ],
   },
   {
     token: 'package',
     refs: [
-      'stage_policy_ref:mag/package-and-submit-ready/owner-receipt-closeout',
-      'quality_gate_ref:mag/package-and-submit-ready-export-owner',
+      'target_agent_delivery_policy_ref:target_agent/package-owner-closeout',
+      'target_agent_quality_gate_ref:target_agent/export-owner',
     ],
   },
   {
     token: 'typed-blocker',
     refs: [
-      'production_acceptance_contract_ref:mag/contracts/production_acceptance/mag-production-acceptance.json',
-      'regression_suite_ref:mag/production-acceptance-owner-boundary',
+      'target_agent_production_acceptance_contract_ref:target_agent/production_acceptance',
+      'target_agent_regression_suite_ref:target_agent/owner-boundary',
     ],
   },
 ];
 
-const MAG_DEFAULT_CHANGE_REFS = [
-  'production_acceptance_contract_ref:mag/contracts/production_acceptance/mag-production-acceptance.json',
-  'owner_receipt_contract_ref:mag/production-live-acceptance',
-  'product_entry_surface_ref:mag/product-owner-receipt-evidence',
-  'stage_policy_ref:mag/package-and-submit-ready/owner-receipt-closeout',
-  'quality_gate_ref:mag/fundability-owner',
-  'regression_suite_ref:mag/production-acceptance-owner-boundary',
+const TARGET_AGENT_OWNER_RECEIPT_DEFAULT_CHANGE_REFS = [
+  'target_agent_production_acceptance_contract_ref:target_agent/production_acceptance',
+  'target_agent_owner_receipt_contract_ref:target_agent/live-acceptance',
+  'target_agent_owner_route_ref:target_agent/owner-receipt-projection',
+  'target_agent_quality_gate_ref:target_agent/export-owner',
+  'target_agent_regression_suite_ref:target_agent/owner-boundary',
 ];
 
 const EXTERNAL_LEARNING_REFS = [
@@ -227,33 +219,6 @@ const PATCH_SURFACE_HINTS_BY_DOMAIN: PatchSurfaceHintsByDomain = {
       'tests/test_prediction_model_first_draft_quality.py',
       'tests/test_medical_reporting_audit.py',
       'tests/test_medical_publication_surface.py',
-    ],
-  },
-  'med-autogrant': {
-    production_acceptance_contract_ref: [
-      'contracts/production_acceptance/mag-production-acceptance.json',
-      'tests/test_production_acceptance.py',
-    ],
-    owner_receipt_contract_ref: [
-      'contracts/owner_receipt_contract.json',
-      'src/med_autogrant/product_entry_parts/owner_receipts.py',
-    ],
-    product_entry_surface_ref: [
-      'src/med_autogrant/product_entry_parts/entry.py',
-      'src/med_autogrant/cli_parts/handlers.py',
-    ],
-    stage_policy_ref: [
-      'agent/stages/package_and_submit_ready.json',
-      'agent/quality_gates/package_and_submit_ready.md',
-      'src/med_autogrant/stage_control_plane.py',
-    ],
-    quality_gate_ref: [
-      'agent/quality_gates/fundability.md',
-      'agent/quality_gates/review_and_rebuttal.md',
-    ],
-    regression_suite_ref: [
-      'tests/test_production_acceptance.py',
-      'tests/product_entry_cases/test_controlled_soak.py',
     ],
   },
 };
@@ -413,7 +378,6 @@ function inferProposedChangeRefs({
 }): string[] {
   const combined = [...suiteRefs, ...reviewerEvidenceText(aiReviewerEvaluation)].join('\n').toLowerCase();
   const inferred = new Set<string>();
-  const isMagTarget = targetAgent.domain_id === 'med-autogrant';
   if (
     String(suite.suite_id || '').includes('medical-manuscript')
     || combined.includes('medical-manuscript')
@@ -422,27 +386,22 @@ function inferProposedChangeRefs({
     MAS_DEFAULT_CHANGE_REFS.forEach((ref) => inferred.add(ref));
   }
   if (
-    isMagTarget
-    && (
-      String(suite.suite_id || '').includes('mag-agent-lab-suite')
-      || combined.includes('med-autogrant')
-      || combined.includes('grant_owner_live_acceptance')
-      || combined.includes('live-acceptance')
-      || combined.includes('owner-receipt')
-    )
+    combined.includes('owner-receipt')
+    || combined.includes('owner_receipt')
+    || combined.includes('live-acceptance')
+    || combined.includes('production-acceptance')
+    || combined.includes('production_acceptance')
   ) {
-    MAG_DEFAULT_CHANGE_REFS.forEach((ref) => inferred.add(ref));
+    TARGET_AGENT_OWNER_RECEIPT_DEFAULT_CHANGE_REFS.forEach((ref) => inferred.add(ref));
   }
   for (const mapping of MAS_MEDICAL_MANUSCRIPT_CHANGE_REFS) {
     if (combined.includes(mapping.token)) {
       mapping.refs.forEach((ref) => inferred.add(ref));
     }
   }
-  if (isMagTarget) {
-    for (const mapping of MAG_LIVE_ACCEPTANCE_CHANGE_REFS) {
-      if (combined.includes(mapping.token)) {
-        mapping.refs.forEach((ref) => inferred.add(ref));
-      }
+  for (const mapping of TARGET_AGENT_OWNER_RECEIPT_CHANGE_REFS) {
+    if (combined.includes(mapping.token)) {
+      mapping.refs.forEach((ref) => inferred.add(ref));
     }
   }
   if (inferred.size === 0) {
@@ -476,7 +435,7 @@ function buildPatchTraceabilityMatrix({
     || ref.includes('review_ledger')
   );
   const matrix = [];
-  for (const mapping of [...MAS_MEDICAL_MANUSCRIPT_CHANGE_REFS, ...MAG_LIVE_ACCEPTANCE_CHANGE_REFS]) {
+  for (const mapping of [...MAS_MEDICAL_MANUSCRIPT_CHANGE_REFS, ...TARGET_AGENT_OWNER_RECEIPT_CHANGE_REFS]) {
     if (!textMatchesToken(combined, mapping.token)) {
       continue;
     }
@@ -529,111 +488,74 @@ function fileHintsForPatchRefs({ domainId, patchRefs }: { domainId: string; patc
 }
 
 function improvementAreaForTarget(targetAgent: TargetAgent): string {
-  if (targetAgent.domain_id === 'med-autogrant') {
-    return 'grant_owner_live_acceptance_receipt_scaleout_capability';
-  }
-  return 'high_quality_medical_manuscript_first_draft_capability';
+  return `${targetAgent.domain_id.replace(/[^a-z0-9]+/gi, '_').toLowerCase()}_agent_lab_result_consumption_capability`;
 }
 
 function targetCapabilityRef(targetAgent: TargetAgent): string {
-  if (targetAgent.domain_id === 'med-autogrant') {
-    return `domain-agent:${targetAgent.domain_id}/grant-owner-live-acceptance-receipt-scaleout-capability`;
-  }
-  return `domain-agent:${targetAgent.domain_id}/high-quality-medical-manuscript-first-draft-capability`;
+  return `domain-agent:${targetAgent.domain_id}/agent-lab-result-consumption-capability`;
 }
 
-function targetEditableSurfaceRefs(targetAgent: TargetAgent): string[] {
-  if (targetAgent.domain_id === 'med-autogrant') {
-    return [
-      'production_acceptance_contract_ref',
-      'owner_receipt_contract_ref',
-      'product_entry_surface_ref',
-      'stage_policy_ref',
-      'quality_gate_ref',
-      'regression_suite_ref',
-    ];
-  }
-  return [
-    'stage_policy_ref',
-    'skill_ref',
-    'rubric_ref',
-    'prompt_ref',
-    'quality_contract_ref',
-    'regression_suite_ref',
-  ];
+function targetEditableSurfaceRefs(proposedChangeRefs: string[]): string[] {
+  return surfaceRefsForPatchRefs(proposedChangeRefs);
 }
 
-function mechanismEditableSurfaces(targetAgent: TargetAgent): string[] {
-  if (targetAgent.domain_id === 'med-autogrant') {
-    return [
-      'target_agent_production_acceptance_contract_ref',
-      'target_agent_owner_receipt_contract_ref',
-      'target_agent_product_entry_surface_ref',
-      'target_agent_stage_policy_ref',
-      'target_agent_quality_gate_ref',
-      'target_agent_regression_suite_ref',
-    ];
-  }
-  return [
-    'target_agent_stage_policy_ref',
-    'target_agent_skill_ref',
-    'target_agent_rubric_ref',
-    'target_agent_prompt_ref',
-    'target_agent_quality_contract_ref',
-    'target_agent_regression_suite_ref',
-  ];
+function mechanismEditableSurfaces(proposedChangeRefs: string[]): string[] {
+  return surfaceRefsForPatchRefs(proposedChangeRefs).map((surfaceRef) =>
+    surfaceRef.startsWith('target_agent_') ? surfaceRef : `target_agent_${surfaceRef}`
+  );
 }
 
 function forbiddenTargetPathsOrSurfaces(targetAgent: TargetAgent): string[] {
-  if (targetAgent.domain_id === 'med-autogrant') {
+  if (targetAgent.domain_id === 'med-autoscience') {
     return [
-      'grant truth surfaces',
-      'grant strategy memory body',
-      'proposal or package artifact body',
-      'fundability verdict bodies',
-      'quality verdict bodies',
-      'submission readiness export verdicts',
+      'study truth surfaces',
+      'paper artifacts',
+      'publication_eval/latest.json',
+      'controller_decisions/latest.json',
+      'manuscript/current_package',
+      'submission readiness verdicts',
     ];
   }
   return [
-    'study truth surfaces',
-    'paper artifacts',
-    'publication_eval/latest.json',
-    'controller_decisions/latest.json',
-    'manuscript/current_package',
+    'target domain truth surfaces',
+    'target domain memory body',
+    'target domain artifact body',
+    'target quality verdict bodies',
     'submission readiness verdicts',
+    'export verdict bodies',
   ];
 }
 
 function runtimeRequiredSurfaceRefs(targetAgent: TargetAgent): string[] {
-  if (targetAgent.domain_id === 'med-autogrant') {
+  if (targetAgent.domain_id === 'med-autoscience') {
     return [
-      'product_entry_manifest',
-      'owner_receipt_contract',
-      'production_acceptance_contract',
-      'grant_authoring_readiness',
-      'focused_hosted_receipt_verification',
+      'study_runtime_status',
+      'domain_transition',
+      'publication_supervisor_state',
+      'default_executor_dispatch_execution',
+      'target_agent_status_or_progress_projection',
     ];
   }
   return [
-    'study_runtime_status',
-    'domain_transition',
-    'publication_supervisor_state',
+    'target_agent_descriptor',
+    'target_agent_owner_route',
+    'target_agent_owner_receipt_contract',
+    'target_agent_quality_gate_projection',
     'default_executor_dispatch_execution',
     'target_agent_status_or_progress_projection',
   ];
 }
 
 function runtimeExpectedOutcomes(targetAgent: TargetAgent): string[] {
-  if (targetAgent.domain_id === 'med-autogrant') {
+  if (targetAgent.domain_id === 'med-autoscience') {
     return [
-      'patched owner receipt or production acceptance contract is visible in MAG product-entry/read-model projection',
-      'MAG owner receipt closeout returns domain_owner_receipt or typed blocker without OPL granting fundability readiness',
-      'no forbidden target domain truth, artifact, memory, fundability verdict, or submission readiness surface is written by opl-meta-agent',
+      'patched quality contract or owner route is visible in target runtime/read-model projection',
+      'blocked suite redrive no longer parks as stale human handoff when target owner work remains',
+      'no forbidden target domain truth, artifact, memory, quality verdict, or submission readiness surface is written by opl-meta-agent',
     ];
   }
   return [
-    'patched quality contract or owner route is visible in target runtime/read-model projection',
+    'patched quality contract, owner route, or owner receipt contract is visible in target runtime/read-model projection',
     'blocked suite redrive no longer parks as stale human handoff when target owner work remains',
     'no forbidden target domain truth, artifact, memory, quality verdict, or submission readiness surface is written by opl-meta-agent',
   ];
@@ -705,7 +627,7 @@ function buildCapabilityCandidate({
       : 'generic_patch_refs_only',
     ...domainPackReceiptFields(domainPackSummary),
     source_domain_pack: domainPackSummary,
-    target_editable_surface_refs: targetEditableSurfaceRefs(targetAgent),
+    target_editable_surface_refs: targetEditableSurfaceRefs(proposedChangeRefs),
     external_learning_refs: EXTERNAL_LEARNING_REFS,
     owner_receipt_ref: receipt.receipt_id,
     authority_boundary: {
@@ -915,7 +837,7 @@ function main() {
     receipt,
     learningCandidate,
     mechanismRef: `mechanism:opl-meta-agent/${targetAgent.domain_id}/external-suite-self-evolution-loop`,
-    editableSurfaces: mechanismEditableSurfaces(targetAgent),
+    editableSurfaces: mechanismEditableSurfaces(proposedChangeRefs),
     evidenceDeltaRef: `evidence-delta:opl-meta-agent/${targetAgent.domain_id}/external-agent-lab-suite`,
     observeRefs: [suitePath, aiReviewerEvaluationPath, ...EXTERNAL_LEARNING_REFS],
     diagnoseRefs: [...suiteRefs, ...aiReviewerEvaluation.source_refs],
