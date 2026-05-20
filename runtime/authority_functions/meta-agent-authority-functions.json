@@ -88,6 +88,27 @@
         "forbidden_roles": []
       },
       {
+        "script_ref": "scripts/mas-evidence-takeover.ts",
+        "classes": [
+          "smoke_helper",
+          "developer_work_order_materializer",
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [
+          "opl_agent_lab_complete_control_plane"
+        ],
+        "writes_only": [
+          "mas_agent_lab_suite_ref",
+          "developer_patch_work_order_ref",
+          "mas_capability_improvement_candidate_ref",
+          "owner_receipt_refs",
+          "mechanism_patch_proposal_ref",
+          "typed_blocker_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
         "script_ref": "scripts/install-codex-plugin.ts",
         "classes": [
           "developer_work_order_materializer"

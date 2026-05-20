@@ -88,6 +88,7 @@ The loop does not directly rewrite final answers. It turns each run into an audi
 - The bootstrap path is `npm run bootstrap:sample -- --output-dir <dir> --opl-bin <opl> --ai-reviewer-evaluation <reviewer-eval.json>`: generate `sample-brief-agent`, call OPL scaffold validation, generate an Agent Lab external suite, run `opl agent-lab run --suite`, consume a structured AI reviewer evaluation, and write a baseline receipt, online-learning candidate, and `mechanism-patch-proposal.json`.
 - The takeover path is `npm run takeover:test -- --agent-dir <existing-agent-dir> --output-dir <dir> --opl-bin <opl>`: read target agent descriptors/contracts, generate a takeover suite, run Agent Lab, and write a takeover receipt, gated self-evolution candidate, and `takeover-mechanism-patch-proposal.json`.
 - The unified interface path is `opl agents interfaces --repo-dir <this-repo> --json`: OPL reads the standard contracts and emits CLI, MCP, Skill, product-entry, OpenAI tool, and AI SDK descriptors.
+- The MAS evidence takeover path is `npm run mas:evidence -- --mas-repo <mas-repo> --output-dir <dir> --opl-bin <opl> [--ai-reviewer-evaluation <reviewer-eval.json>]`: read MAS production acceptance / generated-surface handoff / owner-receipt contracts, generate `mas-agent-lab-suite.json`, run `opl agent-lab run --suite`, and emit refs-only developer work order, MAS capability candidate, mechanism patch proposal, or a typed blocker when reviewer evaluation is missing.
 - A mechanism patch proposal records `mechanism_ref/version`, `editable_surfaces`, `observe/diagnose/edit`, `segment_run_ref`, `evidence_delta_ref`, `next_mechanism_candidate_ref`, and proposal-only authority flags.
 - OPL Agent Lab's mechanism surface is a refs-only control plane. It can expose `opl agent-lab mechanism --json` and `opl agent-lab evolve --suite <suite.json> --json`, but it cannot upgrade suite pass, mechanism candidate, or evolution segment into a domain verdict.
 
@@ -127,6 +128,10 @@ npm run bootstrap:sample -- --output-dir /tmp/opl-meta-agent-demo --opl-bin /Use
 
 ```bash
 npm run takeover:test -- --agent-dir /tmp/opl-meta-agent-demo/sample-brief-agent --output-dir /tmp/opl-meta-agent-takeover --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl
+```
+
+```bash
+npm run mas:evidence -- --mas-repo /Users/gaofeng/workspace/med-autoscience --output-dir /tmp/opl-meta-agent-mas-evidence --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl --ai-reviewer-evaluation /tmp/mas-reviewer-eval.json
 ```
 
 ```bash
