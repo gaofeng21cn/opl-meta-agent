@@ -109,6 +109,25 @@ type MechanismPatchProposalOptions = {
   editRefs?: string[];
 };
 
+type RealTargetDeliveryReceiptOptions = {
+  targetAgent: TargetAgent;
+  suiteResult: SuiteResult;
+  baselineDeliveryReceipt: OwnerReceipt;
+  candidateAgentPackageRef: string;
+  agentLabSuiteRef: string;
+  promotionGateRefs: string[];
+  noForbiddenWriteProofRefs: string[];
+  sampleTargetAgentRef: string;
+  sampleReceiptRef: string;
+};
+
+type ScaleoutEvidenceLedgerOptions = {
+  deliveryReceipts: JsonObject[];
+  sampleReceiptRefs: string[];
+  realTargetAgentDeliveryCountMin?: number;
+  multiTargetScaleoutDeliveryCountMin?: number;
+};
+
 export function resolveOplBin(value = process.env.OPL_BIN ?? DEFAULT_OPL_BIN): string {
   return path.resolve(value);
 }
@@ -522,6 +541,128 @@ export function buildMechanismPatchProposal({
     next_mechanism_candidate_ref: nextMechanismCandidateRef,
     promotion_gate_ref: learningCandidate.promotion_gate_ref,
     authority_boundary: {
+      can_write_target_domain_truth: false,
+      can_write_target_domain_memory_body: false,
+      can_mutate_target_domain_artifact_body: false,
+      can_authorize_target_domain_quality_or_export: false,
+      can_promote_default_agent_without_gate: false,
+      can_train_or_deploy_model_weights: false,
+    },
+  };
+}
+
+export function buildRealTargetDeliveryReceipt({
+  targetAgent,
+  suiteResult,
+  baselineDeliveryReceipt,
+  candidateAgentPackageRef,
+  agentLabSuiteRef,
+  promotionGateRefs,
+  noForbiddenWriteProofRefs,
+  sampleTargetAgentRef,
+  sampleReceiptRef,
+}: RealTargetDeliveryReceiptOptions): JsonObject {
+  const receiptId = stableId('oma_real_target_delivery', [
+    targetAgent.domain_id,
+    suiteResult.result_id,
+    baselineDeliveryReceipt.receipt_id,
+  ]);
+
+  return {
+    surface_kind: 'opl_meta_agent_real_target_agent_delivery_receipt',
+    schema_version: 1,
+    receipt_class: 'real_target_agent_delivery_receipt',
+    receipt_id: receiptId,
+    evidence_class: 'real_target_agent_delivery',
+    status: 'real_target_delivery_evidence_recorded',
+    target_agent: {
+      domain_id: targetAgent.domain_id,
+      domain_label: targetAgent.domain_label,
+      delivery_domain: targetAgent.delivery_domain,
+      repo_dir: targetAgent.repo_dir,
+      descriptor_ref: targetAgent.descriptor_ref,
+    },
+    target_agent_repo_ref: targetAgent.repo_dir,
+    candidate_agent_package_ref: candidateAgentPackageRef,
+    agent_lab_suite_ref: agentLabSuiteRef,
+    agent_lab_result_ref: suiteResult.result_id,
+    baseline_delivery_receipt_ref: baselineDeliveryReceipt.receipt_id,
+    owner_receipt_refs: [baselineDeliveryReceipt.receipt_id],
+    promotion_gate_refs: promotionGateRefs,
+    no_forbidden_write_proof_refs: noForbiddenWriteProofRefs,
+    sample_smoke: {
+      counted_as_real_target_delivery: false,
+      sample_target_agent_ref: sampleTargetAgentRef,
+      sample_receipt_ref: sampleReceiptRef,
+    },
+    completion_gate: {
+      real_target_agent_delivery_count_min: 1,
+      real_target_agent_delivery_count_met: true,
+      multi_target_scaleout_delivery_count_met: false,
+      requires_agent_lab_result_refs: true,
+      requires_owner_receipt_refs: true,
+      requires_no_forbidden_write_proof_refs: true,
+      requires_promotion_gate_refs_for_default_agent_changes: true,
+    },
+    authority_boundary: {
+      refs_only: true,
+      not_generic_runtime_owner: true,
+      not_target_domain_truth_writer: true,
+      can_write_target_domain_truth: false,
+      can_write_target_domain_memory_body: false,
+      can_mutate_target_domain_artifact_body: false,
+      can_authorize_target_domain_quality_or_export: false,
+      can_promote_default_agent_without_gate: false,
+      can_train_or_deploy_model_weights: false,
+    },
+  };
+}
+
+export function buildScaleoutEvidenceLedger({
+  deliveryReceipts,
+  sampleReceiptRefs,
+  realTargetAgentDeliveryCountMin = 1,
+  multiTargetScaleoutDeliveryCountMin = 2,
+}: ScaleoutEvidenceLedgerOptions): JsonObject {
+  const realTargetAgentDeliveryCount = deliveryReceipts.length;
+  const targetAgentDeliveryReceiptRefs = deliveryReceipts.map((receipt) => receipt.receipt_id);
+  const targetAgentOwnerReceiptRefs = deliveryReceipts.flatMap((receipt) => receipt.owner_receipt_refs ?? []);
+  const agentLabResultRefs = deliveryReceipts.map((receipt) => receipt.agent_lab_result_ref);
+  const noForbiddenWriteProofRefs = deliveryReceipts.flatMap((receipt) => receipt.no_forbidden_write_proof_refs ?? []);
+  const promotionGateRefs = deliveryReceipts.flatMap((receipt) => receipt.promotion_gate_refs ?? []);
+
+  return {
+    surface_kind: 'opl_meta_agent_real_target_agent_scaleout_evidence_ledger',
+    schema_version: 1,
+    evidence_status: realTargetAgentDeliveryCount >= realTargetAgentDeliveryCountMin
+      ? 'real_target_delivery_minimum_met_scaleout_pending'
+      : 'real_target_delivery_minimum_not_met',
+    role: 'refs_only_scaleout_evidence_ledger',
+    real_target_agent_delivery_count_min: realTargetAgentDeliveryCountMin,
+    multi_target_scaleout_delivery_count_min: multiTargetScaleoutDeliveryCountMin,
+    real_target_agent_delivery_count: realTargetAgentDeliveryCount,
+    multi_target_scaleout_delivery_count: realTargetAgentDeliveryCount,
+    target_agent_delivery_receipt_refs: targetAgentDeliveryReceiptRefs,
+    target_agent_owner_receipt_refs: targetAgentOwnerReceiptRefs,
+    agent_lab_result_refs: agentLabResultRefs,
+    no_forbidden_write_proof_refs: noForbiddenWriteProofRefs,
+    promotion_gate_refs: promotionGateRefs,
+    minimum_completion_gate: {
+      real_target_agent_delivery_count_met: realTargetAgentDeliveryCount >= realTargetAgentDeliveryCountMin,
+      multi_target_scaleout_delivery_count_met: realTargetAgentDeliveryCount >= multiTargetScaleoutDeliveryCountMin,
+      requires_agent_lab_result_refs: agentLabResultRefs.length === realTargetAgentDeliveryCount,
+      requires_owner_receipt_refs: targetAgentOwnerReceiptRefs.length >= realTargetAgentDeliveryCount,
+      requires_no_forbidden_write_proof_refs: noForbiddenWriteProofRefs.length >= realTargetAgentDeliveryCount,
+      requires_promotion_gate_refs_for_default_agent_changes: promotionGateRefs.length >= realTargetAgentDeliveryCount,
+    },
+    sample_smoke: {
+      counted_as_real_target_delivery: false,
+      sample_receipt_refs: sampleReceiptRefs,
+    },
+    authority_boundary: {
+      refs_only: true,
+      not_generic_runtime_owner: true,
+      not_target_domain_truth_writer: true,
       can_write_target_domain_truth: false,
       can_write_target_domain_memory_body: false,
       can_mutate_target_domain_artifact_body: false,
