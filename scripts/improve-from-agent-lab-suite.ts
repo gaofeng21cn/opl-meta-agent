@@ -42,6 +42,10 @@ type ImproveArgs = {
 
 type PatchTraceabilityEntry = JsonObject & {
   gap_token: string;
+  failure_evidence: string[];
+  root_cause: string;
+  targeted_fix: string[];
+  predicted_impact: string;
   source_failure_refs: string[];
   required_patch_refs: string[];
   editable_surface_refs: string[];
@@ -497,8 +501,20 @@ function buildPatchTraceabilityMatrix({
       textMatchesToken(suggestion, mapping.token)
     );
     const reviewerSourceRefs = aiReviewerEvaluation.source_refs.filter((ref) => textMatchesToken(ref, mapping.token));
+    const failureEvidence = unique([
+      ...sourceFailureRefs.filter((ref) => textMatchesToken(ref, mapping.token)),
+      ...reviewerSourceRefs,
+      ...reviewerSuggestions.map((suggestion) => `ai-reviewer-suggestion:${suggestion}`),
+    ]);
     matrix.push({
       gap_token: mapping.token,
+      failure_evidence: failureEvidence.length ? failureEvidence : unique([
+        ...aiReviewerEvaluation.source_refs,
+        ...aiReviewerEvaluation.direct_evidence_refs,
+      ]),
+      root_cause: `AI reviewer identified ${mapping.token} as a target-agent capability gap requiring owner-gated source changes.`,
+      targeted_fix: requiredPatchRefs,
+      predicted_impact: aiReviewerEvaluation.predicted_impact,
       source_failure_refs: sourceFailureRefs.filter((ref) => textMatchesToken(ref, mapping.token)),
       required_patch_refs: requiredPatchRefs,
       editable_surface_refs: surfaceRefsForPatchRefs(requiredPatchRefs),
@@ -656,6 +672,25 @@ function buildDeveloperPatchWorkOrder({
   policy: TargetImprovementPolicy;
 }): JsonObject {
   const noPatchRequired = suiteResult.status === 'passed';
+  const targetRepoFileHints = unique(capabilityCandidate.patch_traceability_matrix.flatMap((entry) =>
+    entry.target_repo_file_hints
+  ));
+  const requiredVerificationRefs = noPatchRequired
+    ? [
+        'target_owner_receipt_projection_ref',
+        'no_target_domain_truth_write_proof',
+      ]
+    : unique(capabilityCandidate.patch_traceability_matrix.flatMap((entry) =>
+        entry.required_verification_refs
+      )).concat([
+        'target_runtime_consumption_verification_receipt',
+        'target_workspace_environment_consumption_receipt',
+      ]);
+  const failureEvidence = unique([
+    ...capabilityCandidate.failure_taxonomy_refs,
+    ...capabilityCandidate.ai_reviewer_evidence.source_refs,
+    ...capabilityCandidate.ai_reviewer_evidence.direct_evidence_refs,
+  ]);
   return {
     surface_kind: 'opl_meta_agent_developer_patch_work_order',
     version: 'opl-meta-agent.developer-patch-work-order.v1',
@@ -676,7 +711,37 @@ function buildDeveloperPatchWorkOrder({
     ai_reviewer_independence: capabilityCandidate.ai_reviewer_independence,
     ai_reviewer_evidence: capabilityCandidate.ai_reviewer_evidence,
     review_provenance: capabilityCandidate.review_provenance,
+    ahe_developer_work_order: {
+      failure_evidence: failureEvidence,
+      root_cause: noPatchRequired
+        ? 'Agent Lab result passed; remaining work is coordination and owner receipt projection proof.'
+        : 'Agent Lab and independent AI reviewer evidence identify target-agent capability gaps that require owner-gated source changes.',
+      targeted_fix: noPatchRequired
+        ? ['record coordination result and preserve target owner receipt authority']
+        : capabilityCandidate.proposed_change_refs,
+      predicted_impact: capabilityCandidate.ai_reviewer_review.predicted_impact,
+    },
     required_patch_surfaces: noPatchRequired ? [] : capabilityCandidate.target_editable_surface_refs,
+    allowed_editable_surfaces: noPatchRequired ? [] : capabilityCandidate.target_editable_surface_refs,
+    target_repo_file_hints: noPatchRequired ? [] : targetRepoFileHints,
+    required_verification_refs: requiredVerificationRefs,
+    rollback_version_refs: noPatchRequired
+      ? ['owner_receipt_coordination_record']
+      : ['git_commit', 'target_agent_previous_head_ref', 'temporary_worktree_ref'],
+    owner_route_refs: [
+      `target-agent-owner:${targetAgent.domain_id}`,
+      `promotion-gate:opl-meta-agent/${targetAgent.domain_id}/external-suite-self-evolution`,
+    ],
+    no_forbidden_write_proof: {
+      required: true,
+      proof_refs: noPatchRequired
+        ? ['no_target_domain_truth_write_proof']
+        : ['no_target_domain_truth_write_proof', 'repo_hygiene_no_checkout_venv_proof'],
+      can_write_target_domain_truth: false,
+      can_write_target_domain_memory_body: false,
+      can_mutate_target_domain_artifact_body: false,
+      can_authorize_target_domain_quality_or_export: false,
+    },
     proposed_change_refs: capabilityCandidate.proposed_change_refs,
     patch_traceability_matrix: noPatchRequired ? [] : capabilityCandidate.patch_traceability_matrix,
     implementation_controls: {
@@ -771,6 +836,31 @@ function buildDeveloperPatchWorkOrder({
       can_train_or_deploy_model_weights: false,
     },
   };
+}
+
+function requireNonEmptyStringArray(value: unknown, fieldName: string): void {
+  if (!Array.isArray(value) || !value.some((entry) => typeof entry === 'string' && entry.trim().length > 0)) {
+    throw new Error(`Invalid developer patch work order: ${fieldName} must be a non-empty string array.`);
+  }
+}
+
+function requireNonEmptyString(value: unknown, fieldName: string): void {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new Error(`Invalid developer patch work order: ${fieldName} must be a non-empty string.`);
+  }
+}
+
+function validateDeveloperPatchWorkOrder(workOrder: JsonObject): void {
+  requireNonEmptyStringArray(workOrder.ai_reviewer_evidence?.source_refs, 'ai_reviewer_evidence.source_refs');
+  requireNonEmptyString(workOrder.ai_reviewer_review?.predicted_impact, 'ai_reviewer_review.predicted_impact');
+  requireNonEmptyStringArray(workOrder.ahe_developer_work_order?.failure_evidence, 'ahe_developer_work_order.failure_evidence');
+  requireNonEmptyString(workOrder.ahe_developer_work_order?.root_cause, 'ahe_developer_work_order.root_cause');
+  requireNonEmptyStringArray(workOrder.ahe_developer_work_order?.targeted_fix, 'ahe_developer_work_order.targeted_fix');
+  requireNonEmptyString(workOrder.ahe_developer_work_order?.predicted_impact, 'ahe_developer_work_order.predicted_impact');
+  requireNonEmptyStringArray(workOrder.required_verification_refs, 'required_verification_refs');
+  requireNonEmptyStringArray(workOrder.owner_route_refs, 'owner_route_refs');
+  requireNonEmptyStringArray(workOrder.rollback_version_refs, 'rollback_version_refs');
+  requireNonEmptyStringArray(workOrder.no_forbidden_write_proof?.proof_refs, 'no_forbidden_write_proof.proof_refs');
 }
 
 function main() {
@@ -877,6 +967,7 @@ function main() {
     capabilityCandidate,
     policy,
   });
+  validateDeveloperPatchWorkOrder(developerPatchWorkOrder);
 
   const receiptPath = path.join(outputDir, 'meta-agent-improvement-receipt.json');
   const learningPath = path.join(outputDir, 'online-learning-candidate.json');

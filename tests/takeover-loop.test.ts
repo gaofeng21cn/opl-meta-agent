@@ -35,6 +35,7 @@ function writeAiReviewerEvaluation(filePath: string): void {
       'receipt-ref:takeover-fixture/baseline-delivery',
     ],
     verdict: 'baseline_ready_with_owner_gate',
+    predicted_impact: 'The takeover fixture should preserve owner-gated baseline delivery while exercising source and runbook coverage.',
     provenance: {
       artifact_ref: 'artifact-ref:ai-reviewer/takeover-fixture',
       created_by: 'test-fixture',

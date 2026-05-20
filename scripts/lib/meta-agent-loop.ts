@@ -50,6 +50,7 @@ export type AiReviewerEvaluation = JsonObject & {
   source_refs: string[];
   direct_evidence_refs: string[];
   verdict: string;
+  predicted_impact: string;
   provenance: JsonObject;
 };
 
@@ -199,6 +200,7 @@ export function validateAiReviewerEvaluation(
     'review_attempt_ref',
     'critique',
     'verdict',
+    'predicted_impact',
   ]) {
     if (!nonEmptyString(payload[field])) {
       errors.push(`${field} must be a non-empty string`);
@@ -252,6 +254,7 @@ export function validateAiReviewerEvaluation(
     source_refs: (payload.source_refs as string[]).map((ref) => ref.trim()),
     direct_evidence_refs: (payload.direct_evidence_refs as string[]).map((ref) => ref.trim()),
     verdict: payload.verdict.trim(),
+    predicted_impact: payload.predicted_impact.trim(),
     provenance: payload.provenance,
   };
 }
@@ -278,6 +281,7 @@ export function aiReviewerReceiptFields(
       review_attempt_ref: aiReviewerEvaluation.review_attempt_ref,
       critique: aiReviewerEvaluation.critique,
       suggestions: aiReviewerEvaluation.suggestions,
+      predicted_impact: aiReviewerEvaluation.predicted_impact,
     },
     ai_reviewer_independence: {
       no_shared_context: aiReviewerEvaluation.no_shared_context,
@@ -292,6 +296,7 @@ export function aiReviewerReceiptFields(
     },
     ai_reviewer_scorecard: {
       verdict: aiReviewerEvaluation.verdict,
+      predicted_impact: aiReviewerEvaluation.predicted_impact,
     },
     review_provenance: {
       reviewer_kind: aiReviewerEvaluation.reviewer_kind,

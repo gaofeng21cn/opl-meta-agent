@@ -37,6 +37,7 @@ function writeAiReviewerEvaluation(filePath: string, overrides: JsonObject = {})
       'receipt-ref:opl-meta-agent/baseline-delivery',
     ],
     verdict: 'baseline_ready_with_owner_gate',
+    predicted_impact: 'The baseline should remain owner-gated while making source coverage and operator handoff evidence auditable.',
     provenance: {
       artifact_ref: 'artifact-ref:ai-reviewer/sample-brief-agent-baseline',
       reviewer_prompt_ref: 'agent/prompts/baseline-delivery.md',

@@ -225,6 +225,7 @@ function writeAiReviewerEvaluation(filePath: string): void {
       'contracts/agent_lab_handoff.json',
     ],
     verdict: 'blocked_requires_developer_patch',
+    predicted_impact: 'The patch work order should expose missing owner-route and no-forbidden-write proof refs without writing MAS truth or publication verdicts.',
     provenance: {
       artifact_ref: 'artifact-ref:ai-reviewer/mas-production-evidence-tail',
       created_by: 'test-fixture',
@@ -315,7 +316,16 @@ test('agent:evidence generates domain Agent Lab suite and proposal artifacts fro
     assert.equal(workOrder.implementation_controls.refs_only, true);
     assert.equal(workOrder.implementation_controls.no_forbidden_write_proof_required, true);
     assert.ok(workOrder.editable_surface_limits.editable_surfaces.includes('agent/prompts'));
+    assert.ok(workOrder.allowed_editable_surfaces.includes('agent/prompts'));
+    assert.ok(workOrder.target_repo_file_hints.includes('contracts/agent_lab_handoff.json'));
     assert.ok(workOrder.editable_surface_limits.forbidden_write_surfaces.includes('current_package'));
+    assert.ok(workOrder.required_verification_refs.includes('scripts/verify.sh'));
+    assert.ok(workOrder.rollback_version_refs.includes('target_agent_current_head_ref'));
+    assert.ok(workOrder.owner_route_refs.includes('owner-route:med-autoscience/MedAutoScience'));
+    assert.ok(workOrder.ahe_developer_work_order.failure_evidence.includes('contracts/production_acceptance/mas-production-acceptance.json'));
+    assert.match(workOrder.ahe_developer_work_order.root_cause, /Production evidence tail/);
+    assert.ok(workOrder.ahe_developer_work_order.targeted_fix.includes('agent:evidence-tail/med-autoscience/no-forbidden-write-proof'));
+    assert.match(workOrder.ahe_developer_work_order.predicted_impact, /no-forbidden-write proof refs/);
     assert.ok(workOrder.verification_command_refs.includes('scripts/verify.sh'));
 
     const candidate = readJson(path.join(outputDir, 'target-capability-improvement-candidate.json'));
@@ -395,11 +405,19 @@ test('agent:evidence emits typed blocker and no delivery receipt when reviewer e
     assert.equal(typedBlocker.authority_boundary.no_delivery_receipt_signed, true);
     assert.equal(typedBlocker.authority_boundary.can_write_target_domain_truth, false);
     assert.ok(typedBlocker.required_input_refs.includes('--ai-reviewer-evaluation <json>'));
+    assert.ok(typedBlocker.required_source_refs.includes('contracts/agent_lab_handoff.json'));
+    assert.ok(typedBlocker.required_verification_refs.includes('scripts/verify.sh'));
+    assert.ok(typedBlocker.rollback_version_refs.includes('target_agent_current_head_ref'));
+    assert.ok(typedBlocker.owner_route_refs.includes('owner-route:med-autoscience/MedAutoScience'));
+    assert.match(typedBlocker.ahe_developer_work_order.root_cause, /reviewer evaluation is missing/);
+    assert.match(typedBlocker.ahe_developer_work_order.predicted_impact, /Blocks delivery receipt/);
     assert.ok(typedBlocker.verification_command_refs.includes('scripts/verify.sh'));
 
     const workOrder = readJson(path.join(outputDir, 'developer-patch-work-order.json'));
     assert.equal(workOrder.status, 'blocked_missing_ai_reviewer_evaluation');
     assert.equal(workOrder.no_forbidden_write.can_write_target_domain_truth, false);
+    assert.ok(workOrder.required_verification_refs.includes('scripts/verify.sh'));
+    assert.ok(workOrder.ahe_developer_work_order.failure_evidence.includes('scripts/verify.sh'));
     assert.equal(workOrder.implementation_controls.target_owner_receipt_or_typed_blocker_required, true);
     assert.ok(workOrder.editable_surface_limits.forbidden_write_surfaces.includes('target quality verdict'));
   } finally {

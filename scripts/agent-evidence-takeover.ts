@@ -703,13 +703,27 @@ function buildDeveloperWorkOrder({
   suiteResult,
   capabilityCandidate,
   ownerReceiptRefsPath,
+  targetAgent,
 }: {
   contracts: AgentContracts;
   suite: JsonObject;
   suiteResult: JsonObject;
   capabilityCandidate: JsonObject;
   ownerReceiptRefsPath: string;
+  targetAgent: TargetAgentIdentity;
 }): JsonObject {
+  const verificationCommandRefs = verificationRefs(contracts.productionAcceptance);
+  const sourceFailureRefs = unique([
+    ...productionAcceptanceEvidenceRefs(contracts.productionAcceptance),
+    ...verificationCommandRefs,
+    ...refsFromRecord(contracts.productionAcceptance.codex_first_landing_program?.parallel_execution_model?.shared_blockers),
+  ]);
+  const reviewerEvidenceRefs = capabilityCandidate.ai_reviewer_evidence
+    ? unique([
+        ...textList(capabilityCandidate.ai_reviewer_evidence.source_refs),
+        ...textList(capabilityCandidate.ai_reviewer_evidence.direct_evidence_refs),
+      ])
+    : [];
   return {
     surface_kind: 'opl_meta_agent_target_developer_patch_work_order',
     version: 'opl-meta-agent.target-developer-patch-work-order.v1',
@@ -727,6 +741,15 @@ function buildDeveloperWorkOrder({
     owner_receipt_refs_ref: ownerReceiptRefsPath,
     target_owner_route: capabilityCandidate.target_owner_route,
     editable_surface_limits: capabilityCandidate.editable_surface_limits,
+    allowed_editable_surfaces: capabilityCandidate.editable_surface_limits.editable_surfaces,
+    target_repo_file_hints: capabilityCandidate.editable_surface_limits.editable_surfaces,
+    required_verification_refs: verificationCommandRefs,
+    rollback_version_refs: [
+      'target_agent_current_head_ref',
+      'developer_patch_branch_or_worktree_ref',
+      'owner_receipt_or_typed_blocker_version_ref',
+    ],
+    owner_route_refs: productionEvidenceGate(contracts, targetAgent).owner_route_refs,
     proposed_change_refs: capabilityCandidate.proposed_change_refs,
     ai_reviewer_evaluation_ref: capabilityCandidate.ai_reviewer_evaluation_ref,
     ai_reviewer_status: capabilityCandidate.ai_reviewer_status,
@@ -738,6 +761,16 @@ function buildDeveloperWorkOrder({
           review_provenance: capabilityCandidate.review_provenance,
         }
       : {}),
+    ahe_developer_work_order: {
+      failure_evidence: unique([...sourceFailureRefs, ...reviewerEvidenceRefs]),
+      root_cause: capabilityCandidate.ai_reviewer_status === 'present'
+        ? 'Production evidence tail lacks target-owner-gated proof refs required for domain-ready promotion.'
+        : 'Structured independent AI reviewer evaluation is missing, so the work order cannot authorize a mechanism patch proposal.',
+      targeted_fix: capabilityCandidate.proposed_change_refs,
+      predicted_impact: capabilityCandidate.ai_reviewer_status === 'present'
+        ? capabilityCandidate.ai_reviewer_review.predicted_impact
+        : 'Blocks delivery receipt and preserves target owner authority until reviewer evidence is supplied.',
+    },
     implementation_controls: {
       proposal_only: true,
       refs_only: true,
@@ -750,7 +783,7 @@ function buildDeveloperWorkOrder({
       forbidden_write_surfaces: forbiddenWriteSurfaces(contracts),
     },
     no_forbidden_write: capabilityCandidate.no_forbidden_write,
-    verification_command_refs: verificationRefs(contracts.productionAcceptance),
+    verification_command_refs: verificationCommandRefs,
   };
 }
 
@@ -840,6 +873,16 @@ function buildTypedBlocker({
     target_owner_route: targetOwnerRoute(contracts),
     work_order_ref: workOrder.work_order_id,
     required_input_refs: ['--ai-reviewer-evaluation <json>'],
+    required_source_refs: [
+      contracts.productionAcceptanceRef,
+      'contracts/agent_lab_handoff.json',
+      'contracts/generated_surface_handoff.json',
+      'contracts/owner_receipt_contract.json',
+    ],
+    required_verification_refs: workOrder.required_verification_refs,
+    rollback_version_refs: workOrder.rollback_version_refs,
+    owner_route_refs: workOrder.owner_route_refs,
+    ahe_developer_work_order: workOrder.ahe_developer_work_order,
     required_ai_reviewer_independence_fields: [
       'no_shared_context=true',
       'independent_attempt=true',
@@ -849,6 +892,7 @@ function buildTypedBlocker({
       'execution_attempt_ref != review_attempt_ref',
     ],
     no_forbidden_write: workOrder.no_forbidden_write,
+    no_forbidden_write_proof: workOrder.no_forbidden_write,
     verification_command_refs: verificationRefs(contracts.productionAcceptance),
     authority_boundary: {
       typed_blocker_only: true,
@@ -912,6 +956,7 @@ function main(): void {
     suiteResult,
     capabilityCandidate,
     ownerReceiptRefsPath,
+    targetAgent,
   });
   const workOrderPath = path.join(args.outputDir, 'developer-patch-work-order.json');
   writeJson(workOrderPath, workOrder);
