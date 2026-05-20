@@ -13,6 +13,7 @@ import {
   writeJson,
 } from './lib/meta-agent-loop.ts';
 import type { JsonObject } from './lib/domain-pack.ts';
+import { buildTargetPatchLoopMachineRefs } from './lib/work-order-policy.ts';
 
 type AgentEvidenceArgs = {
   agentRepo: string;
@@ -697,40 +698,6 @@ function buildCapabilityCandidate({
   };
 }
 
-function buildTargetPatchLoopMachineRefs({
-  targetAgent,
-  suiteResult,
-  workOrderId,
-  requiredVerificationRefs,
-  noForbiddenWriteProofRefs,
-}: {
-  targetAgent: TargetAgentIdentity;
-  suiteResult: JsonObject;
-  workOrderId: string;
-  requiredVerificationRefs: string[];
-  noForbiddenWriteProofRefs: string[];
-}): JsonObject {
-  const suiteResultRef = stringValue(suiteResult.result_id) ?? stableId('agent_lab_result', [workOrderId]);
-  return {
-    blocked_suite_result_ref: suiteResultRef,
-    developer_patch_work_order_ref: workOrderId,
-    patch_traceability_matrix_ref: `${workOrderId}#/patch_traceability_matrix`,
-    target_repo_verification_refs: requiredVerificationRefs,
-    target_runtime_read_model_consumption_ref:
-      `target-runtime-read-model-consumption:${targetAgent.domainId}/${workOrderId}`,
-    workspace_environment_proof_ref:
-      `workspace-environment-proof:${targetAgent.domainId}/${workOrderId}`,
-    no_forbidden_write_proof_ref: noForbiddenWriteProofRefs[0]
-      ?? `no-forbidden-write:${targetAgent.domainId}/${workOrderId}`,
-    target_owner_receipt_or_typed_blocker_ref:
-      `target-owner-receipt-or-typed-blocker:${targetAgent.domainId}/${workOrderId}`,
-    patch_absorption_ref: `patch-absorption:${targetAgent.domainId}/${workOrderId}`,
-    worktree_cleanup_ref: `worktree-cleanup:${targetAgent.domainId}/${workOrderId}`,
-    agent_lab_re_evaluation_ref:
-      `agent-lab-re-evaluation:${targetAgent.domainId}/${suiteResultRef}/${workOrderId}`,
-  };
-}
-
 function buildDeveloperWorkOrder({
   contracts,
   suite,
@@ -819,8 +786,8 @@ function buildDeveloperWorkOrder({
     },
     no_forbidden_write: capabilityCandidate.no_forbidden_write,
     machine_closeout_refs: buildTargetPatchLoopMachineRefs({
-      targetAgent,
-      suiteResult,
+      domainId: targetAgent.domainId,
+      suiteResultRef: stringValue(suiteResult.result_id) ?? stableId('agent_lab_result', [workOrderId]),
       workOrderId,
       requiredVerificationRefs: verificationCommandRefs,
       noForbiddenWriteProofRefs: textList(capabilityCandidate.no_forbidden_write?.proof_refs),
