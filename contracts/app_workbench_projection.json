@@ -4,7 +4,7 @@
   "domain_id": "opl-meta-agent",
   "owner": "opl-meta-agent",
   "projection_owner": "one-person-lab",
-  "projection_status": "contract_ready",
+  "projection_status": "drilldown_readiness_receipt_ready",
   "role": "refs_status_receipts_candidates_and_blockers_only",
   "source_refs": {
     "domain_manifest_registration_ref": "contracts/opl_domain_manifest_registration.json",
@@ -83,6 +83,45 @@
       "write_boundary": "display_refs_only"
     }
   ],
+  "drilldown_readiness_receipt": {
+    "surface_kind": "opl_app_workbench_drilldown_readiness_receipt",
+    "receipt_ref": "app-drilldown-readiness:opl-meta-agent/2026-05-20",
+    "status": "ready_for_app_consumption_refs_only",
+    "projection_contract_ref": "contracts/app_workbench_projection.json",
+    "summary_first": true,
+    "detail_mode_required_for_full_refs": true,
+    "safe_action_route_refs": [
+      "safe-action:opl-meta-agent/build-agent-baseline",
+      "safe-action:opl-meta-agent/takeover-external-agent-test",
+      "safe-action:opl-meta-agent/improve-from-external-agent-lab-suite",
+      "safe-action:opl-meta-agent/generate-mechanism-patch-proposal"
+    ],
+    "blocker_ref_fields": [
+      "typed_blocker_refs",
+      "remaining_blocker_refs",
+      "promotion_gate_ref",
+      "owner_review_receipt_ref"
+    ],
+    "receipt_ref_fields": [
+      "baseline_delivery_receipt_ref",
+      "agent_lab_result_ref",
+      "developer_patch_work_order_ref",
+      "mechanism_patch_proposal_ref",
+      "target_agent_delivery_receipt_refs"
+    ],
+    "live_rendering_status": "not_claimed_by_contract",
+    "verified_by_refs": [
+      "tests/contracts.test.ts"
+    ],
+    "authority_boundary": {
+      "refs_only": true,
+      "can_write_target_domain_truth": false,
+      "can_write_target_domain_memory_body": false,
+      "can_mutate_target_domain_artifact_body": false,
+      "can_authorize_target_domain_quality_or_export": false,
+      "can_promote_default_agent_without_gate": false
+    }
+  },
   "authority_boundary": {
     "refs_only": true,
     "not_generic_runtime_owner": true,
