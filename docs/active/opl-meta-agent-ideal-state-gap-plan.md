@@ -17,6 +17,8 @@ Date: `2026-05-20`
 
 `opl-meta-agent` 是 OPL-compatible Foundry Agent，面向“开发新的 OPL-compatible 高价值知识交付智能体”。它已经具备 sample agent bootstrap、real-target delivery minimum evidence、external agent testing takeover、external suite self-evolution、developer work order 和 mechanism patch proposal 的 repo-local loop。
 
+当前计划已经从 contract-ready 收敛到 Codex-attempt-native / usable landing。下一目标不是继续分阶段观望，而是一次性打通：stage launch contract 发起真实目标尝试，独立 Codex reviewer 基于 direct evidence 做无共享上下文评审，OPL registry / App 消费本仓 refs-only surface，真实 blocked target 进入 patch -> rerun -> owner receipt loop，并持续执行 script-to-pack hygiene。
+
 OPL Framework 持有 standard scaffold、Agent Lab、generated interface bundle、runtime / queue / attempt ledger / provider receipt / observability / promotion gate。`opl-meta-agent` 不能把这些能力复制成仓内私有平台。
 
 OMA 的理想职责不是“为每个 domain agent 做一套专用 evidence takeover”，而是提供一套 target-agent generic foundry / repair / takeover 机制。目标 agent 通过标准 contracts 暴露 descriptor、stage/action refs、generated surface handoff、owner receipt contract、Agent Lab handoff、production/live acceptance、owner routes、required return shapes、no-forbidden-write proof 和 verification refs；OMA 读取这些接口，产出通用 suite、work order、candidate、proposal 或 typed blocker。
@@ -57,35 +59,42 @@ OMA 的理想职责不是“为每个 domain agent 做一套专用 evidence take
 
 以下是结构正确后的证据缺口，不能反向解释成 generic runtime 或 target-domain authority：
 
-- `OPL domain manifest registration` 的本仓 contract 与 discovery receipt surface 已落地；仍缺 OPL 主仓 / App 侧真实 registry 消费记录。
+- `OPL domain manifest registration` 的本仓 contract 与 discovery receipt surface 已落地；仍缺 OPL 主仓 / App 侧真实 registry consumption receipt。
 - App/workbench projection 的本仓 contract 与 drilldown readiness receipt surface 已落地；仍缺 OPL App 实际渲染、截图或 runtime drilldown receipt。
+- Stage launch contract 仍需在真实目标仓触发：输入应包含 target repo、allowed editable surfaces、stage prompt/skill/knowledge refs、blocked evidence refs、verification refs、owner route 和 no-forbidden-write refs。
+- Independent Codex reviewer attempt 仍需落证：reviewer 必须读取 direct evidence、无共享上下文，输出 critique/suggestions/source refs/verdict/provenance，并带 rollback/canary/version refs；suite pass、scorecard、schema completeness 或 generated-surface proof 都不能替代该 reviewer verdict。
 - `real_target_agent_delivery_count_min=1` 的 receipt/ledger 已由 bootstrap loop 支撑；多目标 scaleout 的 OMA refs-only gate 已由 MAS + MAG closeout refs 闭合。剩余证据是继续扩展到更多 target agents 和真实 target patch / rerun / owner receipt 的长期样本。
 - external-agent takeover/improve loop 的 production acceptance evidence 已由 `contracts/production_acceptance/meta-agent-production-acceptance.json` 收口；它不再作为结构标准化缺口统计，也不替代真实线上目标领域 delivery 或默认 promotion gate。
-- 真实多目标 agent 的 Agent Lab suite、blocked suite -> developer work order -> patch -> re-run -> owner receipt scaleout 仍需积累。
+- 真实 blocked target patch loop 仍需落地：blocked suite -> developer work order -> Codex patch -> target repo verification -> owner receipt -> cleanup closeout 必须在至少一个真实目标仓闭合，随后再做多目标 scaleout。
 - 目标 agent 标准 handoff 的跨仓一致性仍需继续积累：MAS/MAG/RCA 都应向同一 Agent Lab / OMA 接口靠拢，domain-specific suite/command 名称只允许停留在 owner refs、fixtures 或历史 provenance。
+- Script-to-pack hygiene 是持续证据项：仍在 scripts 中增长的 agent-building policy 必须迁回 `agent/`、`contracts/` 或 explicit authority refs；保留脚本需要证明自己只是 authority implementation、smoke helper、fixture/proof helper 或 developer work-order materializer。
 - Mechanism patch proposal 仍是 proposal-only；需要 promotion gate receipt 才能进入默认 agent 变更。
 
-## 完善顺序
+## Usable landing 顺序
 
-1. `opl_registry_consumption`
-   OPL 主仓或 App 侧消费 `contracts/opl_domain_manifest_registration.json` 中的 discovery receipt surface，留下真实 registry discovery receipt。当前本仓已经提供 refs-only machine surface。
+1. `stage_launch_contract`
+   在真实目标仓启动 OMA stage launch，输入 target repo、blocked evidence、allowed editable surfaces、verification refs、owner route、no-forbidden-write refs 和 rollback/version refs。输出必须是 stage attempt refs、typed blocker 或 developer work order，而不是泛泛 plan。
 
-2. `app_workbench_live_rendering`
-   由 OPL App/workbench 展示 meta-agent 的 target brief、candidate package refs、Agent Lab result refs、developer work order、mechanism patch proposal 和 blocker；展示层不能写 target truth 或默认 promotion。本仓已提供 drilldown readiness receipt，下一步是 App 渲染、截图或 runtime drilldown receipt。
+2. `independent_codex_reviewer_attempt`
+   由独立 Codex reviewer 读取 direct evidence 与 target refs，输出结构化 reviewer evaluation。该 reviewer 不能共享执行上下文，不能只引用 suite/scaffold/generated proof，必须给出 critique、suggestions、source refs、verdict、provenance 和 rollback/canary/version refs。
 
-3. `multi_target_scaleout`
-   在至少两个真实目标 agent / blocked suite 上跑完整 intent -> research -> skeleton/takeover -> Agent Lab -> baseline receipt -> mechanism patch proposal -> gated improvement，留下 owner receipt、no-forbidden-write proof、target repo test 和 cleanup closeout。
+3. `registry_app_consumption`
+   OPL 主仓或 App 侧消费 `contracts/opl_domain_manifest_registration.json` 与 `contracts/app_workbench_projection.json`，留下真实 registry discovery receipt、App render / screenshot / runtime drilldown receipt。消费结果只能展示 refs/status/receipt/blocker，不能写 target truth 或默认 promotion。
 
-4. `standard_target_agent_handoff_convergence`
-   把 MAS/MAG/RCA 这类目标 agent 的 production/live acceptance、Agent Lab handoff、owner-route refs、required-return-shapes、editable-surface policy 和 verification refs 收敛到同一 target-agent contract vocabulary。验收口径是 OMA 不新增 domain-specific command，Agent Lab 不新增 domain-specific suite kind，目标 agent 自己声明兼容性。
+4. `real_blocked_target_patch_loop`
+   对一个真实 blocked target 执行 developer patch work order：Codex 只改 allowed editable surfaces，重跑 target repo verification，记录 no-forbidden-write proof、owner receipt、patch absorption 和 cleanup closeout。完成后再扩展到 RCA / 新 Foundry Agent 等更多目标。
 
-5. `physical_source_morphology_hygiene`
+5. `script_to_pack_hygiene`
    把仍在 scripts 中增长的 agent-building 规则优先迁入 declarative pack 或 contracts；保留脚本必须能指向 `runtime/authority_functions`、smoke action、fixture/proof helper 或 developer work-order materializer，并持续证明不持有 OPL generic runtime、target domain truth 或 default promotion authority。
+
+6. `standard_target_agent_handoff_convergence`
+   把 MAS/MAG/RCA 这类目标 agent 的 production/live acceptance、Agent Lab handoff、owner-route refs、required-return-shapes、editable-surface policy 和 verification refs 收敛到同一 target-agent contract vocabulary。验收口径是 OMA 不新增 domain-specific command，Agent Lab 不新增 domain-specific suite kind，目标 agent 自己声明兼容性。
 
 ## 当前不能写成
 
 - 不能写成 `opl-meta-agent` 是 OPL Framework 内置模块。
 - 不能写成 sample bootstrap / testing takeover / external-suite improvement 等于真实线上 agent package delivery。
+- 不能写成 generated surface proof、registration readiness 或 App projection readiness 等于 domain ready、quality verdict、App live rendering 或 default promotion。
 - 不能写成 Agent Lab suite pass、mechanism patch proposal 或 online-learning candidate 等于默认 agent promotion。
 - 不能写成 Agent Lab 支持 MAS/MAG-specific suite，或 OMA 提供 MAS/MAG-specific command family；正确口径是目标 agent 提供标准 handoff，Agent Lab / OMA 消费通用接口。
 - 不能把 `scripts/bootstrap-sample-agent.ts` 或 `scripts/lib/meta-agent-loop.ts` 写成 generic runtime owner；它们只是 minimal authority function implementation refs 或 smoke action targets。

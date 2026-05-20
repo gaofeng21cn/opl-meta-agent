@@ -74,10 +74,12 @@
 ## 当前定位与边界
 
 - `OPL Meta Agent` 面向“开发智能体的智能体”：它把目标智能体需求推进成可测试、可交付、可持续优化的基线包。
+- 当前设计已经从 contract-ready 收敛到 Codex-attempt-native 的 usable landing plan：下一目标是直接发起真实 stage launch contract、由独立 Codex reviewer 读取证据并尝试评审、让 OPL registry / App 实际消费投影、对真实 blocked target 形成 patch -> rerun -> owner receipt 闭环，并把仍在 `scripts/` 中增长的构建规则收敛回 pack 或 authority refs。
 - `agent/` 是本仓真实 domain pack 入口：`knowledge/`、`prompts/`、`quality_gates/`、`skills/`、`stages/` 至少提供可解析、非空、无占位的 domain-owned 文件，`contracts/stage_control_plane.json` 的 stage prompt、skill、knowledge、evaluation refs 必须指向这些真实文件。
 - 本仓复用 OPL Framework 的脚手架、Agent Lab、队列、状态投影和采用门槛，不在本仓重建通用运行框架。
 - CLI、MCP、Skill、product-entry 和工具描述由 OPL Framework 根据本仓的 action / stage 合同统一生成；本仓不维护私有通用入口包装层。
 - 生成接口可以调用本仓声明的 minimal authority functions 和 domain smoke action，但只能投影 refs、回执、blocker 与候选，不能写领域事实、记忆正文、产物正文、质量/导出裁决或无 gate 推广默认 agent。
+- 已有 generated-surface / registration / App projection proof 只证明本仓可被 OPL 消费，不等于目标 domain ready、质量裁决完成、App live rendering 已发生或默认 agent 可以推广。
 - OPL Framework 持有通用运行时、Agent Lab、标准脚手架、队列、阶段尝试记录、提供者回执、观测、优化引用和采用门槛。
 - 目标领域智能体继续持有自己的领域事实、质量裁决、产物权威、记忆正文和拥有者回执。
 - 对第一步不是由 `OPL Meta Agent` 开发的智能体，本仓也可以接管测试编排和自进化候选生成；默认仍只产生测试套件、接管回执、受门控候选和机制补丁建议。
@@ -92,6 +94,7 @@
 - 统一接口入口是 `opl agents interfaces --repo-dir <this-repo> --json`：OPL 读取本仓标准合同并生成 CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述。
 - Registry / App 消费入口在 `contracts/opl_domain_manifest_registration.json` 和 `contracts/app_workbench_projection.json`：它们提供 discovery receipt 与 drilldown readiness receipt，只证明 OPL/App 可消费 refs，不宣称 App live rendering、目标事实写入或默认推广已经发生。
 - Agent evidence takeover 入口是 `npm run agent:evidence -- --agent-repo <agent-repo> --output-dir <dir> --opl-bin <opl> [--ai-reviewer-evaluation <reviewer-eval.json>]`：读取 target production acceptance、Agent Lab handoff、generated-surface handoff 和 owner-receipt 合同，生成 `suite_kind=agent_production_evidence_suite` 的 `agent-lab-suite.json`，运行 `opl agent-lab run --suite`，再输出 refs-only developer work order、domain agent capability candidate、mechanism patch proposal，或在缺 reviewer evaluation 时输出 typed blocker。
+- Usable landing 的验证路径不是再等待合同成熟，而是用真实目标仓触发 blocked evidence、生成 developer patch work order、由 Codex 在允许 surface 内落 patch、重跑目标验证并取得 owner receipt；独立 reviewer attempt 必须带 direct evidence、无共享上下文和可回滚版本引用。
 - 机制补丁建议会记录 `mechanism_ref/version`、`editable_surfaces`、`observe/diagnose/edit`、`segment_run_ref`、`evidence_delta_ref`、`next_mechanism_candidate_ref` 和权限边界标记。
 - OPL Agent Lab 的机制面是只读引用控制面。它可以暴露 `opl agent-lab mechanism --json` 和 `opl agent-lab evolve --suite <suite.json> --json`，但不能把测试通过、机制候选或演化片段升级成领域裁决。
 
