@@ -14,11 +14,12 @@
 ## 步骤
 
 1. 读取轨迹与 receipts，只保留 refs、指标摘要和失败分类，不复制 target memory/artifact body。
-2. 建立 evidence delta：相对上一版机制，哪些 stage、prompt、skill、gate 或 suite 表现发生变化。
-3. 要求 human review 将证据分为 adopt、revise、reject、watch。
-4. 生成 online learning dataset refs，标注来源、许可、隐私边界和可重放条件。
-5. 生成 mechanism patch proposal：observe、diagnose、edit 三段都必须引用证据。
-6. 为 future candidates 标注 gate、owner、验证命令和 rollback path。
+2. 建立 evidence delta：相对上一版机制，哪些 stage、prompt、skill、knowledge、tool policy、gate 或 suite 表现发生变化。
+3. 让 Codex 提出机制层解释和反事实：如果不改 prompt/skill/stage/gate，会继续失败在哪里；如果改错 surface，会产生什么越权或质量风险。
+4. 要求独立 AI reviewer 或 human/owner review 将证据分为 adopt、revise、reject、watch。
+5. 生成 online learning dataset refs，标注来源、许可、隐私边界和可重放条件。
+6. 生成 mechanism patch proposal：observe、diagnose、edit 三段都必须引用证据。
+7. 为 future candidates 标注 gate、owner、验证命令和 rollback path。
 
 ## 输出
 
@@ -33,6 +34,8 @@
 - 每个 edit 都有 segment run ref、evidence delta ref 和 next mechanism candidate ref。
 - human review 与 execution attempt 分离，有独立 receipt。
 - future candidate 可以进入 Agent Lab gate，而不是直接落入 production default。
+- 独立 reviewer 必须基于 direct evidence refs 判断机制是否值得采用；no-current-failure、suite pass 或 generated receipt 只能作为辅助信号。
+- 学习结果优先改进 prompt、skill、knowledge、stage policy、tool policy、suite policy 或 quality gate，不把未来 AI executor 的推理路线硬编码成脚本。
 
 ## 禁止事项
 
