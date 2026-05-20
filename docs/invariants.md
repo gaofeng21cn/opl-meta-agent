@@ -11,3 +11,6 @@
 - Do not promote a generated target agent as default without an explicit OPL gate.
 - Do not write target-domain truth, memory body, artifact body, quality verdict, or export verdict.
 - Mechanism patch proposals are proposal-only surfaces: they may reference editable mechanism surfaces, observed segment runs, evidence deltas, and next candidate refs, but they must not apply edits or promote defaults without an explicit gate.
+- Generated-surface proof, registry readiness, App projection readiness, suite pass, schema completeness, or contract completeness must not be described as domain ready, App live rendering, quality verdict, owner receipt, or default promotion.
+- A usable landing claim requires real consumption evidence: stage launch refs, independent Codex reviewer evaluation with direct evidence and no shared context, registry/App consumption receipt where applicable, real blocked target patch/rerun evidence, owner receipt, no-forbidden-write proof, and cleanup closeout.
+- Repo-local scripts must remain authority implementation refs, smoke helpers, fixture/proof helpers, or developer work-order materializers. Agent-building policy that grows beyond those roles must move back into `agent/`, `contracts/`, or explicit authority refs.

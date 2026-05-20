@@ -1,6 +1,6 @@
 # opl-meta-agent 状态
 
-当前状态：已创建独立 OPL-compatible Foundry Agent repo，命名为 `opl-meta-agent`，并通过 OPL standard domain-agent scaffold validation、self-learning loop smoke、real-target delivery minimum evidence、registry/App refs-only readiness 与 mechanism patch proposal smoke。
+当前状态：已创建独立 OPL-compatible Foundry Agent repo，命名为 `opl-meta-agent`，并通过 OPL standard domain-agent scaffold validation、self-learning loop smoke、real-target delivery minimum evidence、registry/App refs-only readiness 与 mechanism patch proposal smoke。当前设计不再停留在 contract-ready；下一目标是 Codex-attempt-native / usable landing：stage launch contract、independent Codex reviewer attempt、registry/App consumption、real blocked target patch loop 和 script-to-pack hygiene 一次性落到可用闭环。
 
 已落地：
 
@@ -33,6 +33,7 @@
 - Workspace environment consumption proof：当目标 agent 修复依赖 runtime extras、workspace lock/profile 或 owner-entry 环境迁移时，developer work order 会要求 `target_workspace_environment_verification`、dependency lock/profile migration proof、owner-entry redrive proof 和 repo hygiene proof，避免只在源码测试通过而真实 study runtime 没有消费到新能力。
 - Mechanism patch proposal：记录 `mechanism_ref/version`、`editable_surfaces`、`observe/diagnose/edit`、`segment_run_ref`、`evidence_delta_ref`、`next_mechanism_candidate_ref` 和 proposal-only authority boundary。
 - Physical source morphology：`agent/` 是 agent-building semantic pack，`contracts/` 是 registration / generated handoff / App projection / scaleout evidence 机器面，`runtime/authority_functions/` 是最小 authority refs，`scripts/` 只是 authority implementation refs、smoke helpers、fixture/proof helper 或 developer work-order materializer。本仓不持有 generic runtime、registry owner、App shell、Agent Lab execution、promotion gate 或 target domain truth。
+- Usable landing plan：下一轮应直接从真实 target agent 启动 stage launch contract，产出 blocked suite / evidence，生成 developer patch work order，由 Codex 在 allowed editable surfaces 内落地补丁，重跑 target repo 验证，再由目标 owner 签 owner receipt。独立 Codex reviewer attempt 必须以 direct evidence、no-shared-context、rollback/canary/version refs 和 reviewer provenance 为输入，不能用 schema completeness、suite pass 或 generated surface proof 替代专家 verdict。
 
 未完成：
 
@@ -40,3 +41,4 @@
 - App/workbench 侧实际渲染、截图或 drilldown runtime receipt 仍未完成；本仓已提供 refs-only drilldown readiness receipt。
 - 多目标真实 agent scaleout 的 OMA refs-only 证据门已由 MAS + MAG 两个真实目标 closeout refs 关闭；后续剩余是继续扩展到 RCA / 新 Foundry Agent 的更多 target-agent handoff 样本，以及真实 target repo patch / rerun / owner receipt 的长期累积。该 evidence 不授权默认 promotion。
 - MAS/MAG/RCA 的标准 handoff vocabulary 仍需继续收敛；目标是每个标准 OPL Agent 自己提供 Agent Lab / OMA 消费接口，而不是在 Agent Lab 或 OMA 内增加 domain-specific suite kind / command。
+- `scripts/` 中仍在增长的 agent-building policy 必须持续迁回 `agent/`、`contracts/` 或 explicit authority refs；允许保留的脚本只能是 authority implementation、smoke helper、fixture/proof helper 或 developer work-order materializer。

@@ -38,6 +38,18 @@ Declarative Agent-Building Pack
 
 因此，`agent:evidence`、external-suite improvement 和 testing takeover 都应产出 target-agent generic artifacts：`agent-lab-suite.json`、`agent-lab-run-result.json`、`developer-patch-work-order.json`、`target-capability-improvement-candidate.json`、`mechanism-patch-proposal.json` 和 `typed-blocker.json`。如果目标 agent 是 MAS 或 MAG，输出里的 domain refs 可以指向 MAS/MAG owner surfaces；输出机制本身仍是通用 target-agent mechanism。
 
+## Codex-Attempt-Native Usable Landing
+
+理想态不是 contract-ready 后继续观望，而是让 OMA 能直接发起真实可用闭环：
+
+1. `stage launch contract`：从真实 target agent 的 handoff 读取 target repo、stage refs、allowed editable surfaces、blocked evidence refs、verification refs、owner route、no-forbidden-write refs 和 rollback/version refs。
+2. `independent Codex reviewer attempt`：由独立 Codex reviewer 基于 direct evidence 评审，不共享执行上下文，输出 critique、suggestions、source refs、verdict、provenance 和 rollback/canary/version refs。
+3. `registry/App consumption`：OPL 主仓或 App 消费 registration / App projection surface，留下 discovery receipt、render / screenshot / runtime drilldown receipt，只展示 refs/status/receipt/blocker。
+4. `real blocked target patch loop`：developer patch work order 授权 Codex 修改目标仓 allowed editable surfaces，随后重跑目标验证，目标 owner 签 receipt，并保留 no-forbidden-write proof、patch absorption 和 cleanup closeout。
+5. `script-to-pack hygiene`：把可声明的 agent-building policy 持续迁回 `agent/`、`contracts/` 或 explicit authority refs，让 `scripts/` 保持 implementation/proof/materializer 角色。
+
+generated surface proof、registration readiness、App projection readiness、suite pass、scorecard、schema completeness 或 contract completeness 都只是输入证据。它们不能替代 independent reviewer verdict、target owner receipt、App live consumption proof 或默认 promotion gate。
+
 ## 长期 Owner 边界
 
 `opl-meta-agent` 持有：
@@ -87,8 +99,10 @@ CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framewo
 - 所有 generated interface surface 均由 OPL Framework 生成或托管；本仓不实现 repo-owned generic wrapper。
 - 所有 retained scripts 都能归类为 domain smoke、minimal authority function implementation ref、fixture/proof helper 或历史 provenance；不能归类的脚本必须上收 OPL、收薄成 refs-only adapter 或退役。
 - Agent Lab suite、baseline delivery、testing takeover、external suite self-evolution、target-agent evidence takeover 和 mechanism patch proposal 都返回 owner receipt / typed blocker / candidate refs，不写目标 domain truth。
-- 真实线上目标 agent package delivery 产生可追溯 baseline receipt、Agent Lab evidence、candidate package ref、promotion gate ref 和 no-forbidden-write proof。
-- App/workbench projection 只展示 refs、status、candidate、receipt 和 blocker，不把 proposal 或 suite pass 写成默认 promotion。
+- 至少一个真实 blocked target 完成 patch -> rerun -> owner receipt -> cleanup closeout loop，并保留 no-forbidden-write proof。
+- 独立 Codex reviewer attempt 基于 direct evidence、无共享上下文和 reviewer provenance 输出 verdict；该 verdict 与目标 owner receipt 共同约束机制采用。
+- OPL registry / App 真实消费本仓 projection，留下 discovery、render/screenshot 或 runtime drilldown receipt。
+- App/workbench projection 只展示 refs、status、candidate、receipt 和 blocker，不把 proposal、suite pass 或 generated surface proof 写成默认 promotion。
 
 ## 当前差距入口
 
