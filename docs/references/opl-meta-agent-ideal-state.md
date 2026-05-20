@@ -4,17 +4,18 @@ Owner: `opl-meta-agent`
 Purpose: `north_star_reference`
 State: `active_support`
 Machine boundary: 本文是人读目标态参考。机器真相继续归 `contracts/`、`runtime/authority_functions/`、OPL Agent Lab result refs、owner receipts、candidate refs 和未来 delivery receipts。
-Date: `2026-05-19`
+Date: `2026-05-20`
 
 ## 文档读法
 
 - 本文只写 `opl-meta-agent` 的 north-star 目标态和长期 owner boundary；当前差距、完善顺序和证据缺口回到 [opl-meta-agent 理想目标态差距与完善计划](../active/opl-meta-agent-ideal-state-gap-plan.md)。
 - `opl-meta-agent` 是 OPL-compatible Foundry Agent，不是 OPL Framework 内置模块。OPL Framework 持有 runtime、Agent Lab、standard scaffold、generated interface bundle、queue、attempt ledger、provider receipt、observability、optimizer / RL transition refs 和 promotion gate。
+- Agent Lab 与 `opl-meta-agent` 都是标准消费者，不是为 MAS、MAG、RCA 或任一单仓定制的兼容层。标准 OPL Agent 必须提供可被 Agent Lab / OMA 消费的 handoff、suite seed、owner route、receipt、no-forbidden-write 和 patch-work-order 输入；不能把叙事写成 Agent Lab 或 OMA 为每个 agent 单独实现一套能力。
 - 目标态优先于当前脚本形态。仓内脚本可以作为 domain smoke 或 minimal authority function implementation refs 存在，但不能变成 repo-owned generic runtime、generic CLI/MCP/Skill/product-entry wrapper、generic scheduler、queue、attempt ledger、operator workbench 或默认 promotion engine。
 
 ## 目标结论
 
-理想状态下，`opl-meta-agent` 是“构建新的 OPL-compatible 高价值知识交付智能体”的 domain agent。它读取用户意图和目标领域材料，形成可审计的 agent brief、stage plan、domain pack、quality gates、Agent Lab suite、baseline receipt、online-learning candidate 和 mechanism patch proposal。
+理想状态下，`opl-meta-agent` 是“构建、接管、修复和持续改进 OPL-compatible 高价值知识交付智能体”的 Foundry Agent。它读取用户意图、目标领域材料和目标 agent 的标准 handoff surface，形成可审计的 agent brief、stage plan、domain pack、quality gates、Agent Lab suite seed、baseline receipt、developer patch work order、online-learning candidate 和 mechanism patch proposal。
 
 `opl-meta-agent` 的理想形态是：
 
@@ -24,7 +25,18 @@ Declarative Agent-Building Pack
   + minimal agent-building authority functions
 ```
 
-它的领域价值是 agent-building semantics：目标理解、外部经验调研、stage 分解、pack 生成策略、Agent Lab suite 组织、baseline 验收、外部 agent testing takeover、机制补丁候选和在线学习审阅。它不拥有目标 domain 的 truth、memory body、artifact body、quality/export verdict，也不绕过目标 domain owner 的 receipt / promotion gate。
+它的领域价值是 agent-building semantics：目标理解、外部经验调研、stage 分解、pack 生成策略、标准 Agent Lab suite 组织、baseline 验收、外部 agent testing takeover、developer work order、机制补丁候选和在线学习审阅。它不拥有目标 domain 的 truth、memory body、artifact body、quality/export verdict，也不绕过目标 domain owner 的 receipt / promotion gate。
+
+## 标准消费者与目标 Agent 接口
+
+目标态的方向是“标准 OPL Agent 兼容 Agent Lab / OMA”，不是“Agent Lab / OMA 兼容每个具体 agent”。这条边界决定了命名、合同和文档口径：
+
+- `OPL Agent Lab` 是 framework-level refs-only eval / mechanism / evidence control plane。它只运行标准 suite、投影 suite result、gate result、ref summary、mechanism evolution segment 和 promotion-safety refs；它不持有 MAS/MAG/RCA 这类 domain-specific suite 语义。
+- `opl-meta-agent` 是 standard target-agent foundry / repair / takeover consumer。它读取目标 agent 提供的标准 contracts 和 handoff，生成 candidate package、developer patch work order、target capability improvement candidate、mechanism patch proposal 或 typed blocker；它不为每个目标 agent 维护私有命令族或专用 evidence runtime。
+- 标准 OPL Agent 负责声明自己的 Agent Lab / OMA 消费面，包括 descriptor、stage/action contract、generated-surface handoff、owner receipt contract、Agent Lab handoff、production acceptance / live acceptance surface、owner route refs、required return shapes、no-forbidden-write proof refs、editable surface limits 和 verification command refs。
+- MAS、MAG、RCA 等名字只能出现在目标 agent 自己的 domain id、owner route、fixture、example、receipt provenance 或真实 smoke evidence 中；不能出现在 OPL Agent Lab 或 OMA 的顶层 surface kind、公开命令名、长期 contract vocabulary 或 design center 叙事里。
+
+因此，`agent:evidence`、external-suite improvement 和 testing takeover 都应产出 target-agent generic artifacts：`agent-lab-suite.json`、`agent-lab-run-result.json`、`developer-patch-work-order.json`、`target-capability-improvement-candidate.json`、`mechanism-patch-proposal.json` 和 `typed-blocker.json`。如果目标 agent 是 MAS 或 MAG，输出里的 domain refs 可以指向 MAS/MAG owner surfaces；输出机制本身仍是通用 target-agent mechanism。
 
 ## 长期 Owner 边界
 
@@ -46,6 +58,7 @@ OPL Framework 持有：
 目标 domain agent 持有：
 
 - 目标领域 truth、memory body、artifact body、quality/export verdict、artifact authority、owner receipt 和默认 agent promotion authority。
+- 目标 agent 对 Agent Lab / OMA 的标准 handoff surface：suite seed、owner route refs、receipt refs、required return shapes、no-forbidden-write proof refs、editable surface policy 和 closeout gate。
 
 ## Pack 与 Generated Surface 形状
 
@@ -73,7 +86,7 @@ CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framewo
 - `agent/` pack、`contracts/pack_compiler_input.json`、`contracts/generated_surface_handoff.json` 和 `contracts/stage_control_plane.json` 全部采用 OPL standard pack shape，并由 OPL scaffold validation 通过。
 - 所有 generated interface surface 均由 OPL Framework 生成或托管；本仓不实现 repo-owned generic wrapper。
 - 所有 retained scripts 都能归类为 domain smoke、minimal authority function implementation ref、fixture/proof helper 或历史 provenance；不能归类的脚本必须上收 OPL、收薄成 refs-only adapter 或退役。
-- Agent Lab suite、baseline delivery、testing takeover、external suite self-evolution 和 mechanism patch proposal 都返回 owner receipt / typed blocker / candidate refs，不写目标 domain truth。
+- Agent Lab suite、baseline delivery、testing takeover、external suite self-evolution、target-agent evidence takeover 和 mechanism patch proposal 都返回 owner receipt / typed blocker / candidate refs，不写目标 domain truth。
 - 真实线上目标 agent package delivery 产生可追溯 baseline receipt、Agent Lab evidence、candidate package ref、promotion gate ref 和 no-forbidden-write proof。
 - App/workbench projection 只展示 refs、status、candidate、receipt 和 blocker，不把 proposal 或 suite pass 写成默认 promotion。
 

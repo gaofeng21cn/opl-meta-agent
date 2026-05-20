@@ -6,9 +6,17 @@
 
 - `opl-meta-agent` owns：agent-building semantics、intent brief、research brief、stage decomposition、candidate agent package policy、Agent Lab suite specs、baseline delivery receipt、online learning review policy 和 mechanism patch proposal 记录。
 - `opl-meta-agent` owns as domain pack：`agent/knowledge`、`agent/prompts`、`agent/quality_gates`、`agent/skills`、`agent/stages` 下的领域引用文件，以及 `contracts/` 中声明这些文件、阶段、动作、handoff 和 authority boundary 的机器合同。
-- `opl-meta-agent` can take over：既有 OPL-compatible agent 的测试编排、自进化候选组织、mechanism patch proposal 产出和 takeover receipt。
+- `opl-meta-agent` can consume standard target-agent handoff：既有 OPL-compatible agent 的测试编排、自进化候选组织、developer patch work order、mechanism patch proposal 产出和 takeover receipt。
 - `OPL Framework` owns：generic runtime、Agent Lab、standard scaffold、queue、attempt ledger、provider receipt、observability projection、optimizer/RL transition refs、promotion gates。
-- target domain agent owns：domain truth、quality verdict、artifact authority、memory body、owner receipt。
+- target domain agent owns：domain truth、quality verdict、artifact authority、memory body、owner receipt，并负责提供 Agent Lab / OMA 可消费的标准 descriptor、handoff、owner-route、receipt、verification 和 no-forbidden-write refs。
+
+## Standard Consumer Boundary
+
+Agent Lab 与 `opl-meta-agent` 是标准消费者。目标 agent 兼容它们，而不是它们分别兼容每个目标 agent。
+
+- Agent Lab 消费 `agent_lab_external_suite`、`agent_production_evidence_suite`、recovery probes、scorecard refs、promotion gate refs、mechanism evolution refs 和 production evidence gate refs。Agent Lab 不持有 MAS/MAG/RCA 专用 suite kind，也不签发目标 domain verdict。
+- OMA 消费目标 agent 的 production/live acceptance、Agent Lab handoff、generated-surface handoff、owner receipt contract、editable surface policy、verification command refs 和 no-forbidden-write proof refs。OMA 产出 target-agent generic work order / candidate / proposal / blocker，不维护 MAS/MAG/RCA 私有 command family。
+- 目标 agent 可以在 owner routes、receipt refs、artifact refs 或 smoke fixture 中出现自己的 domain id；这些 domain refs 不能反向污染 Agent Lab / OMA 的顶层 contract vocabulary。
 
 ## Runtime
 
@@ -51,6 +59,8 @@ CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framewo
 `external-agent-takeover` 读取目标 agent repo/package 的 descriptor/contracts，生成 `agent_lab_external_suite`，调用 OPL `agent-lab run`，再写入 `testing_takeover_self_evolution_receipt`、gated online-learning candidate 和 mechanism patch proposal。
 
 `improve-from-external-agent-lab-suite` 读取目标 domain 的 Agent Lab suite/result，并消费与 baseline delivery 相同 schema 的 AI reviewer evaluation。reviewer critique、suggestions、source refs 和 provenance 会进入 target capability improvement candidate、developer patch work order 和 mechanism patch proposal refs；可识别 suggestion 会映射到 `patch_traceability_matrix` 的 required patch refs、editable surfaces 和 target repo file hints。
+
+`agent:evidence` 读取目标 agent 的 standard production evidence handoff，生成 `agent_production_evidence_suite`、Agent Lab run result、developer patch work order、target capability improvement candidate、mechanism patch proposal 或 typed blocker。MAS/MAG 等目标 agent 只通过 domain refs 出现在输入与 owner route 中；命令、suite kind、输出文件和 OMA surface kind 保持 target-agent generic。
 
 该 takeover 只覆盖测试接管和候选生成。target domain truth、quality verdict、artifact body、memory body、默认 agent promotion authority 继续由目标 domain owner 持有；receipt 和 candidate 必须显式声明 `can_write_target_domain_memory_body=false`、`can_promote_default_agent_without_gate=false`。
 
