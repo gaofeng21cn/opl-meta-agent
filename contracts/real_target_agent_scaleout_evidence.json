@@ -3,7 +3,7 @@
   "schema_version": 1,
   "domain_id": "opl-meta-agent",
   "owner": "opl-meta-agent",
-  "evidence_status": "contract_ready_no_real_scaleout_claim_yet",
+  "evidence_status": "real_target_delivery_minimum_supported_scaleout_pending",
   "role": "refs_only_scaleout_evidence_gate",
   "source_refs": {
     "domain_manifest_registration_ref": "contracts/opl_domain_manifest_registration.json",
@@ -60,6 +60,20 @@
     "requires_owner_receipt_refs": true,
     "requires_no_forbidden_write_proof_refs": true,
     "requires_promotion_gate_refs_for_default_agent_changes": true
+  },
+  "implemented_receipt_surfaces": {
+    "real_target_delivery_receipt_surface_kind": "opl_meta_agent_real_target_agent_delivery_receipt",
+    "scaleout_evidence_ledger_surface_kind": "opl_meta_agent_real_target_agent_scaleout_evidence_ledger",
+    "default_output_refs": [
+      "real-target-delivery-receipt.json",
+      "real-target-scaleout-evidence-ledger.json"
+    ],
+    "verified_by_refs": [
+      "tests/bootstrap-loop.test.ts"
+    ],
+    "sample_smoke_counted_as_real_target_delivery": false,
+    "real_target_agent_delivery_count_min_supported": true,
+    "multi_target_scaleout_pending": true
   },
   "authority_boundary": {
     "refs_only": true,

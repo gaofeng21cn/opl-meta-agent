@@ -122,6 +122,8 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
     const receiptPath = path.join(outputRoot, 'baseline-delivery-receipt.json');
     const learningPath = path.join(outputRoot, 'online-learning-candidate.json');
     const mechanismPath = path.join(outputRoot, 'mechanism-patch-proposal.json');
+    const realTargetReceiptPath = path.join(outputRoot, 'real-target-delivery-receipt.json');
+    const realTargetLedgerPath = path.join(outputRoot, 'real-target-scaleout-evidence-ledger.json');
     const fixturePath = path.join(
       targetDir,
       'contracts',
@@ -136,6 +138,8 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
     assert.equal(fs.existsSync(receiptPath), true);
     assert.equal(fs.existsSync(learningPath), true);
     assert.equal(fs.existsSync(mechanismPath), true);
+    assert.equal(fs.existsSync(realTargetReceiptPath), true);
+    assert.equal(fs.existsSync(realTargetLedgerPath), true);
 
     const fixture = readJson(fixturePath);
     assert.equal(fixture.surface_kind, 'generated_agent_morphology_conformance_fixture');
@@ -188,6 +192,57 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
     assert.equal(mechanism.segment_run_ref, payload.opl_agent_lab.suite_result.result_id);
     assert.equal(mechanism.evidence_delta_ref, 'evidence-delta:opl-meta-agent/sample-brief-agent/baseline');
     assert.equal(mechanism.next_mechanism_candidate_ref, learning.candidate_id);
+
+    const realTargetReceipt = readJson(realTargetReceiptPath);
+    assert.equal(realTargetReceipt.surface_kind, 'opl_meta_agent_real_target_agent_delivery_receipt');
+    assert.equal(realTargetReceipt.receipt_class, 'real_target_agent_delivery_receipt');
+    assert.equal(realTargetReceipt.evidence_class, 'real_target_agent_delivery');
+    assert.equal(realTargetReceipt.status, 'real_target_delivery_evidence_recorded');
+    assert.equal(realTargetReceipt.target_agent.domain_id, 'real-target-brief-agent');
+    assert.notEqual(realTargetReceipt.target_agent.domain_id, payload.target_agent.domain_id);
+    assert.equal(realTargetReceipt.sample_smoke.counted_as_real_target_delivery, false);
+    assert.equal(realTargetReceipt.sample_smoke.sample_target_agent_ref, 'domain-agent:sample-brief-agent');
+    assert.equal(realTargetReceipt.sample_smoke.sample_receipt_ref, receipt.receipt_id);
+    assert.equal(realTargetReceipt.owner_receipt_refs.length, 1);
+    assert.equal(realTargetReceipt.owner_receipt_refs[0], realTargetReceipt.baseline_delivery_receipt_ref);
+    assert.ok(realTargetReceipt.owner_receipt_refs[0].startsWith('oma_receipt_'));
+    assert.equal(realTargetReceipt.agent_lab_result_ref, payload.real_target_delivery.agent_lab_run.suite_result.result_id);
+    assert.deepEqual(realTargetReceipt.no_forbidden_write_proof_refs, [
+      'no-forbidden-write:opl-meta-agent/real-target-brief-agent/real_target_delivery',
+    ]);
+    assert.deepEqual(realTargetReceipt.promotion_gate_refs, [
+      'promotion-gate:opl-meta-agent/real-target-brief-agent',
+    ]);
+    assert.equal(realTargetReceipt.authority_boundary.refs_only, true);
+    assert.equal(realTargetReceipt.authority_boundary.can_write_target_domain_truth, false);
+    assert.equal(realTargetReceipt.authority_boundary.can_write_target_domain_memory_body, false);
+    assert.equal(realTargetReceipt.authority_boundary.can_mutate_target_domain_artifact_body, false);
+    assert.equal(realTargetReceipt.authority_boundary.can_authorize_target_domain_quality_or_export, false);
+    assert.equal(realTargetReceipt.target_truth, undefined);
+    assert.equal(realTargetReceipt.memory_body, undefined);
+    assert.equal(realTargetReceipt.artifact_body, undefined);
+
+    const scaleoutLedger = readJson(realTargetLedgerPath);
+    assert.equal(scaleoutLedger.surface_kind, 'opl_meta_agent_real_target_agent_scaleout_evidence_ledger');
+    assert.equal(scaleoutLedger.evidence_status, 'real_target_delivery_minimum_met_scaleout_pending');
+    assert.equal(scaleoutLedger.real_target_agent_delivery_count_min, 1);
+    assert.equal(scaleoutLedger.real_target_agent_delivery_count, 1);
+    assert.equal(scaleoutLedger.minimum_completion_gate.real_target_agent_delivery_count_met, true);
+    assert.equal(scaleoutLedger.minimum_completion_gate.multi_target_scaleout_delivery_count_met, false);
+    assert.deepEqual(scaleoutLedger.target_agent_delivery_receipt_refs, [realTargetReceipt.receipt_id]);
+    assert.deepEqual(scaleoutLedger.target_agent_owner_receipt_refs, realTargetReceipt.owner_receipt_refs);
+    assert.deepEqual(scaleoutLedger.agent_lab_result_refs, [realTargetReceipt.agent_lab_result_ref]);
+    assert.deepEqual(scaleoutLedger.no_forbidden_write_proof_refs, realTargetReceipt.no_forbidden_write_proof_refs);
+    assert.deepEqual(scaleoutLedger.promotion_gate_refs, realTargetReceipt.promotion_gate_refs);
+    assert.equal(scaleoutLedger.sample_smoke.counted_as_real_target_delivery, false);
+    assert.deepEqual(scaleoutLedger.sample_smoke.sample_receipt_refs, [receipt.receipt_id]);
+    assert.equal(scaleoutLedger.authority_boundary.refs_only, true);
+    assert.equal(scaleoutLedger.authority_boundary.can_write_target_domain_truth, false);
+    assert.equal(scaleoutLedger.authority_boundary.can_write_target_domain_memory_body, false);
+    assert.equal(scaleoutLedger.authority_boundary.can_mutate_target_domain_artifact_body, false);
+    assert.equal(scaleoutLedger.target_truth, undefined);
+    assert.equal(scaleoutLedger.memory_body, undefined);
+    assert.equal(scaleoutLedger.artifact_body, undefined);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }

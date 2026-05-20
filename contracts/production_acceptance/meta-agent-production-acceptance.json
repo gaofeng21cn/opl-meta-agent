@@ -33,7 +33,8 @@
   "acceptance_scope": [
     "production_live_soak_not_claimed_by_conformance",
     "domain_ready_not_claimed_by_conformance",
-    "external_agent_takeover_improve_loop_acceptance"
+    "external_agent_takeover_improve_loop_acceptance",
+    "real_target_agent_delivery_minimum_receipt_supported"
   ],
   "conformance_state": {
     "structural_conformance": "passed",
@@ -78,6 +79,10 @@
       "docs/status.md",
       "docs/active/opl-meta-agent-ideal-state-gap-plan.md"
     ],
+    "real_target_delivery_receipt_refs": [
+      "real-target-delivery-receipt.json",
+      "real-target-scaleout-evidence-ledger.json"
+    ],
     "typed_blocker_refs": []
   },
   "acceptance_receipt": {
@@ -95,6 +100,7 @@
       "Agent Lab test handoff refs present",
       "proposal and materializer refs present",
       "review and audit receipt refs present",
+      "real target delivery receipt and scaleout ledger surfaces supported",
       "no target-domain authority writes allowed",
       "new-agent morphology and conformance fixture required"
     ]
@@ -124,6 +130,18 @@
       "tests/bootstrap-loop.test.ts",
       "tests/contracts.test.ts"
     ]
+  },
+  "real_target_delivery_minimum": {
+    "status": "supported_by_bootstrap_receipt_surface",
+    "real_target_agent_delivery_count_min": 1,
+    "multi_target_scaleout_delivery_count_min": 2,
+    "multi_target_scaleout_status": "pending",
+    "receipt_surface_kind": "opl_meta_agent_real_target_agent_delivery_receipt",
+    "ledger_surface_kind": "opl_meta_agent_real_target_agent_scaleout_evidence_ledger",
+    "verified_by_refs": [
+      "tests/bootstrap-loop.test.ts"
+    ],
+    "sample_smoke_counted_as_real_target_delivery": false
   },
   "authority_boundary": {
     "refs_only": true,
