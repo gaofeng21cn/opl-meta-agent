@@ -26,6 +26,7 @@ Use this plugin when a user wants to turn a high-value knowledge workflow into a
 3. Use the `agent/` pack refs for prompts, stages, skills, quality gates, and knowledge.
 4. Generate or inspect candidate package refs, then validate through OPL scaffold/interface and Agent Lab evidence.
 5. Emit receipts, mechanism patch proposals, or developer work orders as refs-only outputs.
+6. For product-facing use, route through the OPL registry discovery receipt and App drilldown readiness receipt; these are refs-only product consumption surfaces and do not claim live rendering, target truth writes, artifact mutation, or default promotion.
 
 ## Useful Commands
 

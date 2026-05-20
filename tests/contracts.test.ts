@@ -330,7 +330,7 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
 
   assert.equal(registration.surface_kind, 'opl_domain_manifest_registration');
   assert.equal(registration.registry_owner, 'one-person-lab');
-  assert.equal(registration.registration_status, 'contract_ready');
+  assert.equal(registration.registration_status, 'discovery_receipt_ready');
   assert.equal(registration.role, 'domain_registration_metadata_refs_only');
   assertNoForbiddenAuthority(registration, 'registration');
   assert.equal(registration.authority_boundary.registry_owner_is_opl_framework, true);
@@ -340,10 +340,19 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
     .filter(([key]) => key.endsWith('_ref'))
     .map(([, value]) => value as string)
     .forEach(assertRepoRefExists);
+  assert.equal(registration.discovery_receipt.surface_kind, 'opl_domain_manifest_discovery_receipt');
+  assert.equal(registration.discovery_receipt.status, 'ready_for_opl_registry_consumption');
+  assert.equal(registration.discovery_receipt.registry_owner, 'one-person-lab');
+  assert.ok(registration.discovery_receipt.safe_action_route_refs.includes('safe-action:opl-meta-agent/build-agent-baseline'));
+  assert.ok(registration.discovery_receipt.blocked_claims.includes('app_live_rendering_complete'));
+  assert.equal(registration.discovery_receipt.authority_boundary.refs_only, true);
+  assert.equal(registration.discovery_receipt.authority_boundary.can_write_target_domain_truth, false);
+  asStrings(registration.discovery_receipt.consumed_contract_refs).forEach(assertRepoRefExists);
+  asStrings(registration.discovery_receipt.verified_by_refs).forEach(assertRepoRefExists);
 
   assert.equal(appProjection.surface_kind, 'opl_app_workbench_projection_contract');
   assert.equal(appProjection.projection_owner, 'one-person-lab');
-  assert.equal(appProjection.projection_status, 'contract_ready');
+  assert.equal(appProjection.projection_status, 'drilldown_readiness_receipt_ready');
   assert.equal(appProjection.role, 'refs_status_receipts_candidates_and_blockers_only');
   assertNoForbiddenAuthority(appProjection, 'appProjection');
   assert.equal(appProjection.authority_boundary.projection_owner_is_opl_framework, true);
@@ -353,6 +362,17 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
     asObjects(appProjection.workbench_sections).some((section) => section.section_id === 'scaleout_evidence'),
     true,
   );
+  assert.equal(appProjection.drilldown_readiness_receipt.surface_kind, 'opl_app_workbench_drilldown_readiness_receipt');
+  assert.equal(appProjection.drilldown_readiness_receipt.status, 'ready_for_app_consumption_refs_only');
+  assert.equal(appProjection.drilldown_readiness_receipt.summary_first, true);
+  assert.equal(appProjection.drilldown_readiness_receipt.detail_mode_required_for_full_refs, true);
+  assert.equal(appProjection.drilldown_readiness_receipt.live_rendering_status, 'not_claimed_by_contract');
+  assert.ok(appProjection.drilldown_readiness_receipt.safe_action_route_refs.includes('safe-action:opl-meta-agent/improve-from-external-agent-lab-suite'));
+  assert.ok(appProjection.drilldown_readiness_receipt.blocker_ref_fields.includes('typed_blocker_refs'));
+  assert.ok(appProjection.drilldown_readiness_receipt.receipt_ref_fields.includes('mechanism_patch_proposal_ref'));
+  assert.equal(appProjection.drilldown_readiness_receipt.authority_boundary.refs_only, true);
+  assert.equal(appProjection.drilldown_readiness_receipt.authority_boundary.can_mutate_target_domain_artifact_body, false);
+  asStrings(appProjection.drilldown_readiness_receipt.verified_by_refs).forEach(assertRepoRefExists);
   asStrings(Object.values(appProjection.source_refs)).forEach(assertRepoRefExists);
 
   assert.equal(scaleoutEvidence.surface_kind, 'real_target_agent_scaleout_evidence_contract');
@@ -393,6 +413,14 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
     'contracts/real_target_agent_scaleout_evidence.json',
   );
   assert.equal(
+    generatedSurfaceHandoff.registry_discovery_receipt_ref,
+    registration.discovery_receipt.receipt_ref,
+  );
+  assert.equal(
+    generatedSurfaceHandoff.app_drilldown_readiness_receipt_ref,
+    appProjection.drilldown_readiness_receipt.receipt_ref,
+  );
+  assert.equal(
     asObjects(generatedSurfaceHandoff.generated_surfaces).some((surface) =>
       surface.surface_id === 'scaleout_evidence_projection'
     ),
@@ -401,6 +429,8 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
   assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('opl_domain_manifest_registration_contract'));
   assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('app_workbench_projection_contract'));
   assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('real_target_agent_scaleout_evidence_contract'));
+  assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('registry_discovery_receipt'));
+  assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('app_drilldown_readiness_receipt'));
   assert.deepEqual(actionCatalog.registration_projection_evidence_contract_refs, {
     opl_domain_manifest_registration_ref: 'contracts/opl_domain_manifest_registration.json',
     app_workbench_projection_ref: 'contracts/app_workbench_projection.json',

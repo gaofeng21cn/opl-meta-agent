@@ -8,6 +8,8 @@
   "registration_contract_ref": "contracts/opl_domain_manifest_registration.json",
   "app_workbench_projection_ref": "contracts/app_workbench_projection.json",
   "scaleout_evidence_contract_ref": "contracts/real_target_agent_scaleout_evidence.json",
+  "registry_discovery_receipt_ref": "discovery-receipt:opl-meta-agent/manifest-registration/2026-05-20",
+  "app_drilldown_readiness_receipt_ref": "app-drilldown-readiness:opl-meta-agent/2026-05-20",
   "domain_pack_role": "domain_truth_prompt_skill_stage_quality_refs_only",
   "generated_interface_role": "invoke_and_project_without_domain_authority_escalation",
   "generated_surfaces": [
@@ -93,7 +95,9 @@
     "no_forbidden_write_evidence",
     "opl_domain_manifest_registration_contract",
     "app_workbench_projection_contract",
-    "real_target_agent_scaleout_evidence_contract"
+    "real_target_agent_scaleout_evidence_contract",
+    "registry_discovery_receipt",
+    "app_drilldown_readiness_receipt"
   ],
   "marker": "generated_by_opl_standard_domain_agent_scaffold_v1",
   "canonical_semantic_pack_root": "agent/"
