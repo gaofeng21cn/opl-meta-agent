@@ -67,7 +67,93 @@
       "authority_boundary": {
         "domain_truth_owner": "opl-meta-agent",
         "opl_role": "projection_only"
-      }
+      },
+      "selected_executor": "codex_cli",
+      "executor_binding": {
+        "binding_kind": "codex_cli_first_class_stage_executor",
+        "executor_ref": "executor:codex-cli",
+        "executor_owner": "OPL Framework",
+        "launch_surface_owner": "one-person-lab",
+        "domain_pack_owner": "opl-meta-agent",
+        "adapter_required": false,
+        "non_codex_executor_requires_explicit_adapter": true,
+        "codex_first_expert_judgment_required": true
+      },
+      "requires": [
+        "stage:intent-intake",
+        "prompt-ref:agent/prompts/intent-intake.md",
+        "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
+        "knowledge-ref:agent/knowledge/opl-boundary-policy.md",
+        "knowledge-ref:agent/knowledge/project-maturity-signals.md",
+        "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
+        "runtime-ref:stage-attempt-ledger",
+        "runtime-ref:generated-interface-bundle"
+      ],
+      "ensures": [
+        "stage-attempt-receipt-ref:intent-intake",
+        "executor-receipt-ref:intent-intake/codex-cli",
+        "no-forbidden-write-proof-ref:intent-intake",
+        "independent-ai-review-ref:intent-intake",
+        "output-ref:intent_brief_ref",
+        "output-ref:acceptance_criteria_ref",
+        "output-ref:authority_boundary_ref"
+      ],
+      "expected_receipt_refs": [
+        "stage-attempt-receipt-ref:intent-intake",
+        "executor-receipt-ref:intent-intake/codex-cli",
+        "boundary-receipt-ref:intent-intake/refs-only",
+        "no-forbidden-write-proof-ref:intent-intake",
+        "independent-ai-review-ref:intent-intake"
+      ],
+      "verified_static_core": {
+        "status": "required_before_launch",
+        "checks": [
+          "prompt_refs_resolve_to_domain_pack_files",
+          "skill_refs_resolve_to_domain_pack_files",
+          "knowledge_refs_resolve_to_domain_pack_files",
+          "quality_gate_refs_resolve_to_domain_pack_files",
+          "allowed_action_refs_resolve_to_action_catalog_when_present",
+          "authority_boundary_forbids_domain_truth_memory_quality_and_promotion_writes"
+        ]
+      },
+      "runtime_enforced_boundary": {
+        "opl_10_principle_refs": [
+          "opl10:codex_cli_first_class_executor",
+          "opl10:stage_led_execution",
+          "opl10:declarative_domain_pack",
+          "opl10:explicit_prompt_tools_knowledge",
+          "opl10:refs_only_domain_truth_boundary",
+          "opl10:receipted_handoff",
+          "opl10:independent_ai_review_gate",
+          "opl10:runtime_enforced_no_forbidden_writes",
+          "opl10:generated_surfaces_from_contracts",
+          "opl10:blockers_before_quality_or_promotion_claims"
+        ],
+        "codex_first": true,
+        "selected_executor_must_match_binding": true,
+        "stage_attempt_ledger_required": true,
+        "receipt_refs_required": true,
+        "independent_ai_review_required_before_promotion": true,
+        "no_shared_context_review_required": true,
+        "generated_surface_owner": "one-person-lab",
+        "domain_truth_owner": "opl-meta-agent",
+        "can_write_domain_truth": false,
+        "can_write_memory_body": false,
+        "can_mutate_target_domain_artifact_body": false,
+        "can_authorize_quality_or_export": false,
+        "can_promote_default_agent_without_gate": false,
+        "suite_pass_claims_domain_ready": false
+      },
+      "hard_blocker_refs": [
+        "blocker:missing_prompt_ref",
+        "blocker:missing_tool_or_skill_ref",
+        "blocker:missing_knowledge_or_memory_ref",
+        "blocker:missing_quality_gate_ref",
+        "blocker:missing_expected_receipt_ref",
+        "blocker:forbidden_domain_truth_or_memory_write",
+        "blocker:quality_or_promotion_claim_without_independent_ai_review",
+        "blocker:contract_completeness_claimed_as_quality_verdict"
+      ]
     },
     {
       "stage_id": "web-experience-research",
@@ -124,7 +210,93 @@
       "authority_boundary": {
         "domain_truth_owner": "opl-meta-agent",
         "opl_role": "projection_only"
-      }
+      },
+      "selected_executor": "codex_cli",
+      "executor_binding": {
+        "binding_kind": "codex_cli_first_class_stage_executor",
+        "executor_ref": "executor:codex-cli",
+        "executor_owner": "OPL Framework",
+        "launch_surface_owner": "one-person-lab",
+        "domain_pack_owner": "opl-meta-agent",
+        "adapter_required": false,
+        "non_codex_executor_requires_explicit_adapter": true,
+        "codex_first_expert_judgment_required": true
+      },
+      "requires": [
+        "stage:web-experience-research",
+        "prompt-ref:agent/prompts/web-experience-research.md",
+        "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
+        "knowledge-ref:agent/knowledge/transferable-agent-practices.md",
+        "knowledge-ref:agent/knowledge/project-maturity-signals.md",
+        "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
+        "runtime-ref:stage-attempt-ledger",
+        "runtime-ref:generated-interface-bundle"
+      ],
+      "ensures": [
+        "stage-attempt-receipt-ref:web-experience-research",
+        "executor-receipt-ref:web-experience-research/codex-cli",
+        "no-forbidden-write-proof-ref:web-experience-research",
+        "independent-ai-review-ref:web-experience-research",
+        "output-ref:research_brief_ref",
+        "output-ref:source_refs",
+        "output-ref:pattern_disposition_refs"
+      ],
+      "expected_receipt_refs": [
+        "stage-attempt-receipt-ref:web-experience-research",
+        "executor-receipt-ref:web-experience-research/codex-cli",
+        "boundary-receipt-ref:web-experience-research/refs-only",
+        "no-forbidden-write-proof-ref:web-experience-research",
+        "independent-ai-review-ref:web-experience-research"
+      ],
+      "verified_static_core": {
+        "status": "required_before_launch",
+        "checks": [
+          "prompt_refs_resolve_to_domain_pack_files",
+          "skill_refs_resolve_to_domain_pack_files",
+          "knowledge_refs_resolve_to_domain_pack_files",
+          "quality_gate_refs_resolve_to_domain_pack_files",
+          "allowed_action_refs_resolve_to_action_catalog_when_present",
+          "authority_boundary_forbids_domain_truth_memory_quality_and_promotion_writes"
+        ]
+      },
+      "runtime_enforced_boundary": {
+        "opl_10_principle_refs": [
+          "opl10:codex_cli_first_class_executor",
+          "opl10:stage_led_execution",
+          "opl10:declarative_domain_pack",
+          "opl10:explicit_prompt_tools_knowledge",
+          "opl10:refs_only_domain_truth_boundary",
+          "opl10:receipted_handoff",
+          "opl10:independent_ai_review_gate",
+          "opl10:runtime_enforced_no_forbidden_writes",
+          "opl10:generated_surfaces_from_contracts",
+          "opl10:blockers_before_quality_or_promotion_claims"
+        ],
+        "codex_first": true,
+        "selected_executor_must_match_binding": true,
+        "stage_attempt_ledger_required": true,
+        "receipt_refs_required": true,
+        "independent_ai_review_required_before_promotion": true,
+        "no_shared_context_review_required": true,
+        "generated_surface_owner": "one-person-lab",
+        "domain_truth_owner": "opl-meta-agent",
+        "can_write_domain_truth": false,
+        "can_write_memory_body": false,
+        "can_mutate_target_domain_artifact_body": false,
+        "can_authorize_quality_or_export": false,
+        "can_promote_default_agent_without_gate": false,
+        "suite_pass_claims_domain_ready": false
+      },
+      "hard_blocker_refs": [
+        "blocker:missing_prompt_ref",
+        "blocker:missing_tool_or_skill_ref",
+        "blocker:missing_knowledge_or_memory_ref",
+        "blocker:missing_quality_gate_ref",
+        "blocker:missing_expected_receipt_ref",
+        "blocker:forbidden_domain_truth_or_memory_write",
+        "blocker:quality_or_promotion_claim_without_independent_ai_review",
+        "blocker:contract_completeness_claimed_as_quality_verdict"
+      ]
     },
     {
       "stage_id": "stage-decomposition",
@@ -181,7 +353,93 @@
       "authority_boundary": {
         "domain_truth_owner": "opl-meta-agent",
         "opl_role": "projection_only"
-      }
+      },
+      "selected_executor": "codex_cli",
+      "executor_binding": {
+        "binding_kind": "codex_cli_first_class_stage_executor",
+        "executor_ref": "executor:codex-cli",
+        "executor_owner": "OPL Framework",
+        "launch_surface_owner": "one-person-lab",
+        "domain_pack_owner": "opl-meta-agent",
+        "adapter_required": false,
+        "non_codex_executor_requires_explicit_adapter": true,
+        "codex_first_expert_judgment_required": true
+      },
+      "requires": [
+        "stage:stage-decomposition",
+        "prompt-ref:agent/prompts/stage-decomposition.md",
+        "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
+        "knowledge-ref:agent/knowledge/opl-boundary-policy.md",
+        "knowledge-ref:agent/knowledge/transferable-agent-practices.md",
+        "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
+        "runtime-ref:stage-attempt-ledger",
+        "runtime-ref:generated-interface-bundle"
+      ],
+      "ensures": [
+        "stage-attempt-receipt-ref:stage-decomposition",
+        "executor-receipt-ref:stage-decomposition/codex-cli",
+        "no-forbidden-write-proof-ref:stage-decomposition",
+        "independent-ai-review-ref:stage-decomposition",
+        "output-ref:stage_control_plane_ref",
+        "output-ref:action_catalog_ref",
+        "output-ref:memory_descriptor_ref"
+      ],
+      "expected_receipt_refs": [
+        "stage-attempt-receipt-ref:stage-decomposition",
+        "executor-receipt-ref:stage-decomposition/codex-cli",
+        "boundary-receipt-ref:stage-decomposition/refs-only",
+        "no-forbidden-write-proof-ref:stage-decomposition",
+        "independent-ai-review-ref:stage-decomposition"
+      ],
+      "verified_static_core": {
+        "status": "required_before_launch",
+        "checks": [
+          "prompt_refs_resolve_to_domain_pack_files",
+          "skill_refs_resolve_to_domain_pack_files",
+          "knowledge_refs_resolve_to_domain_pack_files",
+          "quality_gate_refs_resolve_to_domain_pack_files",
+          "allowed_action_refs_resolve_to_action_catalog_when_present",
+          "authority_boundary_forbids_domain_truth_memory_quality_and_promotion_writes"
+        ]
+      },
+      "runtime_enforced_boundary": {
+        "opl_10_principle_refs": [
+          "opl10:codex_cli_first_class_executor",
+          "opl10:stage_led_execution",
+          "opl10:declarative_domain_pack",
+          "opl10:explicit_prompt_tools_knowledge",
+          "opl10:refs_only_domain_truth_boundary",
+          "opl10:receipted_handoff",
+          "opl10:independent_ai_review_gate",
+          "opl10:runtime_enforced_no_forbidden_writes",
+          "opl10:generated_surfaces_from_contracts",
+          "opl10:blockers_before_quality_or_promotion_claims"
+        ],
+        "codex_first": true,
+        "selected_executor_must_match_binding": true,
+        "stage_attempt_ledger_required": true,
+        "receipt_refs_required": true,
+        "independent_ai_review_required_before_promotion": true,
+        "no_shared_context_review_required": true,
+        "generated_surface_owner": "one-person-lab",
+        "domain_truth_owner": "opl-meta-agent",
+        "can_write_domain_truth": false,
+        "can_write_memory_body": false,
+        "can_mutate_target_domain_artifact_body": false,
+        "can_authorize_quality_or_export": false,
+        "can_promote_default_agent_without_gate": false,
+        "suite_pass_claims_domain_ready": false
+      },
+      "hard_blocker_refs": [
+        "blocker:missing_prompt_ref",
+        "blocker:missing_tool_or_skill_ref",
+        "blocker:missing_knowledge_or_memory_ref",
+        "blocker:missing_quality_gate_ref",
+        "blocker:missing_expected_receipt_ref",
+        "blocker:forbidden_domain_truth_or_memory_write",
+        "blocker:quality_or_promotion_claim_without_independent_ai_review",
+        "blocker:contract_completeness_claimed_as_quality_verdict"
+      ]
     },
     {
       "stage_id": "agent-skeleton-build",
@@ -245,7 +503,96 @@
       "authority_boundary": {
         "domain_truth_owner": "opl-meta-agent",
         "opl_role": "projection_only"
-      }
+      },
+      "selected_executor": "codex_cli",
+      "executor_binding": {
+        "binding_kind": "codex_cli_first_class_stage_executor",
+        "executor_ref": "executor:codex-cli",
+        "executor_owner": "OPL Framework",
+        "launch_surface_owner": "one-person-lab",
+        "domain_pack_owner": "opl-meta-agent",
+        "adapter_required": false,
+        "non_codex_executor_requires_explicit_adapter": true,
+        "codex_first_expert_judgment_required": true
+      },
+      "requires": [
+        "stage:agent-skeleton-build",
+        "prompt-ref:agent/prompts/agent-skeleton-build.md",
+        "skill-ref:agent/skills/agent-baseline-build.md",
+        "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
+        "knowledge-ref:agent/knowledge/opl-boundary-policy.md",
+        "knowledge-ref:agent/knowledge/transferable-agent-practices.md",
+        "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
+        "action-ref:build-agent-baseline",
+        "runtime-ref:stage-attempt-ledger",
+        "runtime-ref:generated-interface-bundle"
+      ],
+      "ensures": [
+        "stage-attempt-receipt-ref:agent-skeleton-build",
+        "executor-receipt-ref:agent-skeleton-build/codex-cli",
+        "no-forbidden-write-proof-ref:agent-skeleton-build",
+        "independent-ai-review-ref:agent-skeleton-build",
+        "output-ref:domain_descriptor_ref",
+        "output-ref:skill_refs",
+        "output-ref:prompt_refs",
+        "output-ref:candidate_agent_package_ref"
+      ],
+      "expected_receipt_refs": [
+        "stage-attempt-receipt-ref:agent-skeleton-build",
+        "executor-receipt-ref:agent-skeleton-build/codex-cli",
+        "boundary-receipt-ref:agent-skeleton-build/refs-only",
+        "no-forbidden-write-proof-ref:agent-skeleton-build",
+        "independent-ai-review-ref:agent-skeleton-build"
+      ],
+      "verified_static_core": {
+        "status": "required_before_launch",
+        "checks": [
+          "prompt_refs_resolve_to_domain_pack_files",
+          "skill_refs_resolve_to_domain_pack_files",
+          "knowledge_refs_resolve_to_domain_pack_files",
+          "quality_gate_refs_resolve_to_domain_pack_files",
+          "allowed_action_refs_resolve_to_action_catalog_when_present",
+          "authority_boundary_forbids_domain_truth_memory_quality_and_promotion_writes"
+        ]
+      },
+      "runtime_enforced_boundary": {
+        "opl_10_principle_refs": [
+          "opl10:codex_cli_first_class_executor",
+          "opl10:stage_led_execution",
+          "opl10:declarative_domain_pack",
+          "opl10:explicit_prompt_tools_knowledge",
+          "opl10:refs_only_domain_truth_boundary",
+          "opl10:receipted_handoff",
+          "opl10:independent_ai_review_gate",
+          "opl10:runtime_enforced_no_forbidden_writes",
+          "opl10:generated_surfaces_from_contracts",
+          "opl10:blockers_before_quality_or_promotion_claims"
+        ],
+        "codex_first": true,
+        "selected_executor_must_match_binding": true,
+        "stage_attempt_ledger_required": true,
+        "receipt_refs_required": true,
+        "independent_ai_review_required_before_promotion": true,
+        "no_shared_context_review_required": true,
+        "generated_surface_owner": "one-person-lab",
+        "domain_truth_owner": "opl-meta-agent",
+        "can_write_domain_truth": false,
+        "can_write_memory_body": false,
+        "can_mutate_target_domain_artifact_body": false,
+        "can_authorize_quality_or_export": false,
+        "can_promote_default_agent_without_gate": false,
+        "suite_pass_claims_domain_ready": false
+      },
+      "hard_blocker_refs": [
+        "blocker:missing_prompt_ref",
+        "blocker:missing_tool_or_skill_ref",
+        "blocker:missing_knowledge_or_memory_ref",
+        "blocker:missing_quality_gate_ref",
+        "blocker:missing_expected_receipt_ref",
+        "blocker:forbidden_domain_truth_or_memory_write",
+        "blocker:quality_or_promotion_claim_without_independent_ai_review",
+        "blocker:contract_completeness_claimed_as_quality_verdict"
+      ]
     },
     {
       "stage_id": "eval-suite-build",
@@ -306,7 +653,94 @@
       "authority_boundary": {
         "domain_truth_owner": "opl-meta-agent",
         "opl_role": "projection_only"
-      }
+      },
+      "selected_executor": "codex_cli",
+      "executor_binding": {
+        "binding_kind": "codex_cli_first_class_stage_executor",
+        "executor_ref": "executor:codex-cli",
+        "executor_owner": "OPL Framework",
+        "launch_surface_owner": "one-person-lab",
+        "domain_pack_owner": "opl-meta-agent",
+        "adapter_required": false,
+        "non_codex_executor_requires_explicit_adapter": true,
+        "codex_first_expert_judgment_required": true
+      },
+      "requires": [
+        "stage:eval-suite-build",
+        "prompt-ref:agent/prompts/eval-suite-build.md",
+        "skill-ref:agent/skills/agent-baseline-build.md",
+        "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
+        "knowledge-ref:agent/knowledge/project-maturity-signals.md",
+        "knowledge-ref:agent/knowledge/transferable-agent-practices.md",
+        "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
+        "runtime-ref:stage-attempt-ledger",
+        "runtime-ref:generated-interface-bundle"
+      ],
+      "ensures": [
+        "stage-attempt-receipt-ref:eval-suite-build",
+        "executor-receipt-ref:eval-suite-build/codex-cli",
+        "no-forbidden-write-proof-ref:eval-suite-build",
+        "independent-ai-review-ref:eval-suite-build",
+        "output-ref:agent_lab_task_manifest_refs",
+        "output-ref:scorecard_refs",
+        "output-ref:promotion_gate_refs"
+      ],
+      "expected_receipt_refs": [
+        "stage-attempt-receipt-ref:eval-suite-build",
+        "executor-receipt-ref:eval-suite-build/codex-cli",
+        "boundary-receipt-ref:eval-suite-build/refs-only",
+        "no-forbidden-write-proof-ref:eval-suite-build",
+        "independent-ai-review-ref:eval-suite-build"
+      ],
+      "verified_static_core": {
+        "status": "required_before_launch",
+        "checks": [
+          "prompt_refs_resolve_to_domain_pack_files",
+          "skill_refs_resolve_to_domain_pack_files",
+          "knowledge_refs_resolve_to_domain_pack_files",
+          "quality_gate_refs_resolve_to_domain_pack_files",
+          "allowed_action_refs_resolve_to_action_catalog_when_present",
+          "authority_boundary_forbids_domain_truth_memory_quality_and_promotion_writes"
+        ]
+      },
+      "runtime_enforced_boundary": {
+        "opl_10_principle_refs": [
+          "opl10:codex_cli_first_class_executor",
+          "opl10:stage_led_execution",
+          "opl10:declarative_domain_pack",
+          "opl10:explicit_prompt_tools_knowledge",
+          "opl10:refs_only_domain_truth_boundary",
+          "opl10:receipted_handoff",
+          "opl10:independent_ai_review_gate",
+          "opl10:runtime_enforced_no_forbidden_writes",
+          "opl10:generated_surfaces_from_contracts",
+          "opl10:blockers_before_quality_or_promotion_claims"
+        ],
+        "codex_first": true,
+        "selected_executor_must_match_binding": true,
+        "stage_attempt_ledger_required": true,
+        "receipt_refs_required": true,
+        "independent_ai_review_required_before_promotion": true,
+        "no_shared_context_review_required": true,
+        "generated_surface_owner": "one-person-lab",
+        "domain_truth_owner": "opl-meta-agent",
+        "can_write_domain_truth": false,
+        "can_write_memory_body": false,
+        "can_mutate_target_domain_artifact_body": false,
+        "can_authorize_quality_or_export": false,
+        "can_promote_default_agent_without_gate": false,
+        "suite_pass_claims_domain_ready": false
+      },
+      "hard_blocker_refs": [
+        "blocker:missing_prompt_ref",
+        "blocker:missing_tool_or_skill_ref",
+        "blocker:missing_knowledge_or_memory_ref",
+        "blocker:missing_quality_gate_ref",
+        "blocker:missing_expected_receipt_ref",
+        "blocker:forbidden_domain_truth_or_memory_write",
+        "blocker:quality_or_promotion_claim_without_independent_ai_review",
+        "blocker:contract_completeness_claimed_as_quality_verdict"
+      ]
     },
     {
       "stage_id": "baseline-run",
@@ -365,7 +799,94 @@
       "authority_boundary": {
         "domain_truth_owner": "opl-meta-agent",
         "opl_role": "projection_only"
-      }
+      },
+      "selected_executor": "codex_cli",
+      "executor_binding": {
+        "binding_kind": "codex_cli_first_class_stage_executor",
+        "executor_ref": "executor:codex-cli",
+        "executor_owner": "OPL Framework",
+        "launch_surface_owner": "one-person-lab",
+        "domain_pack_owner": "opl-meta-agent",
+        "adapter_required": false,
+        "non_codex_executor_requires_explicit_adapter": true,
+        "codex_first_expert_judgment_required": true
+      },
+      "requires": [
+        "stage:baseline-run",
+        "prompt-ref:agent/prompts/baseline-run.md",
+        "skill-ref:agent/skills/agent-baseline-build.md",
+        "knowledge-ref:agent/knowledge/opl-boundary-policy.md",
+        "knowledge-ref:agent/knowledge/project-maturity-signals.md",
+        "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
+        "action-ref:build-agent-baseline",
+        "runtime-ref:stage-attempt-ledger",
+        "runtime-ref:generated-interface-bundle"
+      ],
+      "ensures": [
+        "stage-attempt-receipt-ref:baseline-run",
+        "executor-receipt-ref:baseline-run/codex-cli",
+        "no-forbidden-write-proof-ref:baseline-run",
+        "independent-ai-review-ref:baseline-run",
+        "output-ref:trajectory_refs",
+        "output-ref:receipt_refs",
+        "output-ref:failure_taxonomy_refs"
+      ],
+      "expected_receipt_refs": [
+        "stage-attempt-receipt-ref:baseline-run",
+        "executor-receipt-ref:baseline-run/codex-cli",
+        "boundary-receipt-ref:baseline-run/refs-only",
+        "no-forbidden-write-proof-ref:baseline-run",
+        "independent-ai-review-ref:baseline-run"
+      ],
+      "verified_static_core": {
+        "status": "required_before_launch",
+        "checks": [
+          "prompt_refs_resolve_to_domain_pack_files",
+          "skill_refs_resolve_to_domain_pack_files",
+          "knowledge_refs_resolve_to_domain_pack_files",
+          "quality_gate_refs_resolve_to_domain_pack_files",
+          "allowed_action_refs_resolve_to_action_catalog_when_present",
+          "authority_boundary_forbids_domain_truth_memory_quality_and_promotion_writes"
+        ]
+      },
+      "runtime_enforced_boundary": {
+        "opl_10_principle_refs": [
+          "opl10:codex_cli_first_class_executor",
+          "opl10:stage_led_execution",
+          "opl10:declarative_domain_pack",
+          "opl10:explicit_prompt_tools_knowledge",
+          "opl10:refs_only_domain_truth_boundary",
+          "opl10:receipted_handoff",
+          "opl10:independent_ai_review_gate",
+          "opl10:runtime_enforced_no_forbidden_writes",
+          "opl10:generated_surfaces_from_contracts",
+          "opl10:blockers_before_quality_or_promotion_claims"
+        ],
+        "codex_first": true,
+        "selected_executor_must_match_binding": true,
+        "stage_attempt_ledger_required": true,
+        "receipt_refs_required": true,
+        "independent_ai_review_required_before_promotion": true,
+        "no_shared_context_review_required": true,
+        "generated_surface_owner": "one-person-lab",
+        "domain_truth_owner": "opl-meta-agent",
+        "can_write_domain_truth": false,
+        "can_write_memory_body": false,
+        "can_mutate_target_domain_artifact_body": false,
+        "can_authorize_quality_or_export": false,
+        "can_promote_default_agent_without_gate": false,
+        "suite_pass_claims_domain_ready": false
+      },
+      "hard_blocker_refs": [
+        "blocker:missing_prompt_ref",
+        "blocker:missing_tool_or_skill_ref",
+        "blocker:missing_knowledge_or_memory_ref",
+        "blocker:missing_quality_gate_ref",
+        "blocker:missing_expected_receipt_ref",
+        "blocker:forbidden_domain_truth_or_memory_write",
+        "blocker:quality_or_promotion_claim_without_independent_ai_review",
+        "blocker:contract_completeness_claimed_as_quality_verdict"
+      ]
     },
     {
       "stage_id": "external-agent-takeover",
@@ -442,7 +963,97 @@
         "domain_truth_owner": "opl-meta-agent",
         "target_domain_truth_owner_preserved": true,
         "opl_role": "projection_only"
-      }
+      },
+      "selected_executor": "codex_cli",
+      "executor_binding": {
+        "binding_kind": "codex_cli_first_class_stage_executor",
+        "executor_ref": "executor:codex-cli",
+        "executor_owner": "OPL Framework",
+        "launch_surface_owner": "one-person-lab",
+        "domain_pack_owner": "opl-meta-agent",
+        "adapter_required": false,
+        "non_codex_executor_requires_explicit_adapter": true,
+        "codex_first_expert_judgment_required": true
+      },
+      "requires": [
+        "stage:external-agent-takeover",
+        "prompt-ref:agent/prompts/external-agent-takeover.md",
+        "skill-ref:agent/skills/external-suite-improvement.md",
+        "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
+        "knowledge-ref:agent/knowledge/opl-boundary-policy.md",
+        "knowledge-ref:agent/knowledge/project-maturity-signals.md",
+        "quality-gate-ref:agent/quality_gates/takeover.md",
+        "quality-gate-ref:agent/quality_gates/external-suite-self-evolution.md",
+        "action-ref:takeover-external-agent-test",
+        "runtime-ref:stage-attempt-ledger",
+        "runtime-ref:generated-interface-bundle"
+      ],
+      "ensures": [
+        "stage-attempt-receipt-ref:external-agent-takeover",
+        "executor-receipt-ref:external-agent-takeover/codex-cli",
+        "no-forbidden-write-proof-ref:external-agent-takeover",
+        "independent-ai-review-ref:external-agent-takeover",
+        "output-ref:agent_lab_external_suite_ref",
+        "output-ref:testing_takeover_receipt_ref",
+        "output-ref:gated_self_evolution_candidate_ref",
+        "output-ref:mechanism_patch_proposal_ref"
+      ],
+      "expected_receipt_refs": [
+        "stage-attempt-receipt-ref:external-agent-takeover",
+        "executor-receipt-ref:external-agent-takeover/codex-cli",
+        "boundary-receipt-ref:external-agent-takeover/refs-only",
+        "no-forbidden-write-proof-ref:external-agent-takeover",
+        "independent-ai-review-ref:external-agent-takeover"
+      ],
+      "verified_static_core": {
+        "status": "required_before_launch",
+        "checks": [
+          "prompt_refs_resolve_to_domain_pack_files",
+          "skill_refs_resolve_to_domain_pack_files",
+          "knowledge_refs_resolve_to_domain_pack_files",
+          "quality_gate_refs_resolve_to_domain_pack_files",
+          "allowed_action_refs_resolve_to_action_catalog_when_present",
+          "authority_boundary_forbids_domain_truth_memory_quality_and_promotion_writes"
+        ]
+      },
+      "runtime_enforced_boundary": {
+        "opl_10_principle_refs": [
+          "opl10:codex_cli_first_class_executor",
+          "opl10:stage_led_execution",
+          "opl10:declarative_domain_pack",
+          "opl10:explicit_prompt_tools_knowledge",
+          "opl10:refs_only_domain_truth_boundary",
+          "opl10:receipted_handoff",
+          "opl10:independent_ai_review_gate",
+          "opl10:runtime_enforced_no_forbidden_writes",
+          "opl10:generated_surfaces_from_contracts",
+          "opl10:blockers_before_quality_or_promotion_claims"
+        ],
+        "codex_first": true,
+        "selected_executor_must_match_binding": true,
+        "stage_attempt_ledger_required": true,
+        "receipt_refs_required": true,
+        "independent_ai_review_required_before_promotion": true,
+        "no_shared_context_review_required": true,
+        "generated_surface_owner": "one-person-lab",
+        "domain_truth_owner": "opl-meta-agent",
+        "can_write_domain_truth": false,
+        "can_write_memory_body": false,
+        "can_mutate_target_domain_artifact_body": false,
+        "can_authorize_quality_or_export": false,
+        "can_promote_default_agent_without_gate": false,
+        "suite_pass_claims_domain_ready": false
+      },
+      "hard_blocker_refs": [
+        "blocker:missing_prompt_ref",
+        "blocker:missing_tool_or_skill_ref",
+        "blocker:missing_knowledge_or_memory_ref",
+        "blocker:missing_quality_gate_ref",
+        "blocker:missing_expected_receipt_ref",
+        "blocker:forbidden_domain_truth_or_memory_write",
+        "blocker:quality_or_promotion_claim_without_independent_ai_review",
+        "blocker:contract_completeness_claimed_as_quality_verdict"
+      ]
     },
     {
       "stage_id": "optimizer-iteration",
@@ -509,7 +1120,99 @@
       "authority_boundary": {
         "domain_truth_owner": "opl-meta-agent",
         "opl_role": "projection_only"
-      }
+      },
+      "selected_executor": "codex_cli",
+      "executor_binding": {
+        "binding_kind": "codex_cli_first_class_stage_executor",
+        "executor_ref": "executor:codex-cli",
+        "executor_owner": "OPL Framework",
+        "launch_surface_owner": "one-person-lab",
+        "domain_pack_owner": "opl-meta-agent",
+        "adapter_required": false,
+        "non_codex_executor_requires_explicit_adapter": true,
+        "codex_first_expert_judgment_required": true
+      },
+      "requires": [
+        "stage:optimizer-iteration",
+        "prompt-ref:agent/prompts/optimizer-iteration.md",
+        "skill-ref:agent/skills/external-suite-improvement.md",
+        "knowledge-ref:agent/knowledge/transferable-agent-practices.md",
+        "knowledge-ref:agent/knowledge/project-maturity-signals.md",
+        "quality-gate-ref:agent/quality_gates/external-suite-self-evolution.md",
+        "quality-gate-ref:agent/quality_gates/mechanism-patch-adoption.md",
+        "action-ref:improve-from-external-agent-lab-suite",
+        "runtime-ref:stage-attempt-ledger",
+        "runtime-ref:generated-interface-bundle"
+      ],
+      "ensures": [
+        "stage-attempt-receipt-ref:optimizer-iteration",
+        "executor-receipt-ref:optimizer-iteration/codex-cli",
+        "no-forbidden-write-proof-ref:optimizer-iteration",
+        "independent-ai-review-ref:optimizer-iteration",
+        "output-ref:improvement_candidate_refs",
+        "output-ref:target_capability_improvement_candidate_refs",
+        "output-ref:mechanism_patch_proposal_refs",
+        "output-ref:developer_patch_work_order_refs",
+        "output-ref:target_agent_version_receipt_refs",
+        "output-ref:candidate_branch_refs",
+        "output-ref:regression_result_refs"
+      ],
+      "expected_receipt_refs": [
+        "stage-attempt-receipt-ref:optimizer-iteration",
+        "executor-receipt-ref:optimizer-iteration/codex-cli",
+        "boundary-receipt-ref:optimizer-iteration/refs-only",
+        "no-forbidden-write-proof-ref:optimizer-iteration",
+        "independent-ai-review-ref:optimizer-iteration"
+      ],
+      "verified_static_core": {
+        "status": "required_before_launch",
+        "checks": [
+          "prompt_refs_resolve_to_domain_pack_files",
+          "skill_refs_resolve_to_domain_pack_files",
+          "knowledge_refs_resolve_to_domain_pack_files",
+          "quality_gate_refs_resolve_to_domain_pack_files",
+          "allowed_action_refs_resolve_to_action_catalog_when_present",
+          "authority_boundary_forbids_domain_truth_memory_quality_and_promotion_writes"
+        ]
+      },
+      "runtime_enforced_boundary": {
+        "opl_10_principle_refs": [
+          "opl10:codex_cli_first_class_executor",
+          "opl10:stage_led_execution",
+          "opl10:declarative_domain_pack",
+          "opl10:explicit_prompt_tools_knowledge",
+          "opl10:refs_only_domain_truth_boundary",
+          "opl10:receipted_handoff",
+          "opl10:independent_ai_review_gate",
+          "opl10:runtime_enforced_no_forbidden_writes",
+          "opl10:generated_surfaces_from_contracts",
+          "opl10:blockers_before_quality_or_promotion_claims"
+        ],
+        "codex_first": true,
+        "selected_executor_must_match_binding": true,
+        "stage_attempt_ledger_required": true,
+        "receipt_refs_required": true,
+        "independent_ai_review_required_before_promotion": true,
+        "no_shared_context_review_required": true,
+        "generated_surface_owner": "one-person-lab",
+        "domain_truth_owner": "opl-meta-agent",
+        "can_write_domain_truth": false,
+        "can_write_memory_body": false,
+        "can_mutate_target_domain_artifact_body": false,
+        "can_authorize_quality_or_export": false,
+        "can_promote_default_agent_without_gate": false,
+        "suite_pass_claims_domain_ready": false
+      },
+      "hard_blocker_refs": [
+        "blocker:missing_prompt_ref",
+        "blocker:missing_tool_or_skill_ref",
+        "blocker:missing_knowledge_or_memory_ref",
+        "blocker:missing_quality_gate_ref",
+        "blocker:missing_expected_receipt_ref",
+        "blocker:forbidden_domain_truth_or_memory_write",
+        "blocker:quality_or_promotion_claim_without_independent_ai_review",
+        "blocker:contract_completeness_claimed_as_quality_verdict"
+      ]
     },
     {
       "stage_id": "baseline-delivery",
@@ -572,7 +1275,95 @@
       "authority_boundary": {
         "domain_truth_owner": "opl-meta-agent",
         "opl_role": "projection_only"
-      }
+      },
+      "selected_executor": "codex_cli",
+      "executor_binding": {
+        "binding_kind": "codex_cli_first_class_stage_executor",
+        "executor_ref": "executor:codex-cli",
+        "executor_owner": "OPL Framework",
+        "launch_surface_owner": "one-person-lab",
+        "domain_pack_owner": "opl-meta-agent",
+        "adapter_required": false,
+        "non_codex_executor_requires_explicit_adapter": true,
+        "codex_first_expert_judgment_required": true
+      },
+      "requires": [
+        "stage:baseline-delivery",
+        "prompt-ref:agent/prompts/baseline-delivery.md",
+        "skill-ref:agent/skills/agent-baseline-build.md",
+        "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
+        "knowledge-ref:agent/knowledge/opl-boundary-policy.md",
+        "knowledge-ref:agent/knowledge/project-maturity-signals.md",
+        "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
+        "action-ref:build-agent-baseline",
+        "runtime-ref:stage-attempt-ledger",
+        "runtime-ref:generated-interface-bundle"
+      ],
+      "ensures": [
+        "stage-attempt-receipt-ref:baseline-delivery",
+        "executor-receipt-ref:baseline-delivery/codex-cli",
+        "no-forbidden-write-proof-ref:baseline-delivery",
+        "independent-ai-review-ref:baseline-delivery",
+        "output-ref:baseline_agent_package_ref",
+        "output-ref:delivery_receipt_ref",
+        "output-ref:operator_runbook_ref"
+      ],
+      "expected_receipt_refs": [
+        "stage-attempt-receipt-ref:baseline-delivery",
+        "executor-receipt-ref:baseline-delivery/codex-cli",
+        "boundary-receipt-ref:baseline-delivery/refs-only",
+        "no-forbidden-write-proof-ref:baseline-delivery",
+        "independent-ai-review-ref:baseline-delivery"
+      ],
+      "verified_static_core": {
+        "status": "required_before_launch",
+        "checks": [
+          "prompt_refs_resolve_to_domain_pack_files",
+          "skill_refs_resolve_to_domain_pack_files",
+          "knowledge_refs_resolve_to_domain_pack_files",
+          "quality_gate_refs_resolve_to_domain_pack_files",
+          "allowed_action_refs_resolve_to_action_catalog_when_present",
+          "authority_boundary_forbids_domain_truth_memory_quality_and_promotion_writes"
+        ]
+      },
+      "runtime_enforced_boundary": {
+        "opl_10_principle_refs": [
+          "opl10:codex_cli_first_class_executor",
+          "opl10:stage_led_execution",
+          "opl10:declarative_domain_pack",
+          "opl10:explicit_prompt_tools_knowledge",
+          "opl10:refs_only_domain_truth_boundary",
+          "opl10:receipted_handoff",
+          "opl10:independent_ai_review_gate",
+          "opl10:runtime_enforced_no_forbidden_writes",
+          "opl10:generated_surfaces_from_contracts",
+          "opl10:blockers_before_quality_or_promotion_claims"
+        ],
+        "codex_first": true,
+        "selected_executor_must_match_binding": true,
+        "stage_attempt_ledger_required": true,
+        "receipt_refs_required": true,
+        "independent_ai_review_required_before_promotion": true,
+        "no_shared_context_review_required": true,
+        "generated_surface_owner": "one-person-lab",
+        "domain_truth_owner": "opl-meta-agent",
+        "can_write_domain_truth": false,
+        "can_write_memory_body": false,
+        "can_mutate_target_domain_artifact_body": false,
+        "can_authorize_quality_or_export": false,
+        "can_promote_default_agent_without_gate": false,
+        "suite_pass_claims_domain_ready": false
+      },
+      "hard_blocker_refs": [
+        "blocker:missing_prompt_ref",
+        "blocker:missing_tool_or_skill_ref",
+        "blocker:missing_knowledge_or_memory_ref",
+        "blocker:missing_quality_gate_ref",
+        "blocker:missing_expected_receipt_ref",
+        "blocker:forbidden_domain_truth_or_memory_write",
+        "blocker:quality_or_promotion_claim_without_independent_ai_review",
+        "blocker:contract_completeness_claimed_as_quality_verdict"
+      ]
     },
     {
       "stage_id": "online-learning",
@@ -636,7 +1427,96 @@
       "authority_boundary": {
         "domain_truth_owner": "opl-meta-agent",
         "opl_role": "projection_only"
-      }
+      },
+      "selected_executor": "codex_cli",
+      "executor_binding": {
+        "binding_kind": "codex_cli_first_class_stage_executor",
+        "executor_ref": "executor:codex-cli",
+        "executor_owner": "OPL Framework",
+        "launch_surface_owner": "one-person-lab",
+        "domain_pack_owner": "opl-meta-agent",
+        "adapter_required": false,
+        "non_codex_executor_requires_explicit_adapter": true,
+        "codex_first_expert_judgment_required": true
+      },
+      "requires": [
+        "stage:online-learning",
+        "prompt-ref:agent/prompts/online-learning.md",
+        "skill-ref:agent/skills/external-suite-improvement.md",
+        "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
+        "knowledge-ref:agent/knowledge/opl-boundary-policy.md",
+        "knowledge-ref:agent/knowledge/transferable-agent-practices.md",
+        "quality-gate-ref:agent/quality_gates/mechanism-patch-adoption.md",
+        "action-ref:generate-mechanism-patch-proposal",
+        "runtime-ref:stage-attempt-ledger",
+        "runtime-ref:generated-interface-bundle"
+      ],
+      "ensures": [
+        "stage-attempt-receipt-ref:online-learning",
+        "executor-receipt-ref:online-learning/codex-cli",
+        "no-forbidden-write-proof-ref:online-learning",
+        "independent-ai-review-ref:online-learning",
+        "output-ref:online_learning_dataset_refs",
+        "output-ref:human_review_refs",
+        "output-ref:mechanism_patch_proposal_refs",
+        "output-ref:future_candidate_refs"
+      ],
+      "expected_receipt_refs": [
+        "stage-attempt-receipt-ref:online-learning",
+        "executor-receipt-ref:online-learning/codex-cli",
+        "boundary-receipt-ref:online-learning/refs-only",
+        "no-forbidden-write-proof-ref:online-learning",
+        "independent-ai-review-ref:online-learning"
+      ],
+      "verified_static_core": {
+        "status": "required_before_launch",
+        "checks": [
+          "prompt_refs_resolve_to_domain_pack_files",
+          "skill_refs_resolve_to_domain_pack_files",
+          "knowledge_refs_resolve_to_domain_pack_files",
+          "quality_gate_refs_resolve_to_domain_pack_files",
+          "allowed_action_refs_resolve_to_action_catalog_when_present",
+          "authority_boundary_forbids_domain_truth_memory_quality_and_promotion_writes"
+        ]
+      },
+      "runtime_enforced_boundary": {
+        "opl_10_principle_refs": [
+          "opl10:codex_cli_first_class_executor",
+          "opl10:stage_led_execution",
+          "opl10:declarative_domain_pack",
+          "opl10:explicit_prompt_tools_knowledge",
+          "opl10:refs_only_domain_truth_boundary",
+          "opl10:receipted_handoff",
+          "opl10:independent_ai_review_gate",
+          "opl10:runtime_enforced_no_forbidden_writes",
+          "opl10:generated_surfaces_from_contracts",
+          "opl10:blockers_before_quality_or_promotion_claims"
+        ],
+        "codex_first": true,
+        "selected_executor_must_match_binding": true,
+        "stage_attempt_ledger_required": true,
+        "receipt_refs_required": true,
+        "independent_ai_review_required_before_promotion": true,
+        "no_shared_context_review_required": true,
+        "generated_surface_owner": "one-person-lab",
+        "domain_truth_owner": "opl-meta-agent",
+        "can_write_domain_truth": false,
+        "can_write_memory_body": false,
+        "can_mutate_target_domain_artifact_body": false,
+        "can_authorize_quality_or_export": false,
+        "can_promote_default_agent_without_gate": false,
+        "suite_pass_claims_domain_ready": false
+      },
+      "hard_blocker_refs": [
+        "blocker:missing_prompt_ref",
+        "blocker:missing_tool_or_skill_ref",
+        "blocker:missing_knowledge_or_memory_ref",
+        "blocker:missing_quality_gate_ref",
+        "blocker:missing_expected_receipt_ref",
+        "blocker:forbidden_domain_truth_or_memory_write",
+        "blocker:quality_or_promotion_claim_without_independent_ai_review",
+        "blocker:contract_completeness_claimed_as_quality_verdict"
+      ]
     }
   ],
   "opl_runtime_dependency": {
