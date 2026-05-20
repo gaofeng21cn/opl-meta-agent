@@ -8,6 +8,19 @@ import { fileURLToPath } from 'node:url';
 import type { JsonObject } from '../scripts/lib/domain-pack.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const targetPatchLoopMachineRefFields = [
+  'blocked_suite_result_ref',
+  'developer_patch_work_order_ref',
+  'patch_traceability_matrix_ref',
+  'target_repo_verification_refs',
+  'target_runtime_read_model_consumption_ref',
+  'workspace_environment_proof_ref',
+  'no_forbidden_write_proof_ref',
+  'target_owner_receipt_or_typed_blocker_ref',
+  'patch_absorption_ref',
+  'worktree_cleanup_ref',
+  'agent_lab_re_evaluation_ref',
+];
 
 function writeJson(filePath: string, payload: unknown): void {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
@@ -16,6 +29,32 @@ function writeJson(filePath: string, payload: unknown): void {
 
 function readJson(filePath: string): JsonObject {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+function assertTargetPatchLoopMachineRefs(refs: JsonObject, expected: {
+  blockedSuiteResultRef: string;
+  developerPatchWorkOrderRef: string;
+  requiredVerificationRefs: string[];
+}): void {
+  targetPatchLoopMachineRefFields.forEach((field) => {
+    assert.ok(field in refs, `machine_closeout_refs.${field} should be present`);
+  });
+  assert.equal(refs.blocked_suite_result_ref, expected.blockedSuiteResultRef);
+  assert.equal(refs.developer_patch_work_order_ref, expected.developerPatchWorkOrderRef);
+  assert.ok(String(refs.patch_traceability_matrix_ref).endsWith('#/patch_traceability_matrix'));
+  assert.deepEqual(refs.target_repo_verification_refs, expected.requiredVerificationRefs);
+  [
+    'target_runtime_read_model_consumption_ref',
+    'workspace_environment_proof_ref',
+    'no_forbidden_write_proof_ref',
+    'target_owner_receipt_or_typed_blocker_ref',
+    'patch_absorption_ref',
+    'worktree_cleanup_ref',
+    'agent_lab_re_evaluation_ref',
+  ].forEach((field) => {
+    assert.equal(typeof refs[field], 'string', `machine_closeout_refs.${field} should be a string ref`);
+    assert.ok(String(refs[field]).length > 0, `machine_closeout_refs.${field} should not be empty`);
+  });
 }
 
 function writeFakeOplBin(filePath: string): void {
@@ -327,6 +366,15 @@ test('agent:evidence generates domain Agent Lab suite and proposal artifacts fro
     assert.ok(workOrder.ahe_developer_work_order.targeted_fix.includes('agent:evidence-tail/med-autoscience/no-forbidden-write-proof'));
     assert.match(workOrder.ahe_developer_work_order.predicted_impact, /no-forbidden-write proof refs/);
     assert.ok(workOrder.verification_command_refs.includes('scripts/verify.sh'));
+    assertTargetPatchLoopMachineRefs(workOrder.machine_closeout_refs, {
+      blockedSuiteResultRef: workOrder.source_agent_lab_result_ref,
+      developerPatchWorkOrderRef: workOrder.work_order_id,
+      requiredVerificationRefs: workOrder.required_verification_refs,
+    });
+    assert.equal(
+      workOrder.machine_closeout_refs.target_owner_receipt_or_typed_blocker_ref,
+      `target-owner-receipt-or-typed-blocker:med-autoscience/${workOrder.work_order_id}`,
+    );
 
     const candidate = readJson(path.join(outputDir, 'target-capability-improvement-candidate.json'));
     assert.equal(candidate.status, 'candidate_recorded_requires_target_owner_gate');
@@ -412,6 +460,11 @@ test('agent:evidence emits typed blocker and no delivery receipt when reviewer e
     assert.match(typedBlocker.ahe_developer_work_order.root_cause, /reviewer evaluation is missing/);
     assert.match(typedBlocker.ahe_developer_work_order.predicted_impact, /Blocks delivery receipt/);
     assert.ok(typedBlocker.verification_command_refs.includes('scripts/verify.sh'));
+    assertTargetPatchLoopMachineRefs(typedBlocker.machine_closeout_refs, {
+      blockedSuiteResultRef: typedBlocker.blocked_suite_result_ref,
+      developerPatchWorkOrderRef: typedBlocker.work_order_ref,
+      requiredVerificationRefs: typedBlocker.required_verification_refs,
+    });
 
     const workOrder = readJson(path.join(outputDir, 'developer-patch-work-order.json'));
     assert.equal(workOrder.status, 'blocked_missing_ai_reviewer_evaluation');
@@ -420,6 +473,11 @@ test('agent:evidence emits typed blocker and no delivery receipt when reviewer e
     assert.ok(workOrder.ahe_developer_work_order.failure_evidence.includes('scripts/verify.sh'));
     assert.equal(workOrder.implementation_controls.target_owner_receipt_or_typed_blocker_required, true);
     assert.ok(workOrder.editable_surface_limits.forbidden_write_surfaces.includes('target quality verdict'));
+    assertTargetPatchLoopMachineRefs(workOrder.machine_closeout_refs, {
+      blockedSuiteResultRef: workOrder.source_agent_lab_result_ref,
+      developerPatchWorkOrderRef: workOrder.work_order_id,
+      requiredVerificationRefs: workOrder.required_verification_refs,
+    });
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }

@@ -57,8 +57,15 @@
       "projection_fields": [
         "developer_patch_work_order_ref",
         "patch_traceability_matrix_ref",
-        "target_workspace_environment_verification_ref",
-        "target_owner_entry_redrive_ref"
+        "blocked_suite_result_ref",
+        "target_repo_verification_refs",
+        "target_runtime_read_model_consumption_ref",
+        "workspace_environment_proof_ref",
+        "no_forbidden_write_proof_ref",
+        "target_owner_receipt_or_typed_blocker_ref",
+        "patch_absorption_ref",
+        "worktree_cleanup_ref",
+        "agent_lab_re_evaluation_ref"
       ],
       "write_boundary": "display_refs_only"
     },
@@ -107,7 +114,23 @@
       "agent_lab_result_ref",
       "developer_patch_work_order_ref",
       "mechanism_patch_proposal_ref",
+      "patch_absorption_ref",
+      "worktree_cleanup_ref",
+      "agent_lab_re_evaluation_ref",
       "target_agent_delivery_receipt_refs"
+    ],
+    "developer_work_order_machine_ref_fields": [
+      "blocked_suite_result_ref",
+      "developer_patch_work_order_ref",
+      "patch_traceability_matrix_ref",
+      "target_repo_verification_refs",
+      "target_runtime_read_model_consumption_ref",
+      "workspace_environment_proof_ref",
+      "no_forbidden_write_proof_ref",
+      "target_owner_receipt_or_typed_blocker_ref",
+      "patch_absorption_ref",
+      "worktree_cleanup_ref",
+      "agent_lab_re_evaluation_ref"
     ],
     "live_rendering_status": "not_claimed_by_contract",
     "verified_by_refs": [

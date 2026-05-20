@@ -697,6 +697,40 @@ function buildCapabilityCandidate({
   };
 }
 
+function buildTargetPatchLoopMachineRefs({
+  targetAgent,
+  suiteResult,
+  workOrderId,
+  requiredVerificationRefs,
+  noForbiddenWriteProofRefs,
+}: {
+  targetAgent: TargetAgentIdentity;
+  suiteResult: JsonObject;
+  workOrderId: string;
+  requiredVerificationRefs: string[];
+  noForbiddenWriteProofRefs: string[];
+}): JsonObject {
+  const suiteResultRef = stringValue(suiteResult.result_id) ?? stableId('agent_lab_result', [workOrderId]);
+  return {
+    blocked_suite_result_ref: suiteResultRef,
+    developer_patch_work_order_ref: workOrderId,
+    patch_traceability_matrix_ref: `${workOrderId}#/patch_traceability_matrix`,
+    target_repo_verification_refs: requiredVerificationRefs,
+    target_runtime_read_model_consumption_ref:
+      `target-runtime-read-model-consumption:${targetAgent.domainId}/${workOrderId}`,
+    workspace_environment_proof_ref:
+      `workspace-environment-proof:${targetAgent.domainId}/${workOrderId}`,
+    no_forbidden_write_proof_ref: noForbiddenWriteProofRefs[0]
+      ?? `no-forbidden-write:${targetAgent.domainId}/${workOrderId}`,
+    target_owner_receipt_or_typed_blocker_ref:
+      `target-owner-receipt-or-typed-blocker:${targetAgent.domainId}/${workOrderId}`,
+    patch_absorption_ref: `patch-absorption:${targetAgent.domainId}/${workOrderId}`,
+    worktree_cleanup_ref: `worktree-cleanup:${targetAgent.domainId}/${workOrderId}`,
+    agent_lab_re_evaluation_ref:
+      `agent-lab-re-evaluation:${targetAgent.domainId}/${suiteResultRef}/${workOrderId}`,
+  };
+}
+
 function buildDeveloperWorkOrder({
   contracts,
   suite,
@@ -713,6 +747,11 @@ function buildDeveloperWorkOrder({
   targetAgent: TargetAgentIdentity;
 }): JsonObject {
   const verificationCommandRefs = verificationRefs(contracts.productionAcceptance);
+  const workOrderId = stableId('oma_agent_developer_work_order', [
+    suite.suite_id,
+    suiteResult.result_id,
+    capabilityCandidate.candidate_id,
+  ]);
   const sourceFailureRefs = unique([
     ...productionAcceptanceEvidenceRefs(contracts.productionAcceptance),
     ...verificationCommandRefs,
@@ -727,11 +766,7 @@ function buildDeveloperWorkOrder({
   return {
     surface_kind: 'opl_meta_agent_target_developer_patch_work_order',
     version: 'opl-meta-agent.target-developer-patch-work-order.v1',
-    work_order_id: stableId('oma_agent_developer_work_order', [
-      suite.suite_id,
-      suiteResult.result_id,
-      capabilityCandidate.candidate_id,
-    ]),
+    work_order_id: workOrderId,
     status: capabilityCandidate.ai_reviewer_status === 'present'
       ? 'ready_for_target_agent_source_patch_proposal'
       : 'blocked_missing_ai_reviewer_evaluation',
@@ -783,6 +818,13 @@ function buildDeveloperWorkOrder({
       forbidden_write_surfaces: forbiddenWriteSurfaces(contracts),
     },
     no_forbidden_write: capabilityCandidate.no_forbidden_write,
+    machine_closeout_refs: buildTargetPatchLoopMachineRefs({
+      targetAgent,
+      suiteResult,
+      workOrderId,
+      requiredVerificationRefs: verificationCommandRefs,
+      noForbiddenWriteProofRefs: textList(capabilityCandidate.no_forbidden_write?.proof_refs),
+    }),
     verification_command_refs: verificationCommandRefs,
   };
 }
@@ -871,6 +913,7 @@ function buildTypedBlocker({
     blocked_reason: 'independent_ai_reviewer_attempt_required_before_mechanism_patch_proposal_or_delivery_receipt',
     next_owner: 'opl-meta-agent',
     target_owner_route: targetOwnerRoute(contracts),
+    blocked_suite_result_ref: workOrder.source_agent_lab_result_ref,
     work_order_ref: workOrder.work_order_id,
     required_input_refs: ['--ai-reviewer-evaluation <json>'],
     required_source_refs: [
@@ -883,6 +926,7 @@ function buildTypedBlocker({
     rollback_version_refs: workOrder.rollback_version_refs,
     owner_route_refs: workOrder.owner_route_refs,
     ahe_developer_work_order: workOrder.ahe_developer_work_order,
+    machine_closeout_refs: workOrder.machine_closeout_refs,
     required_ai_reviewer_independence_fields: [
       'no_shared_context=true',
       'independent_attempt=true',

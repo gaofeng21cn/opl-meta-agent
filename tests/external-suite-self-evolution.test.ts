@@ -10,6 +10,19 @@ import type { JsonObject } from '../scripts/lib/domain-pack.ts';
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const oplBin = process.env.OPL_BIN
   ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
+const targetPatchLoopMachineRefFields = [
+  'blocked_suite_result_ref',
+  'developer_patch_work_order_ref',
+  'patch_traceability_matrix_ref',
+  'target_repo_verification_refs',
+  'target_runtime_read_model_consumption_ref',
+  'workspace_environment_proof_ref',
+  'no_forbidden_write_proof_ref',
+  'target_owner_receipt_or_typed_blocker_ref',
+  'patch_absorption_ref',
+  'worktree_cleanup_ref',
+  'agent_lab_re_evaluation_ref',
+];
 
 function writeJson(filePath: string, payload: unknown): void {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
@@ -18,6 +31,32 @@ function writeJson(filePath: string, payload: unknown): void {
 
 function readJson(filePath: string): JsonObject {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+function assertTargetPatchLoopMachineRefs(refs: JsonObject, expected: {
+  blockedSuiteResultRef: string;
+  developerPatchWorkOrderRef: string;
+  requiredVerificationRefs: string[];
+}): void {
+  targetPatchLoopMachineRefFields.forEach((field) => {
+    assert.ok(field in refs, `machine_closeout_refs.${field} should be present`);
+  });
+  assert.equal(refs.blocked_suite_result_ref, expected.blockedSuiteResultRef);
+  assert.equal(refs.developer_patch_work_order_ref, expected.developerPatchWorkOrderRef);
+  assert.ok(String(refs.patch_traceability_matrix_ref).endsWith('#/patch_traceability_matrix'));
+  assert.deepEqual(refs.target_repo_verification_refs, expected.requiredVerificationRefs);
+  [
+    'target_runtime_read_model_consumption_ref',
+    'workspace_environment_proof_ref',
+    'no_forbidden_write_proof_ref',
+    'target_owner_receipt_or_typed_blocker_ref',
+    'patch_absorption_ref',
+    'worktree_cleanup_ref',
+    'agent_lab_re_evaluation_ref',
+  ].forEach((field) => {
+    assert.equal(typeof refs[field], 'string', `machine_closeout_refs.${field} should be a string ref`);
+    assert.ok(String(refs[field]).length > 0, `machine_closeout_refs.${field} should not be empty`);
+  });
 }
 
 function writeAiReviewerEvaluation(filePath: string, overrides: JsonObject = {}): JsonObject {
@@ -663,6 +702,15 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     assert.equal(workOrder.version_management.temporary_worktree_cleanup_required, true);
     assert.equal(workOrder.authority_boundary.can_modify_target_agent_source_repo, true);
     assert.equal(workOrder.authority_boundary.can_write_target_domain_truth, false);
+    assertTargetPatchLoopMachineRefs(workOrder.machine_closeout_refs, {
+      blockedSuiteResultRef: workOrder.source_agent_lab_result_ref,
+      developerPatchWorkOrderRef: workOrder.work_order_id,
+      requiredVerificationRefs: workOrder.required_verification_refs,
+    });
+    assert.equal(
+      workOrder.machine_closeout_refs.target_owner_receipt_or_typed_blocker_ref,
+      `target-owner-receipt-or-typed-blocker:med-autoscience/${workOrder.work_order_id}`,
+    );
     assert.ok(
       (workOrder.patch_traceability_matrix as JsonObject[]).some((item) => item.gap_token === 'internal-quality-language-purge'),
     );
@@ -841,6 +889,13 @@ test('target-agent owner receipt Agent Lab suite becomes a no-patch result-consu
     assert.equal(workOrder.authority_boundary.can_modify_target_agent_docs, false);
     assert.equal(workOrder.authority_boundary.can_write_target_domain_truth, false);
     assert.equal(workOrder.authority_boundary.can_authorize_target_domain_quality_or_export, false);
+    assertTargetPatchLoopMachineRefs(workOrder.machine_closeout_refs, {
+      blockedSuiteResultRef: workOrder.source_agent_lab_result_ref,
+      developerPatchWorkOrderRef: workOrder.work_order_id,
+      requiredVerificationRefs: workOrder.required_verification_refs,
+    });
+    assert.match(workOrder.machine_closeout_refs.patch_absorption_ref, /no-source-patch/);
+    assert.match(workOrder.machine_closeout_refs.worktree_cleanup_ref, /no-source-patch/);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }
@@ -907,6 +962,30 @@ test('owner-receipt wording in a standard suite stays target-agent generic', () 
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }
+});
+
+test('workbench and scaleout contracts expose target patch-loop machine refs only', () => {
+  const appProjection = readJson(path.join(repoRoot, 'contracts/app_workbench_projection.json'));
+  const scaleoutEvidence = readJson(path.join(repoRoot, 'contracts/real_target_agent_scaleout_evidence.json'));
+  const developerWorkOrderSection = (appProjection.workbench_sections as JsonObject[]).find((section) =>
+    section.section_id === 'developer_work_order'
+  );
+  const blockedSuiteEvidenceClass = (scaleoutEvidence.required_evidence_classes as JsonObject[]).find((entry) =>
+    entry.evidence_class === 'blocked_suite_to_developer_work_order'
+  );
+
+  assert.ok(developerWorkOrderSection);
+  assert.ok(blockedSuiteEvidenceClass);
+  assert.deepEqual(
+    appProjection.drilldown_readiness_receipt.developer_work_order_machine_ref_fields,
+    targetPatchLoopMachineRefFields,
+  );
+  assert.deepEqual(blockedSuiteEvidenceClass.required_refs, targetPatchLoopMachineRefFields);
+  targetPatchLoopMachineRefFields.forEach((field) => {
+    assert.ok((developerWorkOrderSection.projection_fields as string[]).includes(field));
+  });
+  assert.equal(appProjection.authority_boundary.refs_only, true);
+  assert.equal(scaleoutEvidence.authority_boundary.can_write_target_domain_truth, false);
 });
 
 test('external suite improvement fails closed when AI reviewer evaluation is missing', () => {

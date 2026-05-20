@@ -573,6 +573,44 @@ function mechanismEditableSurfaces(proposedChangeRefs: string[]): string[] {
   );
 }
 
+function buildTargetPatchLoopMachineRefs({
+  targetAgent,
+  suiteResult,
+  workOrderId,
+  requiredVerificationRefs,
+  noForbiddenWriteProofRefs,
+  noPatchRequired,
+}: {
+  targetAgent: TargetAgent;
+  suiteResult: SuiteResult;
+  workOrderId: string;
+  requiredVerificationRefs: string[];
+  noForbiddenWriteProofRefs: string[];
+  noPatchRequired: boolean;
+}): JsonObject {
+  const patchMode = noPatchRequired ? 'no-source-patch' : 'source-patch';
+  return {
+    blocked_suite_result_ref: suiteResult.result_id,
+    developer_patch_work_order_ref: workOrderId,
+    patch_traceability_matrix_ref: `${workOrderId}#/patch_traceability_matrix`,
+    target_repo_verification_refs: requiredVerificationRefs,
+    target_runtime_read_model_consumption_ref:
+      `target-runtime-read-model-consumption:${targetAgent.domain_id}/${workOrderId}/${patchMode}`,
+    workspace_environment_proof_ref:
+      `workspace-environment-proof:${targetAgent.domain_id}/${workOrderId}/${patchMode}`,
+    no_forbidden_write_proof_ref: noForbiddenWriteProofRefs[0]
+      ?? `no-forbidden-write:${targetAgent.domain_id}/${workOrderId}`,
+    target_owner_receipt_or_typed_blocker_ref:
+      `target-owner-receipt-or-typed-blocker:${targetAgent.domain_id}/${workOrderId}`,
+    patch_absorption_ref:
+      `patch-absorption:${targetAgent.domain_id}/${workOrderId}/${patchMode}`,
+    worktree_cleanup_ref:
+      `worktree-cleanup:${targetAgent.domain_id}/${workOrderId}/${patchMode}`,
+    agent_lab_re_evaluation_ref:
+      `agent-lab-re-evaluation:${targetAgent.domain_id}/${suiteResult.result_id}/${workOrderId}`,
+  };
+}
+
 function buildCapabilityCandidate({
   targetAgent,
   suite,
@@ -672,6 +710,12 @@ function buildDeveloperPatchWorkOrder({
   policy: TargetImprovementPolicy;
 }): JsonObject {
   const noPatchRequired = suiteResult.status === 'passed';
+  const workOrderId = stableId('oma_developer_patch_work_order', [
+    targetAgent.domain_id,
+    suite.suite_id,
+    suiteResult.result_id,
+    capabilityCandidate.candidate_id,
+  ]);
   const targetRepoFileHints = unique(capabilityCandidate.patch_traceability_matrix.flatMap((entry) =>
     entry.target_repo_file_hints
   ));
@@ -686,6 +730,9 @@ function buildDeveloperPatchWorkOrder({
         'target_runtime_consumption_verification_receipt',
         'target_workspace_environment_consumption_receipt',
       ]);
+  const noForbiddenWriteProofRefs = noPatchRequired
+    ? ['no_target_domain_truth_write_proof']
+    : ['no_target_domain_truth_write_proof', 'repo_hygiene_no_checkout_venv_proof'];
   const failureEvidence = unique([
     ...capabilityCandidate.failure_taxonomy_refs,
     ...capabilityCandidate.ai_reviewer_evidence.source_refs,
@@ -694,12 +741,7 @@ function buildDeveloperPatchWorkOrder({
   return {
     surface_kind: 'opl_meta_agent_developer_patch_work_order',
     version: 'opl-meta-agent.developer-patch-work-order.v1',
-    work_order_id: stableId('oma_developer_patch_work_order', [
-      targetAgent.domain_id,
-      suite.suite_id,
-      suiteResult.result_id,
-      capabilityCandidate.candidate_id,
-    ]),
+    work_order_id: workOrderId,
     status: noPatchRequired ? 'no_patch_required' : 'ready_for_target_agent_source_patch',
     product_id: 'opl-meta-agent',
     target_agent: capabilityCandidate.target_agent,
@@ -734,14 +776,20 @@ function buildDeveloperPatchWorkOrder({
     ],
     no_forbidden_write_proof: {
       required: true,
-      proof_refs: noPatchRequired
-        ? ['no_target_domain_truth_write_proof']
-        : ['no_target_domain_truth_write_proof', 'repo_hygiene_no_checkout_venv_proof'],
+      proof_refs: noForbiddenWriteProofRefs,
       can_write_target_domain_truth: false,
       can_write_target_domain_memory_body: false,
       can_mutate_target_domain_artifact_body: false,
       can_authorize_target_domain_quality_or_export: false,
     },
+    machine_closeout_refs: buildTargetPatchLoopMachineRefs({
+      targetAgent,
+      suiteResult,
+      workOrderId,
+      requiredVerificationRefs,
+      noForbiddenWriteProofRefs,
+      noPatchRequired,
+    }),
     proposed_change_refs: capabilityCandidate.proposed_change_refs,
     patch_traceability_matrix: noPatchRequired ? [] : capabilityCandidate.patch_traceability_matrix,
     implementation_controls: {
