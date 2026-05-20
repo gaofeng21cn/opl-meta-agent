@@ -8,8 +8,11 @@
     "improve:external-suite": "node --experimental-strip-types scripts/improve-from-agent-lab-suite.ts",
     "agent:evidence": "node --experimental-strip-types scripts/agent-evidence-takeover.ts",
     "takeover:test": "node --experimental-strip-types scripts/takeover-agent.ts",
-    "typecheck": "tsc --noEmit",
-    "test": "node --test tests/*.test.ts"
+    "repo:hygiene": "scripts/repo-hygiene.sh",
+    "repo:hygiene:fix": "scripts/repo-hygiene.sh --fix",
+    "verify": "scripts/verify.sh",
+    "typecheck": "scripts/run-with-repo-temp-env.sh tsc --noEmit",
+    "test": "scripts/run-with-repo-temp-env.sh node --test tests/*.test.ts"
   },
   "license": "Apache-2.0",
   "devDependencies": {
