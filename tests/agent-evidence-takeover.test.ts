@@ -206,6 +206,10 @@ function writeAiReviewerEvaluation(filePath: string): void {
     reviewer_kind: 'ai_reviewer',
     model_or_provider: 'gpt-5.5',
     run_ref: 'run:ai-reviewer/mas/production-evidence-tail',
+    execution_attempt_ref: 'attempt:executor/mas/production-evidence-tail',
+    review_attempt_ref: 'attempt:ai-reviewer/mas/production-evidence-tail',
+    no_shared_context: true,
+    independent_attempt: true,
     critique: 'domain agent production evidence tail still needs owner-route and no-forbidden-write proof materialized as refs.',
     suggestions: [
       'Generate a refs-only Agent Lab suite from the target production acceptance contract.',
@@ -215,6 +219,10 @@ function writeAiReviewerEvaluation(filePath: string): void {
       'contracts/production_acceptance/mas-production-acceptance.json',
       'contracts/generated_surface_handoff.json',
       'contracts/owner_receipt_contract.json',
+    ],
+    direct_evidence_refs: [
+      'contracts/production_acceptance/production-acceptance.json',
+      'contracts/agent_lab_handoff.json',
     ],
     verdict: 'blocked_requires_developer_patch',
     provenance: {
@@ -294,9 +302,14 @@ test('agent:evidence generates domain Agent Lab suite and proposal artifacts fro
       ),
     );
     assert.ok(suite.tasks[0].promotion_gate.no_forbidden_write_proof_refs.includes('no-forbidden-write:med-autoscience/production-evidence-tail'));
+    assert.ok(suite.tasks[0].scorecard.evidence_refs.includes('contracts/agent_lab_handoff.json'));
 
     const workOrder = readJson(path.join(outputDir, 'developer-patch-work-order.json'));
     assert.equal(workOrder.status, 'ready_for_target_agent_source_patch_proposal');
+    assert.equal(workOrder.ai_reviewer_independence.no_shared_context, true);
+    assert.equal(workOrder.ai_reviewer_independence.independent_attempt, true);
+    assert.equal(workOrder.ai_reviewer_independence.execution_attempt_ref, 'attempt:executor/mas/production-evidence-tail');
+    assert.equal(workOrder.ai_reviewer_independence.review_attempt_ref, 'attempt:ai-reviewer/mas/production-evidence-tail');
     assert.equal(workOrder.target_owner_route.domain_ready_requires_owner_receipt_or_typed_blocker, true);
     assert.equal(workOrder.implementation_controls.proposal_only, true);
     assert.equal(workOrder.implementation_controls.refs_only, true);
@@ -307,6 +320,11 @@ test('agent:evidence generates domain Agent Lab suite and proposal artifacts fro
 
     const candidate = readJson(path.join(outputDir, 'target-capability-improvement-candidate.json'));
     assert.equal(candidate.status, 'candidate_recorded_requires_target_owner_gate');
+    assert.equal(candidate.ai_reviewer_independence.no_shared_context, true);
+    assert.deepEqual(candidate.ai_reviewer_evidence.direct_evidence_refs, [
+      'contracts/production_acceptance/production-acceptance.json',
+      'contracts/agent_lab_handoff.json',
+    ]);
     assert.equal(candidate.target_owner_route.quality_or_export_ready_requires_target_owner_gate, true);
     assert.ok(candidate.proposed_change_refs.includes('agent:evidence-tail/med-autoscience/no-forbidden-write-proof'));
     assert.equal(candidate.no_forbidden_write.can_authorize_target_quality_or_export, false);
@@ -368,6 +386,12 @@ test('agent:evidence emits typed blocker and no delivery receipt when reviewer e
 
     const typedBlocker = readJson(path.join(outputDir, 'typed-blocker.json'));
     assert.equal(typedBlocker.status, 'blocked_missing_ai_reviewer_evaluation');
+    assert.equal(
+      typedBlocker.blocked_reason,
+      'independent_ai_reviewer_attempt_required_before_mechanism_patch_proposal_or_delivery_receipt',
+    );
+    assert.ok(typedBlocker.required_ai_reviewer_independence_fields.includes('no_shared_context=true'));
+    assert.ok(typedBlocker.required_ai_reviewer_independence_fields.includes('execution_attempt_ref != review_attempt_ref'));
     assert.equal(typedBlocker.authority_boundary.no_delivery_receipt_signed, true);
     assert.equal(typedBlocker.authority_boundary.can_write_target_domain_truth, false);
     assert.ok(typedBlocker.required_input_refs.includes('--ai-reviewer-evaluation <json>'));

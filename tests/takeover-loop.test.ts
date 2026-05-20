@@ -18,6 +18,10 @@ function writeAiReviewerEvaluation(filePath: string): void {
     reviewer_kind: 'ai_reviewer',
     model_or_provider: 'gpt-5.5',
     run_ref: 'run:ai-reviewer/opl-meta-agent/takeover-fixture',
+    execution_attempt_ref: 'attempt:executor/opl-meta-agent/takeover-fixture',
+    review_attempt_ref: 'attempt:ai-reviewer/opl-meta-agent/takeover-fixture',
+    no_shared_context: true,
+    independent_attempt: true,
     critique: 'The fixture baseline is suitable for takeover testing with explicit source and runbook coverage.',
     suggestions: [
       'Keep takeover fixture source coverage visible in baseline delivery receipts.',
@@ -25,6 +29,10 @@ function writeAiReviewerEvaluation(filePath: string): void {
     source_refs: [
       'review-ref:opl-meta-agent/takeover-fixture/ai-reviewer',
       'evidence-ref:sample-brief-agent/scaffold-validation',
+    ],
+    direct_evidence_refs: [
+      'artifact-ref:takeover-fixture/package',
+      'receipt-ref:takeover-fixture/baseline-delivery',
     ],
     verdict: 'baseline_ready_with_owner_gate',
     provenance: {
