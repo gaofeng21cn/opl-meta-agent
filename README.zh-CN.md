@@ -88,6 +88,7 @@
 - 最小自举入口是 `npm run bootstrap:sample -- --output-dir <dir> --opl-bin <opl> --ai-reviewer-evaluation <reviewer-eval.json>`：生成 `sample-brief-agent`，调用 OPL 脚手架校验，生成 Agent Lab 外部测试套件，运行 `opl agent-lab run --suite`，消费结构化 AI reviewer evaluation，再写入基线回执、后续学习候选和 `mechanism-patch-proposal.json`。
 - 外部接管入口是 `npm run takeover:test -- --agent-dir <existing-agent-dir> --output-dir <dir> --opl-bin <opl>`：读取目标智能体的描述文件和合同，生成接管测试套件，运行 Agent Lab，再写入接管回执、受门控的自进化候选和 `takeover-mechanism-patch-proposal.json`。
 - 统一接口入口是 `opl agents interfaces --repo-dir <this-repo> --json`：OPL 读取本仓标准合同并生成 CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述。
+- MAS evidence takeover 入口是 `npm run mas:evidence -- --mas-repo <mas-repo> --output-dir <dir> --opl-bin <opl> [--ai-reviewer-evaluation <reviewer-eval.json>]`：读取 MAS production acceptance、generated-surface handoff 和 owner-receipt 合同，生成 `mas-agent-lab-suite.json`，运行 `opl agent-lab run --suite`，再输出 refs-only developer work order、MAS capability candidate、mechanism patch proposal，或在缺 reviewer evaluation 时输出 typed blocker。
 - 机制补丁建议会记录 `mechanism_ref/version`、`editable_surfaces`、`observe/diagnose/edit`、`segment_run_ref`、`evidence_delta_ref`、`next_mechanism_candidate_ref` 和权限边界标记。
 - OPL Agent Lab 的机制面是只读引用控制面。它可以暴露 `opl agent-lab mechanism --json` 和 `opl agent-lab evolve --suite <suite.json> --json`，但不能把测试通过、机制候选或演化片段升级成领域裁决。
 
@@ -127,6 +128,10 @@ npm run bootstrap:sample -- --output-dir /tmp/opl-meta-agent-demo --opl-bin /Use
 
 ```bash
 npm run takeover:test -- --agent-dir /tmp/opl-meta-agent-demo/sample-brief-agent --output-dir /tmp/opl-meta-agent-takeover --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl
+```
+
+```bash
+npm run mas:evidence -- --mas-repo /Users/gaofeng/workspace/med-autoscience --output-dir /tmp/opl-meta-agent-mas-evidence --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl --ai-reviewer-evaluation /tmp/mas-reviewer-eval.json
 ```
 
 ```bash

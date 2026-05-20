@@ -206,6 +206,7 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   assert.equal(actionCatalog.version, 'family-action-catalog.v1');
   assert.match(packageJson.scripts['bootstrap:sample'], /--experimental-strip-types/);
   assert.match(packageJson.scripts['improve:external-suite'], /--experimental-strip-types/);
+  assert.match(packageJson.scripts['mas:evidence'], /--experimental-strip-types/);
   assert.match(packageJson.scripts['takeover:test'], /--experimental-strip-types/);
   const actions = asObjects(actionCatalog.actions);
   assert.ok(actions.some((action) => action.action_id === 'build-agent-baseline'));
