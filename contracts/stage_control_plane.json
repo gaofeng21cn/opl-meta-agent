@@ -9,7 +9,9 @@
     "opl_role": "stage_runtime_projection_and_generated_interface_owner",
     "opl_can_write_domain_truth": false,
     "opl_can_write_memory_body": false,
-    "opl_can_authorize_quality_or_export": false
+    "opl_can_authorize_quality_or_export": false,
+    "opl_can_switch_default_executor": false,
+    "oma_can_switch_default_executor": false
   },
   "stages": [
     {
@@ -87,7 +89,8 @@
         "knowledge-ref:agent/knowledge/project-maturity-signals.md",
         "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
         "runtime-ref:stage-attempt-ledger",
-        "runtime-ref:generated-interface-bundle"
+        "runtime-ref:generated-interface-bundle",
+        "runtime-ref:stage-executor-policy-gate"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:intent-intake",
@@ -152,7 +155,56 @@
         "blocker:missing_expected_receipt_ref",
         "blocker:forbidden_domain_truth_or_memory_write",
         "blocker:quality_or_promotion_claim_without_independent_ai_review",
-        "blocker:contract_completeness_claimed_as_quality_verdict"
+        "blocker:contract_completeness_claimed_as_quality_verdict",
+        "blocker:missing_non_default_executor_binding_ref"
+      ],
+      "executor_policy_capability": {
+        "supports_stage_level_executor_policy": true,
+        "default_executor_kind": "codex_cli",
+        "non_default_executor_policy_allowed": true,
+        "non_default_executor_requires_explicit_adapter": true,
+        "non_default_executor_requires_executor_binding_ref": true,
+        "policy_fields": [
+          "executor_kind",
+          "model",
+          "reasoning_effort",
+          "provider",
+          "executor_binding_ref",
+          "executor_labels",
+          "required_capabilities",
+          "receipt_requirements"
+        ],
+        "agent_lab_trial_required_before_default_promotion": true,
+        "quality_equivalence_claim_allowed": false,
+        "default_executor_switch_allowed_by_oma": false
+      },
+      "stage_executor_policy_candidates": [
+        {
+          "candidate_kind": "stage_executor_policy_candidate",
+          "stage_id": "intent-intake",
+          "default_executor_kind": "codex_cli",
+          "candidate_status": "candidate_ref_only_requires_agent_lab_trial",
+          "model": "inherited_codex_default",
+          "reasoning_effort": "inherited_codex_default",
+          "provider": "openai",
+          "executor_binding_ref": "opl://executors/codex-cli/default",
+          "required_capabilities": [
+            "agentic_repo_work",
+            "tool_use",
+            "structured_receipt"
+          ],
+          "receipt_requirements": [
+            "stage-attempt-receipt-ref:intent-intake",
+            "executor-receipt-ref:intent-intake/codex-cli",
+            "no-forbidden-write-proof-ref:intent-intake"
+          ],
+          "can_launch_without_explicit_binding": true,
+          "can_claim_quality_equivalence": false,
+          "can_change_default_executor": false,
+          "candidate_ref": "stage-executor-policy-candidate:opl-meta-agent/intent-intake/codex-default",
+          "executor_kind": "codex_cli",
+          "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/intent-intake/codex-default-baseline"
+        }
       ]
     },
     {
@@ -230,7 +282,8 @@
         "knowledge-ref:agent/knowledge/project-maturity-signals.md",
         "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
         "runtime-ref:stage-attempt-ledger",
-        "runtime-ref:generated-interface-bundle"
+        "runtime-ref:generated-interface-bundle",
+        "runtime-ref:stage-executor-policy-gate"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:web-experience-research",
@@ -295,7 +348,57 @@
         "blocker:missing_expected_receipt_ref",
         "blocker:forbidden_domain_truth_or_memory_write",
         "blocker:quality_or_promotion_claim_without_independent_ai_review",
-        "blocker:contract_completeness_claimed_as_quality_verdict"
+        "blocker:contract_completeness_claimed_as_quality_verdict",
+        "blocker:missing_non_default_executor_binding_ref"
+      ],
+      "executor_policy_capability": {
+        "supports_stage_level_executor_policy": true,
+        "default_executor_kind": "codex_cli",
+        "non_default_executor_policy_allowed": true,
+        "non_default_executor_requires_explicit_adapter": true,
+        "non_default_executor_requires_executor_binding_ref": true,
+        "policy_fields": [
+          "executor_kind",
+          "model",
+          "reasoning_effort",
+          "provider",
+          "executor_binding_ref",
+          "executor_labels",
+          "required_capabilities",
+          "receipt_requirements"
+        ],
+        "agent_lab_trial_required_before_default_promotion": true,
+        "quality_equivalence_claim_allowed": false,
+        "default_executor_switch_allowed_by_oma": false
+      },
+      "stage_executor_policy_candidates": [
+        {
+          "candidate_kind": "stage_executor_policy_candidate",
+          "stage_id": "web-experience-research",
+          "default_executor_kind": "codex_cli",
+          "candidate_status": "candidate_ref_only_requires_agent_lab_trial",
+          "model": "explicit_non_default_research_or_review_model",
+          "reasoning_effort": "high",
+          "provider": "explicit_adapter",
+          "executor_binding_ref": null,
+          "required_capabilities": [
+            "independent_research_review",
+            "direct_evidence_audit",
+            "structured_receipt"
+          ],
+          "receipt_requirements": [
+            "executor_binding_ref",
+            "stage-attempt-receipt-ref:web-experience-research",
+            "executor-receipt-ref:web-experience-research/claude-code",
+            "no-shared-context-review-ref"
+          ],
+          "can_launch_without_explicit_binding": false,
+          "can_claim_quality_equivalence": false,
+          "can_change_default_executor": false,
+          "candidate_ref": "stage-executor-policy-candidate:opl-meta-agent/web-experience-research/reviewer-diversity",
+          "executor_kind": "claude_code",
+          "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/web-experience-research/non-default-reviewer-diversity"
+        }
       ]
     },
     {
@@ -373,7 +476,8 @@
         "knowledge-ref:agent/knowledge/transferable-agent-practices.md",
         "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
         "runtime-ref:stage-attempt-ledger",
-        "runtime-ref:generated-interface-bundle"
+        "runtime-ref:generated-interface-bundle",
+        "runtime-ref:stage-executor-policy-gate"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:stage-decomposition",
@@ -438,7 +542,56 @@
         "blocker:missing_expected_receipt_ref",
         "blocker:forbidden_domain_truth_or_memory_write",
         "blocker:quality_or_promotion_claim_without_independent_ai_review",
-        "blocker:contract_completeness_claimed_as_quality_verdict"
+        "blocker:contract_completeness_claimed_as_quality_verdict",
+        "blocker:missing_non_default_executor_binding_ref"
+      ],
+      "executor_policy_capability": {
+        "supports_stage_level_executor_policy": true,
+        "default_executor_kind": "codex_cli",
+        "non_default_executor_policy_allowed": true,
+        "non_default_executor_requires_explicit_adapter": true,
+        "non_default_executor_requires_executor_binding_ref": true,
+        "policy_fields": [
+          "executor_kind",
+          "model",
+          "reasoning_effort",
+          "provider",
+          "executor_binding_ref",
+          "executor_labels",
+          "required_capabilities",
+          "receipt_requirements"
+        ],
+        "agent_lab_trial_required_before_default_promotion": true,
+        "quality_equivalence_claim_allowed": false,
+        "default_executor_switch_allowed_by_oma": false
+      },
+      "stage_executor_policy_candidates": [
+        {
+          "candidate_kind": "stage_executor_policy_candidate",
+          "stage_id": "stage-decomposition",
+          "default_executor_kind": "codex_cli",
+          "candidate_status": "candidate_ref_only_requires_agent_lab_trial",
+          "model": "inherited_codex_default",
+          "reasoning_effort": "inherited_codex_default",
+          "provider": "openai",
+          "executor_binding_ref": "opl://executors/codex-cli/default",
+          "required_capabilities": [
+            "agentic_repo_work",
+            "tool_use",
+            "structured_receipt"
+          ],
+          "receipt_requirements": [
+            "stage-attempt-receipt-ref:stage-decomposition",
+            "executor-receipt-ref:stage-decomposition/codex-cli",
+            "no-forbidden-write-proof-ref:stage-decomposition"
+          ],
+          "can_launch_without_explicit_binding": true,
+          "can_claim_quality_equivalence": false,
+          "can_change_default_executor": false,
+          "candidate_ref": "stage-executor-policy-candidate:opl-meta-agent/stage-decomposition/codex-default",
+          "executor_kind": "codex_cli",
+          "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/stage-decomposition/codex-default-baseline"
+        }
       ]
     },
     {
@@ -525,7 +678,8 @@
         "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
         "action-ref:build-agent-baseline",
         "runtime-ref:stage-attempt-ledger",
-        "runtime-ref:generated-interface-bundle"
+        "runtime-ref:generated-interface-bundle",
+        "runtime-ref:stage-executor-policy-gate"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:agent-skeleton-build",
@@ -591,7 +745,56 @@
         "blocker:missing_expected_receipt_ref",
         "blocker:forbidden_domain_truth_or_memory_write",
         "blocker:quality_or_promotion_claim_without_independent_ai_review",
-        "blocker:contract_completeness_claimed_as_quality_verdict"
+        "blocker:contract_completeness_claimed_as_quality_verdict",
+        "blocker:missing_non_default_executor_binding_ref"
+      ],
+      "executor_policy_capability": {
+        "supports_stage_level_executor_policy": true,
+        "default_executor_kind": "codex_cli",
+        "non_default_executor_policy_allowed": true,
+        "non_default_executor_requires_explicit_adapter": true,
+        "non_default_executor_requires_executor_binding_ref": true,
+        "policy_fields": [
+          "executor_kind",
+          "model",
+          "reasoning_effort",
+          "provider",
+          "executor_binding_ref",
+          "executor_labels",
+          "required_capabilities",
+          "receipt_requirements"
+        ],
+        "agent_lab_trial_required_before_default_promotion": true,
+        "quality_equivalence_claim_allowed": false,
+        "default_executor_switch_allowed_by_oma": false
+      },
+      "stage_executor_policy_candidates": [
+        {
+          "candidate_kind": "stage_executor_policy_candidate",
+          "stage_id": "agent-skeleton-build",
+          "default_executor_kind": "codex_cli",
+          "candidate_status": "candidate_ref_only_requires_agent_lab_trial",
+          "model": "inherited_codex_default",
+          "reasoning_effort": "inherited_codex_default",
+          "provider": "openai",
+          "executor_binding_ref": "opl://executors/codex-cli/default",
+          "required_capabilities": [
+            "agentic_repo_work",
+            "tool_use",
+            "structured_receipt"
+          ],
+          "receipt_requirements": [
+            "stage-attempt-receipt-ref:agent-skeleton-build",
+            "executor-receipt-ref:agent-skeleton-build/codex-cli",
+            "no-forbidden-write-proof-ref:agent-skeleton-build"
+          ],
+          "can_launch_without_explicit_binding": true,
+          "can_claim_quality_equivalence": false,
+          "can_change_default_executor": false,
+          "candidate_ref": "stage-executor-policy-candidate:opl-meta-agent/agent-skeleton-build/codex-default",
+          "executor_kind": "codex_cli",
+          "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/agent-skeleton-build/codex-default-baseline"
+        }
       ]
     },
     {
@@ -674,7 +877,8 @@
         "knowledge-ref:agent/knowledge/transferable-agent-practices.md",
         "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
         "runtime-ref:stage-attempt-ledger",
-        "runtime-ref:generated-interface-bundle"
+        "runtime-ref:generated-interface-bundle",
+        "runtime-ref:stage-executor-policy-gate"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:eval-suite-build",
@@ -739,7 +943,59 @@
         "blocker:missing_expected_receipt_ref",
         "blocker:forbidden_domain_truth_or_memory_write",
         "blocker:quality_or_promotion_claim_without_independent_ai_review",
-        "blocker:contract_completeness_claimed_as_quality_verdict"
+        "blocker:contract_completeness_claimed_as_quality_verdict",
+        "blocker:missing_non_default_executor_binding_ref"
+      ],
+      "executor_policy_capability": {
+        "supports_stage_level_executor_policy": true,
+        "default_executor_kind": "codex_cli",
+        "non_default_executor_policy_allowed": true,
+        "non_default_executor_requires_explicit_adapter": true,
+        "non_default_executor_requires_executor_binding_ref": true,
+        "policy_fields": [
+          "executor_kind",
+          "model",
+          "reasoning_effort",
+          "provider",
+          "executor_binding_ref",
+          "executor_labels",
+          "required_capabilities",
+          "receipt_requirements"
+        ],
+        "agent_lab_trial_required_before_default_promotion": true,
+        "quality_equivalence_claim_allowed": false,
+        "default_executor_switch_allowed_by_oma": false
+      },
+      "stage_executor_policy_candidates": [
+        {
+          "candidate_kind": "stage_executor_policy_candidate",
+          "stage_id": "eval-suite-build",
+          "default_executor_kind": "codex_cli",
+          "candidate_status": "candidate_ref_only_requires_agent_lab_trial",
+          "model": "gemini-3.5-flash",
+          "reasoning_effort": "high",
+          "provider": "google",
+          "executor_binding_ref": "executor-binding:antigravity/opl-meta-agent-eval-suite-build-html-authoring",
+          "required_capabilities": [
+            "html_generation",
+            "visual_layout_iteration",
+            "agent_lab_suite_authoring",
+            "structured_receipt"
+          ],
+          "receipt_requirements": [
+            "executor_binding_ref",
+            "stage-attempt-receipt-ref:eval-suite-build",
+            "executor-receipt-ref:eval-suite-build/antigravity-cli",
+            "no-forbidden-write-proof-ref:eval-suite-build",
+            "agent-lab-stage-executor-policy-trial-ref"
+          ],
+          "can_launch_without_explicit_binding": false,
+          "can_claim_quality_equivalence": false,
+          "can_change_default_executor": false,
+          "candidate_ref": "stage-executor-policy-candidate:opl-meta-agent/eval-suite-build/antigravity-html-suite-authoring",
+          "executor_kind": "antigravity_cli",
+          "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/eval-suite-build/html-authoring-antigravity-speed"
+        }
       ]
     },
     {
@@ -820,7 +1076,8 @@
         "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
         "action-ref:build-agent-baseline",
         "runtime-ref:stage-attempt-ledger",
-        "runtime-ref:generated-interface-bundle"
+        "runtime-ref:generated-interface-bundle",
+        "runtime-ref:stage-executor-policy-gate"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:baseline-run",
@@ -885,7 +1142,56 @@
         "blocker:missing_expected_receipt_ref",
         "blocker:forbidden_domain_truth_or_memory_write",
         "blocker:quality_or_promotion_claim_without_independent_ai_review",
-        "blocker:contract_completeness_claimed_as_quality_verdict"
+        "blocker:contract_completeness_claimed_as_quality_verdict",
+        "blocker:missing_non_default_executor_binding_ref"
+      ],
+      "executor_policy_capability": {
+        "supports_stage_level_executor_policy": true,
+        "default_executor_kind": "codex_cli",
+        "non_default_executor_policy_allowed": true,
+        "non_default_executor_requires_explicit_adapter": true,
+        "non_default_executor_requires_executor_binding_ref": true,
+        "policy_fields": [
+          "executor_kind",
+          "model",
+          "reasoning_effort",
+          "provider",
+          "executor_binding_ref",
+          "executor_labels",
+          "required_capabilities",
+          "receipt_requirements"
+        ],
+        "agent_lab_trial_required_before_default_promotion": true,
+        "quality_equivalence_claim_allowed": false,
+        "default_executor_switch_allowed_by_oma": false
+      },
+      "stage_executor_policy_candidates": [
+        {
+          "candidate_kind": "stage_executor_policy_candidate",
+          "stage_id": "baseline-run",
+          "default_executor_kind": "codex_cli",
+          "candidate_status": "candidate_ref_only_requires_agent_lab_trial",
+          "model": "inherited_codex_default",
+          "reasoning_effort": "inherited_codex_default",
+          "provider": "openai",
+          "executor_binding_ref": "opl://executors/codex-cli/default",
+          "required_capabilities": [
+            "agentic_repo_work",
+            "tool_use",
+            "structured_receipt"
+          ],
+          "receipt_requirements": [
+            "stage-attempt-receipt-ref:baseline-run",
+            "executor-receipt-ref:baseline-run/codex-cli",
+            "no-forbidden-write-proof-ref:baseline-run"
+          ],
+          "can_launch_without_explicit_binding": true,
+          "can_claim_quality_equivalence": false,
+          "can_change_default_executor": false,
+          "candidate_ref": "stage-executor-policy-candidate:opl-meta-agent/baseline-run/codex-default",
+          "executor_kind": "codex_cli",
+          "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/baseline-run/codex-default-baseline"
+        }
       ]
     },
     {
@@ -986,7 +1292,8 @@
         "quality-gate-ref:agent/quality_gates/external-suite-self-evolution.md",
         "action-ref:takeover-external-agent-test",
         "runtime-ref:stage-attempt-ledger",
-        "runtime-ref:generated-interface-bundle"
+        "runtime-ref:generated-interface-bundle",
+        "runtime-ref:stage-executor-policy-gate"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:external-agent-takeover",
@@ -1052,7 +1359,56 @@
         "blocker:missing_expected_receipt_ref",
         "blocker:forbidden_domain_truth_or_memory_write",
         "blocker:quality_or_promotion_claim_without_independent_ai_review",
-        "blocker:contract_completeness_claimed_as_quality_verdict"
+        "blocker:contract_completeness_claimed_as_quality_verdict",
+        "blocker:missing_non_default_executor_binding_ref"
+      ],
+      "executor_policy_capability": {
+        "supports_stage_level_executor_policy": true,
+        "default_executor_kind": "codex_cli",
+        "non_default_executor_policy_allowed": true,
+        "non_default_executor_requires_explicit_adapter": true,
+        "non_default_executor_requires_executor_binding_ref": true,
+        "policy_fields": [
+          "executor_kind",
+          "model",
+          "reasoning_effort",
+          "provider",
+          "executor_binding_ref",
+          "executor_labels",
+          "required_capabilities",
+          "receipt_requirements"
+        ],
+        "agent_lab_trial_required_before_default_promotion": true,
+        "quality_equivalence_claim_allowed": false,
+        "default_executor_switch_allowed_by_oma": false
+      },
+      "stage_executor_policy_candidates": [
+        {
+          "candidate_kind": "stage_executor_policy_candidate",
+          "stage_id": "external-agent-takeover",
+          "default_executor_kind": "codex_cli",
+          "candidate_status": "candidate_ref_only_requires_agent_lab_trial",
+          "model": "inherited_codex_default",
+          "reasoning_effort": "inherited_codex_default",
+          "provider": "openai",
+          "executor_binding_ref": "opl://executors/codex-cli/default",
+          "required_capabilities": [
+            "agentic_repo_work",
+            "tool_use",
+            "structured_receipt"
+          ],
+          "receipt_requirements": [
+            "stage-attempt-receipt-ref:external-agent-takeover",
+            "executor-receipt-ref:external-agent-takeover/codex-cli",
+            "no-forbidden-write-proof-ref:external-agent-takeover"
+          ],
+          "can_launch_without_explicit_binding": true,
+          "can_claim_quality_equivalence": false,
+          "can_change_default_executor": false,
+          "candidate_ref": "stage-executor-policy-candidate:opl-meta-agent/external-agent-takeover/codex-default",
+          "executor_kind": "codex_cli",
+          "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/external-agent-takeover/codex-default-baseline"
+        }
       ]
     },
     {
@@ -1142,7 +1498,8 @@
         "quality-gate-ref:agent/quality_gates/mechanism-patch-adoption.md",
         "action-ref:improve-from-external-agent-lab-suite",
         "runtime-ref:stage-attempt-ledger",
-        "runtime-ref:generated-interface-bundle"
+        "runtime-ref:generated-interface-bundle",
+        "runtime-ref:stage-executor-policy-gate"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:optimizer-iteration",
@@ -1211,7 +1568,56 @@
         "blocker:missing_expected_receipt_ref",
         "blocker:forbidden_domain_truth_or_memory_write",
         "blocker:quality_or_promotion_claim_without_independent_ai_review",
-        "blocker:contract_completeness_claimed_as_quality_verdict"
+        "blocker:contract_completeness_claimed_as_quality_verdict",
+        "blocker:missing_non_default_executor_binding_ref"
+      ],
+      "executor_policy_capability": {
+        "supports_stage_level_executor_policy": true,
+        "default_executor_kind": "codex_cli",
+        "non_default_executor_policy_allowed": true,
+        "non_default_executor_requires_explicit_adapter": true,
+        "non_default_executor_requires_executor_binding_ref": true,
+        "policy_fields": [
+          "executor_kind",
+          "model",
+          "reasoning_effort",
+          "provider",
+          "executor_binding_ref",
+          "executor_labels",
+          "required_capabilities",
+          "receipt_requirements"
+        ],
+        "agent_lab_trial_required_before_default_promotion": true,
+        "quality_equivalence_claim_allowed": false,
+        "default_executor_switch_allowed_by_oma": false
+      },
+      "stage_executor_policy_candidates": [
+        {
+          "candidate_kind": "stage_executor_policy_candidate",
+          "stage_id": "optimizer-iteration",
+          "default_executor_kind": "codex_cli",
+          "candidate_status": "candidate_ref_only_requires_agent_lab_trial",
+          "model": "inherited_codex_default",
+          "reasoning_effort": "inherited_codex_default",
+          "provider": "openai",
+          "executor_binding_ref": "opl://executors/codex-cli/default",
+          "required_capabilities": [
+            "agentic_repo_work",
+            "tool_use",
+            "structured_receipt"
+          ],
+          "receipt_requirements": [
+            "stage-attempt-receipt-ref:optimizer-iteration",
+            "executor-receipt-ref:optimizer-iteration/codex-cli",
+            "no-forbidden-write-proof-ref:optimizer-iteration"
+          ],
+          "can_launch_without_explicit_binding": true,
+          "can_claim_quality_equivalence": false,
+          "can_change_default_executor": false,
+          "candidate_ref": "stage-executor-policy-candidate:opl-meta-agent/optimizer-iteration/codex-default",
+          "executor_kind": "codex_cli",
+          "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/optimizer-iteration/codex-default-baseline"
+        }
       ]
     },
     {
@@ -1297,7 +1703,8 @@
         "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
         "action-ref:build-agent-baseline",
         "runtime-ref:stage-attempt-ledger",
-        "runtime-ref:generated-interface-bundle"
+        "runtime-ref:generated-interface-bundle",
+        "runtime-ref:stage-executor-policy-gate"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:baseline-delivery",
@@ -1362,7 +1769,56 @@
         "blocker:missing_expected_receipt_ref",
         "blocker:forbidden_domain_truth_or_memory_write",
         "blocker:quality_or_promotion_claim_without_independent_ai_review",
-        "blocker:contract_completeness_claimed_as_quality_verdict"
+        "blocker:contract_completeness_claimed_as_quality_verdict",
+        "blocker:missing_non_default_executor_binding_ref"
+      ],
+      "executor_policy_capability": {
+        "supports_stage_level_executor_policy": true,
+        "default_executor_kind": "codex_cli",
+        "non_default_executor_policy_allowed": true,
+        "non_default_executor_requires_explicit_adapter": true,
+        "non_default_executor_requires_executor_binding_ref": true,
+        "policy_fields": [
+          "executor_kind",
+          "model",
+          "reasoning_effort",
+          "provider",
+          "executor_binding_ref",
+          "executor_labels",
+          "required_capabilities",
+          "receipt_requirements"
+        ],
+        "agent_lab_trial_required_before_default_promotion": true,
+        "quality_equivalence_claim_allowed": false,
+        "default_executor_switch_allowed_by_oma": false
+      },
+      "stage_executor_policy_candidates": [
+        {
+          "candidate_kind": "stage_executor_policy_candidate",
+          "stage_id": "baseline-delivery",
+          "default_executor_kind": "codex_cli",
+          "candidate_status": "candidate_ref_only_requires_agent_lab_trial",
+          "model": "inherited_codex_default",
+          "reasoning_effort": "inherited_codex_default",
+          "provider": "openai",
+          "executor_binding_ref": "opl://executors/codex-cli/default",
+          "required_capabilities": [
+            "agentic_repo_work",
+            "tool_use",
+            "structured_receipt"
+          ],
+          "receipt_requirements": [
+            "stage-attempt-receipt-ref:baseline-delivery",
+            "executor-receipt-ref:baseline-delivery/codex-cli",
+            "no-forbidden-write-proof-ref:baseline-delivery"
+          ],
+          "can_launch_without_explicit_binding": true,
+          "can_claim_quality_equivalence": false,
+          "can_change_default_executor": false,
+          "candidate_ref": "stage-executor-policy-candidate:opl-meta-agent/baseline-delivery/codex-default",
+          "executor_kind": "codex_cli",
+          "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/baseline-delivery/codex-default-baseline"
+        }
       ]
     },
     {
@@ -1449,7 +1905,8 @@
         "quality-gate-ref:agent/quality_gates/mechanism-patch-adoption.md",
         "action-ref:generate-mechanism-patch-proposal",
         "runtime-ref:stage-attempt-ledger",
-        "runtime-ref:generated-interface-bundle"
+        "runtime-ref:generated-interface-bundle",
+        "runtime-ref:stage-executor-policy-gate"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:online-learning",
@@ -1515,7 +1972,56 @@
         "blocker:missing_expected_receipt_ref",
         "blocker:forbidden_domain_truth_or_memory_write",
         "blocker:quality_or_promotion_claim_without_independent_ai_review",
-        "blocker:contract_completeness_claimed_as_quality_verdict"
+        "blocker:contract_completeness_claimed_as_quality_verdict",
+        "blocker:missing_non_default_executor_binding_ref"
+      ],
+      "executor_policy_capability": {
+        "supports_stage_level_executor_policy": true,
+        "default_executor_kind": "codex_cli",
+        "non_default_executor_policy_allowed": true,
+        "non_default_executor_requires_explicit_adapter": true,
+        "non_default_executor_requires_executor_binding_ref": true,
+        "policy_fields": [
+          "executor_kind",
+          "model",
+          "reasoning_effort",
+          "provider",
+          "executor_binding_ref",
+          "executor_labels",
+          "required_capabilities",
+          "receipt_requirements"
+        ],
+        "agent_lab_trial_required_before_default_promotion": true,
+        "quality_equivalence_claim_allowed": false,
+        "default_executor_switch_allowed_by_oma": false
+      },
+      "stage_executor_policy_candidates": [
+        {
+          "candidate_kind": "stage_executor_policy_candidate",
+          "stage_id": "online-learning",
+          "default_executor_kind": "codex_cli",
+          "candidate_status": "candidate_ref_only_requires_agent_lab_trial",
+          "model": "inherited_codex_default",
+          "reasoning_effort": "inherited_codex_default",
+          "provider": "openai",
+          "executor_binding_ref": "opl://executors/codex-cli/default",
+          "required_capabilities": [
+            "agentic_repo_work",
+            "tool_use",
+            "structured_receipt"
+          ],
+          "receipt_requirements": [
+            "stage-attempt-receipt-ref:online-learning",
+            "executor-receipt-ref:online-learning/codex-cli",
+            "no-forbidden-write-proof-ref:online-learning"
+          ],
+          "can_launch_without_explicit_binding": true,
+          "can_claim_quality_equivalence": false,
+          "can_change_default_executor": false,
+          "candidate_ref": "stage-executor-policy-candidate:opl-meta-agent/online-learning/codex-default",
+          "executor_kind": "codex_cli",
+          "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/online-learning/codex-default-baseline"
+        }
       ]
     }
   ],
@@ -1524,7 +2030,8 @@
     "standard_domain_agent_scaffold": true,
     "stage_attempt_ledger": true,
     "promotion_gate_refs": true,
-    "generated_interface_bundle": true
+    "generated_interface_bundle": true,
+    "agent_lab_stage_executor_policy_read_model": true
   },
   "notes": [
     "OPL Framework owns generated CLI/MCP/Skill/product-entry/tool descriptors for this stage plane.",

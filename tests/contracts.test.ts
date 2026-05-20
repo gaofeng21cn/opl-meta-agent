@@ -398,6 +398,146 @@ test('stage launch contract is Codex-first, receipted, and OPL-10 bounded', () =
   });
 });
 
+test('stage executor policy candidates stay gated, refs-only, and non-default explicit', () => {
+  const stageControl = readJson('contracts/stage_control_plane.json');
+
+  assert.equal(stageControl.opl_runtime_dependency.agent_lab_stage_executor_policy_read_model, true);
+  assert.equal(stageControl.authority_boundary.opl_can_switch_default_executor, false);
+  assert.equal(stageControl.authority_boundary.oma_can_switch_default_executor, false);
+
+  asObjects(stageControl.stages).forEach((stage) => {
+    const label = String(stage.stage_id);
+    assert.equal(stage.selected_executor, 'codex_cli', `${label}.selected_executor remains Codex first-class`);
+    assert.ok(
+      asStrings(stage.requires).includes('runtime-ref:stage-executor-policy-gate'),
+      `${label}.requires stage executor policy gate`,
+    );
+    assert.ok(
+      asStrings(stage.hard_blocker_refs).includes('blocker:missing_non_default_executor_binding_ref'),
+      `${label}.hard_blocker_refs missing non-default binding blocker`,
+    );
+
+    assert.equal(
+      stage.executor_policy_capability.supports_stage_level_executor_policy,
+      true,
+      `${label}.supports_stage_level_executor_policy`,
+    );
+    assert.equal(stage.executor_policy_capability.default_executor_kind, 'codex_cli', `${label}.default_executor_kind`);
+    assert.equal(
+      stage.executor_policy_capability.non_default_executor_policy_allowed,
+      true,
+      `${label}.non_default_executor_policy_allowed`,
+    );
+    assert.equal(
+      stage.executor_policy_capability.non_default_executor_requires_explicit_adapter,
+      true,
+      `${label}.non_default_executor_requires_explicit_adapter`,
+    );
+    assert.equal(
+      stage.executor_policy_capability.non_default_executor_requires_executor_binding_ref,
+      true,
+      `${label}.non_default_executor_requires_executor_binding_ref`,
+    );
+    assert.deepEqual(stage.executor_policy_capability.policy_fields, [
+      'executor_kind',
+      'model',
+      'reasoning_effort',
+      'provider',
+      'executor_binding_ref',
+      'executor_labels',
+      'required_capabilities',
+      'receipt_requirements',
+    ]);
+    assert.equal(
+      stage.executor_policy_capability.agent_lab_trial_required_before_default_promotion,
+      true,
+      `${label}.agent_lab_trial_required_before_default_promotion`,
+    );
+    assert.equal(
+      stage.executor_policy_capability.quality_equivalence_claim_allowed,
+      false,
+      `${label}.quality_equivalence_claim_allowed`,
+    );
+    assert.equal(
+      stage.executor_policy_capability.default_executor_switch_allowed_by_oma,
+      false,
+      `${label}.default_executor_switch_allowed_by_oma`,
+    );
+
+    const candidates = asObjects(stage.stage_executor_policy_candidates);
+    assert.ok(candidates.length > 0, `${label}.stage_executor_policy_candidates should not be empty`);
+    candidates.forEach((candidate) => {
+      assert.equal(candidate.candidate_kind, 'stage_executor_policy_candidate', `${label}.candidate_kind`);
+      assert.equal(candidate.stage_id, label, `${label}.candidate stage_id`);
+      assert.equal(candidate.default_executor_kind, 'codex_cli', `${label}.candidate default_executor_kind`);
+      assert.equal(
+        candidate.candidate_status,
+        'candidate_ref_only_requires_agent_lab_trial',
+        `${label}.candidate_status`,
+      );
+      assert.equal(candidate.can_claim_quality_equivalence, false, `${label}.candidate quality equivalence`);
+      assert.equal(candidate.can_change_default_executor, false, `${label}.candidate default switch`);
+      assert.match(
+        candidate.candidate_ref,
+        new RegExp(`^stage-executor-policy-candidate:opl-meta-agent/${label}/`),
+        `${label}.candidate_ref`,
+      );
+      assert.ok(asStrings(candidate.receipt_requirements).length > 0, `${label}.candidate receipts`);
+      assert.ok(asStrings(candidate.required_capabilities).length > 0, `${label}.candidate capabilities`);
+
+      if (candidate.executor_kind === 'codex_cli') {
+        assert.equal(candidate.can_launch_without_explicit_binding, true, `${label}.codex launch binding`);
+        assert.equal(
+          String(candidate.executor_binding_ref).startsWith('opl://executors/codex-cli/'),
+          true,
+          `${label}.codex binding ref`,
+        );
+      } else {
+        assert.equal(candidate.can_launch_without_explicit_binding, false, `${label}.non-default launch binding`);
+        assert.ok(
+          asStrings(candidate.receipt_requirements).includes('executor_binding_ref'),
+          `${label}.non-default requires executor_binding_ref receipt`,
+        );
+      }
+    });
+  });
+
+  const evalSuite = asObjects(stageControl.stages).find((stage) => stage.stage_id === 'eval-suite-build');
+  assert.ok(evalSuite);
+  const antigravityCandidate = asObjects(evalSuite.stage_executor_policy_candidates)
+    .find((candidate) => candidate.executor_kind === 'antigravity_cli');
+  assert.ok(antigravityCandidate);
+  assert.equal(antigravityCandidate.model, 'gemini-3.5-flash');
+  assert.equal(antigravityCandidate.reasoning_effort, 'high');
+  assert.equal(antigravityCandidate.provider, 'google');
+  assert.equal(
+    antigravityCandidate.executor_binding_ref,
+    'executor-binding:antigravity/opl-meta-agent-eval-suite-build-html-authoring',
+  );
+  assert.ok(asStrings(antigravityCandidate.required_capabilities).includes('html_generation'));
+  assert.ok(asStrings(antigravityCandidate.required_capabilities).includes('visual_layout_iteration'));
+  assert.ok(
+    asStrings(antigravityCandidate.receipt_requirements)
+      .includes('executor-receipt-ref:eval-suite-build/antigravity-cli'),
+  );
+  assert.ok(
+    asStrings(antigravityCandidate.receipt_requirements).includes('agent-lab-stage-executor-policy-trial-ref'),
+  );
+
+  const research = asObjects(stageControl.stages).find((stage) => stage.stage_id === 'web-experience-research');
+  assert.ok(research);
+  const claudeCandidate = asObjects(research.stage_executor_policy_candidates)
+    .find((candidate) => candidate.executor_kind === 'claude_code');
+  assert.ok(claudeCandidate);
+  assert.equal(claudeCandidate.executor_binding_ref, null);
+  assert.equal(claudeCandidate.can_launch_without_explicit_binding, false);
+  assert.ok(asStrings(claudeCandidate.receipt_requirements).includes('executor_binding_ref'));
+  assert.ok(
+    asStrings(research.hard_blocker_refs).includes('blocker:missing_non_default_executor_binding_ref'),
+    'web-experience-research should fail closed without a non-default executor binding ref',
+  );
+});
+
 test('action catalog and owner receipts forbid target-domain authority writes', () => {
   const actionCatalog = readJson('contracts/action_catalog.json');
   const ownerReceipt = readJson('contracts/owner_receipt_contract.json');

@@ -4,6 +4,8 @@
 - Do not implement generic OPL runtime primitives in this domain repo.
 - Do not implement repo-owned generic CLI, MCP, Skill, product-entry, sidecar, status, or workbench wrappers; OPL Framework generates or hosts those surfaces from contracts.
 - Do not add target-domain-specific Agent Lab suite kinds, OMA command families, or top-level OMA surface kinds for MAS, MAG, RCA, or any single agent. Target agents expose standard handoff; Agent Lab and OMA consume the standard interface.
+- Do not treat `stage_executor_policy_candidate` as an executor switch, runner implementation, queue implementation, Agent Lab replacement, quality equivalence claim, or default-executor promotion. OMA may propose refs-only stage executor policy candidates; OPL / Agent Lab owns trials, gates, read models, receipts, adapters, bindings, and any default-executor promotion decision.
+- Non-default stage executor candidates require explicit adapter / executor binding / receipt refs and must fail closed with `blocker:missing_non_default_executor_binding_ref` when those refs are absent.
 - Do not let OPL write domain truth, memory body, or quality/export verdicts.
 - Keep `agent/` as a real domain pack: required pack files and `stage_control_plane` stage prompt, skill, knowledge, and evaluation refs must resolve to repo files that are non-empty and free of placeholder markers.
 - Generated interfaces may invoke declared actions and minimal authority functions, but they must remain projection/invocation surfaces owned by OPL Framework and must not escalate into domain truth, memory body, artifact body, quality/export verdict, or default-promotion authority.
