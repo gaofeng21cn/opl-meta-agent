@@ -13,12 +13,14 @@
 ## 步骤
 
 1. 列出目标 agent 从 intake 到 delivery 的最小 stage sequence，避免把多个 owner 的责任塞进同一 stage。
-2. 为每个 stage 明确 goal、inputs、prompt refs、tools/action refs、knowledge refs、outputs、handoff 和 quality gate。
-3. 设计 action catalog，只保留 domain authority function 或 smoke CLI；generic CLI/MCP/Skill/product-entry 交给 OPL generated interface。
-4. 设计 memory descriptor：只定义 locator、schema、owner 和访问规则，不写 memory body。
-5. 设计 artifact locator：只定义交付物 refs、package roots、receipts 和 provenance。
-6. 对每个 stage 标注 owner split：target domain agent、`opl-meta-agent`、OPL Framework。
-7. 检查所有 outputs 是否能被后续 stage 或 gate 消费，删掉不可消费的输出。
+2. 让 Codex 先给出候选 stage graph 与反例：哪些 stage 太机械、哪些 stage 会限制 AI executor、哪些 stage 需要合并/拆分/删除。
+3. 为每个 stage 明确 goal、inputs、prompt refs、tools/action refs、knowledge refs、outputs、handoff 和 quality gate。
+4. 对每个 stage 写清 AI executor autonomy：Codex 可在哪些范围内自主规划、调用工具、要求补充 source、route-back、重写策略。
+5. 设计 action catalog，只保留 domain authority function 或 smoke CLI；generic CLI/MCP/Skill/product-entry 交给 OPL generated interface。
+6. 设计 memory descriptor：只定义 locator、schema、owner 和访问规则，不写 memory body。
+7. 设计 artifact locator：只定义交付物 refs、package roots、receipts 和 provenance。
+8. 对每个 stage 标注 owner split：target domain agent、`opl-meta-agent`、OPL Framework。
+9. 检查所有 outputs 是否能被后续 stage 或 gate 消费，删掉不可消费的输出。
 
 ## 输出
 
@@ -33,6 +35,8 @@
 - action/stage metadata 可作为 CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK surface 的唯一派生源。
 - 没有 repo-owned generic scheduler、daemon、queue、attempt ledger、workbench 或 private wrapper。
 - domain truth、memory body、artifact body、quality/export verdict 的 owner 没有漂移。
+- stage graph 不把推理路线、写作策略、评审标准或修订策略写死；这些开放式判断由 Codex executor 和独立 reviewer 承担。
+- 每个 stage 都能声明 knowledge/tool/rubric gap blocker，避免为了通过 scaffold validation 生成空语义包。
 
 ## 禁止事项
 

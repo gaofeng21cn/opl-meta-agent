@@ -161,6 +161,51 @@ test('domain pack files and stage prompt refs resolve to usable repo files', () 
   assert.equal(generatedInterfaceBoundary.generated_interface_can_authorize_quality_or_export, false);
 });
 
+test('semantic pack keeps Codex-first expert judgment above mechanical gates', () => {
+  const requiredFragmentsByFile: Record<string, string[]> = {
+    'agent/knowledge/opl-boundary-policy.md': [
+      'Codex-first',
+      '最强 AI executor',
+      'contract completeness',
+      '独立 AI reviewer',
+      'no-shared-context',
+    ],
+    'agent/prompts/intent-intake.md': [
+      'Codex-first',
+      '反例',
+      'knowledge/tool gap blocker',
+    ],
+    'agent/prompts/stage-decomposition.md': [
+      'AI executor autonomy',
+      '限制 AI executor',
+      'knowledge/tool/rubric gap blocker',
+    ],
+    'agent/prompts/optimizer-iteration.md': [
+      'root-cause reasoning',
+      '独立 reviewer',
+      'scorecard pass',
+    ],
+    'agent/prompts/online-learning.md': [
+      '反事实',
+      'direct evidence refs',
+      'no-current-failure',
+    ],
+    'agent/quality_gates/mechanism-patch-adoption.md': [
+      'independent AI reviewer direct-evidence',
+      'no-shared-context',
+      'suite pass',
+      'Codex/owner',
+    ],
+  };
+
+  Object.entries(requiredFragmentsByFile).forEach(([relativePath, fragments]) => {
+    const content = readText(relativePath);
+    fragments.forEach((fragment) => {
+      assert.match(content, new RegExp(fragment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `${relativePath} should contain ${fragment}`);
+    });
+  });
+});
+
 test('opl-meta-agent stage plan covers research, build, eval, optimization, delivery, and learning', () => {
   const stageControl = readJson('contracts/stage_control_plane.json');
 

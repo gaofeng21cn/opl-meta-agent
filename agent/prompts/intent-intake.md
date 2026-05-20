@@ -14,11 +14,13 @@
 ## 步骤
 
 1. 提取目标 agent 的核心 job：它要为谁交付什么可验证成果。
-2. 分离 domain truth owner、quality verdict owner、artifact authority、memory body owner 和 OPL Framework 的 projection/runtime 角色。
-3. 把用户约束写成正向 acceptance criteria：交付物必须包含什么、运行必须证明什么、receipt 必须声明什么。
-4. 把禁止事项写成 explicit non-goals：不得写目标 domain truth、不得改 memory body、不得无 gate promote default agent、不得训练或部署模型权重。
-5. 标注待澄清项；只有会改变 authority boundary 或交付物定义的问题才阻塞下一阶段。
-6. 输出三个 refs 的正文摘要和稳定 locator，供 stage-decomposition 消费。
+2. 用 Codex-first 方式重构需求：判断用户真正要的是新 agent、既有 agent takeover、mechanism improvement，还是 owner-boundary clarification；必要时提出更强的目标形态。
+3. 分离 domain truth owner、quality verdict owner、artifact authority、memory body owner 和 OPL Framework 的 projection/runtime 角色。
+4. 主动寻找反例：哪些要求会把 OPL 写成领域裁判、把 smoke 当交付、把 suite pass 当 promotion，或限制 AI executor 的专家判断空间。
+5. 把用户约束写成正向 acceptance criteria：交付物必须包含什么、运行必须证明什么、receipt 必须声明什么。
+6. 把禁止事项写成 explicit non-goals：不得写目标 domain truth、不得改 memory body、不得无 gate promote default agent、不得训练或部署模型权重。
+7. 标注待澄清项；只有会改变 authority boundary 或交付物定义的问题才阻塞下一阶段。
+8. 输出三个 refs 的正文摘要和稳定 locator，供 stage-decomposition 消费。
 
 ## 输出
 
@@ -32,6 +34,8 @@
 - authority boundary 明确区分 `opl-meta-agent`、OPL Framework 和 target domain agent。
 - acceptance criteria 可以直接转成 stage、action、quality gate 或 Agent Lab scorecard。
 - 没有把“调研、建议、候选”写成“已采用、已交付、已授权”。
+- intent brief 记录 Codex 的需求重构、反例和 route-back 理由；没有把用户第一句话机械映射成 stage graph。
+- 如果缺少能支撑 agent 设计判断的领域知识、工具或质量 rubric，输出 knowledge/tool gap blocker，而不是继续生成薄 scaffold。
 
 ## 禁止事项
 
