@@ -55,6 +55,7 @@
 - 用户提供目标智能体的领域、交付物、质量门槛、禁止事项和运行约束。
 - `OPL Meta Agent` 组织公开经验、拆解阶段，生成候选智能体包，并交给 OPL Agent Lab 跑测试。
 - Agent Lab 返回只包含引用和结果摘要的测试结果；本仓把它整理成交付回执、学习候选和机制补丁建议。
+- 默认采用 executor-first / Codex-first：让最强 AI executor 承担需求重构、反例搜索、工具/知识缺口发现、路线取舍和机制改进判断；合同只负责边界、权限、回执、证据和可恢复性下限。
 - 任何机制变更、默认智能体切换、质量采用或真实交付权威，都必须经过显式门槛或目标领域拥有者确认。
 
 ## Agent Lab 自进化闭环
@@ -86,8 +87,10 @@
   <summary><strong>给技术操作者看的机制说明</strong></summary>
 
 - 最小自举入口是 `npm run bootstrap:sample -- --output-dir <dir> --opl-bin <opl> --ai-reviewer-evaluation <reviewer-eval.json>`：生成 `sample-brief-agent`，调用 OPL 脚手架校验，生成 Agent Lab 外部测试套件，运行 `opl agent-lab run --suite`，消费结构化 AI reviewer evaluation，再写入基线回执、后续学习候选和 `mechanism-patch-proposal.json`。
+- 同一自举入口还会生成 `real-target-brief-agent` 的 refs-only 最小交付证据，输出 `real-target-delivery-receipt.json` 和 `real-target-scaleout-evidence-ledger.json`；sample smoke 不计入真实目标交付，多目标 scaleout 仍需要后续目标仓 owner receipt。
 - 外部接管入口是 `npm run takeover:test -- --agent-dir <existing-agent-dir> --output-dir <dir> --opl-bin <opl>`：读取目标智能体的描述文件和合同，生成接管测试套件，运行 Agent Lab，再写入接管回执、受门控的自进化候选和 `takeover-mechanism-patch-proposal.json`。
 - 统一接口入口是 `opl agents interfaces --repo-dir <this-repo> --json`：OPL 读取本仓标准合同并生成 CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述。
+- Registry / App 消费入口在 `contracts/opl_domain_manifest_registration.json` 和 `contracts/app_workbench_projection.json`：它们提供 discovery receipt 与 drilldown readiness receipt，只证明 OPL/App 可消费 refs，不宣称 App live rendering、目标事实写入或默认推广已经发生。
 - 机制补丁建议会记录 `mechanism_ref/version`、`editable_surfaces`、`observe/diagnose/edit`、`segment_run_ref`、`evidence_delta_ref`、`next_mechanism_candidate_ref` 和权限边界标记。
 - OPL Agent Lab 的机制面是只读引用控制面。它可以暴露 `opl agent-lab mechanism --json` 和 `opl agent-lab evolve --suite <suite.json> --json`，但不能把测试通过、机制候选或演化片段升级成领域裁决。
 
