@@ -164,6 +164,23 @@
         "forbidden_roles": []
       },
       {
+        "script_ref": "scripts/lib/agent-evidence-materializer.ts",
+        "classes": [
+          "fixture_or_proof_helper",
+          "developer_work_order_materializer"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": [
+          "owner_receipt_refs",
+          "target_capability_improvement_candidate_ref",
+          "developer_patch_work_order_ref",
+          "mechanism_patch_proposal_ref",
+          "typed_blocker_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
         "script_ref": "scripts/lib/target-improvement-policy.ts",
         "classes": [
           "fixture_or_proof_helper",
