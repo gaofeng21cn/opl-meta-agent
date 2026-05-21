@@ -39,7 +39,7 @@ Agent Lab 与 `opl-meta-agent` 是标准消费者。目标 agent 兼容它们，
 
 ## Runtime
 
-本仓只声明 thin sidecar/projection adapter。长期运行、唤醒、排队、恢复、attempt ledger 和 operator workbench 由 OPL Framework 提供。
+本仓只保留 `runtime/authority_functions/` 下的最小 authority refs。长期运行、唤醒、排队、恢复、attempt ledger、sidecar/projection dispatch、status read model 和 operator workbench 由 OPL Framework 生成或托管。
 
 ## Codex-Attempt-Native Landing
 

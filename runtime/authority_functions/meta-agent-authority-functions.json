@@ -109,18 +109,6 @@
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/install-codex-plugin.ts",
-        "classes": [
-          "developer_work_order_materializer"
-        ],
-        "authority_function_refs": [],
-        "consumes_opl_surfaces": [],
-        "writes_only": [
-          "local_codex_plugin_marketplace_entry"
-        ],
-        "forbidden_roles": []
-      },
-      {
         "script_ref": "scripts/lib/domain-pack.ts",
         "classes": [
           "fixture_or_proof_helper"
