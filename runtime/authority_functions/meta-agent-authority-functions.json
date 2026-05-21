@@ -122,6 +122,21 @@
         "forbidden_roles": []
       },
       {
+        "script_ref": "scripts/lib/bootstrap-domain-packs.ts",
+        "classes": [
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": [
+          "candidate_agent_action_catalog_ref",
+          "candidate_agent_stage_control_plane_ref",
+          "real_target_agent_action_catalog_ref",
+          "real_target_agent_stage_control_plane_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
         "script_ref": "scripts/lib/meta-agent-loop.ts",
         "classes": [
           "authority_function_implementation_ref",
