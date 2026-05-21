@@ -47,7 +47,7 @@ Date: `2026-05-21`
 
 ## Immediate thinning items
 
-1. Keep `scripts/lib/work-order-policy.ts` as pure developer work-order materializer helper.
+1. `scripts/lib/work-order-policy.ts` 已落地为 pure developer work-order materializer helper，承载 target patch-loop closeout refs 的共享 helper。
 2. Keep the two large scripts as materializers that consume helper policy and target refs.
 3. Continue migrating stable AI reviewer gate / capability mapping / proposal policy into `agent/prompts/`, `agent/stages/`, `agent/quality_gates/`, `contracts/` or `runtime/authority_functions/`.
 4. Do not add repo-local scheduler, queue, attempt ledger, status/workbench shell, registry owner, Agent Lab runner or promotion gate.

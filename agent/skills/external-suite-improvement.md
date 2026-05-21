@@ -31,12 +31,15 @@
 - `regression_result_refs`
 - `target_agent_version_receipt_refs`
 - `mechanism_patch_proposal_refs`
+- `typed_blocker_refs`
+- `machine_closeout_refs`
 
 ## 质量门槛
 
 - 每个 patch 都追溯到 suite failure 或 owner feedback。
 - 每个 AI reviewer suggestion 都保留 source refs/provenance，并映射到 developer work order 或明确说明不产生 patch。
-- developer work order 必须同时串起 reviewer refs、executor aperture、patch traceability、target verification、owner route、no-forbidden-write proof、canary、rollback 和 version refs。
+- developer work order 必须同时串起 reviewer refs、executor aperture、patch traceability、target verification、owner route、no-forbidden-write proof、canary、rollback、version refs 和 machine closeout refs。
+- machine closeout refs 必须覆盖 blocked suite、developer work order、patch traceability、target verification、runtime/read-model consumption、workspace proof、no-forbidden-write、target owner receipt or typed blocker、patch absorption、worktree cleanup 和 Agent Lab re-evaluation。
 - receipt 证明目标 domain truth、memory body、artifact body、quality verdict 未被写入。
 - 修复被目标 runtime/read-model 消费，而不仅是源码测试通过。
 
