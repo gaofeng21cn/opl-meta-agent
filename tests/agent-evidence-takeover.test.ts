@@ -240,6 +240,56 @@ function writeTargetAgentFixture(agentRepo: string): void {
   });
 }
 
+function writeEfficiencyProductionEvidence(agentRepo: string, withQualityFloor = true): void {
+  const productionPath = path.join(agentRepo, 'contracts/production_acceptance/production-acceptance.json');
+  const productionAcceptance = readJson(productionPath);
+  productionAcceptance.efficiency_non_regression_refs = {
+    ...(withQualityFloor
+      ? { quality_floor_refs: ['quality-floor:med-autoscience/current-publication-quality'] }
+      : {}),
+    latency_baseline_refs: ['latency-baseline:med-autoscience/agent-evidence-tail-before'],
+    usage_cost_refs: ['usage-cost:med-autoscience/agent-evidence-tail-before'],
+    cache_reuse_refs: ['cache-reuse:med-autoscience/agent-evidence-tail-prefix-cache'],
+    target_verification_refs: ['target-verification:med-autoscience/agent-evidence-tail-redrive'],
+  };
+  writeJson(productionPath, productionAcceptance);
+}
+
+function writeEfficiencyAiReviewerEvaluation(filePath: string): void {
+  writeJson(filePath, {
+    reviewer_kind: 'ai_reviewer',
+    model_or_provider: 'gpt-5.5',
+    run_ref: 'run:ai-reviewer/mas/production-efficiency-tail',
+    execution_attempt_ref: 'attempt:executor/mas/production-efficiency-tail',
+    review_attempt_ref: 'attempt:ai-reviewer/mas/production-efficiency-tail',
+    no_shared_context: true,
+    independent_attempt: true,
+    critique: 'Production evidence includes efficiency non-regression refs for latency, usage cost, cache reuse, target verification, and quality floor.',
+    suggestions: [
+      'Materialize a generic target-agent efficiency work order without claiming MAS quality or export readiness.',
+    ],
+    source_refs: [
+      'latency-baseline:med-autoscience/agent-evidence-tail-before',
+      'usage-cost:med-autoscience/agent-evidence-tail-before',
+      'cache-reuse:med-autoscience/agent-evidence-tail-prefix-cache',
+      'quality-floor:med-autoscience/current-publication-quality',
+    ],
+    direct_evidence_refs: [
+      'quality-floor:med-autoscience/current-publication-quality',
+      'target-verification:med-autoscience/agent-evidence-tail-redrive',
+    ],
+    verdict: 'blocked_requires_developer_patch',
+    predicted_impact: 'The work order should preserve quality-floor evidence while improving latency, usage cost, and cache reuse.',
+    canary_refs: ['canary:med-autoscience/production-efficiency-redrive'],
+    rollback_refs: ['rollback:med-autoscience/pre-efficiency-workorder-head'],
+    version_refs: ['version:med-autoscience/current-head'],
+    provenance: {
+      artifact_ref: 'artifact-ref:ai-reviewer/mas-production-efficiency-tail',
+      created_by: 'test-fixture',
+    },
+  });
+}
+
 function writeAiReviewerEvaluation(filePath: string): void {
   writeJson(filePath, {
     reviewer_kind: 'ai_reviewer',
@@ -274,6 +324,119 @@ function writeAiReviewerEvaluation(filePath: string): void {
     },
   });
 }
+
+test('agent:evidence projects production efficiency evidence into work order refs', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-agent-efficiency-'));
+  try {
+    const agentRepo = path.join(outputRoot, 'med-autoscience');
+    const outputDir = path.join(outputRoot, 'out');
+    const fakeOplBin = path.join(outputRoot, 'fake-opl.js');
+    const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+    writeTargetAgentFixture(agentRepo);
+    writeEfficiencyProductionEvidence(agentRepo);
+    writeFakeOplBin(fakeOplBin);
+    writeEfficiencyAiReviewerEvaluation(reviewerEvaluationPath);
+
+    const result = spawnSync(
+      process.execPath,
+      [
+        path.join(repoRoot, 'scripts/agent-evidence-takeover.ts'),
+        '--agent-repo',
+        agentRepo,
+        '--output-dir',
+        outputDir,
+        '--opl-bin',
+        fakeOplBin,
+        '--ai-reviewer-evaluation',
+        reviewerEvaluationPath,
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        maxBuffer: 16 * 1024 * 1024,
+      },
+    );
+
+    assert.equal(result.status, 0, result.stderr);
+    const payload = JSON.parse(result.stdout) as JsonObject;
+    assert.equal(payload.status, 'proposal_recorded_requires_target_owner_gate');
+    const workOrder = readJson(path.join(outputDir, 'developer-patch-work-order.json'));
+    assert.deepEqual(workOrder.efficiency_non_regression_refs.quality_floor_refs, [
+      'quality-floor:med-autoscience/current-publication-quality',
+    ]);
+    assert.deepEqual(workOrder.efficiency_non_regression_refs.latency_baseline_refs, [
+      'latency-baseline:med-autoscience/agent-evidence-tail-before',
+    ]);
+    assert.deepEqual(workOrder.efficiency_non_regression_refs.usage_cost_refs, [
+      'usage-cost:med-autoscience/agent-evidence-tail-before',
+    ]);
+    assert.deepEqual(workOrder.efficiency_non_regression_refs.cache_reuse_refs, [
+      'cache-reuse:med-autoscience/agent-evidence-tail-prefix-cache',
+    ]);
+    assert.deepEqual(workOrder.efficiency_non_regression_refs.target_verification_refs, [
+      'target-verification:med-autoscience/agent-evidence-tail-redrive',
+    ]);
+    assert.deepEqual(
+      workOrder.work_order_completeness.efficiency_non_regression_refs,
+      workOrder.efficiency_non_regression_refs,
+    );
+    assert.deepEqual(
+      workOrder.machine_closeout_refs.efficiency_non_regression_refs,
+      workOrder.efficiency_non_regression_refs,
+    );
+    assert.ok(workOrder.required_verification_refs.includes('target-verification:med-autoscience/agent-evidence-tail-redrive'));
+    assert.equal(workOrder.implementation_controls.quality_floor_non_regression_required, true);
+    assert.equal(workOrder.authority_boundary.can_authorize_target_quality_or_export, false);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
+test('agent:evidence efficiency production evidence without quality floor emits typed blocker only', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-agent-efficiency-blocker-'));
+  try {
+    const agentRepo = path.join(outputRoot, 'med-autoscience');
+    const outputDir = path.join(outputRoot, 'out');
+    const fakeOplBin = path.join(outputRoot, 'fake-opl.js');
+    const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+    writeTargetAgentFixture(agentRepo);
+    writeEfficiencyProductionEvidence(agentRepo, false);
+    writeFakeOplBin(fakeOplBin);
+    writeEfficiencyAiReviewerEvaluation(reviewerEvaluationPath);
+
+    const result = spawnSync(
+      process.execPath,
+      [
+        path.join(repoRoot, 'scripts/agent-evidence-takeover.ts'),
+        '--agent-repo',
+        agentRepo,
+        '--output-dir',
+        outputDir,
+        '--opl-bin',
+        fakeOplBin,
+        '--ai-reviewer-evaluation',
+        reviewerEvaluationPath,
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        maxBuffer: 16 * 1024 * 1024,
+      },
+    );
+
+    assert.equal(result.status, 0, result.stderr);
+    const payload = JSON.parse(result.stdout) as JsonObject;
+    assert.equal(payload.status, 'blocked_efficiency_quality_floor_missing');
+    assert.equal(fs.existsSync(path.join(outputDir, 'mechanism-patch-proposal.json')), false);
+    const typedBlocker = readJson(path.join(outputDir, 'typed-blocker.json'));
+    assert.equal(typedBlocker.blocked_reason, 'efficiency_evidence_requires_quality_floor_refs');
+    assert.ok(typedBlocker.missing_required_fields.includes('efficiency_non_regression_refs.quality_floor_refs'));
+    assert.equal(typedBlocker.authority_boundary.no_executable_work_order_issued, true);
+    assert.equal(typedBlocker.authority_boundary.can_authorize_target_quality_or_export, false);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
 
 test('agent:evidence generates domain Agent Lab suite and proposal artifacts from target agent contracts', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-agent-evidence-'));
