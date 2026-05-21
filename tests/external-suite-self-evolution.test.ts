@@ -86,6 +86,9 @@ function writeAiReviewerEvaluation(filePath: string, overrides: JsonObject = {})
     ],
     verdict: 'blocked_requires_developer_patch',
     predicted_impact: 'The patch should convert reviewer-observed manuscript quality gaps into target-owned quality contracts, prompts, and regression checks without moving publication authority out of MAS.',
+    canary_refs: ['canary:mas/002/high-quality-medical-manuscript-redrive'],
+    rollback_refs: ['rollback:mas/002/pre-reviewer-workorder-head'],
+    version_refs: ['version:mas/002/current-head'],
     provenance: {
       artifact_ref: 'artifact-ref:ai-reviewer/mas/002/high-quality-medical-manuscript',
       reviewer_prompt_ref: 'instructions:mas/high-quality-medical-manuscript-ai-reviewer',
@@ -375,6 +378,9 @@ function writeOwnerReceiptAiReviewerEvaluation(filePath: string, overrides: Json
     ],
     verdict: 'accepted_no_patch_required',
     predicted_impact: 'The coordination record should preserve target-owner receipt authority while making Agent Lab consumption auditable.',
+    canary_refs: ['canary:target-agent/owner-receipt-projection'],
+    rollback_refs: ['rollback:target-agent/owner-receipt-coordination-record'],
+    version_refs: ['version:target-agent/current-head'],
     provenance: {
       artifact_ref: 'artifact-ref:ai-reviewer/target-agent/owner-receipt-consumption',
       reviewer_prompt_ref: 'instructions:target-agent/owner-receipt-reviewer',
@@ -688,6 +694,8 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     assert.deepEqual(workOrder.ai_reviewer_review.suggestions, reviewerEvaluation.suggestions);
     assert.equal(workOrder.ai_reviewer_review.predicted_impact, reviewerEvaluation.predicted_impact);
     assert.deepEqual(workOrder.ai_reviewer_independence.direct_evidence_refs, reviewerEvaluation.direct_evidence_refs);
+    assert.equal(workOrder.ai_reviewer_scorecard.verdict, reviewerEvaluation.verdict);
+    assert.deepEqual(workOrder.ai_reviewer_recovery_refs.canary_refs, reviewerEvaluation.canary_refs);
     assert.ok(workOrder.ahe_developer_work_order.failure_evidence.includes('rubric-gap:mas/002/hdl-harmonization-and-sensitivity'));
     assert.match(workOrder.ahe_developer_work_order.root_cause, /capability gaps/);
     assert.ok(workOrder.ahe_developer_work_order.targeted_fix.includes('quality_contract_ref:prediction_model_first_draft_quality'));
@@ -698,6 +706,28 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     assert.ok(workOrder.rollback_version_refs.includes('target_agent_previous_head_ref'));
     assert.ok(workOrder.owner_route_refs.includes('target-agent-owner:med-autoscience'));
     assert.equal(workOrder.no_forbidden_write_proof.can_write_target_domain_truth, false);
+    assert.equal(workOrder.work_order_completeness.required_fields_present, true);
+    assert.ok(workOrder.work_order_completeness.reviewer_refs.includes(reviewerEvaluationPath));
+    assert.ok(workOrder.work_order_completeness.reviewer_refs.includes('paper/evidence_ledger.json'));
+    assert.equal(workOrder.work_order_completeness.executor_aperture.executor_first, true);
+    assert.equal(workOrder.work_order_completeness.executor_aperture.codex_first, true);
+    assert.equal(workOrder.work_order_completeness.executor_aperture.executor, 'codex_cli');
+    assert.ok(workOrder.work_order_completeness.executor_aperture.allowed_write_surfaces.includes('quality_contract_ref'));
+    assert.ok(workOrder.work_order_completeness.executor_aperture.forbidden_write_surfaces.includes('target_quality_or_export_verdict'));
+    assert.equal(
+      workOrder.work_order_completeness.patch_traceability.matrix_ref,
+      `${workOrder.work_order_id}#/patch_traceability_matrix`,
+    );
+    assert.equal(workOrder.work_order_completeness.patch_traceability.traceability_status, 'gap_to_patch_refs_mapped');
+    assert.ok(workOrder.work_order_completeness.target_verification.required_refs.includes('target_repo_test_receipt'));
+    assert.equal(workOrder.work_order_completeness.target_verification.requires_target_owner_receipt_or_typed_blocker, true);
+    assert.ok(workOrder.work_order_completeness.owner_route.route_refs.includes('target-agent-owner:med-autoscience'));
+    assert.equal(workOrder.work_order_completeness.no_forbidden_write_proof.can_write_target_domain_truth, false);
+    assert.ok(workOrder.work_order_completeness.no_forbidden_write_proof.proof_refs.includes('no_target_domain_truth_write_proof'));
+    assert.ok(workOrder.work_order_completeness.canary_refs.includes('canary:mas/002/high-quality-medical-manuscript-redrive'));
+    assert.ok(workOrder.work_order_completeness.rollback_refs.includes('rollback:mas/002/pre-reviewer-workorder-head'));
+    assert.ok(workOrder.work_order_completeness.version_refs.includes('version:mas/002/current-head'));
+    assert.match(workOrder.work_order_completeness.fail_closed_blocker_ref, /typed-blocker:opl-meta-agent\/med-autoscience/);
     assert.equal(workOrder.version_management.absorb_back_required, true);
     assert.equal(workOrder.version_management.temporary_worktree_cleanup_required, true);
     assert.equal(workOrder.authority_boundary.can_modify_target_agent_source_repo, true);
@@ -871,6 +901,14 @@ test('target-agent owner receipt Agent Lab suite becomes a no-patch result-consu
     assert.ok(workOrder.rollback_version_refs.includes('owner_receipt_coordination_record'));
     assert.equal(workOrder.ahe_developer_work_order.predicted_impact, reviewerEvaluation.predicted_impact);
     assert.deepEqual(workOrder.patch_traceability_matrix, []);
+    assert.equal(workOrder.work_order_completeness.required_fields_present, true);
+    assert.equal(workOrder.work_order_completeness.executor_aperture.allowed_scope, 'coordination_record_only');
+    assert.deepEqual(workOrder.work_order_completeness.executor_aperture.allowed_write_surfaces, []);
+    assert.equal(workOrder.work_order_completeness.patch_traceability.traceability_status, 'no_source_patch_required');
+    assert.ok(workOrder.work_order_completeness.target_verification.required_refs.includes('target_owner_receipt_projection_ref'));
+    assert.ok(workOrder.work_order_completeness.canary_refs.includes('canary:target-agent/owner-receipt-projection'));
+    assert.ok(workOrder.work_order_completeness.rollback_refs.includes('owner_receipt_coordination_record'));
+    assert.ok(workOrder.work_order_completeness.version_refs.includes('owner_receipt_coordination_record'));
     assert.equal(workOrder.implementation_controls.coordination_record_only, true);
     assert.equal(workOrder.implementation_controls.source_patch_required, false);
     assert.equal(workOrder.implementation_controls.developer_patch_receipt_required, false);
@@ -1069,6 +1107,53 @@ test('external suite improvement fails closed when AI reviewer predicted impact 
 
     assert.notEqual(result.status, 0);
     assert.match(result.stderr, /predicted_impact must be a non-empty string/);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'developer-patch-work-order.json')), false);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
+test('external suite improvement fails closed when reviewer direct evidence is scaffold-only', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-external-suite-scaffold-reviewer-'));
+  try {
+    const targetAgentDir = path.join(outputRoot, 'med-autoscience');
+    writeJson(path.join(targetAgentDir, 'contracts/domain_descriptor.json'), {
+      domain_id: 'med-autoscience',
+      domain_label: 'MedAutoScience',
+      delivery_domain: 'medical_research',
+    });
+    writeMedicalTargetImprovementPolicy(targetAgentDir);
+    const suitePath = path.join(outputRoot, 'medical-manuscript-quality-suite.json');
+    writeJson(suitePath, buildBlockedMedicalManuscriptSuite(suitePath));
+    const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+    writeAiReviewerEvaluation(reviewerEvaluationPath, {
+      direct_evidence_refs: ['suite:mas/002/generated-scaffold'],
+    });
+
+    const result = spawnSync(
+      process.execPath,
+      [
+        path.join(repoRoot, 'scripts/improve-from-agent-lab-suite.ts'),
+        '--suite',
+        suitePath,
+        '--target-agent-dir',
+        targetAgentDir,
+        '--output-dir',
+        outputRoot,
+        '--ai-reviewer-evaluation',
+        reviewerEvaluationPath,
+        '--opl-bin',
+        oplBin,
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        maxBuffer: 16 * 1024 * 1024,
+      },
+    );
+
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /direct_evidence_refs must include direct evidence beyond suite\/scaffold refs/);
     assert.equal(fs.existsSync(path.join(outputRoot, 'developer-patch-work-order.json')), false);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });

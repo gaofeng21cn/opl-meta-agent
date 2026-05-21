@@ -265,6 +265,9 @@ function writeAiReviewerEvaluation(filePath: string): void {
     ],
     verdict: 'blocked_requires_developer_patch',
     predicted_impact: 'The patch work order should expose missing owner-route and no-forbidden-write proof refs without writing MAS truth or publication verdicts.',
+    canary_refs: ['canary:med-autoscience/production-evidence-tail-redrive'],
+    rollback_refs: ['rollback:med-autoscience/pre-agent-evidence-workorder-head'],
+    version_refs: ['version:med-autoscience/current-head'],
     provenance: {
       artifact_ref: 'artifact-ref:ai-reviewer/mas-production-evidence-tail',
       created_by: 'test-fixture',
@@ -350,6 +353,10 @@ test('agent:evidence generates domain Agent Lab suite and proposal artifacts fro
     assert.equal(workOrder.ai_reviewer_independence.independent_attempt, true);
     assert.equal(workOrder.ai_reviewer_independence.execution_attempt_ref, 'attempt:executor/mas/production-evidence-tail');
     assert.equal(workOrder.ai_reviewer_independence.review_attempt_ref, 'attempt:ai-reviewer/mas/production-evidence-tail');
+    assert.equal(workOrder.ai_reviewer_scorecard.verdict, 'blocked_requires_developer_patch');
+    assert.deepEqual(workOrder.ai_reviewer_recovery_refs.canary_refs, [
+      'canary:med-autoscience/production-evidence-tail-redrive',
+    ]);
     assert.equal(workOrder.target_owner_route.domain_ready_requires_owner_receipt_or_typed_blocker, true);
     assert.equal(workOrder.implementation_controls.proposal_only, true);
     assert.equal(workOrder.implementation_controls.refs_only, true);
@@ -366,6 +373,33 @@ test('agent:evidence generates domain Agent Lab suite and proposal artifacts fro
     assert.ok(workOrder.ahe_developer_work_order.targeted_fix.includes('agent:evidence-tail/med-autoscience/no-forbidden-write-proof'));
     assert.match(workOrder.ahe_developer_work_order.predicted_impact, /no-forbidden-write proof refs/);
     assert.ok(workOrder.verification_command_refs.includes('scripts/verify.sh'));
+    assert.equal(workOrder.work_order_completeness.required_fields_present, true);
+    assert.ok(workOrder.work_order_completeness.reviewer_refs.includes(reviewerEvaluationPath));
+    assert.ok(workOrder.work_order_completeness.reviewer_refs.includes('contracts/agent_lab_handoff.json'));
+    assert.equal(workOrder.work_order_completeness.executor_aperture.executor_first, true);
+    assert.equal(workOrder.work_order_completeness.executor_aperture.codex_first, true);
+    assert.equal(workOrder.work_order_completeness.executor_aperture.executor, 'codex_cli');
+    assert.ok(workOrder.work_order_completeness.executor_aperture.allowed_write_surfaces.includes('agent/prompts'));
+    assert.ok(workOrder.work_order_completeness.executor_aperture.forbidden_write_surfaces.includes('current_package'));
+    assert.equal(
+      workOrder.work_order_completeness.patch_traceability.matrix_ref,
+      `${workOrder.work_order_id}#/patch_traceability_matrix`,
+    );
+    assert.equal(
+      workOrder.work_order_completeness.patch_traceability.traceability_status,
+      'reviewer_refs_to_agent_evidence_tail_refs_mapped',
+    );
+    assert.ok(workOrder.work_order_completeness.target_verification.required_refs.includes('scripts/verify.sh'));
+    assert.equal(workOrder.work_order_completeness.target_verification.requires_no_forbidden_write_proof, true);
+    assert.ok(workOrder.work_order_completeness.owner_route.route_refs.includes('owner-route:med-autoscience/MedAutoScience'));
+    assert.ok(
+      workOrder.work_order_completeness.no_forbidden_write_proof.proof_refs.includes(
+        'no-forbidden-write:med-autoscience/production-evidence-tail',
+      ),
+    );
+    assert.ok(workOrder.work_order_completeness.canary_refs.includes('canary:med-autoscience/production-evidence-tail-redrive'));
+    assert.ok(workOrder.work_order_completeness.rollback_refs.includes('rollback:med-autoscience/pre-agent-evidence-workorder-head'));
+    assert.ok(workOrder.work_order_completeness.version_refs.includes('version:med-autoscience/current-head'));
     assertTargetPatchLoopMachineRefs(workOrder.machine_closeout_refs, {
       blockedSuiteResultRef: workOrder.source_agent_lab_result_ref,
       developerPatchWorkOrderRef: workOrder.work_order_id,
@@ -379,6 +413,7 @@ test('agent:evidence generates domain Agent Lab suite and proposal artifacts fro
     const candidate = readJson(path.join(outputDir, 'target-capability-improvement-candidate.json'));
     assert.equal(candidate.status, 'candidate_recorded_requires_target_owner_gate');
     assert.equal(candidate.ai_reviewer_independence.no_shared_context, true);
+    assert.equal(candidate.ai_reviewer_scorecard.verdict, 'blocked_requires_developer_patch');
     assert.deepEqual(candidate.ai_reviewer_evidence.direct_evidence_refs, [
       'contracts/production_acceptance/production-acceptance.json',
       'contracts/agent_lab_handoff.json',
@@ -457,6 +492,18 @@ test('agent:evidence emits typed blocker and no delivery receipt when reviewer e
     assert.ok(typedBlocker.required_verification_refs.includes('scripts/verify.sh'));
     assert.ok(typedBlocker.rollback_version_refs.includes('target_agent_current_head_ref'));
     assert.ok(typedBlocker.owner_route_refs.includes('owner-route:med-autoscience/MedAutoScience'));
+    assert.equal(typedBlocker.work_order_completeness.required_fields_present, false);
+    assert.ok(typedBlocker.work_order_completeness.missing_required_fields.includes('ai_reviewer_evidence.direct_evidence_refs'));
+    assert.equal(
+      typedBlocker.work_order_completeness.patch_traceability.traceability_status,
+      'blocked_missing_reviewer_refs',
+    );
+    assert.ok(typedBlocker.work_order_completeness.target_verification.required_refs.includes('scripts/verify.sh'));
+    assert.ok(
+      typedBlocker.work_order_completeness.fail_closed_blocker_ref.includes(
+        'missing-required-work-order-field',
+      ),
+    );
     assert.match(typedBlocker.ahe_developer_work_order.root_cause, /reviewer evaluation is missing/);
     assert.match(typedBlocker.ahe_developer_work_order.predicted_impact, /Blocks delivery receipt/);
     assert.ok(typedBlocker.verification_command_refs.includes('scripts/verify.sh'));
@@ -473,6 +520,10 @@ test('agent:evidence emits typed blocker and no delivery receipt when reviewer e
     assert.ok(workOrder.ahe_developer_work_order.failure_evidence.includes('scripts/verify.sh'));
     assert.equal(workOrder.implementation_controls.target_owner_receipt_or_typed_blocker_required, true);
     assert.ok(workOrder.editable_surface_limits.forbidden_write_surfaces.includes('target quality verdict'));
+    assert.equal(workOrder.work_order_completeness.required_fields_present, false);
+    assert.ok(workOrder.work_order_completeness.missing_required_fields.includes('ai_reviewer_review'));
+    assert.deepEqual(workOrder.work_order_completeness.reviewer_refs, []);
+    assert.ok(workOrder.work_order_completeness.canary_refs.includes('agent-lab-canary:med-autoscience/production-evidence-tail'));
     assertTargetPatchLoopMachineRefs(workOrder.machine_closeout_refs, {
       blockedSuiteResultRef: workOrder.source_agent_lab_result_ref,
       developerPatchWorkOrderRef: workOrder.work_order_id,
