@@ -35,7 +35,7 @@
     "memory_body",
     "owner_receipt",
     "typed_blocker",
-    "sidecar_or_projection_adapter",
+    "refs_only_domain_adapter",
     "domain_entry_and_tests"
   ],
   "forbidden_generic_owner_roles": [

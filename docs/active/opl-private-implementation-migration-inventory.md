@@ -14,6 +14,8 @@ Date: `2026-05-21`
 
 2026-05-21 本轮最小清理已把 `agent:evidence` 与 `improve:external-suite` 共享的 target patch-loop machine refs、runtime/read-model consumption proof、target workspace environment proof、no-patch/source-patch closeout evidence 和默认 forbidden target surfaces 集中到 `scripts/lib/work-order-policy.ts`。这只是 repo-local materializer helper 收薄：OPL Framework 仍持有 Agent Lab runner、attempt ledger、queue、provider receipt、registry、App/workbench shell、promotion gate 和 generated interface owner。
 
+同轮 family-retire-legacy-oma 清理已删除无 active caller 的 repo-local Codex plugin/Skill wrapper：`plugins/opl-meta-agent/**`、`scripts/install-codex-plugin.ts`、`tests/codex-plugin.test.ts`；同时删除仅承载占位 README 的 `runtime/sidecar/`、`runtime/projection_builders/`、`runtime/lifecycle_adapters/`。当前 `runtime/` 只允许 `authority_functions/`，OPL generated Skill/product-entry、sidecar/projection dispatch、status read model 和 workbench shell 继续由 OPL Framework 生成或托管。
+
 ## Classification
 
 | class | 含义 |
@@ -35,6 +37,15 @@ Date: `2026-05-21`
 | `contracts/app_workbench_projection.json` | n/a | `already_thin_adapter` | contracts tests, OPL App consumption refs | refs/status/receipt/blocker projection contract | 已声明 App/workbench owner is OPL; OMA only supplies refs | OMA work-order/candidate refs | App/workbench display shell | keep refs-only; live App screenshot/evidence from OPL/App side | `tests/contracts.test.ts` |
 | `contracts/opl_domain_manifest_registration.json` | n/a | `already_thin_adapter` | contracts tests, OPL registry/discovery refs | registry discovery metadata | registry owner is OPL; OMA supplies registration refs only | domain descriptor/handoff refs | registry/discovery owner | OPL registry receipt required before live claim | `tests/contracts.test.ts` |
 | `runtime/authority_functions/meta-agent-authority-functions.json` | n/a | `domain_authority_retained` | contracts tests, authority function refs | explicit authority refs for package builder and proposal authorizer | minimal refs-only authority functions belong OMA, but cannot own runtime | candidate package builder, proposal authorizer refs | none except OPL invocation shell | keep no generic owner flags; scripts must match implementation refs | `tests/contracts.test.ts` |
+
+## Retired Legacy Surfaces
+
+| retired surface | 退役证据 | 替代 owner / surface | 验证入口 |
+| --- | --- | --- | --- |
+| `plugins/opl-meta-agent/**` | 只由 repo-local installer 和 dedicated plugin test 保活；不在 action/stage contracts、package scripts 或 generated interface test 中作为 active caller | OPL Framework 从 `contracts/action_catalog.json` 与 `contracts/stage_control_plane.json` 生成 Skill/product-entry/tool descriptors | `tests/contracts.test.ts` 的 generated interface 与 no local wrapper 断言 |
+| `scripts/install-codex-plugin.ts` | 仅写本仓 `.agents/plugins/marketplace.json`，属于 repo-owned local plugin wrapper materializer；已无 allowed active caller | OPL registry / generated surface handoff | `runtime/authority_functions` script morphology 断言 |
+| `tests/codex-plugin.test.ts` | 只测试上述 repo-local wrapper 安装路径，属于兼容测试 | `tests/contracts.test.ts` 验证 OPL generated interfaces 和 manifest registration refs | `npm test` |
+| `runtime/sidecar/`, `runtime/projection_builders/`, `runtime/lifecycle_adapters/` | 仅包含占位 README，无 active caller 或 authority function refs | `contracts/generated_surface_handoff.json`、`contracts/app_workbench_projection.json` 与 OPL-hosted runtime surfaces | runtime source shape 断言 |
 
 ## Bad-smell flags
 

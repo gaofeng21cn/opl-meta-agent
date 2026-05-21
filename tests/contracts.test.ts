@@ -616,6 +616,18 @@ test('OPL owns generated interface surfaces for opl-meta-agent contract pack', (
   assert.ok(privatePolicy.forbidden_private_surface_classes.includes('generic_cli_mcp_product_wrapper'));
 });
 
+test('repo source has no local generated-surface wrappers or runtime adapter placeholders', () => {
+  assert.equal(fs.existsSync(path.join(repoRoot, 'plugins')), false, 'repo-local Codex plugin wrapper should not exist');
+  assert.deepEqual(
+    fs.readdirSync(path.join(repoRoot, 'runtime')).sort(),
+    ['authority_functions'],
+  );
+  assert.deepEqual(
+    fs.readdirSync(path.join(repoRoot, 'runtime', 'authority_functions')).sort(),
+    ['meta-agent-authority-functions.json'],
+  );
+});
+
 test('registration, App workbench projection, and scaleout evidence contracts are consumable refs-only surfaces', () => {
   const registration = readJson('contracts/opl_domain_manifest_registration.json');
   const appProjection = readJson('contracts/app_workbench_projection.json');

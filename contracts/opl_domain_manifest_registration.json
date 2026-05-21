@@ -70,8 +70,7 @@
       "target_domain_truth_written"
     ],
     "verified_by_refs": [
-      "tests/contracts.test.ts",
-      "tests/codex-plugin.test.ts"
+      "tests/contracts.test.ts"
     ],
     "authority_boundary": {
       "refs_only": true,
