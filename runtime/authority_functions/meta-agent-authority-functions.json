@@ -196,6 +196,23 @@
         "forbidden_roles": []
       },
       {
+        "script_ref": "scripts/lib/external-suite-materializer.ts",
+        "classes": [
+          "fixture_or_proof_helper",
+          "developer_work_order_materializer"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": [
+          "developer_patch_work_order_ref",
+          "typed_blocker_ref",
+          "target_runtime_read_model_consumption_ref",
+          "workspace_environment_proof_ref",
+          "no_forbidden_write_proof_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
         "script_ref": "scripts/lib/target-improvement-policy.ts",
         "classes": [
           "fixture_or_proof_helper",
