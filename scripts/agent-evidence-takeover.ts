@@ -21,8 +21,23 @@ import {
   buildTargetPatchLoopMachineRefs,
   buildTargetWorkspaceEnvironmentVerification,
   buildWorkOrderBundleRefs,
+  firstString,
+  forbiddenWriteSurfaces,
+  noForbiddenWriteProofRefs,
+  ownerRouteRef,
+  productionAcceptanceEvidenceRefs,
+  records,
+  refsFromEntries,
+  refsFromRecord,
+  requiredReturnShapes,
+  stringList,
+  stringValue,
+  targetOwnerRoute,
   targetPatchLoopCloseoutEvidence,
+  taskRequiredReturnShapeRefs,
+  uniqueRefs,
   validateDeveloperPatchWorkOrder,
+  verificationRefs,
 } from './lib/work-order-policy.ts';
 
 type AgentEvidenceArgs = {
@@ -226,91 +241,8 @@ function loadAgentContracts(agentRepo: string, productionAcceptancePath: string 
   };
 }
 
-function refsFromEntries(entries: unknown): string[] {
-  if (!Array.isArray(entries)) {
-    return [];
-  }
-  return entries
-    .map((entry) => {
-      if (typeof entry === 'string') {
-        return entry;
-      }
-      if (entry && typeof entry === 'object' && typeof (entry as JsonObject).ref === 'string') {
-        return (entry as JsonObject).ref;
-      }
-      return null;
-    })
-    .filter((ref): ref is string => Boolean(ref && ref.trim()))
-    .map((ref) => ref.trim());
-}
-
-function verificationRefs(productionAcceptance: JsonObject): string[] {
-  return unique([
-    ...refsFromEntries(productionAcceptance.domain_acceptance_receipt?.next_verification_command_refs),
-    ...refsFromEntries(productionAcceptance.refs?.next_verification_command_refs),
-    ...refsFromEntries(productionAcceptance.closure_evidence?.next_verification_ref ? [
-      productionAcceptance.closure_evidence.next_verification_ref,
-    ] : []),
-  ]);
-}
-
-function refsFromRecord(value: unknown): string[] {
-  if (typeof value === 'string') {
-    return [value];
-  }
-  if (!value || typeof value !== 'object') {
-    return [];
-  }
-  if (Array.isArray(value)) {
-    return value.flatMap(refsFromRecord);
-  }
-  const record = value as JsonObject;
-  return [
-    ...(typeof record.ref === 'string' ? [record.ref] : []),
-    ...Object.entries(record)
-      .filter(([key]) => key !== 'ref')
-      .flatMap(([, nested]) => refsFromRecord(nested)),
-  ];
-}
-
-function productionAcceptanceEvidenceRefs(productionAcceptance: JsonObject): string[] {
-  return unique([
-    ...refsFromRecord(productionAcceptance.domain_acceptance_receipt),
-    ...refsFromRecord(productionAcceptance.refs),
-    ...refsFromEntries(productionAcceptance.closure_evidence?.owner_receipt_ref ? [
-      productionAcceptance.closure_evidence.owner_receipt_ref,
-    ] : []),
-  ]);
-}
-
 function unique(values: string[]): string[] {
-  return [...new Set(values.filter((value) => value.trim().length > 0))];
-}
-
-function textList(value: unknown): string[] {
-  return Array.isArray(value)
-    ? unique(value.filter((entry): entry is string => typeof entry === 'string').map((entry) => entry.trim()))
-    : [];
-}
-
-function records(value: unknown): JsonObject[] {
-  return Array.isArray(value)
-    ? value.filter((entry): entry is JsonObject => Boolean(entry) && typeof entry === 'object' && !Array.isArray(entry))
-    : [];
-}
-
-function stringValue(value: unknown): string | null {
-  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
-}
-
-function firstString(values: unknown[], fallback: string): string {
-  for (const value of values) {
-    const text = stringValue(value);
-    if (text) {
-      return text;
-    }
-  }
-  return fallback;
+  return uniqueRefs(values);
 }
 
 function targetAgentIdentity(contracts: AgentContracts, agentRepo: string): TargetAgentIdentity {
@@ -346,50 +278,6 @@ function handoffTasks(agentLabHandoff: JsonObject): JsonObject[] {
   return records(agentLabHandoff.external_suite_seed?.tasks);
 }
 
-function ownerRouteRef(ownerRoute: unknown, targetAgent: TargetAgentIdentity): string | null {
-  const normalized = stringValue(ownerRoute);
-  if (!normalized) {
-    return null;
-  }
-  if (normalized.startsWith('owner-route:')) {
-    return normalized;
-  }
-  if (normalized.includes('/')) {
-    return `owner-route:${normalized}`;
-  }
-  return `owner-route:${targetAgent.domainId}/${normalized}`;
-}
-
-function requiredReturnShapes(contracts: AgentContracts): string[] {
-  return unique([
-    ...textList(contracts.productionAcceptance.production_like_receipt_chain?.required_return_shapes),
-    ...textList(contracts.productionAcceptance.domain_acceptance_receipt?.required_return_shapes),
-  ]);
-}
-
-function taskRequiredReturnShapeRefs(tasks: JsonObject[], targetAgent: TargetAgentIdentity): string[] {
-  return unique(tasks.flatMap((task) => (
-    textList(task.required_return_shapes).map((shape) => `required-return-shape:${targetAgent.domainId}/${shape}`)
-  )));
-}
-
-function forbiddenWriteSurfaces(contracts: AgentContracts): string[] {
-  return unique([
-    ...TARGET_AGENT_FORBIDDEN_WRITE_SURFACES,
-    ...textList(contracts.generatedSurfaceHandoff.generated_surface_policy?.must_not_write),
-    ...textList(contracts.productionAcceptance.authority_boundary?.forbidden_write_surfaces),
-  ]);
-}
-
-function noForbiddenWriteProofRefs(contracts: AgentContracts, targetAgent: TargetAgentIdentity): string[] {
-  const refs = unique([
-    ...refsFromEntries(contracts.productionAcceptance.authority_boundary?.no_forbidden_write_proof_refs),
-    ...refsFromEntries(contracts.generatedSurfaceHandoff.no_forbidden_write_proof_refs),
-    ...refsFromEntries(contracts.agentLabHandoff.no_forbidden_write_proof_refs),
-  ]);
-  return refs.length > 0 ? refs : [`no-forbidden-write:${targetAgent.domainId}/production-evidence-tail`];
-}
-
 function sourceContractRefs(contracts: AgentContracts): string[] {
   return [
     contracts.productionAcceptanceRef,
@@ -398,19 +286,6 @@ function sourceContractRefs(contracts: AgentContracts): string[] {
     'contracts/generated_surface_handoff.json',
     'contracts/owner_receipt_contract.json',
   ];
-}
-
-function targetOwnerRoute(contracts: AgentContracts): JsonObject {
-  const boundary = contracts.productionAcceptance.authority_boundary ?? {};
-  return {
-    domain_ready_requires_owner_receipt_or_typed_blocker:
-      boundary.domain_ready_requires_owner_receipt_or_typed_blocker === true,
-    quality_or_export_ready_requires_target_owner_gate:
-      boundary.quality_or_export_ready_requires_target_owner_gate === true,
-    artifact_mutation_requires_owner_receipt:
-      boundary.artifact_mutation_requires_owner_receipt === true,
-    source_authority_boundary_ref: `${contracts.productionAcceptanceRef}#/authority_boundary`,
-  };
 }
 
 function productionEvidenceGate(contracts: AgentContracts, targetAgent: TargetAgentIdentity): JsonObject {
@@ -492,7 +367,7 @@ function buildAgentLabSuite({
       can_mutate_target_artifact_body: false,
       can_authorize_target_quality_or_export: false,
       can_promote_default_agent_without_gate: false,
-      forbidden_write_surfaces: forbiddenWriteSurfaces(contracts),
+    forbidden_write_surfaces: forbiddenWriteSurfaces(contracts, TARGET_AGENT_FORBIDDEN_WRITE_SURFACES),
     },
     tasks: [
       {
@@ -683,7 +558,7 @@ function buildCapabilityCandidate({
     ],
     editable_surface_limits: {
       editable_surfaces: TARGET_AGENT_EDITABLE_SURFACES,
-      forbidden_write_surfaces: forbiddenWriteSurfaces(contracts),
+      forbidden_write_surfaces: forbiddenWriteSurfaces(contracts, TARGET_AGENT_FORBIDDEN_WRITE_SURFACES),
       proposal_only: true,
       refs_only: true,
     },
@@ -733,18 +608,18 @@ function buildDeveloperWorkOrder({
   ]);
   const reviewerEvidenceRefs = capabilityCandidate.ai_reviewer_evidence
     ? unique([
-        ...textList(capabilityCandidate.ai_reviewer_evidence.source_refs),
-        ...textList(capabilityCandidate.ai_reviewer_evidence.direct_evidence_refs),
+        ...stringList(capabilityCandidate.ai_reviewer_evidence.source_refs),
+        ...stringList(capabilityCandidate.ai_reviewer_evidence.direct_evidence_refs),
       ])
     : [];
-  const noForbiddenRefs = textList(capabilityCandidate.no_forbidden_write?.proof_refs);
+  const noForbiddenRefs = stringList(capabilityCandidate.no_forbidden_write?.proof_refs);
   const reviewerPresent = capabilityCandidate.ai_reviewer_status === 'present';
   const recoveryRefs = capabilityCandidate.ai_reviewer_recovery_refs ?? {};
   const reviewerPoolRefs = reviewerPresent
     ? unique([
         String(capabilityCandidate.ai_reviewer_evaluation_ref),
-        ...textList(capabilityCandidate.ai_reviewer_evidence?.source_refs),
-        ...textList(capabilityCandidate.ai_reviewer_evidence?.direct_evidence_refs),
+        ...stringList(capabilityCandidate.ai_reviewer_evidence?.source_refs),
+        ...stringList(capabilityCandidate.ai_reviewer_evidence?.direct_evidence_refs),
       ])
     : [];
   const machineCloseoutRefs = buildTargetPatchLoopMachineRefs({
@@ -813,7 +688,7 @@ function buildDeveloperWorkOrder({
       targetCloseoutRefs: bundleRefs.target_closeout_refs as string[],
       reviewerRefs: reviewerPoolRefs,
       workOrderId,
-      proposedChangeRefs: textList(capabilityCandidate.proposed_change_refs),
+      proposedChangeRefs: stringList(capabilityCandidate.proposed_change_refs),
       traceabilityStatus: reviewerPresent
         ? 'reviewer_refs_to_agent_evidence_tail_refs_mapped'
         : 'blocked_missing_reviewer_refs',
@@ -826,21 +701,21 @@ function buildDeveloperWorkOrder({
       noForbiddenWriteProofRefs: noForbiddenRefs,
       executorAllowedScope: 'refs_only_target_agent_owner_gated_patch_proposal',
       executorAllowedWriteSurfaces: TARGET_AGENT_EDITABLE_SURFACES,
-      executorForbiddenWriteSurfaces: textList(capabilityCandidate.editable_surface_limits?.forbidden_write_surfaces)
+      executorForbiddenWriteSurfaces: stringList(capabilityCandidate.editable_surface_limits?.forbidden_write_surfaces)
         .length
-        ? textList(capabilityCandidate.editable_surface_limits?.forbidden_write_surfaces)
+        ? stringList(capabilityCandidate.editable_surface_limits?.forbidden_write_surfaces)
         : TARGET_AGENT_FORBIDDEN_WRITE_SURFACES,
       canaryRefs: [
-        ...textList(recoveryRefs.canary_refs),
+        ...stringList(recoveryRefs.canary_refs),
         `agent-lab-canary:${targetAgent.domainId}/production-evidence-tail`,
       ],
       rollbackRefs: [
-        ...textList(recoveryRefs.rollback_refs),
+        ...stringList(recoveryRefs.rollback_refs),
         'target_agent_current_head_ref',
         'developer_patch_branch_or_worktree_ref',
       ],
       versionRefs: [
-        ...textList(recoveryRefs.version_refs),
+        ...stringList(recoveryRefs.version_refs),
         'target_agent_current_head_ref',
         'developer_patch_branch_or_worktree_ref',
         'owner_receipt_or_typed_blocker_version_ref',
@@ -875,7 +750,7 @@ function buildDeveloperWorkOrder({
       independent_reviewer_or_auditor_receipt_required: true,
       no_forbidden_write_proof_required: true,
       verification_command_refs_required: true,
-      forbidden_write_surfaces: forbiddenWriteSurfaces(contracts),
+      forbidden_write_surfaces: forbiddenWriteSurfaces(contracts, TARGET_AGENT_FORBIDDEN_WRITE_SURFACES),
       required_closeout_evidence: targetPatchLoopCloseoutEvidence({
         sourcePatchRequired: capabilityCandidate.ai_reviewer_status === 'present',
       }),
