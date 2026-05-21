@@ -20,6 +20,7 @@ import {
   buildRuntimeConsumptionVerification,
   buildTargetPatchLoopMachineRefs,
   buildTargetWorkspaceEnvironmentVerification,
+  buildWorkOrderBundleRefs,
   targetPatchLoopCloseoutEvidence,
   validateDeveloperPatchWorkOrder,
 } from './lib/work-order-policy.ts';
@@ -739,6 +740,26 @@ function buildDeveloperWorkOrder({
   const noForbiddenRefs = textList(capabilityCandidate.no_forbidden_write?.proof_refs);
   const reviewerPresent = capabilityCandidate.ai_reviewer_status === 'present';
   const recoveryRefs = capabilityCandidate.ai_reviewer_recovery_refs ?? {};
+  const reviewerPoolRefs = reviewerPresent
+    ? unique([
+        String(capabilityCandidate.ai_reviewer_evaluation_ref),
+        ...textList(capabilityCandidate.ai_reviewer_evidence?.source_refs),
+        ...textList(capabilityCandidate.ai_reviewer_evidence?.direct_evidence_refs),
+      ])
+    : [];
+  const machineCloseoutRefs = buildTargetPatchLoopMachineRefs({
+    domainId: targetAgent.domainId,
+    suiteResultRef: stringValue(suiteResult.result_id) ?? stableId('agent_lab_result', [workOrderId]),
+    workOrderId,
+    requiredVerificationRefs: verificationCommandRefs,
+    noForbiddenWriteProofRefs: noForbiddenRefs,
+  });
+  const bundleRefs = buildWorkOrderBundleRefs({
+    domainId: targetAgent.domainId,
+    workOrderId,
+    reviewerRefs: reviewerPoolRefs,
+    machineCloseoutRefs,
+  });
   return {
     surface_kind: 'opl_meta_agent_target_developer_patch_work_order',
     version: 'opl-meta-agent.target-developer-patch-work-order.v1',
@@ -774,6 +795,7 @@ function buildDeveloperWorkOrder({
           review_provenance: capabilityCandidate.review_provenance,
         }
       : {}),
+    ...bundleRefs,
     work_order_completeness: buildRefsOnlyWorkOrderCompleteness({
       requiredFieldsPresent: reviewerPresent,
       missingRequiredFields: [
@@ -785,13 +807,11 @@ function buildDeveloperWorkOrder({
         'ai_reviewer_scorecard.verdict',
         'review_provenance',
       ],
-      reviewerRefs: reviewerPresent
-        ? [
-            String(capabilityCandidate.ai_reviewer_evaluation_ref),
-            ...textList(capabilityCandidate.ai_reviewer_evidence?.source_refs),
-            ...textList(capabilityCandidate.ai_reviewer_evidence?.direct_evidence_refs),
-          ]
-        : [],
+      executorLeaseRef: String(bundleRefs.executor_lease_ref),
+      reviewerPoolRefs,
+      patchExecutionBundleRef: String(bundleRefs.patch_execution_bundle_ref),
+      targetCloseoutRefs: bundleRefs.target_closeout_refs as string[],
+      reviewerRefs: reviewerPoolRefs,
       workOrderId,
       proposedChangeRefs: textList(capabilityCandidate.proposed_change_refs),
       traceabilityStatus: reviewerPresent
@@ -864,13 +884,7 @@ function buildDeveloperWorkOrder({
     target_workspace_environment_verification: buildTargetWorkspaceEnvironmentVerification(),
     no_forbidden_write: capabilityCandidate.no_forbidden_write,
     no_forbidden_write_proof: capabilityCandidate.no_forbidden_write,
-    machine_closeout_refs: buildTargetPatchLoopMachineRefs({
-      domainId: targetAgent.domainId,
-      suiteResultRef: stringValue(suiteResult.result_id) ?? stableId('agent_lab_result', [workOrderId]),
-      workOrderId,
-      requiredVerificationRefs: verificationCommandRefs,
-      noForbiddenWriteProofRefs: noForbiddenRefs,
-    }),
+    machine_closeout_refs: machineCloseoutRefs,
     verification_command_refs: verificationCommandRefs,
   };
 }

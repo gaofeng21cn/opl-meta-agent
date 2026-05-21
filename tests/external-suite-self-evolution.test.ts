@@ -695,6 +695,25 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     assert.equal(workOrder.ai_reviewer_review.predicted_impact, reviewerEvaluation.predicted_impact);
     assert.deepEqual(workOrder.ai_reviewer_independence.direct_evidence_refs, reviewerEvaluation.direct_evidence_refs);
     assert.equal(workOrder.ai_reviewer_scorecard.verdict, reviewerEvaluation.verdict);
+    assert.equal(workOrder.executor_lease_ref, `executor-lease:codex-cli/${workOrder.work_order_id}`);
+    assert.ok(workOrder.reviewer_pool_refs.includes(reviewerEvaluationPath));
+    assert.ok(workOrder.reviewer_pool_refs.includes('paper/evidence_ledger.json'));
+    assert.equal(
+      workOrder.patch_execution_bundle_ref,
+      `patch-execution-bundle:target-agent/${workOrder.target_agent.domain_id}/${workOrder.work_order_id}`,
+    );
+    assert.ok(workOrder.target_closeout_refs.includes(workOrder.machine_closeout_refs.patch_absorption_ref));
+    assert.ok(workOrder.target_closeout_refs.includes(workOrder.machine_closeout_refs.worktree_cleanup_ref));
+    assert.equal(
+      workOrder.work_order_completeness.executor_lease_ref,
+      workOrder.executor_lease_ref,
+    );
+    assert.deepEqual(workOrder.work_order_completeness.reviewer_pool_refs, workOrder.reviewer_pool_refs);
+    assert.equal(
+      workOrder.work_order_completeness.patch_execution_bundle_ref,
+      workOrder.patch_execution_bundle_ref,
+    );
+    assert.deepEqual(workOrder.work_order_completeness.target_closeout_refs, workOrder.target_closeout_refs);
     assert.deepEqual(workOrder.ai_reviewer_recovery_refs.canary_refs, reviewerEvaluation.canary_refs);
     assert.ok(workOrder.ahe_developer_work_order.failure_evidence.includes('rubric-gap:mas/002/hdl-harmonization-and-sensitivity'));
     assert.match(workOrder.ahe_developer_work_order.root_cause, /capability gaps/);
@@ -722,6 +741,10 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     assert.equal(workOrder.work_order_completeness.executor_aperture.executor_first, true);
     assert.equal(workOrder.work_order_completeness.executor_aperture.codex_first, true);
     assert.equal(workOrder.work_order_completeness.executor_aperture.executor, 'codex_cli');
+    assert.equal(
+      workOrder.work_order_completeness.executor_aperture.executor_lease_ref,
+      workOrder.executor_lease_ref,
+    );
     assert.ok(workOrder.work_order_completeness.executor_aperture.allowed_write_surfaces.includes('quality_contract_ref'));
     assert.ok(workOrder.work_order_completeness.executor_aperture.forbidden_write_surfaces.includes('target_quality_or_export_verdict'));
     assert.equal(

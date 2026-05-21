@@ -37,6 +37,7 @@ import {
   buildRuntimeConsumptionVerification,
   buildTargetPatchLoopMachineRefs,
   buildTargetWorkspaceEnvironmentVerification,
+  buildWorkOrderBundleRefs,
   targetPatchLoopCloseoutEvidence,
   validateDeveloperPatchWorkOrder,
 } from './lib/work-order-policy.ts';
@@ -696,6 +697,25 @@ function buildDeveloperPatchWorkOrder({
     ...capabilityCandidate.ai_reviewer_evidence.direct_evidence_refs,
   ]);
   const patchMode = noPatchRequired ? 'no-source-patch' : 'source-patch';
+  const reviewerPoolRefs = unique([
+    String(capabilityCandidate.ai_reviewer_evaluation_ref),
+    ...capabilityCandidate.ai_reviewer_evidence.source_refs,
+    ...capabilityCandidate.ai_reviewer_evidence.direct_evidence_refs,
+  ]);
+  const machineCloseoutRefs = buildTargetPatchLoopMachineRefs({
+    domainId: targetAgent.domain_id,
+    suiteResultRef: suiteResult.result_id,
+    workOrderId,
+    requiredVerificationRefs,
+    noForbiddenWriteProofRefs,
+    patchMode,
+  });
+  const bundleRefs = buildWorkOrderBundleRefs({
+    domainId: targetAgent.domain_id,
+    workOrderId,
+    reviewerRefs: reviewerPoolRefs,
+    machineCloseoutRefs,
+  });
   return {
     surface_kind: 'opl_meta_agent_developer_patch_work_order',
     version: 'opl-meta-agent.developer-patch-work-order.v1',
@@ -713,13 +733,14 @@ function buildDeveloperPatchWorkOrder({
     ai_reviewer_scorecard: capabilityCandidate.ai_reviewer_scorecard,
     ai_reviewer_recovery_refs: capabilityCandidate.ai_reviewer_recovery_refs,
     review_provenance: capabilityCandidate.review_provenance,
+    ...bundleRefs,
     work_order_completeness: buildRefsOnlyWorkOrderCompleteness({
       requiredFieldsPresent: true,
-      reviewerRefs: [
-        String(capabilityCandidate.ai_reviewer_evaluation_ref),
-        ...capabilityCandidate.ai_reviewer_evidence.source_refs,
-        ...capabilityCandidate.ai_reviewer_evidence.direct_evidence_refs,
-      ],
+      executorLeaseRef: String(bundleRefs.executor_lease_ref),
+      reviewerPoolRefs,
+      patchExecutionBundleRef: String(bundleRefs.patch_execution_bundle_ref),
+      targetCloseoutRefs: bundleRefs.target_closeout_refs as string[],
+      reviewerRefs: reviewerPoolRefs,
       workOrderId,
       proposedChangeRefs: capabilityCandidate.proposed_change_refs,
       traceabilityStatus: noPatchRequired ? 'no_source_patch_required' : capabilityCandidate.traceability_status,
@@ -793,14 +814,7 @@ function buildDeveloperPatchWorkOrder({
       can_mutate_target_domain_artifact_body: false,
       can_authorize_target_domain_quality_or_export: false,
     },
-    machine_closeout_refs: buildTargetPatchLoopMachineRefs({
-      domainId: targetAgent.domain_id,
-      suiteResultRef: suiteResult.result_id,
-      workOrderId,
-      requiredVerificationRefs,
-      noForbiddenWriteProofRefs,
-      patchMode,
-    }),
+    machine_closeout_refs: machineCloseoutRefs,
     proposed_change_refs: capabilityCandidate.proposed_change_refs,
     patch_traceability_matrix: noPatchRequired ? [] : capabilityCandidate.patch_traceability_matrix,
     implementation_controls: {

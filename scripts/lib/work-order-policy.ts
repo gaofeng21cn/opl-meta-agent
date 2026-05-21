@@ -12,6 +12,10 @@ type DeveloperPatchWorkOrderValidationOptions = {
 type RefsOnlyWorkOrderCompletenessOptions = {
   requiredFieldsPresent: boolean;
   missingRequiredFields?: string[];
+  executorLeaseRef: string;
+  reviewerPoolRefs: string[];
+  patchExecutionBundleRef: string;
+  targetCloseoutRefs: string[];
   reviewerRefs: string[];
   workOrderId: string;
   proposedChangeRefs: string[];
@@ -28,6 +32,13 @@ type RefsOnlyWorkOrderCompletenessOptions = {
   versionRefs: string[];
   failClosedBlockerRef: string;
   authorityFieldNames?: WorkOrderAuthorityFieldNames;
+};
+
+type WorkOrderBundleRefOptions = {
+  domainId: string;
+  workOrderId: string;
+  reviewerRefs: string[];
+  machineCloseoutRefs: JsonObject;
 };
 
 export const DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES = [
@@ -141,6 +152,10 @@ export function buildOplAgentLabOwnedPrimitiveRefs({
 export function buildRefsOnlyWorkOrderCompleteness({
   requiredFieldsPresent,
   missingRequiredFields = [],
+  executorLeaseRef,
+  reviewerPoolRefs,
+  patchExecutionBundleRef,
+  targetCloseoutRefs,
   reviewerRefs,
   workOrderId,
   proposedChangeRefs,
@@ -161,11 +176,16 @@ export function buildRefsOnlyWorkOrderCompleteness({
   return {
     required_fields_present: requiredFieldsPresent,
     missing_required_fields: requiredFieldsPresent ? [] : missingRequiredFields,
+    executor_lease_ref: executorLeaseRef,
+    reviewer_pool_refs: uniqueRefs(reviewerPoolRefs),
+    patch_execution_bundle_ref: patchExecutionBundleRef,
+    target_closeout_refs: uniqueRefs(targetCloseoutRefs),
     reviewer_refs: uniqueRefs(reviewerRefs),
     executor_aperture: {
       executor_first: true,
       codex_first: true,
       executor: 'codex_cli',
+      executor_lease_ref: executorLeaseRef,
       allowed_scope: executorAllowedScope,
       allowed_write_surfaces: executorAllowedWriteSurfaces,
       forbidden_write_surfaces: executorForbiddenWriteSurfaces,
@@ -195,6 +215,24 @@ export function buildRefsOnlyWorkOrderCompleteness({
     rollback_refs: uniqueRefs(rollbackRefs),
     version_refs: uniqueRefs(versionRefs),
     fail_closed_blocker_ref: failClosedBlockerRef,
+  };
+}
+
+export function buildWorkOrderBundleRefs({
+  domainId,
+  workOrderId,
+  reviewerRefs,
+  machineCloseoutRefs,
+}: WorkOrderBundleRefOptions): JsonObject {
+  return {
+    executor_lease_ref: `executor-lease:codex-cli/${workOrderId}`,
+    reviewer_pool_refs: uniqueRefs(reviewerRefs),
+    patch_execution_bundle_ref: `patch-execution-bundle:target-agent/${domainId}/${workOrderId}`,
+    target_closeout_refs: uniqueRefs(
+      Object.values(machineCloseoutRefs)
+        .flatMap((value) => Array.isArray(value) ? value : [value])
+        .filter((value): value is string => typeof value === 'string'),
+    ),
   };
 }
 
@@ -288,6 +326,13 @@ function requireNonEmptyString(value: unknown, fieldName: string): void {
   }
 }
 
+function requireTypedBlockerRef(value: unknown, fieldName: string): void {
+  requireNonEmptyString(value, fieldName);
+  if (!String(value).startsWith('typed-blocker:')) {
+    throw new Error(`Invalid developer patch work order: ${fieldName} must be a typed blocker ref.`);
+  }
+}
+
 export function validateDeveloperPatchWorkOrder(
   workOrder: JsonObject,
   options: DeveloperPatchWorkOrderValidationOptions = {},
@@ -300,7 +345,11 @@ export function validateDeveloperPatchWorkOrder(
     );
     requireNonEmptyString(workOrder.ai_reviewer_scorecard?.verdict, 'ai_reviewer_scorecard.verdict');
     requireNonEmptyString(workOrder.ai_reviewer_review?.predicted_impact, 'ai_reviewer_review.predicted_impact');
+    requireNonEmptyStringArray(workOrder.reviewer_pool_refs, 'reviewer_pool_refs');
   }
+  requireNonEmptyString(workOrder.executor_lease_ref, 'executor_lease_ref');
+  requireNonEmptyString(workOrder.patch_execution_bundle_ref, 'patch_execution_bundle_ref');
+  requireNonEmptyStringArray(workOrder.target_closeout_refs, 'target_closeout_refs');
   requireNonEmptyStringArray(workOrder.ahe_developer_work_order?.failure_evidence, 'ahe_developer_work_order.failure_evidence');
   requireNonEmptyString(workOrder.ahe_developer_work_order?.root_cause, 'ahe_developer_work_order.root_cause');
   requireNonEmptyStringArray(workOrder.ahe_developer_work_order?.targeted_fix, 'ahe_developer_work_order.targeted_fix');
@@ -311,7 +360,27 @@ export function validateDeveloperPatchWorkOrder(
   requireNonEmptyStringArray(workOrder.no_forbidden_write_proof?.proof_refs, 'no_forbidden_write_proof.proof_refs');
   if (!options.allowMissingReviewerFields) {
     requireNonEmptyStringArray(workOrder.work_order_completeness?.reviewer_refs, 'work_order_completeness.reviewer_refs');
+    requireNonEmptyStringArray(
+      workOrder.work_order_completeness?.reviewer_pool_refs,
+      'work_order_completeness.reviewer_pool_refs',
+    );
   }
+  requireNonEmptyString(
+    workOrder.work_order_completeness?.executor_lease_ref,
+    'work_order_completeness.executor_lease_ref',
+  );
+  requireNonEmptyString(
+    workOrder.work_order_completeness?.executor_aperture?.executor_lease_ref,
+    'work_order_completeness.executor_aperture.executor_lease_ref',
+  );
+  requireNonEmptyString(
+    workOrder.work_order_completeness?.patch_execution_bundle_ref,
+    'work_order_completeness.patch_execution_bundle_ref',
+  );
+  requireNonEmptyStringArray(
+    workOrder.work_order_completeness?.target_closeout_refs,
+    'work_order_completeness.target_closeout_refs',
+  );
   requireNonEmptyString(
     workOrder.work_order_completeness?.patch_traceability?.matrix_ref,
     'work_order_completeness.patch_traceability.matrix_ref',
@@ -331,4 +400,8 @@ export function validateDeveloperPatchWorkOrder(
   requireNonEmptyStringArray(workOrder.work_order_completeness?.canary_refs, 'work_order_completeness.canary_refs');
   requireNonEmptyStringArray(workOrder.work_order_completeness?.rollback_refs, 'work_order_completeness.rollback_refs');
   requireNonEmptyStringArray(workOrder.work_order_completeness?.version_refs, 'work_order_completeness.version_refs');
+  requireTypedBlockerRef(
+    workOrder.work_order_completeness?.fail_closed_blocker_ref,
+    'work_order_completeness.fail_closed_blocker_ref',
+  );
 }

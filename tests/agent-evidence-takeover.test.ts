@@ -354,6 +354,25 @@ test('agent:evidence generates domain Agent Lab suite and proposal artifacts fro
     assert.equal(workOrder.ai_reviewer_independence.execution_attempt_ref, 'attempt:executor/mas/production-evidence-tail');
     assert.equal(workOrder.ai_reviewer_independence.review_attempt_ref, 'attempt:ai-reviewer/mas/production-evidence-tail');
     assert.equal(workOrder.ai_reviewer_scorecard.verdict, 'blocked_requires_developer_patch');
+    assert.equal(workOrder.executor_lease_ref, `executor-lease:codex-cli/${workOrder.work_order_id}`);
+    assert.ok(workOrder.reviewer_pool_refs.includes(reviewerEvaluationPath));
+    assert.ok(workOrder.reviewer_pool_refs.includes('contracts/agent_lab_handoff.json'));
+    assert.equal(
+      workOrder.patch_execution_bundle_ref,
+      `patch-execution-bundle:target-agent/med-autoscience/${workOrder.work_order_id}`,
+    );
+    assert.ok(workOrder.target_closeout_refs.includes(workOrder.machine_closeout_refs.patch_absorption_ref));
+    assert.ok(workOrder.target_closeout_refs.includes(workOrder.machine_closeout_refs.worktree_cleanup_ref));
+    assert.equal(
+      workOrder.work_order_completeness.executor_lease_ref,
+      workOrder.executor_lease_ref,
+    );
+    assert.deepEqual(workOrder.work_order_completeness.reviewer_pool_refs, workOrder.reviewer_pool_refs);
+    assert.equal(
+      workOrder.work_order_completeness.patch_execution_bundle_ref,
+      workOrder.patch_execution_bundle_ref,
+    );
+    assert.deepEqual(workOrder.work_order_completeness.target_closeout_refs, workOrder.target_closeout_refs);
     assert.deepEqual(workOrder.ai_reviewer_recovery_refs.canary_refs, [
       'canary:med-autoscience/production-evidence-tail-redrive',
     ]);
@@ -389,6 +408,10 @@ test('agent:evidence generates domain Agent Lab suite and proposal artifacts fro
     assert.equal(workOrder.work_order_completeness.executor_aperture.executor_first, true);
     assert.equal(workOrder.work_order_completeness.executor_aperture.codex_first, true);
     assert.equal(workOrder.work_order_completeness.executor_aperture.executor, 'codex_cli');
+    assert.equal(
+      workOrder.work_order_completeness.executor_aperture.executor_lease_ref,
+      workOrder.executor_lease_ref,
+    );
     assert.ok(workOrder.work_order_completeness.executor_aperture.allowed_write_surfaces.includes('agent/prompts'));
     assert.ok(workOrder.work_order_completeness.executor_aperture.forbidden_write_surfaces.includes('current_package'));
     assert.equal(
@@ -531,6 +554,13 @@ test('agent:evidence emits typed blocker and no delivery receipt when reviewer e
 
     const workOrder = readJson(path.join(outputDir, 'developer-patch-work-order.json'));
     assert.equal(workOrder.status, 'blocked_missing_ai_reviewer_evaluation');
+    assert.equal(workOrder.executor_lease_ref, `executor-lease:codex-cli/${workOrder.work_order_id}`);
+    assert.deepEqual(workOrder.reviewer_pool_refs, []);
+    assert.equal(
+      workOrder.patch_execution_bundle_ref,
+      `patch-execution-bundle:target-agent/med-autoscience/${workOrder.work_order_id}`,
+    );
+    assert.ok(workOrder.target_closeout_refs.includes(workOrder.machine_closeout_refs.target_owner_receipt_or_typed_blocker_ref));
     assert.equal(workOrder.no_forbidden_write.can_write_target_domain_truth, false);
     assert.ok(workOrder.required_verification_refs.includes('scripts/verify.sh'));
     assert.ok(workOrder.ahe_developer_work_order.failure_evidence.includes('scripts/verify.sh'));
