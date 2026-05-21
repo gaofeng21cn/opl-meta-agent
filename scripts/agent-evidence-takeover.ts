@@ -21,6 +21,7 @@ import {
   buildTargetPatchLoopMachineRefs,
   buildTargetWorkspaceEnvironmentVerification,
   targetPatchLoopCloseoutEvidence,
+  validateDeveloperPatchWorkOrder,
 } from './lib/work-order-policy.ts';
 
 type AgentEvidenceArgs = {
@@ -862,6 +863,7 @@ function buildDeveloperWorkOrder({
     runtime_consumption_verification: buildRuntimeConsumptionVerification(),
     target_workspace_environment_verification: buildTargetWorkspaceEnvironmentVerification(),
     no_forbidden_write: capabilityCandidate.no_forbidden_write,
+    no_forbidden_write_proof: capabilityCandidate.no_forbidden_write,
     machine_closeout_refs: buildTargetPatchLoopMachineRefs({
       domainId: targetAgent.domainId,
       suiteResultRef: stringValue(suiteResult.result_id) ?? stableId('agent_lab_result', [workOrderId]),
@@ -1047,6 +1049,9 @@ function main(): void {
     capabilityCandidate,
     ownerReceiptRefsPath,
     targetAgent,
+  });
+  validateDeveloperPatchWorkOrder(workOrder, {
+    allowMissingReviewerFields: !aiReviewerEvaluation,
   });
   const workOrderPath = path.join(args.outputDir, 'developer-patch-work-order.json');
   writeJson(workOrderPath, workOrder);
