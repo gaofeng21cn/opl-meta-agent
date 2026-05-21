@@ -162,6 +162,22 @@
           "opl_agent_lab_promotion_readiness_primitive_ref"
         ],
         "forbidden_roles": []
+      },
+      {
+        "script_ref": "scripts/lib/target-improvement-policy.ts",
+        "classes": [
+          "fixture_or_proof_helper",
+          "developer_work_order_materializer"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": [
+          "target_capability_improvement_candidate_ref",
+          "patch_traceability_matrix_ref",
+          "target_editable_surface_refs",
+          "target_repo_file_hints"
+        ],
+        "forbidden_roles": []
       }
     ]
   },
