@@ -35,6 +35,11 @@ import {
   buildTargetPatchLoopMachineRefs,
   buildTargetWorkspaceEnvironmentVerification,
   buildWorkOrderBundleRefs,
+  collectEfficiencyNonRegressionRefs,
+  type EfficiencyNonRegressionRefs,
+  hasEfficiencyNonRegressionEvidence,
+  missingEfficiencyNonRegressionFields,
+  stringList,
   targetPatchLoopCloseoutEvidence,
   validateDeveloperPatchWorkOrder,
 } from './lib/work-order-policy.ts';
@@ -66,6 +71,7 @@ type CapabilityCandidate = JsonObject & {
   target_editable_surface_refs: string[];
   proposed_change_refs: string[];
   patch_traceability_matrix: PatchTraceabilityEntry[];
+  efficiency_non_regression_refs: EfficiencyNonRegressionRefs;
 };
 
 function parseArgs(argv: string[]): ImproveArgs {
@@ -212,6 +218,7 @@ function buildCapabilityCandidate({
   suiteRefs,
   feedbackRef,
   patchTraceabilityMatrix,
+  efficiencyNonRegressionRefs,
   domainPackSummary,
   aiReviewerEvaluation,
   aiReviewerEvaluationRef,
@@ -225,6 +232,7 @@ function buildCapabilityCandidate({
   suiteRefs: string[];
   feedbackRef: string | null;
   patchTraceabilityMatrix: PatchTraceabilityEntry[];
+  efficiencyNonRegressionRefs: EfficiencyNonRegressionRefs;
   domainPackSummary: DomainPackSummary;
   aiReviewerEvaluation: AiReviewerEvaluation;
   aiReviewerEvaluationRef: string;
@@ -267,6 +275,7 @@ function buildCapabilityCandidate({
     ).concat(aiReviewerEvaluation.source_refs),
     proposed_change_refs: proposedChangeRefs,
     patch_traceability_matrix: patchTraceabilityMatrix,
+    efficiency_non_regression_refs: efficiencyNonRegressionRefs,
     traceability_status: patchTraceabilityMatrix.length
       ? 'gap_to_patch_refs_mapped'
       : 'generic_patch_refs_only',
@@ -303,6 +312,8 @@ function buildDeveloperPatchWorkOrder({
   policy: TargetImprovementPolicy;
 }): JsonObject {
   const noPatchRequired = suiteResult.status === 'passed';
+  const efficiencyNonRegressionRefs = capabilityCandidate.efficiency_non_regression_refs;
+  const hasEfficiencyEvidence = hasEfficiencyNonRegressionEvidence(efficiencyNonRegressionRefs);
   const workOrderId = stableId('oma_developer_patch_work_order', [
     targetAgent.domain_id,
     suite.suite_id,
@@ -312,7 +323,7 @@ function buildDeveloperPatchWorkOrder({
   const targetRepoFileHints = unique(capabilityCandidate.patch_traceability_matrix.flatMap((entry) =>
     entry.target_repo_file_hints
   ));
-  const requiredVerificationRefs = noPatchRequired
+  const requiredVerificationRefs = unique((noPatchRequired
     ? [
         'target_owner_receipt_projection_ref',
         'no_target_domain_truth_write_proof',
@@ -322,7 +333,7 @@ function buildDeveloperPatchWorkOrder({
       )).concat([
         'target_runtime_consumption_verification_receipt',
         'target_workspace_environment_consumption_receipt',
-      ]);
+      ])).concat(stringList(efficiencyNonRegressionRefs.target_verification_refs)));
   const noForbiddenWriteProofRefs = noPatchRequired
     ? ['no_target_domain_truth_write_proof']
     : ['no_target_domain_truth_write_proof', 'repo_hygiene_no_checkout_venv_proof'];
@@ -344,6 +355,7 @@ function buildDeveloperPatchWorkOrder({
     requiredVerificationRefs,
     noForbiddenWriteProofRefs,
     patchMode,
+    efficiencyNonRegressionRefs,
   });
   const bundleRefs = buildWorkOrderBundleRefs({
     domainId: targetAgent.domain_id,
@@ -413,6 +425,7 @@ function buildDeveloperPatchWorkOrder({
       ],
       failClosedBlockerRef:
         `typed-blocker:opl-meta-agent/${capabilityCandidate.target_agent.domain_id}/${workOrderId}/missing-required-work-order-field`,
+      efficiencyNonRegressionRefs,
     }),
     required_opl_agent_lab_primitive_refs: buildOplAgentLabOwnedPrimitiveRefs({
       domainId: targetAgent.domain_id,
@@ -434,6 +447,7 @@ function buildDeveloperPatchWorkOrder({
     allowed_editable_surfaces: noPatchRequired ? [] : capabilityCandidate.target_editable_surface_refs,
     target_repo_file_hints: noPatchRequired ? [] : targetRepoFileHints,
     required_verification_refs: requiredVerificationRefs,
+    ...(hasEfficiencyEvidence ? { efficiency_non_regression_refs: efficiencyNonRegressionRefs } : {}),
     rollback_version_refs: noPatchRequired
       ? ['owner_receipt_coordination_record']
       : ['git_commit', 'target_agent_previous_head_ref', 'temporary_worktree_ref'],
@@ -467,6 +481,7 @@ function buildDeveloperPatchWorkOrder({
       target_owner_receipt_projection_required: noPatchRequired,
       no_target_domain_truth_write_proof_required: true,
       no_quality_verdict_or_submission_readiness_authority: true,
+      quality_floor_non_regression_required: hasEfficiencyEvidence,
       forbidden_target_paths_or_surfaces: policy.forbiddenTargetPathsOrSurfaces,
       required_closeout_evidence: targetPatchLoopCloseoutEvidence({
         sourcePatchRequired: !noPatchRequired,
@@ -509,6 +524,51 @@ function buildDeveloperPatchWorkOrder({
   };
 }
 
+function buildEfficiencyTypedBlocker({
+  targetAgent,
+  suite,
+  suiteResult,
+  capabilityCandidate,
+  missingFields,
+}: {
+  targetAgent: TargetAgent;
+  suite: JsonObject;
+  suiteResult: SuiteResult;
+  capabilityCandidate: CapabilityCandidate;
+  missingFields: string[];
+}): JsonObject {
+  const workOrderId = stableId('oma_efficiency_work_order_blocker', [
+    targetAgent.domain_id,
+    suite.suite_id,
+    suiteResult.result_id,
+    capabilityCandidate.candidate_id,
+    missingFields,
+  ]);
+  return {
+    surface_kind: 'opl_meta_agent_efficiency_work_order_typed_blocker',
+    version: 'opl-meta-agent.efficiency-work-order-typed-blocker.v1',
+    blocker_id: stableId('oma_efficiency_blocker', [workOrderId]),
+    status: 'blocked_efficiency_quality_floor_missing',
+    blocked_reason: 'efficiency_evidence_requires_quality_floor_refs',
+    target_agent: capabilityCandidate.target_agent,
+    source_agent_lab_result_ref: suiteResult.result_id,
+    target_capability_improvement_candidate_ref: capabilityCandidate.candidate_id,
+    work_order_ref: workOrderId,
+    missing_required_fields: missingFields,
+    efficiency_non_regression_refs: capabilityCandidate.efficiency_non_regression_refs,
+    required_input_refs: ['efficiency_non_regression_refs.quality_floor_refs'],
+    authority_boundary: {
+      typed_blocker_only: true,
+      no_executable_work_order_issued: true,
+      can_write_target_domain_truth: false,
+      can_write_target_domain_memory_body: false,
+      can_mutate_target_domain_artifact_body: false,
+      can_authorize_target_quality_or_export: false,
+      can_promote_default_agent_without_gate: false,
+    },
+  };
+}
+
 function main() {
   const { suitePath, targetAgentDir, outputDir, feedbackRef, oplBin, aiReviewerEvaluationPath } = parseArgs(
     process.argv.slice(2),
@@ -542,6 +602,7 @@ function main() {
     aiReviewerEvaluation,
     policy,
   });
+  const efficiencyNonRegressionRefs = collectEfficiencyNonRegressionRefs(suite, aiReviewerEvaluation);
 
   const receipt: OwnerReceipt = {
     ...buildOwnerReceipt({
@@ -597,11 +658,51 @@ function main() {
     suiteRefs,
     feedbackRef,
     patchTraceabilityMatrix,
+    efficiencyNonRegressionRefs,
     domainPackSummary,
     aiReviewerEvaluation,
     aiReviewerEvaluationRef: aiReviewerEvaluationPath,
     policy,
   });
+  const missingEfficiencyFields = missingEfficiencyNonRegressionFields(capabilityCandidate.efficiency_non_regression_refs);
+  if (missingEfficiencyFields.length > 0) {
+    const blocker = buildEfficiencyTypedBlocker({
+      targetAgent,
+      suite,
+      suiteResult,
+      capabilityCandidate,
+      missingFields: missingEfficiencyFields,
+    });
+    const capabilityPath = path.join(outputDir, 'target-capability-improvement-candidate.json');
+    const blockerPath = path.join(outputDir, 'typed-blocker.json');
+    const runPath = path.join(outputDir, 'agent-lab-run-result.json');
+    writeJson(capabilityPath, capabilityCandidate);
+    writeJson(blockerPath, blocker);
+    writeJson(runPath, agentLabRun);
+    process.stdout.write(`${JSON.stringify({
+      surface_kind: 'opl_meta_agent_external_suite_self_evolution_result',
+      version: 'opl-meta-agent.external-suite-self-evolution.v1',
+      status: 'blocked_efficiency_quality_floor_missing',
+      product_id: 'opl-meta-agent',
+      target_agent: capabilityCandidate.target_agent,
+      authority_boundary: {
+        ...capabilityCandidate.authority_boundary,
+        no_executable_work_order_issued: true,
+      },
+      artifacts: {
+        suite_path: suitePath,
+        agent_lab_run_result_path: runPath,
+        target_capability_improvement_candidate_path: capabilityPath,
+        typed_blocker_path: blockerPath,
+      },
+      opl_agent_lab: agentLabRun.agent_lab_run,
+      learning_loop: {
+        target_capability_improvement_candidate: capabilityCandidate,
+        typed_blocker: blocker,
+      },
+    }, null, 2)}\n`);
+    return;
+  }
   const developerPatchWorkOrder = buildDeveloperPatchWorkOrder({
     targetAgent,
     suite,

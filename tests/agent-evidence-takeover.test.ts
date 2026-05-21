@@ -255,7 +255,7 @@ function writeEfficiencyProductionEvidence(agentRepo: string, withQualityFloor =
   writeJson(productionPath, productionAcceptance);
 }
 
-function writeEfficiencyAiReviewerEvaluation(filePath: string): void {
+function writeEfficiencyAiReviewerEvaluation(filePath: string, withQualityFloor = true): void {
   writeJson(filePath, {
     reviewer_kind: 'ai_reviewer',
     model_or_provider: 'gpt-5.5',
@@ -272,11 +272,11 @@ function writeEfficiencyAiReviewerEvaluation(filePath: string): void {
       'latency-baseline:med-autoscience/agent-evidence-tail-before',
       'usage-cost:med-autoscience/agent-evidence-tail-before',
       'cache-reuse:med-autoscience/agent-evidence-tail-prefix-cache',
-      'quality-floor:med-autoscience/current-publication-quality',
+      ...(withQualityFloor ? ['quality-floor:med-autoscience/current-publication-quality'] : []),
     ],
     direct_evidence_refs: [
-      'quality-floor:med-autoscience/current-publication-quality',
       'target-verification:med-autoscience/agent-evidence-tail-redrive',
+      ...(withQualityFloor ? ['quality-floor:med-autoscience/current-publication-quality'] : []),
     ],
     verdict: 'blocked_requires_developer_patch',
     predicted_impact: 'The work order should preserve quality-floor evidence while improving latency, usage cost, and cache reuse.',
@@ -335,7 +335,7 @@ test('agent:evidence projects production efficiency evidence into work order ref
     writeTargetAgentFixture(agentRepo);
     writeEfficiencyProductionEvidence(agentRepo);
     writeFakeOplBin(fakeOplBin);
-    writeEfficiencyAiReviewerEvaluation(reviewerEvaluationPath);
+    writeEfficiencyAiReviewerEvaluation(reviewerEvaluationPath, false);
 
     const result = spawnSync(
       process.execPath,
@@ -402,7 +402,7 @@ test('agent:evidence efficiency production evidence without quality floor emits 
     writeTargetAgentFixture(agentRepo);
     writeEfficiencyProductionEvidence(agentRepo, false);
     writeFakeOplBin(fakeOplBin);
-    writeEfficiencyAiReviewerEvaluation(reviewerEvaluationPath);
+    writeEfficiencyAiReviewerEvaluation(reviewerEvaluationPath, false);
 
     const result = spawnSync(
       process.execPath,

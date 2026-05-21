@@ -21,8 +21,11 @@ import {
   buildTargetPatchLoopMachineRefs,
   buildTargetWorkspaceEnvironmentVerification,
   buildWorkOrderBundleRefs,
+  collectEfficiencyNonRegressionRefs,
   firstString,
   forbiddenWriteSurfaces,
+  hasEfficiencyNonRegressionEvidence,
+  missingEfficiencyNonRegressionFields,
   noForbiddenWriteProofRefs,
   ownerRouteRef,
   productionAcceptanceEvidenceRefs,
@@ -528,6 +531,12 @@ function buildCapabilityCandidate({
 }): JsonObject {
   const sharedBlockers = contracts.productionAcceptance.codex_first_landing_program?.parallel_execution_model?.shared_blockers ?? [];
   const noForbiddenRefs = noForbiddenWriteProofRefs(contracts, targetAgent);
+  const efficiencyNonRegressionRefs = collectEfficiencyNonRegressionRefs(
+    contracts.productionAcceptance,
+    contracts.agentLabHandoff,
+    suite,
+    aiReviewerEvaluation,
+  );
   return {
     surface_kind: 'opl_meta_agent_target_capability_improvement_candidate',
     version: 'opl-meta-agent.target-capability-improvement-candidate.v1',
@@ -571,6 +580,7 @@ function buildCapabilityCandidate({
       can_authorize_target_quality_or_export: false,
       can_promote_default_agent_without_gate: false,
     },
+    efficiency_non_regression_refs: efficiencyNonRegressionRefs,
     verification_command_refs: verificationRefs(contracts.productionAcceptance),
     ai_reviewer_evaluation_ref: aiReviewerEvaluationPath,
     ai_reviewer_status: aiReviewerEvaluation ? 'present' : 'missing_typed_blocker_required',
@@ -596,6 +606,12 @@ function buildDeveloperWorkOrder({
   targetAgent: TargetAgentIdentity;
 }): JsonObject {
   const verificationCommandRefs = verificationRefs(contracts.productionAcceptance);
+  const efficiencyNonRegressionRefs = capabilityCandidate.efficiency_non_regression_refs;
+  const hasEfficiencyEvidence = hasEfficiencyNonRegressionEvidence(efficiencyNonRegressionRefs);
+  const requiredVerificationRefs = unique([
+    ...verificationCommandRefs,
+    ...stringList(efficiencyNonRegressionRefs.target_verification_refs),
+  ]);
   const workOrderId = stableId('oma_agent_developer_work_order', [
     suite.suite_id,
     suiteResult.result_id,
@@ -626,8 +642,9 @@ function buildDeveloperWorkOrder({
     domainId: targetAgent.domainId,
     suiteResultRef: stringValue(suiteResult.result_id) ?? stableId('agent_lab_result', [workOrderId]),
     workOrderId,
-    requiredVerificationRefs: verificationCommandRefs,
+    requiredVerificationRefs,
     noForbiddenWriteProofRefs: noForbiddenRefs,
+    efficiencyNonRegressionRefs,
   });
   const bundleRefs = buildWorkOrderBundleRefs({
     domainId: targetAgent.domainId,
@@ -650,7 +667,7 @@ function buildDeveloperWorkOrder({
     editable_surface_limits: capabilityCandidate.editable_surface_limits,
     allowed_editable_surfaces: capabilityCandidate.editable_surface_limits.editable_surfaces,
     target_repo_file_hints: capabilityCandidate.editable_surface_limits.editable_surfaces,
-    required_verification_refs: verificationCommandRefs,
+    required_verification_refs: requiredVerificationRefs,
     rollback_version_refs: [
       'target_agent_current_head_ref',
       'developer_patch_branch_or_worktree_ref',
@@ -692,7 +709,7 @@ function buildDeveloperWorkOrder({
       traceabilityStatus: reviewerPresent
         ? 'reviewer_refs_to_agent_evidence_tail_refs_mapped'
         : 'blocked_missing_reviewer_refs',
-      requiredVerificationRefs: verificationCommandRefs,
+      requiredVerificationRefs,
       targetVerificationExtraRefs: [
         'target_owner_receipt_or_typed_blocker',
         'no_forbidden_write_proof',
@@ -725,6 +742,7 @@ function buildDeveloperWorkOrder({
       authorityFieldNames: {
         memoryWriteField: 'can_write_target_memory_body',
       },
+      efficiencyNonRegressionRefs,
     }),
     required_opl_agent_lab_primitive_refs: buildOplAgentLabOwnedPrimitiveRefs({
       domainId: targetAgent.domainId,
@@ -749,6 +767,7 @@ function buildDeveloperWorkOrder({
       target_owner_receipt_or_typed_blocker_required: true,
       independent_reviewer_or_auditor_receipt_required: true,
       no_forbidden_write_proof_required: true,
+      quality_floor_non_regression_required: hasEfficiencyEvidence,
       verification_command_refs_required: true,
       forbidden_write_surfaces: forbiddenWriteSurfaces(contracts, TARGET_AGENT_FORBIDDEN_WRITE_SURFACES),
       required_closeout_evidence: targetPatchLoopCloseoutEvidence({
@@ -759,8 +778,20 @@ function buildDeveloperWorkOrder({
     target_workspace_environment_verification: buildTargetWorkspaceEnvironmentVerification(),
     no_forbidden_write: capabilityCandidate.no_forbidden_write,
     no_forbidden_write_proof: capabilityCandidate.no_forbidden_write,
+    ...(hasEfficiencyEvidence ? { efficiency_non_regression_refs: efficiencyNonRegressionRefs } : {}),
     machine_closeout_refs: machineCloseoutRefs,
-    verification_command_refs: verificationCommandRefs,
+    verification_command_refs: requiredVerificationRefs,
+    authority_boundary: {
+      can_modify_target_agent_source_repo: reviewerPresent,
+      can_modify_target_agent_tests: reviewerPresent,
+      can_modify_target_agent_docs: reviewerPresent,
+      can_write_target_domain_truth: false,
+      can_write_target_memory_body: false,
+      can_write_target_domain_memory_body: false,
+      can_mutate_target_domain_artifact_body: false,
+      can_authorize_target_quality_or_export: false,
+      can_promote_default_agent_without_gate: false,
+    },
   };
 }
 
@@ -821,6 +852,7 @@ function buildMechanismPatchProposal({
       proposal_only: true,
       refs_only: true,
       can_write_target_domain_truth: false,
+      can_write_target_memory_body: false,
       can_write_target_domain_memory_body: false,
       can_mutate_target_domain_artifact_body: false,
       can_authorize_target_domain_quality_or_export: false,
@@ -834,18 +866,24 @@ function buildTypedBlocker({
   suite,
   suiteResult,
   workOrder,
+  status = 'blocked_missing_ai_reviewer_evaluation',
+  blockedReason = 'independent_ai_reviewer_attempt_required_before_mechanism_patch_proposal_or_delivery_receipt',
+  missingRequiredFields = [],
 }: {
   contracts: AgentContracts;
   suite: JsonObject;
   suiteResult: JsonObject;
   workOrder: JsonObject;
+  status?: string;
+  blockedReason?: string;
+  missingRequiredFields?: string[];
 }): JsonObject {
   return {
     surface_kind: 'opl_meta_agent_agent_evidence_takeover_typed_blocker',
     version: 'opl-meta-agent.agent-evidence-takeover-typed-blocker.v1',
     blocker_id: stableId('oma_agent_evidence_blocker', [suite.suite_id, suiteResult.result_id, workOrder.work_order_id]),
-    status: 'blocked_missing_ai_reviewer_evaluation',
-    blocked_reason: 'independent_ai_reviewer_attempt_required_before_mechanism_patch_proposal_or_delivery_receipt',
+    status,
+    blocked_reason: blockedReason,
     next_owner: 'opl-meta-agent',
     target_owner_route: targetOwnerRoute(contracts),
     blocked_suite_result_ref: workOrder.source_agent_lab_result_ref,
@@ -858,6 +896,7 @@ function buildTypedBlocker({
       'contracts/owner_receipt_contract.json',
     ],
     required_verification_refs: workOrder.required_verification_refs,
+    missing_required_fields: missingRequiredFields,
     rollback_version_refs: workOrder.rollback_version_refs,
     owner_route_refs: workOrder.owner_route_refs,
     ahe_developer_work_order: workOrder.ahe_developer_work_order,
@@ -873,11 +912,15 @@ function buildTypedBlocker({
     ],
     no_forbidden_write: workOrder.no_forbidden_write,
     no_forbidden_write_proof: workOrder.no_forbidden_write,
+    ...(workOrder.efficiency_non_regression_refs
+      ? { efficiency_non_regression_refs: workOrder.efficiency_non_regression_refs }
+      : {}),
     work_order_completeness: workOrder.work_order_completeness,
     verification_command_refs: verificationRefs(contracts.productionAcceptance),
     authority_boundary: {
       typed_blocker_only: true,
       no_delivery_receipt_signed: true,
+      no_executable_work_order_issued: true,
       can_write_target_domain_truth: false,
       can_authorize_target_quality_or_export: false,
       can_mutate_target_artifact_body: false,
@@ -939,6 +982,7 @@ function main(): void {
     ownerReceiptRefsPath,
     targetAgent,
   });
+  const missingEfficiencyFields = missingEfficiencyNonRegressionFields(capabilityCandidate.efficiency_non_regression_refs);
   validateDeveloperPatchWorkOrder(workOrder, {
     allowMissingReviewerFields: !aiReviewerEvaluation,
   });
@@ -962,7 +1006,22 @@ function main(): void {
   };
 
   let status = 'blocked_missing_ai_reviewer_evaluation';
-  if (aiReviewerEvaluation) {
+  if (missingEfficiencyFields.length > 0) {
+    const typedBlocker = buildTypedBlocker({
+      contracts,
+      suite,
+      suiteResult,
+      workOrder,
+      status: 'blocked_efficiency_quality_floor_missing',
+      blockedReason: 'efficiency_evidence_requires_quality_floor_refs',
+      missingRequiredFields: missingEfficiencyFields,
+    });
+    const typedBlockerPath = path.join(args.outputDir, 'typed-blocker.json');
+    writeJson(typedBlockerPath, typedBlocker);
+    artifacts.typed_blocker_path = typedBlockerPath;
+    learningLoop.typed_blocker = typedBlocker;
+    status = 'blocked_efficiency_quality_floor_missing';
+  } else if (aiReviewerEvaluation) {
     const mechanismPatchProposal = buildMechanismPatchProposal({
       suite,
       suiteResult,

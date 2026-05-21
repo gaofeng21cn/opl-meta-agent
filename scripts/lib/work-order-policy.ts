@@ -9,6 +9,14 @@ type DeveloperPatchWorkOrderValidationOptions = {
   allowMissingReviewerFields?: boolean;
 };
 
+export type EfficiencyNonRegressionRefs = {
+  quality_floor_refs: string[];
+  latency_baseline_refs: string[];
+  usage_cost_refs: string[];
+  cache_reuse_refs: string[];
+  target_verification_refs: string[];
+};
+
 type RefsOnlyWorkOrderCompletenessOptions = {
   requiredFieldsPresent: boolean;
   missingRequiredFields?: string[];
@@ -32,6 +40,7 @@ type RefsOnlyWorkOrderCompletenessOptions = {
   versionRefs: string[];
   failClosedBlockerRef: string;
   authorityFieldNames?: WorkOrderAuthorityFieldNames;
+  efficiencyNonRegressionRefs?: EfficiencyNonRegressionRefs;
 };
 
 type WorkOrderBundleRefOptions = {
@@ -164,6 +173,107 @@ export function refsFromRecord(value: unknown): string[] {
       .filter(([key]) => key !== 'ref')
       .flatMap(([, nested]) => refsFromRecord(nested)),
   ];
+}
+
+export function emptyEfficiencyNonRegressionRefs(): EfficiencyNonRegressionRefs {
+  return {
+    quality_floor_refs: [],
+    latency_baseline_refs: [],
+    usage_cost_refs: [],
+    cache_reuse_refs: [],
+    target_verification_refs: [],
+  };
+}
+
+function refsByTokens(values: string[], tokens: string[]): string[] {
+  return uniqueRefs(values.filter((ref) => {
+    const normalized = ref.toLowerCase();
+    return tokens.some((token) => normalized.includes(token));
+  }));
+}
+
+export function collectEfficiencyNonRegressionRefs(...sources: unknown[]): EfficiencyNonRegressionRefs {
+  const explicit = emptyEfficiencyNonRegressionRefs();
+  const flatRefs: string[] = [];
+  const visit = (value: unknown): void => {
+    if (typeof value === 'string') {
+      flatRefs.push(value);
+      return;
+    }
+    if (!value || typeof value !== 'object') {
+      return;
+    }
+    if (Array.isArray(value)) {
+      value.forEach(visit);
+      return;
+    }
+    const record = value as JsonObject;
+    for (const field of Object.keys(explicit) as Array<keyof EfficiencyNonRegressionRefs>) {
+      explicit[field].push(...stringList(record[field]));
+    }
+    if (record.efficiency_evidence_refs) {
+      visit(record.efficiency_evidence_refs);
+    }
+    if (record.efficiency_non_regression_refs) {
+      visit(record.efficiency_non_regression_refs);
+    }
+    [
+      record.evidence_refs,
+      record.metric_refs,
+      record.quality_gate_refs,
+      record.review_refs,
+      record.required_refs,
+      record.regression_suite_refs,
+      record.source_refs,
+      record.direct_evidence_refs,
+      record.artifact_refs,
+      record.repair_refs,
+      record.receipt_refs,
+      record.next_verification_command_refs,
+    ].forEach(visit);
+  };
+  sources.forEach(visit);
+  const merged = {
+    quality_floor_refs: uniqueRefs([
+      ...explicit.quality_floor_refs,
+      ...refsByTokens(flatRefs, ['quality-floor', 'quality_floor']),
+    ]),
+    latency_baseline_refs: uniqueRefs([
+      ...explicit.latency_baseline_refs,
+      ...refsByTokens(flatRefs, ['latency-baseline', 'latency_baseline']),
+    ]),
+    usage_cost_refs: uniqueRefs([
+      ...explicit.usage_cost_refs,
+      ...refsByTokens(flatRefs, ['usage-cost', 'usage_cost', 'token-cost', 'token_cost', 'cost-baseline']),
+    ]),
+    cache_reuse_refs: uniqueRefs([
+      ...explicit.cache_reuse_refs,
+      ...refsByTokens(flatRefs, ['cache-reuse', 'cache_reuse', 'prefix-cache', 'prefix_cache']),
+    ]),
+    target_verification_refs: uniqueRefs([
+      ...explicit.target_verification_refs,
+      ...refsByTokens(flatRefs, ['target-verification', 'target_verification']),
+    ]),
+  };
+  return merged;
+}
+
+export function hasEfficiencyNonRegressionEvidence(refs: EfficiencyNonRegressionRefs): boolean {
+  return [
+    refs.quality_floor_refs,
+    refs.latency_baseline_refs,
+    refs.usage_cost_refs,
+    refs.cache_reuse_refs,
+    refs.target_verification_refs,
+  ].some((values) => values.length > 0);
+}
+
+export function missingEfficiencyNonRegressionFields(refs: EfficiencyNonRegressionRefs): string[] {
+  const missing: string[] = [];
+  if (hasEfficiencyNonRegressionEvidence(refs) && refs.quality_floor_refs.length === 0) {
+    missing.push('efficiency_non_regression_refs.quality_floor_refs');
+  }
+  return missing;
 }
 
 export function verificationRefs(productionAcceptance: JsonObject): string[] {
@@ -331,6 +441,7 @@ export function buildRefsOnlyWorkOrderCompleteness({
   versionRefs,
   failClosedBlockerRef,
   authorityFieldNames,
+  efficiencyNonRegressionRefs,
 }: RefsOnlyWorkOrderCompletenessOptions): JsonObject {
   return {
     required_fields_present: requiredFieldsPresent,
@@ -373,6 +484,9 @@ export function buildRefsOnlyWorkOrderCompleteness({
     canary_refs: uniqueRefs(canaryRefs),
     rollback_refs: uniqueRefs(rollbackRefs),
     version_refs: uniqueRefs(versionRefs),
+    ...(efficiencyNonRegressionRefs && hasEfficiencyNonRegressionEvidence(efficiencyNonRegressionRefs)
+      ? { efficiency_non_regression_refs: efficiencyNonRegressionRefs }
+      : {}),
     fail_closed_blocker_ref: failClosedBlockerRef,
   };
 }
@@ -402,6 +516,7 @@ export function buildTargetPatchLoopMachineRefs({
   requiredVerificationRefs,
   noForbiddenWriteProofRefs,
   patchMode,
+  efficiencyNonRegressionRefs,
 }: {
   domainId: string;
   suiteResultRef: string;
@@ -409,6 +524,7 @@ export function buildTargetPatchLoopMachineRefs({
   requiredVerificationRefs: string[];
   noForbiddenWriteProofRefs: string[];
   patchMode?: string;
+  efficiencyNonRegressionRefs?: EfficiencyNonRegressionRefs;
 }): JsonObject {
   const modeSuffix = patchMode ? `/${patchMode}` : '';
   return {
@@ -428,6 +544,9 @@ export function buildTargetPatchLoopMachineRefs({
     worktree_cleanup_ref: `worktree-cleanup:${domainId}/${workOrderId}${modeSuffix}`,
     agent_lab_re_evaluation_ref:
       `agent-lab-re-evaluation:${domainId}/${suiteResultRef}/${workOrderId}`,
+    ...(efficiencyNonRegressionRefs && hasEfficiencyNonRegressionEvidence(efficiencyNonRegressionRefs)
+      ? { efficiency_non_regression_refs: efficiencyNonRegressionRefs }
+      : {}),
   };
 }
 

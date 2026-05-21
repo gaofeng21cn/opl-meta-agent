@@ -13,6 +13,7 @@
 - patch traceability matrix。
 - developer patch work order ref。
 - developer work order completeness：reviewer refs、executor aperture、target verification refs、owner route refs、no-forbidden-write proof、canary refs、rollback refs 和 version refs。
+- 若存在效率证据，必须提供通用 target-agent `efficiency_non_regression_refs`：`quality_floor_refs`、`latency_baseline_refs`、`usage_cost_refs`、`cache_reuse_refs`、`target_verification_refs`。
 - machine closeout refs：blocked suite、developer work order、patch traceability、target verification、runtime/read-model consumption、workspace proof、no-forbidden-write、target owner receipt or typed blocker、patch absorption、worktree cleanup 和 Agent Lab re-evaluation。
 - regression result refs。
 
@@ -23,6 +24,7 @@
 - developer work order 显式声明 Codex/executor-first aperture，并把可写面限制到 target owner gate 允许的 source、tests、docs、prompt/skill/stage/quality-gate policy。
 - editable surfaces 限定在 target owner gate 允许的 source、tests、docs 或 mechanism policy。
 - patch traceability、target verification、owner route、no-forbidden-write proof、rollback/canary/version refs 和 machine closeout refs 同时存在；缺任一项 fail closed 到 typed blocker。
+- 效率 work order 保持 target-agent generic，只消费标准 suite / production evidence refs；latency、usage cost、cache reuse 或 target verification 证据必须和 quality floor refs 一起进入 work order、completeness 与 closeout 投影。
 - regression 覆盖原 failure、forbidden writes 和 runtime/read-model consumption。
 - version receipt 声明 branch/worktree、absorb gate 和 cleanup state。
 
@@ -32,6 +34,8 @@
 - reviewer evaluation 缺 direct evidence、verdict、provenance、no-shared-context proof 或独立 attempt refs。
 - developer work order 缺 reviewer refs、executor aperture、patch traceability、target verification、owner route、no-forbidden-write proof、canary、rollback 或 version refs。
 - developer work order 缺 target owner receipt or typed blocker、patch absorption、worktree cleanup 或 Agent Lab re-evaluation closeout ref。
+- efficiency evidence 缺 `quality_floor_refs`，或 reviewer direct evidence 缺失。
+- 为效率优化新增 domain 专用 command family，而非消费标准 target handoff/evidence refs。
 - 通过启发式后处理绕过真实机制缺口。
 - 修改 target truth、memory body、artifact body 或 quality verdict。
 - regression 只证明本地单元测试，无法证明目标 runtime 消费。
