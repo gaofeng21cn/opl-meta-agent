@@ -360,6 +360,16 @@ test('agent:evidence generates domain Agent Lab suite and proposal artifacts fro
     assert.equal(workOrder.target_owner_route.domain_ready_requires_owner_receipt_or_typed_blocker, true);
     assert.equal(workOrder.implementation_controls.proposal_only, true);
     assert.equal(workOrder.implementation_controls.refs_only, true);
+    assert.equal(workOrder.required_opl_agent_lab_primitive_refs.owner, 'one-person-lab');
+    assert.equal(workOrder.required_opl_agent_lab_primitive_refs.consumed_as_refs_only_by_oma, true);
+    assert.match(
+      workOrder.required_opl_agent_lab_primitive_refs.work_order_readiness_primitive_ref,
+      /^opl-agent-lab-primitive:work-order-readiness\/med-autoscience\//,
+    );
+    assert.match(
+      workOrder.required_opl_agent_lab_primitive_refs.promotion_readiness_primitive_ref,
+      /^opl-agent-lab-primitive:promotion-readiness\/med-autoscience\//,
+    );
     assert.equal(workOrder.implementation_controls.no_forbidden_write_proof_required, true);
     assert.ok(workOrder.editable_surface_limits.editable_surfaces.includes('agent/prompts'));
     assert.ok(workOrder.allowed_editable_surfaces.includes('agent/prompts'));
@@ -489,6 +499,12 @@ test('agent:evidence emits typed blocker and no delivery receipt when reviewer e
     assert.equal(typedBlocker.authority_boundary.can_write_target_domain_truth, false);
     assert.ok(typedBlocker.required_input_refs.includes('--ai-reviewer-evaluation <json>'));
     assert.ok(typedBlocker.required_source_refs.includes('contracts/agent_lab_handoff.json'));
+    assert.equal(typedBlocker.required_opl_agent_lab_primitive_refs.owner, 'one-person-lab');
+    assert.equal(typedBlocker.required_opl_agent_lab_primitive_refs.consumed_as_refs_only_by_oma, true);
+    assert.match(
+      typedBlocker.required_opl_agent_lab_primitive_refs.work_order_readiness_primitive_ref,
+      /^opl-agent-lab-primitive:work-order-readiness\/med-autoscience\//,
+    );
     assert.ok(typedBlocker.required_verification_refs.includes('scripts/verify.sh'));
     assert.ok(typedBlocker.rollback_version_refs.includes('target_agent_current_head_ref'));
     assert.ok(typedBlocker.owner_route_refs.includes('owner-route:med-autoscience/MedAutoScience'));

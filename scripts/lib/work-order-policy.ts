@@ -1,5 +1,31 @@
 import type { JsonObject } from './domain-pack.ts';
 
+type WorkOrderAuthorityFieldNames = {
+  memoryWriteField?: string;
+  artifactMutationField?: string;
+};
+
+type RefsOnlyWorkOrderCompletenessOptions = {
+  requiredFieldsPresent: boolean;
+  missingRequiredFields?: string[];
+  reviewerRefs: string[];
+  workOrderId: string;
+  proposedChangeRefs: string[];
+  traceabilityStatus: string;
+  requiredVerificationRefs: string[];
+  targetVerificationExtraRefs: string[];
+  ownerRouteRefs: string[];
+  noForbiddenWriteProofRefs: string[];
+  executorAllowedScope: string;
+  executorAllowedWriteSurfaces: string[];
+  executorForbiddenWriteSurfaces: string[];
+  canaryRefs: string[];
+  rollbackRefs: string[];
+  versionRefs: string[];
+  failClosedBlockerRef: string;
+  authorityFieldNames?: WorkOrderAuthorityFieldNames;
+};
+
 export const DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES = [
   'target domain truth surfaces',
   'target domain memory body',
@@ -57,6 +83,116 @@ export const DEFAULT_SOURCE_PATCH_CLOSEOUT_EVIDENCE = [
   'target agent status or decision docs updated',
   'temporary worktree cleaned after absorb',
 ];
+
+function uniqueRefs(values: string[]): string[] {
+  return [...new Set(values.filter((value) => value.trim().length > 0))];
+}
+
+function buildNoForbiddenWriteReadiness({
+  proofRefs,
+  authorityFieldNames = {},
+}: {
+  proofRefs: string[];
+  authorityFieldNames?: WorkOrderAuthorityFieldNames;
+}): JsonObject {
+  return {
+    required: true,
+    proof_refs: proofRefs,
+    can_write_target_domain_truth: false,
+    [authorityFieldNames.memoryWriteField ?? 'can_write_target_domain_memory_body']: false,
+    [authorityFieldNames.artifactMutationField ?? 'can_mutate_target_domain_artifact_body']: false,
+    can_authorize_target_quality_or_export: false,
+  };
+}
+
+export function buildOplAgentLabOwnedPrimitiveRefs({
+  domainId,
+  workOrderId,
+  patchMode,
+  promotionGateRef,
+}: {
+  domainId: string;
+  workOrderId: string;
+  patchMode?: string;
+  promotionGateRef?: string;
+}): JsonObject {
+  const modeSuffix = patchMode ? `/${patchMode}` : '';
+  return {
+    work_order_readiness_primitive_ref:
+      `opl-agent-lab-primitive:work-order-readiness/${domainId}/${workOrderId}${modeSuffix}`,
+    promotion_readiness_primitive_ref:
+      `opl-agent-lab-primitive:promotion-readiness/${domainId}/${workOrderId}${modeSuffix}`,
+    target_owner_return_primitive_ref:
+      `opl-agent-lab-primitive:target-owner-return/${domainId}/${workOrderId}`,
+    patch_traceability_primitive_ref:
+      `opl-agent-lab-primitive:patch-traceability/${domainId}/${workOrderId}${modeSuffix}`,
+    readiness_projection_ref:
+      `opl-agent-lab-readiness-projection:${domainId}/${workOrderId}${modeSuffix}`,
+    promotion_gate_ref: promotionGateRef ?? `promotion-gate:opl-agent-lab/${domainId}/${workOrderId}`,
+    owner: 'one-person-lab',
+    consumed_as_refs_only_by_oma: true,
+  };
+}
+
+export function buildRefsOnlyWorkOrderCompleteness({
+  requiredFieldsPresent,
+  missingRequiredFields = [],
+  reviewerRefs,
+  workOrderId,
+  proposedChangeRefs,
+  traceabilityStatus,
+  requiredVerificationRefs,
+  targetVerificationExtraRefs,
+  ownerRouteRefs,
+  noForbiddenWriteProofRefs,
+  executorAllowedScope,
+  executorAllowedWriteSurfaces,
+  executorForbiddenWriteSurfaces,
+  canaryRefs,
+  rollbackRefs,
+  versionRefs,
+  failClosedBlockerRef,
+  authorityFieldNames,
+}: RefsOnlyWorkOrderCompletenessOptions): JsonObject {
+  return {
+    required_fields_present: requiredFieldsPresent,
+    missing_required_fields: requiredFieldsPresent ? [] : missingRequiredFields,
+    reviewer_refs: uniqueRefs(reviewerRefs),
+    executor_aperture: {
+      executor_first: true,
+      codex_first: true,
+      executor: 'codex_cli',
+      allowed_scope: executorAllowedScope,
+      allowed_write_surfaces: executorAllowedWriteSurfaces,
+      forbidden_write_surfaces: executorForbiddenWriteSurfaces,
+    },
+    patch_traceability: {
+      matrix_ref: `${workOrderId}#/patch_traceability_matrix`,
+      proposed_change_refs: proposedChangeRefs,
+      traceability_status: traceabilityStatus,
+    },
+    target_verification: {
+      required_refs: uniqueRefs([
+        ...requiredVerificationRefs,
+        ...targetVerificationExtraRefs,
+      ]),
+      requires_target_owner_receipt_or_typed_blocker: true,
+      requires_no_forbidden_write_proof: true,
+    },
+    owner_route: {
+      target_owner_required: true,
+      route_refs: ownerRouteRefs,
+    },
+    no_forbidden_write_proof: buildNoForbiddenWriteReadiness({
+      proofRefs: noForbiddenWriteProofRefs,
+      authorityFieldNames,
+    }),
+    canary_refs: uniqueRefs(canaryRefs),
+    rollback_refs: uniqueRefs(rollbackRefs),
+    version_refs: uniqueRefs(versionRefs),
+    fail_closed_blocker_ref: failClosedBlockerRef,
+  };
+}
 
 export function buildTargetPatchLoopMachineRefs({
   domainId,

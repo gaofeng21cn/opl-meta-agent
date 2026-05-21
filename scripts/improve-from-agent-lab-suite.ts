@@ -32,6 +32,8 @@ import {
   DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
   DEFAULT_RUNTIME_EXPECTED_OUTCOMES,
   DEFAULT_RUNTIME_REQUIRED_SURFACE_REFS,
+  buildOplAgentLabOwnedPrimitiveRefs,
+  buildRefsOnlyWorkOrderCompleteness,
   buildRuntimeConsumptionVerification,
   buildTargetPatchLoopMachineRefs,
   buildTargetWorkspaceEnvironmentVerification,
@@ -71,16 +73,6 @@ type CapabilityCandidate = JsonObject & {
   target_editable_surface_refs: string[];
   proposed_change_refs: string[];
   patch_traceability_matrix: PatchTraceabilityEntry[];
-};
-
-type WorkOrderCompletenessInput = {
-  suiteResult: SuiteResult;
-  aiReviewerEvaluation: AiReviewerEvaluation;
-  capabilityCandidate: CapabilityCandidate;
-  workOrderId: string;
-  requiredVerificationRefs: string[];
-  noForbiddenWriteProofRefs: string[];
-  noPatchRequired: boolean;
 };
 
 type ChangeRefMapping = {
@@ -574,87 +566,6 @@ function mechanismEditableSurfaces(proposedChangeRefs: string[]): string[] {
   );
 }
 
-function workOrderCompleteness({
-  suiteResult,
-  aiReviewerEvaluation,
-  capabilityCandidate,
-  workOrderId,
-  requiredVerificationRefs,
-  noForbiddenWriteProofRefs,
-  noPatchRequired,
-}: WorkOrderCompletenessInput): JsonObject {
-  const patchTraceabilityMatrixRef = `${workOrderId}#/patch_traceability_matrix`;
-  const targetVerificationRefs = unique([
-    ...requiredVerificationRefs,
-    'target_owner_receipt_or_typed_blocker',
-    noPatchRequired ? 'target_owner_receipt_projection_ref' : 'target_repo_test_receipt',
-  ]);
-  const canaryRefs = unique([
-    ...(aiReviewerEvaluation.canary_refs ?? []),
-    `agent-lab-canary:${suiteResult.result_id}`,
-  ]);
-  const rollbackRefs = unique([
-    ...(aiReviewerEvaluation.rollback_refs ?? []),
-    ...noForbiddenWriteProofRefs,
-    noPatchRequired ? 'owner_receipt_coordination_record' : 'target_agent_previous_head_ref',
-  ]);
-  const versionRefs = unique([
-    ...(aiReviewerEvaluation.version_refs ?? []),
-    noPatchRequired ? 'owner_receipt_coordination_record' : 'git_commit',
-  ]);
-  return {
-    required_fields_present: true,
-    reviewer_refs: unique([
-      String(capabilityCandidate.ai_reviewer_evaluation_ref),
-      ...capabilityCandidate.ai_reviewer_evidence.source_refs,
-      ...capabilityCandidate.ai_reviewer_evidence.direct_evidence_refs,
-    ]),
-    executor_aperture: {
-      executor_first: true,
-      codex_first: true,
-      executor: 'codex_cli',
-      allowed_scope: noPatchRequired ? 'coordination_record_only' : 'target_agent_owner_gated_patch',
-      allowed_write_surfaces: noPatchRequired ? [] : capabilityCandidate.target_editable_surface_refs,
-      forbidden_write_surfaces: [
-        'target_domain_truth',
-        'target_domain_memory_body',
-        'target_domain_artifact_body',
-        'target_quality_or_export_verdict',
-        'default_agent_promotion_without_gate',
-      ],
-    },
-    patch_traceability: {
-      matrix_ref: patchTraceabilityMatrixRef,
-      traceability_status: noPatchRequired ? 'no_source_patch_required' : capabilityCandidate.traceability_status,
-      proposed_change_refs: capabilityCandidate.proposed_change_refs,
-    },
-    target_verification: {
-      required_refs: targetVerificationRefs,
-      requires_target_owner_receipt_or_typed_blocker: true,
-      requires_no_forbidden_write_proof: true,
-    },
-    owner_route: {
-      target_owner_required: true,
-      route_refs: [
-        `target-agent-owner:${capabilityCandidate.target_agent.domain_id}`,
-        `target-owner-receipt-or-typed-blocker:${capabilityCandidate.target_agent.domain_id}/${workOrderId}`,
-      ],
-    },
-    no_forbidden_write_proof: {
-      required: true,
-      proof_refs: noForbiddenWriteProofRefs,
-      can_write_target_domain_truth: false,
-      can_write_target_domain_memory_body: false,
-      can_mutate_target_domain_artifact_body: false,
-      can_authorize_target_domain_quality_or_export: false,
-    },
-    canary_refs: canaryRefs,
-    rollback_refs: rollbackRefs,
-    version_refs: versionRefs,
-    fail_closed_blocker_ref: `typed-blocker:opl-meta-agent/${capabilityCandidate.target_agent.domain_id}/${workOrderId}/missing-required-work-order-field`,
-  };
-}
-
 function buildCapabilityCandidate({
   targetAgent,
   suite,
@@ -783,6 +694,7 @@ function buildDeveloperPatchWorkOrder({
     ...capabilityCandidate.ai_reviewer_evidence.source_refs,
     ...capabilityCandidate.ai_reviewer_evidence.direct_evidence_refs,
   ]);
+  const patchMode = noPatchRequired ? 'no-source-patch' : 'source-patch';
   return {
     surface_kind: 'opl_meta_agent_developer_patch_work_order',
     version: 'opl-meta-agent.developer-patch-work-order.v1',
@@ -800,14 +712,56 @@ function buildDeveloperPatchWorkOrder({
     ai_reviewer_scorecard: capabilityCandidate.ai_reviewer_scorecard,
     ai_reviewer_recovery_refs: capabilityCandidate.ai_reviewer_recovery_refs,
     review_provenance: capabilityCandidate.review_provenance,
-    work_order_completeness: workOrderCompleteness({
-      suiteResult,
-      aiReviewerEvaluation: capabilityCandidate.ai_reviewer_evaluation,
-      capabilityCandidate,
+    work_order_completeness: buildRefsOnlyWorkOrderCompleteness({
+      requiredFieldsPresent: true,
+      reviewerRefs: [
+        String(capabilityCandidate.ai_reviewer_evaluation_ref),
+        ...capabilityCandidate.ai_reviewer_evidence.source_refs,
+        ...capabilityCandidate.ai_reviewer_evidence.direct_evidence_refs,
+      ],
       workOrderId,
+      proposedChangeRefs: capabilityCandidate.proposed_change_refs,
+      traceabilityStatus: noPatchRequired ? 'no_source_patch_required' : capabilityCandidate.traceability_status,
       requiredVerificationRefs,
+      targetVerificationExtraRefs: [
+        'target_owner_receipt_or_typed_blocker',
+        noPatchRequired ? 'target_owner_receipt_projection_ref' : 'target_repo_test_receipt',
+      ],
+      ownerRouteRefs: [
+        `target-agent-owner:${capabilityCandidate.target_agent.domain_id}`,
+        `target-owner-receipt-or-typed-blocker:${capabilityCandidate.target_agent.domain_id}/${workOrderId}`,
+      ],
       noForbiddenWriteProofRefs,
-      noPatchRequired,
+      executorAllowedScope: noPatchRequired ? 'coordination_record_only' : 'target_agent_owner_gated_patch',
+      executorAllowedWriteSurfaces: noPatchRequired ? [] : capabilityCandidate.target_editable_surface_refs,
+      executorForbiddenWriteSurfaces: [
+        'target_domain_truth',
+        'target_domain_memory_body',
+        'target_domain_artifact_body',
+        'target_quality_or_export_verdict',
+        'default_agent_promotion_without_gate',
+      ],
+      canaryRefs: [
+        ...(capabilityCandidate.ai_reviewer_evaluation.canary_refs ?? []),
+        `agent-lab-canary:${suiteResult.result_id}`,
+      ],
+      rollbackRefs: [
+        ...(capabilityCandidate.ai_reviewer_evaluation.rollback_refs ?? []),
+        ...noForbiddenWriteProofRefs,
+        noPatchRequired ? 'owner_receipt_coordination_record' : 'target_agent_previous_head_ref',
+      ],
+      versionRefs: [
+        ...(capabilityCandidate.ai_reviewer_evaluation.version_refs ?? []),
+        noPatchRequired ? 'owner_receipt_coordination_record' : 'git_commit',
+      ],
+      failClosedBlockerRef:
+        `typed-blocker:opl-meta-agent/${capabilityCandidate.target_agent.domain_id}/${workOrderId}/missing-required-work-order-field`,
+    }),
+    required_opl_agent_lab_primitive_refs: buildOplAgentLabOwnedPrimitiveRefs({
+      domainId: targetAgent.domain_id,
+      workOrderId,
+      patchMode,
+      promotionGateRef: `promotion-gate:opl-meta-agent/${targetAgent.domain_id}/external-suite-self-evolution`,
     }),
     ahe_developer_work_order: {
       failure_evidence: failureEvidence,
@@ -844,7 +798,7 @@ function buildDeveloperPatchWorkOrder({
       workOrderId,
       requiredVerificationRefs,
       noForbiddenWriteProofRefs,
-      patchMode: noPatchRequired ? 'no-source-patch' : 'source-patch',
+      patchMode,
     }),
     proposed_change_refs: capabilityCandidate.proposed_change_refs,
     patch_traceability_matrix: noPatchRequired ? [] : capabilityCandidate.patch_traceability_matrix,

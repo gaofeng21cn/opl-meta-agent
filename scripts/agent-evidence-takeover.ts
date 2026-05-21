@@ -15,6 +15,8 @@ import {
 import type { JsonObject } from './lib/domain-pack.ts';
 import {
   DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
+  buildOplAgentLabOwnedPrimitiveRefs,
+  buildRefsOnlyWorkOrderCompleteness,
   buildRuntimeConsumptionVerification,
   buildTargetPatchLoopMachineRefs,
   buildTargetWorkspaceEnvironmentVerification,
@@ -701,96 +703,6 @@ function buildCapabilityCandidate({
   };
 }
 
-function buildWorkOrderCompleteness({
-  targetAgent,
-  capabilityCandidate,
-  workOrderId,
-  verificationCommandRefs,
-  noForbiddenWriteProofRefs,
-}: {
-  targetAgent: TargetAgentIdentity;
-  capabilityCandidate: JsonObject;
-  workOrderId: string;
-  verificationCommandRefs: string[];
-  noForbiddenWriteProofRefs: string[];
-}): JsonObject {
-  const reviewerPresent = capabilityCandidate.ai_reviewer_status === 'present';
-  const reviewerRefs = reviewerPresent
-    ? unique([
-        String(capabilityCandidate.ai_reviewer_evaluation_ref),
-        ...textList(capabilityCandidate.ai_reviewer_evidence?.source_refs),
-        ...textList(capabilityCandidate.ai_reviewer_evidence?.direct_evidence_refs),
-      ])
-    : [];
-  const recoveryRefs = capabilityCandidate.ai_reviewer_recovery_refs ?? {};
-  return {
-    required_fields_present: reviewerPresent,
-    missing_required_fields: reviewerPresent
-      ? []
-      : [
-        'ai_reviewer_evaluation_ref',
-        'ai_reviewer_review',
-        'ai_reviewer_independence',
-        'ai_reviewer_evidence.source_refs',
-        'ai_reviewer_evidence.direct_evidence_refs',
-        'ai_reviewer_scorecard.verdict',
-        'review_provenance',
-      ],
-    reviewer_refs: reviewerRefs,
-    executor_aperture: {
-      executor_first: true,
-      codex_first: true,
-      executor: 'codex_cli',
-      allowed_scope: 'refs_only_target_agent_owner_gated_patch_proposal',
-      allowed_write_surfaces: TARGET_AGENT_EDITABLE_SURFACES,
-      forbidden_write_surfaces: capabilityCandidate.editable_surface_limits?.forbidden_write_surfaces
-        ?? TARGET_AGENT_FORBIDDEN_WRITE_SURFACES,
-    },
-    patch_traceability: {
-      matrix_ref: `${workOrderId}#/patch_traceability_matrix`,
-      proposed_change_refs: textList(capabilityCandidate.proposed_change_refs),
-      traceability_status: reviewerPresent ? 'reviewer_refs_to_agent_evidence_tail_refs_mapped' : 'blocked_missing_reviewer_refs',
-    },
-    target_verification: {
-      required_refs: unique([
-        ...verificationCommandRefs,
-        'target_owner_receipt_or_typed_blocker',
-        'no_forbidden_write_proof',
-      ]),
-      requires_target_owner_receipt_or_typed_blocker: true,
-      requires_no_forbidden_write_proof: true,
-    },
-    owner_route: {
-      target_owner_required: true,
-      route_refs: [`owner-route:${targetAgent.domainId}/${targetAgent.owner}`],
-    },
-    no_forbidden_write_proof: {
-      required: true,
-      proof_refs: noForbiddenWriteProofRefs,
-      can_write_target_domain_truth: false,
-      can_write_target_memory_body: false,
-      can_mutate_target_artifact_body: false,
-      can_authorize_target_quality_or_export: false,
-    },
-    canary_refs: unique([
-      ...textList(recoveryRefs.canary_refs),
-      `agent-lab-canary:${targetAgent.domainId}/production-evidence-tail`,
-    ]),
-    rollback_refs: unique([
-      ...textList(recoveryRefs.rollback_refs),
-      'target_agent_current_head_ref',
-      'developer_patch_branch_or_worktree_ref',
-    ]),
-    version_refs: unique([
-      ...textList(recoveryRefs.version_refs),
-      'target_agent_current_head_ref',
-      'developer_patch_branch_or_worktree_ref',
-      'owner_receipt_or_typed_blocker_version_ref',
-    ]),
-    fail_closed_blocker_ref: `typed-blocker:opl-meta-agent/${targetAgent.domainId}/${workOrderId}/missing-required-work-order-field`,
-  };
-}
-
 function buildDeveloperWorkOrder({
   contracts,
   suite,
@@ -824,6 +736,8 @@ function buildDeveloperWorkOrder({
       ])
     : [];
   const noForbiddenRefs = textList(capabilityCandidate.no_forbidden_write?.proof_refs);
+  const reviewerPresent = capabilityCandidate.ai_reviewer_status === 'present';
+  const recoveryRefs = capabilityCandidate.ai_reviewer_recovery_refs ?? {};
   return {
     surface_kind: 'opl_meta_agent_target_developer_patch_work_order',
     version: 'opl-meta-agent.target-developer-patch-work-order.v1',
@@ -859,12 +773,67 @@ function buildDeveloperWorkOrder({
           review_provenance: capabilityCandidate.review_provenance,
         }
       : {}),
-    work_order_completeness: buildWorkOrderCompleteness({
-      targetAgent,
-      capabilityCandidate,
+    work_order_completeness: buildRefsOnlyWorkOrderCompleteness({
+      requiredFieldsPresent: reviewerPresent,
+      missingRequiredFields: [
+        'ai_reviewer_evaluation_ref',
+        'ai_reviewer_review',
+        'ai_reviewer_independence',
+        'ai_reviewer_evidence.source_refs',
+        'ai_reviewer_evidence.direct_evidence_refs',
+        'ai_reviewer_scorecard.verdict',
+        'review_provenance',
+      ],
+      reviewerRefs: reviewerPresent
+        ? [
+            String(capabilityCandidate.ai_reviewer_evaluation_ref),
+            ...textList(capabilityCandidate.ai_reviewer_evidence?.source_refs),
+            ...textList(capabilityCandidate.ai_reviewer_evidence?.direct_evidence_refs),
+          ]
+        : [],
       workOrderId,
-      verificationCommandRefs,
+      proposedChangeRefs: textList(capabilityCandidate.proposed_change_refs),
+      traceabilityStatus: reviewerPresent
+        ? 'reviewer_refs_to_agent_evidence_tail_refs_mapped'
+        : 'blocked_missing_reviewer_refs',
+      requiredVerificationRefs: verificationCommandRefs,
+      targetVerificationExtraRefs: [
+        'target_owner_receipt_or_typed_blocker',
+        'no_forbidden_write_proof',
+      ],
+      ownerRouteRefs: [`owner-route:${targetAgent.domainId}/${targetAgent.owner}`],
       noForbiddenWriteProofRefs: noForbiddenRefs,
+      executorAllowedScope: 'refs_only_target_agent_owner_gated_patch_proposal',
+      executorAllowedWriteSurfaces: TARGET_AGENT_EDITABLE_SURFACES,
+      executorForbiddenWriteSurfaces: textList(capabilityCandidate.editable_surface_limits?.forbidden_write_surfaces)
+        .length
+        ? textList(capabilityCandidate.editable_surface_limits?.forbidden_write_surfaces)
+        : TARGET_AGENT_FORBIDDEN_WRITE_SURFACES,
+      canaryRefs: [
+        ...textList(recoveryRefs.canary_refs),
+        `agent-lab-canary:${targetAgent.domainId}/production-evidence-tail`,
+      ],
+      rollbackRefs: [
+        ...textList(recoveryRefs.rollback_refs),
+        'target_agent_current_head_ref',
+        'developer_patch_branch_or_worktree_ref',
+      ],
+      versionRefs: [
+        ...textList(recoveryRefs.version_refs),
+        'target_agent_current_head_ref',
+        'developer_patch_branch_or_worktree_ref',
+        'owner_receipt_or_typed_blocker_version_ref',
+      ],
+      failClosedBlockerRef:
+        `typed-blocker:opl-meta-agent/${targetAgent.domainId}/${workOrderId}/missing-required-work-order-field`,
+      authorityFieldNames: {
+        memoryWriteField: 'can_write_target_memory_body',
+      },
+    }),
+    required_opl_agent_lab_primitive_refs: buildOplAgentLabOwnedPrimitiveRefs({
+      domainId: targetAgent.domainId,
+      workOrderId,
+      promotionGateRef: `promotion-gate:${targetAgent.domainId}/production-evidence-tail/owner-gated`,
     }),
     ahe_developer_work_order: {
       failure_evidence: unique([...sourceFailureRefs, ...reviewerEvidenceRefs]),
@@ -1002,6 +971,7 @@ function buildTypedBlocker({
     owner_route_refs: workOrder.owner_route_refs,
     ahe_developer_work_order: workOrder.ahe_developer_work_order,
     machine_closeout_refs: workOrder.machine_closeout_refs,
+    required_opl_agent_lab_primitive_refs: workOrder.required_opl_agent_lab_primitive_refs,
     required_ai_reviewer_independence_fields: [
       'no_shared_context=true',
       'independent_attempt=true',

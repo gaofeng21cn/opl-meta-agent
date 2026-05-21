@@ -705,6 +705,16 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     assert.ok(workOrder.required_verification_refs.includes('target_repo_test_receipt'));
     assert.ok(workOrder.rollback_version_refs.includes('target_agent_previous_head_ref'));
     assert.ok(workOrder.owner_route_refs.includes('target-agent-owner:med-autoscience'));
+    assert.equal(workOrder.required_opl_agent_lab_primitive_refs.owner, 'one-person-lab');
+    assert.equal(workOrder.required_opl_agent_lab_primitive_refs.consumed_as_refs_only_by_oma, true);
+    assert.match(
+      workOrder.required_opl_agent_lab_primitive_refs.work_order_readiness_primitive_ref,
+      /^opl-agent-lab-primitive:work-order-readiness\/med-autoscience\//,
+    );
+    assert.match(
+      workOrder.required_opl_agent_lab_primitive_refs.promotion_readiness_primitive_ref,
+      /^opl-agent-lab-primitive:promotion-readiness\/med-autoscience\//,
+    );
     assert.equal(workOrder.no_forbidden_write_proof.can_write_target_domain_truth, false);
     assert.equal(workOrder.work_order_completeness.required_fields_present, true);
     assert.ok(workOrder.work_order_completeness.reviewer_refs.includes(reviewerEvaluationPath));
@@ -898,6 +908,12 @@ test('target-agent owner receipt Agent Lab suite becomes a no-patch result-consu
     assert.deepEqual(workOrder.required_patch_surfaces, []);
     assert.deepEqual(workOrder.allowed_editable_surfaces, []);
     assert.ok(workOrder.required_verification_refs.includes('target_owner_receipt_projection_ref'));
+    assert.equal(workOrder.required_opl_agent_lab_primitive_refs.owner, 'one-person-lab');
+    assert.equal(workOrder.required_opl_agent_lab_primitive_refs.consumed_as_refs_only_by_oma, true);
+    assert.match(
+      workOrder.required_opl_agent_lab_primitive_refs.work_order_readiness_primitive_ref,
+      /\/no-source-patch$/,
+    );
     assert.ok(workOrder.rollback_version_refs.includes('owner_receipt_coordination_record'));
     assert.equal(workOrder.ahe_developer_work_order.predicted_impact, reviewerEvaluation.predicted_impact);
     assert.deepEqual(workOrder.patch_traceability_matrix, []);
