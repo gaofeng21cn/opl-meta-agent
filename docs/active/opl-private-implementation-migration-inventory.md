@@ -12,6 +12,8 @@ Date: `2026-05-21`
 
 本轮 scan 发现大型风险面集中在 `scripts/agent-evidence-takeover.ts`、`scripts/improve-from-agent-lab-suite.ts`、`scripts/bootstrap-sample-agent.ts` 和 `scripts/lib/meta-agent-loop.ts`。这些脚本当前可用，但容易继续吸收 policy 并变成私有 runner / promotion engine / workbench。台账口径是：脚本只能作为 authority implementation、smoke helper、fixture/proof helper 或 developer work-order materializer；可声明的策略继续迁回 `agent/`、`contracts/` 或 `runtime/authority_functions/`。
 
+2026-05-21 本轮最小清理已把 `agent:evidence` 与 `improve:external-suite` 共享的 target patch-loop machine refs、runtime/read-model consumption proof、target workspace environment proof、no-patch/source-patch closeout evidence 和默认 forbidden target surfaces 集中到 `scripts/lib/work-order-policy.ts`。这只是 repo-local materializer helper 收薄：OPL Framework 仍持有 Agent Lab runner、attempt ledger、queue、provider receipt、registry、App/workbench shell、promotion gate 和 generated interface owner。
+
 ## Classification
 
 | class | 含义 |
@@ -25,17 +27,18 @@ Date: `2026-05-21`
 
 | surface | lines | class | current active caller | 当前实际职责 | 为什么属于该分类 | OMA 必须保留的 authority | 可迁往 OPL 的 generic 子域 | 迁移/退役门槛 | 推荐验证入口 |
 | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- |
-| `scripts/agent-evidence-takeover.ts` | 1075 | `needs_split_before_migration` | `npm run agent:evidence`、`tests/agent-evidence-takeover.test.ts` | 读取目标 agent production acceptance / handoff，生成 Agent Lab suite、developer work order、capability candidate、mechanism proposal 或 typed blocker | 混合 target handoff parsing、work-order policy、suite invocation、proposal assembly；需防止成为 generic evidence runner / promotion gate | target-agent production evidence work-order materialization refs、typed blocker、candidate/proposal refs | Agent Lab suite runner、attempt ledger、promotion gate、App workbench/registry consumption | 抽出共享 work-order policy；script 只保留 materializer；不得写 target truth / quality / artifact / memory / owner receipt | `npm test`、`npm run typecheck` |
-| `scripts/improve-from-agent-lab-suite.ts` | 1069 | `needs_split_before_migration` | `npm run improve:external-suite`、external-suite tests | external suite -> developer patch work order / candidate / proposal materializer | 与 `agent-evidence` 共享 closeout refs、runtime consumption proof、AI reviewer gate policy；policy 应回到 helper/pack/contract | developer patch work-order materialization refs、proposal-only candidate refs | Agent Lab runner、promotion gate、target runtime/App read model shell | 抽出共享 policy；保持 independent reviewer fail-closed；no domain-specific command family | `npm test`、`npm run typecheck` |
+| `scripts/agent-evidence-takeover.ts` | 1050 | `needs_split_before_migration` | `npm run agent:evidence`、`tests/agent-evidence-takeover.test.ts` | 读取目标 agent production acceptance / handoff，生成 Agent Lab suite、developer work order、capability candidate、mechanism proposal 或 typed blocker | target handoff parsing、suite invocation、proposal assembly 仍在脚本内；work-order closeout/runtime/workspace proof policy 已迁入 helper，仍需防止成为 generic evidence runner / promotion gate | target-agent production evidence work-order materialization refs、typed blocker、candidate/proposal refs | Agent Lab suite runner、attempt ledger、promotion gate、App workbench/registry consumption | 继续拆出可声明 policy；script 只保留 materializer；不得写 target truth / quality / artifact / memory / owner receipt | `npm test`、`npm run typecheck` |
+| `scripts/improve-from-agent-lab-suite.ts` | 985 | `needs_split_before_migration` | `npm run improve:external-suite`、external-suite tests | external suite -> developer patch work order / candidate / proposal materializer | AI reviewer gate、capability mapping 与 proposal assembly 仍在脚本内；共享 closeout refs、runtime consumption proof、workspace proof 已迁入 helper | developer patch work-order materialization refs、proposal-only candidate refs | Agent Lab runner、promotion gate、target runtime/App read model shell | 继续迁移稳定 policy 到 pack/contract；保持 independent reviewer fail-closed；no domain-specific command family | `npm test`、`npm run typecheck` |
 | `scripts/bootstrap-sample-agent.ts` | 746 | `already_thin_adapter` | `npm run bootstrap:sample`、bootstrap loop tests | sample agent / real-target smoke helper、baseline receipt、scaleout ledger | 是 smoke/proof helper，不应变成 product runtime 或 scaffold owner | candidate package refs、baseline receipt refs、scaleout evidence refs | standard scaffold/generator, Agent Lab runner | policy stable 后迁入 `agent/` / `contracts`; script remains smoke target | bootstrap loop tests |
 | `scripts/lib/meta-agent-loop.ts` | 729 | `already_thin_adapter` with split pressure | imported by bootstrap/sample and evidence scripts | shared fixture generation, Agent Lab suite helpers, receipt/proposal builders | shared helper 可保留，但不应成为 OPL runtime / Agent Lab implementation | package/work-order/proposal materializer helpers | Agent Lab execution, runtime/queue/attempt ledger | split policy constants from helper; no generic runner ownership | `npm test`、`npm run typecheck` |
+| `scripts/lib/work-order-policy.ts` | 137 | `already_thin_adapter` | imported by `agent:evidence` and `improve:external-suite` | 共享 target patch-loop closeout refs、runtime/read-model proof、workspace proof、forbidden target surface defaults | 是 repo-local developer work-order materializer helper，不运行 suite、不签 promotion、不持有 target truth | work-order policy constants and refs-only proof builders | OPL Agent Lab/App/registry runtime consumption receipts and promotion gate | 保持 pure helper；稳定合同文本继续迁入 `agent/`、`contracts/` 或 authority refs | `npm test`、`npm run typecheck` |
 | `contracts/app_workbench_projection.json` | n/a | `already_thin_adapter` | contracts tests, OPL App consumption refs | refs/status/receipt/blocker projection contract | 已声明 App/workbench owner is OPL; OMA only supplies refs | OMA work-order/candidate refs | App/workbench display shell | keep refs-only; live App screenshot/evidence from OPL/App side | `tests/contracts.test.ts` |
 | `contracts/opl_domain_manifest_registration.json` | n/a | `already_thin_adapter` | contracts tests, OPL registry/discovery refs | registry discovery metadata | registry owner is OPL; OMA supplies registration refs only | domain descriptor/handoff refs | registry/discovery owner | OPL registry receipt required before live claim | `tests/contracts.test.ts` |
 | `runtime/authority_functions/meta-agent-authority-functions.json` | n/a | `domain_authority_retained` | contracts tests, authority function refs | explicit authority refs for package builder and proposal authorizer | minimal refs-only authority functions belong OMA, but cannot own runtime | candidate package builder, proposal authorizer refs | none except OPL invocation shell | keep no generic owner flags; scripts must match implementation refs | `tests/contracts.test.ts` |
 
 ## Bad-smell flags
 
-- Large script-level policy: `agent-evidence-takeover.ts` and `improve-from-agent-lab-suite.ts` repeat work-order closeout / runtime consumption / AI reviewer gate semantics.
+- Large script-level policy: `agent-evidence-takeover.ts` and `improve-from-agent-lab-suite.ts` 仍承载 AI reviewer gate、capability mapping 和 proposal assembly；work-order closeout / runtime consumption / workspace proof repetition 已收薄到 helper。
 - Agent Lab runner leakage: scripts may call OPL Agent Lab but cannot become Agent Lab implementation.
 - Promotion shortcut risk: mechanism patch proposal and suite pass remain proposal-only / gated.
 - Domain-specific command risk: OMA must not add MAS/MAG/RCA-specific command families; targets provide standard handoff.
@@ -44,9 +47,9 @@ Date: `2026-05-21`
 
 ## Immediate thinning items
 
-1. Extract shared target-agent work-order policy into a named script helper module.
+1. Keep `scripts/lib/work-order-policy.ts` as pure developer work-order materializer helper.
 2. Keep the two large scripts as materializers that consume helper policy and target refs.
-3. Continue migrating stable policy text into `agent/prompts/`, `agent/stages/`, `agent/quality_gates/`, `contracts/` or `runtime/authority_functions/`.
+3. Continue migrating stable AI reviewer gate / capability mapping / proposal policy into `agent/prompts/`, `agent/stages/`, `agent/quality_gates/`, `contracts/` or `runtime/authority_functions/`.
 4. Do not add repo-local scheduler, queue, attempt ledger, status/workbench shell, registry owner, Agent Lab runner or promotion gate.
 
 ## OPL primitive dependencies

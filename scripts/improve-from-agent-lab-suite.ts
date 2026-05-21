@@ -32,7 +32,10 @@ import {
   DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
   DEFAULT_RUNTIME_EXPECTED_OUTCOMES,
   DEFAULT_RUNTIME_REQUIRED_SURFACE_REFS,
+  buildRuntimeConsumptionVerification,
   buildTargetPatchLoopMachineRefs,
+  buildTargetWorkspaceEnvironmentVerification,
+  targetPatchLoopCloseoutEvidence,
 } from './lib/work-order-policy.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -861,52 +864,15 @@ function buildDeveloperPatchWorkOrder({
       no_target_domain_truth_write_proof_required: true,
       no_quality_verdict_or_submission_readiness_authority: true,
       forbidden_target_paths_or_surfaces: policy.forbiddenTargetPathsOrSurfaces,
-      required_closeout_evidence: noPatchRequired
-        ? [
-          'target owner receipt projection consumed Agent Lab suite result',
-          'target owner receipt projection consumed opl-meta-agent coordination result',
-          'no target source patch was requested',
-          'no target domain truth, memory body, artifact body, quality verdict, or export verdict was written',
-        ]
-        : [
-          'patch_traceability_matrix addressed',
-          'target agent tests passed',
-          'target runtime/read-model consumed patched capability',
-          'target workspace dependency lock/profile migrated when runtime extras are required',
-          'target owner entry redrive consumed the migrated workspace environment',
-          'repo hygiene proof shows no target checkout .venv or generated egg-info pollution',
-          'developer patch receipt recorded',
-          'target agent status or decision docs updated',
-          'temporary worktree cleaned after absorb',
-        ],
+      required_closeout_evidence: targetPatchLoopCloseoutEvidence({
+        sourcePatchRequired: !noPatchRequired,
+      }),
     },
-    runtime_consumption_verification: {
-      verification_mode: 'read_only_target_domain_runtime_projection',
-      required_surface_refs: policy.runtimeRequiredSurfaceRefs,
-      expected_outcomes: policy.runtimeExpectedOutcomes,
-      can_write_target_domain_truth: false,
-      can_mutate_target_domain_artifact_body: false,
-      can_authorize_target_domain_quality_or_export: false,
-    },
-    target_workspace_environment_verification: {
-      verification_mode: 'read_only_target_workspace_environment_and_owner_entry_redrive',
-      required_surface_refs: [
-        'target_workspace_pyproject_or_lock',
-        'target_workspace_profile_or_config_env',
-        'study_runtime_analysis_bundle',
-        'target_owner_entry_redrive_report',
-        'target_repo_hygiene_status',
-      ],
-      expected_outcomes: [
-        'target workspace dependency lock/profile includes required runtime extras before owner redrive',
-        'owner runtime entry uses the target workspace interpreter rather than target repo checkout .venv',
-        'owner redrive reports the analysis/runtime bundle as ready under the target workspace interpreter',
-        'repo hygiene proof shows no target checkout .venv or generated egg-info pollution',
-      ],
-      can_write_target_domain_truth: false,
-      can_mutate_target_domain_artifact_body: false,
-      can_authorize_target_domain_quality_or_export: false,
-    },
+    runtime_consumption_verification: buildRuntimeConsumptionVerification({
+      requiredSurfaceRefs: policy.runtimeRequiredSurfaceRefs,
+      expectedOutcomes: policy.runtimeExpectedOutcomes,
+    }),
+    target_workspace_environment_verification: buildTargetWorkspaceEnvironmentVerification(),
     version_management: {
       target_agent_version_owner: 'target_agent_repo',
       required_version_artifacts: noPatchRequired

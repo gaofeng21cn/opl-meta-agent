@@ -13,7 +13,13 @@ import {
   writeJson,
 } from './lib/meta-agent-loop.ts';
 import type { JsonObject } from './lib/domain-pack.ts';
-import { buildTargetPatchLoopMachineRefs } from './lib/work-order-policy.ts';
+import {
+  DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
+  buildRuntimeConsumptionVerification,
+  buildTargetPatchLoopMachineRefs,
+  buildTargetWorkspaceEnvironmentVerification,
+  targetPatchLoopCloseoutEvidence,
+} from './lib/work-order-policy.ts';
 
 type AgentEvidenceArgs = {
   agentRepo: string;
@@ -60,10 +66,7 @@ const TARGET_AGENT_EDITABLE_SURFACES = [
 ];
 
 const TARGET_AGENT_FORBIDDEN_WRITE_SURFACES = [
-  'target domain truth',
-  'target memory body',
-  'target artifact body',
-  'target quality verdict',
+  ...DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
   'target export verdict',
   'target owner receipt body',
   'default agent promotion without gate',
@@ -883,7 +886,12 @@ function buildDeveloperWorkOrder({
       no_forbidden_write_proof_required: true,
       verification_command_refs_required: true,
       forbidden_write_surfaces: forbiddenWriteSurfaces(contracts),
+      required_closeout_evidence: targetPatchLoopCloseoutEvidence({
+        sourcePatchRequired: capabilityCandidate.ai_reviewer_status === 'present',
+      }),
     },
+    runtime_consumption_verification: buildRuntimeConsumptionVerification(),
+    target_workspace_environment_verification: buildTargetWorkspaceEnvironmentVerification(),
     no_forbidden_write: capabilityCandidate.no_forbidden_write,
     machine_closeout_refs: buildTargetPatchLoopMachineRefs({
       domainId: targetAgent.domainId,
