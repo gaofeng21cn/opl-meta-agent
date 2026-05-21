@@ -192,6 +192,37 @@ function refsByTokens(values: string[], tokens: string[]): string[] {
   }));
 }
 
+function recordValue(value: unknown, key: string): JsonObject | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+  const nested = (value as JsonObject)[key];
+  return nested && typeof nested === 'object' && !Array.isArray(nested) ? nested as JsonObject : null;
+}
+
+function collectEfficiencyHandoffProjectionRefs(record: JsonObject, target: EfficiencyNonRegressionRefs): void {
+  const projections = Object.entries(record)
+    .filter(([key, value]) => (
+      key === 'efficiency_handoff_projection' || key.endsWith('_efficiency_handoff_projection')
+    ) && value && typeof value === 'object' && !Array.isArray(value))
+    .map(([, value]) => value as JsonObject);
+
+  for (const projection of projections) {
+    const signals = recordValue(projection, 'efficiency_signal_refs');
+    const qualityFloor = recordValue(projection, 'quality_floor_refs');
+    if (qualityFloor) {
+      target.quality_floor_refs.push(...refsFromRecord(qualityFloor));
+    }
+    if (signals) {
+      target.latency_baseline_refs.push(...stringList(signals.duration_refs));
+      target.usage_cost_refs.push(...stringList(signals.cost_refs));
+      target.cache_reuse_refs.push(...stringList(signals.cache_refs));
+      target.cache_reuse_refs.push(...stringList(signals.reuse_refs));
+      target.target_verification_refs.push(...stringList(signals.export_result_refs));
+    }
+  }
+}
+
 export function collectEfficiencyNonRegressionRefs(...sources: unknown[]): EfficiencyNonRegressionRefs {
   const explicit = emptyEfficiencyNonRegressionRefs();
   const flatRefs: string[] = [];
@@ -208,6 +239,7 @@ export function collectEfficiencyNonRegressionRefs(...sources: unknown[]): Effic
       return;
     }
     const record = value as JsonObject;
+    collectEfficiencyHandoffProjectionRefs(record, explicit);
     for (const field of Object.keys(explicit) as Array<keyof EfficiencyNonRegressionRefs>) {
       explicit[field].push(...stringList(record[field]));
     }
