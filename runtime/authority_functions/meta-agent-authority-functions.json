@@ -153,6 +153,55 @@
         "forbidden_roles": []
       },
       {
+        "script_ref": "scripts/lib/meta-agent-loop-ai-reviewer.ts",
+        "classes": [
+          "fixture_or_proof_helper",
+          "developer_work_order_materializer"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": [
+          "ai_reviewer_evaluation_ref",
+          "ai_reviewer_receipt_fields_ref",
+          "ai_reviewer_acceptance_gate_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
+        "script_ref": "scripts/lib/meta-agent-loop-io.ts",
+        "classes": [
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [
+          "opl_agent_lab_complete_control_plane"
+        ],
+        "writes_only": [
+          "opl_command_json_ref",
+          "target_agent_descriptor_ref",
+          "json_materialization_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
+        "script_ref": "scripts/lib/meta-agent-loop-receipts.ts",
+        "classes": [
+          "fixture_or_proof_helper",
+          "developer_work_order_materializer"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": [
+          "agent_lab_suite_ref",
+          "owner_receipt_ref",
+          "online_learning_candidate_ref",
+          "mechanism_patch_proposal_ref",
+          "real_target_delivery_receipt_ref",
+          "scaleout_evidence_ledger_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
         "script_ref": "scripts/lib/meta-agent-loop.ts",
         "classes": [
           "authority_function_implementation_ref",
