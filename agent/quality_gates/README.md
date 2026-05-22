@@ -7,4 +7,5 @@ Gates:
 - `baseline-delivery.md`
 - `takeover.md`
 - `external-suite-self-evolution.md`
+- `external-work-order-execution.md`
 - `mechanism-patch-adoption.md`

@@ -6,6 +6,7 @@
   "scripts": {
     "bootstrap:sample": "node --experimental-strip-types scripts/bootstrap-sample-agent.ts",
     "improve:external-suite": "node --experimental-strip-types scripts/improve-from-agent-lab-suite.ts",
+    "execute:external-work-order": "node --experimental-strip-types scripts/execute-external-work-order.ts",
     "agent:evidence": "node --experimental-strip-types scripts/agent-evidence-takeover.ts",
     "takeover:test": "node --experimental-strip-types scripts/takeover-agent.ts",
     "repo:hygiene": "scripts/repo-hygiene.sh",

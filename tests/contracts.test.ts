@@ -546,6 +546,7 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   assert.equal(actionCatalog.version, 'family-action-catalog.v1');
   assert.match(packageJson.scripts['bootstrap:sample'], /--experimental-strip-types/);
   assert.match(packageJson.scripts['improve:external-suite'], /--experimental-strip-types/);
+  assert.match(packageJson.scripts['execute:external-work-order'], /--experimental-strip-types/);
   assert.match(packageJson.scripts['agent:evidence'], /--experimental-strip-types/);
   assert.match(packageJson.scripts['takeover:test'], /--experimental-strip-types/);
   const actions = asObjects(actionCatalog.actions);
@@ -568,6 +569,30 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   assert.equal(externalSuiteAction.authority_boundary.can_modify_target_agent_docs, true);
   assert.equal(externalSuiteAction.authority_boundary.can_authorize_target_domain_quality_or_export, false);
   assert.ok(externalSuiteAction.workspace_locator_fields.includes('ai_reviewer_evaluation'));
+  const executeWorkOrderAction = actions.find(
+    (action) => action.action_id === 'execute-external-work-order',
+  );
+  assert.ok(executeWorkOrderAction);
+  assert.equal(executeWorkOrderAction.supported_surfaces.mcp.descriptor_only, true);
+  assert.equal(executeWorkOrderAction.supported_surfaces.product_entry.action_key, 'execute-external-work-order');
+  assert.equal(executeWorkOrderAction.authority_boundary.delegates_to_opl_agent_lab_execute_work_order, true);
+  assert.equal(executeWorkOrderAction.authority_boundary.can_own_generic_runner, false);
+  assert.equal(executeWorkOrderAction.authority_boundary.can_manage_target_worktree_lifecycle, false);
+  assert.equal(executeWorkOrderAction.authority_boundary.can_absorb_target_branch, false);
+  assert.equal(executeWorkOrderAction.authority_boundary.can_clean_target_worktree, false);
+  assert.equal(executeWorkOrderAction.authority_boundary.can_write_target_domain_truth, false);
+  assert.equal(executeWorkOrderAction.authority_boundary.can_mutate_target_domain_artifact_body, false);
+  assert.ok(executeWorkOrderAction.workspace_locator_fields.includes('work_order_path'));
+  const morphologyPolicy = readJson('runtime/authority_functions/meta-agent-authority-functions.json')
+    .script_morphology_policy as JsonObject;
+  const executeWorkOrderFunction = asObjects(morphologyPolicy.script_classifications).find(
+    (entry) => entry.script_ref === 'scripts/execute-external-work-order.ts',
+  );
+  assert.ok(executeWorkOrderFunction);
+  assert.ok(asStrings(executeWorkOrderFunction.forbidden_roles).includes('target_worktree_lifecycle_owner'));
+  assert.ok(asStrings(executeWorkOrderFunction.forbidden_roles).includes('codex_cli_runner_owner'));
+  assert.ok(asStrings(executeWorkOrderFunction.consumes_opl_surfaces)
+    .includes('opl_agent_lab_execute_work_order_control_plane'));
   const baselineAction = actions.find((action) => action.action_id === 'build-agent-baseline');
   assert.ok(baselineAction);
   assert.ok(baselineAction.workspace_locator_fields.includes('ai_reviewer_evaluation'));
@@ -1038,6 +1063,25 @@ test('script physical morphology stays limited to authority refs and helpers', (
   const classifiedScripts = asObjects(morphologyPolicy.script_classifications).map((entry) => entry.script_ref as string).sort();
   assert.deepEqual(classifiedScripts, scripts);
 
+  const allowedScriptForbiddenRoles = new Map<string, string[]>([
+    [
+      'scripts/execute-external-work-order.ts',
+      [
+        'codex_cli_runner_owner',
+        'target_worktree_lifecycle_owner',
+        'target_branch_absorption_owner',
+        'target_worktree_cleanup_owner',
+        'generic_queue_owner',
+        'generic_attempt_ledger_owner',
+        'target_domain_truth_owner',
+        'target_domain_quality_or_export_verdict_owner',
+        'target_domain_artifact_body_owner',
+        'target_domain_memory_body_owner',
+        'target_owner_receipt_body_owner',
+      ],
+    ],
+  ]);
+
   asObjects(morphologyPolicy.script_classifications).forEach((entry) => {
     assertRepoRefExists(entry.script_ref);
     assert.ok(entry.classes.length > 0, `${entry.script_ref} should have at least one script class`);
@@ -1047,7 +1091,11 @@ test('script physical morphology stays limited to authority refs and helpers', (
         `${entry.script_ref} uses unsupported script morphology class ${classId}`,
       );
     });
-    assert.deepEqual(entry.forbidden_roles, [], `${entry.script_ref} must not carry forbidden script roles`);
+    assert.deepEqual(
+      entry.forbidden_roles,
+      allowedScriptForbiddenRoles.get(entry.script_ref as string) ?? [],
+      `${entry.script_ref} carries unexpected forbidden script roles`,
+    );
     assert.ok(entry.writes_only.length > 0, `${entry.script_ref} should declare refs-only writes`);
 
     const declaredAuthorityRefs = entry.authority_function_refs ?? [];
@@ -1135,11 +1183,21 @@ test('OPL generated interfaces expose CLI, MCP, Skill, and product-entry descrip
     true,
   );
   assert.equal(
+    asObjects(bundle.skill.descriptors).some((entry) =>
+      entry.command_contract_id === 'opl-meta-agent.execute-external-work-order'
+    ),
+    true,
+  );
+  assert.equal(
     asObjects(bundle.product_entry.descriptors).some((entry) => entry.action_key === 'takeover-external-agent-test'),
     true,
   );
   assert.equal(
     asObjects(bundle.product_entry.descriptors).some((entry) => entry.action_key === 'improve-from-external-agent-lab-suite'),
+    true,
+  );
+  assert.equal(
+    asObjects(bundle.product_entry.descriptors).some((entry) => entry.action_key === 'execute-external-work-order'),
     true,
   );
   assert.equal(bundle.authority_boundary.generated_interface_can_write_domain_truth, false);

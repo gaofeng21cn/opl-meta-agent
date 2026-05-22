@@ -97,6 +97,8 @@ CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framewo
 
 Usable landing 的首个真实 target patch-loop smoke 已由 MAG closeout projection 落证：blocked suite / OMA work order / patch traceability / target verification / runtime read-model consumption / workspace proof / no-forbidden-write / owner receipt or typed blocker / absorption / cleanup / Agent Lab re-evaluation 都有 refs-only closeout shape。后续证据要求是把同一 shape 扩展到更多真实 target 与更多真实 patch / rerun 样本。work order、generated-surface readiness、suite pass 或单次 smoke 仍只能算消费面 proof，不能写成 target domain ready、quality verdict、artifact readiness 或 default promotion。
 
+OMA 侧执行入口保持薄委托：`execute:external-work-order` 读取已经生成的 developer patch work order，只校验 refs-only shape 与 authority boundary，然后调用 OPL Framework 的 `opl agent-lab execute-work-order --work-order <path> --json`。target worktree lifecycle、generic runner、queue、attempt ledger、absorb、cleanup、execution receipt 与 re-evaluation orchestration 均由 OPL Agent Lab / target owner 控制面持有；OMA 不在本仓实现第二套执行器或 worktree 管理。
+
 该 takeover 只覆盖测试接管和候选生成。target domain truth、quality verdict、artifact body、memory body、默认 agent promotion authority 继续由目标 domain owner 持有；receipt 和 candidate 必须显式声明 `can_write_target_domain_memory_body=false`、`can_promote_default_agent_without_gate=false`。
 
 ## Mechanism Patch Proposal

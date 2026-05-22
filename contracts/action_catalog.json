@@ -195,6 +195,69 @@
       }
     },
     {
+      "action_id": "execute-external-work-order",
+      "title": "Execute External Work Order",
+      "summary": "Validate an OMA developer patch work order and delegate execution to OPL Agent Lab's execute-work-order control plane without implementing an OMA runner, queue, target worktree lifecycle, absorb, or cleanup loop.",
+      "owner": "opl-meta-agent",
+      "effect": "mutating",
+      "source_command": {
+        "command": "npm run execute:external-work-order -- --work-order <work_order_path> --opl-bin <opl_bin> [--output <output_path>] -- [agent_lab_passthrough_args]",
+        "surface_kind": "domain_smoke_cli_thin_delegation"
+      },
+      "input_schema_ref": "contracts/schemas/execute-external-work-order.input.schema.json",
+      "output_schema_ref": "contracts/schemas/execute-external-work-order.output.schema.json",
+      "workspace_locator_fields": [
+        "work_order_path",
+        "opl_bin",
+        "output_path"
+      ],
+      "human_gate_ids": [
+        "target_agent_owner_patch_gate",
+        "opl_agent_lab_execute_work_order_gate"
+      ],
+      "supported_surfaces": {
+        "cli": {
+          "command": "npm run execute:external-work-order -- --work-order <work_order_path> --opl-bin <opl_bin> [--output <output_path>] -- [agent_lab_passthrough_args]",
+          "surface_kind": "domain_smoke_cli_thin_delegation"
+        },
+        "mcp": {
+          "tool_name": "opl_meta_agent_execute_external_work_order",
+          "surface_kind": "opl_generated_mcp_descriptor",
+          "descriptor_only": true,
+          "public_runtime": false
+        },
+        "skill": {
+          "command_contract_id": "opl-meta-agent.execute-external-work-order",
+          "surface_kind": "opl_generated_skill_contract"
+        },
+        "product_entry": {
+          "action_key": "execute-external-work-order",
+          "command": "npm run execute:external-work-order -- --work-order <work_order_path> --opl-bin <opl_bin> [--output <output_path>] -- [agent_lab_passthrough_args]",
+          "surface_kind": "domain_product_entry_action"
+        },
+        "openai": {
+          "tool_name": "opl_meta_agent_execute_external_work_order"
+        },
+        "ai_sdk": {
+          "tool_name": "opl_meta_agent_execute_external_work_order"
+        }
+      },
+      "authority_boundary": {
+        "delegates_to_opl_agent_lab_execute_work_order": true,
+        "can_own_generic_runner": false,
+        "can_own_generic_queue_or_attempt_ledger": false,
+        "can_manage_target_worktree_lifecycle": false,
+        "can_absorb_target_branch": false,
+        "can_clean_target_worktree": false,
+        "can_write_target_domain_truth": false,
+        "can_write_target_domain_memory_body": false,
+        "can_mutate_target_domain_artifact_body": false,
+        "can_authorize_target_domain_quality_or_export": false,
+        "can_promote_default_agent_without_gate": false,
+        "can_train_or_deploy_model_weights": false
+      }
+    },
+    {
       "action_id": "generate-mechanism-patch-proposal",
       "title": "Generate Mechanism Patch Proposal",
       "summary": "Convert Agent Lab run evidence and a gated learning candidate into a proposal-only mechanism patch record.",

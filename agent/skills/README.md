@@ -6,4 +6,5 @@ Skills:
 
 - `opl-meta-agent-domain-skill.md`
 - `external-suite-improvement.md`
+- `external-work-order-execution.md`
 - `agent-baseline-build.md`
