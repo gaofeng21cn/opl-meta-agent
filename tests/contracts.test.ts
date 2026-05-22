@@ -1146,3 +1146,119 @@ test('OPL generated interfaces expose CLI, MCP, Skill, and product-entry descrip
   assert.equal(bundle.authority_boundary.generated_interface_can_write_memory_body, false);
   assert.equal(bundle.authority_boundary.generated_interface_can_authorize_quality_or_export, false);
 });
+
+test('OPL default-caller deletion evidence is closed by domain-owned refs without authorizing physical delete', () => {
+  const evidence = readJson('contracts/default_caller_deletion_evidence.json');
+  const generatedSurfaceHandoff = readJson('contracts/generated_surface_handoff.json');
+  const audit = readJson('contracts/functional_privatization_audit.json');
+  const expectedSurfaces = [
+    'cli',
+    'mcp',
+    'skill',
+    'product_entry',
+    'product_status',
+    'product_session',
+    'sidecar',
+    'workbench',
+  ];
+
+  assert.equal(evidence.surface_kind, 'opl_meta_agent_default_caller_deletion_evidence');
+  assert.equal(evidence.owner, 'opl-meta-agent');
+  assert.equal(evidence.generated_surface_owner, 'one-person-lab');
+  assert.equal(evidence.domain_repo_can_own_generated_surface, false);
+  assert.equal(evidence.physical_delete_authorized, false);
+  assert.equal(evidence.authority_boundary.refs_only, true);
+  assert.equal(evidence.authority_boundary.can_write_domain_truth, false);
+  assert.equal(evidence.authority_boundary.can_write_memory_body, false);
+  assert.equal(evidence.authority_boundary.can_authorize_quality_or_export, false);
+  assert.equal(evidence.authority_boundary.can_authorize_domain_repo_physical_delete, false);
+  assert.ok(asStrings(evidence.retained_domain_authority).includes('agent_building_semantics'));
+  assert.ok(asStrings(evidence.retained_domain_authority).includes('prompt_pack_quality_judgment'));
+  assert.ok(asStrings(evidence.retained_domain_authority).includes('work_order_materialization_semantics'));
+  assert.ok(asStrings(evidence.retained_domain_authority).includes('target_domain_truth_boundary'));
+  assert.ok(asStrings(evidence.opl_owned_surfaces).includes('runtime_queue_workbench_projection'));
+  assert.equal(
+    generatedSurfaceHandoff.default_caller_deletion_evidence_ref,
+    'contracts/default_caller_deletion_evidence.json',
+  );
+
+  const handoffSurfaces = asObjects(generatedSurfaceHandoff.handoff_surfaces);
+  assert.deepEqual(asObjects(handoffSurfaces).map((surface) => surface.surface_id), expectedSurfaces);
+  expectedSurfaces.forEach((surfaceId) => {
+    const surfaceEvidence = evidence.surface_evidence[surfaceId] as JsonObject;
+    assert.ok(surfaceEvidence, `${surfaceId} should have deletion evidence`);
+    assert.ok(asStrings(surfaceEvidence.typed_blocker_refs).length > 0);
+    assert.ok(asStrings(surfaceEvidence.no_forbidden_write_refs).length > 0);
+    assert.ok(asStrings(surfaceEvidence.tombstone_refs).length > 0);
+    assert.ok(asStrings(surfaceEvidence.provenance_refs).length > 0);
+    assert.ok(asStrings(surfaceEvidence.current_surface_refs).length > 0);
+
+    const handoffSurface = handoffSurfaces.find((entry) => entry.surface_id === surfaceId);
+    assert.ok(handoffSurface, `${surfaceId} should have a handoff surface`);
+    assert.equal(handoffSurface.owner, 'one-person-lab');
+    assert.equal(handoffSurface.physical_delete_authorized, false);
+    assert.equal(
+      handoffSurface.bridge_exit_gate_ref,
+      `contracts/default_caller_deletion_evidence.json#/surface_evidence/${surfaceId}`,
+    );
+
+    const moduleId = `default_caller_${surfaceId}_deletion_evidence`;
+    const auditModule = asObjects(audit.modules).find((entry) => entry.module_id === moduleId);
+    assert.ok(auditModule, `${moduleId} should be represented in functional audit`);
+    assert.equal(auditModule.owner, 'opl-meta-agent');
+    assert.equal(auditModule.classification, 'refs_only_domain_adapter');
+    assert.deepEqual(auditModule.code_paths, ['contracts/default_caller_deletion_evidence.json']);
+    assert.equal(
+      auditModule.role_scope,
+      'refs_only_default_caller_deletion_evidence_not_generated_surface_owner',
+    );
+    assert.equal(auditModule.bridge_exit_gate.physical_delete_authorized, false);
+    assert.deepEqual(
+      asStrings(auditModule.bridge_exit_gate.typed_blocker_refs),
+      asStrings(surfaceEvidence.typed_blocker_refs),
+    );
+    assert.deepEqual(
+      asStrings(auditModule.bridge_exit_gate.no_forbidden_write_refs),
+      asStrings(surfaceEvidence.no_forbidden_write_refs),
+    );
+  });
+
+  const result = spawnSync(oplBin, [
+    'agents',
+    'default-callers',
+    '--agent',
+    `opl-meta-agent=${repoRoot}`,
+    '--json',
+  ], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    maxBuffer: 16 * 1024 * 1024,
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout) as JsonObject;
+  const report = payload.agent_default_caller_readiness as JsonObject;
+  const summary = report.summary as JsonObject;
+  assert.equal(summary.generated_default_caller_surface_count, 8);
+  assert.equal(summary.blocked_surface_count, 0);
+  assert.equal(summary.missing_domain_owner_receipt_or_typed_blocker_count, 0);
+  assert.equal(summary.missing_no_forbidden_write_proof_count, 0);
+  assert.equal(summary.missing_tombstone_or_provenance_ref_count, 0);
+  assert.equal(report.migration_gate_policy.physical_delete_authorized_by_this_report, false);
+  assert.equal(report.authority_boundary.report_can_authorize_domain_repo_physical_delete, false);
+
+  const repoReport = asObjects(report.reports)[0];
+  assert.equal(repoReport.deletion_gate.physical_delete_authorized, false);
+  assert.equal(repoReport.deletion_gate.missing_domain_owner_receipt_or_typed_blocker_count, 0);
+  assert.equal(repoReport.deletion_gate.missing_no_forbidden_write_proof_count, 0);
+  assert.equal(repoReport.deletion_gate.missing_tombstone_or_provenance_ref_count, 0);
+  assert.equal(asObjects(repoReport.surface_gates).length, 8);
+  asObjects(repoReport.surface_gates).forEach((gate) => {
+    const worklist = gate.deletion_evidence_worklist as JsonObject;
+    assert.equal(gate.status, 'ready_for_default_caller_cutover');
+    assert.equal(worklist.physical_delete_authorized, false);
+    assert.equal(worklist.domain_owner_receipt_or_typed_blocker.status, 'observed');
+    assert.equal(worklist.no_forbidden_write_proof.status, 'observed');
+    assert.equal(worklist.tombstone_or_provenance_ref.status, 'observed');
+  });
+});

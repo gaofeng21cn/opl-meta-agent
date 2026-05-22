@@ -186,6 +186,478 @@
       ],
       "active_caller_status": "contract_ready_no_real_scaleout_claim_yet",
       "role_scope": "refs_only_scaleout_evidence_gate_not_target_domain_truth_writer"
+    },
+    {
+      "module_id": "default_caller_cli_deletion_evidence",
+      "classification": "refs_only_domain_adapter",
+      "owner": "opl-meta-agent",
+      "code_paths": [
+        "contracts/default_caller_deletion_evidence.json"
+      ],
+      "active_callers": [
+        "OPL generated interface bundle"
+      ],
+      "active_caller_status": "domain_owned_delete_evidence_refs_materialized",
+      "role_scope": "refs_only_default_caller_deletion_evidence_not_generated_surface_owner",
+      "current_surface_refs": [
+        "opl-generated-default-caller:opl-meta-agent/cli",
+        "contracts/default_caller_deletion_evidence.json#/surface_evidence/cli"
+      ],
+      "expected_opl_primitives": [
+        "opl_generated_interface_bundle",
+        "opl_generated_status_and_hosted_workbench_projection"
+      ],
+      "retained_domain_authority": [
+        "agent_building_semantics",
+        "prompt_pack_quality_judgment",
+        "work_order_materialization_semantics",
+        "target_domain_truth_boundary",
+        "typed_blocker_materialization",
+        "owner_receipt_materialization"
+      ],
+      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default wrapper surface.",
+      "cannot_absorb_reason": "OPL cannot sign OMA domain owner receipts, typed blockers, agent-building semantics, or target-domain truth-boundary evidence.",
+      "semantic_equivalence_status": "cleared_by_boundary",
+      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned deletion evidence refs.",
+      "bridge_exit_gate": {
+        "owner_receipt_refs": [],
+        "typed_blocker_refs": [
+          "typed-blocker:opl-meta-agent/default-caller-deletion/cli/domain-delete-authority-not-delegated"
+        ],
+        "no_forbidden_write_refs": [
+          "no-forbidden-write:opl-meta-agent/default-caller-deletion/cli"
+        ],
+        "tombstone_refs": [
+          "tombstone:opl-meta-agent/default-caller-deletion/cli/no-repo-local-wrapper"
+        ],
+        "provenance_refs": [
+          "contracts/default_caller_deletion_evidence.json#/surface_evidence/cli",
+          "contracts/generated_surface_handoff.json#/handoff_surfaces/cli"
+        ],
+        "current_surface_refs": [
+          "opl-generated-default-caller:opl-meta-agent/cli"
+        ],
+        "physical_delete_authorized": false,
+        "authority_boundary": {
+          "can_write_domain_truth": false,
+          "can_write_memory_body": false,
+          "can_authorize_quality_or_export": false,
+          "can_authorize_domain_repo_physical_delete": false
+        }
+      }
+    },
+    {
+      "module_id": "default_caller_mcp_deletion_evidence",
+      "classification": "refs_only_domain_adapter",
+      "owner": "opl-meta-agent",
+      "code_paths": [
+        "contracts/default_caller_deletion_evidence.json"
+      ],
+      "active_callers": [
+        "OPL generated interface bundle"
+      ],
+      "active_caller_status": "domain_owned_delete_evidence_refs_materialized",
+      "role_scope": "refs_only_default_caller_deletion_evidence_not_generated_surface_owner",
+      "current_surface_refs": [
+        "opl-generated-default-caller:opl-meta-agent/mcp",
+        "contracts/default_caller_deletion_evidence.json#/surface_evidence/mcp"
+      ],
+      "expected_opl_primitives": [
+        "opl_generated_interface_bundle",
+        "opl_generated_status_and_hosted_workbench_projection"
+      ],
+      "retained_domain_authority": [
+        "agent_building_semantics",
+        "prompt_pack_quality_judgment",
+        "work_order_materialization_semantics",
+        "target_domain_truth_boundary",
+        "typed_blocker_materialization",
+        "owner_receipt_materialization"
+      ],
+      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default wrapper surface.",
+      "cannot_absorb_reason": "OPL cannot sign OMA domain owner receipts, typed blockers, agent-building semantics, or target-domain truth-boundary evidence.",
+      "semantic_equivalence_status": "cleared_by_boundary",
+      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned deletion evidence refs.",
+      "bridge_exit_gate": {
+        "owner_receipt_refs": [],
+        "typed_blocker_refs": [
+          "typed-blocker:opl-meta-agent/default-caller-deletion/mcp/domain-delete-authority-not-delegated"
+        ],
+        "no_forbidden_write_refs": [
+          "no-forbidden-write:opl-meta-agent/default-caller-deletion/mcp"
+        ],
+        "tombstone_refs": [
+          "tombstone:opl-meta-agent/default-caller-deletion/mcp/no-repo-local-wrapper"
+        ],
+        "provenance_refs": [
+          "contracts/default_caller_deletion_evidence.json#/surface_evidence/mcp",
+          "contracts/generated_surface_handoff.json#/handoff_surfaces/mcp"
+        ],
+        "current_surface_refs": [
+          "opl-generated-default-caller:opl-meta-agent/mcp"
+        ],
+        "physical_delete_authorized": false,
+        "authority_boundary": {
+          "can_write_domain_truth": false,
+          "can_write_memory_body": false,
+          "can_authorize_quality_or_export": false,
+          "can_authorize_domain_repo_physical_delete": false
+        }
+      }
+    },
+    {
+      "module_id": "default_caller_skill_deletion_evidence",
+      "classification": "refs_only_domain_adapter",
+      "owner": "opl-meta-agent",
+      "code_paths": [
+        "contracts/default_caller_deletion_evidence.json"
+      ],
+      "active_callers": [
+        "OPL generated interface bundle"
+      ],
+      "active_caller_status": "domain_owned_delete_evidence_refs_materialized",
+      "role_scope": "refs_only_default_caller_deletion_evidence_not_generated_surface_owner",
+      "current_surface_refs": [
+        "opl-generated-default-caller:opl-meta-agent/skill",
+        "contracts/default_caller_deletion_evidence.json#/surface_evidence/skill"
+      ],
+      "expected_opl_primitives": [
+        "opl_generated_interface_bundle",
+        "opl_generated_status_and_hosted_workbench_projection"
+      ],
+      "retained_domain_authority": [
+        "agent_building_semantics",
+        "prompt_pack_quality_judgment",
+        "work_order_materialization_semantics",
+        "target_domain_truth_boundary",
+        "typed_blocker_materialization",
+        "owner_receipt_materialization"
+      ],
+      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default wrapper surface.",
+      "cannot_absorb_reason": "OPL cannot sign OMA domain owner receipts, typed blockers, agent-building semantics, or target-domain truth-boundary evidence.",
+      "semantic_equivalence_status": "cleared_by_boundary",
+      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned deletion evidence refs.",
+      "bridge_exit_gate": {
+        "owner_receipt_refs": [],
+        "typed_blocker_refs": [
+          "typed-blocker:opl-meta-agent/default-caller-deletion/skill/domain-delete-authority-not-delegated"
+        ],
+        "no_forbidden_write_refs": [
+          "no-forbidden-write:opl-meta-agent/default-caller-deletion/skill"
+        ],
+        "tombstone_refs": [
+          "tombstone:opl-meta-agent/default-caller-deletion/skill/no-repo-local-wrapper"
+        ],
+        "provenance_refs": [
+          "contracts/default_caller_deletion_evidence.json#/surface_evidence/skill",
+          "contracts/generated_surface_handoff.json#/handoff_surfaces/skill"
+        ],
+        "current_surface_refs": [
+          "opl-generated-default-caller:opl-meta-agent/skill"
+        ],
+        "physical_delete_authorized": false,
+        "authority_boundary": {
+          "can_write_domain_truth": false,
+          "can_write_memory_body": false,
+          "can_authorize_quality_or_export": false,
+          "can_authorize_domain_repo_physical_delete": false
+        }
+      }
+    },
+    {
+      "module_id": "default_caller_product_entry_deletion_evidence",
+      "classification": "refs_only_domain_adapter",
+      "owner": "opl-meta-agent",
+      "code_paths": [
+        "contracts/default_caller_deletion_evidence.json"
+      ],
+      "active_callers": [
+        "OPL generated product-entry default caller"
+      ],
+      "active_caller_status": "domain_owned_delete_evidence_refs_materialized",
+      "role_scope": "refs_only_default_caller_deletion_evidence_not_generated_surface_owner",
+      "current_surface_refs": [
+        "opl-generated-default-caller:opl-meta-agent/product_entry",
+        "contracts/default_caller_deletion_evidence.json#/surface_evidence/product_entry"
+      ],
+      "expected_opl_primitives": [
+        "opl_generated_interface_bundle",
+        "opl_generated_status_and_hosted_workbench_projection"
+      ],
+      "retained_domain_authority": [
+        "agent_building_semantics",
+        "prompt_pack_quality_judgment",
+        "work_order_materialization_semantics",
+        "target_domain_truth_boundary",
+        "typed_blocker_materialization",
+        "owner_receipt_materialization"
+      ],
+      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default wrapper surface.",
+      "cannot_absorb_reason": "OPL cannot sign OMA domain owner receipts, typed blockers, agent-building semantics, or target-domain truth-boundary evidence.",
+      "semantic_equivalence_status": "cleared_by_boundary",
+      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned deletion evidence refs.",
+      "bridge_exit_gate": {
+        "owner_receipt_refs": [],
+        "typed_blocker_refs": [
+          "typed-blocker:opl-meta-agent/default-caller-deletion/product-entry/domain-delete-authority-not-delegated"
+        ],
+        "no_forbidden_write_refs": [
+          "no-forbidden-write:opl-meta-agent/default-caller-deletion/product-entry"
+        ],
+        "tombstone_refs": [
+          "tombstone:opl-meta-agent/default-caller-deletion/product-entry/no-repo-local-wrapper"
+        ],
+        "provenance_refs": [
+          "contracts/default_caller_deletion_evidence.json#/surface_evidence/product_entry",
+          "contracts/generated_surface_handoff.json#/handoff_surfaces/product_entry"
+        ],
+        "current_surface_refs": [
+          "opl-generated-default-caller:opl-meta-agent/product_entry"
+        ],
+        "physical_delete_authorized": false,
+        "authority_boundary": {
+          "can_write_domain_truth": false,
+          "can_write_memory_body": false,
+          "can_authorize_quality_or_export": false,
+          "can_authorize_domain_repo_physical_delete": false
+        }
+      }
+    },
+    {
+      "module_id": "default_caller_product_status_deletion_evidence",
+      "classification": "refs_only_domain_adapter",
+      "owner": "opl-meta-agent",
+      "code_paths": [
+        "contracts/default_caller_deletion_evidence.json"
+      ],
+      "active_callers": [
+        "OPL generated product-status default caller"
+      ],
+      "active_caller_status": "domain_owned_delete_evidence_refs_materialized",
+      "role_scope": "refs_only_default_caller_deletion_evidence_not_generated_surface_owner",
+      "current_surface_refs": [
+        "opl-generated-default-caller:opl-meta-agent/product_status",
+        "contracts/default_caller_deletion_evidence.json#/surface_evidence/product_status"
+      ],
+      "expected_opl_primitives": [
+        "opl_generated_interface_bundle",
+        "opl_generated_status_and_hosted_workbench_projection"
+      ],
+      "retained_domain_authority": [
+        "agent_building_semantics",
+        "prompt_pack_quality_judgment",
+        "work_order_materialization_semantics",
+        "target_domain_truth_boundary",
+        "typed_blocker_materialization",
+        "owner_receipt_materialization"
+      ],
+      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default wrapper surface.",
+      "cannot_absorb_reason": "OPL cannot sign OMA domain owner receipts, typed blockers, agent-building semantics, or target-domain truth-boundary evidence.",
+      "semantic_equivalence_status": "cleared_by_boundary",
+      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned deletion evidence refs.",
+      "bridge_exit_gate": {
+        "owner_receipt_refs": [],
+        "typed_blocker_refs": [
+          "typed-blocker:opl-meta-agent/default-caller-deletion/product-status/domain-delete-authority-not-delegated"
+        ],
+        "no_forbidden_write_refs": [
+          "no-forbidden-write:opl-meta-agent/default-caller-deletion/product-status"
+        ],
+        "tombstone_refs": [
+          "tombstone:opl-meta-agent/default-caller-deletion/product-status/no-repo-local-wrapper"
+        ],
+        "provenance_refs": [
+          "contracts/default_caller_deletion_evidence.json#/surface_evidence/product_status",
+          "contracts/generated_surface_handoff.json#/handoff_surfaces/product_status"
+        ],
+        "current_surface_refs": [
+          "opl-generated-default-caller:opl-meta-agent/product_status"
+        ],
+        "physical_delete_authorized": false,
+        "authority_boundary": {
+          "can_write_domain_truth": false,
+          "can_write_memory_body": false,
+          "can_authorize_quality_or_export": false,
+          "can_authorize_domain_repo_physical_delete": false
+        }
+      }
+    },
+    {
+      "module_id": "default_caller_product_session_deletion_evidence",
+      "classification": "refs_only_domain_adapter",
+      "owner": "opl-meta-agent",
+      "code_paths": [
+        "contracts/default_caller_deletion_evidence.json"
+      ],
+      "active_callers": [
+        "OPL generated product-session default caller"
+      ],
+      "active_caller_status": "domain_owned_delete_evidence_refs_materialized",
+      "role_scope": "refs_only_default_caller_deletion_evidence_not_generated_surface_owner",
+      "current_surface_refs": [
+        "opl-generated-default-caller:opl-meta-agent/product_session",
+        "contracts/default_caller_deletion_evidence.json#/surface_evidence/product_session"
+      ],
+      "expected_opl_primitives": [
+        "opl_generated_interface_bundle",
+        "opl_generated_status_and_hosted_workbench_projection"
+      ],
+      "retained_domain_authority": [
+        "agent_building_semantics",
+        "prompt_pack_quality_judgment",
+        "work_order_materialization_semantics",
+        "target_domain_truth_boundary",
+        "typed_blocker_materialization",
+        "owner_receipt_materialization"
+      ],
+      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default wrapper surface.",
+      "cannot_absorb_reason": "OPL cannot sign OMA domain owner receipts, typed blockers, agent-building semantics, or target-domain truth-boundary evidence.",
+      "semantic_equivalence_status": "cleared_by_boundary",
+      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned deletion evidence refs.",
+      "bridge_exit_gate": {
+        "owner_receipt_refs": [],
+        "typed_blocker_refs": [
+          "typed-blocker:opl-meta-agent/default-caller-deletion/product-session/domain-delete-authority-not-delegated"
+        ],
+        "no_forbidden_write_refs": [
+          "no-forbidden-write:opl-meta-agent/default-caller-deletion/product-session"
+        ],
+        "tombstone_refs": [
+          "tombstone:opl-meta-agent/default-caller-deletion/product-session/no-repo-local-wrapper"
+        ],
+        "provenance_refs": [
+          "contracts/default_caller_deletion_evidence.json#/surface_evidence/product_session",
+          "contracts/generated_surface_handoff.json#/handoff_surfaces/product_session"
+        ],
+        "current_surface_refs": [
+          "opl-generated-default-caller:opl-meta-agent/product_session"
+        ],
+        "physical_delete_authorized": false,
+        "authority_boundary": {
+          "can_write_domain_truth": false,
+          "can_write_memory_body": false,
+          "can_authorize_quality_or_export": false,
+          "can_authorize_domain_repo_physical_delete": false
+        }
+      }
+    },
+    {
+      "module_id": "default_caller_sidecar_deletion_evidence",
+      "classification": "refs_only_domain_adapter",
+      "owner": "opl-meta-agent",
+      "code_paths": [
+        "contracts/default_caller_deletion_evidence.json"
+      ],
+      "active_callers": [
+        "OPL generated sidecar default caller"
+      ],
+      "active_caller_status": "domain_owned_delete_evidence_refs_materialized",
+      "role_scope": "refs_only_default_caller_deletion_evidence_not_generated_surface_owner",
+      "current_surface_refs": [
+        "opl-generated-default-caller:opl-meta-agent/sidecar",
+        "contracts/default_caller_deletion_evidence.json#/surface_evidence/sidecar"
+      ],
+      "expected_opl_primitives": [
+        "opl_generated_interface_bundle",
+        "opl_generated_status_and_hosted_workbench_projection"
+      ],
+      "retained_domain_authority": [
+        "agent_building_semantics",
+        "prompt_pack_quality_judgment",
+        "work_order_materialization_semantics",
+        "target_domain_truth_boundary",
+        "typed_blocker_materialization",
+        "owner_receipt_materialization"
+      ],
+      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default wrapper surface.",
+      "cannot_absorb_reason": "OPL cannot sign OMA domain owner receipts, typed blockers, agent-building semantics, or target-domain truth-boundary evidence.",
+      "semantic_equivalence_status": "cleared_by_boundary",
+      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned deletion evidence refs.",
+      "bridge_exit_gate": {
+        "owner_receipt_refs": [],
+        "typed_blocker_refs": [
+          "typed-blocker:opl-meta-agent/default-caller-deletion/sidecar/domain-delete-authority-not-delegated"
+        ],
+        "no_forbidden_write_refs": [
+          "no-forbidden-write:opl-meta-agent/default-caller-deletion/sidecar"
+        ],
+        "tombstone_refs": [
+          "tombstone:opl-meta-agent/default-caller-deletion/sidecar/no-repo-local-wrapper"
+        ],
+        "provenance_refs": [
+          "contracts/default_caller_deletion_evidence.json#/surface_evidence/sidecar",
+          "contracts/generated_surface_handoff.json#/handoff_surfaces/sidecar"
+        ],
+        "current_surface_refs": [
+          "opl-generated-default-caller:opl-meta-agent/sidecar"
+        ],
+        "physical_delete_authorized": false,
+        "authority_boundary": {
+          "can_write_domain_truth": false,
+          "can_write_memory_body": false,
+          "can_authorize_quality_or_export": false,
+          "can_authorize_domain_repo_physical_delete": false
+        }
+      }
+    },
+    {
+      "module_id": "default_caller_workbench_deletion_evidence",
+      "classification": "refs_only_domain_adapter",
+      "owner": "opl-meta-agent",
+      "code_paths": [
+        "contracts/default_caller_deletion_evidence.json"
+      ],
+      "active_callers": [
+        "OPL hosted workbench default caller"
+      ],
+      "active_caller_status": "domain_owned_delete_evidence_refs_materialized",
+      "role_scope": "refs_only_default_caller_deletion_evidence_not_generated_surface_owner",
+      "current_surface_refs": [
+        "opl-generated-default-caller:opl-meta-agent/workbench",
+        "contracts/default_caller_deletion_evidence.json#/surface_evidence/workbench"
+      ],
+      "expected_opl_primitives": [
+        "opl_generated_interface_bundle",
+        "opl_generated_status_and_hosted_workbench_projection"
+      ],
+      "retained_domain_authority": [
+        "agent_building_semantics",
+        "prompt_pack_quality_judgment",
+        "work_order_materialization_semantics",
+        "target_domain_truth_boundary",
+        "typed_blocker_materialization",
+        "owner_receipt_materialization"
+      ],
+      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default wrapper surface.",
+      "cannot_absorb_reason": "OPL cannot sign OMA domain owner receipts, typed blockers, agent-building semantics, or target-domain truth-boundary evidence.",
+      "semantic_equivalence_status": "cleared_by_boundary",
+      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned deletion evidence refs.",
+      "bridge_exit_gate": {
+        "owner_receipt_refs": [],
+        "typed_blocker_refs": [
+          "typed-blocker:opl-meta-agent/default-caller-deletion/workbench/domain-delete-authority-not-delegated"
+        ],
+        "no_forbidden_write_refs": [
+          "no-forbidden-write:opl-meta-agent/default-caller-deletion/workbench"
+        ],
+        "tombstone_refs": [
+          "tombstone:opl-meta-agent/default-caller-deletion/workbench/no-repo-local-wrapper"
+        ],
+        "provenance_refs": [
+          "contracts/default_caller_deletion_evidence.json#/surface_evidence/workbench",
+          "contracts/generated_surface_handoff.json#/handoff_surfaces/workbench"
+        ],
+        "current_surface_refs": [
+          "opl-generated-default-caller:opl-meta-agent/workbench"
+        ],
+        "physical_delete_authorized": false,
+        "authority_boundary": {
+          "can_write_domain_truth": false,
+          "can_write_memory_body": false,
+          "can_authorize_quality_or_export": false,
+          "can_authorize_domain_repo_physical_delete": false
+        }
+      }
     }
   ],
   "authority_boundary": {
