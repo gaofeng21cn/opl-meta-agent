@@ -7,16 +7,23 @@ import {
 } from './meta-agent-loop.ts';
 import {
   DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
+} from './work-order-policy-constants.ts';
+import {
   buildOplAgentLabOwnedPrimitiveRefs,
   buildRefsOnlyWorkOrderCompleteness,
   buildRuntimeConsumptionVerification,
   buildTargetPatchLoopMachineRefs,
   buildTargetWorkspaceEnvironmentVerification,
   buildWorkOrderBundleRefs,
+  targetPatchLoopCloseoutEvidence,
+} from './work-order-builders.ts';
+import {
   collectEfficiencyNonRegressionRefs,
+  hasEfficiencyNonRegressionEvidence,
+} from './work-order-efficiency.ts';
+import {
   firstString,
   forbiddenWriteSurfaces,
-  hasEfficiencyNonRegressionEvidence,
   noForbiddenWriteProofRefs,
   ownerRouteRef,
   productionAcceptanceEvidenceRefs,
@@ -27,11 +34,10 @@ import {
   stringList,
   stringValue,
   targetOwnerRoute,
-  targetPatchLoopCloseoutEvidence,
   taskRequiredReturnShapeRefs,
   uniqueRefs,
   verificationRefs,
-} from './work-order-policy.ts';
+} from './work-order-refs.ts';
 
 export type AgentContracts = {
   productionAcceptance: JsonObject;

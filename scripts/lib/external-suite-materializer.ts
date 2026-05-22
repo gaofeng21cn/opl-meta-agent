@@ -16,11 +16,15 @@ import {
   buildTargetPatchLoopMachineRefs,
   buildTargetWorkspaceEnvironmentVerification,
   buildWorkOrderBundleRefs,
-  hasEfficiencyNonRegressionEvidence,
-  stringList,
   targetPatchLoopCloseoutEvidence,
+} from './work-order-builders.ts';
+import {
+  hasEfficiencyNonRegressionEvidence,
   type EfficiencyNonRegressionRefs,
-} from './work-order-policy.ts';
+} from './work-order-efficiency.ts';
+import {
+  stringList,
+} from './work-order-refs.ts';
 
 export type CapabilityCandidate = JsonObject & {
   candidate_id: string;

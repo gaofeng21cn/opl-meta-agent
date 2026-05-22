@@ -30,11 +30,15 @@ import {
 } from './lib/meta-agent-loop.ts';
 import {
   buildOplAgentLabOwnedPrimitiveRefs,
+} from './lib/work-order-builders.ts';
+import {
   collectEfficiencyNonRegressionRefs,
   type EfficiencyNonRegressionRefs,
   missingEfficiencyNonRegressionFields,
+} from './lib/work-order-efficiency.ts';
+import {
   validateDeveloperPatchWorkOrder,
-} from './lib/work-order-policy.ts';
+} from './lib/work-order-validation.ts';
 import {
   type PatchTraceabilityEntry,
   type TargetImprovementPolicy,

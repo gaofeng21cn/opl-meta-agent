@@ -27,12 +27,16 @@ import {
 } from './lib/agent-evidence-materializer.ts';
 import {
   forbiddenWriteSurfaces,
-  missingEfficiencyNonRegressionFields,
   noForbiddenWriteProofRefs,
   productionAcceptanceEvidenceRefs,
-  validateDeveloperPatchWorkOrder,
   verificationRefs,
-} from './lib/work-order-policy.ts';
+} from './lib/work-order-refs.ts';
+import {
+  missingEfficiencyNonRegressionFields,
+} from './lib/work-order-efficiency.ts';
+import {
+  validateDeveloperPatchWorkOrder,
+} from './lib/work-order-validation.ts';
 
 type AgentEvidenceArgs = {
   agentRepo: string;

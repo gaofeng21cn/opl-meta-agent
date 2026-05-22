@@ -28,6 +28,27 @@
     ],
     "script_classifications": [
       {
+        "script_ref": "scripts/agent-evidence-takeover.ts",
+        "classes": [
+          "smoke_helper",
+          "developer_work_order_materializer",
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [
+          "opl_agent_lab_complete_control_plane"
+        ],
+        "writes_only": [
+          "agent_lab_suite_ref",
+          "developer_patch_work_order_ref",
+          "target_capability_improvement_candidate_ref",
+          "owner_receipt_refs",
+          "mechanism_patch_proposal_ref",
+          "typed_blocker_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
         "script_ref": "scripts/bootstrap-sample-agent.ts",
         "classes": [
           "authority_function_implementation_ref",
@@ -46,24 +67,6 @@
           "candidate_agent_package_ref",
           "owner_receipt_ref",
           "agent_lab_suite_ref",
-          "mechanism_patch_proposal_ref"
-        ],
-        "forbidden_roles": []
-      },
-      {
-        "script_ref": "scripts/takeover-agent.ts",
-        "classes": [
-          "smoke_helper",
-          "fixture_or_proof_helper"
-        ],
-        "authority_function_refs": [],
-        "consumes_opl_surfaces": [
-          "opl_agent_lab_complete_control_plane"
-        ],
-        "writes_only": [
-          "agent_lab_suite_ref",
-          "testing_takeover_self_evolution_receipt",
-          "online_learning_candidate_ref",
           "mechanism_patch_proposal_ref"
         ],
         "forbidden_roles": []
@@ -88,23 +91,34 @@
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/agent-evidence-takeover.ts",
+        "script_ref": "scripts/lib/agent-evidence-materializer.ts",
         "classes": [
-          "smoke_helper",
-          "developer_work_order_materializer",
+          "fixture_or_proof_helper",
+          "developer_work_order_materializer"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": [
+          "owner_receipt_refs",
+          "target_capability_improvement_candidate_ref",
+          "developer_patch_work_order_ref",
+          "mechanism_patch_proposal_ref",
+          "typed_blocker_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
+        "script_ref": "scripts/lib/bootstrap-domain-packs.ts",
+        "classes": [
           "fixture_or_proof_helper"
         ],
         "authority_function_refs": [],
-        "consumes_opl_surfaces": [
-          "opl_agent_lab_complete_control_plane"
-        ],
+        "consumes_opl_surfaces": [],
         "writes_only": [
-          "agent_lab_suite_ref",
-          "developer_patch_work_order_ref",
-          "target_capability_improvement_candidate_ref",
-          "owner_receipt_refs",
-          "mechanism_patch_proposal_ref",
-          "typed_blocker_ref"
+          "candidate_agent_action_catalog_ref",
+          "candidate_agent_stage_control_plane_ref",
+          "real_target_agent_action_catalog_ref",
+          "real_target_agent_stage_control_plane_ref"
         ],
         "forbidden_roles": []
       },
@@ -122,17 +136,19 @@
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/lib/bootstrap-domain-packs.ts",
+        "script_ref": "scripts/lib/external-suite-materializer.ts",
         "classes": [
-          "fixture_or_proof_helper"
+          "fixture_or_proof_helper",
+          "developer_work_order_materializer"
         ],
         "authority_function_refs": [],
         "consumes_opl_surfaces": [],
         "writes_only": [
-          "candidate_agent_action_catalog_ref",
-          "candidate_agent_stage_control_plane_ref",
-          "real_target_agent_action_catalog_ref",
-          "real_target_agent_stage_control_plane_ref"
+          "developer_patch_work_order_ref",
+          "typed_blocker_ref",
+          "target_runtime_read_model_consumption_ref",
+          "workspace_environment_proof_ref",
+          "no_forbidden_write_proof_ref"
         ],
         "forbidden_roles": []
       },
@@ -161,7 +177,23 @@
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/lib/work-order-policy.ts",
+        "script_ref": "scripts/lib/target-improvement-policy.ts",
+        "classes": [
+          "fixture_or_proof_helper",
+          "developer_work_order_materializer"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": [
+          "target_capability_improvement_candidate_ref",
+          "patch_traceability_matrix_ref",
+          "target_editable_surface_refs",
+          "target_repo_file_hints"
+        ],
+        "forbidden_roles": []
+      },
+      {
+        "script_ref": "scripts/lib/work-order-builders.ts",
         "classes": [
           "fixture_or_proof_helper",
           "developer_work_order_materializer"
@@ -179,7 +211,7 @@
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/lib/agent-evidence-materializer.ts",
+        "script_ref": "scripts/lib/work-order-efficiency.ts",
         "classes": [
           "fixture_or_proof_helper",
           "developer_work_order_materializer"
@@ -187,16 +219,24 @@
         "authority_function_refs": [],
         "consumes_opl_surfaces": [],
         "writes_only": [
-          "owner_receipt_refs",
-          "target_capability_improvement_candidate_ref",
-          "developer_patch_work_order_ref",
-          "mechanism_patch_proposal_ref",
-          "typed_blocker_ref"
+          "efficiency_non_regression_ref_projection"
         ],
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/lib/external-suite-materializer.ts",
+        "script_ref": "scripts/lib/work-order-policy-constants.ts",
+        "classes": [
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": [
+          "work_order_policy_constant_refs"
+        ],
+        "forbidden_roles": []
+      },
+      {
+        "script_ref": "scripts/lib/work-order-refs.ts",
         "classes": [
           "fixture_or_proof_helper",
           "developer_work_order_materializer"
@@ -204,16 +244,14 @@
         "authority_function_refs": [],
         "consumes_opl_surfaces": [],
         "writes_only": [
-          "developer_patch_work_order_ref",
-          "typed_blocker_ref",
+          "owner_route_refs",
           "target_runtime_read_model_consumption_ref",
-          "workspace_environment_proof_ref",
           "no_forbidden_write_proof_ref"
         ],
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/lib/target-improvement-policy.ts",
+        "script_ref": "scripts/lib/work-order-validation.ts",
         "classes": [
           "fixture_or_proof_helper",
           "developer_work_order_materializer"
@@ -221,10 +259,25 @@
         "authority_function_refs": [],
         "consumes_opl_surfaces": [],
         "writes_only": [
-          "target_capability_improvement_candidate_ref",
-          "patch_traceability_matrix_ref",
-          "target_editable_surface_refs",
-          "target_repo_file_hints"
+          "developer_patch_work_order_shape_validation_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
+        "script_ref": "scripts/takeover-agent.ts",
+        "classes": [
+          "smoke_helper",
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [
+          "opl_agent_lab_complete_control_plane"
+        ],
+        "writes_only": [
+          "agent_lab_suite_ref",
+          "testing_takeover_self_evolution_receipt",
+          "online_learning_candidate_ref",
+          "mechanism_patch_proposal_ref"
         ],
         "forbidden_roles": []
       }
