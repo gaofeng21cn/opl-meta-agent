@@ -9,3 +9,4 @@ Gates:
 - `external-suite-self-evolution.md`
 - `external-work-order-execution.md`
 - `mechanism-patch-adoption.md`
+- `trajectory-learning-proposal.md`

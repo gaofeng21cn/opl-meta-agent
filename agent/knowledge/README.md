@@ -7,3 +7,4 @@ Knowledge files:
 - `transferable-agent-practices.md`
 - `opl-boundary-policy.md`
 - `project-maturity-signals.md`
+- `trajectory-learning-policy.md`

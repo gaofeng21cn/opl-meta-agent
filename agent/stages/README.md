@@ -14,3 +14,4 @@ Stage files:
 - `optimizer-iteration.md`
 - `baseline-delivery.md`
 - `online-learning.md`
+- `trajectory-learning-intake.md`

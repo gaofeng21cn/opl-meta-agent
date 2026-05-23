@@ -8,3 +8,4 @@ Skills:
 - `external-suite-improvement.md`
 - `external-work-order-execution.md`
 - `agent-baseline-build.md`
+- `trajectory-learning-intake.md`
