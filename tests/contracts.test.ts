@@ -674,6 +674,16 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   assert.ok(baselineAction.workspace_locator_fields.includes('ai_reviewer_evaluation'));
   const mechanismAction = actions.find((action) => action.action_id === 'generate-mechanism-patch-proposal');
   assert.ok(mechanismAction);
+  assert.equal(
+    mechanismAction.source_command.command,
+    'authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer',
+  );
+  assert.equal(mechanismAction.supported_surfaces.cli.surface_kind, 'not_exposed_repo_local_cli');
+  assert.equal(
+    mechanismAction.supported_surfaces.product_entry.surface_kind,
+    'opl_generated_product_entry_descriptor',
+  );
+  assert.doesNotMatch(JSON.stringify(mechanismAction), /opl-meta-agent authority-function/);
   assert.deepEqual(mechanismAction.workspace_locator_fields, [
     'mechanism_ref',
     'segment_run_ref',
@@ -684,8 +694,18 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
     (action) => action.action_id === 'materialize-trajectory-learning-proposal',
   );
   assert.ok(trajectoryLearningAction);
+  assert.equal(
+    trajectoryLearningAction.source_command.command,
+    'contract-ref:contracts/trajectory_learning_contract.json#/candidate_surfaces',
+  );
+  assert.equal(trajectoryLearningAction.supported_surfaces.cli.surface_kind, 'not_exposed_repo_local_cli');
   assert.equal(trajectoryLearningAction.supported_surfaces.mcp.descriptor_only, true);
+  assert.equal(
+    trajectoryLearningAction.supported_surfaces.product_entry.surface_kind,
+    'opl_generated_product_entry_descriptor',
+  );
   assert.equal(trajectoryLearningAction.supported_surfaces.product_entry.action_key, 'materialize-trajectory-learning-proposal');
+  assert.doesNotMatch(JSON.stringify(trajectoryLearningAction), /opl-meta-agent authority-function/);
   assert.ok(trajectoryLearningAction.workspace_locator_fields.includes('redacted_trajectory_ref'));
   assert.ok(trajectoryLearningAction.workspace_locator_fields.includes('candidate_buffer_ref'));
   assert.ok(trajectoryLearningAction.workspace_locator_fields.includes('agent_lab_promotion_gate_ref'));

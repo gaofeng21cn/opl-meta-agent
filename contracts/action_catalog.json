@@ -271,8 +271,8 @@
       "owner": "opl-meta-agent",
       "effect": "mutating",
       "source_command": {
-        "command": "opl-meta-agent authority-function generate-mechanism-patch-proposal",
-        "surface_kind": "minimal_authority_function"
+        "command": "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer",
+        "surface_kind": "minimal_authority_function_ref_only_contract"
       },
       "input_schema_ref": "contracts/schemas/generate-mechanism-patch-proposal.input.schema.json",
       "output_schema_ref": "contracts/schemas/generate-mechanism-patch-proposal.output.schema.json",
@@ -287,8 +287,9 @@
       ],
       "supported_surfaces": {
         "cli": {
-          "command": "opl-meta-agent authority-function generate-mechanism-patch-proposal",
-          "surface_kind": "minimal_authority_function"
+          "command": "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer",
+          "surface_kind": "not_exposed_repo_local_cli",
+          "handler_ref": "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer"
         },
         "mcp": {
           "tool_name": "opl_meta_agent_generate_mechanism_patch_proposal",
@@ -302,8 +303,9 @@
         },
         "product_entry": {
           "action_key": "generate-mechanism-patch-proposal",
-          "command": "opl-meta-agent authority-function generate-mechanism-patch-proposal",
-          "surface_kind": "domain_product_entry_action"
+          "command": "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer",
+          "surface_kind": "opl_generated_product_entry_descriptor",
+          "handler_ref": "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer"
         },
         "openai": {
           "tool_name": "opl_meta_agent_generate_mechanism_patch_proposal"
@@ -328,7 +330,7 @@
       "owner": "opl-meta-agent",
       "effect": "mutating",
       "source_command": {
-        "command": "opl-meta-agent authority-function materialize-trajectory-learning-proposal",
+        "command": "contract-ref:contracts/trajectory_learning_contract.json#/candidate_surfaces",
         "surface_kind": "minimal_authority_function_ref_only_contract"
       },
       "input_schema_ref": "contracts/trajectory_learning_contract.json#/learning_flow",
@@ -347,8 +349,9 @@
       ],
       "supported_surfaces": {
         "cli": {
-          "command": "opl-meta-agent authority-function materialize-trajectory-learning-proposal",
-          "surface_kind": "minimal_authority_function_ref_only_contract"
+          "command": "contract-ref:contracts/trajectory_learning_contract.json#/candidate_surfaces",
+          "surface_kind": "not_exposed_repo_local_cli",
+          "handler_ref": "contract-ref:contracts/trajectory_learning_contract.json#/candidate_surfaces"
         },
         "mcp": {
           "tool_name": "opl_meta_agent_materialize_trajectory_learning_proposal",
@@ -362,8 +365,9 @@
         },
         "product_entry": {
           "action_key": "materialize-trajectory-learning-proposal",
-          "command": "opl-meta-agent authority-function materialize-trajectory-learning-proposal",
-          "surface_kind": "domain_product_entry_action"
+          "command": "contract-ref:contracts/trajectory_learning_contract.json#/candidate_surfaces",
+          "surface_kind": "opl_generated_product_entry_descriptor",
+          "handler_ref": "contract-ref:contracts/trajectory_learning_contract.json#/candidate_surfaces"
         },
         "openai": {
           "tool_name": "opl_meta_agent_materialize_trajectory_learning_proposal"
