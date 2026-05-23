@@ -1,5 +1,10 @@
 # opl-meta-agent 架构
 
+Owner: `opl-meta-agent`
+Purpose: `architecture_and_owner_boundary`
+State: `active_truth`
+Machine boundary: 本文是人读架构说明。机器真相继续归 `contracts/`、`agent/`、`runtime/authority_functions/`、source、CLI/API 行为、OPL Agent Lab result refs 和测试。
+
 `opl-meta-agent` 是 OPL-based Foundry Agent，不是 OPL Framework 内置模块。
 
 ## Owner Split

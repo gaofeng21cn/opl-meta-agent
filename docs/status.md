@@ -1,5 +1,10 @@
 # opl-meta-agent 状态
 
+Owner: `opl-meta-agent`
+Purpose: `current_status_and_evidence_boundary`
+State: `active_truth`
+Machine boundary: 本文是人读状态摘要。机器真相继续归 `contracts/`、`agent/`、`runtime/authority_functions/`、source、CLI/API 行为、OPL Agent Lab result refs、work-order receipts 和测试。
+
 当前状态：已创建独立 OPL-compatible Foundry Agent repo，命名为 `opl-meta-agent`，并通过 OPL standard domain-agent scaffold validation、self-learning loop smoke、real-target delivery minimum evidence、registry/App refs-only readiness 与 mechanism patch proposal smoke。当前设计不再停留在 contract-ready：AHE-style developer work order 机器面已经进入 `improve:external-suite` 与 `agent:evidence`，可以把 blocked suite / production evidence handoff 转成带 failure evidence、root cause、targeted fix、predicted impact、allowed editable surfaces、verification refs、rollback/version refs、owner route refs 和 no-forbidden-write proof 的 patch-loop work order 或 typed blocker。2026-05-21 后续增强把 executable work order bundle 固定为 executor-first：work order 顶层和 completeness 都必须投影 `executor_lease_ref`、`reviewer_pool_refs`、`patch_execution_bundle_ref` 与 `target_closeout_refs`，独立 Codex reviewer pool 必须绑定 direct evidence、独立 invocation/context/trace/receipt、source refs、critique/suggestion/verdict 和 rollback/canary/version refs；缺关键 refs 时 fail closed typed blocker。2026-05-20 首个真实目标 smoke 已由 MAG 收口为 target owner patch-loop closeout projection，证明 OMA work order 的 11 个 closeout refs 可被真实 target agent 消费并返回 owner receipt / typed blocker shape；该证据仍不能替代目标 domain ready、quality verdict、artifact readiness 或 default promotion。
 
 已落地：

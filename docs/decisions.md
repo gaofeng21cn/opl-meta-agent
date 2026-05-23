@@ -1,5 +1,10 @@
 # opl-meta-agent 决策
 
+Owner: `opl-meta-agent`
+Purpose: `active_decision_record`
+State: `active_truth_with_history_notes`
+Machine boundary: 本文是人读决策记录。机器真相继续归 `contracts/`、source、CLI/API 行为、OPL Agent Lab result refs、work-order receipts 和测试。
+
 - Adopt OPL standard domain-agent scaffold v1.
 - Keep this repo as a declarative domain pack plus minimal authority functions.
 - Treat `agent/` as the authoritative repo-tracked domain pack root. Pack file paths and stage prompt refs must be machine-checkable paths, not Markdown heading names or prose-only references.

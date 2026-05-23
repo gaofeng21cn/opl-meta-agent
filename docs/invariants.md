@@ -1,5 +1,10 @@
 # opl-meta-agent 硬约束
 
+Owner: `opl-meta-agent`
+Purpose: `invariants_and_forbidden_claims`
+State: `active_truth`
+Machine boundary: 本文是人读硬约束。机器真相继续归 `contracts/`、source、CLI/API 行为、OPL Agent Lab result refs、work-order receipts、tests 和 target owner receipts / typed blockers。
+
 - Do not store runtime artifacts in repo source.
 - Do not implement generic OPL runtime primitives in this domain repo.
 - Do not implement repo-owned generic CLI, MCP, Skill, product-entry, sidecar, status, or workbench wrappers; OPL Framework generates or hosts those surfaces from contracts.
