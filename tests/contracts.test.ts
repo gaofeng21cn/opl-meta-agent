@@ -599,10 +599,7 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
     (entry) => entry.script_ref === 'scripts/execute-external-work-order.ts',
   );
   assert.ok(executeWorkOrderFunction);
-  assert.ok(asStrings(executeWorkOrderFunction.forbidden_roles).includes('target_worktree_lifecycle_owner'));
-  assert.ok(asStrings(executeWorkOrderFunction.forbidden_roles).includes('codex_cli_runner_owner'));
-  assert.ok(asStrings(executeWorkOrderFunction.forbidden_roles)
-    .includes('target_owner_closeout_hook_invocation_owner'));
+  assert.deepEqual(asStrings(executeWorkOrderFunction.forbidden_roles), []);
   assert.ok(asStrings(executeWorkOrderFunction.writes_only).includes('owner_closeout_hook_delegated_ref'));
   assert.ok(asStrings(executeWorkOrderFunction.writes_only).includes('no_oma_owner_receipt_write_proof_ref'));
   assert.ok(asStrings(executeWorkOrderFunction.consumes_opl_surfaces)
@@ -1077,26 +1074,6 @@ test('script physical morphology stays limited to authority refs and helpers', (
   const classifiedScripts = asObjects(morphologyPolicy.script_classifications).map((entry) => entry.script_ref as string).sort();
   assert.deepEqual(classifiedScripts, scripts);
 
-  const allowedScriptForbiddenRoles = new Map<string, string[]>([
-    [
-      'scripts/execute-external-work-order.ts',
-      [
-        'codex_cli_runner_owner',
-        'target_worktree_lifecycle_owner',
-        'target_branch_absorption_owner',
-        'target_worktree_cleanup_owner',
-        'target_owner_closeout_hook_invocation_owner',
-        'generic_queue_owner',
-        'generic_attempt_ledger_owner',
-        'target_domain_truth_owner',
-        'target_domain_quality_or_export_verdict_owner',
-        'target_domain_artifact_body_owner',
-        'target_domain_memory_body_owner',
-        'target_owner_receipt_body_owner',
-      ],
-    ],
-  ]);
-
   asObjects(morphologyPolicy.script_classifications).forEach((entry) => {
     assertRepoRefExists(entry.script_ref);
     assert.ok(entry.classes.length > 0, `${entry.script_ref} should have at least one script class`);
@@ -1108,8 +1085,8 @@ test('script physical morphology stays limited to authority refs and helpers', (
     });
     assert.deepEqual(
       entry.forbidden_roles,
-      allowedScriptForbiddenRoles.get(entry.script_ref as string) ?? [],
-      `${entry.script_ref} carries unexpected forbidden script roles`,
+      [],
+      `${entry.script_ref} must not declare active forbidden script roles`,
     );
     assert.ok(entry.writes_only.length > 0, `${entry.script_ref} should declare refs-only writes`);
 
