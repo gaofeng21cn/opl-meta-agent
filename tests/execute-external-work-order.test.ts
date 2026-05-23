@@ -25,7 +25,7 @@ function writeFakeOplBin(filePath: string, logPath: string): void {
 const fs = require('node:fs');
 const argv = process.argv.slice(2);
 fs.writeFileSync(${JSON.stringify(logPath)}, JSON.stringify({ argv }, null, 2) + '\\n');
-if (argv[0] !== 'agent-lab' || argv[1] !== 'execute-work-order') {
+if (argv[0] !== 'work-order' || argv[1] !== 'execute') {
   console.error('unexpected fake opl invocation: ' + argv.join(' '));
   process.exit(2);
 }
@@ -36,10 +36,11 @@ if (workOrderIndex === -1 || !argv[workOrderIndex + 1]) {
 }
 const workOrder = JSON.parse(fs.readFileSync(argv[workOrderIndex + 1], 'utf8'));
 process.stdout.write(JSON.stringify({
-  surface_kind: 'opl_agent_lab_execute_work_order_result',
+  surface_kind: 'opl_work_order_execute_result',
   status: 'delegated',
   delegated_work_order_ref: workOrder.work_order_id,
-  target_worktree_lifecycle_owner: 'OPL Agent Lab',
+  primitive_owner: 'one-person-lab/OPL',
+  target_worktree_lifecycle_owner: 'one-person-lab/OPL',
   oma_owned_target_worktree_lifecycle: false
 }, null, 2) + '\\n');
 `,
@@ -109,7 +110,7 @@ function buildWorkOrder(): JsonObject {
   };
 }
 
-test('execute external work order delegates execution and lifecycle to OPL Agent Lab', () => {
+test('execute external work order delegates execution and lifecycle to the OPL work-order primitive', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-execute-work-order-test-'));
   const fakeBinDir = path.join(tempDir, 'bin');
   fs.mkdirSync(fakeBinDir, { recursive: true });
@@ -151,8 +152,8 @@ test('execute external work order delegates execution and lifecycle to OPL Agent
 
   const oplInvocation = readJson(oplLogPath);
   assert.deepEqual(oplInvocation.argv, [
-    'agent-lab',
-    'execute-work-order',
+    'work-order',
+    'execute',
     '--work-order',
     workOrderPath,
     '--json',
@@ -160,15 +161,16 @@ test('execute external work order delegates execution and lifecycle to OPL Agent
 
   const payload = readJson(outputPath);
   assert.equal(payload.surface_kind, 'opl_meta_agent_external_work_order_execution_delegation');
-  assert.equal(payload.status, 'delegated_to_opl_agent_lab');
+  assert.equal(payload.status, 'delegated_to_opl_work_order_primitive');
   assert.equal(payload.oma_target_worktree_lifecycle_owner, false);
   assert.equal(payload.owner_closeout_hook_delegated, true);
   assert.equal(payload.oma_can_write_owner_receipt, false);
   assert.equal(payload.target_owner_closeout_owner, 'target-domain via OPL');
-  assert.equal(payload.opl_agent_lab_command.command, 'agent-lab execute-work-order');
-  assert.deepEqual(payload.opl_agent_lab_command.args, oplInvocation.argv);
+  assert.equal(payload.opl_work_order_command.command, 'work-order execute');
+  assert.deepEqual(payload.opl_work_order_command.args, oplInvocation.argv);
   assert.equal(payload.work_order_ref, 'oma_developer_patch_work_order_test');
-  assert.equal(payload.opl_result.target_worktree_lifecycle_owner, 'OPL Agent Lab');
+  assert.equal(payload.opl_result.primitive_owner, 'one-person-lab/OPL');
+  assert.equal(payload.opl_result.target_worktree_lifecycle_owner, 'one-person-lab/OPL');
 });
 
 test('execute external work order rejects non Codex CLI leases before delegation', () => {

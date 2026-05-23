@@ -80,11 +80,11 @@
         ],
         "authority_function_refs": [],
         "consumes_opl_surfaces": [
-          "opl_agent_lab_execute_work_order_control_plane"
+          "opl_work_order_execute_primitive"
         ],
         "writes_only": [
           "external_work_order_execution_delegation_ref",
-          "opl_agent_lab_execution_result_ref",
+          "opl_work_order_execution_result_ref",
           "no_oma_target_worktree_lifecycle_proof_ref",
           "owner_closeout_hook_delegated_ref",
           "no_oma_owner_receipt_write_proof_ref"

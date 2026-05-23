@@ -124,8 +124,8 @@ function assertExternalWorkOrderIsDelegable(workOrder: JsonObject): void {
 
 function buildOplArgs(args: ExecuteArgs): string[] {
   return [
-    'agent-lab',
-    'execute-work-order',
+    'work-order',
+    'execute',
     '--work-order',
     args.workOrderPath,
     '--json',
@@ -143,20 +143,20 @@ function main(): void {
   const payload = {
     surface_kind: 'opl_meta_agent_external_work_order_execution_delegation',
     version: 'opl-meta-agent.external-work-order-execution-delegation.v1',
-    status: 'delegated_to_opl_agent_lab',
+    status: 'delegated_to_opl_work_order_primitive',
     owner: 'opl-meta-agent',
     work_order_ref: workOrder.work_order_id,
     work_order_path: args.workOrderPath,
     oma_target_worktree_lifecycle_owner: false,
-    target_worktree_lifecycle_owner: 'one-person-lab/OPL Agent Lab',
+    target_worktree_lifecycle_owner: 'one-person-lab/OPL',
     owner_closeout_hook_delegated: true,
     target_owner_closeout_owner: 'target-domain via OPL',
-    target_owner_closeout_hook_invocation_owner: 'one-person-lab/OPL Agent Lab',
+    target_owner_closeout_hook_invocation_owner: 'one-person-lab/OPL',
     oma_can_write_owner_receipt: false,
     delegated_without_generic_runner: true,
     delegated_without_target_queue_or_absorb: true,
-    opl_agent_lab_command: {
-      command: 'agent-lab execute-work-order',
+    opl_work_order_command: {
+      command: 'work-order execute',
       opl_bin: args.oplBin,
       args: oplArgs,
       passthrough_args: args.passthroughArgs,

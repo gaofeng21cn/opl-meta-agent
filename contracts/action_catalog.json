@@ -197,11 +197,11 @@
     {
       "action_id": "execute-external-work-order",
       "title": "Execute External Work Order",
-      "summary": "Validate an OMA developer patch work order and delegate execution to OPL Agent Lab's execute-work-order control plane, including any post-absorb target-domain owner closeout hook, without implementing an OMA runner, queue, target worktree lifecycle, absorb, cleanup, or owner-receipt loop.",
+      "summary": "Validate an OMA developer patch work order and delegate execution to OPL Framework's work-order execute primitive, including any post-absorb target-domain owner closeout hook, without implementing an OMA runner, queue, target worktree lifecycle, absorb, cleanup, or owner-receipt loop.",
       "owner": "opl-meta-agent",
       "effect": "mutating",
       "source_command": {
-        "command": "npm run execute:external-work-order -- --work-order <work_order_path> --opl-bin <opl_bin> [--output <output_path>] -- [agent_lab_passthrough_args]",
+        "command": "npm run execute:external-work-order -- --work-order <work_order_path> --opl-bin <opl_bin> [--output <output_path>] -- [opl_work_order_passthrough_args]",
         "surface_kind": "domain_smoke_cli_thin_delegation"
       },
       "input_schema_ref": "contracts/schemas/execute-external-work-order.input.schema.json",
@@ -213,12 +213,12 @@
       ],
       "human_gate_ids": [
         "target_agent_owner_patch_gate",
-        "opl_agent_lab_execute_work_order_gate",
+        "opl_work_order_execute_gate",
         "target_domain_owner_closeout_hook_gate"
       ],
       "supported_surfaces": {
         "cli": {
-          "command": "npm run execute:external-work-order -- --work-order <work_order_path> --opl-bin <opl_bin> [--output <output_path>] -- [agent_lab_passthrough_args]",
+          "command": "npm run execute:external-work-order -- --work-order <work_order_path> --opl-bin <opl_bin> [--output <output_path>] -- [opl_work_order_passthrough_args]",
           "surface_kind": "domain_smoke_cli_thin_delegation"
         },
         "mcp": {
@@ -233,7 +233,7 @@
         },
         "product_entry": {
           "action_key": "execute-external-work-order",
-          "command": "npm run execute:external-work-order -- --work-order <work_order_path> --opl-bin <opl_bin> [--output <output_path>] -- [agent_lab_passthrough_args]",
+          "command": "npm run execute:external-work-order -- --work-order <work_order_path> --opl-bin <opl_bin> [--output <output_path>] -- [opl_work_order_passthrough_args]",
           "surface_kind": "domain_product_entry_action"
         },
         "openai": {
@@ -244,7 +244,7 @@
         }
       },
       "authority_boundary": {
-        "delegates_to_opl_agent_lab_execute_work_order": true,
+        "delegates_to_opl_work_order_execute": true,
         "can_own_generic_runner": false,
         "can_own_generic_queue_or_attempt_ledger": false,
         "can_manage_target_worktree_lifecycle": false,
