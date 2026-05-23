@@ -14,3 +14,4 @@
 - `agent/prompts/optimizer-iteration.md`
 - `agent/prompts/baseline-delivery.md`
 - `agent/prompts/online-learning.md`
+- `agent/prompts/trajectory-learning-intake.md`
