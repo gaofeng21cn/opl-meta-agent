@@ -13,6 +13,30 @@ Date: `2026-05-20`
 - 差距按标准 OPL Agent 目标态判断，不按当前脚本是否能跑判断。通用 runtime、queue、attempt ledger、Agent Lab execution、promotion gate、generated interface wrapper、operator workbench 和 App shell 都归 OPL Framework；`opl-meta-agent` 只保留 declarative agent-building pack、refs-only action outputs、developer work-order materialization 和 minimal authority functions。
 - 当前文档口径必须固定为：Agent Lab / OMA 是通用标准消费者，标准 OPL Agent 提供它们需要的 interface / handoff；不能写成 Agent Lab 或 OMA 为 MAS、MAG、RCA 单独兼容。
 
+## Active Truth owner 与内容路由
+
+本文是 `opl-meta-agent` 当前完成进度、当前差距、测试/证据差距和下一轮 Agent prompt 的 single Active Truth owner。North-star 目标态回到 [opl-meta-agent 理想目标态](../references/opl-meta-agent-ideal-state.md)；私有实现台账回到 [opl-meta-agent 私有实现与 OPL 迁移台账](./opl-private-implementation-migration-inventory.md)。如果后续出现多个 active plan 抢同一职责，以本文为 owner，并把重复计划折回本文或 history/tombstone。
+
+内容路由固定如下：
+
+| 内容角色 | 当前落点 |
+| --- | --- |
+| 当前完成进度、当前 gap、下一轮 Agent prompt | 本文 |
+| north-star / target-state reference | `docs/references/opl-meta-agent-ideal-state.md` |
+| 私有实现分类、脚本收薄、上收候选 | `docs/active/opl-private-implementation-migration-inventory.md` |
+| 当前公开角色、边界、状态、决策 | 核心五件套 |
+| 过程记录、dated closeout、旧路线 | future `docs/history/**` 或提交/receipt provenance |
+
+## 当前完成进度
+
+| Area | Current status | Live evidence | Notes |
+| --- | --- | --- | --- |
+| Standard OPL Agent shape | `done_with_evidence_tail` | `agent/` pack、`contracts/pack_compiler_input.json`、`contracts/generated_surface_handoff.json`、tests | repo source pack、generated surface handoff、authority refs 已落地；不能写成 production ready。 |
+| Developer work-order materialization | `done_with_scaleout_tail` | `improve:external-suite`、`agent:evidence`、work-order contracts/tests | 已能产出 executor-first patch-loop work order / typed blocker；还需更多真实 target patch/rerun/owner receipt 样本。 |
+| OPL registry / App consumption | `partial` | `contracts/opl_domain_manifest_registration.json`、`contracts/app_workbench_projection.json`、OPL App drilldown refs | OPL 主仓已消费 OMA patch-loop refs；真实 App screenshot/release/live runtime receipt 仍是 evidence tail。 |
+| Script-to-pack hygiene | `active` | `runtime/authority_functions/`、`scripts/lib/*`、private implementation inventory | 当前保留脚本均需继续证明只是 materializer / authority implementation / smoke helper，不成为 private runtime。 |
+| Production consumption | `partial` | OPL App drilldown OMA managed install/update、App live path、owner receipt/typed blocker refs | OPL 侧已观察到 managed install/update、App live path 和 scaleout refs；long-soak 未闭合。 |
+
 ## 当前定位
 
 `opl-meta-agent` 是 OPL-compatible Foundry Agent，面向“开发新的 OPL-compatible 高价值知识交付智能体”。它已经具备 sample agent bootstrap、real-target delivery minimum evidence、external agent testing takeover、external suite self-evolution、developer work order 和 mechanism patch proposal 的 repo-local loop。
@@ -96,6 +120,44 @@ OMA 的理想职责不是“为每个 domain agent 做一套专用 evidence take
 
 6. `standard_target_agent_handoff_convergence`
    把 MAS/MAG/RCA 这类目标 agent 的 production/live acceptance、Agent Lab handoff、owner-route refs、required-return-shapes、editable-surface policy 和 verification refs 收敛到同一 target-agent contract vocabulary。验收口径是 OMA 不新增 domain-specific command，Agent Lab 不新增 domain-specific suite kind，目标 agent 自己声明兼容性。
+
+## 下一轮 Agent prompt
+
+Objective:
+
+- 使用 OPL Doc Governance 继续推进 `opl-meta-agent` 的 production-consumption 与 script-to-pack hygiene evidence；只处理本文仍 open 的证据尾项，不新增第二套 active plan。
+
+Write scope:
+
+- OMA repo 内的 `agent/`、`contracts/`、`runtime/authority_functions/`、`scripts/lib/*`、核心 docs 和 tests。
+- 必要时同步 OPL 主仓对 OMA registration/App projection/production-consumption refs 的消费文档。
+
+Non-goals:
+
+- 不实现 repo-owned generic scheduler、queue、attempt ledger、Agent Lab runner、promotion gate、App shell、CLI/MCP/Skill/product-entry wrapper 或 target-domain verdict。
+- 不把 generated surface proof、registration readiness、App projection readiness、suite pass、schema completeness 或 work-order shape 写成 production ready。
+- 不把 MAS/MAG/RCA 名字写成 OMA 的顶层 command family、suite kind 或长期 contract vocabulary。
+
+Live truth inputs:
+
+- `AGENTS.md`、`TASTE.md`、核心五件套、本文、`docs/references/opl-meta-agent-ideal-state.md`、`docs/active/opl-private-implementation-migration-inventory.md`。
+- `contracts/opl_domain_manifest_registration.json`、`contracts/app_workbench_projection.json`、`contracts/real_target_agent_scaleout_evidence.json`、`contracts/production_acceptance/meta-agent-production-acceptance.json`。
+- OPL 主仓 `opl framework readiness --family-defaults --json` 与 `opl runtime app-operator-drilldown --detail full --json` 的 OMA production-consumption refs。
+
+Verification commands:
+
+```bash
+npm run typecheck
+npm test
+python3 /Users/gaofeng/workspace/opl-doc-governance/scripts/opl_doc_doctor.py doctor . --format json
+```
+
+Completion / foldback gate:
+
+- 已关闭 gap 从本文删除或重写到当前完成进度。
+- durable current truth 折回核心五件套或本文。
+- 过程命令、旧路线和 dated closeout 不留在 active path。
+- 下一轮 prompt 只保留仍未完成的 real target scaleout、App/live consumption、long-soak 或 script-to-pack hygiene 工作。
 
 ## 当前不能写成
 
