@@ -68,7 +68,7 @@ function buildNoForbiddenWriteReadiness({
   };
 }
 
-export function buildOplAgentLabOwnedPrimitiveRefs({
+export function buildOplWorkOrderPrimitiveRefs({
   domainId,
   workOrderId,
   patchMode,
@@ -82,16 +82,16 @@ export function buildOplAgentLabOwnedPrimitiveRefs({
   const modeSuffix = patchMode ? `/${patchMode}` : '';
   return {
     work_order_readiness_primitive_ref:
-      `opl-agent-lab-primitive:work-order-readiness/${domainId}/${workOrderId}${modeSuffix}`,
+      `opl-work-order-primitive:work-order-readiness/${domainId}/${workOrderId}${modeSuffix}`,
     promotion_readiness_primitive_ref:
-      `opl-agent-lab-primitive:promotion-readiness/${domainId}/${workOrderId}${modeSuffix}`,
+      `opl-work-order-primitive:promotion-readiness/${domainId}/${workOrderId}${modeSuffix}`,
     target_owner_return_primitive_ref:
-      `opl-agent-lab-primitive:target-owner-return/${domainId}/${workOrderId}`,
+      `opl-work-order-primitive:target-owner-return/${domainId}/${workOrderId}`,
     patch_traceability_primitive_ref:
-      `opl-agent-lab-primitive:patch-traceability/${domainId}/${workOrderId}${modeSuffix}`,
+      `opl-work-order-primitive:patch-traceability/${domainId}/${workOrderId}${modeSuffix}`,
     readiness_projection_ref:
-      `opl-agent-lab-readiness-projection:${domainId}/${workOrderId}${modeSuffix}`,
-    promotion_gate_ref: promotionGateRef ?? `promotion-gate:opl-agent-lab/${domainId}/${workOrderId}`,
+      `opl-work-order-readiness-projection:${domainId}/${workOrderId}${modeSuffix}`,
+    promotion_gate_ref: promotionGateRef ?? `promotion-gate:opl-work-order/${domainId}/${workOrderId}`,
     owner: 'one-person-lab',
     consumed_as_refs_only_by_oma: true,
   };

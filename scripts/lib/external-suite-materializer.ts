@@ -10,7 +10,7 @@ import type {
   TargetImprovementPolicy,
 } from './target-improvement-policy.ts';
 import {
-  buildOplAgentLabOwnedPrimitiveRefs,
+  buildOplWorkOrderPrimitiveRefs,
   buildRefsOnlyWorkOrderCompleteness,
   buildRuntimeConsumptionVerification,
   buildTargetPatchLoopMachineRefs,
@@ -171,7 +171,7 @@ export function buildDeveloperPatchWorkOrder({
         `typed-blocker:opl-meta-agent/${capabilityCandidate.target_agent.domain_id}/${workOrderId}/missing-required-work-order-field`,
       efficiencyNonRegressionRefs,
     }),
-    required_opl_agent_lab_primitive_refs: buildOplAgentLabOwnedPrimitiveRefs({
+    required_opl_work_order_primitive_refs: buildOplWorkOrderPrimitiveRefs({
       domainId: targetAgent.domain_id,
       workOrderId,
       patchMode,

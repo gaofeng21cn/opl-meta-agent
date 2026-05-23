@@ -29,7 +29,7 @@ import {
   writeJson,
 } from './lib/meta-agent-loop.ts';
 import {
-  buildOplAgentLabOwnedPrimitiveRefs,
+  buildOplWorkOrderPrimitiveRefs,
 } from './lib/work-order-builders.ts';
 import {
   collectEfficiencyNonRegressionRefs,

@@ -9,7 +9,7 @@ import {
   DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
 } from './work-order-policy-constants.ts';
 import {
-  buildOplAgentLabOwnedPrimitiveRefs,
+  buildOplWorkOrderPrimitiveRefs,
   buildRefsOnlyWorkOrderCompleteness,
   buildRuntimeConsumptionVerification,
   buildTargetPatchLoopMachineRefs,
@@ -407,7 +407,7 @@ export function buildDeveloperWorkOrder({
       },
       efficiencyNonRegressionRefs,
     }),
-    required_opl_agent_lab_primitive_refs: buildOplAgentLabOwnedPrimitiveRefs({
+    required_opl_work_order_primitive_refs: buildOplWorkOrderPrimitiveRefs({
       domainId: targetAgent.domainId,
       workOrderId,
       promotionGateRef: `promotion-gate:${targetAgent.domainId}/production-evidence-tail/owner-gated`,
@@ -564,7 +564,7 @@ export function buildTypedBlocker({
     owner_route_refs: workOrder.owner_route_refs,
     ahe_developer_work_order: workOrder.ahe_developer_work_order,
     machine_closeout_refs: workOrder.machine_closeout_refs,
-    required_opl_agent_lab_primitive_refs: workOrder.required_opl_agent_lab_primitive_refs,
+    required_opl_work_order_primitive_refs: workOrder.required_opl_work_order_primitive_refs,
     required_ai_reviewer_independence_fields: [
       'no_shared_context=true',
       'independent_attempt=true',

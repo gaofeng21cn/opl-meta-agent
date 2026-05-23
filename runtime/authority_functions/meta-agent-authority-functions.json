@@ -274,8 +274,8 @@
           "target_runtime_read_model_consumption_ref",
           "workspace_environment_proof_ref",
           "no_forbidden_write_proof_ref",
-          "opl_agent_lab_work_order_readiness_primitive_ref",
-          "opl_agent_lab_promotion_readiness_primitive_ref"
+          "opl_work_order_readiness_primitive_ref",
+          "opl_work_order_promotion_readiness_primitive_ref"
         ],
         "forbidden_roles": []
       },
