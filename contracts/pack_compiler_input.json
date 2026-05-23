@@ -51,6 +51,7 @@
     "artifact_authority_contract",
     "memory_policy",
     "owner_receipt_schema",
+    "target_owner_closeout_hook_delegation_policy",
     "domain_fixtures"
   ],
   "minimal_authority_functions": [

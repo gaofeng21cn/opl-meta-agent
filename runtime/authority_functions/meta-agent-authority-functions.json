@@ -85,13 +85,16 @@
         "writes_only": [
           "external_work_order_execution_delegation_ref",
           "opl_agent_lab_execution_result_ref",
-          "no_oma_target_worktree_lifecycle_proof_ref"
+          "no_oma_target_worktree_lifecycle_proof_ref",
+          "owner_closeout_hook_delegated_ref",
+          "no_oma_owner_receipt_write_proof_ref"
         ],
         "forbidden_roles": [
           "codex_cli_runner_owner",
           "target_worktree_lifecycle_owner",
           "target_branch_absorption_owner",
           "target_worktree_cleanup_owner",
+          "target_owner_closeout_hook_invocation_owner",
           "generic_queue_owner",
           "generic_attempt_ledger_owner",
           "target_domain_truth_owner",

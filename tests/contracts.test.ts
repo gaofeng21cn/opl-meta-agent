@@ -129,6 +129,10 @@ test('domain pack files and stage prompt refs resolve to usable repo files', () 
   assert.equal(packCompilerInput.domain_pack_owner, 'opl-meta-agent');
   assert.equal(packCompilerInput.canonical_semantic_pack_root, 'agent/');
   assert.equal(packCompilerInput.canonical_semantic_pack_role, 'repo_source_declarative_meta_agent_pack');
+  assert.ok(
+    asStrings(packCompilerInput.declarative_domain_pack)
+      .includes('target_owner_closeout_hook_delegation_policy'),
+  );
   assert.equal(generatedSurfaceHandoff.canonical_semantic_pack_root, 'agent/');
   assert.equal(generatedSurfaceHandoff.domain_pack_role, 'domain_truth_prompt_skill_stage_quality_refs_only');
   assert.equal(
@@ -580,8 +584,14 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   assert.equal(executeWorkOrderAction.authority_boundary.can_manage_target_worktree_lifecycle, false);
   assert.equal(executeWorkOrderAction.authority_boundary.can_absorb_target_branch, false);
   assert.equal(executeWorkOrderAction.authority_boundary.can_clean_target_worktree, false);
+  assert.equal(executeWorkOrderAction.authority_boundary.owner_closeout_hook_delegated, true);
+  assert.equal(executeWorkOrderAction.authority_boundary.target_owner_closeout_owner, 'target-domain via OPL');
+  assert.equal(executeWorkOrderAction.authority_boundary.oma_can_write_owner_receipt, false);
+  assert.equal(executeWorkOrderAction.authority_boundary.can_invoke_target_owner_closeout_hook, false);
+  assert.equal(executeWorkOrderAction.authority_boundary.can_write_target_owner_receipt_body, false);
   assert.equal(executeWorkOrderAction.authority_boundary.can_write_target_domain_truth, false);
   assert.equal(executeWorkOrderAction.authority_boundary.can_mutate_target_domain_artifact_body, false);
+  assert.ok(executeWorkOrderAction.human_gate_ids.includes('target_domain_owner_closeout_hook_gate'));
   assert.ok(executeWorkOrderAction.workspace_locator_fields.includes('work_order_path'));
   const morphologyPolicy = readJson('runtime/authority_functions/meta-agent-authority-functions.json')
     .script_morphology_policy as JsonObject;
@@ -591,6 +601,10 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   assert.ok(executeWorkOrderFunction);
   assert.ok(asStrings(executeWorkOrderFunction.forbidden_roles).includes('target_worktree_lifecycle_owner'));
   assert.ok(asStrings(executeWorkOrderFunction.forbidden_roles).includes('codex_cli_runner_owner'));
+  assert.ok(asStrings(executeWorkOrderFunction.forbidden_roles)
+    .includes('target_owner_closeout_hook_invocation_owner'));
+  assert.ok(asStrings(executeWorkOrderFunction.writes_only).includes('owner_closeout_hook_delegated_ref'));
+  assert.ok(asStrings(executeWorkOrderFunction.writes_only).includes('no_oma_owner_receipt_write_proof_ref'));
   assert.ok(asStrings(executeWorkOrderFunction.consumes_opl_surfaces)
     .includes('opl_agent_lab_execute_work_order_control_plane'));
   const baselineAction = actions.find((action) => action.action_id === 'build-agent-baseline');
@@ -1071,6 +1085,7 @@ test('script physical morphology stays limited to authority refs and helpers', (
         'target_worktree_lifecycle_owner',
         'target_branch_absorption_owner',
         'target_worktree_cleanup_owner',
+        'target_owner_closeout_hook_invocation_owner',
         'generic_queue_owner',
         'generic_attempt_ledger_owner',
         'target_domain_truth_owner',

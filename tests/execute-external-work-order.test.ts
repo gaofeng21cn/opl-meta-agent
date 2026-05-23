@@ -162,6 +162,9 @@ test('execute external work order delegates execution and lifecycle to OPL Agent
   assert.equal(payload.surface_kind, 'opl_meta_agent_external_work_order_execution_delegation');
   assert.equal(payload.status, 'delegated_to_opl_agent_lab');
   assert.equal(payload.oma_target_worktree_lifecycle_owner, false);
+  assert.equal(payload.owner_closeout_hook_delegated, true);
+  assert.equal(payload.oma_can_write_owner_receipt, false);
+  assert.equal(payload.target_owner_closeout_owner, 'target-domain via OPL');
   assert.equal(payload.opl_agent_lab_command.command, 'agent-lab execute-work-order');
   assert.deepEqual(payload.opl_agent_lab_command.args, oplInvocation.argv);
   assert.equal(payload.work_order_ref, 'oma_developer_patch_work_order_test');
