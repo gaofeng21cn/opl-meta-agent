@@ -37,6 +37,17 @@ Agent Lab 与 `opl-meta-agent` 是标准消费者。目标 agent 兼容它们，
 
 因此，OMA 的 self-evolution 不是“自己判断并推广目标 agent”，而是把可审计证据转成受限 patch loop。Codex 只能在 work order 授权的文件范围内修改目标仓；目标验证和 owner receipt 回填后，下一轮仍回到 Agent Lab 做 evidence delta、falsification 和 promotion gate 评估。
 
+## Clean-Room Skill Pattern Intake
+
+`skillnerds/xskill` 的吸收边界是 pattern source，不是依赖或运行时。OMA 只学习以下 agent-building 组织形态：
+
+- trajectory atomization：把 skill 改进拆成可引用的 observe / diagnose / edit / evidence atoms，并进入 stage attempt、reviewer evidence、mechanism proposal 或 work-order refs。
+- candidate buffer：把多个 skill / prompt / policy 候选保持为 refs-only buffer，等待 Agent Lab 评估和 OPL promotion gate，而不是在 OMA 内直接采用默认版本。
+- per-skill version / canary evidence：每个 skill 级变更必须带 version、rollback、canary 或 target verification refs；缺这些 refs 时只能输出 typed blocker。
+- team redaction / sync refs：跨人或跨团队复用只能表达为 redacted source refs、sync receipt refs 和 owner route refs，不能复制目标 domain memory body、artifact body、truth 或 reviewer verdict。
+
+不吸收 xskill daemon/runtime、generic scheduler、skill installer、team server 或任何替代 OPL execution plane 的实现。Agent Lab、promotion gate、queue、attempt ledger、worktree lifecycle、absorb / cleanup 和 generated interfaces 仍归 OPL Framework；OMA 只产出 refs-only proposal、developer work order 或 typed blocker。
+
 ## Runtime
 
 本仓只保留 `runtime/authority_functions/` 下的最小 authority refs。长期运行、唤醒、排队、恢复、attempt ledger、sidecar/projection dispatch、status read model 和 operator workbench 由 OPL Framework 生成或托管。
