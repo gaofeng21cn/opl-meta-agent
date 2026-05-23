@@ -23,7 +23,8 @@
   "registration_projection_evidence_contract_refs": {
     "opl_domain_manifest_registration_ref": "contracts/opl_domain_manifest_registration.json",
     "app_workbench_projection_ref": "contracts/app_workbench_projection.json",
-    "real_target_agent_scaleout_evidence_ref": "contracts/real_target_agent_scaleout_evidence.json"
+    "real_target_agent_scaleout_evidence_ref": "contracts/real_target_agent_scaleout_evidence.json",
+    "trajectory_learning_contract_ref": "contracts/trajectory_learning_contract.json"
   },
   "domain_allowed_roles": [
     "domain_truth",
@@ -186,6 +187,40 @@
       ],
       "active_caller_status": "contract_ready_no_real_scaleout_claim_yet",
       "role_scope": "refs_only_scaleout_evidence_gate_not_target_domain_truth_writer"
+    },
+    {
+      "module_id": "trajectory_learning_contract",
+      "classification": "refs_only_domain_adapter",
+      "owner": "opl-meta-agent",
+      "code_paths": [
+        "contracts/trajectory_learning_contract.json"
+      ],
+      "active_callers": [
+        "OPL Agent Lab",
+        "OPL App workbench",
+        "OPL generated interface bundle"
+      ],
+      "active_caller_status": "contract_ready_refs_only",
+      "role_scope": "trajectory_atom_candidate_and_proposal_contract_not_runtime_owner",
+      "consumes_opl_surface": "opl_agent_lab_promotion_gate",
+      "retained_domain_authority": [
+        "agent_building_semantics",
+        "skill_prompt_stage_policy_candidate_semantics",
+        "proposal_materialization_semantics",
+        "target_domain_truth_boundary"
+      ],
+      "expected_opl_primitives": [
+        "generic_trajectory_ingest_runtime",
+        "agent_lab_promotion_gate",
+        "generated_interface_bundle",
+        "hosted_workbench_projection"
+      ],
+      "forbidden_roles": [
+        "generic_trajectory_daemon_owner",
+        "user_scope_skill_installer_owner",
+        "quality_or_export_verdict_authority"
+      ],
+      "retention_reason": "OMA owns how redacted trajectory atoms become skill, prompt, stage-policy, or mechanism proposal refs; OPL owns runtime ingestion, sync, Agent Lab gate, and generated projection."
     },
     {
       "module_id": "default_caller_cli_deletion_evidence",

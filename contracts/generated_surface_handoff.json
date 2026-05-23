@@ -84,6 +84,14 @@
       "status": "descriptor_source_available",
       "source_contract": "contracts/pack_compiler_input.json",
       "domain_policy": "domain_repo_supplies_fixtures_expected_receipts_and_forbidden_write_assertions"
+    },
+    {
+      "surface_id": "trajectory_learning_projection",
+      "owner": "one-person-lab",
+      "target_role": "opl_generated_surface",
+      "status": "descriptor_source_available",
+      "source_contract": "contracts/trajectory_learning_contract.json",
+      "domain_policy": "domain_repo_supplies_redacted_trajectory_atom_candidate_and_proposal_refs_only"
     }
   ],
   "required_domain_handoff": [
@@ -101,7 +109,11 @@
     "default_caller_deletion_evidence_contract",
     "default_caller_typed_blocker_refs",
     "default_caller_no_forbidden_write_refs",
-    "default_caller_tombstone_or_provenance_refs"
+    "default_caller_tombstone_or_provenance_refs",
+    "trajectory_learning_contract",
+    "trajectory_atomization_receipt_refs",
+    "candidate_buffer_receipt_refs",
+    "ux_signal_not_quality_verdict_boundary"
   ],
   "marker": "generated_by_opl_standard_domain_agent_scaffold_v1",
   "canonical_semantic_pack_root": "agent/",
@@ -227,5 +239,6 @@
       "bridge_exit_gate_ref": "contracts/default_caller_deletion_evidence.json#/surface_evidence/workbench",
       "physical_delete_authorized": false
     }
-  ]
+  ],
+  "trajectory_learning_contract_ref": "contracts/trajectory_learning_contract.json"
 }

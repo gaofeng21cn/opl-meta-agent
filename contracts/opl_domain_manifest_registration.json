@@ -20,7 +20,8 @@
     "authority_functions_ref": "runtime/authority_functions/meta-agent-authority-functions.json",
     "owner_receipt_contract_ref": "contracts/owner_receipt_contract.json",
     "app_workbench_projection_ref": "contracts/app_workbench_projection.json",
-    "scaleout_evidence_contract_ref": "contracts/real_target_agent_scaleout_evidence.json"
+    "scaleout_evidence_contract_ref": "contracts/real_target_agent_scaleout_evidence.json",
+    "trajectory_learning_contract_ref": "contracts/trajectory_learning_contract.json"
   },
   "human_doc_refs": [
     "docs/status.md",
@@ -41,7 +42,8 @@
     "action_catalog_ref",
     "generated_surface_handoff_ref",
     "app_workbench_projection_ref",
-    "scaleout_evidence_contract_ref"
+    "scaleout_evidence_contract_ref",
+    "trajectory_learning_contract_ref"
   ],
   "discovery_receipt": {
     "surface_kind": "opl_domain_manifest_discovery_receipt",
@@ -56,18 +58,21 @@
       "contracts/pack_compiler_input.json",
       "contracts/generated_surface_handoff.json",
       "contracts/app_workbench_projection.json",
-      "contracts/real_target_agent_scaleout_evidence.json"
+      "contracts/real_target_agent_scaleout_evidence.json",
+      "contracts/trajectory_learning_contract.json"
     ],
     "safe_action_route_refs": [
       "safe-action:opl-meta-agent/build-agent-baseline",
       "safe-action:opl-meta-agent/takeover-external-agent-test",
       "safe-action:opl-meta-agent/improve-from-external-agent-lab-suite",
-      "safe-action:opl-meta-agent/generate-mechanism-patch-proposal"
+      "safe-action:opl-meta-agent/generate-mechanism-patch-proposal",
+      "safe-action:opl-meta-agent/materialize-trajectory-learning-proposal"
     ],
     "blocked_claims": [
       "app_live_rendering_complete",
       "default_agent_promoted",
-      "target_domain_truth_written"
+      "target_domain_truth_written",
+      "ux_score_authorized_quality_verdict"
     ],
     "verified_by_refs": [
       "tests/contracts.test.ts"

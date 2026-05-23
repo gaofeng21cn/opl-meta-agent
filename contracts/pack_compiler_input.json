@@ -7,6 +7,7 @@
   "required_domain_pack_paths": [
     "agent/knowledge/opl-boundary-policy.md",
     "agent/knowledge/project-maturity-signals.md",
+    "agent/knowledge/trajectory-learning-policy.md",
     "agent/knowledge/transferable-agent-practices.md",
     "agent/prompts/agent-skeleton-build.md",
     "agent/prompts/baseline-delivery.md",
@@ -17,16 +18,19 @@
     "agent/prompts/online-learning.md",
     "agent/prompts/optimizer-iteration.md",
     "agent/prompts/stage-decomposition.md",
+    "agent/prompts/trajectory-learning-intake.md",
     "agent/prompts/web-experience-research.md",
     "agent/quality_gates/baseline-delivery.md",
     "agent/quality_gates/external-suite-self-evolution.md",
     "agent/quality_gates/external-work-order-execution.md",
     "agent/quality_gates/mechanism-patch-adoption.md",
     "agent/quality_gates/takeover.md",
+    "agent/quality_gates/trajectory-learning-proposal.md",
     "agent/skills/agent-baseline-build.md",
     "agent/skills/external-suite-improvement.md",
     "agent/skills/external-work-order-execution.md",
     "agent/skills/opl-meta-agent-domain-skill.md",
+    "agent/skills/trajectory-learning-intake.md",
     "agent/stages/agent-skeleton-build.md",
     "agent/stages/baseline-delivery.md",
     "agent/stages/baseline-run.md",
@@ -36,6 +40,7 @@
     "agent/stages/online-learning.md",
     "agent/stages/optimizer-iteration.md",
     "agent/stages/stage-decomposition.md",
+    "agent/stages/trajectory-learning-intake.md",
     "agent/stages/web-experience-research.md"
   ],
   "declarative_domain_pack": [
@@ -52,7 +57,10 @@
     "memory_policy",
     "owner_receipt_schema",
     "target_owner_closeout_hook_delegation_policy",
-    "domain_fixtures"
+    "domain_fixtures",
+    "trajectory_atomization_policy",
+    "trajectory_candidate_buffer_policy",
+    "skill_prompt_stage_policy_proposal_contract"
   ],
   "minimal_authority_functions": [
     "mechanism_patch_proposal_authorizer",
@@ -84,5 +92,6 @@
   },
   "marker": "generated_by_opl_standard_domain_agent_scaffold_v1",
   "canonical_semantic_pack_root": "agent/",
-  "canonical_semantic_pack_role": "repo_source_declarative_meta_agent_pack"
+  "canonical_semantic_pack_role": "repo_source_declarative_meta_agent_pack",
+  "trajectory_learning_contract_ref": "contracts/trajectory_learning_contract.json"
 }
