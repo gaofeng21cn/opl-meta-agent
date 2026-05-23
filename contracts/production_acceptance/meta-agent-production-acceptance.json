@@ -27,7 +27,9 @@
       "cmd:rtk npm run typecheck",
       "cmd:rtk git diff --check"
     ],
-    "typed_blocker_refs": []
+    "typed_blocker_refs": [
+      "typed_blocker_ref://opl-meta-agent/production-consumption/long-soak-pending"
+    ]
   },
   "role": "refs_only_external_agent_takeover_improve_loop_acceptance",
   "acceptance_scope": [
@@ -83,7 +85,28 @@
       "real-target-delivery-receipt.json",
       "real-target-scaleout-evidence-ledger.json"
     ],
-    "typed_blocker_refs": []
+    "typed_blocker_refs": [
+      "typed_blocker_ref://opl-meta-agent/production-consumption/long-soak-pending"
+    ]
+  },
+  "production_consumption_followthrough": {
+    "status": "blocked_by_domain_owned_typed_blocker",
+    "production_consumption_ready": false,
+    "long_soak_claimed": false,
+    "typed_blocker_ref": "typed_blocker_ref://opl-meta-agent/production-consumption/long-soak-pending",
+    "typed_blocker_artifact_ref": "contracts/production_acceptance/oma-production-consumption-long-soak-typed-blocker.json",
+    "required_next_evidence_refs": [
+      "long_soak_receipt_ref",
+      "operator_long_soak_ref",
+      "production_soak_ref",
+      "agent_lab_rerun_long_soak_ref"
+    ],
+    "authority_boundary": {
+      "refs_only": true,
+      "can_claim_production_ready": false,
+      "can_close_long_soak_gate": false,
+      "can_write_opl_runtime_state": false
+    }
   },
   "acceptance_receipt": {
     "receipt_class": "external_agent_takeover_improve_loop_acceptance_receipt",

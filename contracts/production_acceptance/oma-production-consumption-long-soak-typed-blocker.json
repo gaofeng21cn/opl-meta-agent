@@ -1,0 +1,58 @@
+{
+  "surface_kind": "opl_meta_agent_production_consumption_typed_blocker",
+  "schema_version": 1,
+  "domain_id": "opl-meta-agent",
+  "owner": "opl-meta-agent",
+  "typed_blocker_ref": "typed_blocker_ref://opl-meta-agent/production-consumption/long-soak-pending",
+  "blocker_status": "active",
+  "blocked_gate": "long_soak_refs",
+  "blocked_surface": "opl_app_drilldown_oma_production_consumption_followthrough",
+  "reason": "production_consumption_long_soak_refs_not_observed",
+  "production_consumption_ready": false,
+  "long_soak_claimed": false,
+  "domain_ready_claimed": false,
+  "default_promotion_claimed": false,
+  "accepted_resolution_paths": [
+    "real_long_soak_refs",
+    "operator_long_soak_refs",
+    "production_soak_refs",
+    "agent_lab_rerun_long_soak_refs"
+  ],
+  "required_return_shapes": [
+    "long_soak_receipt_ref",
+    "operator_long_soak_ref",
+    "production_soak_ref",
+    "agent_lab_rerun_long_soak_ref"
+  ],
+  "source_refs": [
+    "contracts/production_acceptance/meta-agent-production-acceptance.json",
+    "contracts/app_workbench_projection.json",
+    "docs/status.md",
+    "docs/active/opl-meta-agent-ideal-state-gap-plan.md"
+  ],
+  "next_verification_command_refs": [
+    "cmd:rtk node --test tests/contracts.test.ts",
+    "cmd:rtk npm run typecheck",
+    "cmd:rtk npm test",
+    "cmd:rtk git diff --check"
+  ],
+  "authority_boundary": {
+    "refs_only": true,
+    "not_generic_runtime_owner": true,
+    "can_write_target_domain_truth": false,
+    "can_write_target_domain_memory_body": false,
+    "can_mutate_target_domain_artifact_body": false,
+    "can_authorize_target_domain_quality_or_export": false,
+    "can_promote_default_agent_without_gate": false,
+    "can_claim_production_ready": false,
+    "can_close_long_soak_gate": false,
+    "can_create_opl_ledger_receipt": false,
+    "can_write_opl_runtime_state": false
+  },
+  "forbidden_claims": [
+    "typed_blocker_equals_long_soak_success",
+    "typed_blocker_equals_production_consumption_ready",
+    "contract_presence_equals_app_live_closeout",
+    "opl_record_without_verify_equals_consumed"
+  ]
+}

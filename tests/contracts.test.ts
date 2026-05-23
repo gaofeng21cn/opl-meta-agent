@@ -1022,7 +1022,43 @@ test('production acceptance evidence closes conformance evidence tail through re
   assert.ok(acceptance.refs.acceptance_receipt_refs.includes(acceptance.receipt_ref));
   assert.ok(acceptance.refs.doc_refs.includes('docs/status.md'));
   assert.ok(acceptance.refs.next_verification_command_refs.includes('cmd:rtk git diff --check'));
-  assert.deepEqual(acceptance.refs.typed_blocker_refs, []);
+  assert.ok(
+    asStrings(acceptance.refs.typed_blocker_refs)
+      .includes('typed_blocker_ref://opl-meta-agent/production-consumption/long-soak-pending'),
+  );
+  assert.equal(
+    acceptance.production_consumption_followthrough.status,
+    'blocked_by_domain_owned_typed_blocker',
+  );
+  assert.equal(acceptance.production_consumption_followthrough.production_consumption_ready, false);
+  assert.equal(acceptance.production_consumption_followthrough.long_soak_claimed, false);
+  assert.equal(
+    acceptance.production_consumption_followthrough.typed_blocker_ref,
+    'typed_blocker_ref://opl-meta-agent/production-consumption/long-soak-pending',
+  );
+  assertRepoRefExists(acceptance.production_consumption_followthrough.typed_blocker_artifact_ref);
+  assert.equal(
+    acceptance.production_consumption_followthrough.authority_boundary.can_claim_production_ready,
+    false,
+  );
+  const productionConsumptionBlocker = readJson(
+    acceptance.production_consumption_followthrough.typed_blocker_artifact_ref as string,
+  );
+  assert.equal(
+    productionConsumptionBlocker.typed_blocker_ref,
+    'typed_blocker_ref://opl-meta-agent/production-consumption/long-soak-pending',
+  );
+  assert.equal(productionConsumptionBlocker.blocked_gate, 'long_soak_refs');
+  assert.equal(productionConsumptionBlocker.production_consumption_ready, false);
+  assert.equal(productionConsumptionBlocker.long_soak_claimed, false);
+  assert.deepEqual(productionConsumptionBlocker.accepted_resolution_paths, [
+    'real_long_soak_refs',
+    'operator_long_soak_refs',
+    'production_soak_refs',
+    'agent_lab_rerun_long_soak_refs',
+  ]);
+  assertNoForbiddenAuthority(productionConsumptionBlocker, 'productionConsumptionBlocker');
+  assert.equal(productionConsumptionBlocker.authority_boundary.can_claim_production_ready, false);
   assert.equal(acceptance.role, 'refs_only_external_agent_takeover_improve_loop_acceptance');
   assert.ok(acceptance.acceptance_scope.includes('production_live_soak_not_claimed_by_conformance'));
   assert.ok(acceptance.acceptance_scope.includes('domain_ready_not_claimed_by_conformance'));
@@ -1035,7 +1071,10 @@ test('production acceptance evidence closes conformance evidence tail through re
   assert.ok(acceptance.external_agent_acceptance_chain.test_handoff_refs.length > 0);
   assert.ok(acceptance.external_agent_acceptance_chain.proposal_materializer_refs.length > 0);
   assert.ok(acceptance.external_agent_acceptance_chain.review_audit_receipt_refs.length > 0);
-  assert.deepEqual(acceptance.external_agent_acceptance_chain.typed_blocker_refs, []);
+  assert.ok(
+    asStrings(acceptance.external_agent_acceptance_chain.typed_blocker_refs)
+      .includes('typed_blocker_ref://opl-meta-agent/production-consumption/long-soak-pending'),
+  );
   assert.equal(
     acceptance.acceptance_receipt.receipt_class,
     'external_agent_takeover_improve_loop_acceptance_receipt',
