@@ -33,15 +33,15 @@ Date: `2026-05-20`
 | --- | --- | --- | --- |
 | Standard OPL Agent shape | `done_with_evidence_tail` | `agent/` pack、`contracts/pack_compiler_input.json`、`contracts/generated_surface_handoff.json`、tests | repo source pack、generated surface handoff、authority refs 已落地；不能写成 production ready。 |
 | Developer work-order materialization | `done_with_scaleout_tail` | `improve:external-suite`、`agent:evidence`、work-order contracts/tests | 已能产出 executor-first patch-loop work order / typed blocker；还需更多真实 target patch/rerun/owner receipt 样本。 |
-| OPL registry / App consumption | `partial` | `contracts/opl_domain_manifest_registration.json`、`contracts/app_workbench_projection.json`、OPL App drilldown refs | OPL 主仓已消费 OMA patch-loop refs；真实 App screenshot/release/live runtime receipt 仍是 evidence tail。 |
+| OPL registry / App consumption | `partial` | `contracts/opl_domain_manifest_registration.json`、`contracts/app_workbench_projection.json`、OPL generated interface read-model、OPL App drilldown refs | OPL generated interface read-model 已返回 `status=ready`；App/operator drilldown 已消费 OMA patch-loop refs，但真实 App screenshot/release/live runtime closeout 仍是 evidence tail。 |
 | Script-to-pack hygiene | `active` | `runtime/authority_functions/`、`scripts/lib/*`、private implementation inventory | 当前保留脚本均需继续证明只是 materializer / authority implementation / smoke helper，不成为 private runtime。 |
-| Production consumption | `partial` | OPL App drilldown OMA managed install/update、App live path、owner receipt/typed blocker refs | OPL 侧已观察到 managed install/update、App live path 和 scaleout refs；long-soak 未闭合。 |
+| Production consumption | `partial_open_long_soak_gate` | OPL App drilldown OMA production-consumption followthrough | OPL drilldown 当前显示 `production_consumption_ready=false`、`open_gate_ids=[long_soak_refs]`；结构消费和 patch-loop refs 已观察，production closeout 未闭合。 |
 
 ## 当前定位
 
 `opl-meta-agent` 是 OPL-compatible Foundry Agent，面向“开发新的 OPL-compatible 高价值知识交付智能体”。它已经具备 sample agent bootstrap、real-target delivery minimum evidence、external agent testing takeover、external suite self-evolution、developer work order 和 mechanism patch proposal 的 repo-local loop。
 
-当前计划已经从 contract-ready 收敛到 Codex-attempt-native / usable landing。AHE-style developer work order 机器面已进入 `improve:external-suite` 与 `agent:evidence`：OMA 可以把真实目标 handoff、blocked suite 和结构化 reviewer evaluation 转成 failure evidence、root cause、targeted fix、predicted impact、allowed editable surfaces、verification refs、rollback/version refs、owner route refs 和 no-forbidden-write proof 齐备的 patch-loop work order 或 typed blocker。2026-05-20 MAG 首个真实 target smoke 已证明这些 work order closeout refs 可以被目标 agent refs-only 消费并投影为 owner receipt / typed blocker shape。剩余目标不是继续补 contract，而是扩大真实执行证据：stage launch contract 发起更多真实目标尝试，独立 Codex reviewer 基于 direct evidence 做无共享上下文评审，OPL registry / App 消费本仓 refs-only surface，更多真实 blocked target 进入 patch -> rerun -> owner receipt loop，并持续执行 script-to-pack hygiene。
+当前计划已经从 contract-ready 收敛到 Codex-attempt-native / usable landing。AHE-style developer work order 机器面已进入 `improve:external-suite` 与 `agent:evidence`：OMA 可以把真实目标 handoff、blocked suite 和结构化 reviewer evaluation 转成 failure evidence、root cause、targeted fix、predicted impact、allowed editable surfaces、verification refs、rollback/version refs、owner route refs 和 no-forbidden-write proof 齐备的 patch-loop work order 或 typed blocker。2026-05-20 MAG 首个真实 target smoke 已证明这些 work order closeout refs 可以被目标 agent refs-only 消费并投影为 owner receipt / typed blocker shape。当前 OPL App/operator drilldown 进一步观察到两个 OMA patch-loop target closeout refs，但 production consumption followthrough 仍因 `long_soak_refs` gate open 而未 ready。剩余目标不是继续补 contract，而是扩大真实执行证据：stage launch contract 发起更多真实目标尝试，独立 Codex reviewer 基于 direct evidence 做无共享上下文评审，补齐 OPL/App production long-soak 或 typed blocker refs，更多真实 blocked target 进入 patch -> rerun -> owner receipt loop，并持续执行 script-to-pack hygiene。
 
 OPL Framework 持有 standard scaffold、Agent Lab、generated interface bundle、runtime / queue / attempt ledger / provider receipt / observability / promotion gate。`opl-meta-agent` 不能把这些能力复制成仓内私有平台。
 
@@ -90,7 +90,7 @@ OMA 的理想职责不是“为每个 domain agent 做一套专用 evidence take
 以下是结构正确后的证据缺口，不能反向解释成 generic runtime 或 target-domain authority：
 
 - `OPL domain manifest registration` 的本仓 contract 与 discovery receipt surface 已落地；仍缺 OPL 主仓 / App 侧真实 registry consumption receipt。
-- App/workbench projection 的本仓 contract 与 drilldown readiness receipt surface 已落地；OPL 主仓已消费 OMA patch-loop refs 到 App/operator drilldown，仍缺真实 App 截图、发布包或 live runtime drilldown receipt。
+- App/workbench projection 的本仓 contract 与 drilldown readiness receipt surface 已落地；OPL App/operator drilldown 已消费 OMA patch-loop refs，且显示 `opl_meta_agent_patch_loop_closed_count=2`、`opl_meta_agent_scaleout_target_count=2`。它同时显示 `opl_meta_agent_production_consumption_ready=false`，open gate 是 `long_soak_refs`，所以仍缺 production long-soak、真实 App 截图/发布包或 live runtime drilldown closeout receipt。
 - Stage launch contract 仍需在真实目标仓触发：输入应包含 target repo、allowed editable surfaces、stage prompt/skill/knowledge refs、blocked evidence refs、verification refs、owner route 和 no-forbidden-write refs。
 - Independent Codex reviewer attempt 仍需落证：reviewer 必须读取 direct evidence、无共享上下文，输出 critique/suggestions/source refs/verdict/provenance，并带 rollback/canary/version refs；suite pass、scorecard、schema completeness 或 generated-surface proof 都不能替代该 reviewer verdict。
 - `real_target_agent_delivery_count_min=1` 的 receipt/ledger 已由 bootstrap loop 支撑；多目标 scaleout 的 OMA refs-only gate 已由 MAS + MAG closeout refs 闭合。剩余证据是继续扩展到更多 target agents 和真实 target patch / rerun / owner receipt 的长期样本。
@@ -110,7 +110,7 @@ OMA 的理想职责不是“为每个 domain agent 做一套专用 evidence take
    由独立 Codex reviewer 读取 direct evidence 与 target refs，输出结构化 reviewer evaluation。该 reviewer 不能共享执行上下文，不能只引用 suite/scaffold/generated proof，必须给出 critique、suggestions、source refs、verdict、provenance 和 rollback/canary/version refs。
 
 3. `registry_app_consumption`
-   OPL 主仓或 App 侧消费 `contracts/opl_domain_manifest_registration.json` 与 `contracts/app_workbench_projection.json`，留下真实 registry discovery receipt、App render / screenshot / runtime drilldown receipt。消费结果只能展示 refs/status/receipt/blocker，不能写 target truth 或默认 promotion。
+   OPL 主仓或 App 侧消费 `contracts/opl_domain_manifest_registration.json` 与 `contracts/app_workbench_projection.json`，留下真实 registry discovery receipt、App render / screenshot / runtime drilldown receipt。当前 OPL generated interface read-model 已能消费本仓 contracts，App/operator drilldown 已消费 OMA patch-loop refs；下一步必须补齐 `long_soak_refs` 或明确 typed blocker，消费结果只能展示 refs/status/receipt/blocker，不能写 target truth 或默认 promotion。
 
 4. `real_blocked_target_patch_loop_scaleout`
    在 MAG smoke 已证明 closeout shape 后，把带 AHE 四字段的 developer patch work order 扩展到 RCA / 新 Foundry Agent 等更多目标：Codex 只改 allowed editable surfaces，重跑 target repo verification，记录 target runtime/read-model consumption、workspace environment proof、no-forbidden-write proof、owner receipt、patch absorption、cleanup closeout 和 Agent Lab re-evaluation。
@@ -125,7 +125,7 @@ OMA 的理想职责不是“为每个 domain agent 做一套专用 evidence take
 
 Objective:
 
-- 使用 OPL Doc Governance 继续推进 `opl-meta-agent` 的 production-consumption 与 script-to-pack hygiene evidence；只处理本文仍 open 的证据尾项，不新增第二套 active plan。
+- 使用 OPL Doc Governance 继续推进 `opl-meta-agent` 的 production-consumption long-soak、真实 App/live closeout 与 script-to-pack hygiene evidence；只处理本文仍 open 的证据尾项，不新增第二套 active plan。
 
 Write scope:
 
@@ -157,7 +157,7 @@ Completion / foldback gate:
 - 已关闭 gap 从本文删除或重写到当前完成进度。
 - durable current truth 折回核心五件套或本文。
 - 过程命令、旧路线和 dated closeout 不留在 active path。
-- 下一轮 prompt 只保留仍未完成的 real target scaleout、App/live consumption、long-soak 或 script-to-pack hygiene 工作。
+- 下一轮 prompt 只保留仍未完成的 App/live production long-soak、真实 App/render/runtime closeout、更多 real target patch-loop 样本或 script-to-pack hygiene 工作。
 
 ## 当前不能写成
 

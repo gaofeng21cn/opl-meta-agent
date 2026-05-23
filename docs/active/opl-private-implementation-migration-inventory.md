@@ -4,13 +4,13 @@ Owner: `opl-meta-agent`
 Purpose: `opl_private_implementation_migration_inventory`
 State: `active_inventory`
 Machine boundary: 本文是 human-readable 迁移治理台账。机器真相继续归 `contracts/`、`runtime/authority_functions/`、scripts 行为、Agent Lab result refs、developer work order refs、candidate refs、owner receipts 和目标 agent owner receipts。
-Date: `2026-05-22`
+Date: `2026-05-23`
 
 ## 当前 clean truth
 
 `opl-meta-agent` 是 OPL-compatible Foundry Agent / builder agent，不是 OPL Framework 内置模块。OPL Framework 持有 standard scaffold、Agent Lab、generated interface bundle、runtime、queue、attempt ledger、provider receipt、observability、registry、App workbench 和 promotion gate。`opl-meta-agent` 只保留 agent-building semantic pack、refs-only action outputs、candidate package / developer work-order / mechanism proposal materialization 和 minimal authority functions。
 
-本轮 fresh scan 发现 repo-tracked TS/Python/CLI/status/runtime/watch/workbench/product-entry/projection/locator/storage/attempt-ledger/state-machine 实现文件没有超过 800 行；接近 1000 行的文件集中在测试聚合面：`tests/external-suite-self-evolution.test.ts` 1450 行、`tests/contracts.test.ts` 1148 行、`tests/agent-evidence-takeover.test.ts` 744 行。实现侧最大的文件是 `scripts/lib/agent-evidence-materializer.ts` 594 行，其次是 `scripts/agent-evidence-takeover.ts` 516 行、`scripts/lib/meta-agent-loop-receipts.ts` 497 行、`scripts/bootstrap-sample-agent.ts` 484 行、`scripts/improve-from-agent-lab-suite.ts` 479 行。当前没有发现安全、低风险且自然的大型私有控制面代码拆分切口；继续机械拆分会降低 refs-only materializer 的局部可读性。
+本轮 fresh scan 发现 repo-tracked TS/Python/CLI/status/runtime/watch/workbench/product-entry/projection/locator/storage/attempt-ledger/state-machine 实现文件没有超过 800 行；超过 1000 行的文件集中在测试聚合面：`tests/external-suite-self-evolution.test.ts` 1450 行、`tests/contracts.test.ts` 1421 行、`tests/agent-evidence-takeover.test.ts` 744 行。实现侧最大的文件是 `scripts/lib/agent-evidence-materializer.ts` 594 行，其次是 `scripts/agent-evidence-takeover.ts` 516 行、`scripts/lib/meta-agent-loop-receipts.ts` 497 行、`scripts/bootstrap-sample-agent.ts` 484 行、`scripts/improve-from-agent-lab-suite.ts` 479 行。当前没有发现安全、低风险且自然的大型私有控制面代码拆分切口；继续机械拆分会降低 refs-only materializer 的局部可读性。
 
 本轮 scan 的平台化风险面仍集中在 `scripts/agent-evidence-takeover.ts`、`scripts/improve-from-agent-lab-suite.ts`、`scripts/bootstrap-sample-agent.ts`、`scripts/lib/agent-evidence-materializer.ts` 和 `scripts/lib/meta-agent-loop-receipts.ts`。这些脚本当前可用，但容易继续吸收 policy 并变成私有 runner / promotion engine / workbench。台账口径是：脚本只能作为 authority implementation、smoke helper、fixture/proof helper 或 developer work-order materializer；可声明的策略继续迁回 `agent/`、`contracts/` 或 `runtime/authority_functions/`。
 

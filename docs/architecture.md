@@ -75,7 +75,7 @@ Patch-loop closeout 现在固定为 11 个 refs：blocked suite result、develop
 
 `contracts/app_workbench_projection.json` 是 OPL App/workbench 的 refs-only projection contract。它允许展示 target brief、candidate package、Agent Lab results、developer work order、mechanism patch proposal 和 scaleout evidence 的 refs/status/receipt/blocker。App shell、workbench runtime state 和 drilldown rendering 由 OPL Framework / OPL App 持有；`opl-meta-agent` 不写 target domain truth、memory body、artifact body、quality/export verdict 或默认 agent promotion。
 
-上述 registration / App projection 是 landing 的消费输入，不是 landing 完成证明。完成证明必须来自 OPL 主仓或 App 侧的 registry discovery receipt、App render / screenshot / runtime drilldown receipt，以及目标 agent owner receipt。
+上述 registration / App projection 是 landing 的消费输入，不是 landing 完成证明。当前 OPL generated interface read-model 可消费本仓 contracts，OPL App/operator drilldown 可消费 OMA patch-loop refs；production completion 仍必须来自 OPL 主仓或 App 侧的 registry discovery receipt、App render / screenshot / runtime drilldown receipt、`long_soak_refs` closeout，以及目标 agent owner receipt。
 
 `contracts/real_target_agent_scaleout_evidence.json` 定义真实目标 agent delivery 与多目标 scaleout 的 evidence gate。当前它只声明必须收集的 target repo ref、candidate package ref、Agent Lab result ref、owner receipt ref、promotion gate ref、no-forbidden-write proof ref 和 cleanup closeout ref；它不把 sample bootstrap、testing takeover smoke、suite pass 或 mechanism patch proposal 升级成真实线上交付完成。
 
