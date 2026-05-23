@@ -4,7 +4,7 @@
 
 基于 Agent Lab evidence 生成并执行受 gate 的目标 agent 改进。允许在明确 owner gate 下修改目标 agent source、tests、docs；所有改动必须有 failure ref 和 regression proof。
 
-执行阶段由 OPL Agent Lab `execute-work-order` 承接。OMA 只把 `developer_patch_work_order_ref` 薄委托给 OPL，不实现 generic runner、target worktree lifecycle、queue、attempt ledger、absorb、cleanup 或 target owner closeout hook 调用。
+执行阶段由 OPL Framework `work-order execute` primitive 承接。OMA 只把 `developer_patch_work_order_ref` 薄委托给 OPL，不实现 generic runner、target worktree lifecycle、queue、attempt ledger、absorb、cleanup 或 target owner closeout hook 调用。
 
 ## Handoff
 
