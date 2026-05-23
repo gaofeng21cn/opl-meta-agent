@@ -1822,6 +1822,231 @@
       ]
     },
     {
+      "stage_id": "trajectory-learning-intake",
+      "stage_kind": "revision",
+      "title": "Trajectory Learning Intake",
+      "summary": "Turn redacted external coding-agent trajectory refs into single-intent atoms, candidate buffers, and gated skill, prompt, stage-policy, or mechanism proposal refs.",
+      "goal": "Produce trajectory atom refs, candidate buffer refs, and proposal refs without running a daemon, installing user-scope skills, or claiming UX/canary evidence as quality verdict.",
+      "owner": "opl-meta-agent",
+      "domain_stage_refs": [
+        "trajectory-learning-intake"
+      ],
+      "inputs": [],
+      "knowledge_refs": [
+        {
+          "ref_kind": "domain_knowledge_ref",
+          "ref": "agent/knowledge/trajectory-learning-policy.md"
+        },
+        {
+          "ref_kind": "domain_knowledge_ref",
+          "ref": "agent/knowledge/opl-boundary-policy.md"
+        }
+      ],
+      "skills": [
+        {
+          "ref_kind": "domain_skill_ref",
+          "ref": "agent/skills/trajectory-learning-intake.md"
+        },
+        {
+          "ref_kind": "domain_skill_ref",
+          "ref": "agent/skills/opl-meta-agent-domain-skill.md"
+        }
+      ],
+      "prompt_refs": [
+        {
+          "ref_kind": "domain_prompt_ref",
+          "ref": "agent/prompts/trajectory-learning-intake.md"
+        }
+      ],
+      "allowed_action_refs": [
+        "materialize-trajectory-learning-proposal"
+      ],
+      "outputs": [
+        {
+          "ref_kind": "domain_ref",
+          "ref": [
+            "redacted_trajectory_ref",
+            "trajectory_atom_refs",
+            "candidate_buffer_ref",
+            "skill_policy_candidate_ref",
+            "prompt_policy_candidate_ref",
+            "stage_policy_candidate_ref",
+            "mechanism_patch_proposal_ref",
+            "typed_blocker_refs"
+          ]
+        }
+      ],
+      "evaluation": [
+        {
+          "ref_kind": "domain_quality_gate_ref",
+          "ref": "agent/quality_gates/trajectory-learning-proposal.md"
+        }
+      ],
+      "handoff": null,
+      "source_refs": [],
+      "authority_boundary": {
+        "domain_truth_owner": "opl-meta-agent",
+        "opl_role": "projection_only"
+      },
+      "selected_executor": "codex_cli",
+      "executor_binding": {
+        "binding_kind": "codex_cli_first_class_stage_executor",
+        "executor_ref": "executor:codex-cli",
+        "executor_owner": "OPL Framework",
+        "launch_surface_owner": "one-person-lab",
+        "domain_pack_owner": "opl-meta-agent",
+        "adapter_required": false,
+        "non_codex_executor_requires_explicit_adapter": true,
+        "codex_first_expert_judgment_required": true
+      },
+      "requires": [
+        "stage:trajectory-learning-intake",
+        "prompt-ref:agent/prompts/trajectory-learning-intake.md",
+        "skill-ref:agent/skills/trajectory-learning-intake.md",
+        "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
+        "knowledge-ref:agent/knowledge/trajectory-learning-policy.md",
+        "knowledge-ref:agent/knowledge/opl-boundary-policy.md",
+        "quality-gate-ref:agent/quality_gates/trajectory-learning-proposal.md",
+        "action-ref:materialize-trajectory-learning-proposal",
+        "contract-ref:contracts/trajectory_learning_contract.json",
+        "runtime-ref:stage-attempt-ledger",
+        "runtime-ref:generated-interface-bundle",
+        "runtime-ref:stage-executor-policy-gate",
+        "runtime-ref:agent-lab-promotion-gate"
+      ],
+      "ensures": [
+        "stage-attempt-receipt-ref:trajectory-learning-intake",
+        "executor-receipt-ref:trajectory-learning-intake/codex-cli",
+        "no-forbidden-write-proof-ref:trajectory-learning-intake",
+        "independent-ai-review-ref:trajectory-learning-intake",
+        "output-ref:redacted_trajectory_ref",
+        "output-ref:trajectory_atom_refs",
+        "output-ref:candidate_buffer_ref",
+        "output-ref:skill_policy_candidate_ref",
+        "output-ref:prompt_policy_candidate_ref",
+        "output-ref:stage_policy_candidate_ref",
+        "output-ref:mechanism_patch_proposal_ref",
+        "output-ref:typed_blocker_refs"
+      ],
+      "expected_receipt_refs": [
+        "stage-attempt-receipt-ref:trajectory-learning-intake",
+        "executor-receipt-ref:trajectory-learning-intake/codex-cli",
+        "boundary-receipt-ref:trajectory-learning-intake/refs-only",
+        "no-forbidden-write-proof-ref:trajectory-learning-intake",
+        "independent-ai-review-ref:trajectory-learning-intake",
+        "redaction-proof-ref:trajectory-learning-intake",
+        "trajectory-atomization-receipt-ref:trajectory-learning-intake",
+        "candidate-buffer-receipt-ref:trajectory-learning-intake",
+        "agent-lab-promotion-gate-ref:trajectory-learning-intake"
+      ],
+      "verified_static_core": {
+        "status": "required_before_launch",
+        "checks": [
+          "prompt_refs_resolve_to_domain_pack_files",
+          "skill_refs_resolve_to_domain_pack_files",
+          "knowledge_refs_resolve_to_domain_pack_files",
+          "quality_gate_refs_resolve_to_domain_pack_files",
+          "allowed_action_refs_resolve_to_action_catalog_when_present",
+          "authority_boundary_forbids_domain_truth_memory_quality_and_promotion_writes"
+        ]
+      },
+      "runtime_enforced_boundary": {
+        "opl_10_principle_refs": [
+          "opl10:codex_cli_first_class_executor",
+          "opl10:stage_led_execution",
+          "opl10:declarative_domain_pack",
+          "opl10:explicit_prompt_tools_knowledge",
+          "opl10:refs_only_domain_truth_boundary",
+          "opl10:receipted_handoff",
+          "opl10:independent_ai_review_gate",
+          "opl10:runtime_enforced_no_forbidden_writes",
+          "opl10:generated_surfaces_from_contracts",
+          "opl10:blockers_before_quality_or_promotion_claims"
+        ],
+        "codex_first": true,
+        "selected_executor_must_match_binding": true,
+        "stage_attempt_ledger_required": true,
+        "receipt_refs_required": true,
+        "independent_ai_review_required_before_promotion": true,
+        "no_shared_context_review_required": true,
+        "generated_surface_owner": "one-person-lab",
+        "domain_truth_owner": "opl-meta-agent",
+        "can_write_domain_truth": false,
+        "can_write_memory_body": false,
+        "can_mutate_target_domain_artifact_body": false,
+        "can_authorize_quality_or_export": false,
+        "can_promote_default_agent_without_gate": false,
+        "suite_pass_claims_domain_ready": false,
+        "can_claim_ux_score_as_quality_verdict": false,
+        "can_install_user_scope_skills": false
+      },
+      "hard_blocker_refs": [
+        "blocker:missing_prompt_ref",
+        "blocker:missing_tool_or_skill_ref",
+        "blocker:missing_knowledge_or_memory_ref",
+        "blocker:missing_quality_gate_ref",
+        "blocker:missing_expected_receipt_ref",
+        "blocker:forbidden_domain_truth_or_memory_write",
+        "blocker:quality_or_promotion_claim_without_independent_ai_review",
+        "blocker:contract_completeness_claimed_as_quality_verdict",
+        "blocker:missing_non_default_executor_binding_ref",
+        "blocker:missing_redaction_proof_ref",
+        "blocker:single_atom_attempted_direct_promotion",
+        "blocker:ux_score_claimed_as_quality_verdict",
+        "blocker:missing_agent_lab_promotion_gate_ref"
+      ],
+      "executor_policy_capability": {
+        "supports_stage_level_executor_policy": true,
+        "default_executor_kind": "codex_cli",
+        "non_default_executor_policy_allowed": true,
+        "non_default_executor_requires_explicit_adapter": true,
+        "non_default_executor_requires_executor_binding_ref": true,
+        "policy_fields": [
+          "executor_kind",
+          "model",
+          "reasoning_effort",
+          "provider",
+          "executor_binding_ref",
+          "executor_labels",
+          "required_capabilities",
+          "receipt_requirements"
+        ],
+        "agent_lab_trial_required_before_default_promotion": true,
+        "quality_equivalence_claim_allowed": false,
+        "default_executor_switch_allowed_by_oma": false
+      },
+      "stage_executor_policy_candidates": [
+        {
+          "candidate_kind": "stage_executor_policy_candidate",
+          "stage_id": "trajectory-learning-intake",
+          "default_executor_kind": "codex_cli",
+          "candidate_status": "candidate_ref_only_requires_agent_lab_trial",
+          "model": "inherited_codex_default",
+          "reasoning_effort": "inherited_codex_default",
+          "provider": "openai",
+          "executor_binding_ref": "opl://executors/codex-cli/default",
+          "required_capabilities": [
+            "trajectory_analysis",
+            "agentic_repo_work",
+            "tool_use",
+            "structured_receipt"
+          ],
+          "receipt_requirements": [
+            "stage-attempt-receipt-ref:trajectory-learning-intake",
+            "executor-receipt-ref:trajectory-learning-intake/codex-cli",
+            "no-forbidden-write-proof-ref:trajectory-learning-intake",
+            "redaction-proof-ref:trajectory-learning-intake"
+          ],
+          "can_launch_without_explicit_binding": true,
+          "can_claim_quality_equivalence": false,
+          "can_change_default_executor": false,
+          "candidate_ref": "stage-executor-policy-candidate:opl-meta-agent/trajectory-learning-intake/codex-default",
+          "executor_kind": "codex_cli",
+          "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/trajectory-learning-intake/codex-default-baseline"
+        }
+      ]
+    },
+    {
       "stage_id": "online-learning",
       "stage_kind": "revision",
       "title": "Online Learning",

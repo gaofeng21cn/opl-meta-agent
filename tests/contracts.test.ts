@@ -240,6 +240,70 @@ test('semantic pack keeps Codex-first expert judgment above mechanical gates', (
   });
 });
 
+test('trajectory learning contract absorbs xskill patterns as OMA-native refs-only proposals', () => {
+  const trajectoryLearning = readJson('contracts/trajectory_learning_contract.json');
+
+  assert.equal(trajectoryLearning.surface_kind, 'opl_meta_agent_trajectory_learning_contract');
+  assert.equal(trajectoryLearning.owner, 'opl-meta-agent');
+  assert.equal(trajectoryLearning.source_disposition, 'clean_room_pattern_source');
+  assert.equal(trajectoryLearning.source_project_ref, 'https://github.com/skillnerds/xskill');
+  assert.equal(trajectoryLearning.contract_status, 'ready_for_agent_lab_consumption_refs_only');
+  assertNoForbiddenAuthority(trajectoryLearning, 'trajectoryLearning');
+  assert.equal(trajectoryLearning.authority_boundary.can_run_trajectory_daemon, false);
+  assert.equal(trajectoryLearning.authority_boundary.can_install_user_scope_skills, false);
+  assert.equal(trajectoryLearning.authority_boundary.can_claim_ux_score_as_quality_verdict, false);
+  assert.equal(trajectoryLearning.authority_boundary.opl_owns_generic_ingest_and_sync_runtime, true);
+  assert.equal(trajectoryLearning.authority_boundary.agent_lab_owns_promotion_gate, true);
+  assert.equal(trajectoryLearning.authority_boundary.oma_outputs_are_proposals_only, true);
+
+  assert.deepEqual(asStrings(trajectoryLearning.absorbed_pattern_refs), [
+    'xskill-pattern:trajectory-to-single-intent-atom',
+    'xskill-pattern:atom-to-candidate-buffer',
+    'xskill-pattern:candidate-buffer-to-skill-or-policy-proposal',
+    'xskill-pattern:per-skill-versioned-canary-evidence',
+    'xskill-pattern:team-redaction-before-shared-learning',
+  ]);
+  assert.deepEqual(asStrings(trajectoryLearning.forbidden_imports), [
+    'xskill-daemon-runtime',
+    'xskill-team-server',
+    'xskill-user-scope-skill-installer',
+    'xskill-generic-scheduler',
+    'xskill-canary-as-owner-verdict',
+  ]);
+
+  const semanticRefs = asStrings(trajectoryLearning.semantic_pack_refs);
+  [
+    'agent/knowledge/trajectory-learning-policy.md',
+    'agent/prompts/trajectory-learning-intake.md',
+    'agent/skills/trajectory-learning-intake.md',
+    'agent/quality_gates/trajectory-learning-proposal.md',
+    'agent/stages/trajectory-learning-intake.md',
+  ].forEach((relativePath) => {
+    assert.ok(semanticRefs.includes(relativePath), `semantic pack should include ${relativePath}`);
+    assertUsablePackFile(relativePath);
+  });
+
+  assert.deepEqual(asObjects(trajectoryLearning.learning_flow).map((entry) => entry.step_id), [
+    'redacted_trajectory_ref_intake',
+    'single_intent_atomization',
+    'candidate_buffer_accumulation',
+    'proposal_materialization',
+    'agent_lab_promotion_gate',
+  ]);
+  assert.ok(
+    asStrings(trajectoryLearning.required_receipt_refs).includes('redaction-proof-ref'),
+    'redaction proof should be required',
+  );
+  assert.ok(
+    asStrings(trajectoryLearning.required_receipt_refs).includes('ux-signal-ref-not-quality-verdict'),
+    'UX signal should be explicitly downgraded from quality verdict',
+  );
+  assert.ok(
+    asStrings(trajectoryLearning.required_receipt_refs).includes('agent-lab-promotion-gate-ref'),
+    'Agent Lab promotion gate should remain the promotion authority',
+  );
+});
+
 test('opl-meta-agent stage plan covers research, build, eval, optimization, delivery, and learning', () => {
   const stageControl = readJson('contracts/stage_control_plane.json');
 
@@ -255,6 +319,7 @@ test('opl-meta-agent stage plan covers research, build, eval, optimization, deli
     'external-agent-takeover',
     'optimizer-iteration',
     'baseline-delivery',
+    'trajectory-learning-intake',
     'online-learning',
   ]);
   assert.deepEqual(
@@ -615,11 +680,27 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
     'evidence_delta_ref',
     'next_mechanism_candidate_ref',
   ]);
+  const trajectoryLearningAction = actions.find(
+    (action) => action.action_id === 'materialize-trajectory-learning-proposal',
+  );
+  assert.ok(trajectoryLearningAction);
+  assert.equal(trajectoryLearningAction.supported_surfaces.mcp.descriptor_only, true);
+  assert.equal(trajectoryLearningAction.supported_surfaces.product_entry.action_key, 'materialize-trajectory-learning-proposal');
+  assert.ok(trajectoryLearningAction.workspace_locator_fields.includes('redacted_trajectory_ref'));
+  assert.ok(trajectoryLearningAction.workspace_locator_fields.includes('candidate_buffer_ref'));
+  assert.ok(trajectoryLearningAction.workspace_locator_fields.includes('agent_lab_promotion_gate_ref'));
+  assert.equal(trajectoryLearningAction.authority_boundary.can_run_trajectory_daemon, false);
+  assert.equal(trajectoryLearningAction.authority_boundary.can_install_user_scope_skills, false);
+  assert.equal(trajectoryLearningAction.authority_boundary.can_claim_ux_score_as_quality_verdict, false);
+  assert.equal(trajectoryLearningAction.authority_boundary.can_promote_default_agent_without_gate, false);
+  assert.equal(trajectoryLearningAction.authority_boundary.can_write_target_domain_truth, false);
   assert.ok(actionCatalog.forbidden_generic_owner_roles.includes('generic_scheduler_owner'));
   assert.ok(actionCatalog.forbidden_generic_owner_roles.includes('generic_cli_mcp_product_wrapper_owner'));
   assert.ok(actionCatalog.forbidden_generic_owner_roles.includes('generic_sidecar_owner'));
   assert.ok(actionCatalog.forbidden_generic_owner_roles.includes('generic_session_store_owner'));
   assert.ok(actionCatalog.forbidden_generic_owner_roles.includes('generic_status_workbench_owner'));
+  assert.ok(actionCatalog.forbidden_generic_owner_roles.includes('generic_trajectory_daemon_owner'));
+  assert.ok(actionCatalog.forbidden_generic_owner_roles.includes('user_scope_skill_installer_owner'));
   assert.ok(actionCatalog.forbidden_generic_owner_roles.includes('generated_surface_owner_in_domain_repo'));
   assert.ok(ownerReceipt.allowed_receipt_classes.includes('testing_takeover_self_evolution_receipt'));
   assert.ok(ownerReceipt.allowed_receipt_classes.includes('mechanism_patch_proposal_receipt'));
@@ -701,9 +782,13 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
   assertNoForbiddenAuthority(appProjection, 'appProjection');
   assert.equal(appProjection.authority_boundary.projection_owner_is_opl_framework, true);
   assert.equal(appProjection.authority_boundary.domain_repo_can_own_generic_operator_workbench, false);
-  assert.equal(appProjection.workbench_sections.length, 6);
+  assert.equal(appProjection.workbench_sections.length, 7);
   assert.equal(
     asObjects(appProjection.workbench_sections).some((section) => section.section_id === 'scaleout_evidence'),
+    true,
+  );
+  assert.equal(
+    asObjects(appProjection.workbench_sections).some((section) => section.section_id === 'trajectory_learning'),
     true,
   );
   assert.equal(appProjection.drilldown_readiness_receipt.surface_kind, 'opl_app_workbench_drilldown_readiness_receipt');
@@ -792,6 +877,10 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
     'contracts/real_target_agent_scaleout_evidence.json',
   );
   assert.equal(
+    generatedSurfaceHandoff.trajectory_learning_contract_ref,
+    'contracts/trajectory_learning_contract.json',
+  );
+  assert.equal(
     generatedSurfaceHandoff.registry_discovery_receipt_ref,
     registration.discovery_receipt.receipt_ref,
   );
@@ -805,20 +894,30 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
     ),
     true,
   );
+  assert.equal(
+    asObjects(generatedSurfaceHandoff.generated_surfaces).some((surface) =>
+      surface.surface_id === 'trajectory_learning_projection'
+    ),
+    true,
+  );
   assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('opl_domain_manifest_registration_contract'));
   assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('app_workbench_projection_contract'));
   assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('real_target_agent_scaleout_evidence_contract'));
+  assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('trajectory_learning_contract'));
+  assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('ux_signal_not_quality_verdict_boundary'));
   assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('registry_discovery_receipt'));
   assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('app_drilldown_readiness_receipt'));
   assert.deepEqual(actionCatalog.registration_projection_evidence_contract_refs, {
     opl_domain_manifest_registration_ref: 'contracts/opl_domain_manifest_registration.json',
     app_workbench_projection_ref: 'contracts/app_workbench_projection.json',
     real_target_agent_scaleout_evidence_ref: 'contracts/real_target_agent_scaleout_evidence.json',
+    trajectory_learning_contract_ref: 'contracts/trajectory_learning_contract.json',
   });
   assert.deepEqual(audit.registration_projection_evidence_contract_refs, {
     opl_domain_manifest_registration_ref: 'contracts/opl_domain_manifest_registration.json',
     app_workbench_projection_ref: 'contracts/app_workbench_projection.json',
     real_target_agent_scaleout_evidence_ref: 'contracts/real_target_agent_scaleout_evidence.json',
+    trajectory_learning_contract_ref: 'contracts/trajectory_learning_contract.json',
   });
 });
 
@@ -829,6 +928,7 @@ test('top-level OMA commands and materializers stay target-agent generic', () =>
     'contracts/stage_control_plane.json',
     'contracts/app_workbench_projection.json',
     'contracts/opl_domain_manifest_registration.json',
+    'contracts/trajectory_learning_contract.json',
     'scripts/agent-evidence-takeover.ts',
     'scripts/improve-from-agent-lab-suite.ts',
   ].forEach(assertNoForbiddenDesignCenterVocabulary);
@@ -836,6 +936,7 @@ test('top-level OMA commands and materializers stay target-agent generic', () =>
   const actionCatalog = readJson('contracts/action_catalog.json');
   const actionIds = asObjects(actionCatalog.actions).map((action) => action.action_id);
   assert.ok(actionIds.includes('improve-from-external-agent-lab-suite'));
+  assert.ok(actionIds.includes('materialize-trajectory-learning-proposal'));
   assert.equal(actionIds.some((actionId) => /mas|mag|medical|grant|manuscript|publication|fundability/i.test(actionId)), false);
 
   const statusDoc = readText('docs/references/opl-meta-agent-ideal-state.md');
@@ -864,6 +965,12 @@ test('registration, projection, and evidence contracts are represented in functi
       classification: 'refs_only_domain_adapter',
       codePath: 'contracts/real_target_agent_scaleout_evidence.json',
       roleScope: 'refs_only_scaleout_evidence_gate_not_target_domain_truth_writer',
+    },
+    {
+      moduleId: 'trajectory_learning_contract',
+      classification: 'refs_only_domain_adapter',
+      codePath: 'contracts/trajectory_learning_contract.json',
+      roleScope: 'trajectory_atom_candidate_and_proposal_contract_not_runtime_owner',
     },
   ];
 

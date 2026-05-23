@@ -12,7 +12,8 @@
     "stage_control_plane_ref": "contracts/stage_control_plane.json",
     "action_catalog_ref": "contracts/action_catalog.json",
     "owner_receipt_contract_ref": "contracts/owner_receipt_contract.json",
-    "scaleout_evidence_contract_ref": "contracts/real_target_agent_scaleout_evidence.json"
+    "scaleout_evidence_contract_ref": "contracts/real_target_agent_scaleout_evidence.json",
+    "trajectory_learning_contract_ref": "contracts/trajectory_learning_contract.json"
   },
   "human_doc_refs": [
     "docs/status.md",
@@ -88,6 +89,22 @@
         "remaining_blocker_refs"
       ],
       "write_boundary": "display_refs_only"
+    },
+    {
+      "section_id": "trajectory_learning",
+      "projection_fields": [
+        "redacted_trajectory_ref",
+        "trajectory_atom_refs",
+        "candidate_buffer_ref",
+        "skill_policy_candidate_ref",
+        "prompt_policy_candidate_ref",
+        "stage_policy_candidate_ref",
+        "ux_signal_ref",
+        "canary_evidence_ref",
+        "agent_lab_promotion_gate_ref",
+        "owner_review_receipt_or_typed_blocker_ref"
+      ],
+      "write_boundary": "display_refs_and_proposal_status_only"
     }
   ],
   "drilldown_readiness_receipt": {
@@ -101,13 +118,15 @@
       "safe-action:opl-meta-agent/build-agent-baseline",
       "safe-action:opl-meta-agent/takeover-external-agent-test",
       "safe-action:opl-meta-agent/improve-from-external-agent-lab-suite",
-      "safe-action:opl-meta-agent/generate-mechanism-patch-proposal"
+      "safe-action:opl-meta-agent/generate-mechanism-patch-proposal",
+      "safe-action:opl-meta-agent/materialize-trajectory-learning-proposal"
     ],
     "blocker_ref_fields": [
       "typed_blocker_refs",
       "remaining_blocker_refs",
       "promotion_gate_ref",
-      "owner_review_receipt_ref"
+      "owner_review_receipt_ref",
+      "owner_review_receipt_or_typed_blocker_ref"
     ],
     "receipt_ref_fields": [
       "baseline_delivery_receipt_ref",
@@ -117,7 +136,10 @@
       "patch_absorption_ref",
       "worktree_cleanup_ref",
       "agent_lab_re_evaluation_ref",
-      "target_agent_delivery_receipt_refs"
+      "target_agent_delivery_receipt_refs",
+      "trajectory_atomization_receipt_ref",
+      "candidate_buffer_receipt_ref",
+      "agent_lab_promotion_gate_ref"
     ],
     "developer_work_order_machine_ref_fields": [
       "blocked_suite_result_ref",
