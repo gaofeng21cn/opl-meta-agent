@@ -579,7 +579,7 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   assert.ok(executeWorkOrderAction);
   assert.equal(executeWorkOrderAction.supported_surfaces.mcp.descriptor_only, true);
   assert.equal(executeWorkOrderAction.supported_surfaces.product_entry.action_key, 'execute-external-work-order');
-  assert.equal(executeWorkOrderAction.authority_boundary.delegates_to_opl_agent_lab_execute_work_order, true);
+  assert.equal(executeWorkOrderAction.authority_boundary.delegates_to_opl_work_order_execute, true);
   assert.equal(executeWorkOrderAction.authority_boundary.can_own_generic_runner, false);
   assert.equal(executeWorkOrderAction.authority_boundary.can_manage_target_worktree_lifecycle, false);
   assert.equal(executeWorkOrderAction.authority_boundary.can_absorb_target_branch, false);
@@ -603,7 +603,7 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   assert.ok(asStrings(executeWorkOrderFunction.writes_only).includes('owner_closeout_hook_delegated_ref'));
   assert.ok(asStrings(executeWorkOrderFunction.writes_only).includes('no_oma_owner_receipt_write_proof_ref'));
   assert.ok(asStrings(executeWorkOrderFunction.consumes_opl_surfaces)
-    .includes('opl_agent_lab_execute_work_order_control_plane'));
+    .includes('opl_work_order_execute_primitive'));
   const baselineAction = actions.find((action) => action.action_id === 'build-agent-baseline');
   assert.ok(baselineAction);
   assert.ok(baselineAction.workspace_locator_fields.includes('ai_reviewer_evaluation'));
