@@ -15,8 +15,8 @@ Date: `2026-05-24`
 - `opl-meta-agent` 是 OPL-compatible Foundry Agent，不是 OPL Framework 内置模块。
 - 理想物理形态是 `Declarative Agent-Building Pack + OPL generated/hosted surfaces + minimal agent-building authority functions`。
 - 当前功能/结构 gap 为 `0`：`agent/` pack、contracts、generated-surface handoff、minimal authority refs、developer work-order materializer 和 no-forbidden-write boundary 已落地；这个判断以 repo-native tests 和 contracts 为前提。
-- 当前未完成项主要是测试/证据尾项：OPL registry / App 真实消费 receipt、production long-soak 或对应 blocker record/verify、更多真实 target patch -> rerun -> owner receipt 样本、独立 Codex reviewer direct-evidence verdict、跨目标 agent 标准 handoff 收敛和持续 script-to-pack hygiene。
-- `production_consumption_ready=false` 与 `long_soak_refs` open 是当前真实状态；`contracts/production_acceptance/oma-production-consumption-long-soak-typed-blocker.json` 只能证明 OMA 已 materialize typed blocker，不能替代 long-soak 成功。
+- 当前未完成项主要是测试/证据尾项：OPL registry / App 真实 discovery/render receipt、后续 cohort 的 repeat long-soak / live drilldown 证据、更多真实 target patch -> rerun -> owner receipt 样本、独立 Codex reviewer direct-evidence verdict、跨目标 agent 标准 handoff 收敛和持续 script-to-pack hygiene。
+- OPL 侧当前已能把 OMA production-consumption read model 读成 ready；这个 ready 只关闭 OPL refs-only consumption gate，不授权 target domain ready、family production ready、default promotion，也不替代后续 target cohort 的 repeat long-soak evidence。
 
 禁止误写：
 
@@ -46,7 +46,7 @@ Owner split 固定为：
 | Developer work-order materialization | `done_with_more_real_loop_tail` | `npm run improve:external-suite`、`npm run agent:evidence`、work-order tests、`scripts/lib/work-order-*` | 可输出 executable work order 或 typed blocker；目标 truth、quality、artifact、owner receipt 仍归 target owner。 |
 | External work-order execution delegation | `done_as_thin_delegation` | `npm run execute:external-work-order`、`tests/execute-external-work-order.test.ts` | 只校验 refs 和委托 `opl work-order execute`；不持有 worktree lifecycle、runner、absorb、cleanup 或 owner receipt body。 |
 | Stage executor policy candidates | `done_as_candidate_only` | `contracts/stage_control_plane.json`、stage executor policy tests | OMA 只声明 refs-only candidate；试验、binding、receipt、gate 和默认 executor promotion 归 OPL / Agent Lab。 |
-| Production acceptance / consumption blocker | `partial_blocked` | `contracts/production_acceptance/meta-agent-production-acceptance.json`、`contracts/production_acceptance/oma-production-consumption-long-soak-typed-blocker.json` | blocker 说明 long-soak 未闭合；不能声明 production consumption ready。 |
+| Production acceptance / consumption follow-through | `done_with_repeat_evidence_tail` | `contracts/production_acceptance/meta-agent-production-acceptance.json`、OPL production-consumption read model / refs-only ledger | OPL 侧已可消费 OMA production-consumption refs；当前 ready 只说明 OPL refs-only consumption gate 闭合，不授权 target domain ready、family production ready 或默认 promotion。 |
 | Script morphology | `active_hygiene` | `runtime/authority_functions/`、`scripts/lib/*`、私有实现迁移台账 | 当前脚本只允许是 authority implementation、smoke helper、fixture/proof helper 或 developer work-order materializer。 |
 | Clean-room skill pattern intake | `done_as_docs_and_contract_pattern` | `contracts/trajectory_learning_contract.json`、核心 docs/tests | 只吸收 xskill trajectory / candidate / canary / redaction 模式；不引入 daemon/runtime/scheduler/installer/server。 |
 
@@ -73,7 +73,7 @@ Owner split 固定为：
 | Evidence gap | 当前已有 | 仍缺 |
 | --- | --- | --- |
 | OPL registry discovery consumption | OMA registration contract 与 discovery receipt surface | OPL 主仓或 App 侧真实 registry consumption receipt。 |
-| App/workbench live consumption | App projection contract、drilldown readiness receipt、OMA production-consumption typed blocker | OPL refs-only record/verify 消费 blocker，或真实 production long-soak、App screenshot/release、live runtime drilldown closeout receipt。 |
+| App/workbench live consumption | App projection contract、drilldown readiness receipt、OPL production-consumption refs-only gate 已可消费 OMA evidence | 后续 target cohort 的真实 App render/screenshot、live runtime drilldown closeout receipt 和 repeat long-soak evidence；当前 OPL-side consumption ready 不授权 target default promotion。 |
 | Stage launch on real target | work order 输入 refs、allowed editable surfaces、verification refs、owner route、no-forbidden-write refs 已成形 | 更多真实目标仓 stage attempt refs、typed blocker 或 executable developer work order。 |
 | Independent Codex reviewer attempt | structured reviewer schema、fail-closed rules、reviewer evidence projection | 独立 invocation/context/trace/receipt、direct evidence、source refs、critique/suggestions/verdict/provenance 与 rollback/canary/version refs 的真实样本。 |
 | Real blocked target patch loop scaleout | MAG closeout projection、MAS + MAG refs-only scaleout gate | 更多真实 target patch / rerun / owner receipt / no-forbidden-write / runtime-read-model consumption / workspace proof / cleanup / Agent Lab re-evaluation 样本。 |
@@ -98,7 +98,47 @@ Owner split 固定为：
 5. `script_to_pack_hygiene`
    持续把稳定 policy 迁入 declarative pack、contracts 或 OPL primitive；保留脚本必须能指向 `runtime/authority_functions`、smoke action、fixture/proof helper 或 developer work-order materializer。
 
-下一轮 Agent brief 只应处理上述 open evidence tails，不新增第二套 active plan，不修改 target domain truth / memory body / artifact body / quality/export verdict，不添加 OMA 私有 generic runtime 或 domain-specific command family。
+## 下一轮 Agent prompt
+
+Objective:
+
+- 继续治理 `/Users/gaofeng/workspace/opl-meta-agent` 的 OMA evidence tail、真实 target patch-loop scaleout、独立 reviewer attempt、standard target-agent handoff convergence 和 script-to-pack hygiene。
+
+Write scope:
+
+- `docs/active/opl-meta-agent-ideal-state-gap-plan.md`、`docs/status.md`、`docs/active/opl-private-implementation-migration-inventory.md`、OMA contracts、`agent/` pack、`runtime/authority_functions/`、`scripts/lib/*` 和 tests 中仍影响 OMA owner boundary 或 evidence tail 的部分。
+
+Live truth inputs:
+
+- `AGENTS.md`、`TASTE.md`、核心五件套、本文、ideal-state reference、private implementation inventory。
+- `contracts/opl_domain_manifest_registration.json`、`contracts/app_workbench_projection.json`、`contracts/real_target_agent_scaleout_evidence.json`、production acceptance contracts、generated surface handoff、stage control plane。
+- OPL `agents interfaces --repo-dir <this-repo> --json`、OPL framework readiness / App drilldown / OMA production-consumption read model、`npm test` / `npm run verify`。
+
+Required actions:
+
+- 推进 `registry_app_consumption`、`real_blocked_target_patch_loop_scaleout`、`independent_codex_reviewer_attempt`、`standard_target_agent_handoff_convergence` 和 `script_to_pack_hygiene`。
+- 对新增或增长的 scripts/materializer 核实 active caller、authority boundary、no-forbidden-write、target owner route 和是否应迁入 `agent/`、`contracts/` 或 OPL primitive。
+- 已闭合项折回本文或核心五件套；proof 流水和旧路线进入 history/provenance。
+
+Non-goals:
+
+- 不新增第二套 active plan。
+- 不修改 target domain truth、memory body、artifact body、quality/export verdict、owner receipt body 或 default promotion authority。
+- 不添加 OMA 私有 generic runtime、Agent Lab runner、queue、attempt ledger、registry/App shell、domain-specific command family 或 compatibility facade。
+
+Verification commands:
+
+- Docs-only：`rtk git diff --check`、`rtk rg -n "<<<<<<<|>>>>>>>|=======" docs`。
+- 触及 contracts/source/tests：`rtk npm test` 或 `rtk npm run verify`。
+
+Completion gate:
+
+- Open evidence tail 已更新为 current truth；closed evidence 不以 dated closeout 形式留在 active path。
+- main checkout 上完成触及面验证；worktree/branch 已吸收清理，或明确因近期写入/未提交改动保留。
+
+Foldback target:
+
+- Durable current truth 折回本文、核心五件套、private inventory 或 machine-readable contracts；proof、receipt、worktree/branch 细节进入 `docs/history/**`、OPL ledger、提交历史或 automation memory。
 
 ## 历史索引
 
