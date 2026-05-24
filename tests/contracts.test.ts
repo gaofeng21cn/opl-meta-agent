@@ -1142,6 +1142,7 @@ test('verification entrypoints route caches outside the checkout and expose hygi
 
 test('minimal authority functions are explicit refs, not generic runtime owners', () => {
   const audit = readJson('contracts/functional_privatization_audit.json');
+  const packCompilerInput = readJson('contracts/pack_compiler_input.json');
   const authorityFunctions = readJson('runtime/authority_functions/meta-agent-authority-functions.json');
 
   assert.equal(authorityFunctions.surface_kind, 'meta_agent_authority_function_refs');
@@ -1170,6 +1171,16 @@ test('minimal authority functions are explicit refs, not generic runtime owners'
       invokedByRefs: ['action-ref:generate-mechanism-patch-proposal'],
     },
   ];
+
+  const expectedFunctionIds = expectedAuthorityFunctions.map((entry) => entry.moduleId);
+  assert.deepEqual(
+    asStrings(packCompilerInput.minimal_authority_functions),
+    expectedFunctionIds,
+  );
+  assert.deepEqual(
+    asObjects(authorityFunctions.functions).map((entry) => entry.function_id),
+    expectedFunctionIds,
+  );
 
   expectedAuthorityFunctions.forEach((expected) => {
     const functionRef = asObjects(authorityFunctions.functions).find((entry) => entry.function_id === expected.moduleId);

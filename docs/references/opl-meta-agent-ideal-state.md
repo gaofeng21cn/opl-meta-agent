@@ -4,7 +4,7 @@ Owner: `opl-meta-agent`
 Purpose: `north_star_reference`
 State: `active_support`
 Machine boundary: 本文是人读目标态参考。机器真相继续归 `contracts/`、`runtime/authority_functions/`、OPL Agent Lab result refs、owner receipts、candidate refs 和未来 delivery receipts。
-Date: `2026-05-20`
+Date: `2026-05-24`
 
 ## 文档读法
 
@@ -59,7 +59,7 @@ generated surface proof、registration readiness、App projection readiness、su
 - Agent skeleton / contract / prompt / skill / quality gate 生成策略。
 - Agent Lab suite spec、scorecard refs、recovery probes、blocked suite intake 和 developer patch work order policy。
 - Baseline delivery receipt、testing takeover receipt、online-learning candidate refs 和 mechanism patch proposal refs。
-- Minimal authority functions：candidate agent package builder、mechanism patch proposal authorizer、owner receipt signer、target agent boundary verdict 和 online-learning candidate reviewer。
+- Minimal authority functions：candidate agent package builder 和 mechanism patch proposal authorizer。
 
 OPL Framework 持有：
 

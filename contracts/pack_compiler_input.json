@@ -63,10 +63,8 @@
     "skill_prompt_stage_policy_proposal_contract"
   ],
   "minimal_authority_functions": [
-    "mechanism_patch_proposal_authorizer",
-    "owner_receipt_signer",
-    "target_agent_boundary_verdict",
-    "online_learning_candidate_reviewer"
+    "candidate_agent_package_builder",
+    "mechanism_patch_proposal_authorizer"
   ],
   "generated_surfaces_requested": [
     "cli",
