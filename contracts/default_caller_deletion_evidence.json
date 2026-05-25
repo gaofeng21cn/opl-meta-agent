@@ -30,7 +30,7 @@
     "generated_default_product_entry_wrapper",
     "generated_default_product_status_wrapper",
     "generated_default_product_session_wrapper",
-    "generated_default_domain_action_adapter_wrapper",
+    "generated_default_domain_handler_descriptor",
     "hosted_default_workbench_wrapper",
     "runtime_queue_workbench_projection"
   ],
@@ -189,24 +189,24 @@
         "opl-generated-default-caller:opl-meta-agent/workbench"
       ]
     },
-    "domain_action_adapter_export_dispatch": {
-      "surface_id": "domain_action_adapter_export_dispatch",
-      "target_surface_id": "domain_action_adapter_export_dispatch",
+    "domain_handler": {
+      "surface_id": "domain_handler",
+      "target_surface_id": "domain_handler",
       "typed_blocker_refs": [
-        "typed-blocker:opl-meta-agent/default-caller-deletion/domain-action-adapter/domain-delete-authority-not-delegated"
+        "typed-blocker:opl-meta-agent/default-caller-deletion/domain-handler/domain-delete-authority-not-delegated"
       ],
       "no_forbidden_write_refs": [
-        "no-forbidden-write:opl-meta-agent/default-caller-deletion/domain-action-adapter"
+        "no-forbidden-write:opl-meta-agent/default-caller-deletion/domain-handler"
       ],
       "tombstone_refs": [
-        "tombstone:opl-meta-agent/default-caller-deletion/domain-action-adapter/no-repo-local-wrapper"
+        "tombstone:opl-meta-agent/default-caller-deletion/domain-handler/no-repo-local-wrapper"
       ],
       "provenance_refs": [
-        "contracts/generated_surface_handoff.json#/handoff_surfaces/domain_action_adapter_export_dispatch",
-        "contracts/functional_privatization_audit.json#/modules/default_caller_sidecar_deletion_evidence"
+        "contracts/generated_surface_handoff.json#/handoff_surfaces/domain_handler",
+        "contracts/functional_privatization_audit.json#/modules/default_caller_domain_handler_deletion_evidence"
       ],
       "current_surface_refs": [
-        "opl-generated-default-caller:opl-meta-agent/domain_action_adapter_export_dispatch"
+        "opl-generated-default-caller:opl-meta-agent/domain_handler"
       ]
     }
   },

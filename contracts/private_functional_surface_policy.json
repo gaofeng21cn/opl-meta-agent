@@ -44,7 +44,7 @@
     {
       "class_id": "developer_work_order_materializer",
       "long_term_allowed": true,
-      "interface_shape": "script may convert blocked evidence or developer setup intent into explicit work-order/setup materialization, without becoming a generic runtime, registry owner, or generated CLI/MCP/Skill/product-entry/domain-action-adapter/status/workbench materializer"
+      "interface_shape": "script may convert blocked evidence or developer setup intent into explicit work-order/setup materialization, without becoming a generic runtime, registry owner, or generated CLI/MCP/Skill/product-entry/domain-handler/status/workbench materializer"
     }
   ],
   "forbidden_private_surface_classes": [

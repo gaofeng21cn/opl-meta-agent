@@ -70,7 +70,7 @@
     "cli",
     "mcp",
     "product_entry_manifest",
-    "domain_action_adapter_export_dispatch",
+    "domain_handler",
     "status_read_model",
     "workbench_drilldown",
     "functional_harness_cases"

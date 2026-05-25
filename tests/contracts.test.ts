@@ -1229,7 +1229,7 @@ test('OPL default-caller deletion evidence is closed by domain-owned refs withou
     'product_entry',
     'product_status',
     'product_session',
-    'domain_action_adapter_export_dispatch',
+    'domain_handler',
     'workbench',
   ];
 
