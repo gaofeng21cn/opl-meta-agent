@@ -50,7 +50,7 @@ Owner split 固定为：
 | Production acceptance / consumption follow-through | `done_with_repeat_evidence_tail` | `contracts/production_acceptance/meta-agent-production-acceptance.json`、OPL production-consumption read model / refs-only ledger | OPL 侧已可消费 OMA production-consumption refs；当前 ready 只说明 OPL refs-only consumption gate 闭合，不授权 target domain ready、family production ready 或默认 promotion。 |
 | Script morphology | `active_hygiene` | `runtime/authority_functions/`、`scripts/lib/*`、私有实现迁移台账 | 当前脚本只允许是 authority implementation、smoke helper、fixture/proof helper 或 developer work-order materializer。 |
 | Clean-room skill pattern intake | `done_as_docs_and_contract_pattern` | `contracts/trajectory_learning_contract.json`、核心 docs/tests | 只吸收 xskill trajectory / candidate / canary / redaction 模式；不引入 daemon/runtime/scheduler/installer/server。 |
-| Standard Agent source shape purity | `generic_shell_absent_with_script_hygiene_tail` | `contracts/functional_privatization_audit.json`、`contracts/default_caller_deletion_evidence.json`、runtime source shape tests、本文 | `functional_structure_gap_count=0` 只说明 repo-owned generic shell absent；default caller、sidecar、workbench 和 generated shell 只保留 OPL-owned refs 与 OMA boundary evidence tail。Scripts/materializers 仍是 strict source-purity hygiene tail，不能扩成 runner / promotion gate / workbench。 |
+| Standard Agent source shape purity | `generic_shell_absent_with_script_hygiene_tail` | `contracts/functional_privatization_audit.json`、`contracts/default_caller_deletion_evidence.json`、`runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt`、`tests/source-purity.test.ts`、本文 | `functional_structure_gap_count=0` 只说明 repo-owned generic shell absent；default caller、sidecar、workbench 和 generated shell 只保留 OPL-owned refs 与 OMA boundary evidence tail。Scripts/materializers 仍是 strict source-purity hygiene tail，不能扩成 runner / promotion gate / workbench。 |
 
 ## 功能/结构差距
 
@@ -69,6 +69,7 @@ Owner split 固定为：
 - OPL generated/default caller consumption tail 继续由 default-caller evidence、typed blocker/no-forbidden-write/provenance refs 和 OPL-side consumption receipt 管理。
 - domain refs-only adapter thinning 继续压缩 adapter/materializer 边界；无法证明为 OMA minimal authority implementation 的 helper 要迁入 OPL primitive 或删除。
 - `scripts/` 中稳定下来的 agent-building policy 继续迁回 `agent/`、`contracts/` 或 `runtime/authority_functions/`；脚本不得成为长期 private runner、Agent Lab replacement、workbench、promotion engine 或 compatibility facade。
+- `runtime/authority_functions/meta-agent-authority-functions.json` 的 `source_purity_scan_receipt` 继续记录扫描到的 script refs、缺席的 repo-owned wrapper/runtime 路径、package surface 边界和允许保留的非污染 authority 面；任何新增 script 或 wrapper 路径都必须同步分类和测试。
 - MAS/MAG/RCA/RCA-like target agents 的 handoff vocabulary 继续向同一 Agent Lab / OMA 标准接口收敛。
 - OPL/App production consumption、long-soak、App render/runtime drilldown 和更多 target patch-loop 样本属于证据尾项。
 

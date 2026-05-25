@@ -352,6 +352,71 @@
       }
     ]
   },
+  "source_purity_scan_receipt": {
+    "receipt_id": "source-purity-scan:opl-meta-agent/2026-05-25/strict-standard-agent",
+    "status": "passed",
+    "scan_scope": [
+      "scripts/",
+      "runtime/",
+      "contracts/",
+      "agent/",
+      "package.json"
+    ],
+    "scanned_script_refs": [
+      "scripts/agent-evidence-takeover.ts",
+      "scripts/bootstrap-sample-agent.ts",
+      "scripts/execute-external-work-order.ts",
+      "scripts/improve-from-agent-lab-suite.ts",
+      "scripts/lib/agent-evidence-materializer.ts",
+      "scripts/lib/bootstrap-domain-packs.ts",
+      "scripts/lib/domain-pack.ts",
+      "scripts/lib/external-suite-materializer.ts",
+      "scripts/lib/meta-agent-loop-ai-reviewer.ts",
+      "scripts/lib/meta-agent-loop-io.ts",
+      "scripts/lib/meta-agent-loop-receipts.ts",
+      "scripts/lib/meta-agent-loop.ts",
+      "scripts/lib/target-improvement-policy.ts",
+      "scripts/lib/work-order-builders.ts",
+      "scripts/lib/work-order-efficiency.ts",
+      "scripts/lib/work-order-policy-constants.ts",
+      "scripts/lib/work-order-refs.ts",
+      "scripts/lib/work-order-validation.ts",
+      "scripts/takeover-agent.ts"
+    ],
+    "absent_repo_owned_surface_paths": [
+      "plugins",
+      ".agents",
+      ".codex",
+      "runtime/sidecar",
+      "runtime/projection_builders",
+      "runtime/lifecycle_adapters",
+      "runtime/status",
+      "runtime/workbench",
+      "runtime/product_entry"
+    ],
+    "package_surface_boundary": {
+      "has_bin": false,
+      "has_main": false,
+      "has_exports": false
+    },
+    "retained_non_polluting_domain_authority_surfaces": [
+      "agent/",
+      "contracts/",
+      "runtime/authority_functions/",
+      "scripts authority/materializer/helper refs"
+    ],
+    "forbidden_long_term_composition_claims": [
+      "repo_owned_generic_cli_mcp_skill_product_status_workbench_wrapper",
+      "agent_lab_runner_or_promotion_gate",
+      "generic_queue_attempt_ledger_or_worktree_lifecycle",
+      "target_truth_memory_artifact_quality_or_owner_receipt_writer"
+    ],
+    "verification_refs": [
+      "tests/source-purity.test.ts",
+      "cmd:npm run typecheck",
+      "cmd:npm test"
+    ]
+  },
   "functions": [
     {
       "function_id": "candidate_agent_package_builder",
