@@ -8,7 +8,7 @@ Date: `2026-05-23`
 
 ## 当前 clean truth
 
-`opl-meta-agent` 是 OPL-compatible Foundry Agent / builder agent，不是 OPL Framework 内置模块。OPL Framework 持有 standard scaffold、Agent Lab、generated interface bundle、runtime、queue、attempt ledger、provider receipt、observability、registry、App workbench 和 promotion gate。`opl-meta-agent` 只保留 agent-building semantic pack、refs-only action outputs、candidate package / developer work-order / mechanism proposal materialization 和 minimal authority functions。2026-05-25 active source shape 已收口为 standard OPL Agent purity：`functional_structure_gap_count=0`，本仓不保留 repo-owned generic runtime、generated shell、workbench、sidecar 或 compatibility surface；default caller / sidecar / workbench 只作为 OPL-owned generated/default surface refs 与 OMA boundary evidence tail 出现。
+`opl-meta-agent` 是 OPL-compatible Foundry Agent / builder agent，不是 OPL Framework 内置模块。OPL Framework 持有 standard scaffold、Agent Lab、generated interface bundle、runtime、queue、attempt ledger、provider receipt、observability、registry、App workbench 和 promotion gate。`opl-meta-agent` 只保留 agent-building semantic pack、refs-only action outputs、candidate package / developer work-order / mechanism proposal materialization 和 minimal authority functions。2026-05-25 active source shape 的 machine signal 是 `functional_structure_gap_count=0`，表示本仓不保留 repo-owned generic runtime、generated shell、workbench、sidecar 或 compatibility surface；它不表示所有 scripts/materializers 已达到最终纯净形态。Default caller / sidecar / workbench 只作为 OPL-owned generated/default surface refs 与 OMA boundary evidence tail 出现；scripts 必须持续保持 materializer/helper 角色，并把稳定 policy 迁回 `agent/`、`contracts/`、`runtime/authority_functions/` 或 OPL primitive。
 
 本轮 fresh scan 发现 repo-tracked TS/Python/CLI/status/runtime/watch/workbench/product-entry/projection/locator/storage/attempt-ledger/state-machine 实现文件没有超过 800 行；超过 1000 行的文件集中在测试聚合面：`tests/external-suite-self-evolution.test.ts` 1450 行、`tests/contracts.test.ts` 1421 行、`tests/agent-evidence-takeover.test.ts` 744 行。实现侧最大的文件是 `scripts/lib/agent-evidence-materializer.ts` 594 行，其次是 `scripts/agent-evidence-takeover.ts` 516 行、`scripts/lib/meta-agent-loop-receipts.ts` 497 行、`scripts/bootstrap-sample-agent.ts` 484 行、`scripts/improve-from-agent-lab-suite.ts` 479 行。当前没有发现安全、低风险且自然的大型私有控制面代码拆分切口；继续机械拆分会降低 refs-only materializer 的局部可读性。
 
@@ -34,7 +34,7 @@ Date: `2026-05-23`
 | --- | --- |
 | `domain_authority_retained` | agent-building 语义、candidate/work-order/proposal materialization refs；不能写目标 domain truth。 |
 | `opl_framework_migration_candidate` | 当前脚本内承担的 registry/App/Agent Lab/promotion/runtime/queue/attempt shell 语义，长期归 OPL。 |
-| `already_thin_adapter` | smoke/proof/helper/materializer，仍有 repo-local script caller，但已声明 no generic owner。 |
+| `already_thin_adapter` | smoke/proof/helper/materializer，仍有 repo-local script caller，但已声明 no generic owner；不是最终完成态，增长后必须继续拆薄、迁入 pack/contracts/authority refs 或上收 OPL primitive。 |
 | `needs_split_before_migration` | 脚本混合 target handoff parsing、policy、work-order generation、Agent Lab invocation 或 proposal assembly，需要先抽出共享 policy / authority helper。 |
 
 ## Inventory

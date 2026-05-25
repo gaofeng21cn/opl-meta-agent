@@ -14,8 +14,8 @@ Date: `2026-05-24`
 
 - `opl-meta-agent` 是 OPL-compatible Foundry Agent，不是 OPL Framework 内置模块。
 - 理想物理形态是 `Declarative Agent-Building Pack + OPL generated/hosted surfaces + minimal agent-building authority functions`。
-- 当前功能/结构 gap 为 `0`，即 `functional_structure_gap_count=0`：`agent/` pack、contracts、generated-surface handoff、minimal authority refs、developer work-order materializer、no-forbidden-write boundary 和 active source shape purity 已落地；这个判断以 repo-native tests 和 contracts 为前提。
-- Active source shape 已 landed：当前 repo active surface 只表达 `Declarative Agent-Building Pack + OPL generated/hosted surfaces + minimal agent-building authority functions`，不再把 OMA 写成长期自有 generic runtime、generated shell、workbench、sidecar 或 compatibility surface。
+- 当前 `functional_structure_gap_count=0` 只表示没有发现 repo-owned generic runtime、generated shell、workbench、sidecar 或 compatibility surface；它不能把 `scripts/` materializer、bootstrap pack writer、Agent Lab invocation helper 或 default-caller evidence contracts 写成 strict purity 完成态。
+- Active source shape 的目标是 `Declarative Agent-Building Pack + OPL generated/hosted surfaces + minimal agent-building authority functions`。当前 repo active scripts 只能作为 authority implementation、smoke helper、fixture/proof helper 或 developer work-order materializer 暂留；稳定 policy 必须迁回 `agent/`、`contracts/`、`runtime/authority_functions/` 或 OPL primitive。
 - 当前未完成项主要是测试/证据尾项：OPL generated/default caller consumption tail、OPL registry / App 真实 discovery/render receipt、后续 cohort 的 repeat long-soak / live drilldown 证据、更多真实 target patch -> rerun -> owner receipt 样本、独立 Codex reviewer direct-evidence verdict、跨目标 agent 标准 handoff 收敛、domain refs-only adapter thinning 和持续 script-to-pack hygiene。
 - OPL 侧当前已能把 OMA production-consumption read model 读成 ready；这个 ready 只关闭 OPL refs-only consumption gate，不授权 target domain ready、family production ready、default promotion，也不替代后续 target cohort 的 repeat long-soak evidence。
 
@@ -50,11 +50,11 @@ Owner split 固定为：
 | Production acceptance / consumption follow-through | `done_with_repeat_evidence_tail` | `contracts/production_acceptance/meta-agent-production-acceptance.json`、OPL production-consumption read model / refs-only ledger | OPL 侧已可消费 OMA production-consumption refs；当前 ready 只说明 OPL refs-only consumption gate 闭合，不授权 target domain ready、family production ready 或默认 promotion。 |
 | Script morphology | `active_hygiene` | `runtime/authority_functions/`、`scripts/lib/*`、私有实现迁移台账 | 当前脚本只允许是 authority implementation、smoke helper、fixture/proof helper 或 developer work-order materializer。 |
 | Clean-room skill pattern intake | `done_as_docs_and_contract_pattern` | `contracts/trajectory_learning_contract.json`、核心 docs/tests | 只吸收 xskill trajectory / candidate / canary / redaction 模式；不引入 daemon/runtime/scheduler/installer/server。 |
-| Standard Agent source shape purity | `landed` | `contracts/functional_privatization_audit.json`、`contracts/default_caller_deletion_evidence.json`、runtime source shape tests、本文 | `functional_structure_gap_count=0`；default caller、sidecar、workbench 和 generated shell 只保留 OPL-owned refs 与 OMA boundary evidence tail，不是 repo-owned active surface。 |
+| Standard Agent source shape purity | `generic_shell_absent_with_script_hygiene_tail` | `contracts/functional_privatization_audit.json`、`contracts/default_caller_deletion_evidence.json`、runtime source shape tests、本文 | `functional_structure_gap_count=0` 只说明 repo-owned generic shell absent；default caller、sidecar、workbench 和 generated shell 只保留 OPL-owned refs 与 OMA boundary evidence tail。Scripts/materializers 仍是 strict source-purity hygiene tail，不能扩成 runner / promotion gate / workbench。 |
 
 ## 功能/结构差距
 
-当前无 open 功能/结构差距：`functional_structure_gap_count=0`。这个判断只在以下条件继续成立时有效：
+当前无 repo-owned generic runtime/shell gap，但仍有 strict source-purity hygiene gap。`functional_structure_gap_count=0` 只在以下条件继续成立时有效：
 
 | Reopen trigger | 处理方式 |
 | --- | --- |
@@ -64,11 +64,11 @@ Owner split 固定为：
 | MAS/MAG/RCA 等 domain 名称进入 OMA 顶层 command family、suite kind 或长期 contract vocabulary | 重新打开标准消费者边界 gap，改回 target-agent generic vocabulary。 |
 | `stage_executor_policy_candidate` 被写成 executor switch、quality equivalence、runner implementation 或 default promotion | 重新打开 stage executor policy boundary gap。 |
 
-当前仍需持续治理但不计入功能/结构 gap 的事项：
+当前仍需持续治理的 strict source-purity 事项：
 
 - OPL generated/default caller consumption tail 继续由 default-caller evidence、typed blocker/no-forbidden-write/provenance refs 和 OPL-side consumption receipt 管理。
-- domain refs-only adapter thinning 继续压缩 adapter/materializer 边界，但不把 adapter 写成 compatibility facade。
-- `scripts/` 中稳定下来的 agent-building policy 继续迁回 `agent/`、`contracts/` 或 `runtime/authority_functions/`。
+- domain refs-only adapter thinning 继续压缩 adapter/materializer 边界；无法证明为 OMA minimal authority implementation 的 helper 要迁入 OPL primitive 或删除。
+- `scripts/` 中稳定下来的 agent-building policy 继续迁回 `agent/`、`contracts/` 或 `runtime/authority_functions/`；脚本不得成为长期 private runner、Agent Lab replacement、workbench、promotion engine 或 compatibility facade。
 - MAS/MAG/RCA/RCA-like target agents 的 handoff vocabulary 继续向同一 Agent Lab / OMA 标准接口收敛。
 - OPL/App production consumption、long-soak、App render/runtime drilldown 和更多 target patch-loop 样本属于证据尾项。
 
