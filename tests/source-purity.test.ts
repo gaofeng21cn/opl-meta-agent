@@ -49,6 +49,38 @@ test('runtime source shape keeps generated and generic wrappers out of the repo'
   assert.equal(receipt.package_surface_boundary.has_bin, false);
   assert.equal(receipt.package_surface_boundary.has_main, false);
   assert.equal(receipt.package_surface_boundary.has_exports, false);
+  [
+    '.agents',
+    '.codex',
+    'bin',
+    'cli',
+    'mcp',
+    'plugins',
+    'product-entry',
+    'product_entry',
+    'sidecar',
+    'status',
+    'workbench',
+    'runtime/cli',
+    'runtime/mcp',
+    'runtime/product-entry',
+    'runtime/product_entry',
+    'runtime/sidecar',
+    'runtime/projection_builders',
+    'runtime/lifecycle_adapters',
+    'runtime/status',
+    'runtime/workbench',
+    'runtime/wrappers',
+    'src/cli',
+    'src/mcp',
+    'src/product-entry',
+    'src/product_entry',
+    'src/sidecar',
+    'src/status',
+    'src/workbench',
+  ].forEach((relativePath) => {
+    assert.ok(asStrings(receipt.absent_repo_owned_surface_paths).includes(relativePath));
+  });
 
   asStrings(receipt.absent_repo_owned_surface_paths).forEach((relativePath) => {
     assert.equal(fs.existsSync(path.join(repoRoot, relativePath)), false, `${relativePath} should not exist`);
@@ -129,6 +161,7 @@ test('script morphology stays limited to authority refs, materializers, and help
   const scripts = listFilesByExtension('scripts', '.ts');
   const morphologyPolicy = authorityFunctions.script_morphology_policy as JsonObject;
   const receipt = authorityFunctions.source_purity_scan_receipt as JsonObject;
+  const materializerScan = receipt.generic_script_materializer_scan as JsonObject;
 
   assert.equal(morphologyPolicy.policy_ref, 'contracts/private_functional_surface_policy.json');
   assert.deepEqual(
@@ -147,6 +180,31 @@ test('script morphology stays limited to authority refs, materializers, and help
     'developer_work_order_materializer',
   ]);
   assert.deepEqual(morphologyPolicy.forbidden_roles, asStrings(privatePolicy.forbidden_script_roles));
+  assert.ok(
+    morphologyPolicy.forbidden_roles.includes(
+      'generic_cli_mcp_skill_product_sidecar_status_workbench_materializer_owner',
+    ),
+  );
+  assert.equal(materializerScan.status, 'passed');
+  assert.equal(materializerScan.repo_owned_generic_wrapper_materializer_count, 0);
+  assert.deepEqual(asStrings(materializerScan.excluded_standard_surface_paths), [
+    'agent/',
+    'contracts/',
+    'runtime/authority_functions/',
+  ]);
+  assert.deepEqual(asStrings(materializerScan.forbidden_materializer_roles_absent), [
+    'repo_owned_cli_wrapper_materializer',
+    'repo_owned_mcp_wrapper_materializer',
+    'repo_owned_skill_wrapper_materializer',
+    'repo_owned_product_entry_wrapper_materializer',
+    'repo_owned_domain_action_adapter_wrapper_materializer',
+    'repo_owned_status_read_model_materializer',
+    'repo_owned_workbench_wrapper_materializer',
+  ]);
+  assert.equal(
+    materializerScan.retained_materializer_role,
+    'refs_only_developer_work_order_or_evidence_materializer',
+  );
 
   const implementationRefs = new Map<string, string[]>();
   asObjects(authorityFunctions.functions).forEach((functionRef) => {

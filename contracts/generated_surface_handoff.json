@@ -46,7 +46,7 @@
       "domain_policy": "domain_repo_declares_registration_product_entry_refs_and_domain_authority_refs"
     },
     {
-      "surface_id": "sidecar_export_dispatch",
+      "surface_id": "domain_action_adapter_export_dispatch",
       "owner": "one-person-lab",
       "target_role": "opl_generated_surface",
       "status": "descriptor_source_available",
@@ -210,18 +210,18 @@
       "physical_delete_authorized": false
     },
     {
-      "surface_id": "sidecar",
+      "surface_id": "domain_action_adapter_export_dispatch",
       "owner": "one-person-lab",
       "target_role": "opl_generated_surface",
       "status": "descriptor_source_available_with_domain_boundary_evidence_refs",
       "source_contract": "contracts/pack_compiler_input.json",
       "current_paths": [],
       "current_surface_refs": [
-        "opl-generated-default-caller:opl-meta-agent/sidecar",
-        "contracts/default_caller_deletion_evidence.json#/surface_evidence/sidecar"
+        "opl-generated-default-caller:opl-meta-agent/domain_action_adapter_export_dispatch",
+        "contracts/default_caller_deletion_evidence.json#/surface_evidence/domain_action_adapter_export_dispatch"
       ],
       "domain_policy": "domain_repo_supplies_typed_blocker_no_forbidden_write_tombstone_and_provenance_refs_only",
-      "bridge_exit_gate_ref": "contracts/default_caller_deletion_evidence.json#/surface_evidence/sidecar",
+      "bridge_exit_gate_ref": "contracts/default_caller_deletion_evidence.json#/surface_evidence/domain_action_adapter_export_dispatch",
       "physical_delete_authorized": false
     },
     {

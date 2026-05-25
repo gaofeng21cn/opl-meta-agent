@@ -606,20 +606,20 @@
       }
     },
     {
-      "module_id": "default_caller_sidecar_deletion_evidence",
+      "module_id": "default_caller_domain_action_adapter_export_dispatch_deletion_evidence",
       "classification": "refs_only_domain_adapter",
       "owner": "opl-meta-agent",
       "code_paths": [
         "contracts/default_caller_deletion_evidence.json"
       ],
       "active_callers": [
-        "OPL generated sidecar default caller"
+        "OPL generated domain action adapter default caller"
       ],
       "active_caller_status": "boundary_evidence_refs_materialized",
       "role_scope": "refs_only_default_caller_deletion_evidence_not_generated_surface_owner",
       "current_surface_refs": [
-        "opl-generated-default-caller:opl-meta-agent/sidecar",
-        "contracts/default_caller_deletion_evidence.json#/surface_evidence/sidecar"
+        "opl-generated-default-caller:opl-meta-agent/domain_action_adapter_export_dispatch",
+        "contracts/default_caller_deletion_evidence.json#/surface_evidence/domain_action_adapter_export_dispatch"
       ],
       "expected_opl_primitives": [
         "opl_generated_interface_bundle",
@@ -642,20 +642,20 @@
       "bridge_exit_gate": {
         "owner_receipt_refs": [],
         "typed_blocker_refs": [
-          "typed-blocker:opl-meta-agent/default-caller-deletion/sidecar/domain-delete-authority-not-delegated"
+          "typed-blocker:opl-meta-agent/default-caller-deletion/domain-action-adapter/domain-delete-authority-not-delegated"
         ],
         "no_forbidden_write_refs": [
-          "no-forbidden-write:opl-meta-agent/default-caller-deletion/sidecar"
+          "no-forbidden-write:opl-meta-agent/default-caller-deletion/domain-action-adapter"
         ],
         "tombstone_refs": [
-          "tombstone:opl-meta-agent/default-caller-deletion/sidecar/no-repo-local-wrapper"
+          "tombstone:opl-meta-agent/default-caller-deletion/domain-action-adapter/no-repo-local-wrapper"
         ],
         "provenance_refs": [
-          "contracts/default_caller_deletion_evidence.json#/surface_evidence/sidecar",
-          "contracts/generated_surface_handoff.json#/handoff_surfaces/sidecar"
+          "contracts/default_caller_deletion_evidence.json#/surface_evidence/domain_action_adapter_export_dispatch",
+          "contracts/generated_surface_handoff.json#/handoff_surfaces/domain_action_adapter_export_dispatch"
         ],
         "current_surface_refs": [
-          "opl-generated-default-caller:opl-meta-agent/sidecar"
+          "opl-generated-default-caller:opl-meta-agent/domain_action_adapter_export_dispatch"
         ],
         "physical_delete_authorized": false,
         "authority_boundary": {

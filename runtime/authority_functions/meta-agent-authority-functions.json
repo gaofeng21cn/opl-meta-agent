@@ -23,6 +23,7 @@
       "promotion_gate_owner",
       "target_domain_truth_writer",
       "generic_cli_mcp_product_wrapper_owner",
+      "generic_cli_mcp_skill_product_sidecar_status_workbench_materializer_owner",
       "generic_scheduler_or_daemon_owner",
       "generic_queue_or_attempt_ledger_owner"
     ],
@@ -384,16 +385,54 @@
       "scripts/takeover-agent.ts"
     ],
     "absent_repo_owned_surface_paths": [
-      "plugins",
       ".agents",
       ".codex",
+      "bin",
+      "cli",
+      "mcp",
+      "plugins",
+      "product-entry",
+      "product_entry",
+      "sidecar",
+      "status",
+      "workbench",
+      "runtime/cli",
+      "runtime/mcp",
+      "runtime/product-entry",
+      "runtime/product_entry",
       "runtime/sidecar",
       "runtime/projection_builders",
       "runtime/lifecycle_adapters",
       "runtime/status",
       "runtime/workbench",
-      "runtime/product_entry"
+      "runtime/wrappers",
+      "src/cli",
+      "src/mcp",
+      "src/product-entry",
+      "src/product_entry",
+      "src/sidecar",
+      "src/status",
+      "src/workbench"
     ],
+    "generic_script_materializer_scan": {
+      "status": "passed",
+      "repo_owned_generic_wrapper_materializer_count": 0,
+      "forbidden_materializer_roles_absent": [
+        "repo_owned_cli_wrapper_materializer",
+        "repo_owned_mcp_wrapper_materializer",
+        "repo_owned_skill_wrapper_materializer",
+        "repo_owned_product_entry_wrapper_materializer",
+        "repo_owned_domain_action_adapter_wrapper_materializer",
+        "repo_owned_status_read_model_materializer",
+        "repo_owned_workbench_wrapper_materializer"
+      ],
+      "retained_materializer_role": "refs_only_developer_work_order_or_evidence_materializer",
+      "excluded_standard_surface_paths": [
+        "agent/",
+        "contracts/",
+        "runtime/authority_functions/"
+      ]
+    },
     "package_surface_boundary": {
       "has_bin": false,
       "has_main": false,
@@ -473,6 +512,7 @@
     "generic_attempt_ledger_owner",
     "generic_state_machine_runner_owner",
     "generic_cli_mcp_product_wrapper_owner",
+    "generic_cli_mcp_skill_product_sidecar_status_workbench_materializer_owner",
     "generic_sidecar_owner",
     "generic_session_store_owner",
     "generic_status_workbench_owner"

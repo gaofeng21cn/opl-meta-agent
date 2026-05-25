@@ -30,7 +30,7 @@
     "generated_default_product_entry_wrapper",
     "generated_default_product_status_wrapper",
     "generated_default_product_session_wrapper",
-    "generated_default_sidecar_wrapper",
+    "generated_default_domain_action_adapter_wrapper",
     "hosted_default_workbench_wrapper",
     "runtime_queue_workbench_projection"
   ],
@@ -169,26 +169,6 @@
         "opl-generated-default-caller:opl-meta-agent/product_session"
       ]
     },
-    "sidecar": {
-      "surface_id": "sidecar",
-      "target_surface_id": "sidecar",
-      "typed_blocker_refs": [
-        "typed-blocker:opl-meta-agent/default-caller-deletion/sidecar/domain-delete-authority-not-delegated"
-      ],
-      "no_forbidden_write_refs": [
-        "no-forbidden-write:opl-meta-agent/default-caller-deletion/sidecar"
-      ],
-      "tombstone_refs": [
-        "tombstone:opl-meta-agent/default-caller-deletion/sidecar/no-repo-local-wrapper"
-      ],
-      "provenance_refs": [
-        "contracts/generated_surface_handoff.json#/handoff_surfaces/sidecar",
-        "contracts/functional_privatization_audit.json#/modules/default_caller_sidecar_deletion_evidence"
-      ],
-      "current_surface_refs": [
-        "opl-generated-default-caller:opl-meta-agent/sidecar"
-      ]
-    },
     "workbench": {
       "surface_id": "workbench",
       "target_surface_id": "workbench",
@@ -208,11 +188,32 @@
       "current_surface_refs": [
         "opl-generated-default-caller:opl-meta-agent/workbench"
       ]
+    },
+    "domain_action_adapter_export_dispatch": {
+      "surface_id": "domain_action_adapter_export_dispatch",
+      "target_surface_id": "domain_action_adapter_export_dispatch",
+      "typed_blocker_refs": [
+        "typed-blocker:opl-meta-agent/default-caller-deletion/domain-action-adapter/domain-delete-authority-not-delegated"
+      ],
+      "no_forbidden_write_refs": [
+        "no-forbidden-write:opl-meta-agent/default-caller-deletion/domain-action-adapter"
+      ],
+      "tombstone_refs": [
+        "tombstone:opl-meta-agent/default-caller-deletion/domain-action-adapter/no-repo-local-wrapper"
+      ],
+      "provenance_refs": [
+        "contracts/generated_surface_handoff.json#/handoff_surfaces/domain_action_adapter_export_dispatch",
+        "contracts/functional_privatization_audit.json#/modules/default_caller_sidecar_deletion_evidence"
+      ],
+      "current_surface_refs": [
+        "opl-generated-default-caller:opl-meta-agent/domain_action_adapter_export_dispatch"
+      ]
     }
   },
   "verification_refs": [
     "cmd:/Users/gaofeng/workspace/one-person-lab/bin/opl agents default-callers --agent opl-meta-agent=<repo> --json",
     "cmd:npm test",
     "cmd:npm run typecheck"
-  ]
+  ],
+  "generated_surface_consumption_tail": []
 }
