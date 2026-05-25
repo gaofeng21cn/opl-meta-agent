@@ -146,14 +146,7 @@ test('script morphology stays limited to authority refs, materializers, and help
     'fixture_or_proof_helper',
     'developer_work_order_materializer',
   ]);
-  [
-    'generic_runtime_owner',
-    'generic_registry_owner',
-    'app_shell_owner',
-    'agent_lab_execution_owner',
-    'promotion_gate_owner',
-    'target_domain_truth_writer',
-  ].forEach((role) => assert.ok(morphologyPolicy.forbidden_roles.includes(role)));
+  assert.deepEqual(morphologyPolicy.forbidden_roles, asStrings(privatePolicy.forbidden_script_roles));
 
   const implementationRefs = new Map<string, string[]>();
   asObjects(authorityFunctions.functions).forEach((functionRef) => {
