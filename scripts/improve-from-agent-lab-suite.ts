@@ -26,7 +26,6 @@ import {
   resolveOplBin,
   runOpl,
   stableId,
-  writeJson,
 } from './lib/meta-agent-loop.ts';
 import {
   buildOplWorkOrderPrimitiveRefs,
@@ -52,6 +51,8 @@ import {
   type CapabilityCandidate,
   buildDeveloperPatchWorkOrder,
   buildEfficiencyTypedBlocker,
+  writeEfficiencyBlockerArtifacts,
+  writeExternalSuiteArtifacts,
 } from './lib/external-suite-materializer.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -387,12 +388,12 @@ function main() {
       capabilityCandidate,
       missingFields: missingEfficiencyFields,
     });
-    const capabilityPath = path.join(outputDir, 'target-capability-improvement-candidate.json');
-    const blockerPath = path.join(outputDir, 'typed-blocker.json');
-    const runPath = path.join(outputDir, 'agent-lab-run-result.json');
-    writeJson(capabilityPath, capabilityCandidate);
-    writeJson(blockerPath, blocker);
-    writeJson(runPath, agentLabRun);
+    const artifacts = writeEfficiencyBlockerArtifacts({
+      outputDir,
+      capabilityCandidate,
+      blocker,
+      agentLabRun,
+    });
     process.stdout.write(`${JSON.stringify({
       surface_kind: 'opl_meta_agent_external_suite_self_evolution_result',
       version: 'opl-meta-agent.external-suite-self-evolution.v1',
@@ -405,9 +406,7 @@ function main() {
       },
       artifacts: {
         suite_path: suitePath,
-        agent_lab_run_result_path: runPath,
-        target_capability_improvement_candidate_path: capabilityPath,
-        typed_blocker_path: blockerPath,
+        ...artifacts,
       },
       opl_agent_lab: agentLabRun.agent_lab_run,
       learning_loop: {
@@ -427,19 +426,15 @@ function main() {
   });
   validateDeveloperPatchWorkOrder(developerPatchWorkOrder);
 
-  const receiptPath = path.join(outputDir, 'meta-agent-improvement-receipt.json');
-  const learningPath = path.join(outputDir, 'online-learning-candidate.json');
-  const mechanismPath = path.join(outputDir, 'mechanism-patch-proposal.json');
-  const capabilityPath = path.join(outputDir, 'target-capability-improvement-candidate.json');
-  const workOrderPath = path.join(outputDir, 'developer-patch-work-order.json');
-  const runPath = path.join(outputDir, 'agent-lab-run-result.json');
-
-  writeJson(receiptPath, receipt);
-  writeJson(learningPath, learningCandidate);
-  writeJson(mechanismPath, mechanismPatchProposal);
-  writeJson(capabilityPath, capabilityCandidate);
-  writeJson(workOrderPath, developerPatchWorkOrder);
-  writeJson(runPath, agentLabRun);
+  const artifacts = writeExternalSuiteArtifacts({
+    outputDir,
+    receipt,
+    learningCandidate,
+    mechanismPatchProposal,
+    capabilityCandidate,
+    developerPatchWorkOrder,
+    agentLabRun,
+  });
 
   const payload = {
     surface_kind: 'opl_meta_agent_external_suite_self_evolution_result',
@@ -452,12 +447,7 @@ function main() {
     source_domain_pack: domainPackSummary,
     artifacts: {
       suite_path: suitePath,
-      agent_lab_run_result_path: runPath,
-      meta_agent_improvement_receipt_path: receiptPath,
-      online_learning_candidate_path: learningPath,
-      mechanism_patch_proposal_path: mechanismPath,
-      target_capability_improvement_candidate_path: capabilityPath,
-      developer_patch_work_order_path: workOrderPath,
+      ...artifacts,
     },
     opl_agent_lab: agentLabRun.agent_lab_run,
     learning_loop: {

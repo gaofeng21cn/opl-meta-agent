@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import path from 'node:path';
 import type { JsonObject } from './domain-pack.ts';
 
-export const DEFAULT_OPL_BIN = '/Users/gaofeng/workspace/one-person-lab/bin/opl';
+const DEFAULT_OPL_BIN = '/Users/gaofeng/workspace/one-person-lab/bin/opl';
 
 export type TargetAgent = {
   domain_id: string;

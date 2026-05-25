@@ -41,8 +41,6 @@ export type DomainPackSummary = {
   knowledge_policy_refs: string[];
 };
 
-export type DomainPackSummaryRefsField = DomainPackRefsField;
-
 export type DomainPackReceiptFields = {
   domain_pack_status: DomainPackSummary['status'];
   prompt_policy_refs: string[];

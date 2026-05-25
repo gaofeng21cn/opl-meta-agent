@@ -56,7 +56,7 @@ export type TargetAgentIdentity = {
   targetAgentRef: string;
 };
 
-export const TARGET_AGENT_EDITABLE_SURFACES = [
+const TARGET_AGENT_EDITABLE_SURFACES = [
   'agent/prompts',
   'agent/skills',
   'agent/knowledge',

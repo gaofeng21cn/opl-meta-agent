@@ -36,7 +36,7 @@ function suiteOrScaffoldOnlyRef(ref: string): boolean {
   return normalized.includes('suite') || normalized.includes('scaffold');
 }
 
-export function validateAiReviewerEvaluation(
+function validateAiReviewerEvaluation(
   payload: JsonObject,
   sourceRef: string,
 ): AiReviewerEvaluation {

@@ -13,7 +13,7 @@ export type EfficiencyNonRegressionRefs = {
   target_verification_refs: string[];
 };
 
-export function emptyEfficiencyNonRegressionRefs(): EfficiencyNonRegressionRefs {
+function emptyEfficiencyNonRegressionRefs(): EfficiencyNonRegressionRefs {
   return {
     quality_floor_refs: [],
     latency_baseline_refs: [],

@@ -1,9 +1,11 @@
+import path from 'node:path';
 import type { JsonObject } from './domain-pack.ts';
 import {
   type OwnerReceipt,
   type SuiteResult,
   type TargetAgent,
   stableId,
+  writeJson,
 } from './meta-agent-loop.ts';
 import type {
   PatchTraceabilityEntry,
@@ -36,8 +38,68 @@ export type CapabilityCandidate = JsonObject & {
   efficiency_non_regression_refs: EfficiencyNonRegressionRefs;
 };
 
+type EfficiencyBlockerArtifactOptions = {
+  outputDir: string;
+  capabilityCandidate: CapabilityCandidate;
+  blocker: JsonObject;
+  agentLabRun: JsonObject;
+};
+
+type ExternalSuiteArtifactOptions = {
+  outputDir: string;
+  receipt: OwnerReceipt;
+  learningCandidate: JsonObject;
+  mechanismPatchProposal: JsonObject;
+  capabilityCandidate: CapabilityCandidate;
+  developerPatchWorkOrder: JsonObject;
+  agentLabRun: JsonObject;
+};
+
 function unique(values: string[]): string[] {
   return [...new Set(values.filter((value) => value.trim().length > 0))];
+}
+
+export function writeEfficiencyBlockerArtifacts({
+  outputDir,
+  capabilityCandidate,
+  blocker,
+  agentLabRun,
+}: EfficiencyBlockerArtifactOptions): JsonObject {
+  const artifacts = {
+    target_capability_improvement_candidate_path: path.join(outputDir, 'target-capability-improvement-candidate.json'),
+    typed_blocker_path: path.join(outputDir, 'typed-blocker.json'),
+    agent_lab_run_result_path: path.join(outputDir, 'agent-lab-run-result.json'),
+  };
+  writeJson(artifacts.target_capability_improvement_candidate_path, capabilityCandidate);
+  writeJson(artifacts.typed_blocker_path, blocker);
+  writeJson(artifacts.agent_lab_run_result_path, agentLabRun);
+  return artifacts;
+}
+
+export function writeExternalSuiteArtifacts({
+  outputDir,
+  receipt,
+  learningCandidate,
+  mechanismPatchProposal,
+  capabilityCandidate,
+  developerPatchWorkOrder,
+  agentLabRun,
+}: ExternalSuiteArtifactOptions): JsonObject {
+  const artifacts = {
+    meta_agent_improvement_receipt_path: path.join(outputDir, 'meta-agent-improvement-receipt.json'),
+    online_learning_candidate_path: path.join(outputDir, 'online-learning-candidate.json'),
+    mechanism_patch_proposal_path: path.join(outputDir, 'mechanism-patch-proposal.json'),
+    target_capability_improvement_candidate_path: path.join(outputDir, 'target-capability-improvement-candidate.json'),
+    developer_patch_work_order_path: path.join(outputDir, 'developer-patch-work-order.json'),
+    agent_lab_run_result_path: path.join(outputDir, 'agent-lab-run-result.json'),
+  };
+  writeJson(artifacts.meta_agent_improvement_receipt_path, receipt);
+  writeJson(artifacts.online_learning_candidate_path, learningCandidate);
+  writeJson(artifacts.mechanism_patch_proposal_path, mechanismPatchProposal);
+  writeJson(artifacts.target_capability_improvement_candidate_path, capabilityCandidate);
+  writeJson(artifacts.developer_patch_work_order_path, developerPatchWorkOrder);
+  writeJson(artifacts.agent_lab_run_result_path, agentLabRun);
+  return artifacts;
 }
 
 export function buildDeveloperPatchWorkOrder({

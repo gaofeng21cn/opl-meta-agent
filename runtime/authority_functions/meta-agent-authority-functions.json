@@ -129,6 +129,24 @@
         "forbidden_roles": []
       },
       {
+        "script_ref": "scripts/lib/agent-evidence-contracts.ts",
+        "classes": [
+          "fixture_or_proof_helper",
+          "developer_work_order_materializer"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": [
+          "target_agent_contract_intake_ref",
+          "production_acceptance_contract_ref",
+          "agent_lab_handoff_contract_ref",
+          "domain_descriptor_contract_ref",
+          "generated_surface_handoff_contract_ref",
+          "owner_receipt_contract_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
         "script_ref": "scripts/lib/bootstrap-domain-packs.ts",
         "classes": [
           "fixture_or_proof_helper"
@@ -368,6 +386,7 @@
       "scripts/bootstrap-sample-agent.ts",
       "scripts/execute-external-work-order.ts",
       "scripts/improve-from-agent-lab-suite.ts",
+      "scripts/lib/agent-evidence-contracts.ts",
       "scripts/lib/agent-evidence-materializer.ts",
       "scripts/lib/bootstrap-domain-packs.ts",
       "scripts/lib/domain-pack.ts",
