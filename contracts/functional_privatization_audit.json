@@ -4,6 +4,23 @@
   "domain_id": "opl-meta-agent",
   "marker": "generated_by_opl_standard_domain_agent_scaffold_v1",
   "classification_policy": "domain_declares_non_knowledge_functional_modules_for_opl_unified_audit",
+  "source_shape": "landed",
+  "standard_agent_source_shape": "landed",
+  "functional_structure_gap_count": 0,
+  "domain_repo_retained_generic_surface_count": 0,
+  "remaining_tail_kinds": [
+    "opl_generated_default_caller_consumption_tail",
+    "domain_refs_only_adapter_thinning",
+    "script_to_pack_hygiene",
+    "evidence_tail"
+  ],
+  "forbidden_active_surface_claims": [
+    "repo_owned_generic_runtime",
+    "repo_owned_generated_shell",
+    "repo_owned_workbench",
+    "repo_owned_sidecar",
+    "repo_owned_compatibility_surface"
+  ],
   "opl_owned_replacement_surfaces": [
     "scheduler_supervision_cadence",
     "provider_slo_and_wakeup_transport",
@@ -27,17 +44,17 @@
     "trajectory_learning_contract_ref": "contracts/trajectory_learning_contract.json"
   },
   "domain_allowed_roles": [
-    "domain_truth",
-    "domain_transition_spec",
-    "domain_stage_descriptors",
-    "domain_action_metadata",
-    "quality_or_export_verdict",
-    "artifact_authority",
-    "memory_body",
-    "owner_receipt",
+    "agent_building_semantics",
+    "candidate_agent_skeleton_strategy",
+    "contracts_prompt_skill_quality_gate_generation_strategy",
+    "baseline_review_semantics",
+    "optimizer_review_semantics",
+    "mechanism_proposal_semantics",
+    "developer_work_order_materialization",
+    "owner_receipt_refs",
     "typed_blocker",
     "refs_only_domain_adapter",
-    "domain_entry_and_tests"
+    "minimal_authority_function"
   ],
   "forbidden_generic_owner_roles": [
     "generic_scheduler_owner",
@@ -232,7 +249,7 @@
       "active_callers": [
         "OPL generated interface bundle"
       ],
-      "active_caller_status": "domain_owned_delete_evidence_refs_materialized",
+      "active_caller_status": "boundary_evidence_refs_materialized",
       "role_scope": "refs_only_default_caller_deletion_evidence_not_generated_surface_owner",
       "current_surface_refs": [
         "opl-generated-default-caller:opl-meta-agent/cli",
@@ -244,16 +261,18 @@
       ],
       "retained_domain_authority": [
         "agent_building_semantics",
-        "prompt_pack_quality_judgment",
+        "skeleton_contracts_prompt_skill_quality_gate_generation_strategy",
+        "baseline_review_semantics",
+        "optimizer_review_semantics",
         "work_order_materialization_semantics",
         "target_domain_truth_boundary",
         "typed_blocker_materialization",
-        "owner_receipt_materialization"
+        "owner_receipt_ref_materialization"
       ],
-      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default wrapper surface.",
-      "cannot_absorb_reason": "OPL cannot sign OMA domain owner receipts, typed blockers, agent-building semantics, or target-domain truth-boundary evidence.",
+      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default caller surface.",
+      "cannot_absorb_reason": "OPL cannot author OMA agent-building semantics, typed blockers, owner receipt refs, or target-domain truth-boundary evidence.",
       "semantic_equivalence_status": "cleared_by_boundary",
-      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned deletion evidence refs.",
+      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned boundary evidence refs.",
       "bridge_exit_gate": {
         "owner_receipt_refs": [],
         "typed_blocker_refs": [
@@ -291,7 +310,7 @@
       "active_callers": [
         "OPL generated interface bundle"
       ],
-      "active_caller_status": "domain_owned_delete_evidence_refs_materialized",
+      "active_caller_status": "boundary_evidence_refs_materialized",
       "role_scope": "refs_only_default_caller_deletion_evidence_not_generated_surface_owner",
       "current_surface_refs": [
         "opl-generated-default-caller:opl-meta-agent/mcp",
@@ -303,16 +322,18 @@
       ],
       "retained_domain_authority": [
         "agent_building_semantics",
-        "prompt_pack_quality_judgment",
+        "skeleton_contracts_prompt_skill_quality_gate_generation_strategy",
+        "baseline_review_semantics",
+        "optimizer_review_semantics",
         "work_order_materialization_semantics",
         "target_domain_truth_boundary",
         "typed_blocker_materialization",
-        "owner_receipt_materialization"
+        "owner_receipt_ref_materialization"
       ],
-      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default wrapper surface.",
-      "cannot_absorb_reason": "OPL cannot sign OMA domain owner receipts, typed blockers, agent-building semantics, or target-domain truth-boundary evidence.",
+      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default caller surface.",
+      "cannot_absorb_reason": "OPL cannot author OMA agent-building semantics, typed blockers, owner receipt refs, or target-domain truth-boundary evidence.",
       "semantic_equivalence_status": "cleared_by_boundary",
-      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned deletion evidence refs.",
+      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned boundary evidence refs.",
       "bridge_exit_gate": {
         "owner_receipt_refs": [],
         "typed_blocker_refs": [
@@ -350,7 +371,7 @@
       "active_callers": [
         "OPL generated interface bundle"
       ],
-      "active_caller_status": "domain_owned_delete_evidence_refs_materialized",
+      "active_caller_status": "boundary_evidence_refs_materialized",
       "role_scope": "refs_only_default_caller_deletion_evidence_not_generated_surface_owner",
       "current_surface_refs": [
         "opl-generated-default-caller:opl-meta-agent/skill",
@@ -362,16 +383,18 @@
       ],
       "retained_domain_authority": [
         "agent_building_semantics",
-        "prompt_pack_quality_judgment",
+        "skeleton_contracts_prompt_skill_quality_gate_generation_strategy",
+        "baseline_review_semantics",
+        "optimizer_review_semantics",
         "work_order_materialization_semantics",
         "target_domain_truth_boundary",
         "typed_blocker_materialization",
-        "owner_receipt_materialization"
+        "owner_receipt_ref_materialization"
       ],
-      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default wrapper surface.",
-      "cannot_absorb_reason": "OPL cannot sign OMA domain owner receipts, typed blockers, agent-building semantics, or target-domain truth-boundary evidence.",
+      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default caller surface.",
+      "cannot_absorb_reason": "OPL cannot author OMA agent-building semantics, typed blockers, owner receipt refs, or target-domain truth-boundary evidence.",
       "semantic_equivalence_status": "cleared_by_boundary",
-      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned deletion evidence refs.",
+      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned boundary evidence refs.",
       "bridge_exit_gate": {
         "owner_receipt_refs": [],
         "typed_blocker_refs": [
@@ -409,7 +432,7 @@
       "active_callers": [
         "OPL generated product-entry default caller"
       ],
-      "active_caller_status": "domain_owned_delete_evidence_refs_materialized",
+      "active_caller_status": "boundary_evidence_refs_materialized",
       "role_scope": "refs_only_default_caller_deletion_evidence_not_generated_surface_owner",
       "current_surface_refs": [
         "opl-generated-default-caller:opl-meta-agent/product_entry",
@@ -421,16 +444,18 @@
       ],
       "retained_domain_authority": [
         "agent_building_semantics",
-        "prompt_pack_quality_judgment",
+        "skeleton_contracts_prompt_skill_quality_gate_generation_strategy",
+        "baseline_review_semantics",
+        "optimizer_review_semantics",
         "work_order_materialization_semantics",
         "target_domain_truth_boundary",
         "typed_blocker_materialization",
-        "owner_receipt_materialization"
+        "owner_receipt_ref_materialization"
       ],
-      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default wrapper surface.",
-      "cannot_absorb_reason": "OPL cannot sign OMA domain owner receipts, typed blockers, agent-building semantics, or target-domain truth-boundary evidence.",
+      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default caller surface.",
+      "cannot_absorb_reason": "OPL cannot author OMA agent-building semantics, typed blockers, owner receipt refs, or target-domain truth-boundary evidence.",
       "semantic_equivalence_status": "cleared_by_boundary",
-      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned deletion evidence refs.",
+      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned boundary evidence refs.",
       "bridge_exit_gate": {
         "owner_receipt_refs": [],
         "typed_blocker_refs": [
@@ -468,7 +493,7 @@
       "active_callers": [
         "OPL generated product-status default caller"
       ],
-      "active_caller_status": "domain_owned_delete_evidence_refs_materialized",
+      "active_caller_status": "boundary_evidence_refs_materialized",
       "role_scope": "refs_only_default_caller_deletion_evidence_not_generated_surface_owner",
       "current_surface_refs": [
         "opl-generated-default-caller:opl-meta-agent/product_status",
@@ -480,16 +505,18 @@
       ],
       "retained_domain_authority": [
         "agent_building_semantics",
-        "prompt_pack_quality_judgment",
+        "skeleton_contracts_prompt_skill_quality_gate_generation_strategy",
+        "baseline_review_semantics",
+        "optimizer_review_semantics",
         "work_order_materialization_semantics",
         "target_domain_truth_boundary",
         "typed_blocker_materialization",
-        "owner_receipt_materialization"
+        "owner_receipt_ref_materialization"
       ],
-      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default wrapper surface.",
-      "cannot_absorb_reason": "OPL cannot sign OMA domain owner receipts, typed blockers, agent-building semantics, or target-domain truth-boundary evidence.",
+      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default caller surface.",
+      "cannot_absorb_reason": "OPL cannot author OMA agent-building semantics, typed blockers, owner receipt refs, or target-domain truth-boundary evidence.",
       "semantic_equivalence_status": "cleared_by_boundary",
-      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned deletion evidence refs.",
+      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned boundary evidence refs.",
       "bridge_exit_gate": {
         "owner_receipt_refs": [],
         "typed_blocker_refs": [
@@ -527,7 +554,7 @@
       "active_callers": [
         "OPL generated product-session default caller"
       ],
-      "active_caller_status": "domain_owned_delete_evidence_refs_materialized",
+      "active_caller_status": "boundary_evidence_refs_materialized",
       "role_scope": "refs_only_default_caller_deletion_evidence_not_generated_surface_owner",
       "current_surface_refs": [
         "opl-generated-default-caller:opl-meta-agent/product_session",
@@ -539,16 +566,18 @@
       ],
       "retained_domain_authority": [
         "agent_building_semantics",
-        "prompt_pack_quality_judgment",
+        "skeleton_contracts_prompt_skill_quality_gate_generation_strategy",
+        "baseline_review_semantics",
+        "optimizer_review_semantics",
         "work_order_materialization_semantics",
         "target_domain_truth_boundary",
         "typed_blocker_materialization",
-        "owner_receipt_materialization"
+        "owner_receipt_ref_materialization"
       ],
-      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default wrapper surface.",
-      "cannot_absorb_reason": "OPL cannot sign OMA domain owner receipts, typed blockers, agent-building semantics, or target-domain truth-boundary evidence.",
+      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default caller surface.",
+      "cannot_absorb_reason": "OPL cannot author OMA agent-building semantics, typed blockers, owner receipt refs, or target-domain truth-boundary evidence.",
       "semantic_equivalence_status": "cleared_by_boundary",
-      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned deletion evidence refs.",
+      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned boundary evidence refs.",
       "bridge_exit_gate": {
         "owner_receipt_refs": [],
         "typed_blocker_refs": [
@@ -586,7 +615,7 @@
       "active_callers": [
         "OPL generated sidecar default caller"
       ],
-      "active_caller_status": "domain_owned_delete_evidence_refs_materialized",
+      "active_caller_status": "boundary_evidence_refs_materialized",
       "role_scope": "refs_only_default_caller_deletion_evidence_not_generated_surface_owner",
       "current_surface_refs": [
         "opl-generated-default-caller:opl-meta-agent/sidecar",
@@ -598,16 +627,18 @@
       ],
       "retained_domain_authority": [
         "agent_building_semantics",
-        "prompt_pack_quality_judgment",
+        "skeleton_contracts_prompt_skill_quality_gate_generation_strategy",
+        "baseline_review_semantics",
+        "optimizer_review_semantics",
         "work_order_materialization_semantics",
         "target_domain_truth_boundary",
         "typed_blocker_materialization",
-        "owner_receipt_materialization"
+        "owner_receipt_ref_materialization"
       ],
-      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default wrapper surface.",
-      "cannot_absorb_reason": "OPL cannot sign OMA domain owner receipts, typed blockers, agent-building semantics, or target-domain truth-boundary evidence.",
+      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default caller surface.",
+      "cannot_absorb_reason": "OPL cannot author OMA agent-building semantics, typed blockers, owner receipt refs, or target-domain truth-boundary evidence.",
       "semantic_equivalence_status": "cleared_by_boundary",
-      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned deletion evidence refs.",
+      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned boundary evidence refs.",
       "bridge_exit_gate": {
         "owner_receipt_refs": [],
         "typed_blocker_refs": [
@@ -645,7 +676,7 @@
       "active_callers": [
         "OPL hosted workbench default caller"
       ],
-      "active_caller_status": "domain_owned_delete_evidence_refs_materialized",
+      "active_caller_status": "boundary_evidence_refs_materialized",
       "role_scope": "refs_only_default_caller_deletion_evidence_not_generated_surface_owner",
       "current_surface_refs": [
         "opl-generated-default-caller:opl-meta-agent/workbench",
@@ -657,16 +688,18 @@
       ],
       "retained_domain_authority": [
         "agent_building_semantics",
-        "prompt_pack_quality_judgment",
+        "skeleton_contracts_prompt_skill_quality_gate_generation_strategy",
+        "baseline_review_semantics",
+        "optimizer_review_semantics",
         "work_order_materialization_semantics",
         "target_domain_truth_boundary",
         "typed_blocker_materialization",
-        "owner_receipt_materialization"
+        "owner_receipt_ref_materialization"
       ],
-      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default wrapper surface.",
-      "cannot_absorb_reason": "OPL cannot sign OMA domain owner receipts, typed blockers, agent-building semantics, or target-domain truth-boundary evidence.",
+      "retention_reason": "The domain repo materializes typed blocker and no-forbidden-write refs while OPL owns the generated/default caller surface.",
+      "cannot_absorb_reason": "OPL cannot author OMA agent-building semantics, typed blockers, owner receipt refs, or target-domain truth-boundary evidence.",
       "semantic_equivalence_status": "cleared_by_boundary",
-      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned deletion evidence refs.",
+      "semantic_equivalence_reason": "Default caller routes to OPL generated or hosted surfaces; this module only supplies domain-owned boundary evidence refs.",
       "bridge_exit_gate": {
         "owner_receipt_refs": [],
         "typed_blocker_refs": [

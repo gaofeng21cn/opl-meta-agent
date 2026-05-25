@@ -3,18 +3,25 @@
   "schema_version": 1,
   "domain_id": "opl-meta-agent",
   "owner": "opl-meta-agent",
-  "role": "domain_owned_refs_for_opl_generated_default_caller_deletion_worklists",
-  "evidence_status": "domain_owned_typed_blockers_and_no_forbidden_write_refs_materialized",
+  "role": "domain_boundary_evidence_for_opl_generated_default_caller_consumption",
+  "evidence_status": "source_shape_landed_with_boundary_refs_only_tail",
+  "source_shape": "landed",
+  "standard_agent_source_shape": "landed",
+  "functional_structure_gap_count": 0,
+  "remaining_tail_kind": "opl_generated_default_caller_consumption_tail",
   "physical_delete_authorized": false,
   "generated_surface_owner": "one-person-lab",
   "domain_repo_can_own_generated_surface": false,
+  "domain_repo_retained_generic_surface_count": 0,
   "retained_domain_authority": [
     "agent_building_semantics",
-    "prompt_pack_quality_judgment",
+    "skeleton_contracts_prompt_skill_quality_gate_generation_strategy",
+    "baseline_review_semantics",
+    "optimizer_review_semantics",
     "work_order_materialization_semantics",
     "target_domain_truth_boundary",
     "typed_blocker_materialization",
-    "owner_receipt_materialization"
+    "owner_receipt_ref_materialization"
   ],
   "opl_owned_surfaces": [
     "generated_default_cli_wrapper",
@@ -36,7 +43,10 @@
     "can_authorize_domain_repo_physical_delete": false,
     "can_claim_domain_ready": false,
     "can_claim_production_ready": false,
-    "can_claim_generated_surface_ownership": false
+    "can_claim_generated_surface_ownership": false,
+    "can_restore_repo_local_default_wrapper": false,
+    "can_restore_repo_owned_sidecar_or_workbench": false,
+    "can_create_compatibility_facade": false
   },
   "surface_evidence": {
     "cli": {

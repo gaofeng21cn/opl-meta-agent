@@ -123,7 +123,7 @@
       "surface_id": "cli",
       "owner": "one-person-lab",
       "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available_with_domain_owned_delete_evidence_refs",
+      "status": "descriptor_source_available_with_domain_boundary_evidence_refs",
       "source_contract": "contracts/pack_compiler_input.json",
       "current_paths": [],
       "current_surface_refs": [
@@ -138,7 +138,7 @@
       "surface_id": "mcp",
       "owner": "one-person-lab",
       "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available_with_domain_owned_delete_evidence_refs",
+      "status": "descriptor_source_available_with_domain_boundary_evidence_refs",
       "source_contract": "contracts/pack_compiler_input.json",
       "current_paths": [],
       "current_surface_refs": [
@@ -153,7 +153,7 @@
       "surface_id": "skill",
       "owner": "one-person-lab",
       "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available_with_domain_owned_delete_evidence_refs",
+      "status": "descriptor_source_available_with_domain_boundary_evidence_refs",
       "source_contract": "contracts/pack_compiler_input.json",
       "current_paths": [],
       "current_surface_refs": [
@@ -168,7 +168,7 @@
       "surface_id": "product_entry",
       "owner": "one-person-lab",
       "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available_with_domain_owned_delete_evidence_refs",
+      "status": "descriptor_source_available_with_domain_boundary_evidence_refs",
       "source_contract": "contracts/opl_domain_manifest_registration.json",
       "current_paths": [],
       "current_surface_refs": [
@@ -183,7 +183,7 @@
       "surface_id": "product_status",
       "owner": "one-person-lab",
       "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available_with_domain_owned_delete_evidence_refs",
+      "status": "descriptor_source_available_with_domain_boundary_evidence_refs",
       "source_contract": "contracts/generated_surface_handoff.json",
       "current_paths": [],
       "current_surface_refs": [
@@ -198,7 +198,7 @@
       "surface_id": "product_session",
       "owner": "one-person-lab",
       "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available_with_domain_owned_delete_evidence_refs",
+      "status": "descriptor_source_available_with_domain_boundary_evidence_refs",
       "source_contract": "contracts/stage_control_plane.json",
       "current_paths": [],
       "current_surface_refs": [
@@ -213,7 +213,7 @@
       "surface_id": "sidecar",
       "owner": "one-person-lab",
       "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available_with_domain_owned_delete_evidence_refs",
+      "status": "descriptor_source_available_with_domain_boundary_evidence_refs",
       "source_contract": "contracts/pack_compiler_input.json",
       "current_paths": [],
       "current_surface_refs": [
@@ -228,7 +228,7 @@
       "surface_id": "workbench",
       "owner": "one-person-lab",
       "target_role": "opl_hosted_surface",
-      "status": "descriptor_source_available_with_domain_owned_delete_evidence_refs",
+      "status": "descriptor_source_available_with_domain_boundary_evidence_refs",
       "source_contract": "contracts/app_workbench_projection.json",
       "current_paths": [],
       "current_surface_refs": [

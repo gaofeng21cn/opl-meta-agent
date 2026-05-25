@@ -967,6 +967,26 @@ test('top-level OMA commands and materializers stay target-agent generic', () =>
 
 test('registration, projection, and evidence contracts are represented in functional audit', () => {
   const audit = readJson('contracts/functional_privatization_audit.json');
+  assert.equal(audit.source_shape, 'landed');
+  assert.equal(audit.standard_agent_source_shape, 'landed');
+  assert.equal(audit.functional_structure_gap_count, 0);
+  assert.equal(audit.domain_repo_retained_generic_surface_count, 0);
+  assert.ok(asStrings(audit.remaining_tail_kinds).includes('opl_generated_default_caller_consumption_tail'));
+  assert.ok(asStrings(audit.remaining_tail_kinds).includes('domain_refs_only_adapter_thinning'));
+  assert.ok(asStrings(audit.remaining_tail_kinds).includes('script_to_pack_hygiene'));
+  assert.ok(asStrings(audit.forbidden_active_surface_claims).includes('repo_owned_generic_runtime'));
+  assert.ok(asStrings(audit.forbidden_active_surface_claims).includes('repo_owned_generated_shell'));
+  assert.ok(asStrings(audit.forbidden_active_surface_claims).includes('repo_owned_workbench'));
+  assert.ok(asStrings(audit.forbidden_active_surface_claims).includes('repo_owned_sidecar'));
+  assert.ok(asStrings(audit.forbidden_active_surface_claims).includes('repo_owned_compatibility_surface'));
+  assert.ok(asStrings(audit.domain_allowed_roles).includes('agent_building_semantics'));
+  assert.ok(asStrings(audit.domain_allowed_roles).includes('candidate_agent_skeleton_strategy'));
+  assert.ok(asStrings(audit.domain_allowed_roles).includes('contracts_prompt_skill_quality_gate_generation_strategy'));
+  assert.ok(asStrings(audit.domain_allowed_roles).includes('baseline_review_semantics'));
+  assert.ok(asStrings(audit.domain_allowed_roles).includes('optimizer_review_semantics'));
+  assert.ok(asStrings(audit.domain_allowed_roles).includes('developer_work_order_materialization'));
+  assert.ok(asStrings(audit.domain_allowed_roles).includes('owner_receipt_refs'));
+  assert.equal(asStrings(audit.domain_allowed_roles).includes('domain_entry_and_tests'), false);
   const expectedModules = [
     {
       moduleId: 'opl_domain_manifest_registration',
@@ -1391,18 +1411,34 @@ test('OPL default-caller deletion evidence is closed by domain-owned refs withou
 
   assert.equal(evidence.surface_kind, 'opl_meta_agent_default_caller_deletion_evidence');
   assert.equal(evidence.owner, 'opl-meta-agent');
+  assert.equal(evidence.role, 'domain_boundary_evidence_for_opl_generated_default_caller_consumption');
+  assert.equal(evidence.evidence_status, 'source_shape_landed_with_boundary_refs_only_tail');
+  assert.equal(evidence.source_shape, 'landed');
+  assert.equal(evidence.standard_agent_source_shape, 'landed');
+  assert.equal(evidence.functional_structure_gap_count, 0);
+  assert.equal(evidence.remaining_tail_kind, 'opl_generated_default_caller_consumption_tail');
   assert.equal(evidence.generated_surface_owner, 'one-person-lab');
   assert.equal(evidence.domain_repo_can_own_generated_surface, false);
+  assert.equal(evidence.domain_repo_retained_generic_surface_count, 0);
   assert.equal(evidence.physical_delete_authorized, false);
   assert.equal(evidence.authority_boundary.refs_only, true);
   assert.equal(evidence.authority_boundary.can_write_domain_truth, false);
   assert.equal(evidence.authority_boundary.can_write_memory_body, false);
   assert.equal(evidence.authority_boundary.can_authorize_quality_or_export, false);
   assert.equal(evidence.authority_boundary.can_authorize_domain_repo_physical_delete, false);
+  assert.equal(evidence.authority_boundary.can_restore_repo_local_default_wrapper, false);
+  assert.equal(evidence.authority_boundary.can_restore_repo_owned_sidecar_or_workbench, false);
+  assert.equal(evidence.authority_boundary.can_create_compatibility_facade, false);
   assert.ok(asStrings(evidence.retained_domain_authority).includes('agent_building_semantics'));
-  assert.ok(asStrings(evidence.retained_domain_authority).includes('prompt_pack_quality_judgment'));
+  assert.ok(
+    asStrings(evidence.retained_domain_authority)
+      .includes('skeleton_contracts_prompt_skill_quality_gate_generation_strategy'),
+  );
+  assert.ok(asStrings(evidence.retained_domain_authority).includes('baseline_review_semantics'));
+  assert.ok(asStrings(evidence.retained_domain_authority).includes('optimizer_review_semantics'));
   assert.ok(asStrings(evidence.retained_domain_authority).includes('work_order_materialization_semantics'));
   assert.ok(asStrings(evidence.retained_domain_authority).includes('target_domain_truth_boundary'));
+  assert.ok(asStrings(evidence.retained_domain_authority).includes('owner_receipt_ref_materialization'));
   assert.ok(asStrings(evidence.opl_owned_surfaces).includes('runtime_queue_workbench_projection'));
   assert.equal(
     generatedSurfaceHandoff.default_caller_deletion_evidence_ref,
