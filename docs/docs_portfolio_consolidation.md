@@ -91,3 +91,44 @@ Next tranche write scope:
 
 - Start App docs only when release / GUI dirty lanes are safe or explicitly handed to this governance goal.
 - If App remains unsafe, continue only with newly reopened exact-inventory tails in OPL/MAS/MAG/RCA/OMA caused by later edits.
+
+### 2026-05-27 agent pack README lifecycle tranche
+
+本轮治理 `agent/*/README.md` 这组 exact README/docs scope 外的长期 support README。目标是补齐每个长期文档的 owner / purpose / state / machine boundary，并保持 README 作为人读索引，不把它们写成 machine-required pack path。本轮不改 active truth，不新增 readiness claim，不关闭 OPL series 全局 `/goal`。
+
+Fresh live truth inputs:
+
+- OMA `AGENTS.md`, `TASTE.md`, `docs/README.md`, `docs/status.md`, `docs/architecture.md`, `docs/docs_portfolio_consolidation.md`, and `docs/active/opl-meta-agent-ideal-state-gap-plan.md`.
+- Agent pack support READMEs: `agent/knowledge/README.md`, `agent/prompts/README.md`, `agent/quality_gates/README.md`, `agent/skills/README.md`, and `agent/stages/README.md`.
+- Machine refs: `contracts/pack_compiler_input.json`, `contracts/stage_control_plane.json`, `tests/contracts.test.ts`, and current tracked `agent/**/*.md` files.
+
+Fresh semantic result:
+
+- The five support README file lists already matched tracked non-README pack files under their directories.
+- `contracts/pack_compiler_input.json` `required_domain_pack_paths` already matched every tracked non-README `agent/**/*.md` file and excluded all README files.
+- This tranche therefore only adds lifecycle metadata and preserves the existing support-index role.
+
+Reviewed documents / sections:
+
+| Repo | Reviewed docs / sections | Edited docs this tranche |
+| --- | --- | --- |
+| `opl-meta-agent` | `agent/knowledge/README.md`, `agent/prompts/README.md`, `agent/quality_gates/README.md`, `agent/skills/README.md`, `agent/stages/README.md`, plus machine refs listed above. | The five agent pack README files and `docs/docs_portfolio_consolidation.md` |
+
+Archived / tombstoned / deleted docs:
+
+- none. These README files remain legitimate support indexes for domain pack maintainers.
+
+Unreviewed docs:
+
+- `opl-meta-agent`: none for current repo-root `README*`, `docs/**/*.md`, or tracked `agent/*/README.md` support indexes once this tranche is counted.
+- Agent pack non-README semantic files were used as machine truth refs for file-list and boundary checks; they remain pack body files, not separate docs-governance targets in this tranche.
+
+Remaining stale / retire candidates:
+
+- OMA doc-path retirement remains empty for the currently reviewed root README/docs and agent-pack README surface.
+- Future stale pollution remains the evidence/hygiene class already listed above: App live render/runtime drilldown evidence, repeat long-soak, real target patch-loop owner receipts or typed blockers, standard target-agent handoff convergence, and script-to-pack / OPL primitive hygiene.
+
+Next tranche write scope:
+
+- Start App body docs only when release / GUI dirty lanes are safe or explicitly handed to this governance goal.
+- If App remains unsafe, continue only with newly reopened exact-inventory tails or tracked support README lifecycle gaps in OPL/MAS/MAG/RCA/OMA caused by later edits.
