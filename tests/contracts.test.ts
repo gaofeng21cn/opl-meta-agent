@@ -659,6 +659,18 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   const baselineAction = actions.find((action) => action.action_id === 'build-agent-baseline');
   assert.ok(baselineAction);
   assert.ok(baselineAction.workspace_locator_fields.includes('ai_reviewer_evaluation'));
+  assert.ok(baselineAction.workspace_locator_fields.includes('domain_id'));
+  assert.ok(baselineAction.workspace_locator_fields.includes('domain_label'));
+  assert.ok(baselineAction.workspace_locator_fields.includes('delivery_domain'));
+  assert.ok(baselineAction.workspace_locator_fields.includes('target_brief'));
+  assert.match(baselineAction.summary, /natural-language/i);
+  assert.match(baselineAction.source_command.command, /--domain-id <domain_id>/);
+  assert.match(baselineAction.source_command.command, /--target-brief <target_brief>/);
+  assert.equal(
+    actionCatalog.actions.find((action: JsonObject) => action.action_id === 'build-agent-baseline')
+      ?.supported_surfaces.skill.intent_mapping,
+    'Codex extracts domain_id, domain_label, delivery_domain, target_brief, output_dir, opl_bin, and ai_reviewer_evaluation from the user natural-language request before invoking this action.',
+  );
   const mechanismAction = actions.find((action) => action.action_id === 'generate-mechanism-patch-proposal');
   assert.ok(mechanismAction);
   assert.equal(

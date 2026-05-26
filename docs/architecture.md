@@ -93,15 +93,15 @@ CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framewo
 
 ## Self-Learning Loop
 
-当前 repo-local smoke 闭环按以下顺序运行：
+当前 `build-agent-baseline` 闭环按以下顺序运行；入口可以来自 Codex Skill 的自然语言请求，也可以来自参数化 CLI：
 
-1. `agent-skeleton-build`：调用 OPL `agents scaffold` 生成 `sample-brief-agent`。
+1. `agent-skeleton-build`：Codex 从用户自然语言归一 `domain_id`、`domain_label`、`delivery_domain` 和 `target_brief` 后，调用 OPL `agents scaffold` 生成用户指定的目标 agent package；未传 `--domain-id` 时保留 `sample-brief-agent` 兼容 smoke。
 2. `eval-suite-build`：写入 `agent-lab-suite.json`，只包含 refs、recovery probes、scorecard refs 和 promotion gate。
 3. `baseline-run`：调用 OPL `agent-lab run --suite`，由 OPL Agent Lab 返回 suite result。
 4. `baseline-delivery`：消费结构化 AI reviewer evaluation，写入 `baseline-delivery-receipt.json`，只声明 baseline package refs、review provenance 和 acceptance gates；缺 reviewer evaluation、空 critique/suggestions 或 source refs 只有 suite/scaffold refs 时 fail closed。
 5. `online-learning`：写入 `online-learning-candidate.json` 与 `mechanism-patch-proposal.json`，候选保持 gated，不自动推广默认 agent、不训练或部署模型权重。
 
-自举闭环还会调用 `opl agents interfaces --repo-dir <sample-agent>`，证明由 `OPL Meta Agent` 生成的目标智能体也能被 OPL 统一投影出 CLI / MCP / Skill / product-entry 接口包。
+自举闭环还会调用 `opl agents interfaces --repo-dir <candidate-agent>`，证明由 `OPL Meta Agent` 生成的目标智能体也能被 OPL 统一投影出 CLI / MCP / Skill / product-entry 接口包。
 
 ## External Agent Testing Takeover
 

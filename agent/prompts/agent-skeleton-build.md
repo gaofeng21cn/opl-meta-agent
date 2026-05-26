@@ -8,11 +8,12 @@
 
 - `stage_control_plane_ref`、`action_catalog_ref`、`memory_descriptor_ref`。
 - 目标 agent 的 descriptor、prompt、skill、quality gate、artifact locator 策略。
-- `build-agent-baseline` action 的 workspace locators：`output_dir` 与 `opl_bin`。
+- `build-agent-baseline` action 的 workspace locators：`output_dir`、`opl_bin`、`ai_reviewer_evaluation`。
+- Codex 从用户自然语言归一出的 `domain_id`、`domain_label`、`delivery_domain` 和 `target_brief`。
 
 ## 步骤
 
-1. 在指定 output root 创建候选 agent package，不污染 `opl-meta-agent` 源码 checkout。
+1. 在指定 output root 创建以 `domain_id` 命名的候选 agent package，不污染 `opl-meta-agent` 源码 checkout。
 2. 生成标准目录：`agent/`、`contracts/`、`runtime/`、`docs/`，并确保空目录有明确作用说明。
 3. 写入 domain descriptor、stage control plane、action catalog、memory descriptor、artifact locator 和 owner receipt skeleton。
 4. 写入 prompts、skills、quality gates、knowledge policy，要求每份文档可执行、可验证、无占位标记。

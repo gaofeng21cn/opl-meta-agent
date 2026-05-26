@@ -40,43 +40,75 @@ type BootstrapArgs = {
   outputDir: string;
   oplBin: string;
   aiReviewerEvaluationPath: string;
+  targetAgent: TargetAgent;
+  sampleMode: boolean;
 };
+
+function nonEmptyValue(flag: string, value: string | undefined): string {
+  if (!value) {
+    throw new Error(`Missing value for ${flag}.`);
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    throw new Error(`Value for ${flag} must be non-empty.`);
+  }
+  return trimmed;
+}
 
 function parseArgs(argv: string[]): BootstrapArgs {
   const parsed: {
     outputDir: string | null;
     oplBin: string;
     aiReviewerEvaluationPath: string | null;
+    domainId: string | null;
+    domainLabel: string | null;
+    deliveryDomain: string | null;
+    targetBrief: string | null;
   } = {
     outputDir: null,
     oplBin: resolveOplBin(),
     aiReviewerEvaluationPath: null,
+    domainId: null,
+    domainLabel: null,
+    deliveryDomain: null,
+    targetBrief: null,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
     const token = argv[index];
     const value = argv[index + 1];
     if (token === '--output-dir') {
-      if (!value) {
-        throw new Error('Missing value for --output-dir.');
-      }
-      parsed.outputDir = path.resolve(value);
+      parsed.outputDir = path.resolve(nonEmptyValue(token, value));
       index += 1;
       continue;
     }
     if (token === '--opl-bin') {
-      if (!value) {
-        throw new Error('Missing value for --opl-bin.');
-      }
-      parsed.oplBin = resolveOplBin(value);
+      parsed.oplBin = resolveOplBin(nonEmptyValue(token, value));
       index += 1;
       continue;
     }
     if (token === '--ai-reviewer-evaluation') {
-      if (!value) {
-        throw new Error('Missing value for --ai-reviewer-evaluation.');
-      }
-      parsed.aiReviewerEvaluationPath = path.resolve(value);
+      parsed.aiReviewerEvaluationPath = path.resolve(nonEmptyValue(token, value));
+      index += 1;
+      continue;
+    }
+    if (token === '--domain-id') {
+      parsed.domainId = nonEmptyValue(token, value);
+      index += 1;
+      continue;
+    }
+    if (token === '--domain-label') {
+      parsed.domainLabel = nonEmptyValue(token, value);
+      index += 1;
+      continue;
+    }
+    if (token === '--delivery-domain') {
+      parsed.deliveryDomain = nonEmptyValue(token, value);
+      index += 1;
+      continue;
+    }
+    if (token === '--target-brief') {
+      parsed.targetBrief = nonEmptyValue(token, value);
       index += 1;
       continue;
     }
@@ -89,51 +121,78 @@ function parseArgs(argv: string[]): BootstrapArgs {
     );
   }
   parsed.outputDir ??= fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-bootstrap-'));
+  const sampleMode = parsed.domainId === null;
+  let targetAgent: TargetAgent;
+  if (sampleMode) {
+    targetAgent = {
+      domain_id: 'sample-brief-agent',
+      domain_label: 'Sample Brief Agent',
+      delivery_domain: 'knowledge_briefing',
+      target_brief: 'Create a source-grounded knowledge brief from workspace refs.',
+    };
+  } else {
+    const domainId = parsed.domainId;
+    if (!domainId) {
+      throw new Error('Missing required --domain-id <domain_id>.');
+    }
+    const domainLabel = parsed.domainLabel ?? domainId;
+    targetAgent = {
+      domain_id: domainId,
+      domain_label: domainLabel,
+      delivery_domain: parsed.deliveryDomain ?? 'knowledge_delivery',
+      target_brief: parsed.targetBrief
+        ?? `Create an owner-gated ${domainLabel} delivery from declared workspace refs.`,
+    };
+  }
   return {
     outputDir: parsed.outputDir,
     oplBin: parsed.oplBin,
     aiReviewerEvaluationPath: parsed.aiReviewerEvaluationPath,
+    targetAgent,
+    sampleMode,
   };
 }
 
 function buildAgentLabSuite({
+  targetAgent,
   targetAgentDir,
   aiReviewerEvaluation,
   aiReviewerEvaluationRef,
 }: {
+  targetAgent: TargetAgent;
   targetAgentDir: string;
   aiReviewerEvaluation: AiReviewerEvaluation;
   aiReviewerEvaluationRef: string;
 }): JsonObject {
   return buildExternalSuite({
-    suiteId: 'opl-meta-agent-self-bootstrap-suite',
-    taskId: 'agent-lab-task:opl-meta-agent/sample-brief-agent-baseline',
+    suiteId: targetAgent.domain_id === 'sample-brief-agent'
+      ? 'opl-meta-agent-self-bootstrap-suite'
+      : `opl-meta-agent-baseline-suite:${targetAgent.domain_id}`,
+    taskId: `agent-lab-task:opl-meta-agent/${targetAgent.domain_id}-baseline`,
     taskFamily: 'agent_building_baseline',
     targetAgent: {
-      domain_id: 'sample-brief-agent',
-      domain_label: 'Sample Brief Agent',
-      delivery_domain: 'knowledge_briefing',
+      ...targetAgent,
       descriptor_ref: path.join(targetAgentDir, 'contracts', 'domain_descriptor.json'),
     },
     targetAgentDir,
-    instructionsRef: 'instructions:opl-meta-agent/sample-brief-agent',
-    agentEntryRef: 'domain-agent-entry:sample-brief-agent',
-    stageRefs: ['stage:sample-brief-agent/intake', 'stage:sample-brief-agent/draft'],
+    instructionsRef: `instructions:opl-meta-agent/${targetAgent.domain_id}/baseline`,
+    agentEntryRef: `domain-agent-entry:${targetAgent.domain_id}`,
+    stageRefs: [`stage:${targetAgent.domain_id}/intake`, `stage:${targetAgent.domain_id}/draft`],
     oracleRefs: ['oracle:opl-meta-agent/baseline-contract-valid'],
     scorerRefs: ['scorer:opl-meta-agent/baseline-acceptance'],
-    trajectoryRef: 'trajectory:opl-meta-agent/sample-brief-agent-baseline',
-    runRef: 'run:opl-meta-agent/sample-brief-agent-baseline',
-    artifactRefs: ['artifact-ref:sample-brief-agent/package'],
-    receiptRefs: ['owner-receipt:opl-meta-agent/baseline-delivery'],
+    trajectoryRef: `trajectory:opl-meta-agent/${targetAgent.domain_id}-baseline`,
+    runRef: `run:opl-meta-agent/${targetAgent.domain_id}-baseline`,
+    artifactRefs: [`artifact-ref:${targetAgent.domain_id}/package`],
+    receiptRefs: [`owner-receipt:opl-meta-agent/${targetAgent.domain_id}/baseline-delivery`],
     scorecardRef: 'quality-scorecard:opl-meta-agent/baseline-acceptance',
     metricRefs: ['metric-ref:descriptor-valid', 'metric-ref:agent-lab-suite-valid'],
-    evidenceRefs: ['evidence-ref:sample-brief-agent/scaffold-validation'],
+    evidenceRefs: [`evidence-ref:${targetAgent.domain_id}/scaffold-validation`],
     reviewRefs: ['review-ref:opl-meta-agent/baseline-review'],
     qualityGateRefs: ['quality-gate:opl-meta-agent/baseline-owner'],
-    improvementCandidateRef: 'improvement-candidate:opl-meta-agent/rubric-gap-tightening',
+    improvementCandidateRef: `improvement-candidate:opl-meta-agent/${targetAgent.domain_id}/rubric-gap-tightening`,
     improvementCandidateKind: 'rubric_gap',
     improvementTargetRef: 'quality-gate:opl-meta-agent/baseline-owner',
-    promotionGateRef: 'promotion-gate:opl-meta-agent/sample-brief-agent',
+    promotionGateRef: `promotion-gate:opl-meta-agent/${targetAgent.domain_id}`,
     regressionSuiteRefs: ['regression-suite:opl-meta-agent/self-bootstrap'],
     aiReviewerEvaluation,
     aiReviewerEvaluationRef,
@@ -158,6 +217,7 @@ function buildBaselineReceipt(
       extraAcceptanceGates: {
         direct_and_hosted_path_declared: true,
         operator_runbook_present: true,
+        target_agent_brief_declared: Boolean(targetAgent.target_brief),
         ...aiReviewerAcceptanceGates(),
       },
     }),
@@ -172,14 +232,15 @@ function buildBaselineReceipt(
 }
 
 function buildLearningCandidate(suiteResult: SuiteResult, baselineReceipt: OwnerReceipt): LearningCandidate {
+  const targetAgent = baselineReceipt.target_agent as TargetAgent;
   return buildGatedLearningCandidate({
     suiteResult,
     receipt: baselineReceipt,
-    targetAgent: { domain_id: 'sample-brief-agent' },
+    targetAgent,
     candidateKind: 'rubric_gap',
     targetRef: 'quality-gate:opl-meta-agent/baseline-owner',
-    proposedChangeRefs: ['candidate-ref:sample-brief-agent/add-source-coverage-rubric'],
-    promotionGateRef: 'promotion-gate:opl-meta-agent/sample-brief-agent',
+    proposedChangeRefs: [`candidate-ref:${targetAgent.domain_id}/add-source-coverage-rubric`],
+    promotionGateRef: `promotion-gate:opl-meta-agent/${targetAgent.domain_id}`,
   });
 }
 
@@ -194,7 +255,7 @@ function buildBaselineMechanismPatchProposal(
     suiteResult,
     receipt: baselineReceipt,
     learningCandidate,
-    mechanismRef: 'mechanism:opl-meta-agent/sample-brief-agent/self-learning-loop',
+    mechanismRef: `mechanism:opl-meta-agent/${baselineReceipt.target_agent.domain_id}/self-learning-loop`,
     editableSurfaces: [
       'prompt_policy_ref',
       'skill_policy_ref',
@@ -202,7 +263,7 @@ function buildBaselineMechanismPatchProposal(
       'quality_gate_policy_ref',
       'agent_lab_suite_policy_ref',
     ],
-    evidenceDeltaRef: 'evidence-delta:opl-meta-agent/sample-brief-agent/baseline',
+    evidenceDeltaRef: `evidence-delta:opl-meta-agent/${baselineReceipt.target_agent.domain_id}/baseline`,
     observeRefs: [aiReviewerEvaluationRef],
     diagnoseRefs: aiReviewerEvaluation.source_refs,
     editRefs: aiReviewerEvaluation.suggestions.map((suggestion) => `ai-reviewer-suggestion:${suggestion}`),
@@ -262,16 +323,17 @@ function buildRealTargetAgentSuite({
 }
 
 function main() {
-  const { outputDir, oplBin, aiReviewerEvaluationPath } = parseArgs(process.argv.slice(2));
+  const {
+    outputDir,
+    oplBin,
+    aiReviewerEvaluationPath,
+    targetAgent,
+    sampleMode,
+  } = parseArgs(process.argv.slice(2));
   fs.mkdirSync(outputDir, { recursive: true });
   const domainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
   const aiReviewerEvaluation = loadAiReviewerEvaluation(aiReviewerEvaluationPath);
 
-  const targetAgent: TargetAgent = {
-    domain_id: 'sample-brief-agent',
-    domain_label: 'Sample Brief Agent',
-    delivery_domain: 'knowledge_briefing',
-  };
   const targetAgentLabel = targetAgent.domain_label ?? targetAgent.domain_id;
   const targetAgentDir = path.join(outputDir, targetAgent.domain_id);
   const suitePath = path.join(outputDir, 'agent-lab-suite.json');
@@ -293,8 +355,19 @@ function main() {
     '--force',
     '--json',
   ]);
-  writeSampleAgentDomainPack(targetAgentDir);
+  if (sampleMode) {
+    writeSampleAgentDomainPack(targetAgentDir);
+  } else {
+    writeRealTargetAgentDomainPack(targetAgentDir, targetAgent);
+  }
   writeMinimalAgentDomainPack(targetAgentDir, targetAgent);
+  const descriptorPath = path.join(targetAgentDir, 'contracts', 'domain_descriptor.json');
+  const descriptor = JSON.parse(fs.readFileSync(descriptorPath, 'utf8'));
+  writeJson(descriptorPath, {
+    ...descriptor,
+    delivery_domain: targetAgent.delivery_domain,
+    target_brief: targetAgent.target_brief,
+  });
   const targetDomainPackSummary = readDomainPackSummary(targetAgentDir, {
     domainId: targetAgent.domain_id,
   });
@@ -314,6 +387,7 @@ function main() {
   ]);
 
   const suite = buildAgentLabSuite({
+    targetAgent,
     targetAgentDir,
     aiReviewerEvaluation,
     aiReviewerEvaluationRef: aiReviewerEvaluationPath,
@@ -343,88 +417,102 @@ function main() {
   writeJson(learningPath, learningCandidate);
   writeJson(mechanismPath, mechanismPatchProposal);
 
-  const realTargetAgent: TargetAgent = {
-    domain_id: 'real-target-brief-agent',
-    domain_label: 'Real Target Brief Agent',
-    delivery_domain: 'knowledge_briefing',
-  };
-  const realTargetAgentDir = path.join(outputDir, realTargetAgent.domain_id);
-  runOpl(oplBin, [
-    'agents',
-    'scaffold',
-    '--target-dir',
-    realTargetAgentDir,
-    '--domain-id',
-    realTargetAgent.domain_id,
-    '--domain-label',
-    realTargetAgent.domain_label ?? realTargetAgent.domain_id,
-    '--force',
-    '--json',
-  ]);
-  writeRealTargetAgentDomainPack(realTargetAgentDir, realTargetAgent);
-  writeMinimalAgentDomainPack(realTargetAgentDir, realTargetAgent);
-  const realTargetScaffoldValidation = runOpl(oplBin, [
-    'agents',
-    'scaffold',
-    '--validate',
-    realTargetAgentDir,
-    '--json',
-  ]);
-  const realTargetInterfaces = runOpl(oplBin, [
-    'agents',
-    'interfaces',
-    '--repo-dir',
-    realTargetAgentDir,
-    '--json',
-  ]);
-  const realTargetSuitePath = path.join(outputDir, 'real-target-agent-lab-suite.json');
-  const realTargetSuite = buildRealTargetAgentSuite({
-    realTargetAgent,
-    realTargetAgentDir,
-    aiReviewerEvaluation,
-    aiReviewerEvaluationRef: aiReviewerEvaluationPath,
-  });
-  writeJson(realTargetSuitePath, realTargetSuite);
-  const realTargetAgentLabRun = runOpl(oplBin, ['agent-lab', 'run', '--suite', realTargetSuitePath, '--json']);
-  const realTargetSuiteResult = realTargetAgentLabRun.agent_lab_run.suite_result as SuiteResult;
-  const realTargetReceipt = buildOwnerReceipt({
-    receiptClass: 'real_target_baseline_delivery_receipt',
-    status: 'real_target_baseline_delivered',
-    targetAgent: {
-      ...realTargetAgent,
-      repo_dir: realTargetAgentDir,
-      descriptor_ref: path.join(realTargetAgentDir, 'contracts', 'domain_descriptor.json'),
-    },
-    suiteResult: realTargetSuiteResult,
-    extraAcceptanceGates: {
-      real_target_agent_delivery: true,
-      sample_smoke_counted_as_real_target_delivery: false,
-      ...aiReviewerAcceptanceGates(),
-    },
-  });
-  const realTargetDeliveryReceipt = buildRealTargetDeliveryReceipt({
-    targetAgent: {
-      ...realTargetAgent,
-      repo_dir: realTargetAgentDir,
-      descriptor_ref: path.join(realTargetAgentDir, 'contracts', 'domain_descriptor.json'),
-    },
-    suiteResult: realTargetSuiteResult,
-    baselineDeliveryReceipt: realTargetReceipt,
-    candidateAgentPackageRef: `candidate-agent-package:${realTargetAgent.domain_id}`,
-    agentLabSuiteRef: realTargetSuitePath,
-    promotionGateRefs: [`promotion-gate:opl-meta-agent/${realTargetAgent.domain_id}`],
-    noForbiddenWriteProofRefs: [
-      `no-forbidden-write:opl-meta-agent/${realTargetAgent.domain_id}/real_target_delivery`,
-    ],
-    sampleTargetAgentRef: `domain-agent:${targetAgent.domain_id}`,
-    sampleReceiptRef: baselineReceipt.receipt_id,
-  });
-  const scaleoutEvidenceLedger = buildScaleoutEvidenceLedger({
-    deliveryReceipts: [realTargetDeliveryReceipt],
-    sampleReceiptRefs: [baselineReceipt.receipt_id],
-  });
-  writeJson(realTargetReceiptPath, realTargetDeliveryReceipt);
-  writeJson(scaleoutLedgerPath, scaleoutEvidenceLedger);
+  let realTargetDelivery: JsonObject | null = null;
+  if (sampleMode) {
+    const realTargetAgent: TargetAgent = {
+      domain_id: 'real-target-brief-agent',
+      domain_label: 'Real Target Brief Agent',
+      delivery_domain: 'knowledge_briefing',
+    };
+    const realTargetAgentDir = path.join(outputDir, realTargetAgent.domain_id);
+    runOpl(oplBin, [
+      'agents',
+      'scaffold',
+      '--target-dir',
+      realTargetAgentDir,
+      '--domain-id',
+      realTargetAgent.domain_id,
+      '--domain-label',
+      realTargetAgent.domain_label ?? realTargetAgent.domain_id,
+      '--force',
+      '--json',
+    ]);
+    writeRealTargetAgentDomainPack(realTargetAgentDir, realTargetAgent);
+    writeMinimalAgentDomainPack(realTargetAgentDir, realTargetAgent);
+    const realTargetScaffoldValidation = runOpl(oplBin, [
+      'agents',
+      'scaffold',
+      '--validate',
+      realTargetAgentDir,
+      '--json',
+    ]);
+    const realTargetInterfaces = runOpl(oplBin, [
+      'agents',
+      'interfaces',
+      '--repo-dir',
+      realTargetAgentDir,
+      '--json',
+    ]);
+    const realTargetSuitePath = path.join(outputDir, 'real-target-agent-lab-suite.json');
+    const realTargetSuite = buildRealTargetAgentSuite({
+      realTargetAgent,
+      realTargetAgentDir,
+      aiReviewerEvaluation,
+      aiReviewerEvaluationRef: aiReviewerEvaluationPath,
+    });
+    writeJson(realTargetSuitePath, realTargetSuite);
+    const realTargetAgentLabRun = runOpl(oplBin, ['agent-lab', 'run', '--suite', realTargetSuitePath, '--json']);
+    const realTargetSuiteResult = realTargetAgentLabRun.agent_lab_run.suite_result as SuiteResult;
+    const realTargetReceipt = buildOwnerReceipt({
+      receiptClass: 'real_target_baseline_delivery_receipt',
+      status: 'real_target_baseline_delivered',
+      targetAgent: {
+        ...realTargetAgent,
+        repo_dir: realTargetAgentDir,
+        descriptor_ref: path.join(realTargetAgentDir, 'contracts', 'domain_descriptor.json'),
+      },
+      suiteResult: realTargetSuiteResult,
+      extraAcceptanceGates: {
+        real_target_agent_delivery: true,
+        sample_smoke_counted_as_real_target_delivery: false,
+        ...aiReviewerAcceptanceGates(),
+      },
+    });
+    const realTargetDeliveryReceipt = buildRealTargetDeliveryReceipt({
+      targetAgent: {
+        ...realTargetAgent,
+        repo_dir: realTargetAgentDir,
+        descriptor_ref: path.join(realTargetAgentDir, 'contracts', 'domain_descriptor.json'),
+      },
+      suiteResult: realTargetSuiteResult,
+      baselineDeliveryReceipt: realTargetReceipt,
+      candidateAgentPackageRef: `candidate-agent-package:${realTargetAgent.domain_id}`,
+      agentLabSuiteRef: realTargetSuitePath,
+      promotionGateRefs: [`promotion-gate:opl-meta-agent/${realTargetAgent.domain_id}`],
+      noForbiddenWriteProofRefs: [
+        `no-forbidden-write:opl-meta-agent/${realTargetAgent.domain_id}/real_target_delivery`,
+      ],
+      sampleTargetAgentRef: `domain-agent:${targetAgent.domain_id}`,
+      sampleReceiptRef: baselineReceipt.receipt_id,
+    });
+    const scaleoutEvidenceLedger = buildScaleoutEvidenceLedger({
+      deliveryReceipts: [realTargetDeliveryReceipt],
+      sampleReceiptRefs: [baselineReceipt.receipt_id],
+    });
+    writeJson(realTargetReceiptPath, realTargetDeliveryReceipt);
+    writeJson(scaleoutLedgerPath, scaleoutEvidenceLedger);
+    realTargetDelivery = {
+      target_agent: {
+        ...realTargetAgent,
+        repo_dir: realTargetAgentDir,
+        scaffold_validation_status: realTargetScaffoldValidation.standard_domain_agent_scaffold.validation.status,
+        generated_interface_status: realTargetInterfaces.generated_agent_interfaces.status,
+      },
+      agent_lab_run: realTargetAgentLabRun.agent_lab_run,
+      delivery_receipt: realTargetDeliveryReceipt,
+      scaleout_evidence_ledger: scaleoutEvidenceLedger,
+    };
+  }
 
   const payload = {
     surface_kind: 'opl_meta_agent_self_learning_loop_result',
@@ -448,9 +536,13 @@ function main() {
       baseline_delivery_receipt_path: receiptPath,
       online_learning_candidate_path: learningPath,
       mechanism_patch_proposal_path: mechanismPath,
-      real_target_agent_lab_suite_path: realTargetSuitePath,
-      real_target_delivery_receipt_path: realTargetReceiptPath,
-      real_target_scaleout_evidence_ledger_path: scaleoutLedgerPath,
+      ...(realTargetDelivery
+        ? {
+            real_target_agent_lab_suite_path: path.join(outputDir, 'real-target-agent-lab-suite.json'),
+            real_target_delivery_receipt_path: realTargetReceiptPath,
+            real_target_scaleout_evidence_ledger_path: scaleoutLedgerPath,
+          }
+        : {}),
     },
     opl_agent_lab: agentLabRun.agent_lab_run,
     opl_generated_interfaces: generatedInterfaces.generated_agent_interfaces,
@@ -460,17 +552,11 @@ function main() {
       online_learning_policy: learningCandidate.online_learning_policy,
       mechanism_patch_proposal: mechanismPatchProposal,
     },
-    real_target_delivery: {
-      target_agent: {
-        ...realTargetAgent,
-        repo_dir: realTargetAgentDir,
-        scaffold_validation_status: realTargetScaffoldValidation.standard_domain_agent_scaffold.validation.status,
-        generated_interface_status: realTargetInterfaces.generated_agent_interfaces.status,
-      },
-      agent_lab_run: realTargetAgentLabRun.agent_lab_run,
-      delivery_receipt: realTargetDeliveryReceipt,
-      scaleout_evidence_ledger: scaleoutEvidenceLedger,
-    },
+    ...(realTargetDelivery
+      ? {
+          real_target_delivery: realTargetDelivery,
+        }
+      : {}),
   };
 
   process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);

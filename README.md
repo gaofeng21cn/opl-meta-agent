@@ -87,7 +87,9 @@ The loop does not directly rewrite final answers. It turns each run into an audi
 <details>
   <summary><strong>Technical boundary for operators</strong></summary>
 
-- The bootstrap path is `npm run bootstrap:sample -- --output-dir <dir> --opl-bin <opl> --ai-reviewer-evaluation <reviewer-eval.json>`: generate `sample-brief-agent`, call OPL scaffold validation, generate an Agent Lab external suite, run `opl agent-lab run --suite`, consume a structured AI reviewer evaluation, and write a baseline receipt, online-learning candidate, and `mechanism-patch-proposal.json`.
+- The standard Skill entry is natural language: a user can ask Codex to build an OPL-compatible agent for a named delivery workflow. Codex maps that request to `domain_id`, `domain_label`, `delivery_domain`, `target_brief`, `output_dir`, `opl_bin`, and `ai_reviewer_evaluation`, then invokes the `build-agent-baseline` action.
+- The parameterized bootstrap path is `npm run bootstrap:sample -- --output-dir <dir> --opl-bin <opl> --ai-reviewer-evaluation <reviewer-eval.json> --domain-id <domain-id> --domain-label <label> --delivery-domain <delivery-domain> --target-brief <brief>`: generate the requested target agent repo, call OPL scaffold validation, generate an Agent Lab external suite, run `opl agent-lab run --suite`, consume a structured AI reviewer evaluation, and write a baseline receipt, online-learning candidate, and `mechanism-patch-proposal.json`.
+- The compatibility smoke path without `--domain-id` still generates `sample-brief-agent` and a refs-only `real-target-brief-agent` evidence ledger. That smoke must not be counted as real target delivery.
 - The takeover path is `npm run takeover:test -- --agent-dir <existing-agent-dir> --output-dir <dir> --opl-bin <opl>`: read target agent descriptors/contracts, generate a takeover suite, run Agent Lab, and write a takeover receipt, gated self-evolution candidate, and `takeover-mechanism-patch-proposal.json`.
 - The unified interface path is `opl agents interfaces --repo-dir <this-repo> --json`: OPL reads the standard contracts and emits CLI, MCP, Skill, product-entry, OpenAI tool, and AI SDK descriptors.
 - The Agent evidence takeover path is `npm run agent:evidence -- --agent-repo <agent-repo> --output-dir <dir> --opl-bin <opl> [--ai-reviewer-evaluation <reviewer-eval.json>]`: read target production acceptance, Agent Lab handoff, generated-surface handoff, and owner-receipt contracts, generate `agent-lab-suite.json` with `suite_kind=agent_production_evidence_suite`, run `opl agent-lab run --suite`, and emit refs-only developer work order, domain agent capability candidate, mechanism patch proposal, or a typed blocker when reviewer evaluation is missing.
@@ -126,7 +128,7 @@ npm test
 `typecheck` runs TypeScript's compiler gate over `scripts/**/*.ts` and `tests/**/*.ts`. The test suite verifies contract fields, the OPL-generated interface bundle, real `agent/` domain pack files, stage prompt/skill/knowledge/evaluation ref path resolution, non-empty files, and placeholder absence.
 
 ```bash
-npm run bootstrap:sample -- --output-dir /tmp/opl-meta-agent-demo --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl --ai-reviewer-evaluation /tmp/reviewer-eval.json
+npm run bootstrap:sample -- --output-dir /Users/gaofeng/workspace/research-workbench-agent --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl --ai-reviewer-evaluation /tmp/reviewer-eval.json --domain-id research-workbench-agent --domain-label "Research Workbench Agent" --delivery-domain research_workbench --target-brief "Create an OPL-compatible research workbench agent that turns a user research question into a scoped plan, evidence ledger, and owner-gated brief."
 ```
 
 ```bash

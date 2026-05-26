@@ -10,6 +10,7 @@ export type TargetAgent = {
   domain_id: string;
   domain_label?: string | null;
   delivery_domain?: string | null;
+  target_brief?: string | null;
   descriptor_ref?: string;
   repo_dir?: string;
   descriptor?: JsonObject | null;
@@ -63,6 +64,7 @@ export function readTargetAgent(targetAgentDir: string, fallback: Partial<Target
     domain_id: descriptor?.domain_id ?? fallback.domain_id,
     domain_label: descriptor?.domain_label ?? fallback.domain_label,
     delivery_domain: descriptor?.delivery_domain ?? fallback.delivery_domain,
+    target_brief: descriptor?.target_brief ?? fallback.target_brief,
     descriptor_ref: descriptorPath,
     repo_dir: targetAgentDir,
     descriptor,

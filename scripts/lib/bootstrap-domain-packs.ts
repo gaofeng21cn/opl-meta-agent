@@ -145,6 +145,8 @@ export function writeRealTargetAgentDomainPack(
 ): void {
   const domainId = targetAgent.domain_id;
   const domainLabel = targetAgent.domain_label ?? domainId;
+  const targetBrief = targetAgent.target_brief
+    ?? `Create an owner-gated ${domainLabel} delivery from declared workspace refs.`;
   writeJson(path.join(targetAgentDir, 'contracts', 'action_catalog.json'), {
     surface_kind: 'family_action_catalog',
     version: 'family-action-catalog.v1',
@@ -161,19 +163,20 @@ export function writeRealTargetAgentDomainPack(
     },
     actions: [
       {
-        action_id: 'draft-real-target-brief',
-        title: 'Draft Real Target Brief',
-        summary: 'Draft a source-grounded real target brief from declared workspace refs.',
+        action_id: 'draft-agent-output',
+        title: 'Draft Agent Output',
+        summary: `Draft the owner-gated ${domainLabel} delivery from declared workspace refs.`,
+        natural_language_intent: targetBrief,
         owner: domainLabel,
         effect: 'mutating',
         source_command: {
           command: `${domainId} draft --workspace-root <workspace_root>`,
           surface_kind: 'domain_cli',
         },
-        input_schema_ref: 'contracts/schemas/draft-real-target-brief.input.schema.json',
-        output_schema_ref: 'contracts/schemas/draft-real-target-brief.output.schema.json',
+        input_schema_ref: 'contracts/schemas/draft-agent-output.input.schema.json',
+        output_schema_ref: 'contracts/schemas/draft-agent-output.output.schema.json',
         workspace_locator_fields: ['workspace_root'],
-        human_gate_ids: ['real_target_owner_review'],
+        human_gate_ids: ['target_agent_owner_review'],
         supported_surfaces: {
           cli: {
             command: `${domainId} draft --workspace-root <workspace_root>`,
@@ -186,11 +189,11 @@ export function writeRealTargetAgentDomainPack(
             public_runtime: false,
           },
           skill: {
-            command_contract_id: `${domainId}.draft-real-target-brief`,
+            command_contract_id: `${domainId}.draft-agent-output`,
             surface_kind: 'opl_generated_skill_contract',
           },
           product_entry: {
-            action_key: 'draft-real-target-brief',
+            action_key: 'draft-agent-output',
             command: `${domainId} product draft --workspace-root <workspace_root>`,
             surface_kind: 'domain_product_entry_action',
           },
@@ -227,18 +230,18 @@ export function writeRealTargetAgentDomainPack(
     },
     stages: [
       {
-        stage_id: 'real-target-brief-draft',
+        stage_id: 'agent-output-draft',
         stage_kind: 'creation',
-        title: 'Real Target Brief Draft',
-        summary: 'Draft the real target brief.',
-        goal: 'Create a source-grounded brief from workspace refs.',
+        title: 'Agent Output Draft',
+        summary: `Draft the owner-gated ${domainLabel} delivery.`,
+        goal: targetBrief,
         owner: domainLabel,
-        domain_stage_refs: ['real-target-brief-draft'],
+        domain_stage_refs: ['agent-output-draft'],
         inputs: [],
         knowledge_refs: [],
         skills: [],
         prompt_refs: [],
-        allowed_action_refs: ['draft-real-target-brief'],
+        allowed_action_refs: ['draft-agent-output'],
         outputs: [],
         evaluation: [],
         handoff: null,

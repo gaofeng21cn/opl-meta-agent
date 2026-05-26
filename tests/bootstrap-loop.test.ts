@@ -281,6 +281,116 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
   }
 });
 
+test('build-agent-baseline bootstraps a requested target agent from structured skill inputs', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-loop-requested-target-'));
+  const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+  const reviewerEvaluation = writeAiReviewerEvaluation(reviewerEvaluationPath, {
+    run_ref: 'run:ai-reviewer/opl-meta-agent/research-workbench-agent/baseline',
+    execution_attempt_ref: 'attempt:executor/opl-meta-agent/research-workbench-agent/baseline',
+    review_attempt_ref: 'attempt:ai-reviewer/opl-meta-agent/research-workbench-agent/baseline',
+    source_refs: [
+      'review-ref:opl-meta-agent/research-workbench-agent/ai-reviewer',
+      'evidence-ref:research-workbench-agent/scaffold-validation',
+      'scorecard-ref:opl-meta-agent/baseline-acceptance',
+    ],
+    direct_evidence_refs: [
+      'artifact-ref:research-workbench-agent/package',
+      'receipt-ref:opl-meta-agent/baseline-delivery',
+    ],
+  });
+  const oplBin = process.env.OPL_BIN
+    ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
+  const targetBrief = [
+    'Create an OPL-compatible research workbench agent.',
+    'It should turn a user research question into a scoped plan, evidence ledger, and owner-gated brief.',
+    'It must not write target domain truth or promote itself without explicit gates.',
+  ].join(' ');
+
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [
+        path.join(repoRoot, 'scripts/bootstrap-sample-agent.ts'),
+        '--output-dir',
+        outputRoot,
+        '--opl-bin',
+        oplBin,
+        '--ai-reviewer-evaluation',
+        reviewerEvaluationPath,
+        '--domain-id',
+        'research-workbench-agent',
+        '--domain-label',
+        'Research Workbench Agent',
+        '--delivery-domain',
+        'research_workbench',
+        '--target-brief',
+        targetBrief,
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        maxBuffer: 16 * 1024 * 1024,
+      },
+    );
+
+    assert.equal(result.status, 0, result.stderr);
+    const payload = JSON.parse(result.stdout);
+    const targetDir = path.join(outputRoot, 'research-workbench-agent');
+    const descriptor = readJson(path.join(targetDir, 'contracts', 'domain_descriptor.json'));
+    const actionCatalog = readJson(path.join(targetDir, 'contracts', 'action_catalog.json'));
+    const stageControl = readJson(path.join(targetDir, 'contracts', 'stage_control_plane.json'));
+    const suite = readJson(path.join(outputRoot, 'agent-lab-suite.json'));
+    const receipt = readJson(path.join(outputRoot, 'baseline-delivery-receipt.json'));
+    const mechanism = readJson(path.join(outputRoot, 'mechanism-patch-proposal.json'));
+
+    assert.equal(payload.target_agent.domain_id, 'research-workbench-agent');
+    assert.equal(payload.target_agent.domain_label, 'Research Workbench Agent');
+    assert.equal(payload.target_agent.delivery_domain, 'research_workbench');
+    assert.equal(payload.target_agent.repo_dir, targetDir);
+    assert.equal(payload.target_agent.target_brief, targetBrief);
+    assert.equal(payload.opl_generated_interfaces.skill.descriptors[0].command_contract_id, 'research-workbench-agent.draft-agent-output');
+    assert.equal(payload.opl_generated_interfaces.product_entry.descriptors[0].action_key, 'draft-agent-output');
+    assert.equal(payload.real_target_delivery, undefined);
+
+    assert.equal(descriptor.domain_id, 'research-workbench-agent');
+    assert.equal(descriptor.domain_label, 'Research Workbench Agent');
+    assert.equal(descriptor.delivery_domain, 'research_workbench');
+    assert.equal(descriptor.target_brief, targetBrief);
+    assert.equal(descriptor.authority_boundary.opl_can_write_domain_truth, false);
+    assert.equal(descriptor.authority_boundary.opl_can_authorize_quality_or_export, false);
+
+    assert.equal(actionCatalog.target_domain_id, 'research-workbench-agent');
+    assert.equal(actionCatalog.actions[0].action_id, 'draft-agent-output');
+    assert.equal(actionCatalog.actions[0].summary, 'Draft the owner-gated Research Workbench Agent delivery from declared workspace refs.');
+    assert.equal(actionCatalog.actions[0].supported_surfaces.skill.command_contract_id, 'research-workbench-agent.draft-agent-output');
+    assert.equal(actionCatalog.actions[0].authority_boundary.can_write_target_domain_truth, false);
+    assert.equal(actionCatalog.actions[0].natural_language_intent, targetBrief);
+
+    assert.equal(stageControl.target_domain_id, 'research-workbench-agent');
+    assert.equal(stageControl.stages[0].stage_id, 'agent-output-draft');
+    assert.equal(stageControl.stages[0].goal, targetBrief);
+    assert.deepEqual(stageControl.stages[0].allowed_action_refs, ['draft-agent-output']);
+
+    assert.equal(suite.suite_id, 'opl-meta-agent-baseline-suite:research-workbench-agent');
+    assert.equal(suite.tasks[0].target_agent_ref, 'domain-agent:research-workbench-agent');
+    assert.equal(suite.tasks[0].instructions_ref, 'instructions:opl-meta-agent/research-workbench-agent/baseline');
+    assert.ok(suite.tasks[0].scorecard.evidence_refs.includes(reviewerEvaluationPath));
+    assert.deepEqual(suite.tasks[0].ai_reviewer_evaluation.direct_evidence_refs, reviewerEvaluation.direct_evidence_refs);
+
+    assert.equal(receipt.receipt_class, 'baseline_delivery_receipt');
+    assert.equal(receipt.target_agent.domain_id, 'research-workbench-agent');
+    assert.equal(receipt.target_agent.delivery_domain, 'research_workbench');
+    assert.equal(receipt.target_agent.target_brief, targetBrief);
+    assert.equal(receipt.acceptance_gates.target_agent_brief_declared, true);
+    assert.equal(receipt.status, 'baseline_delivered');
+
+    assert.equal(mechanism.mechanism_ref, 'mechanism:opl-meta-agent/research-workbench-agent/self-learning-loop');
+    assert.equal(mechanism.evidence_delta_ref, 'evidence-delta:opl-meta-agent/research-workbench-agent/baseline');
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
 test('baseline delivery rejects AI reviewer evaluation without independent attempt evidence', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-loop-non-independent-reviewer-'));
   const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
