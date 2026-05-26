@@ -1,0 +1,283 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import test from 'node:test';
+import { fileURLToPath } from 'node:url';
+import type { JsonObject } from '../scripts/lib/domain-pack.ts';
+import {
+  buildFixtureStageDecompositionCloseout,
+  materializeStageDecompositionPackDraft,
+  validateStageDecompositionCloseoutPacket,
+} from '../scripts/lib/stage-decomposition-pack-draft.ts';
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+const targetAgent = {
+  domain_id: 'research-workbench-agent',
+  domain_label: 'Research Workbench Agent',
+  delivery_domain: 'research_workbench',
+  target_brief: 'Create an owner-gated research workbench agent from declared workspace refs.',
+};
+
+function readJson(filePath: string): JsonObject {
+  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+function stageById(stageControl: JsonObject, stageId: string): JsonObject {
+  const stage = (stageControl.stages as JsonObject[]).find((entry) => entry.stage_id === stageId);
+  assert.ok(stage, `expected ${stageId} in stage_control_plane`);
+  return stage;
+}
+
+test('materializer writes the target stage pack from typed stage-decomposition closeout', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-stage-materializer-'));
+  try {
+    const targetAgentDir = path.join(outputRoot, targetAgent.domain_id);
+    const packet = buildFixtureStageDecompositionCloseout({
+      targetAgent,
+      stageId: 'evidence-synthesis-plan',
+      actionId: 'plan-evidence-synthesis',
+      title: 'Evidence Synthesis Plan',
+      promptPath: 'agent/prompts/evidence-synthesis-plan.md',
+      stagePath: 'agent/stages/evidence-synthesis-plan.md',
+      skillPath: 'agent/skills/evidence-synthesis-domain-skill.md',
+      knowledgePath: 'agent/knowledge/evidence-synthesis-boundary.md',
+      qualityGatePath: 'agent/quality_gates/evidence-synthesis-plan-gate.md',
+    });
+
+    const draft = validateStageDecompositionCloseoutPacket(packet, { targetAgent });
+    materializeStageDecompositionPackDraft(targetAgentDir, draft);
+
+    const actionCatalog = readJson(path.join(targetAgentDir, 'contracts/action_catalog.json'));
+    const stageControl = readJson(path.join(targetAgentDir, 'contracts/stage_control_plane.json'));
+    const stage = stageById(stageControl, 'evidence-synthesis-plan');
+
+    assert.equal(actionCatalog.actions[0].action_id, 'plan-evidence-synthesis');
+    assert.equal(stage.goal, targetAgent.target_brief);
+    assert.deepEqual(stage.allowed_action_refs, ['plan-evidence-synthesis']);
+    assert.equal(stage.independent_gate_policy.execution_review_separation_required, true);
+    assert.equal(stage.independent_gate_policy.mechanical_completion_can_close_stage, false);
+    assert.equal(stage.authority_boundary.can_write_target_domain_truth, false);
+    assert.equal(stage.authority_boundary.can_authorize_target_domain_quality_or_export, false);
+
+    [
+      'agent/prompts/evidence-synthesis-plan.md',
+      'agent/stages/evidence-synthesis-plan.md',
+      'agent/skills/evidence-synthesis-domain-skill.md',
+      'agent/knowledge/evidence-synthesis-boundary.md',
+      'agent/quality_gates/evidence-synthesis-plan-gate.md',
+    ].forEach((relativePath) => {
+      const body = fs.readFileSync(path.join(targetAgentDir, relativePath), 'utf8');
+      assert.ok(body.trim().length > 0, `${relativePath} should not be empty`);
+    });
+    assert.match(
+      fs.readFileSync(path.join(targetAgentDir, 'agent/quality_gates/evidence-synthesis-plan-gate.md'), 'utf8'),
+      /Quality gate declaration is required/i,
+    );
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
+test('stage-decomposition closeout validator fails closed on free text and partial packs', () => {
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket('stage graph: draft then review', { targetAgent }),
+    /typed JSON object/i,
+  );
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket({
+      surface_kind: 'stage_attempt_closeout_packet',
+      stage_id: 'stage-decomposition',
+      closeout_refs: ['receipt:partial'],
+    }, { targetAgent }),
+    /stage_decomposition_pack_draft/i,
+  );
+
+  const packet = buildFixtureStageDecompositionCloseout({ targetAgent });
+  const draft = packet.stage_decomposition_pack_draft as JsonObject;
+  const stageControl = draft.stage_control_plane as JsonObject;
+  const stage = (stageControl.stages as JsonObject[])[0];
+  delete stage.independent_gate_policy;
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(packet, { targetAgent }),
+    /independent_gate_policy/i,
+  );
+});
+
+test('stage-decomposition closeout validator rejects missing gate declarations and self-review', () => {
+  const missingGatePacket = buildFixtureStageDecompositionCloseout({ targetAgent });
+  const missingGateDraft = missingGatePacket.stage_decomposition_pack_draft as JsonObject;
+  const files = missingGateDraft.files as JsonObject[];
+  const gateFile = files.find((entry) => entry.path === 'agent/quality_gates/agent-output-draft-quality-gate.md');
+  assert.ok(gateFile);
+  gateFile.body = '# Gate\n\nLooks acceptable.\n';
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(missingGatePacket, { targetAgent }),
+    /quality gate declaration/i,
+  );
+
+  const selfReviewPacket = buildFixtureStageDecompositionCloseout({ targetAgent });
+  const selfReviewDraft = selfReviewPacket.stage_decomposition_pack_draft as JsonObject;
+  const selfReviewStage = ((selfReviewDraft.stage_control_plane as JsonObject).stages as JsonObject[])[0];
+  selfReviewStage.independent_gate_policy.execution_review_separation_required = false;
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(selfReviewPacket, { targetAgent }),
+    /self-review|execution_review_separation_required/i,
+  );
+});
+
+test('build-agent-baseline consumes supplied fixture closeout instead of scripting a fixed stage graph', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-bootstrap-closeout-'));
+  try {
+    const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+    fs.writeFileSync(reviewerEvaluationPath, `${JSON.stringify({
+      reviewer_kind: 'ai_reviewer',
+      model_or_provider: 'gpt-5.5',
+      run_ref: 'run:ai-reviewer/opl-meta-agent/research-workbench-agent/baseline',
+      execution_attempt_ref: 'attempt:executor/opl-meta-agent/research-workbench-agent/baseline',
+      review_attempt_ref: 'attempt:ai-reviewer/opl-meta-agent/research-workbench-agent/baseline',
+      no_shared_context: true,
+      independent_attempt: true,
+      critique: 'The baseline has explicit evidence and owner handoff refs.',
+      suggestions: ['Keep source coverage evidence explicit.'],
+      source_refs: ['review-ref:opl-meta-agent/research-workbench-agent/ai-reviewer'],
+      direct_evidence_refs: ['artifact-ref:research-workbench-agent/package'],
+      verdict: 'baseline_ready_with_owner_gate',
+      predicted_impact: 'Owner-gated baseline can be evaluated without granting OPL target authority.',
+      provenance: {
+        artifact_ref: 'artifact-ref:ai-reviewer/research-workbench-agent-baseline',
+        reviewer_prompt_ref: 'agent/prompts/baseline-delivery.md',
+        created_by: 'test-fixture',
+      },
+    }, null, 2)}\n`);
+    const closeoutPath = path.join(outputRoot, 'stage-decomposition-closeout.json');
+    fs.writeFileSync(closeoutPath, `${JSON.stringify(buildFixtureStageDecompositionCloseout({
+      targetAgent,
+      stageId: 'research-question-intake',
+      actionId: 'capture-research-question',
+      title: 'Research Question Intake',
+      promptPath: 'agent/prompts/research-question-intake.md',
+      stagePath: 'agent/stages/research-question-intake.md',
+      skillPath: 'agent/skills/research-question-intake-skill.md',
+      knowledgePath: 'agent/knowledge/research-question-intake-boundary.md',
+      qualityGatePath: 'agent/quality_gates/research-question-intake-gate.md',
+    }), null, 2)}\n`);
+
+    const result = spawnSync(
+      process.execPath,
+      [
+        path.join(repoRoot, 'scripts/bootstrap-sample-agent.ts'),
+        '--output-dir',
+        outputRoot,
+        '--stage-runner',
+        'fixture',
+        '--stage-closeout-packet',
+        closeoutPath,
+        '--opl-bin',
+        process.env.OPL_BIN ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl',
+        '--ai-reviewer-evaluation',
+        reviewerEvaluationPath,
+        '--domain-id',
+        targetAgent.domain_id,
+        '--domain-label',
+        targetAgent.domain_label,
+        '--delivery-domain',
+        targetAgent.delivery_domain,
+        '--target-brief',
+        targetAgent.target_brief,
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        maxBuffer: 16 * 1024 * 1024,
+      },
+    );
+
+    assert.equal(result.status, 0, result.stderr);
+    const stageControl = readJson(path.join(outputRoot, targetAgent.domain_id, 'contracts/stage_control_plane.json'));
+    stageById(stageControl, 'research-question-intake');
+    assert.equal(
+      (stageControl.stages as JsonObject[]).some((stage) => stage.stage_id === 'agent-output-draft'),
+      false,
+    );
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
+test('build-agent-baseline writes a typed blocker when stage-decomposition closeout is invalid', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-bootstrap-closeout-blocker-'));
+  try {
+    const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+    fs.writeFileSync(reviewerEvaluationPath, `${JSON.stringify({
+      reviewer_kind: 'ai_reviewer',
+      model_or_provider: 'gpt-5.5',
+      run_ref: 'run:ai-reviewer/opl-meta-agent/research-workbench-agent/baseline',
+      execution_attempt_ref: 'attempt:executor/opl-meta-agent/research-workbench-agent/baseline',
+      review_attempt_ref: 'attempt:ai-reviewer/opl-meta-agent/research-workbench-agent/baseline',
+      no_shared_context: true,
+      independent_attempt: true,
+      critique: 'The invalid closeout should block before baseline receipt signing.',
+      suggestions: ['Return a typed blocker and keep the target package unsigned.'],
+      source_refs: ['review-ref:opl-meta-agent/research-workbench-agent/ai-reviewer'],
+      direct_evidence_refs: ['artifact-ref:research-workbench-agent/package'],
+      verdict: 'blocked',
+      predicted_impact: 'Invalid stage decomposition cannot be materialized.',
+      provenance: {
+        artifact_ref: 'artifact-ref:ai-reviewer/research-workbench-agent-baseline',
+        reviewer_prompt_ref: 'agent/prompts/baseline-delivery.md',
+        created_by: 'test-fixture',
+      },
+    }, null, 2)}\n`);
+    const closeoutPath = path.join(outputRoot, 'invalid-stage-decomposition-closeout.json');
+    fs.writeFileSync(closeoutPath, `${JSON.stringify({
+      surface_kind: 'stage_attempt_closeout_packet',
+      stage_id: 'stage-decomposition',
+      closeout_refs: ['receipt:partial'],
+    }, null, 2)}\n`);
+
+    const result = spawnSync(
+      process.execPath,
+      [
+        path.join(repoRoot, 'scripts/bootstrap-sample-agent.ts'),
+        '--output-dir',
+        outputRoot,
+        '--stage-runner',
+        'fixture',
+        '--stage-closeout-packet',
+        closeoutPath,
+        '--opl-bin',
+        process.env.OPL_BIN ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl',
+        '--ai-reviewer-evaluation',
+        reviewerEvaluationPath,
+        '--domain-id',
+        targetAgent.domain_id,
+        '--domain-label',
+        targetAgent.domain_label,
+        '--delivery-domain',
+        targetAgent.delivery_domain,
+        '--target-brief',
+        targetAgent.target_brief,
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        maxBuffer: 16 * 1024 * 1024,
+      },
+    );
+
+    assert.notEqual(result.status, 0);
+    const blockerPath = path.join(outputRoot, `${targetAgent.domain_id}-stage-decomposition-blocker.json`);
+    assert.equal(fs.existsSync(blockerPath), true, result.stderr);
+    const blocker = readJson(blockerPath);
+    assert.equal(blocker.surface_kind, 'stage_attempt_closeout_packet');
+    assert.equal(blocker.stage_id, 'stage-decomposition');
+    assert.equal(blocker.blocked_reason, 'stage_decomposition_materialization_failed');
+    assert.equal(blocker.route_impact.baseline_receipt_signed, false);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'baseline-delivery-receipt.json')), false);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});

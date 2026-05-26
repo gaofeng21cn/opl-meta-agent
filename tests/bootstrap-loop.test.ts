@@ -13,6 +13,86 @@ function readJson(filePath: string): JsonObject {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
+function assertGeneratedTargetStagePack(
+  targetDir: string,
+  stageControl: JsonObject,
+  {
+    stageId,
+    actionRef,
+  }: {
+    stageId: string;
+    actionRef: string;
+  },
+): void {
+  const stage = (stageControl.stages as JsonObject[]).find((entry) => entry.stage_id === stageId);
+  assert.ok(stage, `${stageId} should exist in generated stage control plane`);
+  const refSpecs = [
+    { field: 'prompt_refs', refKind: 'domain_prompt_ref', prefix: 'agent/prompts/' },
+    { field: 'skills', refKind: 'domain_skill_ref', prefix: 'agent/skills/' },
+    { field: 'knowledge_refs', refKind: 'domain_knowledge_ref', prefix: 'agent/knowledge/' },
+    { field: 'evaluation', refKind: 'domain_quality_gate_ref', prefix: 'agent/quality_gates/' },
+  ];
+  refSpecs.forEach((spec) => {
+    const refs = stage[spec.field] as JsonObject[];
+    assert.ok(Array.isArray(refs), `${stageId}.${spec.field} should be an array`);
+    assert.ok(refs.length > 0, `${stageId}.${spec.field} should not be empty`);
+    refs.forEach((entry) => {
+      assert.equal(entry.ref_kind, spec.refKind, `${stageId}.${spec.field}.ref_kind`);
+      assert.ok(
+        String(entry.ref).startsWith(spec.prefix),
+        `${stageId}.${spec.field}.ref should live under ${spec.prefix}`,
+      );
+      const filePath = path.join(targetDir, String(entry.ref));
+      assert.equal(fs.existsSync(filePath), true, `${entry.ref} should exist`);
+      const body = fs.readFileSync(filePath, 'utf8');
+      assert.ok(body.trim().length > 0, `${entry.ref} should not be empty`);
+      assert.equal(new RegExp(`\\b(?:TO${'DO'}|T${'BD'})\\b`, 'i').test(body), false);
+      if (spec.field === 'evaluation') {
+        assert.match(body, /quality gate declaration is required/i);
+        assert.match(body, /Dedicated review stage is conditional/i);
+      }
+    });
+  });
+
+  assert.deepEqual(stage.selected_executor, {
+    executor_kind: 'codex_cli',
+    default_executor: true,
+    executor_binding_ref: 'executor:codex-cli',
+  });
+  assert.equal(stage.independent_gate_policy.gate_owner, stageControl.owner);
+  assert.equal(stage.independent_gate_policy.execution_review_separation_required, true);
+  assert.equal(stage.independent_gate_policy.mechanical_completion_can_close_stage, false);
+  assert.equal(stage.independent_gate_policy.provider_completion_can_claim_domain_ready, false);
+  assert.equal(
+    stage.independent_gate_policy.generated_surface_readiness_can_claim_quality_or_export,
+    false,
+  );
+
+  const requires = stage.stage_contract.requires as string[];
+  const ensures = stage.stage_contract.ensures as string[];
+  assert.ok(requires.includes(`action-ref:${actionRef}`), `${stageId}.requires action ref`);
+  (stage.prompt_refs as JsonObject[]).forEach((entry) => {
+    assert.ok(requires.includes(`prompt-ref:${entry.ref}`), `${stageId}.requires ${entry.ref}`);
+  });
+  (stage.skills as JsonObject[]).forEach((entry) => {
+    assert.ok(requires.includes(`skill-ref:${entry.ref}`), `${stageId}.requires ${entry.ref}`);
+  });
+  (stage.knowledge_refs as JsonObject[]).forEach((entry) => {
+    assert.ok(requires.includes(`knowledge-ref:${entry.ref}`), `${stageId}.requires ${entry.ref}`);
+  });
+  (stage.evaluation as JsonObject[]).forEach((entry) => {
+    assert.ok(requires.includes(`quality-gate-ref:${entry.ref}`), `${stageId}.requires ${entry.ref}`);
+  });
+  assert.ok(ensures.includes(`stage-attempt-receipt-ref:${stageId}`), `${stageId}.ensures stage receipt`);
+  assert.ok(ensures.includes(`executor-receipt-ref:${stageId}/codex-cli`), `${stageId}.ensures executor receipt`);
+  assert.ok(ensures.includes(`independent-gate-receipt-ref:${stageId}`), `${stageId}.ensures gate receipt`);
+  assert.ok(
+    (stage.stage_contract.expected_receipt_refs as JsonObject[])
+      .some((entry) => entry.ref === `independent-gate-receipt-ref:${stageId}`),
+    `${stageId}.expected_receipt_refs independent gate`,
+  );
+}
+
 function writeAiReviewerEvaluation(filePath: string, overrides: JsonObject = {}): JsonObject {
   const evaluation = {
     reviewer_kind: 'ai_reviewer',
@@ -173,6 +253,12 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
     assert.equal(fs.existsSync(realTargetLedgerPath), true);
 
     const fixture = readJson(fixturePath);
+    const stageControl = readJson(path.join(targetDir, 'contracts', 'stage_control_plane.json'));
+    assertGeneratedTargetStagePack(targetDir, stageControl, {
+      stageId: 'brief-draft',
+      actionRef: 'draft-brief',
+    });
+
     assert.equal(fixture.surface_kind, 'generated_agent_morphology_conformance_fixture');
     assert.equal(fixture.domain_id, 'sample-brief-agent');
     assert.equal(fixture.fixture_status, 'required_by_default_generated_agent');
@@ -370,6 +456,10 @@ test('build-agent-baseline bootstraps a requested target agent from structured s
     assert.equal(stageControl.stages[0].stage_id, 'agent-output-draft');
     assert.equal(stageControl.stages[0].goal, targetBrief);
     assert.deepEqual(stageControl.stages[0].allowed_action_refs, ['draft-agent-output']);
+    assertGeneratedTargetStagePack(targetDir, stageControl, {
+      stageId: 'agent-output-draft',
+      actionRef: 'draft-agent-output',
+    });
 
     assert.equal(suite.suite_id, 'opl-meta-agent-baseline-suite:research-workbench-agent');
     assert.equal(suite.tasks[0].target_agent_ref, 'domain-agent:research-workbench-agent');

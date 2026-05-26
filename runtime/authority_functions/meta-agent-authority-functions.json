@@ -265,6 +265,44 @@
         "forbidden_roles": []
       },
       {
+        "script_ref": "scripts/lib/stage-decomposition-pack-draft.ts",
+        "classes": [
+          "fixture_or_proof_helper",
+          "developer_work_order_materializer"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [
+          "opl_family_runtime_stage_attempt",
+          "opl_standard_domain_agent_scaffold"
+        ],
+        "writes_only": [
+          "domain_pack_file_ref",
+          "action_catalog_ref",
+          "stage_control_plane_ref",
+          "typed_blocker_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
+        "script_ref": "scripts/lib/stage-decomposition-runner.ts",
+        "classes": [
+          "smoke_helper",
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [
+          "opl_family_runtime_stage_attempt",
+          "codex_cli_stage_runner"
+        ],
+        "writes_only": [
+          "stage_packet_ref",
+          "stage_decomposition_closeout_ref",
+          "stage_decomposition_attempt_receipt_ref",
+          "typed_blocker_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
         "script_ref": "scripts/lib/target-improvement-policy.ts",
         "classes": [
           "fixture_or_proof_helper",
@@ -395,6 +433,8 @@
       "scripts/lib/meta-agent-loop-io.ts",
       "scripts/lib/meta-agent-loop-receipts.ts",
       "scripts/lib/meta-agent-loop.ts",
+      "scripts/lib/stage-decomposition-pack-draft.ts",
+      "scripts/lib/stage-decomposition-runner.ts",
       "scripts/lib/target-improvement-policy.ts",
       "scripts/lib/work-order-builders.ts",
       "scripts/lib/work-order-efficiency.ts",

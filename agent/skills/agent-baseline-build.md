@@ -13,16 +13,18 @@
 - `domain_label`
 - `delivery_domain`
 - `target_brief`
+- stage-decomposition runner settings or explicit `stage_decomposition_closeout`
 - intent、stage、action、memory、artifact 和 quality gate refs。
 
 `domain_id`、`domain_label`、`delivery_domain` 和 `target_brief` 来自用户自然语言需求。只有目标 agent 的交付物、authority boundary 或质量门槛不清时才回问；不要要求用户理解底层脚本参数。
+`stage_decomposition_closeout` 必须是 Codex `stage-decomposition` typed closeout；如果未显式提供，默认 runner 仍必须产出 typed closeout，不能从自由文本摘要推断 stage graph。
 
 ## 流程
 
 1. 准备 output workspace，确认不会写入 source checkout 的 runtime artifact。
 2. 从自然语言目标生成稳定的 target-agent descriptor 字段和 candidate agent package 路径。
-3. 生成 candidate agent package 的标准目录和 contracts。
-4. 写入 prompts、skills、stages、quality gates、knowledge policy。
+3. 启动或读取 `stage-decomposition` typed closeout，从其中的 stage graph、action refs、pack file bodies、independent gate policy 和 quality gate declaration 生成 candidate agent package 的标准目录和 contracts。
+4. 写入 prompts、skills、stages、quality gates、knowledge policy，并保留 generated-from-closeout proof。
 5. 调用 OPL scaffold validation。
 6. 调用 OPL generated interface projection。
 7. 构造 Agent Lab baseline suite 并运行。
@@ -40,6 +42,8 @@
 
 - package 可以在 clean output root 中重建。
 - contract metadata 足以生成 CLI/MCP/Skill/product-entry/OpenAI/AI SDK surface。
+- stage graph 和 action catalog 来自 typed closeout，而不是脚本内固定 graph。
+- free text closeout、partial refs、缺 independent gate policy、缺 quality gate declaration 或 self-review 必须 fail closed。
 - baseline delivery gate 通过前不签发交付。
 
 ## 禁止事项

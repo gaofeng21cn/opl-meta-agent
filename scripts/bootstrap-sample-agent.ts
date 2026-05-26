@@ -11,9 +11,14 @@ import {
   writeMinimalAgentDomainPack,
 } from './lib/domain-pack.ts';
 import {
-  writeRealTargetAgentDomainPack,
-  writeSampleAgentDomainPack,
-} from './lib/bootstrap-domain-packs.ts';
+  materializeStageDecompositionPackDraft,
+  validateStageDecompositionCloseoutPacket,
+  type StageRunnerKind,
+} from './lib/stage-decomposition-pack-draft.ts';
+import {
+  type StageDecompositionAttemptReceipt,
+  runStageDecompositionAttempt,
+} from './lib/stage-decomposition-runner.ts';
 import {
   type AiReviewerEvaluation,
   type LearningCandidate,
@@ -42,6 +47,8 @@ type BootstrapArgs = {
   aiReviewerEvaluationPath: string;
   targetAgent: TargetAgent;
   sampleMode: boolean;
+  stageRunner: StageRunnerKind;
+  stageCloseoutPacketPath: string | null;
 };
 
 function nonEmptyValue(flag: string, value: string | undefined): string {
@@ -64,6 +71,8 @@ function parseArgs(argv: string[]): BootstrapArgs {
     domainLabel: string | null;
     deliveryDomain: string | null;
     targetBrief: string | null;
+    stageRunner: StageRunnerKind;
+    stageCloseoutPacketPath: string | null;
   } = {
     outputDir: null,
     oplBin: resolveOplBin(),
@@ -72,6 +81,8 @@ function parseArgs(argv: string[]): BootstrapArgs {
     domainLabel: null,
     deliveryDomain: null,
     targetBrief: null,
+    stageRunner: 'fixture',
+    stageCloseoutPacketPath: null,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -109,6 +120,20 @@ function parseArgs(argv: string[]): BootstrapArgs {
     }
     if (token === '--target-brief') {
       parsed.targetBrief = nonEmptyValue(token, value);
+      index += 1;
+      continue;
+    }
+    if (token === '--stage-runner') {
+      const runner = nonEmptyValue(token, value);
+      if (runner !== 'fixture' && runner !== 'live') {
+        throw new Error('Value for --stage-runner must be fixture or live.');
+      }
+      parsed.stageRunner = runner;
+      index += 1;
+      continue;
+    }
+    if (token === '--stage-closeout-packet' || token === '--stage-decomposition-closeout') {
+      parsed.stageCloseoutPacketPath = path.resolve(nonEmptyValue(token, value));
       index += 1;
       continue;
     }
@@ -150,7 +175,86 @@ function parseArgs(argv: string[]): BootstrapArgs {
     aiReviewerEvaluationPath: parsed.aiReviewerEvaluationPath,
     targetAgent,
     sampleMode,
+    stageRunner: parsed.stageRunner,
+    stageCloseoutPacketPath: parsed.stageCloseoutPacketPath,
   };
+}
+
+function materializeStageDecompositionAttempt({
+  targetAgent,
+  targetAgentDir,
+  outputDir,
+  oplBin,
+  stageRunner,
+  stageCloseoutPacketPath,
+}: {
+  targetAgent: TargetAgent;
+  targetAgentDir: string;
+  outputDir: string;
+  oplBin: string;
+  stageRunner: StageRunnerKind;
+  stageCloseoutPacketPath?: string | null;
+}): StageDecompositionAttemptReceipt {
+  const attempt = runStageDecompositionAttempt({
+    targetAgent,
+    targetAgentDir,
+    outputDir,
+    oplBin,
+    runnerKind: stageRunner,
+    closeoutPacketPath: stageCloseoutPacketPath ?? null,
+  });
+  const packDraft = validateStageDecompositionCloseoutPacket(attempt.closeoutPacket, { targetAgent });
+  materializeStageDecompositionPackDraft(targetAgentDir, packDraft);
+  return attempt.receipt;
+}
+
+function stageDecompositionBlockerFromError(error: unknown, targetAgent: TargetAgent): JsonObject {
+  const message = error instanceof Error ? error.message : String(error);
+  try {
+    const parsed = JSON.parse(message);
+    if (
+      typeof parsed === 'object'
+      && parsed !== null
+      && !Array.isArray(parsed)
+      && parsed.surface_kind === 'stage_attempt_closeout_packet'
+      && parsed.stage_id === 'stage-decomposition'
+    ) {
+      return parsed as JsonObject;
+    }
+  } catch {
+    // Fall through to a normalized typed blocker.
+  }
+  return {
+    surface_kind: 'stage_attempt_closeout_packet',
+    stage_id: 'stage-decomposition',
+    closeout_refs: [
+      `typed-blocker:opl-meta-agent/${targetAgent.domain_id}/stage-decomposition/materialization_failed`,
+    ],
+    blocked_reason: 'stage_decomposition_materialization_failed',
+    blocker_message: message,
+    domain_ready_verdict: 'blocked',
+    next_owner: 'opl-meta-agent',
+    route_impact: {
+      target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
+      materialization_allowed: false,
+      baseline_receipt_signed: false,
+    },
+    authority_boundary: {
+      opl: 'stage_attempt_runtime_and_closeout_transport',
+      oma: 'cannot_materialize_without_valid_stage_decomposition_pack_draft',
+      target_domain: 'truth_quality_artifact_gate_owner',
+    },
+  };
+}
+
+function writeStageDecompositionBlocker(
+  outputDir: string,
+  targetAgent: TargetAgent,
+  blocker: JsonObject,
+): string {
+  const blockerPath = path.join(outputDir, `${targetAgent.domain_id}-stage-decomposition-blocker.json`);
+  writeJson(blockerPath, blocker);
+  return blockerPath;
 }
 
 function buildAgentLabSuite({
@@ -207,6 +311,7 @@ function buildBaselineReceipt(
   targetDomainPackSummary: DomainPackSummary,
   aiReviewerEvaluation: AiReviewerEvaluation,
   aiReviewerEvaluationRef: string,
+  stageDecompositionAttempt: StageDecompositionAttemptReceipt,
 ): OwnerReceipt {
   const receipt = {
     ...buildOwnerReceipt({
@@ -227,6 +332,14 @@ function buildBaselineReceipt(
     ...domainPackReceiptFields(domainPackSummary),
     source_domain_pack: domainPackSummary,
     target_agent_domain_pack: targetDomainPackSummary,
+    stage_decomposition_attempt: stageDecompositionAttempt,
+    generated_from_stage_decomposition_closeout: {
+      status: 'verified',
+      stage_packet_ref: stageDecompositionAttempt.stage_packet_ref,
+      closeout_packet_ref: stageDecompositionAttempt.closeout_packet_ref,
+      closeout_refs: stageDecompositionAttempt.closeout_refs,
+      runner_kind: stageDecompositionAttempt.runner_kind,
+    },
   };
   return receipt;
 }
@@ -329,6 +442,8 @@ function main() {
     aiReviewerEvaluationPath,
     targetAgent,
     sampleMode,
+    stageRunner,
+    stageCloseoutPacketPath,
   } = parseArgs(process.argv.slice(2));
   fs.mkdirSync(outputDir, { recursive: true });
   const domainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
@@ -355,12 +470,22 @@ function main() {
     '--force',
     '--json',
   ]);
-  if (sampleMode) {
-    writeSampleAgentDomainPack(targetAgentDir);
-  } else {
-    writeRealTargetAgentDomainPack(targetAgentDir, targetAgent);
-  }
   writeMinimalAgentDomainPack(targetAgentDir, targetAgent);
+  let stageDecompositionAttempt: StageDecompositionAttemptReceipt;
+  try {
+    stageDecompositionAttempt = materializeStageDecompositionAttempt({
+      targetAgent,
+      targetAgentDir,
+      outputDir,
+      oplBin,
+      stageRunner,
+      stageCloseoutPacketPath,
+    });
+  } catch (error) {
+    const blocker = stageDecompositionBlockerFromError(error, targetAgent);
+    const blockerPath = writeStageDecompositionBlocker(outputDir, targetAgent, blocker);
+    throw new Error(`Stage decomposition failed closed; typed blocker written to ${blockerPath}.`);
+  }
   const descriptorPath = path.join(targetAgentDir, 'contracts', 'domain_descriptor.json');
   const descriptor = JSON.parse(fs.readFileSync(descriptorPath, 'utf8'));
   writeJson(descriptorPath, {
@@ -404,6 +529,7 @@ function main() {
     targetDomainPackSummary,
     aiReviewerEvaluation,
     aiReviewerEvaluationPath,
+    stageDecompositionAttempt,
   );
   const learningCandidate = buildLearningCandidate(suiteResult, baselineReceipt);
   const mechanismPatchProposal = buildBaselineMechanismPatchProposal(
@@ -437,8 +563,23 @@ function main() {
       '--force',
       '--json',
     ]);
-    writeRealTargetAgentDomainPack(realTargetAgentDir, realTargetAgent);
     writeMinimalAgentDomainPack(realTargetAgentDir, realTargetAgent);
+    const realTargetStageOutputDir = path.join(outputDir, `${realTargetAgent.domain_id}-stage-decomposition`);
+    let realTargetStageDecompositionAttempt: StageDecompositionAttemptReceipt;
+    try {
+      realTargetStageDecompositionAttempt = materializeStageDecompositionAttempt({
+        targetAgent: realTargetAgent,
+        targetAgentDir: realTargetAgentDir,
+        outputDir: realTargetStageOutputDir,
+        oplBin,
+        stageRunner,
+        stageCloseoutPacketPath: null,
+      });
+    } catch (error) {
+      const blocker = stageDecompositionBlockerFromError(error, realTargetAgent);
+      const blockerPath = writeStageDecompositionBlocker(realTargetStageOutputDir, realTargetAgent, blocker);
+      throw new Error(`Real-target stage decomposition failed closed; typed blocker written to ${blockerPath}.`);
+    }
     const realTargetScaffoldValidation = runOpl(oplBin, [
       'agents',
       'scaffold',
@@ -511,6 +652,7 @@ function main() {
       agent_lab_run: realTargetAgentLabRun.agent_lab_run,
       delivery_receipt: realTargetDeliveryReceipt,
       scaleout_evidence_ledger: scaleoutEvidenceLedger,
+      stage_decomposition_attempt: realTargetStageDecompositionAttempt,
     };
   }
 
@@ -527,11 +669,14 @@ function main() {
       scaffold_validation_status: scaffoldValidation.standard_domain_agent_scaffold.validation.status,
       generated_interface_status: generatedInterfaces.generated_agent_interfaces.status,
       domain_pack_status: targetDomainPackSummary.status,
+      stage_decomposition_status: stageDecompositionAttempt.status,
     },
     ...domainPackReceiptFields(domainPackSummary),
     source_domain_pack: domainPackSummary,
     target_agent_domain_pack: targetDomainPackSummary,
     artifacts: {
+      stage_decomposition_attempt_receipt_path: path.join(outputDir, `${targetAgent.domain_id}-stage-decomposition-attempt-receipt.json`),
+      stage_decomposition_closeout_packet_path: stageDecompositionAttempt.closeout_packet_path,
       suite_path: suitePath,
       baseline_delivery_receipt_path: receiptPath,
       online_learning_candidate_path: learningPath,
@@ -546,6 +691,7 @@ function main() {
     },
     opl_agent_lab: agentLabRun.agent_lab_run,
     opl_generated_interfaces: generatedInterfaces.generated_agent_interfaces,
+    stage_decomposition_attempt: stageDecompositionAttempt,
     learning_loop: {
       baseline_receipt: baselineReceipt,
       online_learning_candidate: learningCandidate,

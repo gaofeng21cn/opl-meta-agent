@@ -600,6 +600,7 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   const packageJson = readJson('package.json');
 
   assert.equal(actionCatalog.version, 'family-action-catalog.v1');
+  assert.match(packageJson.scripts['build-agent-baseline'], /--experimental-strip-types/);
   assert.match(packageJson.scripts['bootstrap:sample'], /--experimental-strip-types/);
   assert.match(packageJson.scripts['improve:external-suite'], /--experimental-strip-types/);
   assert.match(packageJson.scripts['execute:external-work-order'], /--experimental-strip-types/);

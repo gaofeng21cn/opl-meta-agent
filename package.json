@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build-agent-baseline": "node --experimental-strip-types scripts/bootstrap-sample-agent.ts",
     "bootstrap:sample": "node --experimental-strip-types scripts/bootstrap-sample-agent.ts",
     "improve:external-suite": "node --experimental-strip-types scripts/improve-from-agent-lab-suite.ts",
     "execute:external-work-order": "node --experimental-strip-types scripts/execute-external-work-order.ts",

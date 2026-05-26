@@ -88,9 +88,11 @@
 <details>
   <summary><strong>给技术操作者看的机制说明</strong></summary>
 
-- 标准 Skill 入口是自然语言请求：用户可以直接对 Codex 说“帮我做一个能交付 X 的 OPL-compatible 智能体，输出到 `<repo-dir>`，质量门槛是 Y，禁止 Z”。Codex 先把这句话归一成 `domain_id`、`domain_label`、`delivery_domain`、`target_brief`、`output_dir`、`opl_bin` 和 `ai_reviewer_evaluation`，再调用 `build-agent-baseline` action。
-- 参数化自举入口是 `npm run bootstrap:sample -- --output-dir <dir> --opl-bin <opl> --ai-reviewer-evaluation <reviewer-eval.json> --domain-id <domain-id> --domain-label <label> --delivery-domain <delivery-domain> --target-brief <brief>`：生成用户指定的目标 agent repo，调用 OPL 脚手架校验，生成 Agent Lab 外部测试套件，运行 `opl agent-lab run --suite`，消费结构化 AI reviewer evaluation，再写入基线回执、后续学习候选和 `mechanism-patch-proposal.json`。
-- 不带 `--domain-id` 的兼容 smoke 仍生成 `sample-brief-agent`，并额外生成 `real-target-brief-agent` 的 refs-only 最小交付证据，输出 `real-target-delivery-receipt.json` 和 `real-target-scaleout-evidence-ledger.json`；sample smoke 不计入真实目标交付，多目标 scaleout 仍需要后续目标仓 owner receipt。
+- 标准 Skill 入口是自然语言请求：用户可以直接对 Codex 说“帮我做一个能交付 X 的 OPL-compatible 智能体，输出到 `<repo-dir>`，质量门槛是 Y，禁止 Z”。Codex 先把这句话归一成 `domain_id`、`domain_label`、`delivery_domain`、`target_brief`、`output_dir`、`opl_bin`、stage-decomposition runner 设置和 `ai_reviewer_evaluation`，再调用 `build-agent-baseline` action。
+- 默认 `build-agent-baseline` 主路径会启动或消费 Codex `stage-decomposition` typed closeout。该 closeout 是目标 stage graph、action refs、pack 文件、independent gate policy 和 quality gate declaration 的来源；脚本只负责校验、物化、scaffold/Agent Lab 运行和 receipt 记录。
+- 参数化 action implementation 是 `npm run build-agent-baseline -- --output-dir <dir> --opl-bin <opl> --ai-reviewer-evaluation <reviewer-eval.json> [--stage-runner fixture|live] [--stage-decomposition-closeout <closeout.json>] --domain-id <domain-id> --domain-label <label> --delivery-domain <delivery-domain> --target-brief <brief>`：根据 typed stage-decomposition packet 生成用户指定的目标 agent repo，调用 OPL 脚手架校验，生成 Agent Lab 外部测试套件，运行 `opl agent-lab run --suite`，消费结构化 AI reviewer evaluation，再写入基线回执、后续学习候选和 `mechanism-patch-proposal.json`。`bootstrap:sample` 只保留为同一实现的显式兼容 alias。
+- free text closeout、partial refs、缺 independent gate policy、缺 quality gate declaration 或 self-review 必须在签发 baseline receipt 前 fail closed。
+- 不带 `--domain-id` 的兼容 smoke 仍生成 `sample-brief-agent`，并额外生成 `real-target-brief-agent` 的 refs-only 最小交付证据；该 smoke 使用同一个 typed stage-decomposition fixture runner，不计入真实目标交付，多目标 scaleout 仍需要后续目标仓 owner receipt。
 - 外部接管入口是 `npm run takeover:test -- --agent-dir <existing-agent-dir> --output-dir <dir> --opl-bin <opl>`：读取目标智能体的描述文件和合同，生成接管测试套件，运行 Agent Lab，再写入接管回执、受门控的自进化候选和 `takeover-mechanism-patch-proposal.json`。
 - 统一接口入口是 `opl agents interfaces --repo-dir <this-repo> --json`：OPL 读取本仓标准合同并生成 CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述。
 - Registry / App 消费入口在 `contracts/opl_domain_manifest_registration.json` 和 `contracts/app_workbench_projection.json`：它们提供 discovery receipt 与 drilldown readiness receipt，只证明 OPL/App 可消费 refs，不宣称 App live rendering、目标事实写入或默认推广已经发生。
@@ -130,7 +132,7 @@ npm test
 `typecheck` 会用 TypeScript compiler 检查 `scripts/**/*.ts` 和 `tests/**/*.ts`。测试内容包括合同字段、OPL 生成接口 bundle、`agent/` domain pack 文件存在性、stage prompt/skill/knowledge/evaluation refs 真实路径、非空文件与占位符检查。
 
 ```bash
-npm run bootstrap:sample -- --output-dir /Users/gaofeng/workspace/research-workbench-agent --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl --ai-reviewer-evaluation /tmp/reviewer-eval.json --domain-id research-workbench-agent --domain-label "Research Workbench Agent" --delivery-domain research_workbench --target-brief "Create an OPL-compatible research workbench agent that turns a user research question into a scoped plan, evidence ledger, and owner-gated brief."
+npm run build-agent-baseline -- --output-dir /Users/gaofeng/workspace/research-workbench-agent --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl --ai-reviewer-evaluation /tmp/reviewer-eval.json --domain-id research-workbench-agent --domain-label "Research Workbench Agent" --delivery-domain research_workbench --target-brief "Create an OPL-compatible research workbench agent that turns a user research question into a scoped plan, evidence ledger, and owner-gated brief."
 ```
 
 ```bash

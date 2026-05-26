@@ -24,14 +24,21 @@
 
 ## 输出
 
-- `stage_control_plane_ref`：目标 agent 的 stage-led control plane。
-- `action_catalog_ref`：domain-owned action metadata 与 authority boundary。
-- `memory_descriptor_ref`：memory locator、owner 和禁止写入边界。
-- 可选 artifact locator、owner receipt schema、quality gate refs。
+必须输出单个 typed JSON closeout packet，`surface_kind="stage_attempt_closeout_packet"`，`stage_id="stage-decomposition"`，并包含 `stage_decomposition_pack_draft`。自由文本总结不能作为 closeout。
+
+`stage_decomposition_pack_draft` 必须包含：
+
+- `target_agent`：`domain_id`、`domain_label`、`delivery_domain`、`target_brief`。
+- `action_catalog`：domain-owned action metadata、supported surfaces 和 no-forbidden-write authority boundary。
+- `stage_control_plane`：完整 stage list，每个 stage 都带 `selected_executor=codex_cli`、prompt/skill/knowledge/quality gate refs、requires/ensures、expected receipt refs、independent gate policy 和 owner boundary。
+- `files`：目标 repo 下真实 `agent/prompts`、`agent/stages`、`agent/skills`、`agent/knowledge`、`agent/quality_gates` Markdown 文件路径与正文。
+- `no_forbidden_write_policy`：明确 OPL/OMA 不写 target truth、memory body、artifact body、quality/export verdict 或 default promotion。
 
 ## 质量门槛
 
 - 每个 stage 至少声明 prompt、tools/action 或明确无动作原因、knowledge/memory refs、handoff、quality gate。
+- 每个 stage 必须有 quality gate declaration；dedicated review stage 仅在专家判断、artifact/export mutation、domain truth movement、quality/export verdict 或 high-risk handoff 时必要。
+- independent gate policy 必须禁止 execution attempt self-review、shared-context review、mechanical completion claim 和 provider-completion-as-domain-ready claim。
 - action/stage metadata 可作为 CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK surface 的唯一派生源。
 - 没有 repo-owned generic scheduler、daemon、queue、attempt ledger、workbench 或 private wrapper。
 - domain truth、memory body、artifact body、quality/export verdict 的 owner 没有漂移。
