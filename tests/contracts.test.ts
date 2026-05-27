@@ -370,7 +370,8 @@ test('stage launch contract is Codex-first, receipted, and OPL-10 bounded', () =
     const ensures = asStrings(stage.ensures);
     const expectedReceiptRefs = asStrings(stage.expected_receipt_refs);
     const hardBlockerRefs = asStrings(stage.hard_blocker_refs);
-    const userStageLog = stage.user_stage_log_contract;
+    const stageContract = stage.stage_contract;
+    const userStageLog = stageContract.user_stage_log_contract;
 
     assert.ok(requires.includes(`stage:${label}`), `${label}.requires should include stage ref`);
     assert.ok(requires.includes('runtime-ref:stage-attempt-ledger'), `${label}.requires should include stage ledger`);

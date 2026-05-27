@@ -210,41 +210,43 @@
           "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/intent-intake/codex-default-baseline"
         }
       ],
-      "user_stage_log_contract": {
-        "surface_kind": "opl_standard_agent_user_stage_log_contract",
-        "version": "standard-user-stage-log.v1",
-        "owner": "one-person-lab",
-        "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
-        "opl_projection_surface": "stage_progress_log.user_stage_log",
-        "domain_semantic_sources": [
-          "typed_closeout_packet.user_stage_log",
-          "typed_closeout_packet.stage_log_summary",
-          "route_impact.user_stage_log",
-          "route_impact.stage_log_summary"
-        ],
-        "required_domain_semantic_fields": [
-          "stage_name",
-          "problem_summary",
-          "stage_goal",
-          "stage_work_done",
-          "changed_stage_surfaces",
-          "outcome",
-          "remaining_blockers",
-          "evidence_refs"
-        ],
-        "required_observability_fields": [
-          "duration",
-          "token_usage",
-          "cost"
-        ],
-        "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
-        "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
-        "authority_boundary": {
-          "opl_can_infer_domain_semantics": false,
-          "opl_can_read_artifact_body": false,
-          "opl_can_write_domain_truth": false,
-          "opl_can_authorize_quality_or_export": false,
-          "provider_completion_can_claim_stage_semantics_complete": false
+      "stage_contract": {
+        "user_stage_log_contract": {
+          "surface_kind": "opl_standard_agent_user_stage_log_contract",
+          "version": "standard-user-stage-log.v1",
+          "owner": "one-person-lab",
+          "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
+          "opl_projection_surface": "stage_progress_log.user_stage_log",
+          "domain_semantic_sources": [
+            "typed_closeout_packet.user_stage_log",
+            "typed_closeout_packet.stage_log_summary",
+            "route_impact.user_stage_log",
+            "route_impact.stage_log_summary"
+          ],
+          "required_domain_semantic_fields": [
+            "stage_name",
+            "problem_summary",
+            "stage_goal",
+            "stage_work_done",
+            "changed_stage_surfaces",
+            "outcome",
+            "remaining_blockers",
+            "evidence_refs"
+          ],
+          "required_observability_fields": [
+            "duration",
+            "token_usage",
+            "cost"
+          ],
+          "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
+          "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
+          "authority_boundary": {
+            "opl_can_infer_domain_semantics": false,
+            "opl_can_read_artifact_body": false,
+            "opl_can_write_domain_truth": false,
+            "opl_can_authorize_quality_or_export": false,
+            "provider_completion_can_claim_stage_semantics_complete": false
+          }
         }
       }
     },
@@ -445,41 +447,43 @@
           "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/web-experience-research/non-default-reviewer-diversity"
         }
       ],
-      "user_stage_log_contract": {
-        "surface_kind": "opl_standard_agent_user_stage_log_contract",
-        "version": "standard-user-stage-log.v1",
-        "owner": "one-person-lab",
-        "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
-        "opl_projection_surface": "stage_progress_log.user_stage_log",
-        "domain_semantic_sources": [
-          "typed_closeout_packet.user_stage_log",
-          "typed_closeout_packet.stage_log_summary",
-          "route_impact.user_stage_log",
-          "route_impact.stage_log_summary"
-        ],
-        "required_domain_semantic_fields": [
-          "stage_name",
-          "problem_summary",
-          "stage_goal",
-          "stage_work_done",
-          "changed_stage_surfaces",
-          "outcome",
-          "remaining_blockers",
-          "evidence_refs"
-        ],
-        "required_observability_fields": [
-          "duration",
-          "token_usage",
-          "cost"
-        ],
-        "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
-        "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
-        "authority_boundary": {
-          "opl_can_infer_domain_semantics": false,
-          "opl_can_read_artifact_body": false,
-          "opl_can_write_domain_truth": false,
-          "opl_can_authorize_quality_or_export": false,
-          "provider_completion_can_claim_stage_semantics_complete": false
+      "stage_contract": {
+        "user_stage_log_contract": {
+          "surface_kind": "opl_standard_agent_user_stage_log_contract",
+          "version": "standard-user-stage-log.v1",
+          "owner": "one-person-lab",
+          "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
+          "opl_projection_surface": "stage_progress_log.user_stage_log",
+          "domain_semantic_sources": [
+            "typed_closeout_packet.user_stage_log",
+            "typed_closeout_packet.stage_log_summary",
+            "route_impact.user_stage_log",
+            "route_impact.stage_log_summary"
+          ],
+          "required_domain_semantic_fields": [
+            "stage_name",
+            "problem_summary",
+            "stage_goal",
+            "stage_work_done",
+            "changed_stage_surfaces",
+            "outcome",
+            "remaining_blockers",
+            "evidence_refs"
+          ],
+          "required_observability_fields": [
+            "duration",
+            "token_usage",
+            "cost"
+          ],
+          "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
+          "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
+          "authority_boundary": {
+            "opl_can_infer_domain_semantics": false,
+            "opl_can_read_artifact_body": false,
+            "opl_can_write_domain_truth": false,
+            "opl_can_authorize_quality_or_export": false,
+            "provider_completion_can_claim_stage_semantics_complete": false
+          }
         }
       }
     },
@@ -679,41 +683,43 @@
           "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/stage-decomposition/codex-default-baseline"
         }
       ],
-      "user_stage_log_contract": {
-        "surface_kind": "opl_standard_agent_user_stage_log_contract",
-        "version": "standard-user-stage-log.v1",
-        "owner": "one-person-lab",
-        "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
-        "opl_projection_surface": "stage_progress_log.user_stage_log",
-        "domain_semantic_sources": [
-          "typed_closeout_packet.user_stage_log",
-          "typed_closeout_packet.stage_log_summary",
-          "route_impact.user_stage_log",
-          "route_impact.stage_log_summary"
-        ],
-        "required_domain_semantic_fields": [
-          "stage_name",
-          "problem_summary",
-          "stage_goal",
-          "stage_work_done",
-          "changed_stage_surfaces",
-          "outcome",
-          "remaining_blockers",
-          "evidence_refs"
-        ],
-        "required_observability_fields": [
-          "duration",
-          "token_usage",
-          "cost"
-        ],
-        "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
-        "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
-        "authority_boundary": {
-          "opl_can_infer_domain_semantics": false,
-          "opl_can_read_artifact_body": false,
-          "opl_can_write_domain_truth": false,
-          "opl_can_authorize_quality_or_export": false,
-          "provider_completion_can_claim_stage_semantics_complete": false
+      "stage_contract": {
+        "user_stage_log_contract": {
+          "surface_kind": "opl_standard_agent_user_stage_log_contract",
+          "version": "standard-user-stage-log.v1",
+          "owner": "one-person-lab",
+          "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
+          "opl_projection_surface": "stage_progress_log.user_stage_log",
+          "domain_semantic_sources": [
+            "typed_closeout_packet.user_stage_log",
+            "typed_closeout_packet.stage_log_summary",
+            "route_impact.user_stage_log",
+            "route_impact.stage_log_summary"
+          ],
+          "required_domain_semantic_fields": [
+            "stage_name",
+            "problem_summary",
+            "stage_goal",
+            "stage_work_done",
+            "changed_stage_surfaces",
+            "outcome",
+            "remaining_blockers",
+            "evidence_refs"
+          ],
+          "required_observability_fields": [
+            "duration",
+            "token_usage",
+            "cost"
+          ],
+          "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
+          "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
+          "authority_boundary": {
+            "opl_can_infer_domain_semantics": false,
+            "opl_can_read_artifact_body": false,
+            "opl_can_write_domain_truth": false,
+            "opl_can_authorize_quality_or_export": false,
+            "provider_completion_can_claim_stage_semantics_complete": false
+          }
         }
       }
     },
@@ -923,41 +929,43 @@
           "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/agent-skeleton-build/codex-default-baseline"
         }
       ],
-      "user_stage_log_contract": {
-        "surface_kind": "opl_standard_agent_user_stage_log_contract",
-        "version": "standard-user-stage-log.v1",
-        "owner": "one-person-lab",
-        "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
-        "opl_projection_surface": "stage_progress_log.user_stage_log",
-        "domain_semantic_sources": [
-          "typed_closeout_packet.user_stage_log",
-          "typed_closeout_packet.stage_log_summary",
-          "route_impact.user_stage_log",
-          "route_impact.stage_log_summary"
-        ],
-        "required_domain_semantic_fields": [
-          "stage_name",
-          "problem_summary",
-          "stage_goal",
-          "stage_work_done",
-          "changed_stage_surfaces",
-          "outcome",
-          "remaining_blockers",
-          "evidence_refs"
-        ],
-        "required_observability_fields": [
-          "duration",
-          "token_usage",
-          "cost"
-        ],
-        "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
-        "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
-        "authority_boundary": {
-          "opl_can_infer_domain_semantics": false,
-          "opl_can_read_artifact_body": false,
-          "opl_can_write_domain_truth": false,
-          "opl_can_authorize_quality_or_export": false,
-          "provider_completion_can_claim_stage_semantics_complete": false
+      "stage_contract": {
+        "user_stage_log_contract": {
+          "surface_kind": "opl_standard_agent_user_stage_log_contract",
+          "version": "standard-user-stage-log.v1",
+          "owner": "one-person-lab",
+          "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
+          "opl_projection_surface": "stage_progress_log.user_stage_log",
+          "domain_semantic_sources": [
+            "typed_closeout_packet.user_stage_log",
+            "typed_closeout_packet.stage_log_summary",
+            "route_impact.user_stage_log",
+            "route_impact.stage_log_summary"
+          ],
+          "required_domain_semantic_fields": [
+            "stage_name",
+            "problem_summary",
+            "stage_goal",
+            "stage_work_done",
+            "changed_stage_surfaces",
+            "outcome",
+            "remaining_blockers",
+            "evidence_refs"
+          ],
+          "required_observability_fields": [
+            "duration",
+            "token_usage",
+            "cost"
+          ],
+          "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
+          "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
+          "authority_boundary": {
+            "opl_can_infer_domain_semantics": false,
+            "opl_can_read_artifact_body": false,
+            "opl_can_write_domain_truth": false,
+            "opl_can_authorize_quality_or_export": false,
+            "provider_completion_can_claim_stage_semantics_complete": false
+          }
         }
       }
     },
@@ -1165,41 +1173,43 @@
           "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/eval-suite-build/html-authoring-antigravity-speed"
         }
       ],
-      "user_stage_log_contract": {
-        "surface_kind": "opl_standard_agent_user_stage_log_contract",
-        "version": "standard-user-stage-log.v1",
-        "owner": "one-person-lab",
-        "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
-        "opl_projection_surface": "stage_progress_log.user_stage_log",
-        "domain_semantic_sources": [
-          "typed_closeout_packet.user_stage_log",
-          "typed_closeout_packet.stage_log_summary",
-          "route_impact.user_stage_log",
-          "route_impact.stage_log_summary"
-        ],
-        "required_domain_semantic_fields": [
-          "stage_name",
-          "problem_summary",
-          "stage_goal",
-          "stage_work_done",
-          "changed_stage_surfaces",
-          "outcome",
-          "remaining_blockers",
-          "evidence_refs"
-        ],
-        "required_observability_fields": [
-          "duration",
-          "token_usage",
-          "cost"
-        ],
-        "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
-        "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
-        "authority_boundary": {
-          "opl_can_infer_domain_semantics": false,
-          "opl_can_read_artifact_body": false,
-          "opl_can_write_domain_truth": false,
-          "opl_can_authorize_quality_or_export": false,
-          "provider_completion_can_claim_stage_semantics_complete": false
+      "stage_contract": {
+        "user_stage_log_contract": {
+          "surface_kind": "opl_standard_agent_user_stage_log_contract",
+          "version": "standard-user-stage-log.v1",
+          "owner": "one-person-lab",
+          "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
+          "opl_projection_surface": "stage_progress_log.user_stage_log",
+          "domain_semantic_sources": [
+            "typed_closeout_packet.user_stage_log",
+            "typed_closeout_packet.stage_log_summary",
+            "route_impact.user_stage_log",
+            "route_impact.stage_log_summary"
+          ],
+          "required_domain_semantic_fields": [
+            "stage_name",
+            "problem_summary",
+            "stage_goal",
+            "stage_work_done",
+            "changed_stage_surfaces",
+            "outcome",
+            "remaining_blockers",
+            "evidence_refs"
+          ],
+          "required_observability_fields": [
+            "duration",
+            "token_usage",
+            "cost"
+          ],
+          "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
+          "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
+          "authority_boundary": {
+            "opl_can_infer_domain_semantics": false,
+            "opl_can_read_artifact_body": false,
+            "opl_can_write_domain_truth": false,
+            "opl_can_authorize_quality_or_export": false,
+            "provider_completion_can_claim_stage_semantics_complete": false
+          }
         }
       }
     },
@@ -1402,41 +1412,43 @@
           "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/baseline-run/codex-default-baseline"
         }
       ],
-      "user_stage_log_contract": {
-        "surface_kind": "opl_standard_agent_user_stage_log_contract",
-        "version": "standard-user-stage-log.v1",
-        "owner": "one-person-lab",
-        "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
-        "opl_projection_surface": "stage_progress_log.user_stage_log",
-        "domain_semantic_sources": [
-          "typed_closeout_packet.user_stage_log",
-          "typed_closeout_packet.stage_log_summary",
-          "route_impact.user_stage_log",
-          "route_impact.stage_log_summary"
-        ],
-        "required_domain_semantic_fields": [
-          "stage_name",
-          "problem_summary",
-          "stage_goal",
-          "stage_work_done",
-          "changed_stage_surfaces",
-          "outcome",
-          "remaining_blockers",
-          "evidence_refs"
-        ],
-        "required_observability_fields": [
-          "duration",
-          "token_usage",
-          "cost"
-        ],
-        "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
-        "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
-        "authority_boundary": {
-          "opl_can_infer_domain_semantics": false,
-          "opl_can_read_artifact_body": false,
-          "opl_can_write_domain_truth": false,
-          "opl_can_authorize_quality_or_export": false,
-          "provider_completion_can_claim_stage_semantics_complete": false
+      "stage_contract": {
+        "user_stage_log_contract": {
+          "surface_kind": "opl_standard_agent_user_stage_log_contract",
+          "version": "standard-user-stage-log.v1",
+          "owner": "one-person-lab",
+          "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
+          "opl_projection_surface": "stage_progress_log.user_stage_log",
+          "domain_semantic_sources": [
+            "typed_closeout_packet.user_stage_log",
+            "typed_closeout_packet.stage_log_summary",
+            "route_impact.user_stage_log",
+            "route_impact.stage_log_summary"
+          ],
+          "required_domain_semantic_fields": [
+            "stage_name",
+            "problem_summary",
+            "stage_goal",
+            "stage_work_done",
+            "changed_stage_surfaces",
+            "outcome",
+            "remaining_blockers",
+            "evidence_refs"
+          ],
+          "required_observability_fields": [
+            "duration",
+            "token_usage",
+            "cost"
+          ],
+          "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
+          "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
+          "authority_boundary": {
+            "opl_can_infer_domain_semantics": false,
+            "opl_can_read_artifact_body": false,
+            "opl_can_write_domain_truth": false,
+            "opl_can_authorize_quality_or_export": false,
+            "provider_completion_can_claim_stage_semantics_complete": false
+          }
         }
       }
     },
@@ -1660,41 +1672,43 @@
           "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/external-agent-takeover/codex-default-baseline"
         }
       ],
-      "user_stage_log_contract": {
-        "surface_kind": "opl_standard_agent_user_stage_log_contract",
-        "version": "standard-user-stage-log.v1",
-        "owner": "one-person-lab",
-        "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
-        "opl_projection_surface": "stage_progress_log.user_stage_log",
-        "domain_semantic_sources": [
-          "typed_closeout_packet.user_stage_log",
-          "typed_closeout_packet.stage_log_summary",
-          "route_impact.user_stage_log",
-          "route_impact.stage_log_summary"
-        ],
-        "required_domain_semantic_fields": [
-          "stage_name",
-          "problem_summary",
-          "stage_goal",
-          "stage_work_done",
-          "changed_stage_surfaces",
-          "outcome",
-          "remaining_blockers",
-          "evidence_refs"
-        ],
-        "required_observability_fields": [
-          "duration",
-          "token_usage",
-          "cost"
-        ],
-        "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
-        "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
-        "authority_boundary": {
-          "opl_can_infer_domain_semantics": false,
-          "opl_can_read_artifact_body": false,
-          "opl_can_write_domain_truth": false,
-          "opl_can_authorize_quality_or_export": false,
-          "provider_completion_can_claim_stage_semantics_complete": false
+      "stage_contract": {
+        "user_stage_log_contract": {
+          "surface_kind": "opl_standard_agent_user_stage_log_contract",
+          "version": "standard-user-stage-log.v1",
+          "owner": "one-person-lab",
+          "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
+          "opl_projection_surface": "stage_progress_log.user_stage_log",
+          "domain_semantic_sources": [
+            "typed_closeout_packet.user_stage_log",
+            "typed_closeout_packet.stage_log_summary",
+            "route_impact.user_stage_log",
+            "route_impact.stage_log_summary"
+          ],
+          "required_domain_semantic_fields": [
+            "stage_name",
+            "problem_summary",
+            "stage_goal",
+            "stage_work_done",
+            "changed_stage_surfaces",
+            "outcome",
+            "remaining_blockers",
+            "evidence_refs"
+          ],
+          "required_observability_fields": [
+            "duration",
+            "token_usage",
+            "cost"
+          ],
+          "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
+          "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
+          "authority_boundary": {
+            "opl_can_infer_domain_semantics": false,
+            "opl_can_read_artifact_body": false,
+            "opl_can_write_domain_truth": false,
+            "opl_can_authorize_quality_or_export": false,
+            "provider_completion_can_claim_stage_semantics_complete": false
+          }
         }
       }
     },
@@ -1910,41 +1924,43 @@
           "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/optimizer-iteration/codex-default-baseline"
         }
       ],
-      "user_stage_log_contract": {
-        "surface_kind": "opl_standard_agent_user_stage_log_contract",
-        "version": "standard-user-stage-log.v1",
-        "owner": "one-person-lab",
-        "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
-        "opl_projection_surface": "stage_progress_log.user_stage_log",
-        "domain_semantic_sources": [
-          "typed_closeout_packet.user_stage_log",
-          "typed_closeout_packet.stage_log_summary",
-          "route_impact.user_stage_log",
-          "route_impact.stage_log_summary"
-        ],
-        "required_domain_semantic_fields": [
-          "stage_name",
-          "problem_summary",
-          "stage_goal",
-          "stage_work_done",
-          "changed_stage_surfaces",
-          "outcome",
-          "remaining_blockers",
-          "evidence_refs"
-        ],
-        "required_observability_fields": [
-          "duration",
-          "token_usage",
-          "cost"
-        ],
-        "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
-        "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
-        "authority_boundary": {
-          "opl_can_infer_domain_semantics": false,
-          "opl_can_read_artifact_body": false,
-          "opl_can_write_domain_truth": false,
-          "opl_can_authorize_quality_or_export": false,
-          "provider_completion_can_claim_stage_semantics_complete": false
+      "stage_contract": {
+        "user_stage_log_contract": {
+          "surface_kind": "opl_standard_agent_user_stage_log_contract",
+          "version": "standard-user-stage-log.v1",
+          "owner": "one-person-lab",
+          "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
+          "opl_projection_surface": "stage_progress_log.user_stage_log",
+          "domain_semantic_sources": [
+            "typed_closeout_packet.user_stage_log",
+            "typed_closeout_packet.stage_log_summary",
+            "route_impact.user_stage_log",
+            "route_impact.stage_log_summary"
+          ],
+          "required_domain_semantic_fields": [
+            "stage_name",
+            "problem_summary",
+            "stage_goal",
+            "stage_work_done",
+            "changed_stage_surfaces",
+            "outcome",
+            "remaining_blockers",
+            "evidence_refs"
+          ],
+          "required_observability_fields": [
+            "duration",
+            "token_usage",
+            "cost"
+          ],
+          "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
+          "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
+          "authority_boundary": {
+            "opl_can_infer_domain_semantics": false,
+            "opl_can_read_artifact_body": false,
+            "opl_can_write_domain_truth": false,
+            "opl_can_authorize_quality_or_export": false,
+            "provider_completion_can_claim_stage_semantics_complete": false
+          }
         }
       }
     },
@@ -2152,41 +2168,43 @@
           "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/baseline-delivery/codex-default-baseline"
         }
       ],
-      "user_stage_log_contract": {
-        "surface_kind": "opl_standard_agent_user_stage_log_contract",
-        "version": "standard-user-stage-log.v1",
-        "owner": "one-person-lab",
-        "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
-        "opl_projection_surface": "stage_progress_log.user_stage_log",
-        "domain_semantic_sources": [
-          "typed_closeout_packet.user_stage_log",
-          "typed_closeout_packet.stage_log_summary",
-          "route_impact.user_stage_log",
-          "route_impact.stage_log_summary"
-        ],
-        "required_domain_semantic_fields": [
-          "stage_name",
-          "problem_summary",
-          "stage_goal",
-          "stage_work_done",
-          "changed_stage_surfaces",
-          "outcome",
-          "remaining_blockers",
-          "evidence_refs"
-        ],
-        "required_observability_fields": [
-          "duration",
-          "token_usage",
-          "cost"
-        ],
-        "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
-        "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
-        "authority_boundary": {
-          "opl_can_infer_domain_semantics": false,
-          "opl_can_read_artifact_body": false,
-          "opl_can_write_domain_truth": false,
-          "opl_can_authorize_quality_or_export": false,
-          "provider_completion_can_claim_stage_semantics_complete": false
+      "stage_contract": {
+        "user_stage_log_contract": {
+          "surface_kind": "opl_standard_agent_user_stage_log_contract",
+          "version": "standard-user-stage-log.v1",
+          "owner": "one-person-lab",
+          "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
+          "opl_projection_surface": "stage_progress_log.user_stage_log",
+          "domain_semantic_sources": [
+            "typed_closeout_packet.user_stage_log",
+            "typed_closeout_packet.stage_log_summary",
+            "route_impact.user_stage_log",
+            "route_impact.stage_log_summary"
+          ],
+          "required_domain_semantic_fields": [
+            "stage_name",
+            "problem_summary",
+            "stage_goal",
+            "stage_work_done",
+            "changed_stage_surfaces",
+            "outcome",
+            "remaining_blockers",
+            "evidence_refs"
+          ],
+          "required_observability_fields": [
+            "duration",
+            "token_usage",
+            "cost"
+          ],
+          "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
+          "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
+          "authority_boundary": {
+            "opl_can_infer_domain_semantics": false,
+            "opl_can_read_artifact_body": false,
+            "opl_can_write_domain_truth": false,
+            "opl_can_authorize_quality_or_export": false,
+            "provider_completion_can_claim_stage_semantics_complete": false
+          }
         }
       }
     },
@@ -2418,41 +2436,43 @@
           "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/trajectory-learning-intake/codex-default-baseline"
         }
       ],
-      "user_stage_log_contract": {
-        "surface_kind": "opl_standard_agent_user_stage_log_contract",
-        "version": "standard-user-stage-log.v1",
-        "owner": "one-person-lab",
-        "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
-        "opl_projection_surface": "stage_progress_log.user_stage_log",
-        "domain_semantic_sources": [
-          "typed_closeout_packet.user_stage_log",
-          "typed_closeout_packet.stage_log_summary",
-          "route_impact.user_stage_log",
-          "route_impact.stage_log_summary"
-        ],
-        "required_domain_semantic_fields": [
-          "stage_name",
-          "problem_summary",
-          "stage_goal",
-          "stage_work_done",
-          "changed_stage_surfaces",
-          "outcome",
-          "remaining_blockers",
-          "evidence_refs"
-        ],
-        "required_observability_fields": [
-          "duration",
-          "token_usage",
-          "cost"
-        ],
-        "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
-        "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
-        "authority_boundary": {
-          "opl_can_infer_domain_semantics": false,
-          "opl_can_read_artifact_body": false,
-          "opl_can_write_domain_truth": false,
-          "opl_can_authorize_quality_or_export": false,
-          "provider_completion_can_claim_stage_semantics_complete": false
+      "stage_contract": {
+        "user_stage_log_contract": {
+          "surface_kind": "opl_standard_agent_user_stage_log_contract",
+          "version": "standard-user-stage-log.v1",
+          "owner": "one-person-lab",
+          "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
+          "opl_projection_surface": "stage_progress_log.user_stage_log",
+          "domain_semantic_sources": [
+            "typed_closeout_packet.user_stage_log",
+            "typed_closeout_packet.stage_log_summary",
+            "route_impact.user_stage_log",
+            "route_impact.stage_log_summary"
+          ],
+          "required_domain_semantic_fields": [
+            "stage_name",
+            "problem_summary",
+            "stage_goal",
+            "stage_work_done",
+            "changed_stage_surfaces",
+            "outcome",
+            "remaining_blockers",
+            "evidence_refs"
+          ],
+          "required_observability_fields": [
+            "duration",
+            "token_usage",
+            "cost"
+          ],
+          "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
+          "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
+          "authority_boundary": {
+            "opl_can_infer_domain_semantics": false,
+            "opl_can_read_artifact_body": false,
+            "opl_can_write_domain_truth": false,
+            "opl_can_authorize_quality_or_export": false,
+            "provider_completion_can_claim_stage_semantics_complete": false
+          }
         }
       }
     },
@@ -2662,41 +2682,43 @@
           "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/online-learning/codex-default-baseline"
         }
       ],
-      "user_stage_log_contract": {
-        "surface_kind": "opl_standard_agent_user_stage_log_contract",
-        "version": "standard-user-stage-log.v1",
-        "owner": "one-person-lab",
-        "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
-        "opl_projection_surface": "stage_progress_log.user_stage_log",
-        "domain_semantic_sources": [
-          "typed_closeout_packet.user_stage_log",
-          "typed_closeout_packet.stage_log_summary",
-          "route_impact.user_stage_log",
-          "route_impact.stage_log_summary"
-        ],
-        "required_domain_semantic_fields": [
-          "stage_name",
-          "problem_summary",
-          "stage_goal",
-          "stage_work_done",
-          "changed_stage_surfaces",
-          "outcome",
-          "remaining_blockers",
-          "evidence_refs"
-        ],
-        "required_observability_fields": [
-          "duration",
-          "token_usage",
-          "cost"
-        ],
-        "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
-        "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
-        "authority_boundary": {
-          "opl_can_infer_domain_semantics": false,
-          "opl_can_read_artifact_body": false,
-          "opl_can_write_domain_truth": false,
-          "opl_can_authorize_quality_or_export": false,
-          "provider_completion_can_claim_stage_semantics_complete": false
+      "stage_contract": {
+        "user_stage_log_contract": {
+          "surface_kind": "opl_standard_agent_user_stage_log_contract",
+          "version": "standard-user-stage-log.v1",
+          "owner": "one-person-lab",
+          "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
+          "opl_projection_surface": "stage_progress_log.user_stage_log",
+          "domain_semantic_sources": [
+            "typed_closeout_packet.user_stage_log",
+            "typed_closeout_packet.stage_log_summary",
+            "route_impact.user_stage_log",
+            "route_impact.stage_log_summary"
+          ],
+          "required_domain_semantic_fields": [
+            "stage_name",
+            "problem_summary",
+            "stage_goal",
+            "stage_work_done",
+            "changed_stage_surfaces",
+            "outcome",
+            "remaining_blockers",
+            "evidence_refs"
+          ],
+          "required_observability_fields": [
+            "duration",
+            "token_usage",
+            "cost"
+          ],
+          "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
+          "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
+          "authority_boundary": {
+            "opl_can_infer_domain_semantics": false,
+            "opl_can_read_artifact_body": false,
+            "opl_can_write_domain_truth": false,
+            "opl_can_authorize_quality_or_export": false,
+            "provider_completion_can_claim_stage_semantics_complete": false
+          }
         }
       }
     }
