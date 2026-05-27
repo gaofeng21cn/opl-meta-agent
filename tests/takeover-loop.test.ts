@@ -2,9 +2,16 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import {
+  parseBootstrapSampleAgentArgs,
+  runBootstrapSampleAgent,
+} from '../scripts/bootstrap-sample-agent.ts';
+import {
+  parseTakeoverAgentArgs,
+  runTakeoverAgent,
+} from '../scripts/takeover-agent.ts';
 import type { JsonObject } from '../scripts/lib/domain-pack.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -45,18 +52,6 @@ function writeAiReviewerEvaluation(filePath: string): void {
   fs.writeFileSync(filePath, `${JSON.stringify(evaluation, null, 2)}\n`);
 }
 
-function runNode(args: string[], oplBin: string) {
-  return spawnSync(process.execPath, args, {
-    cwd: repoRoot,
-    encoding: 'utf8',
-    maxBuffer: 16 * 1024 * 1024,
-    env: {
-      ...process.env,
-      OPL_BIN: oplBin,
-    },
-  });
-}
-
 test('opl-meta-agent takes over testing for an existing external agent without authority writes or default promotion', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-takeover-'));
   const bootstrapRoot = path.join(outputRoot, 'bootstrap');
@@ -67,30 +62,25 @@ test('opl-meta-agent takes over testing for an existing external agent without a
 
   try {
     writeAiReviewerEvaluation(reviewerEvaluationPath);
-    const bootstrap = runNode([
-      path.join(repoRoot, 'scripts/bootstrap-sample-agent.ts'),
+    runBootstrapSampleAgent(parseBootstrapSampleAgentArgs([
       '--output-dir',
       bootstrapRoot,
       '--opl-bin',
       oplBin,
       '--ai-reviewer-evaluation',
       reviewerEvaluationPath,
-    ], oplBin);
-    assert.equal(bootstrap.status, 0, bootstrap.stderr);
+    ]));
 
     const targetDir = path.join(bootstrapRoot, 'sample-brief-agent');
-    const takeover = runNode([
-      path.join(repoRoot, 'scripts/takeover-agent.ts'),
+    const payload = runTakeoverAgent(parseTakeoverAgentArgs([
       '--agent-dir',
       targetDir,
       '--output-dir',
       takeoverRoot,
       '--opl-bin',
       oplBin,
-    ], oplBin);
-    assert.equal(takeover.status, 0, takeover.stderr);
+    ]));
 
-    const payload = JSON.parse(takeover.stdout);
     assert.equal(payload.surface_kind, 'opl_meta_agent_takeover_loop_result');
     assert.equal(payload.status, 'passed');
     assert.equal(payload.takeover_policy.external_opl_compatible_agents_allowed, true);

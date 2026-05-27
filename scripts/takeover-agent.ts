@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   type DomainPackSummary,
   type JsonObject,
@@ -26,13 +26,13 @@ import {
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-type TakeoverArgs = {
+export type TakeoverArgs = {
   targetAgentDir: string;
   outputDir: string;
   oplBin: string;
 };
 
-function parseArgs(argv: string[]): TakeoverArgs {
+export function parseTakeoverAgentArgs(argv: string[]): TakeoverArgs {
   const parsed: {
     targetAgentDir: string | null;
     outputDir: string | null;
@@ -150,8 +150,7 @@ function buildTakeoverMechanismPatchProposal(
   });
 }
 
-function main() {
-  const { targetAgentDir, outputDir, oplBin } = parseArgs(process.argv.slice(2));
+export function runTakeoverAgent({ targetAgentDir, outputDir, oplBin }: TakeoverArgs): JsonObject {
   fs.mkdirSync(outputDir, { recursive: true });
   const domainPackSummary: DomainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
 
@@ -213,7 +212,7 @@ function main() {
   writeJson(learningPath, learningCandidate);
   writeJson(mechanismPath, mechanismPatchProposal);
 
-  const payload = {
+  return {
     surface_kind: 'opl_meta_agent_takeover_loop_result',
     version: 'opl-meta-agent.takeover-loop.v1',
     status: suiteResult.status === 'passed' ? 'passed' : 'blocked',
@@ -249,13 +248,19 @@ function main() {
       mechanism_patch_proposal: mechanismPatchProposal,
     },
   };
+}
+
+function main() {
+  const payload = runTakeoverAgent(parseTakeoverAgentArgs(process.argv.slice(2)));
 
   process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
 }
 
-try {
-  main();
-} catch (error) {
-  process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
-  process.exitCode = 1;
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  try {
+    main();
+  } catch (error) {
+    process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+    process.exitCode = 1;
+  }
 }

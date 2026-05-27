@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   type DomainPackSummary,
   type JsonObject,
@@ -41,7 +41,7 @@ import {
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-type BootstrapArgs = {
+export type BootstrapArgs = {
   outputDir: string;
   oplBin: string;
   aiReviewerEvaluationPath: string;
@@ -62,7 +62,7 @@ function nonEmptyValue(flag: string, value: string | undefined): string {
   return trimmed;
 }
 
-function parseArgs(argv: string[]): BootstrapArgs {
+export function parseBootstrapSampleAgentArgs(argv: string[]): BootstrapArgs {
   const parsed: {
     outputDir: string | null;
     oplBin: string;
@@ -435,8 +435,7 @@ function buildRealTargetAgentSuite({
   });
 }
 
-function main() {
-  const {
+export function runBootstrapSampleAgent({
     outputDir,
     oplBin,
     aiReviewerEvaluationPath,
@@ -444,7 +443,7 @@ function main() {
     sampleMode,
     stageRunner,
     stageCloseoutPacketPath,
-  } = parseArgs(process.argv.slice(2));
+  }: BootstrapArgs): JsonObject {
   fs.mkdirSync(outputDir, { recursive: true });
   const domainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
   const aiReviewerEvaluation = loadAiReviewerEvaluation(aiReviewerEvaluationPath);
@@ -656,7 +655,7 @@ function main() {
     };
   }
 
-  const payload = {
+  return {
     surface_kind: 'opl_meta_agent_self_learning_loop_result',
     version: 'opl-meta-agent.self-learning-loop.v1',
     status: suiteResult.status === 'passed' ? 'passed' : 'blocked',
@@ -704,13 +703,19 @@ function main() {
         }
       : {}),
   };
+}
+
+function main() {
+  const payload = runBootstrapSampleAgent(parseBootstrapSampleAgentArgs(process.argv.slice(2)));
 
   process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
 }
 
-try {
-  main();
-} catch (error) {
-  process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
-  process.exitCode = 1;
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  try {
+    main();
+  } catch (error) {
+    process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+    process.exitCode = 1;
+  }
 }

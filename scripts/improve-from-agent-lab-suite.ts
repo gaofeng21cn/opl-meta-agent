@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   type DomainPackSummary,
   type JsonObject,
@@ -57,7 +57,7 @@ import {
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-type ImproveArgs = {
+export type ImproveArgs = {
   suitePath: string;
   targetAgentDir: string;
   outputDir: string;
@@ -66,7 +66,7 @@ type ImproveArgs = {
   aiReviewerEvaluationPath: string;
 };
 
-function parseArgs(argv: string[]): ImproveArgs {
+export function parseImproveFromAgentLabSuiteArgs(argv: string[]): ImproveArgs {
   const parsed: {
     suitePath: string | null;
     targetAgentDir: string | null;
@@ -284,10 +284,14 @@ function buildCapabilityCandidate({
   };
 }
 
-function main() {
-  const { suitePath, targetAgentDir, outputDir, feedbackRef, oplBin, aiReviewerEvaluationPath } = parseArgs(
-    process.argv.slice(2),
-  );
+export function runImproveFromAgentLabSuite({
+  suitePath,
+  targetAgentDir,
+  outputDir,
+  feedbackRef,
+  oplBin,
+  aiReviewerEvaluationPath,
+}: ImproveArgs): JsonObject {
   fs.mkdirSync(outputDir, { recursive: true });
   const domainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
   const aiReviewerEvaluation = loadAiReviewerEvaluation(aiReviewerEvaluationPath);
@@ -394,7 +398,7 @@ function main() {
       blocker,
       agentLabRun,
     });
-    process.stdout.write(`${JSON.stringify({
+    return {
       surface_kind: 'opl_meta_agent_external_suite_self_evolution_result',
       version: 'opl-meta-agent.external-suite-self-evolution.v1',
       status: 'blocked_efficiency_quality_floor_missing',
@@ -413,8 +417,7 @@ function main() {
         target_capability_improvement_candidate: capabilityCandidate,
         typed_blocker: blocker,
       },
-    }, null, 2)}\n`);
-    return;
+    };
   }
   const developerPatchWorkOrder = buildDeveloperPatchWorkOrder({
     targetAgent,
@@ -436,7 +439,7 @@ function main() {
     agentLabRun,
   });
 
-  const payload = {
+  return {
     surface_kind: 'opl_meta_agent_external_suite_self_evolution_result',
     version: 'opl-meta-agent.external-suite-self-evolution.v1',
     status: suiteResult.status === 'passed' ? 'passed' : 'blocked_with_developer_patch_work_order',
@@ -458,12 +461,19 @@ function main() {
       developer_patch_work_order: developerPatchWorkOrder,
     },
   };
+}
+
+function main() {
+  const payload = runImproveFromAgentLabSuite(parseImproveFromAgentLabSuiteArgs(process.argv.slice(2)));
+
   process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
 }
 
-try {
-  main();
-} catch (error) {
-  process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
-  process.exitCode = 1;
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  try {
+    main();
+  } catch (error) {
+    process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+    process.exitCode = 1;
+  }
 }

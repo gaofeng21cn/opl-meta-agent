@@ -5,6 +5,10 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import {
+  parseImproveFromAgentLabSuiteArgs,
+  runImproveFromAgentLabSuite,
+} from '../scripts/improve-from-agent-lab-suite.ts';
 import type { JsonObject } from '../scripts/lib/domain-pack.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -31,6 +35,10 @@ function writeJson(filePath: string, payload: unknown): void {
 
 function readJson(filePath: string): JsonObject {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+function runImproveArgs(args: string[]): JsonObject {
+  return runImproveFromAgentLabSuite(parseImproveFromAgentLabSuiteArgs(args));
 }
 
 function assertTargetPatchLoopMachineRefs(refs: JsonObject, expected: {
@@ -683,30 +691,18 @@ test('external suite efficiency evidence is projected into developer work order 
     const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
     writeEfficiencyReviewerEvaluation(reviewerEvaluationPath);
 
-    const result = spawnSync(
-      process.execPath,
-      [
-        path.join(repoRoot, 'scripts/improve-from-agent-lab-suite.ts'),
-        '--suite',
-        suitePath,
-        '--target-agent-dir',
-        targetAgentDir,
-        '--output-dir',
-        outputRoot,
-        '--ai-reviewer-evaluation',
-        reviewerEvaluationPath,
-        '--opl-bin',
-        oplBin,
-      ],
-      {
-        cwd: repoRoot,
-        encoding: 'utf8',
-        maxBuffer: 16 * 1024 * 1024,
-      },
-    );
-
-    assert.equal(result.status, 0, result.stderr);
-    const payload = JSON.parse(result.stdout) as JsonObject;
+    const payload = runImproveArgs([
+      '--suite',
+      suitePath,
+      '--target-agent-dir',
+      targetAgentDir,
+      '--output-dir',
+      outputRoot,
+      '--ai-reviewer-evaluation',
+      reviewerEvaluationPath,
+      '--opl-bin',
+      oplBin,
+    ]);
     assert.equal(payload.status, 'blocked_with_developer_patch_work_order');
     const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
     assert.deepEqual(workOrder.efficiency_non_regression_refs.quality_floor_refs, [
@@ -767,30 +763,18 @@ test('external suite efficiency evidence without quality floor fails closed with
       direct_evidence_refs: ['target-verification:target-agent/efficiency-redrive'],
     });
 
-    const result = spawnSync(
-      process.execPath,
-      [
-        path.join(repoRoot, 'scripts/improve-from-agent-lab-suite.ts'),
-        '--suite',
-        suitePath,
-        '--target-agent-dir',
-        targetAgentDir,
-        '--output-dir',
-        outputRoot,
-        '--ai-reviewer-evaluation',
-        reviewerEvaluationPath,
-        '--opl-bin',
-        oplBin,
-      ],
-      {
-        cwd: repoRoot,
-        encoding: 'utf8',
-        maxBuffer: 16 * 1024 * 1024,
-      },
-    );
-
-    assert.equal(result.status, 0, result.stderr);
-    const payload = JSON.parse(result.stdout) as JsonObject;
+    const payload = runImproveArgs([
+      '--suite',
+      suitePath,
+      '--target-agent-dir',
+      targetAgentDir,
+      '--output-dir',
+      outputRoot,
+      '--ai-reviewer-evaluation',
+      reviewerEvaluationPath,
+      '--opl-bin',
+      oplBin,
+    ]);
     assert.equal(payload.status, 'blocked_efficiency_quality_floor_missing');
     assert.equal(fs.existsSync(path.join(outputRoot, 'mechanism-patch-proposal.json')), false);
     const typedBlocker = readJson(payload.artifacts.typed_blocker_path);
@@ -821,32 +805,20 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
     const reviewerEvaluation = writeAiReviewerEvaluation(reviewerEvaluationPath);
 
-    const result = spawnSync(
-      process.execPath,
-      [
-        path.join(repoRoot, 'scripts/improve-from-agent-lab-suite.ts'),
-        '--suite',
-        suitePath,
-        '--target-agent-dir',
-        targetAgentDir,
-        '--output-dir',
-        outputRoot,
-        '--feedback-ref',
-        'manual-review:gpt-5.5/high-quality-medical-paper-style',
-        '--ai-reviewer-evaluation',
-        reviewerEvaluationPath,
-        '--opl-bin',
-        oplBin,
-      ],
-      {
-        cwd: repoRoot,
-        encoding: 'utf8',
-        maxBuffer: 16 * 1024 * 1024,
-      },
-    );
-
-    assert.equal(result.status, 0, result.stderr);
-    const payload = JSON.parse(result.stdout) as JsonObject;
+    const payload = runImproveArgs([
+      '--suite',
+      suitePath,
+      '--target-agent-dir',
+      targetAgentDir,
+      '--output-dir',
+      outputRoot,
+      '--feedback-ref',
+      'manual-review:gpt-5.5/high-quality-medical-paper-style',
+      '--ai-reviewer-evaluation',
+      reviewerEvaluationPath,
+      '--opl-bin',
+      oplBin,
+    ]);
     assert.equal(payload.surface_kind, 'opl_meta_agent_external_suite_self_evolution_result');
     assert.equal(payload.status, 'blocked_with_developer_patch_work_order');
     assert.equal(payload.target_agent.domain_id, 'med-autoscience');
@@ -1117,32 +1089,20 @@ test('target-agent owner receipt Agent Lab suite becomes a no-patch result-consu
     const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
     const reviewerEvaluation = writeOwnerReceiptAiReviewerEvaluation(reviewerEvaluationPath);
 
-    const result = spawnSync(
-      process.execPath,
-      [
-        path.join(repoRoot, 'scripts/improve-from-agent-lab-suite.ts'),
-        '--suite',
-        suitePath,
-        '--target-agent-dir',
-        targetAgentDir,
-        '--output-dir',
-        outputRoot,
-        '--feedback-ref',
-        'manual-review:gpt-5.5/target-agent-owner-receipt',
-        '--ai-reviewer-evaluation',
-        reviewerEvaluationPath,
-        '--opl-bin',
-        oplBin,
-      ],
-      {
-        cwd: repoRoot,
-        encoding: 'utf8',
-        maxBuffer: 16 * 1024 * 1024,
-      },
-    );
-
-    assert.equal(result.status, 0, result.stderr);
-    const payload = JSON.parse(result.stdout) as JsonObject;
+    const payload = runImproveArgs([
+      '--suite',
+      suitePath,
+      '--target-agent-dir',
+      targetAgentDir,
+      '--output-dir',
+      outputRoot,
+      '--feedback-ref',
+      'manual-review:gpt-5.5/target-agent-owner-receipt',
+      '--ai-reviewer-evaluation',
+      reviewerEvaluationPath,
+      '--opl-bin',
+      oplBin,
+    ]);
     assert.equal(payload.surface_kind, 'opl_meta_agent_external_suite_self_evolution_result');
     assert.equal(payload.status, 'passed');
     assert.equal(payload.target_agent.domain_id, 'target-agent');
@@ -1249,33 +1209,20 @@ test('owner-receipt wording in a standard suite stays target-agent generic', () 
       predicted_impact: 'The external owner-receipt projection remains auditable without target source changes.',
     });
 
-    const result = spawnSync(
-      process.execPath,
-      [
-        '--experimental-strip-types',
-        path.join(repoRoot, 'scripts/improve-from-agent-lab-suite.ts'),
-        '--suite',
-        suitePath,
-        '--target-agent-dir',
-        targetAgentDir,
-        '--output-dir',
-        outputRoot,
-        '--feedback-ref',
-        'manual-review:gpt-5.5/external-owner-receipt',
-        '--opl-bin',
-        oplBin,
-        '--ai-reviewer-evaluation',
-        reviewerEvaluationPath,
-      ],
-      {
-        cwd: repoRoot,
-        encoding: 'utf8',
-        maxBuffer: 16 * 1024 * 1024,
-      },
-    );
-
-    assert.equal(result.status, 0, result.stderr);
-    const payload = JSON.parse(result.stdout) as JsonObject;
+    const payload = runImproveArgs([
+      '--suite',
+      suitePath,
+      '--target-agent-dir',
+      targetAgentDir,
+      '--output-dir',
+      outputRoot,
+      '--feedback-ref',
+      'manual-review:gpt-5.5/external-owner-receipt',
+      '--opl-bin',
+      oplBin,
+      '--ai-reviewer-evaluation',
+      reviewerEvaluationPath,
+    ]);
     const candidate = payload.learning_loop.target_capability_improvement_candidate;
     assert.equal(payload.target_agent.domain_id, 'external-agent');
     assert.equal(

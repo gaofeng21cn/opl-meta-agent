@@ -5,12 +5,20 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import {
+  parseBootstrapSampleAgentArgs,
+  runBootstrapSampleAgent,
+} from '../scripts/bootstrap-sample-agent.ts';
 import type { JsonObject } from '../scripts/lib/domain-pack.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 function readJson(filePath: string): JsonObject {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+function runBootstrapArgs(args: string[]): JsonObject {
+  return runBootstrapSampleAgent(parseBootstrapSampleAgentArgs(args));
 }
 
 function assertGeneratedTargetStagePack(
@@ -138,26 +146,14 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
     ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
 
   try {
-    const result = spawnSync(
-      process.execPath,
-      [
-        path.join(repoRoot, 'scripts/bootstrap-sample-agent.ts'),
-        '--output-dir',
-        outputRoot,
-        '--opl-bin',
-        oplBin,
-        '--ai-reviewer-evaluation',
-        reviewerEvaluationPath,
-      ],
-      {
-        cwd: repoRoot,
-        encoding: 'utf8',
-        maxBuffer: 16 * 1024 * 1024,
-      },
-    );
-
-    assert.equal(result.status, 0, result.stderr);
-    const payload = JSON.parse(result.stdout);
+    const payload = runBootstrapArgs([
+      '--output-dir',
+      outputRoot,
+      '--opl-bin',
+      oplBin,
+      '--ai-reviewer-evaluation',
+      reviewerEvaluationPath,
+    ]);
 
     assert.equal(payload.surface_kind, 'opl_meta_agent_self_learning_loop_result');
     assert.equal(payload.status, 'passed');
@@ -393,34 +389,22 @@ test('build-agent-baseline bootstraps a requested target agent from structured s
   ].join(' ');
 
   try {
-    const result = spawnSync(
-      process.execPath,
-      [
-        path.join(repoRoot, 'scripts/bootstrap-sample-agent.ts'),
-        '--output-dir',
-        outputRoot,
-        '--opl-bin',
-        oplBin,
-        '--ai-reviewer-evaluation',
-        reviewerEvaluationPath,
-        '--domain-id',
-        'research-workbench-agent',
-        '--domain-label',
-        'Research Workbench Agent',
-        '--delivery-domain',
-        'research_workbench',
-        '--target-brief',
-        targetBrief,
-      ],
-      {
-        cwd: repoRoot,
-        encoding: 'utf8',
-        maxBuffer: 16 * 1024 * 1024,
-      },
-    );
-
-    assert.equal(result.status, 0, result.stderr);
-    const payload = JSON.parse(result.stdout);
+    const payload = runBootstrapArgs([
+      '--output-dir',
+      outputRoot,
+      '--opl-bin',
+      oplBin,
+      '--ai-reviewer-evaluation',
+      reviewerEvaluationPath,
+      '--domain-id',
+      'research-workbench-agent',
+      '--domain-label',
+      'Research Workbench Agent',
+      '--delivery-domain',
+      'research_workbench',
+      '--target-brief',
+      targetBrief,
+    ]);
     const targetDir = path.join(outputRoot, 'research-workbench-agent');
     const descriptor = readJson(path.join(targetDir, 'contracts', 'domain_descriptor.json'));
     const actionCatalog = readJson(path.join(targetDir, 'contracts', 'action_catalog.json'));
