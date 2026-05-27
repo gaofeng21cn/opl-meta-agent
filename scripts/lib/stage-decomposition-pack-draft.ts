@@ -29,6 +29,42 @@ const FORBIDDEN_GENERIC_OWNER_ROLES = [
 
 const placeholderPattern = new RegExp(`\\b(?:TO${'DO'}|T${'BD'})\\b`, 'i');
 
+const USER_STAGE_LOG_REQUIRED_FIELDS = [
+  'stage_name',
+  'problem_summary',
+  'stage_goal',
+  'stage_work_done',
+  'changed_stage_surfaces',
+  'outcome',
+  'remaining_blockers',
+  'evidence_refs',
+];
+
+const USER_STAGE_LOG_CONTRACT = {
+  surface_kind: 'opl_standard_agent_user_stage_log_contract',
+  version: 'standard-user-stage-log.v1',
+  owner: 'one-person-lab',
+  standard_agent_requirement: 'domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker',
+  opl_projection_surface: 'stage_progress_log.user_stage_log',
+  domain_semantic_sources: [
+    'typed_closeout_packet.user_stage_log',
+    'typed_closeout_packet.stage_log_summary',
+    'route_impact.user_stage_log',
+    'route_impact.stage_log_summary',
+  ],
+  required_domain_semantic_fields: USER_STAGE_LOG_REQUIRED_FIELDS,
+  required_observability_fields: ['duration', 'token_usage', 'cost'],
+  missing_semantics_policy: 'typed_blocker_or_missing_domain_semantic_summary_no_opl_inference',
+  token_policy: 'observed_or_explicit_missing_null_no_zero_fill',
+  authority_boundary: {
+    opl_can_infer_domain_semantics: false,
+    opl_can_read_artifact_body: false,
+    opl_can_write_domain_truth: false,
+    opl_can_authorize_quality_or_export: false,
+    provider_completion_can_claim_stage_semantics_complete: false,
+  },
+};
+
 export type StageRunnerKind = 'fixture' | 'live';
 
 export type StageDecompositionFileDraft = {
@@ -320,6 +356,7 @@ function buildStageControlPlane({
             `action-ref:${actionId}`,
             `workspace-scope-ref:${stageId}`,
             `source-scope-ref:${stageId}`,
+            'runtime-ref:stage-progress-log-user-stage-log',
           ],
           ensures: [
             `stage-attempt-receipt-ref:${stageId}`,
@@ -327,16 +364,19 @@ function buildStageControlPlane({
             `boundary-receipt-ref:${stageId}/refs-only`,
             `independent-gate-receipt-ref:${stageId}`,
             `owner-handoff-ref:${stageId}`,
+            `stage-user-log-ref:${stageId}`,
           ],
           expected_receipt_refs: [
             ref('stage_attempt_receipt_ref', `stage-attempt-receipt-ref:${stageId}`),
             ref('executor_receipt_ref', `executor-receipt-ref:${stageId}/codex-cli`),
             ref('boundary_receipt_ref', `boundary-receipt-ref:${stageId}/refs-only`),
             ref('independent_gate_receipt_ref', `independent-gate-receipt-ref:${stageId}`),
+            ref('user_stage_log_ref', `stage-user-log-ref:${stageId}`),
           ],
           source_scope_refs: [ref('source_scope_ref', `source-scope:${stageId}`)],
           artifact_scope_refs: [ref('artifact_scope_ref', `artifact-scope:${stageId}`)],
           workspace_scope_refs: [ref('workspace_scope_ref', `workspace-scope:${stageId}`)],
+          user_stage_log_contract: USER_STAGE_LOG_CONTRACT,
         },
         trust_boundary: {
           lane: 'domain_agent',
@@ -523,6 +563,27 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
     rejected_writes: [],
     next_owner: 'opl-meta-agent',
     domain_ready_verdict: 'domain_gate_pending',
+    user_stage_log: {
+      stage_name: 'Stage decomposition pack draft',
+      problem_summary: `The ${owner} target agent needs an OPL-compatible declarative domain pack before baseline generation.`,
+      stage_goal: 'Produce action, stage, prompt, skill, knowledge, quality-gate, and authority-boundary refs for the target agent.',
+      stage_work_done: [
+        `Generated the ${stageId} stage pack draft with Codex CLI executor binding, independent gate policy, and owner handoff refs.`,
+        'Materialized action catalog, stage control plane, prompt, skill, knowledge, and quality gate draft refs without writing target-domain truth.',
+      ],
+      changed_stage_surfaces: [
+        'action_catalog',
+        'stage_control_plane',
+        'agent/prompts',
+        'agent/stages',
+        'agent/skills',
+        'agent/knowledge',
+        'agent/quality_gates',
+      ],
+      outcome: 'domain_gate_pending',
+      remaining_blockers: ['target owner gate and baseline validation still required before promotion'],
+      evidence_refs: [`receipt:opl-meta-agent/${targetAgent.domain_id}/stage-decomposition-pack-draft`],
+    },
     route_impact: {
       next_owner: 'opl-meta-agent',
       materialization_required: true,
@@ -709,9 +770,28 @@ function validateStageControlPlane(
     if (!ensures.includes(`independent-gate-receipt-ref:${stageId}`)) {
       throw new Error(`stage-decomposition pack draft stage ${stageId} missing independent gate receipt ensure.`);
     }
+    if (!requires.includes('runtime-ref:stage-progress-log-user-stage-log')) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} missing user stage log projection requirement.`);
+    }
+    if (!ensures.includes(`stage-user-log-ref:${stageId}`)) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} missing user stage log ensure.`);
+    }
     const expectedReceiptRefs = asRecordArray(contract.expected_receipt_refs, `stage ${stageId}.stage_contract.expected_receipt_refs`);
     if (!expectedReceiptRefs.some((entry) => entry.ref === `independent-gate-receipt-ref:${stageId}`)) {
       throw new Error(`stage-decomposition pack draft stage ${stageId} missing expected independent gate receipt ref.`);
+    }
+    if (!expectedReceiptRefs.some((entry) => entry.ref === `stage-user-log-ref:${stageId}`)) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} missing expected user stage log receipt ref.`);
+    }
+    const userStageLog = asRecord(contract.user_stage_log_contract, `stage ${stageId}.stage_contract.user_stage_log_contract`);
+    const requiredFields = asStringArray(
+      userStageLog.required_domain_semantic_fields,
+      `stage ${stageId}.stage_contract.user_stage_log_contract.required_domain_semantic_fields`,
+    );
+    for (const field of USER_STAGE_LOG_REQUIRED_FIELDS) {
+      if (!requiredFields.includes(field)) {
+        throw new Error(`stage-decomposition pack draft stage ${stageId} user_stage_log_contract missing field ${field}.`);
+      }
     }
     const boundary = asRecord(stage.authority_boundary, `stage ${stageId}.authority_boundary`);
     [

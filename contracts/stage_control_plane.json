@@ -90,7 +90,8 @@
         "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
         "runtime-ref:stage-attempt-ledger",
         "runtime-ref:generated-interface-bundle",
-        "runtime-ref:stage-executor-policy-gate"
+        "runtime-ref:stage-executor-policy-gate",
+        "runtime-ref:stage-progress-log-user-stage-log"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:intent-intake",
@@ -99,14 +100,16 @@
         "independent-ai-review-ref:intent-intake",
         "output-ref:intent_brief_ref",
         "output-ref:acceptance_criteria_ref",
-        "output-ref:authority_boundary_ref"
+        "output-ref:authority_boundary_ref",
+        "stage-user-log-ref:intent-intake"
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:intent-intake",
         "executor-receipt-ref:intent-intake/codex-cli",
         "boundary-receipt-ref:intent-intake/refs-only",
         "no-forbidden-write-proof-ref:intent-intake",
-        "independent-ai-review-ref:intent-intake"
+        "independent-ai-review-ref:intent-intake",
+        "stage-user-log-ref:intent-intake"
       ],
       "verified_static_core": {
         "status": "required_before_launch",
@@ -156,7 +159,8 @@
         "blocker:forbidden_domain_truth_or_memory_write",
         "blocker:quality_or_promotion_claim_without_independent_ai_review",
         "blocker:contract_completeness_claimed_as_quality_verdict",
-        "blocker:missing_non_default_executor_binding_ref"
+        "blocker:missing_non_default_executor_binding_ref",
+        "blocker:missing_user_stage_log_semantics"
       ],
       "executor_policy_capability": {
         "supports_stage_level_executor_policy": true,
@@ -205,7 +209,44 @@
           "executor_kind": "codex_cli",
           "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/intent-intake/codex-default-baseline"
         }
-      ]
+      ],
+      "user_stage_log_contract": {
+        "surface_kind": "opl_standard_agent_user_stage_log_contract",
+        "version": "standard-user-stage-log.v1",
+        "owner": "one-person-lab",
+        "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
+        "opl_projection_surface": "stage_progress_log.user_stage_log",
+        "domain_semantic_sources": [
+          "typed_closeout_packet.user_stage_log",
+          "typed_closeout_packet.stage_log_summary",
+          "route_impact.user_stage_log",
+          "route_impact.stage_log_summary"
+        ],
+        "required_domain_semantic_fields": [
+          "stage_name",
+          "problem_summary",
+          "stage_goal",
+          "stage_work_done",
+          "changed_stage_surfaces",
+          "outcome",
+          "remaining_blockers",
+          "evidence_refs"
+        ],
+        "required_observability_fields": [
+          "duration",
+          "token_usage",
+          "cost"
+        ],
+        "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
+        "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
+        "authority_boundary": {
+          "opl_can_infer_domain_semantics": false,
+          "opl_can_read_artifact_body": false,
+          "opl_can_write_domain_truth": false,
+          "opl_can_authorize_quality_or_export": false,
+          "provider_completion_can_claim_stage_semantics_complete": false
+        }
+      }
     },
     {
       "stage_id": "web-experience-research",
@@ -283,7 +324,8 @@
         "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
         "runtime-ref:stage-attempt-ledger",
         "runtime-ref:generated-interface-bundle",
-        "runtime-ref:stage-executor-policy-gate"
+        "runtime-ref:stage-executor-policy-gate",
+        "runtime-ref:stage-progress-log-user-stage-log"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:web-experience-research",
@@ -292,14 +334,16 @@
         "independent-ai-review-ref:web-experience-research",
         "output-ref:research_brief_ref",
         "output-ref:source_refs",
-        "output-ref:pattern_disposition_refs"
+        "output-ref:pattern_disposition_refs",
+        "stage-user-log-ref:web-experience-research"
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:web-experience-research",
         "executor-receipt-ref:web-experience-research/codex-cli",
         "boundary-receipt-ref:web-experience-research/refs-only",
         "no-forbidden-write-proof-ref:web-experience-research",
-        "independent-ai-review-ref:web-experience-research"
+        "independent-ai-review-ref:web-experience-research",
+        "stage-user-log-ref:web-experience-research"
       ],
       "verified_static_core": {
         "status": "required_before_launch",
@@ -349,7 +393,8 @@
         "blocker:forbidden_domain_truth_or_memory_write",
         "blocker:quality_or_promotion_claim_without_independent_ai_review",
         "blocker:contract_completeness_claimed_as_quality_verdict",
-        "blocker:missing_non_default_executor_binding_ref"
+        "blocker:missing_non_default_executor_binding_ref",
+        "blocker:missing_user_stage_log_semantics"
       ],
       "executor_policy_capability": {
         "supports_stage_level_executor_policy": true,
@@ -399,7 +444,44 @@
           "executor_kind": "claude_code",
           "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/web-experience-research/non-default-reviewer-diversity"
         }
-      ]
+      ],
+      "user_stage_log_contract": {
+        "surface_kind": "opl_standard_agent_user_stage_log_contract",
+        "version": "standard-user-stage-log.v1",
+        "owner": "one-person-lab",
+        "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
+        "opl_projection_surface": "stage_progress_log.user_stage_log",
+        "domain_semantic_sources": [
+          "typed_closeout_packet.user_stage_log",
+          "typed_closeout_packet.stage_log_summary",
+          "route_impact.user_stage_log",
+          "route_impact.stage_log_summary"
+        ],
+        "required_domain_semantic_fields": [
+          "stage_name",
+          "problem_summary",
+          "stage_goal",
+          "stage_work_done",
+          "changed_stage_surfaces",
+          "outcome",
+          "remaining_blockers",
+          "evidence_refs"
+        ],
+        "required_observability_fields": [
+          "duration",
+          "token_usage",
+          "cost"
+        ],
+        "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
+        "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
+        "authority_boundary": {
+          "opl_can_infer_domain_semantics": false,
+          "opl_can_read_artifact_body": false,
+          "opl_can_write_domain_truth": false,
+          "opl_can_authorize_quality_or_export": false,
+          "provider_completion_can_claim_stage_semantics_complete": false
+        }
+      }
     },
     {
       "stage_id": "stage-decomposition",
@@ -477,7 +559,8 @@
         "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
         "runtime-ref:stage-attempt-ledger",
         "runtime-ref:generated-interface-bundle",
-        "runtime-ref:stage-executor-policy-gate"
+        "runtime-ref:stage-executor-policy-gate",
+        "runtime-ref:stage-progress-log-user-stage-log"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:stage-decomposition",
@@ -486,14 +569,16 @@
         "independent-ai-review-ref:stage-decomposition",
         "output-ref:stage_control_plane_ref",
         "output-ref:action_catalog_ref",
-        "output-ref:memory_descriptor_ref"
+        "output-ref:memory_descriptor_ref",
+        "stage-user-log-ref:stage-decomposition"
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:stage-decomposition",
         "executor-receipt-ref:stage-decomposition/codex-cli",
         "boundary-receipt-ref:stage-decomposition/refs-only",
         "no-forbidden-write-proof-ref:stage-decomposition",
-        "independent-ai-review-ref:stage-decomposition"
+        "independent-ai-review-ref:stage-decomposition",
+        "stage-user-log-ref:stage-decomposition"
       ],
       "verified_static_core": {
         "status": "required_before_launch",
@@ -543,7 +628,8 @@
         "blocker:forbidden_domain_truth_or_memory_write",
         "blocker:quality_or_promotion_claim_without_independent_ai_review",
         "blocker:contract_completeness_claimed_as_quality_verdict",
-        "blocker:missing_non_default_executor_binding_ref"
+        "blocker:missing_non_default_executor_binding_ref",
+        "blocker:missing_user_stage_log_semantics"
       ],
       "executor_policy_capability": {
         "supports_stage_level_executor_policy": true,
@@ -592,7 +678,44 @@
           "executor_kind": "codex_cli",
           "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/stage-decomposition/codex-default-baseline"
         }
-      ]
+      ],
+      "user_stage_log_contract": {
+        "surface_kind": "opl_standard_agent_user_stage_log_contract",
+        "version": "standard-user-stage-log.v1",
+        "owner": "one-person-lab",
+        "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
+        "opl_projection_surface": "stage_progress_log.user_stage_log",
+        "domain_semantic_sources": [
+          "typed_closeout_packet.user_stage_log",
+          "typed_closeout_packet.stage_log_summary",
+          "route_impact.user_stage_log",
+          "route_impact.stage_log_summary"
+        ],
+        "required_domain_semantic_fields": [
+          "stage_name",
+          "problem_summary",
+          "stage_goal",
+          "stage_work_done",
+          "changed_stage_surfaces",
+          "outcome",
+          "remaining_blockers",
+          "evidence_refs"
+        ],
+        "required_observability_fields": [
+          "duration",
+          "token_usage",
+          "cost"
+        ],
+        "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
+        "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
+        "authority_boundary": {
+          "opl_can_infer_domain_semantics": false,
+          "opl_can_read_artifact_body": false,
+          "opl_can_write_domain_truth": false,
+          "opl_can_authorize_quality_or_export": false,
+          "provider_completion_can_claim_stage_semantics_complete": false
+        }
+      }
     },
     {
       "stage_id": "agent-skeleton-build",
@@ -679,7 +802,8 @@
         "action-ref:build-agent-baseline",
         "runtime-ref:stage-attempt-ledger",
         "runtime-ref:generated-interface-bundle",
-        "runtime-ref:stage-executor-policy-gate"
+        "runtime-ref:stage-executor-policy-gate",
+        "runtime-ref:stage-progress-log-user-stage-log"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:agent-skeleton-build",
@@ -689,14 +813,16 @@
         "output-ref:domain_descriptor_ref",
         "output-ref:skill_refs",
         "output-ref:prompt_refs",
-        "output-ref:candidate_agent_package_ref"
+        "output-ref:candidate_agent_package_ref",
+        "stage-user-log-ref:agent-skeleton-build"
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:agent-skeleton-build",
         "executor-receipt-ref:agent-skeleton-build/codex-cli",
         "boundary-receipt-ref:agent-skeleton-build/refs-only",
         "no-forbidden-write-proof-ref:agent-skeleton-build",
-        "independent-ai-review-ref:agent-skeleton-build"
+        "independent-ai-review-ref:agent-skeleton-build",
+        "stage-user-log-ref:agent-skeleton-build"
       ],
       "verified_static_core": {
         "status": "required_before_launch",
@@ -746,7 +872,8 @@
         "blocker:forbidden_domain_truth_or_memory_write",
         "blocker:quality_or_promotion_claim_without_independent_ai_review",
         "blocker:contract_completeness_claimed_as_quality_verdict",
-        "blocker:missing_non_default_executor_binding_ref"
+        "blocker:missing_non_default_executor_binding_ref",
+        "blocker:missing_user_stage_log_semantics"
       ],
       "executor_policy_capability": {
         "supports_stage_level_executor_policy": true,
@@ -795,7 +922,44 @@
           "executor_kind": "codex_cli",
           "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/agent-skeleton-build/codex-default-baseline"
         }
-      ]
+      ],
+      "user_stage_log_contract": {
+        "surface_kind": "opl_standard_agent_user_stage_log_contract",
+        "version": "standard-user-stage-log.v1",
+        "owner": "one-person-lab",
+        "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
+        "opl_projection_surface": "stage_progress_log.user_stage_log",
+        "domain_semantic_sources": [
+          "typed_closeout_packet.user_stage_log",
+          "typed_closeout_packet.stage_log_summary",
+          "route_impact.user_stage_log",
+          "route_impact.stage_log_summary"
+        ],
+        "required_domain_semantic_fields": [
+          "stage_name",
+          "problem_summary",
+          "stage_goal",
+          "stage_work_done",
+          "changed_stage_surfaces",
+          "outcome",
+          "remaining_blockers",
+          "evidence_refs"
+        ],
+        "required_observability_fields": [
+          "duration",
+          "token_usage",
+          "cost"
+        ],
+        "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
+        "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
+        "authority_boundary": {
+          "opl_can_infer_domain_semantics": false,
+          "opl_can_read_artifact_body": false,
+          "opl_can_write_domain_truth": false,
+          "opl_can_authorize_quality_or_export": false,
+          "provider_completion_can_claim_stage_semantics_complete": false
+        }
+      }
     },
     {
       "stage_id": "eval-suite-build",
@@ -878,7 +1042,8 @@
         "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
         "runtime-ref:stage-attempt-ledger",
         "runtime-ref:generated-interface-bundle",
-        "runtime-ref:stage-executor-policy-gate"
+        "runtime-ref:stage-executor-policy-gate",
+        "runtime-ref:stage-progress-log-user-stage-log"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:eval-suite-build",
@@ -887,14 +1052,16 @@
         "independent-ai-review-ref:eval-suite-build",
         "output-ref:agent_lab_task_manifest_refs",
         "output-ref:scorecard_refs",
-        "output-ref:promotion_gate_refs"
+        "output-ref:promotion_gate_refs",
+        "stage-user-log-ref:eval-suite-build"
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:eval-suite-build",
         "executor-receipt-ref:eval-suite-build/codex-cli",
         "boundary-receipt-ref:eval-suite-build/refs-only",
         "no-forbidden-write-proof-ref:eval-suite-build",
-        "independent-ai-review-ref:eval-suite-build"
+        "independent-ai-review-ref:eval-suite-build",
+        "stage-user-log-ref:eval-suite-build"
       ],
       "verified_static_core": {
         "status": "required_before_launch",
@@ -944,7 +1111,8 @@
         "blocker:forbidden_domain_truth_or_memory_write",
         "blocker:quality_or_promotion_claim_without_independent_ai_review",
         "blocker:contract_completeness_claimed_as_quality_verdict",
-        "blocker:missing_non_default_executor_binding_ref"
+        "blocker:missing_non_default_executor_binding_ref",
+        "blocker:missing_user_stage_log_semantics"
       ],
       "executor_policy_capability": {
         "supports_stage_level_executor_policy": true,
@@ -996,7 +1164,44 @@
           "executor_kind": "antigravity_cli",
           "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/eval-suite-build/html-authoring-antigravity-speed"
         }
-      ]
+      ],
+      "user_stage_log_contract": {
+        "surface_kind": "opl_standard_agent_user_stage_log_contract",
+        "version": "standard-user-stage-log.v1",
+        "owner": "one-person-lab",
+        "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
+        "opl_projection_surface": "stage_progress_log.user_stage_log",
+        "domain_semantic_sources": [
+          "typed_closeout_packet.user_stage_log",
+          "typed_closeout_packet.stage_log_summary",
+          "route_impact.user_stage_log",
+          "route_impact.stage_log_summary"
+        ],
+        "required_domain_semantic_fields": [
+          "stage_name",
+          "problem_summary",
+          "stage_goal",
+          "stage_work_done",
+          "changed_stage_surfaces",
+          "outcome",
+          "remaining_blockers",
+          "evidence_refs"
+        ],
+        "required_observability_fields": [
+          "duration",
+          "token_usage",
+          "cost"
+        ],
+        "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
+        "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
+        "authority_boundary": {
+          "opl_can_infer_domain_semantics": false,
+          "opl_can_read_artifact_body": false,
+          "opl_can_write_domain_truth": false,
+          "opl_can_authorize_quality_or_export": false,
+          "provider_completion_can_claim_stage_semantics_complete": false
+        }
+      }
     },
     {
       "stage_id": "baseline-run",
@@ -1077,7 +1282,8 @@
         "action-ref:build-agent-baseline",
         "runtime-ref:stage-attempt-ledger",
         "runtime-ref:generated-interface-bundle",
-        "runtime-ref:stage-executor-policy-gate"
+        "runtime-ref:stage-executor-policy-gate",
+        "runtime-ref:stage-progress-log-user-stage-log"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:baseline-run",
@@ -1086,14 +1292,16 @@
         "independent-ai-review-ref:baseline-run",
         "output-ref:trajectory_refs",
         "output-ref:receipt_refs",
-        "output-ref:failure_taxonomy_refs"
+        "output-ref:failure_taxonomy_refs",
+        "stage-user-log-ref:baseline-run"
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:baseline-run",
         "executor-receipt-ref:baseline-run/codex-cli",
         "boundary-receipt-ref:baseline-run/refs-only",
         "no-forbidden-write-proof-ref:baseline-run",
-        "independent-ai-review-ref:baseline-run"
+        "independent-ai-review-ref:baseline-run",
+        "stage-user-log-ref:baseline-run"
       ],
       "verified_static_core": {
         "status": "required_before_launch",
@@ -1143,7 +1351,8 @@
         "blocker:forbidden_domain_truth_or_memory_write",
         "blocker:quality_or_promotion_claim_without_independent_ai_review",
         "blocker:contract_completeness_claimed_as_quality_verdict",
-        "blocker:missing_non_default_executor_binding_ref"
+        "blocker:missing_non_default_executor_binding_ref",
+        "blocker:missing_user_stage_log_semantics"
       ],
       "executor_policy_capability": {
         "supports_stage_level_executor_policy": true,
@@ -1192,7 +1401,44 @@
           "executor_kind": "codex_cli",
           "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/baseline-run/codex-default-baseline"
         }
-      ]
+      ],
+      "user_stage_log_contract": {
+        "surface_kind": "opl_standard_agent_user_stage_log_contract",
+        "version": "standard-user-stage-log.v1",
+        "owner": "one-person-lab",
+        "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
+        "opl_projection_surface": "stage_progress_log.user_stage_log",
+        "domain_semantic_sources": [
+          "typed_closeout_packet.user_stage_log",
+          "typed_closeout_packet.stage_log_summary",
+          "route_impact.user_stage_log",
+          "route_impact.stage_log_summary"
+        ],
+        "required_domain_semantic_fields": [
+          "stage_name",
+          "problem_summary",
+          "stage_goal",
+          "stage_work_done",
+          "changed_stage_surfaces",
+          "outcome",
+          "remaining_blockers",
+          "evidence_refs"
+        ],
+        "required_observability_fields": [
+          "duration",
+          "token_usage",
+          "cost"
+        ],
+        "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
+        "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
+        "authority_boundary": {
+          "opl_can_infer_domain_semantics": false,
+          "opl_can_read_artifact_body": false,
+          "opl_can_write_domain_truth": false,
+          "opl_can_authorize_quality_or_export": false,
+          "provider_completion_can_claim_stage_semantics_complete": false
+        }
+      }
     },
     {
       "stage_id": "external-agent-takeover",
@@ -1293,7 +1539,8 @@
         "action-ref:takeover-external-agent-test",
         "runtime-ref:stage-attempt-ledger",
         "runtime-ref:generated-interface-bundle",
-        "runtime-ref:stage-executor-policy-gate"
+        "runtime-ref:stage-executor-policy-gate",
+        "runtime-ref:stage-progress-log-user-stage-log"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:external-agent-takeover",
@@ -1303,14 +1550,16 @@
         "output-ref:agent_lab_external_suite_ref",
         "output-ref:testing_takeover_receipt_ref",
         "output-ref:gated_self_evolution_candidate_ref",
-        "output-ref:mechanism_patch_proposal_ref"
+        "output-ref:mechanism_patch_proposal_ref",
+        "stage-user-log-ref:external-agent-takeover"
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:external-agent-takeover",
         "executor-receipt-ref:external-agent-takeover/codex-cli",
         "boundary-receipt-ref:external-agent-takeover/refs-only",
         "no-forbidden-write-proof-ref:external-agent-takeover",
-        "independent-ai-review-ref:external-agent-takeover"
+        "independent-ai-review-ref:external-agent-takeover",
+        "stage-user-log-ref:external-agent-takeover"
       ],
       "verified_static_core": {
         "status": "required_before_launch",
@@ -1360,7 +1609,8 @@
         "blocker:forbidden_domain_truth_or_memory_write",
         "blocker:quality_or_promotion_claim_without_independent_ai_review",
         "blocker:contract_completeness_claimed_as_quality_verdict",
-        "blocker:missing_non_default_executor_binding_ref"
+        "blocker:missing_non_default_executor_binding_ref",
+        "blocker:missing_user_stage_log_semantics"
       ],
       "executor_policy_capability": {
         "supports_stage_level_executor_policy": true,
@@ -1409,7 +1659,44 @@
           "executor_kind": "codex_cli",
           "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/external-agent-takeover/codex-default-baseline"
         }
-      ]
+      ],
+      "user_stage_log_contract": {
+        "surface_kind": "opl_standard_agent_user_stage_log_contract",
+        "version": "standard-user-stage-log.v1",
+        "owner": "one-person-lab",
+        "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
+        "opl_projection_surface": "stage_progress_log.user_stage_log",
+        "domain_semantic_sources": [
+          "typed_closeout_packet.user_stage_log",
+          "typed_closeout_packet.stage_log_summary",
+          "route_impact.user_stage_log",
+          "route_impact.stage_log_summary"
+        ],
+        "required_domain_semantic_fields": [
+          "stage_name",
+          "problem_summary",
+          "stage_goal",
+          "stage_work_done",
+          "changed_stage_surfaces",
+          "outcome",
+          "remaining_blockers",
+          "evidence_refs"
+        ],
+        "required_observability_fields": [
+          "duration",
+          "token_usage",
+          "cost"
+        ],
+        "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
+        "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
+        "authority_boundary": {
+          "opl_can_infer_domain_semantics": false,
+          "opl_can_read_artifact_body": false,
+          "opl_can_write_domain_truth": false,
+          "opl_can_authorize_quality_or_export": false,
+          "provider_completion_can_claim_stage_semantics_complete": false
+        }
+      }
     },
     {
       "stage_id": "optimizer-iteration",
@@ -1499,7 +1786,8 @@
         "action-ref:improve-from-external-agent-lab-suite",
         "runtime-ref:stage-attempt-ledger",
         "runtime-ref:generated-interface-bundle",
-        "runtime-ref:stage-executor-policy-gate"
+        "runtime-ref:stage-executor-policy-gate",
+        "runtime-ref:stage-progress-log-user-stage-log"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:optimizer-iteration",
@@ -1512,14 +1800,16 @@
         "output-ref:developer_patch_work_order_refs",
         "output-ref:target_agent_version_receipt_refs",
         "output-ref:candidate_branch_refs",
-        "output-ref:regression_result_refs"
+        "output-ref:regression_result_refs",
+        "stage-user-log-ref:optimizer-iteration"
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:optimizer-iteration",
         "executor-receipt-ref:optimizer-iteration/codex-cli",
         "boundary-receipt-ref:optimizer-iteration/refs-only",
         "no-forbidden-write-proof-ref:optimizer-iteration",
-        "independent-ai-review-ref:optimizer-iteration"
+        "independent-ai-review-ref:optimizer-iteration",
+        "stage-user-log-ref:optimizer-iteration"
       ],
       "verified_static_core": {
         "status": "required_before_launch",
@@ -1569,7 +1859,8 @@
         "blocker:forbidden_domain_truth_or_memory_write",
         "blocker:quality_or_promotion_claim_without_independent_ai_review",
         "blocker:contract_completeness_claimed_as_quality_verdict",
-        "blocker:missing_non_default_executor_binding_ref"
+        "blocker:missing_non_default_executor_binding_ref",
+        "blocker:missing_user_stage_log_semantics"
       ],
       "executor_policy_capability": {
         "supports_stage_level_executor_policy": true,
@@ -1618,7 +1909,44 @@
           "executor_kind": "codex_cli",
           "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/optimizer-iteration/codex-default-baseline"
         }
-      ]
+      ],
+      "user_stage_log_contract": {
+        "surface_kind": "opl_standard_agent_user_stage_log_contract",
+        "version": "standard-user-stage-log.v1",
+        "owner": "one-person-lab",
+        "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
+        "opl_projection_surface": "stage_progress_log.user_stage_log",
+        "domain_semantic_sources": [
+          "typed_closeout_packet.user_stage_log",
+          "typed_closeout_packet.stage_log_summary",
+          "route_impact.user_stage_log",
+          "route_impact.stage_log_summary"
+        ],
+        "required_domain_semantic_fields": [
+          "stage_name",
+          "problem_summary",
+          "stage_goal",
+          "stage_work_done",
+          "changed_stage_surfaces",
+          "outcome",
+          "remaining_blockers",
+          "evidence_refs"
+        ],
+        "required_observability_fields": [
+          "duration",
+          "token_usage",
+          "cost"
+        ],
+        "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
+        "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
+        "authority_boundary": {
+          "opl_can_infer_domain_semantics": false,
+          "opl_can_read_artifact_body": false,
+          "opl_can_write_domain_truth": false,
+          "opl_can_authorize_quality_or_export": false,
+          "provider_completion_can_claim_stage_semantics_complete": false
+        }
+      }
     },
     {
       "stage_id": "baseline-delivery",
@@ -1704,7 +2032,8 @@
         "action-ref:build-agent-baseline",
         "runtime-ref:stage-attempt-ledger",
         "runtime-ref:generated-interface-bundle",
-        "runtime-ref:stage-executor-policy-gate"
+        "runtime-ref:stage-executor-policy-gate",
+        "runtime-ref:stage-progress-log-user-stage-log"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:baseline-delivery",
@@ -1713,14 +2042,16 @@
         "independent-ai-review-ref:baseline-delivery",
         "output-ref:baseline_agent_package_ref",
         "output-ref:delivery_receipt_ref",
-        "output-ref:operator_runbook_ref"
+        "output-ref:operator_runbook_ref",
+        "stage-user-log-ref:baseline-delivery"
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:baseline-delivery",
         "executor-receipt-ref:baseline-delivery/codex-cli",
         "boundary-receipt-ref:baseline-delivery/refs-only",
         "no-forbidden-write-proof-ref:baseline-delivery",
-        "independent-ai-review-ref:baseline-delivery"
+        "independent-ai-review-ref:baseline-delivery",
+        "stage-user-log-ref:baseline-delivery"
       ],
       "verified_static_core": {
         "status": "required_before_launch",
@@ -1770,7 +2101,8 @@
         "blocker:forbidden_domain_truth_or_memory_write",
         "blocker:quality_or_promotion_claim_without_independent_ai_review",
         "blocker:contract_completeness_claimed_as_quality_verdict",
-        "blocker:missing_non_default_executor_binding_ref"
+        "blocker:missing_non_default_executor_binding_ref",
+        "blocker:missing_user_stage_log_semantics"
       ],
       "executor_policy_capability": {
         "supports_stage_level_executor_policy": true,
@@ -1819,7 +2151,44 @@
           "executor_kind": "codex_cli",
           "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/baseline-delivery/codex-default-baseline"
         }
-      ]
+      ],
+      "user_stage_log_contract": {
+        "surface_kind": "opl_standard_agent_user_stage_log_contract",
+        "version": "standard-user-stage-log.v1",
+        "owner": "one-person-lab",
+        "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
+        "opl_projection_surface": "stage_progress_log.user_stage_log",
+        "domain_semantic_sources": [
+          "typed_closeout_packet.user_stage_log",
+          "typed_closeout_packet.stage_log_summary",
+          "route_impact.user_stage_log",
+          "route_impact.stage_log_summary"
+        ],
+        "required_domain_semantic_fields": [
+          "stage_name",
+          "problem_summary",
+          "stage_goal",
+          "stage_work_done",
+          "changed_stage_surfaces",
+          "outcome",
+          "remaining_blockers",
+          "evidence_refs"
+        ],
+        "required_observability_fields": [
+          "duration",
+          "token_usage",
+          "cost"
+        ],
+        "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
+        "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
+        "authority_boundary": {
+          "opl_can_infer_domain_semantics": false,
+          "opl_can_read_artifact_body": false,
+          "opl_can_write_domain_truth": false,
+          "opl_can_authorize_quality_or_export": false,
+          "provider_completion_can_claim_stage_semantics_complete": false
+        }
+      }
     },
     {
       "stage_id": "trajectory-learning-intake",
@@ -1912,7 +2281,8 @@
         "runtime-ref:stage-attempt-ledger",
         "runtime-ref:generated-interface-bundle",
         "runtime-ref:stage-executor-policy-gate",
-        "runtime-ref:agent-lab-promotion-gate"
+        "runtime-ref:agent-lab-promotion-gate",
+        "runtime-ref:stage-progress-log-user-stage-log"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:trajectory-learning-intake",
@@ -1926,7 +2296,8 @@
         "output-ref:prompt_policy_candidate_ref",
         "output-ref:stage_policy_candidate_ref",
         "output-ref:mechanism_patch_proposal_ref",
-        "output-ref:typed_blocker_refs"
+        "output-ref:typed_blocker_refs",
+        "stage-user-log-ref:trajectory-learning-intake"
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:trajectory-learning-intake",
@@ -1937,7 +2308,8 @@
         "redaction-proof-ref:trajectory-learning-intake",
         "trajectory-atomization-receipt-ref:trajectory-learning-intake",
         "candidate-buffer-receipt-ref:trajectory-learning-intake",
-        "agent-lab-promotion-gate-ref:trajectory-learning-intake"
+        "agent-lab-promotion-gate-ref:trajectory-learning-intake",
+        "stage-user-log-ref:trajectory-learning-intake"
       ],
       "verified_static_core": {
         "status": "required_before_launch",
@@ -1993,7 +2365,8 @@
         "blocker:missing_redaction_proof_ref",
         "blocker:single_atom_attempted_direct_promotion",
         "blocker:ux_score_claimed_as_quality_verdict",
-        "blocker:missing_agent_lab_promotion_gate_ref"
+        "blocker:missing_agent_lab_promotion_gate_ref",
+        "blocker:missing_user_stage_log_semantics"
       ],
       "executor_policy_capability": {
         "supports_stage_level_executor_policy": true,
@@ -2044,7 +2417,44 @@
           "executor_kind": "codex_cli",
           "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/trajectory-learning-intake/codex-default-baseline"
         }
-      ]
+      ],
+      "user_stage_log_contract": {
+        "surface_kind": "opl_standard_agent_user_stage_log_contract",
+        "version": "standard-user-stage-log.v1",
+        "owner": "one-person-lab",
+        "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
+        "opl_projection_surface": "stage_progress_log.user_stage_log",
+        "domain_semantic_sources": [
+          "typed_closeout_packet.user_stage_log",
+          "typed_closeout_packet.stage_log_summary",
+          "route_impact.user_stage_log",
+          "route_impact.stage_log_summary"
+        ],
+        "required_domain_semantic_fields": [
+          "stage_name",
+          "problem_summary",
+          "stage_goal",
+          "stage_work_done",
+          "changed_stage_surfaces",
+          "outcome",
+          "remaining_blockers",
+          "evidence_refs"
+        ],
+        "required_observability_fields": [
+          "duration",
+          "token_usage",
+          "cost"
+        ],
+        "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
+        "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
+        "authority_boundary": {
+          "opl_can_infer_domain_semantics": false,
+          "opl_can_read_artifact_body": false,
+          "opl_can_write_domain_truth": false,
+          "opl_can_authorize_quality_or_export": false,
+          "provider_completion_can_claim_stage_semantics_complete": false
+        }
+      }
     },
     {
       "stage_id": "online-learning",
@@ -2131,7 +2541,8 @@
         "action-ref:generate-mechanism-patch-proposal",
         "runtime-ref:stage-attempt-ledger",
         "runtime-ref:generated-interface-bundle",
-        "runtime-ref:stage-executor-policy-gate"
+        "runtime-ref:stage-executor-policy-gate",
+        "runtime-ref:stage-progress-log-user-stage-log"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:online-learning",
@@ -2141,14 +2552,16 @@
         "output-ref:online_learning_dataset_refs",
         "output-ref:human_review_refs",
         "output-ref:mechanism_patch_proposal_refs",
-        "output-ref:future_candidate_refs"
+        "output-ref:future_candidate_refs",
+        "stage-user-log-ref:online-learning"
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:online-learning",
         "executor-receipt-ref:online-learning/codex-cli",
         "boundary-receipt-ref:online-learning/refs-only",
         "no-forbidden-write-proof-ref:online-learning",
-        "independent-ai-review-ref:online-learning"
+        "independent-ai-review-ref:online-learning",
+        "stage-user-log-ref:online-learning"
       ],
       "verified_static_core": {
         "status": "required_before_launch",
@@ -2198,7 +2611,8 @@
         "blocker:forbidden_domain_truth_or_memory_write",
         "blocker:quality_or_promotion_claim_without_independent_ai_review",
         "blocker:contract_completeness_claimed_as_quality_verdict",
-        "blocker:missing_non_default_executor_binding_ref"
+        "blocker:missing_non_default_executor_binding_ref",
+        "blocker:missing_user_stage_log_semantics"
       ],
       "executor_policy_capability": {
         "supports_stage_level_executor_policy": true,
@@ -2247,7 +2661,44 @@
           "executor_kind": "codex_cli",
           "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/online-learning/codex-default-baseline"
         }
-      ]
+      ],
+      "user_stage_log_contract": {
+        "surface_kind": "opl_standard_agent_user_stage_log_contract",
+        "version": "standard-user-stage-log.v1",
+        "owner": "one-person-lab",
+        "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
+        "opl_projection_surface": "stage_progress_log.user_stage_log",
+        "domain_semantic_sources": [
+          "typed_closeout_packet.user_stage_log",
+          "typed_closeout_packet.stage_log_summary",
+          "route_impact.user_stage_log",
+          "route_impact.stage_log_summary"
+        ],
+        "required_domain_semantic_fields": [
+          "stage_name",
+          "problem_summary",
+          "stage_goal",
+          "stage_work_done",
+          "changed_stage_surfaces",
+          "outcome",
+          "remaining_blockers",
+          "evidence_refs"
+        ],
+        "required_observability_fields": [
+          "duration",
+          "token_usage",
+          "cost"
+        ],
+        "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
+        "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
+        "authority_boundary": {
+          "opl_can_infer_domain_semantics": false,
+          "opl_can_read_artifact_body": false,
+          "opl_can_write_domain_truth": false,
+          "opl_can_authorize_quality_or_export": false,
+          "provider_completion_can_claim_stage_semantics_complete": false
+        }
+      }
     }
   ],
   "opl_runtime_dependency": {

@@ -92,6 +92,16 @@ const opl10PrincipleRefs = [
   'opl10:generated_surfaces_from_contracts',
   'opl10:blockers_before_quality_or_promotion_claims',
 ];
+const userStageLogRequiredFields = [
+  'stage_name',
+  'problem_summary',
+  'stage_goal',
+  'stage_work_done',
+  'changed_stage_surfaces',
+  'outcome',
+  'remaining_blockers',
+  'evidence_refs',
+];
 
 test('opl-meta-agent descriptor keeps OPL runtime authority outside the repo', () => {
   const descriptor = readJson('contracts/domain_descriptor.json');
@@ -360,6 +370,7 @@ test('stage launch contract is Codex-first, receipted, and OPL-10 bounded', () =
     const ensures = asStrings(stage.ensures);
     const expectedReceiptRefs = asStrings(stage.expected_receipt_refs);
     const hardBlockerRefs = asStrings(stage.hard_blocker_refs);
+    const userStageLog = stage.user_stage_log_contract;
 
     assert.ok(requires.includes(`stage:${label}`), `${label}.requires should include stage ref`);
     assert.ok(requires.includes('runtime-ref:stage-attempt-ledger'), `${label}.requires should include stage ledger`);
@@ -367,10 +378,15 @@ test('stage launch contract is Codex-first, receipted, and OPL-10 bounded', () =
       requires.includes('runtime-ref:generated-interface-bundle'),
       `${label}.requires should include generated interface bundle`,
     );
+    assert.ok(
+      requires.includes('runtime-ref:stage-progress-log-user-stage-log'),
+      `${label}.requires should include user stage log projection`,
+    );
     assert.ok(ensures.includes(`stage-attempt-receipt-ref:${label}`), `${label}.ensures stage receipt`);
     assert.ok(ensures.includes(`executor-receipt-ref:${label}/codex-cli`), `${label}.ensures executor receipt`);
     assert.ok(ensures.includes(`no-forbidden-write-proof-ref:${label}`), `${label}.ensures boundary proof`);
     assert.ok(ensures.includes(`independent-ai-review-ref:${label}`), `${label}.ensures AI review`);
+    assert.ok(ensures.includes(`stage-user-log-ref:${label}`), `${label}.ensures user stage log`);
     assert.ok(
       expectedReceiptRefs.includes(`boundary-receipt-ref:${label}/refs-only`),
       `${label}.expected_receipt_refs boundary receipt`,
@@ -378,6 +394,52 @@ test('stage launch contract is Codex-first, receipted, and OPL-10 bounded', () =
     assert.ok(
       expectedReceiptRefs.includes(`independent-ai-review-ref:${label}`),
       `${label}.expected_receipt_refs AI review`,
+    );
+    assert.ok(
+      expectedReceiptRefs.includes(`stage-user-log-ref:${label}`),
+      `${label}.expected_receipt_refs user stage log`,
+    );
+    assert.equal(userStageLog.surface_kind, 'opl_standard_agent_user_stage_log_contract', `${label}.user_stage_log`);
+    assert.equal(userStageLog.version, 'standard-user-stage-log.v1', `${label}.user_stage_log.version`);
+    assert.equal(
+      userStageLog.standard_agent_requirement,
+      'domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker',
+      `${label}.user_stage_log.requirement`,
+    );
+    assert.equal(
+      userStageLog.opl_projection_surface,
+      'stage_progress_log.user_stage_log',
+      `${label}.user_stage_log.projection`,
+    );
+    assert.deepEqual(
+      asStrings(userStageLog.required_domain_semantic_fields),
+      userStageLogRequiredFields,
+      `${label}.user_stage_log.semantic_fields`,
+    );
+    assert.deepEqual(
+      asStrings(userStageLog.required_observability_fields),
+      ['duration', 'token_usage', 'cost'],
+      `${label}.user_stage_log.observability_fields`,
+    );
+    assert.equal(
+      userStageLog.missing_semantics_policy,
+      'typed_blocker_or_missing_domain_semantic_summary_no_opl_inference',
+      `${label}.user_stage_log.missing_policy`,
+    );
+    assert.equal(
+      userStageLog.token_policy,
+      'observed_or_explicit_missing_null_no_zero_fill',
+      `${label}.user_stage_log.token_policy`,
+    );
+    assert.equal(
+      userStageLog.authority_boundary.opl_can_infer_domain_semantics,
+      false,
+      `${label}.user_stage_log.no_semantic_inference`,
+    );
+    assert.equal(
+      userStageLog.authority_boundary.opl_can_write_domain_truth,
+      false,
+      `${label}.user_stage_log.no_truth_write`,
     );
 
     asObjects(stage.prompt_refs).forEach((entry) => {
@@ -448,6 +510,7 @@ test('stage launch contract is Codex-first, receipted, and OPL-10 bounded', () =
       'blocker:forbidden_domain_truth_or_memory_write',
       'blocker:quality_or_promotion_claim_without_independent_ai_review',
       'blocker:contract_completeness_claimed_as_quality_verdict',
+      'blocker:missing_user_stage_log_semantics',
     ].forEach((blockerRef) => {
       assert.ok(hardBlockerRefs.includes(blockerRef), `${label}.hard_blocker_refs ${blockerRef}`);
     });

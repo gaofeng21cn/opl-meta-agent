@@ -48,6 +48,16 @@ test('materializer writes the target stage pack from typed stage-decomposition c
     });
 
     const draft = validateStageDecompositionCloseoutPacket(packet, { targetAgent });
+    assert.equal(packet.user_stage_log.stage_name, 'Stage decomposition pack draft');
+    assert.deepEqual(packet.user_stage_log.changed_stage_surfaces, [
+      'action_catalog',
+      'stage_control_plane',
+      'agent/prompts',
+      'agent/stages',
+      'agent/skills',
+      'agent/knowledge',
+      'agent/quality_gates',
+    ]);
     materializeStageDecompositionPackDraft(targetAgentDir, draft);
 
     const actionCatalog = readJson(path.join(targetAgentDir, 'contracts/action_catalog.json'));
@@ -61,6 +71,21 @@ test('materializer writes the target stage pack from typed stage-decomposition c
     assert.equal(stage.independent_gate_policy.mechanical_completion_can_close_stage, false);
     assert.equal(stage.authority_boundary.can_write_target_domain_truth, false);
     assert.equal(stage.authority_boundary.can_authorize_target_domain_quality_or_export, false);
+    assert.ok(stage.stage_contract.requires.includes('runtime-ref:stage-progress-log-user-stage-log'));
+    assert.ok(stage.stage_contract.ensures.includes('stage-user-log-ref:evidence-synthesis-plan'));
+    assert.deepEqual(
+      stage.stage_contract.user_stage_log_contract.required_domain_semantic_fields,
+      [
+        'stage_name',
+        'problem_summary',
+        'stage_goal',
+        'stage_work_done',
+        'changed_stage_surfaces',
+        'outcome',
+        'remaining_blockers',
+        'evidence_refs',
+      ],
+    );
 
     [
       'agent/prompts/evidence-synthesis-plan.md',
@@ -125,6 +150,15 @@ test('stage-decomposition closeout validator rejects missing gate declarations a
   assert.throws(
     () => validateStageDecompositionCloseoutPacket(selfReviewPacket, { targetAgent }),
     /self-review|execution_review_separation_required/i,
+  );
+
+  const missingUserLogPacket = buildFixtureStageDecompositionCloseout({ targetAgent });
+  const missingUserLogDraft = missingUserLogPacket.stage_decomposition_pack_draft as JsonObject;
+  const missingUserLogStage = ((missingUserLogDraft.stage_control_plane as JsonObject).stages as JsonObject[])[0];
+  delete missingUserLogStage.stage_contract.user_stage_log_contract;
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(missingUserLogPacket, { targetAgent }),
+    /user_stage_log_contract/i,
   );
 });
 

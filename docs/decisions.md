@@ -6,6 +6,7 @@ State: `active_truth_with_history_notes`
 Machine boundary: 本文是人读决策记录。机器真相继续归 `contracts/`、source、CLI/API 行为、OPL Agent Lab result refs、work-order receipts 和测试。
 
 - Adopt OPL standard domain-agent scaffold v1.
+- Provide OPL standard `user_stage_log_contract` on every agent-building stage. OMA closeout must explain the user-facing agent-building problem, stage goal, work done, changed source/contract/test/docs surfaces, outcome, remaining blockers, and evidence refs, or return a typed blocker. OPL only projects this into `stage_progress_log.user_stage_log` with duration/token/cost observability; it cannot infer agent-building semantics, write target domain truth, or authorize target quality/export/default promotion.
 - Keep this repo as a declarative domain pack plus minimal authority functions.
 - Treat `agent/` as the authoritative repo-tracked domain pack root. Pack file paths and stage prompt refs must be machine-checkable paths, not Markdown heading names or prose-only references.
 - Use `opl-meta-agent` as the repo/product wording; use `meta-agent` only as a capability type.

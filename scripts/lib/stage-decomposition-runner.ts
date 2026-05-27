@@ -185,6 +185,16 @@ function typedBlocker(reason: string, details: JsonObject = {}): JsonObject {
     blocked_reason: reason,
     domain_ready_verdict: 'blocked',
     next_owner: 'opl-meta-agent',
+    user_stage_log: {
+      stage_name: 'Stage decomposition pack draft',
+      problem_summary: 'The stage-decomposition attempt could not produce a valid typed pack draft closeout.',
+      stage_goal: 'Produce a validated OPL-compatible target-agent domain pack draft.',
+      stage_work_done: ['No target-agent pack was materialized; OMA emitted a typed blocker for the failed stage-decomposition attempt.'],
+      changed_stage_surfaces: [],
+      outcome: 'typed_blocker',
+      remaining_blockers: [reason],
+      evidence_refs: [`typed-blocker:opl-meta-agent/stage-decomposition/${reason}`],
+    },
     route_impact: {
       blocker: reason,
       ...details,
