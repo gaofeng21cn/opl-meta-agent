@@ -36,7 +36,7 @@ Machine boundary: 本文是人读治理入口和 coverage ledger。当前机器�
 
 ### Current OMA Coverage State
 
-Last semantic refresh: `2026-05-28T15:25:45+0800`.
+Last semantic refresh: `2026-05-28T22:28:01+0800`.
 
 This ledger records the current OMA README/docs portfolio state directly instead of appending repeated no-drift process packets. Prior dated tranches are folded into the compact history table below; their durable result is the current coverage state in this section.
 
@@ -46,6 +46,7 @@ Fresh live truth inputs:
 - Public/docs surface: root `README.md`, root `README.zh-CN.md`, `docs/README.md`, core five docs, active gap plan, private implementation inventory, ideal-state reference, and this governance ledger.
 - Support README surface: `agent/knowledge/README.md`, `agent/prompts/README.md`, `agent/quality_gates/README.md`, `agent/skills/README.md`, and `agent/stages/README.md`.
 - Machine refs: `contracts/functional_privatization_audit.json`, `contracts/default_caller_deletion_evidence.json`, `contracts/pack_compiler_input.json`, `contracts/stage_control_plane.json`, `contracts/opl_domain_manifest_registration.json`, `contracts/app_workbench_projection.json`, production-acceptance contracts, `runtime/authority_functions/meta-agent-authority-functions.json`, source, tests, package scripts, OPL Doc Governance doctor output, and `npm test`.
+- OPL consumption read models: `opl agents interfaces --repo-dir /Users/gaofeng/workspace/opl-meta-agent --json` returned generated interface bundle `status=ready` with OPL-owned CLI/MCP/Skill/product-entry/tool descriptors; `opl runtime oma-production-consumption list --json` returned two verified refs-only ledger receipts, one long-soak ref and one historical typed-blocker provenance ref.
 
 Current exact human-doc inventory:
 
@@ -63,6 +64,7 @@ Current semantic result:
 - Remaining tail kinds are still `opl_generated_default_caller_consumption_tail`, `domain_refs_only_adapter_thinning`, `script_to_pack_hygiene`, and `evidence_tail`.
 - `contracts/pack_compiler_input.json` keeps `agent/` as the canonical semantic pack root and lists only non-README pack files in `required_domain_pack_paths`; support README files are human indexes, not machine-required pack paths.
 - OPL registry/App projection contracts remain refs-only handoff material owned by OPL/App for generated/discovery/workbench surfaces; they do not close App live render/runtime drilldown, long-soak, target owner receipt, or promotion gates.
+- Fresh OPL read-model consumption remains consistent with that boundary: interface generation is ready and OMA production-consumption ledger receipts are verified, but both surfaces keep `refs_only=true`, cannot write target truth, cannot create owner receipts, cannot claim domain/production ready, and cannot promote defaults without a gate.
 
 Reviewed documents / sections:
 
@@ -98,3 +100,4 @@ Next tranche write scope:
 | 2026-05-27 repo-local ledger bootstrap | Brought prior OPL-family OMA README/docs coverage into this repo and confirmed root `README*` plus `docs/**/*.md` had unique long-term roles. | Folded into Current OMA Coverage State. |
 | 2026-05-27 agent pack README lifecycle | Added owner / purpose / state / machine boundary to five `agent/*/README.md` support indexes and confirmed they are not machine-required pack paths. | Folded into current support README inventory and boundary statement. |
 | 2026-05-28 no-drift revalidations | Confirmed no new OMA human-doc path, no duplicate active truth owner, and no new readiness claim after OPL-series hygiene. | Replaced by this compact current-state ledger. |
+| 2026-05-28 22:28 CST full-body refresh | Re-read all current root `README*`, all `docs/**/*.md`, tracked `agent/*/README.md` support indexes, core contracts, source/test inventory, package scripts, doctor output, generated interface read model, and OMA production-consumption ledger. | Folded into Current OMA Coverage State; no doc-path retirements or readiness wording changes were needed. |
