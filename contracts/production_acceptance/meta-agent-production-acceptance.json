@@ -27,8 +27,16 @@
       "cmd:rtk npm run typecheck",
       "cmd:rtk git diff --check"
     ],
-    "typed_blocker_refs": [
+    "active_typed_blocker_refs": [],
+    "historical_typed_blocker_refs": [
       "typed_blocker_ref://opl-meta-agent/production-consumption/long-soak-pending"
+    ],
+    "production_consumption_receipt_refs": [
+      "opl://oma-production-consumption/long_soak_ref%3A%2F%2Fopl-meta-agent%2Fproduction-consumption%2Foperator-window%2Fab2526621c7c8159%3Fpath%3D%252FUsers%252Fgaofeng%252Fworkspace%252Fopl-release-evidence%252Foma-production-consumption%252Flong-soak-20260524-0610-CST%252Foma-long-soak-manifest.json%26sha256%3Dab2526621c7c8159ec1c77cd5149fb6e0dd77d9b26c13f99e8976c4f46ab95f6",
+      "opl://oma-production-consumption/typed_blocker_ref%3A%2F%2Fopl-meta-agent%2Fproduction-consumption%2Flong-soak-pending"
+    ],
+    "long_soak_refs": [
+      "long_soak_ref://opl-meta-agent/production-consumption/operator-window/ab2526621c7c8159?path=%2FUsers%2Fgaofeng%2Fworkspace%2Fopl-release-evidence%2Foma-production-consumption%2Flong-soak-20260524-0610-CST%2Foma-long-soak-manifest.json&sha256=ab2526621c7c8159ec1c77cd5149fb6e0dd77d9b26c13f99e8976c4f46ab95f6"
     ],
     "new_agent_consumption_evidence_refs": [
       "contracts/production_acceptance/new_agent_consumption_evidence.json"
@@ -91,27 +99,46 @@
     "new_agent_consumption_evidence_refs": [
       "contracts/production_acceptance/new_agent_consumption_evidence.json"
     ],
-    "typed_blocker_refs": [
+    "active_typed_blocker_refs": [],
+    "historical_typed_blocker_refs": [
       "typed_blocker_ref://opl-meta-agent/production-consumption/long-soak-pending"
     ]
   },
   "production_consumption_followthrough": {
-    "status": "blocked_by_domain_owned_typed_blocker",
-    "production_consumption_ready": false,
+    "status": "production_consumption_refs_projected",
+    "production_consumption_ready": true,
+    "open_gate_count": 0,
+    "gate_count": 4,
     "long_soak_claimed": false,
-    "typed_blocker_ref": "typed_blocker_ref://opl-meta-agent/production-consumption/long-soak-pending",
-    "typed_blocker_artifact_ref": "contracts/production_acceptance/oma-production-consumption-long-soak-typed-blocker.json",
-    "required_next_evidence_refs": [
-      "long_soak_receipt_ref",
-      "operator_long_soak_ref",
-      "production_soak_ref",
-      "agent_lab_rerun_long_soak_ref"
+    "verified_receipt_ref_count": 2,
+    "long_soak_ref_count": 1,
+    "active_typed_blocker_ref_count": 0,
+    "historical_typed_blocker_ref_count": 1,
+    "long_soak_refs": [
+      "long_soak_ref://opl-meta-agent/production-consumption/operator-window/ab2526621c7c8159?path=%2FUsers%2Fgaofeng%2Fworkspace%2Fopl-release-evidence%2Foma-production-consumption%2Flong-soak-20260524-0610-CST%2Foma-long-soak-manifest.json&sha256=ab2526621c7c8159ec1c77cd5149fb6e0dd77d9b26c13f99e8976c4f46ab95f6"
+    ],
+    "verified_receipt_refs": [
+      "opl://oma-production-consumption/long_soak_ref%3A%2F%2Fopl-meta-agent%2Fproduction-consumption%2Foperator-window%2Fab2526621c7c8159%3Fpath%3D%252FUsers%252Fgaofeng%252Fworkspace%252Fopl-release-evidence%252Foma-production-consumption%252Flong-soak-20260524-0610-CST%252Foma-long-soak-manifest.json%26sha256%3Dab2526621c7c8159ec1c77cd5149fb6e0dd77d9b26c13f99e8976c4f46ab95f6",
+      "opl://oma-production-consumption/typed_blocker_ref%3A%2F%2Fopl-meta-agent%2Fproduction-consumption%2Flong-soak-pending"
+    ],
+    "active_typed_blocker_refs": [],
+    "historical_typed_blocker_refs": [
+      "typed_blocker_ref://opl-meta-agent/production-consumption/long-soak-pending"
+    ],
+    "historical_typed_blocker_artifact_ref": "contracts/production_acceptance/oma-production-consumption-long-soak-typed-blocker.json",
+    "future_cohort_required_evidence_refs": [
+      "domain_owner_receipt_or_typed_blocker_ref",
+      "app_live_render_or_runtime_drilldown_ref",
+      "repeat_long_soak_receipt_ref",
+      "target_owner_default_promotion_gate_ref"
     ],
     "authority_boundary": {
       "refs_only": true,
+      "can_claim_domain_ready": false,
       "can_claim_production_ready": false,
       "can_close_long_soak_gate": false,
-      "can_write_opl_runtime_state": false
+      "can_write_opl_runtime_state": false,
+      "can_promote_default_agent_without_gate": false
     }
   },
   "acceptance_receipt": {

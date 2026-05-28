@@ -4,12 +4,19 @@
   "domain_id": "opl-meta-agent",
   "owner": "opl-meta-agent",
   "typed_blocker_ref": "typed_blocker_ref://opl-meta-agent/production-consumption/long-soak-pending",
-  "blocker_status": "active",
+  "blocker_status": "historical_provenance",
+  "superseded_by_status": "production_consumption_refs_projected",
+  "superseded_by_long_soak_refs": [
+    "long_soak_ref://opl-meta-agent/production-consumption/operator-window/ab2526621c7c8159?path=%2FUsers%2Fgaofeng%2Fworkspace%2Fopl-release-evidence%2Foma-production-consumption%2Flong-soak-20260524-0610-CST%2Foma-long-soak-manifest.json&sha256=ab2526621c7c8159ec1c77cd5149fb6e0dd77d9b26c13f99e8976c4f46ab95f6"
+  ],
   "blocked_gate": "long_soak_refs",
   "blocked_surface": "opl_app_drilldown_oma_production_consumption_followthrough",
-  "reason": "production_consumption_long_soak_refs_not_observed",
-  "production_consumption_ready": false,
+  "reason": "historical_production_consumption_long_soak_refs_not_observed",
+  "production_consumption_ready": true,
+  "open_gate_count": 0,
   "long_soak_claimed": false,
+  "active_blocker": false,
+  "historical_typed_blocker": true,
   "domain_ready_claimed": false,
   "default_promotion_claimed": false,
   "accepted_resolution_paths": [
