@@ -34,6 +34,69 @@ Machine boundary: 本文是人读治理入口和 coverage ledger。当前机器�
 
 ## Coverage Ledger
 
+### 2026-05-28 OPL-series no-drift revalidation follow-up
+
+本轮在 OPL series fresh hygiene 后重新核对 `opl-meta-agent` 当前 README/docs lifecycle 状态。目标是确认 2026-05-27 / 2026-05-28 repo-local coverage ledger 仍覆盖当前 exact inventory，并用 fresh machine truth / test evidence 证明没有新开 doc path 或 stale wording 需要正文重写。本轮不改 active truth，不新增 readiness claim，不关闭 OPL series 全局 `/goal`。
+
+Fresh live truth inputs:
+
+- OMA `AGENTS.md`, `TASTE.md`, root `README.md`, `docs/README.md`, `docs/project.md`, `docs/status.md`, `docs/architecture.md`, `docs/invariants.md`, `docs/decisions.md`, active gap plan, ideal-state reference, and this governance ledger.
+- Exact current inventory over repo-root `README*`, `docs/**/*.md`, and support README files:
+  - `README.md`
+  - `README.zh-CN.md`
+  - `docs/README.md`
+  - `docs/active/opl-meta-agent-ideal-state-gap-plan.md`
+  - `docs/active/opl-private-implementation-migration-inventory.md`
+  - `docs/architecture.md`
+  - `docs/decisions.md`
+  - `docs/docs_portfolio_consolidation.md`
+  - `docs/invariants.md`
+  - `docs/project.md`
+  - `docs/references/opl-meta-agent-ideal-state.md`
+  - `docs/status.md`
+  - `agent/knowledge/README.md`
+  - `agent/prompts/README.md`
+  - `agent/quality_gates/README.md`
+  - `agent/skills/README.md`
+  - `agent/stages/README.md`
+- Machine refs: `contracts/functional_privatization_audit.json`, `contracts/pack_compiler_input.json`, `contracts/opl_domain_manifest_registration.json`, `contracts/app_workbench_projection.json`, `contracts/production_acceptance/oma-production-consumption-long-soak-typed-blocker.json`, `package.json`, OPL Doc Governance doctor output, and `npm test`.
+
+Fresh semantic result:
+
+- The exact README/docs/support-README inventory has not gained a new ungoverned doc path since the prior ledger entries.
+- OPL Doc Governance doctor still reports `finding_count=0` and active truth `pass` for `docs/active/opl-meta-agent-ideal-state-gap-plan.md`. This remains a shape signal only; semantic currentness is anchored in live contracts, pack files, tests, and current docs.
+- `contracts/functional_privatization_audit.json` still reports `source_shape=landed`, `functional_structure_gap_count=0`, `domain_repo_retained_generic_surface_count=0`, and remaining tails `opl_generated_default_caller_consumption_tail`, `domain_refs_only_adapter_thinning`, `script_to_pack_hygiene`, and `evidence_tail`. This is source-shape evidence only, not target readiness or default promotion.
+- `contracts/pack_compiler_input.json` still uses `canonical_semantic_pack_root=agent/` and `canonical_semantic_pack_role=repo_source_declarative_meta_agent_pack`; `required_domain_pack_paths` remains non-README pack files only.
+- `contracts/opl_domain_manifest_registration.json` still declares OPL as registry owner and refs-only registration metadata; `contracts/app_workbench_projection.json` still declares OPL App/workbench as projection owner with refs/status/receipts/candidates/blockers only.
+- `contracts/production_acceptance/oma-production-consumption-long-soak-typed-blocker.json` still marks the long-soak blocker active. No long-soak, App live rendering, target domain ready, owner receipt body, artifact readiness, production ready, quality verdict or default promotion claim is closed by this docs tranche.
+- `npm test` passed with `47` tests and `0` failures, covering contracts, generated interfaces, source purity, external work-order delegation, external-suite/self-evolution, stage-decomposition, and takeover loop surfaces.
+
+Reviewed documents / sections:
+
+| Repo | Reviewed docs / sections | Edited docs this tranche |
+| --- | --- | --- |
+| `opl-meta-agent` | Fresh role/currentness read of root `README.md`, `docs/README.md`, core five, active gap plan, ideal-state reference, this ledger, current exact inventory, and machine refs listed above. | `docs/docs_portfolio_consolidation.md` |
+
+Archived / tombstoned / deleted docs:
+
+- none. No duplicate active truth owner, stale current-truth path or unsupported support README path was found in this tranche.
+
+Unreviewed docs:
+
+- `opl-meta-agent`: none newly opened for repo-root `README*`, `docs/**/*.md`, or tracked `agent/*/README.md` support indexes. This tranche revalidated coverage status rather than rereading every line of every already-covered document body.
+- Agent pack non-README semantic files remained machine truth refs, not prose-doc governance targets.
+
+Remaining stale / retire candidates:
+
+- OMA doc-path retirement remains empty for the current exact inventory.
+- Evidence/hygiene tails remain active: OPL registry/App live consumption receipts, repeat long-soak, more real target patch-loop owner receipt or typed blocker samples, independent Codex reviewer direct-evidence samples, standard target-agent handoff convergence, and script-to-pack / OPL primitive hygiene.
+- Any future prose that upgrades refs-only generated/registration/App projection, suite pass, schema completeness, work-order shape, source-shape conformance or OPL refs-only consumption into target-domain readiness or promotion remains stale pollution and must be rewritten.
+
+Next tranche write scope:
+
+- Continue OPL series coverage on repos with newly changed README/docs surfaces or stale lane fallout after branch/worktree hygiene.
+- App body docs remain deferred while the dedicated `full-first-run-stable-gate` lane is dirty/active and not safe for generic docs governance absorb.
+
 ### 2026-05-27 repo-local ledger bootstrap tranche
 
 本轮为 `opl-meta-agent` 新增 repo-local docs governance ledger。目标是把此前记录在 OPL family ledger 的 OMA full README/docs coverage 回写成本仓可审计入口，并让当前 exact inventory 可以在 OMA 本仓自证。本轮不改 active truth，不新增 readiness claim，不关闭 OPL series 全局 `/goal`。
