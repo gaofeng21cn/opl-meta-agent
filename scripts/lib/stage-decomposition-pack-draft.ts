@@ -29,6 +29,9 @@ const FORBIDDEN_GENERIC_OWNER_ROLES = [
 
 const placeholderPattern = new RegExp(`\\b(?:TO${'DO'}|T${'BD'})\\b`, 'i');
 
+const STANDARD_STAGE_PACK_CONFORMANCE_VERSION = 'standard-stage-pack.v2';
+const DEFAULT_STAGE_EXECUTOR_BINDING_REF = 'default_codex_cli';
+
 const USER_STAGE_LOG_REQUIRED_FIELDS = [
   'stage_name',
   'problem_summary',
@@ -282,6 +285,7 @@ function buildStageControlPlane({
     plane_id: `${snakeId(domainId)}_stage_plane`,
     target_domain_id: domainId,
     owner,
+    stage_pack_conformance_version: STANDARD_STAGE_PACK_CONFORMANCE_VERSION,
     authority_boundary: {
       domain_truth_owner: owner,
       opl_role: 'stage_runtime_projection_and_generated_interface_owner',
@@ -297,11 +301,11 @@ function buildStageControlPlane({
         summary,
         goal: targetBriefFor(targetAgent),
         owner,
-        stage_pack_conformance_version: 'standard-stage-pack.v2',
+        stage_pack_conformance_version: STANDARD_STAGE_PACK_CONFORMANCE_VERSION,
         selected_executor: {
           executor_kind: 'codex_cli',
           default_executor: true,
-          executor_binding_ref: 'executor:codex-cli',
+          executor_binding_ref: DEFAULT_STAGE_EXECUTOR_BINDING_REF,
         },
         domain_stage_refs: [stageId],
         inputs: [
@@ -318,7 +322,7 @@ function buildStageControlPlane({
         ],
         evaluation: [ref('domain_quality_gate_ref', qualityGatePath)],
         independent_gate_policy: {
-          gate_ref: `quality-gate:${stageId}`,
+          gate_ref: qualityGatePath,
           gate_owner: owner,
           execution_review_separation_required: true,
           mechanical_completion_can_close_stage: false,
@@ -714,6 +718,9 @@ function validateStageControlPlane(
   if (stageControl.target_domain_id !== targetAgent.domain_id) {
     throw new Error('stage-decomposition pack draft stage_control_plane target_domain_id does not match target agent.');
   }
+  if (stageControl.stage_pack_conformance_version !== STANDARD_STAGE_PACK_CONFORMANCE_VERSION) {
+    throw new Error(`stage-decomposition pack draft stage_control_plane.stage_pack_conformance_version must be ${STANDARD_STAGE_PACK_CONFORMANCE_VERSION}.`);
+  }
   const actionIds = new Set(asRecordArray(actionCatalog.actions, 'action_catalog.actions').map((action) => (
     asString(action.action_id, 'action.action_id')
   )));
@@ -728,6 +735,9 @@ function validateStageControlPlane(
     if (executor.executor_kind !== 'codex_cli' || executor.default_executor !== true) {
       throw new Error(`stage-decomposition pack draft stage ${stageId} must select codex_cli as default executor.`);
     }
+    if (executor.executor_binding_ref !== DEFAULT_STAGE_EXECUTOR_BINDING_REF) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} must use ${DEFAULT_STAGE_EXECUTOR_BINDING_REF} executor binding.`);
+    }
     const promptRefs = validateStageRefs(stage, 'prompt_refs', 'domain_prompt_ref', 'agent/prompts/', files);
     const skillRefs = validateStageRefs(stage, 'skills', 'domain_skill_ref', 'agent/skills/', files);
     const knowledgeRefs = validateStageRefs(stage, 'knowledge_refs', 'domain_knowledge_ref', 'agent/knowledge/', files);
@@ -741,6 +751,9 @@ function validateStageControlPlane(
       }
     });
     const gate = asRecord(stage.independent_gate_policy, `stage ${stageId}.independent_gate_policy`);
+    if (!qualityGateRefs.includes(String(gate.gate_ref))) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} independent_gate_policy.gate_ref must reference a declared quality gate file.`);
+    }
     if (gate.execution_review_separation_required !== true) {
       throw new Error(`stage-decomposition pack draft stage ${stageId} rejects self-review: execution_review_separation_required must be true.`);
     }

@@ -29,6 +29,9 @@
     ],
     "typed_blocker_refs": [
       "typed_blocker_ref://opl-meta-agent/production-consumption/long-soak-pending"
+    ],
+    "new_agent_consumption_evidence_refs": [
+      "contracts/production_acceptance/new_agent_consumption_evidence.json"
     ]
   },
   "role": "refs_only_external_agent_takeover_improve_loop_acceptance",
@@ -85,6 +88,9 @@
       "real-target-delivery-receipt.json",
       "real-target-scaleout-evidence-ledger.json"
     ],
+    "new_agent_consumption_evidence_refs": [
+      "contracts/production_acceptance/new_agent_consumption_evidence.json"
+    ],
     "typed_blocker_refs": [
       "typed_blocker_ref://opl-meta-agent/production-consumption/long-soak-pending"
     ]
@@ -124,6 +130,7 @@
       "proposal and materializer refs present",
       "review and audit receipt refs present",
       "real target delivery receipt and scaleout ledger surfaces supported",
+      "new-agent consumption sample passed Stage Pack v2 conformance and Agent Lab baseline while leaving production tail open",
       "no target-domain authority writes allowed",
       "new-agent morphology and conformance fixture required"
     ]
@@ -142,9 +149,13 @@
   "generated_agent_fixture_requirement": {
     "fixture_status": "required_by_default_generated_agent",
     "fixture_ref": "contracts/production_acceptance/morphology_conformance_fixture.json",
+    "latest_new_agent_consumption_evidence_ref": "contracts/production_acceptance/new_agent_consumption_evidence.json",
     "required_check_refs": [
       "check-ref:generated-agent/domain-pack-files-present",
       "check-ref:generated-agent/stage-action-contracts-present",
+      "check-ref:generated-agent/stage-pack-v2-conformance-passed",
+      "check-ref:generated-agent/default-codex-cli-binding-present",
+      "check-ref:generated-agent/independent-gate-file-ref-present",
       "check-ref:generated-agent/OPL-generated-interface-owner",
       "check-ref:generated-agent/no-target-domain-truth-write",
       "check-ref:generated-agent/no-default-promotion-without-gate"

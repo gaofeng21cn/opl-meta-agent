@@ -1079,6 +1079,7 @@ test('registration, projection, and evidence contracts are represented in functi
 
 test('production acceptance evidence closes conformance evidence tail through refs-only acceptance receipt', () => {
   const acceptance = readJson('contracts/production_acceptance/meta-agent-production-acceptance.json');
+  const newAgentConsumption = readJson('contracts/production_acceptance/new_agent_consumption_evidence.json');
 
   assert.equal(acceptance.surface_kind, 'opl_meta_agent_production_acceptance_evidence');
   assert.equal(acceptance.domain_id, 'opl-meta-agent');
@@ -1098,6 +1099,9 @@ test('production acceptance evidence closes conformance evidence tail through re
     asStrings(acceptance.refs.typed_blocker_refs)
       .includes('typed_blocker_ref://opl-meta-agent/production-consumption/long-soak-pending'),
   );
+  assert.deepEqual(acceptance.refs.new_agent_consumption_evidence_refs, [
+    'contracts/production_acceptance/new_agent_consumption_evidence.json',
+  ]);
   assert.equal(
     acceptance.production_consumption_followthrough.status,
     'blocked_by_domain_owned_typed_blocker',
@@ -1143,6 +1147,9 @@ test('production acceptance evidence closes conformance evidence tail through re
   assert.ok(acceptance.external_agent_acceptance_chain.test_handoff_refs.length > 0);
   assert.ok(acceptance.external_agent_acceptance_chain.proposal_materializer_refs.length > 0);
   assert.ok(acceptance.external_agent_acceptance_chain.review_audit_receipt_refs.length > 0);
+  assert.deepEqual(acceptance.external_agent_acceptance_chain.new_agent_consumption_evidence_refs, [
+    'contracts/production_acceptance/new_agent_consumption_evidence.json',
+  ]);
   assert.ok(
     asStrings(acceptance.external_agent_acceptance_chain.typed_blocker_refs)
       .includes('typed_blocker_ref://opl-meta-agent/production-consumption/long-soak-pending'),
@@ -1156,8 +1163,64 @@ test('production acceptance evidence closes conformance evidence tail through re
   assert.ok(acceptance.promotion_gate.required_next_verification_command_refs.includes('cmd:rtk npm run typecheck'));
   assert.ok(
     acceptance.generated_agent_fixture_requirement.required_check_refs.includes(
+      'check-ref:generated-agent/stage-pack-v2-conformance-passed',
+    ),
+  );
+  assert.ok(
+    acceptance.generated_agent_fixture_requirement.required_check_refs.includes(
+      'check-ref:generated-agent/default-codex-cli-binding-present',
+    ),
+  );
+  assert.ok(
+    acceptance.generated_agent_fixture_requirement.required_check_refs.includes(
+      'check-ref:generated-agent/independent-gate-file-ref-present',
+    ),
+  );
+  assert.equal(
+    acceptance.generated_agent_fixture_requirement.latest_new_agent_consumption_evidence_ref,
+    'contracts/production_acceptance/new_agent_consumption_evidence.json',
+  );
+  assert.ok(
+    acceptance.generated_agent_fixture_requirement.required_check_refs.includes(
       'check-ref:generated-agent/no-target-domain-truth-write',
     ),
+  );
+  assert.equal(newAgentConsumption.surface_kind, 'opl_meta_agent_new_agent_consumption_evidence');
+  assert.equal(newAgentConsumption.evidence_status, 'verified_new_agent_consumption_with_stage_pack_v2_conformance');
+  assert.equal(newAgentConsumption.target_agent.domain_id, 'publication-brief-agent');
+  assert.equal(newAgentConsumption.consumed_surfaces.build_agent_baseline_action, 'opl-meta-agent.build-agent-baseline');
+  assert.equal(newAgentConsumption.consumed_surfaces.generated_interface_status, 'ready');
+  assert.equal(newAgentConsumption.consumed_surfaces.structural_conformance_status, 'passed');
+  assert.equal(newAgentConsumption.consumed_surfaces.readiness_status, 'passed_with_production_evidence_tail');
+  assert.equal(newAgentConsumption.stage_pack_v2_consumption.status, 'passed');
+  assert.equal(newAgentConsumption.stage_pack_v2_consumption.plane_version, 'standard-stage-pack.v2');
+  assert.equal(newAgentConsumption.stage_pack_v2_consumption.executor_binding_ref, 'default_codex_cli');
+  assert.equal(
+    newAgentConsumption.stage_pack_v2_consumption.independent_gate_ref,
+    'agent/quality_gates/agent-output-draft-quality-gate.md',
+  );
+  assert.deepEqual(newAgentConsumption.stage_pack_v2_consumption.blockers, []);
+  assert.equal(newAgentConsumption.ai_reviewer_evaluation.no_shared_context, true);
+  assert.equal(newAgentConsumption.ai_reviewer_evaluation.independent_attempt, true);
+  assert.equal(
+    newAgentConsumption.ai_reviewer_evaluation.verdict,
+    'baseline_ready_with_owner_gate',
+  );
+  assert.equal(
+    newAgentConsumption.production_evidence_tail.status,
+    'open_tail_remains',
+  );
+  assert.equal(newAgentConsumption.production_evidence_tail.production_ready_claimed, false);
+  assert.equal(newAgentConsumption.production_evidence_tail.domain_ready_claimed, false);
+  assert.equal(newAgentConsumption.production_evidence_tail.default_promotion_claimed, false);
+  assert.equal(newAgentConsumption.production_evidence_tail.long_soak_claimed, false);
+  assertNoForbiddenAuthority(newAgentConsumption, 'newAgentConsumption');
+  assert.equal(newAgentConsumption.authority_boundary.can_claim_domain_ready, false);
+  assert.equal(newAgentConsumption.authority_boundary.can_claim_production_ready, false);
+  assert.equal(newAgentConsumption.authority_boundary.can_close_long_soak_gate, false);
+  assert.ok(
+    asStrings(newAgentConsumption.forbidden_claims)
+      .includes('new_agent_consumption_equals_long_soak_success'),
   );
   assertNoForbiddenAuthority(acceptance, 'productionAcceptance');
   assert.equal(acceptance.authority_boundary.target_domain_authority_writes_forbidden, true);
@@ -1170,6 +1233,8 @@ test('production acceptance evidence closes conformance evidence tail through re
     ...asStrings(acceptance.external_agent_acceptance_chain.review_audit_receipt_refs),
     ...asStrings(acceptance.acceptance_receipt.source_refs),
     ...asStrings(acceptance.generated_agent_fixture_requirement.verified_by_refs),
+    ...asStrings(newAgentConsumption.source_refs),
+    acceptance.generated_agent_fixture_requirement.latest_new_agent_consumption_evidence_ref,
     acceptance.doc_ref,
     ...asStrings(acceptance.refs.doc_refs),
   ].forEach(assertRepoRefExists);

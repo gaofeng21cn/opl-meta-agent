@@ -65,9 +65,14 @@ function assertGeneratedTargetStagePack(
   assert.deepEqual(stage.selected_executor, {
     executor_kind: 'codex_cli',
     default_executor: true,
-    executor_binding_ref: 'executor:codex-cli',
+    executor_binding_ref: 'default_codex_cli',
   });
   assert.equal(stage.independent_gate_policy.gate_owner, stageControl.owner);
+  assert.ok(
+    (stage.evaluation as JsonObject[])
+      .some((entry) => entry.ref === stage.independent_gate_policy.gate_ref),
+    `${stageId}.independent_gate_policy.gate_ref should point at a declared quality gate file`,
+  );
   assert.equal(stage.independent_gate_policy.execution_review_separation_required, true);
   assert.equal(stage.independent_gate_policy.mechanical_completion_can_close_stage, false);
   assert.equal(stage.independent_gate_policy.provider_completion_can_claim_domain_ready, false);

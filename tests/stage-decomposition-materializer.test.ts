@@ -65,8 +65,15 @@ test('materializer writes the target stage pack from typed stage-decomposition c
     const stage = stageById(stageControl, 'evidence-synthesis-plan');
 
     assert.equal(actionCatalog.actions[0].action_id, 'plan-evidence-synthesis');
+    assert.equal(stageControl.stage_pack_conformance_version, 'standard-stage-pack.v2');
     assert.equal(stage.goal, targetAgent.target_brief);
     assert.deepEqual(stage.allowed_action_refs, ['plan-evidence-synthesis']);
+    assert.deepEqual(stage.selected_executor, {
+      executor_kind: 'codex_cli',
+      default_executor: true,
+      executor_binding_ref: 'default_codex_cli',
+    });
+    assert.equal(stage.independent_gate_policy.gate_ref, 'agent/quality_gates/evidence-synthesis-plan-gate.md');
     assert.equal(stage.independent_gate_policy.execution_review_separation_required, true);
     assert.equal(stage.independent_gate_policy.mechanical_completion_can_close_stage, false);
     assert.equal(stage.authority_boundary.can_write_target_domain_truth, false);

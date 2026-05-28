@@ -1,0 +1,132 @@
+{
+  "surface_kind": "opl_meta_agent_new_agent_consumption_evidence",
+  "schema_version": 1,
+  "domain_id": "opl-meta-agent",
+  "owner": "opl-meta-agent",
+  "evidence_status": "verified_new_agent_consumption_with_stage_pack_v2_conformance",
+  "role": "refs_only_new_agent_consumption_evidence",
+  "evidence_ref": "new-agent-consumption:opl-meta-agent/publication-brief-agent/2026-05-28",
+  "target_agent": {
+    "domain_id": "publication-brief-agent",
+    "domain_label": "Publication Brief Agent",
+    "delivery_domain": "publication briefing",
+    "target_brief_ref": "brief-ref:opl-meta-agent/publication-brief-agent/claim-risk-reviewer-question-artifact-ref-agent",
+    "generated_by_action": "build-agent-baseline",
+    "generated_package_ref": "artifact-ref:publication-brief-agent/generated-package/2026-05-28"
+  },
+  "consumed_surfaces": {
+    "build_agent_baseline_action": "opl-meta-agent.build-agent-baseline",
+    "stage_decomposition_attempt_ref": "fixture-attempt:opl-meta-agent/publication-brief-agent/stage-decomposition",
+    "stage_decomposition_closeout_ref": "closeout-packet:opl-meta-agent/publication-brief-agent/stage-decomposition",
+    "stage_decomposition_receipt_refs": [
+      "receipt:opl-meta-agent/publication-brief-agent/stage-decomposition-pack-draft"
+    ],
+    "agent_lab_suite_ref": "suite:opl-meta-agent-baseline-suite:publication-brief-agent",
+    "agent_lab_task_ref": "agent-lab-task:opl-meta-agent/publication-brief-agent-baseline",
+    "agent_lab_run_ref": "run:opl-meta-agent/publication-brief-agent-baseline",
+    "agent_lab_result_ref": "oals_95a2f0173d0e6e3742e15c26",
+    "baseline_delivery_receipt_ref": "oma_receipt_0c569641739e",
+    "generated_interface_status": "ready",
+    "structural_conformance_status": "passed",
+    "readiness_status": "passed_with_production_evidence_tail"
+  },
+  "stage_pack_v2_consumption": {
+    "status": "passed",
+    "conformance_version": "standard-stage-pack.v2",
+    "plane_version": "standard-stage-pack.v2",
+    "stage_id": "agent-output-draft",
+    "stage_version": "standard-stage-pack.v2",
+    "selected_executor_kind": "codex_cli",
+    "executor_binding_ref": "default_codex_cli",
+    "independent_gate_ref": "agent/quality_gates/agent-output-draft-quality-gate.md",
+    "expected_receipt_ref_count": 5,
+    "pack_compiler_source_refs_resolved": [
+      "stage_graph_source_ref",
+      "quality_gate_source_ref",
+      "executor_policy_source_ref",
+      "functional_privatization_audit_source_ref",
+      "generated_surface_handoff_source_ref"
+    ],
+    "blockers": []
+  },
+  "ai_reviewer_evaluation": {
+    "reviewer_kind": "ai_reviewer",
+    "model_or_provider": "codex-cli:gpt-5.5",
+    "run_ref": "run:ai-reviewer/opl-meta-agent/publication-brief-agent/baseline/2026-05-28",
+    "execution_attempt_ref": "attempt:executor/opl-meta-agent/publication-brief-agent/baseline/2026-05-28",
+    "review_attempt_ref": "attempt:ai-reviewer/opl-meta-agent/publication-brief-agent/baseline/2026-05-28",
+    "no_shared_context": true,
+    "independent_attempt": true,
+    "verdict": "baseline_ready_with_owner_gate",
+    "source_refs": [
+      "review-ref:opl-meta-agent/publication-brief-agent/ai-reviewer/2026-05-28",
+      "contract-ref:opl-meta-agent/build-agent-baseline",
+      "stage-closeout-ref:opl-meta-agent/publication-brief-agent/stage-decomposition/2026-05-28",
+      "scorecard-ref:opl-meta-agent/baseline-acceptance"
+    ],
+    "direct_evidence_refs": [
+      "artifact-ref:publication-brief-agent/generated-package/2026-05-28",
+      "receipt-ref:opl-meta-agent/publication-brief-agent/baseline-delivery/2026-05-28",
+      "agent-lab-result-ref:opl-meta-agent/publication-brief-agent/baseline/2026-05-28"
+    ]
+  },
+  "production_evidence_tail": {
+    "status": "open_tail_remains",
+    "tail_items": [
+      {
+        "tail_item": "production_live_soak_not_claimed_by_conformance",
+        "status": "open"
+      },
+      {
+        "tail_item": "domain_ready_not_claimed_by_conformance",
+        "status": "open"
+      }
+    ],
+    "production_ready_claimed": false,
+    "domain_ready_claimed": false,
+    "default_promotion_claimed": false,
+    "long_soak_claimed": false
+  },
+  "source_refs": [
+    "scripts/lib/stage-decomposition-pack-draft.ts",
+    "tests/bootstrap-loop.test.ts",
+    "tests/stage-decomposition-materializer.test.ts",
+    "contracts/production_acceptance/meta-agent-production-acceptance.json",
+    "contracts/production_acceptance/oma-production-consumption-long-soak-typed-blocker.json",
+    "docs/status.md",
+    "docs/active/opl-meta-agent-ideal-state-gap-plan.md"
+  ],
+  "verification_refs": [
+    "cmd:rtk npm run build-agent-baseline -- --output-dir /tmp/oma-new-agent-consumption-20260528/build-v2 --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl --stage-runner fixture --domain-id publication-brief-agent --domain-label 'Publication Brief Agent' --delivery-domain 'publication briefing' --target-brief <brief> --ai-reviewer-evaluation /tmp/oma-new-agent-consumption-20260528/ai-reviewer-evaluation.json",
+    "cmd:rtk /Users/gaofeng/workspace/one-person-lab/bin/opl agents conformance --agent publication-brief-agent=/tmp/oma-new-agent-consumption-20260528/build-v2/publication-brief-agent --json",
+    "cmd:rtk /Users/gaofeng/workspace/one-person-lab/bin/opl agents interfaces --repo-dir /tmp/oma-new-agent-consumption-20260528/build-v2/publication-brief-agent --json",
+    "cmd:rtk /Users/gaofeng/workspace/one-person-lab/bin/opl agents readiness --repo-dir /tmp/oma-new-agent-consumption-20260528/build-v2/publication-brief-agent --json",
+    "cmd:rtk node --test tests/stage-decomposition-materializer.test.ts tests/bootstrap-loop.test.ts"
+  ],
+  "next_required_evidence_refs": [
+    "domain_owner_receipt_or_typed_blocker_ref",
+    "app_live_render_or_runtime_drilldown_ref",
+    "long_soak_receipt_ref",
+    "target_owner_default_promotion_gate_ref"
+  ],
+  "authority_boundary": {
+    "refs_only": true,
+    "not_generic_runtime_owner": true,
+    "can_write_target_domain_truth": false,
+    "can_write_target_domain_memory_body": false,
+    "can_mutate_target_domain_artifact_body": false,
+    "can_authorize_target_domain_quality_or_export": false,
+    "can_promote_default_agent_without_gate": false,
+    "can_claim_domain_ready": false,
+    "can_claim_production_ready": false,
+    "can_close_long_soak_gate": false,
+    "can_write_opl_runtime_state": false
+  },
+  "forbidden_claims": [
+    "new_agent_conformance_equals_domain_ready",
+    "agent_lab_suite_pass_equals_quality_verdict",
+    "generated_interface_ready_equals_app_live_closeout",
+    "baseline_receipt_equals_default_promotion",
+    "new_agent_consumption_equals_long_soak_success"
+  ]
+}

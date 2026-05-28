@@ -16,7 +16,7 @@ Date: `2026-05-24`
 - 理想物理形态是 `Declarative Agent-Building Pack + OPL generated/hosted surfaces + minimal agent-building authority functions`。
 - 当前 `functional_structure_gap_count=0` 只表示没有发现 repo-owned generic runtime、generated shell、workbench、sidecar 或 compatibility surface；它不能把 `scripts/` materializer、bootstrap pack writer、Agent Lab invocation helper 或 default-caller evidence contracts 写成 strict purity 完成态。
 - Active source shape 的目标是 `Declarative Agent-Building Pack + OPL generated/hosted surfaces + minimal agent-building authority functions`。当前 repo active scripts 只能作为 authority implementation、smoke helper、fixture/proof helper 或 developer work-order materializer 暂留；稳定 policy 必须迁回 `agent/`、`contracts/`、`runtime/authority_functions/` 或 OPL primitive。
-- 当前未完成项主要是测试/证据尾项：OPL generated/default caller consumption tail、OPL registry / App 真实 discovery/render receipt、后续 cohort 的 repeat long-soak / live drilldown 证据、更多真实 target patch -> rerun -> owner receipt 样本、独立 Codex reviewer direct-evidence verdict、跨目标 agent 标准 handoff 收敛、domain refs-only adapter thinning 和持续 script-to-pack hygiene。
+- 当前未完成项主要是测试/证据尾项：OPL generated/default caller consumption tail、OPL registry / App 真实 discovery/render receipt、后续 cohort 的 repeat long-soak / live drilldown 证据、更多真实 target patch -> rerun -> owner receipt 样本、独立 Codex reviewer direct-evidence verdict、跨目标 agent 标准 handoff 收敛、domain refs-only adapter thinning 和持续 script-to-pack hygiene。2026-05-28 已新增 `publication-brief-agent` 新 Agent 消费样本，证明 `build-agent-baseline` 能生成当前 Stage Pack v2 形状的目标 pack，并被 OPL scaffold/conformance、generated interfaces、readiness 和 Agent Lab baseline 复验消费；该样本仍保留 production/domain-ready tail open。
 - OPL 侧当前已能把 OMA production-consumption read model 读成 ready；这个 ready 只关闭 OPL refs-only consumption gate，不授权 target domain ready、family production ready、default promotion，也不替代后续 target cohort 的 repeat long-soak evidence。
 
 禁止误写：
@@ -48,7 +48,7 @@ Owner split 固定为：
 | Developer work-order materialization | `done_with_more_real_loop_tail` | `npm run improve:external-suite`、`npm run agent:evidence`、work-order tests、`scripts/lib/work-order-*` | 可输出 executable work order 或 typed blocker；目标 truth、quality、artifact、owner receipt 仍归 target owner。 |
 | External work-order execution delegation | `done_as_thin_delegation` | `npm run execute:external-work-order`、`tests/execute-external-work-order.test.ts` | 只校验 refs 和委托 `opl work-order execute`；不持有 worktree lifecycle、runner、absorb、cleanup 或 owner receipt body。 |
 | Stage executor policy candidates | `done_as_candidate_only` | `contracts/stage_control_plane.json`、stage executor policy tests | OMA 只声明 refs-only candidate；试验、binding、receipt、gate 和默认 executor promotion 归 OPL / Agent Lab。 |
-| Production acceptance / consumption follow-through | `done_with_repeat_evidence_tail` | `contracts/production_acceptance/meta-agent-production-acceptance.json`、OPL production-consumption read model / refs-only ledger | OPL 侧已可消费 OMA production-consumption refs；当前 ready 只说明 OPL refs-only consumption gate 闭合，不授权 target domain ready、family production ready 或默认 promotion。 |
+| Production acceptance / consumption follow-through | `done_with_repeat_evidence_tail` | `contracts/production_acceptance/meta-agent-production-acceptance.json`、`contracts/production_acceptance/new_agent_consumption_evidence.json`、OPL production-consumption read model / refs-only ledger | OPL 侧已可消费 OMA production-consumption refs；`publication-brief-agent` 进一步证明新 Agent 对 Stage Pack v2 scaffold/conformance/generated interface/readiness/Agent Lab surfaces 的重复消费。当前 ready 与新消费样本都不授权 target domain ready、family production ready、long-soak 或默认 promotion。 |
 | Script morphology | `active_hygiene` | `runtime/authority_functions/`、`scripts/lib/*`、私有实现迁移台账 | 当前脚本只允许是 authority implementation、smoke helper、fixture/proof helper 或 developer work-order materializer。 |
 | Fallow TS/JS hygiene | `production_unused_surface_closed_with_complexity_tail` | `fallow --production`、`scripts/lib/*`、`scripts/agent-evidence-takeover.ts`、`scripts/improve-from-agent-lab-suite.ts` | unused export/type 应保持关闭；复杂度治理只允许继续按参数解析、contract loading、receipt/artifact materialization 等自然 helper 收薄，不能新增通用 CLI 框架或 runner。 |
 | Clean-room skill pattern intake | `done_as_docs_and_contract_pattern` | `contracts/trajectory_learning_contract.json`、核心 docs/tests | 只吸收 xskill trajectory / candidate / canary / redaction 模式；不引入 daemon/runtime/scheduler/installer/server。 |
@@ -81,7 +81,8 @@ Owner split 固定为：
 | Evidence gap | 当前已有 | 仍缺 |
 | --- | --- | --- |
 | OPL registry discovery consumption | OMA registration contract 与 discovery receipt surface | OPL 主仓或 App 侧真实 registry consumption receipt。 |
-| App/workbench live consumption | App projection contract、drilldown readiness receipt、OPL production-consumption refs-only gate 已可消费 OMA evidence | 后续 target cohort 的真实 App render/screenshot、live runtime drilldown closeout receipt 和 repeat long-soak evidence；当前 OPL-side consumption ready 不授权 target default promotion。 |
+| App/workbench live consumption | App projection contract、drilldown readiness receipt、OPL production-consumption refs-only gate 已可消费 OMA evidence；`publication-brief-agent` 新消费样本已验证 generated product-entry / workbench descriptors ready | 后续 target cohort 的真实 App render/screenshot、live runtime drilldown closeout receipt 和 repeat long-soak evidence；当前 OPL-side consumption ready 和新 Agent descriptor ready 不授权 target default promotion。 |
+| Repeated new-agent scaffold/conformance/readiness consumption | `sample-brief-agent` / `real-target-brief-agent` smoke surfaces；2026-05-28 `publication-brief-agent` 通过 Stage Pack v2 conformance、generated interfaces、readiness 与 Agent Lab baseline | 更多非 sample target cohorts 的 App live path、domain owner receipt 或 typed blocker，以及 long-soak 证据。 |
 | Stage launch on real target | work order 输入 refs、allowed editable surfaces、verification refs、owner route、no-forbidden-write refs 已成形 | 更多真实目标仓 stage attempt refs、typed blocker 或 executable developer work order。 |
 | Independent Codex reviewer attempt | structured reviewer schema、fail-closed rules、reviewer evidence projection | 独立 invocation/context/trace/receipt、direct evidence、source refs、critique/suggestions/verdict/provenance 与 rollback/canary/version refs 的真实样本。 |
 | Real blocked target patch loop scaleout | MAG closeout projection、MAS + MAG refs-only scaleout gate | 更多真实 target patch / rerun / owner receipt / no-forbidden-write / runtime-read-model consumption / workspace proof / cleanup / Agent Lab re-evaluation 样本。 |
@@ -94,23 +95,26 @@ Owner split 固定为：
 1. `registry_app_consumption`
    让 OPL 主仓或 App 侧消费 `contracts/opl_domain_manifest_registration.json` 与 `contracts/app_workbench_projection.json`，留下 registry discovery receipt、App render/screenshot/runtime drilldown receipt；若 long-soak 仍未落证，至少 record/verify OMA-owned typed blocker。
 
-2. `real_blocked_target_patch_loop_scaleout`
+2. `new_agent_consumption_scaleout`
+   继续用更多非 sample target agent 复验 `build-agent-baseline` 生成的 Stage Pack v2、file-backed independent gate、generated interface、Agent Lab baseline、readiness 和 App/workbench descriptor consumption；每个样本都必须显式记录 open production/domain-ready tail，不能把 conformance pass 写成 production closeout。
+
+3. `real_blocked_target_patch_loop_scaleout`
    在更多真实 target agents 上执行带 AHE 四字段的 developer work order：Codex 只改 allowed editable surfaces，重跑目标验证，记录 target runtime/read-model consumption、workspace proof、no-forbidden-write、owner receipt 或 typed blocker、patch absorption、cleanup 和 Agent Lab re-evaluation。
 
-3. `independent_codex_reviewer_attempt`
+4. `independent_codex_reviewer_attempt`
    为真实 patch-loop 补独立 Codex reviewer attempt。reviewer 必须基于 direct evidence，保持 no-shared-context provenance，并输出 source refs、critique、suggestions、verdict 和 rollback/canary/version refs。
 
-4. `standard_target_agent_handoff_convergence`
+5. `standard_target_agent_handoff_convergence`
    推动 MAS/MAG/RCA 和新 Foundry Agent 用同一 target-agent vocabulary 暴露 production/live acceptance、Agent Lab handoff、owner route、editable surface policy、required return shapes、verification refs 和 no-forbidden-write proof。
 
-5. `script_to_pack_hygiene`
+6. `script_to_pack_hygiene`
    持续把稳定 policy 迁入 declarative pack、contracts 或 OPL primitive；保留脚本必须能指向 `runtime/authority_functions`、smoke action、fixture/proof helper 或 developer work-order materializer。
 
 ## 下一轮 Agent prompt
 
 Objective:
 
-- 继续治理 `/Users/gaofeng/workspace/opl-meta-agent` 的 OMA evidence tail、真实 target patch-loop scaleout、独立 reviewer attempt、standard target-agent handoff convergence 和 script-to-pack hygiene。
+- 继续治理 `/Users/gaofeng/workspace/opl-meta-agent` 的 OMA evidence tail、新 Agent consumption scaleout、真实 target patch-loop scaleout、独立 reviewer attempt、standard target-agent handoff convergence 和 script-to-pack hygiene。
 
 Write scope:
 
@@ -124,7 +128,7 @@ Live truth inputs:
 
 Required actions:
 
-- 推进 `registry_app_consumption`、`real_blocked_target_patch_loop_scaleout`、`independent_codex_reviewer_attempt`、`standard_target_agent_handoff_convergence` 和 `script_to_pack_hygiene`。
+- 推进 `registry_app_consumption`、`new_agent_consumption_scaleout`、`real_blocked_target_patch_loop_scaleout`、`independent_codex_reviewer_attempt`、`standard_target_agent_handoff_convergence` 和 `script_to_pack_hygiene`。
 - 对新增或增长的 scripts/materializer 核实 active caller、authority boundary、no-forbidden-write、target owner route 和是否应迁入 `agent/`、`contracts/` 或 OPL primitive。
 - 已闭合项折回本文或核心五件套；proof 流水和旧路线进入 history/provenance。
 
