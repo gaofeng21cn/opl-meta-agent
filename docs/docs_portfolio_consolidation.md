@@ -36,7 +36,7 @@ Machine boundary: 本文是人读治理入口和 coverage ledger。当前机器�
 
 ### Current OMA Coverage State
 
-Last semantic refresh: `2026-05-28T22:28:01+0800`.
+Last semantic refresh: `2026-05-29T01:09:43+0800`.
 
 This ledger records the current OMA README/docs portfolio state directly instead of appending repeated no-drift process packets. Prior dated tranches are folded into the compact history table below; their durable result is the current coverage state in this section.
 
@@ -101,3 +101,4 @@ Next tranche write scope:
 | 2026-05-27 agent pack README lifecycle | Added owner / purpose / state / machine boundary to five `agent/*/README.md` support indexes and confirmed they are not machine-required pack paths. | Folded into current support README inventory and boundary statement. |
 | 2026-05-28 no-drift revalidations | Confirmed no new OMA human-doc path, no duplicate active truth owner, and no new readiness claim after OPL-series hygiene. | Replaced by this compact current-state ledger. |
 | 2026-05-28 22:28 CST full-body refresh | Re-read all current root `README*`, all `docs/**/*.md`, tracked `agent/*/README.md` support indexes, core contracts, source/test inventory, package scripts, doctor output, generated interface read model, and OMA production-consumption ledger. | Folded into Current OMA Coverage State; no doc-path retirements or readiness wording changes were needed. |
+| 2026-05-29 OPL-series automation refresh | Re-read the exact OMA human-doc inventory, active truth owner, ideal-state reference, private implementation inventory, core contracts, generated interface read model, and OMA production-consumption ledger during the six-repo governance run. | Refreshed `Last semantic refresh`; current 17-doc inventory, refs-only generated surface boundary, verified production-consumption receipts, and evidence-tail wording remain unchanged. |
