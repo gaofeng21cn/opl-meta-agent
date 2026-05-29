@@ -36,7 +36,7 @@ Machine boundary: 本文是人读治理入口和 coverage ledger。当前机器�
 
 ### Current OMA Coverage State
 
-Last semantic refresh: `2026-05-29T22:47:00+0800`.
+Last semantic refresh: `2026-05-30T01:01:09+0800`.
 
 This ledger records the current OMA README/docs portfolio state directly instead of appending repeated no-drift process packets. Prior dated tranches are folded into the compact history table below; their durable result is the current coverage state in this section.
 
@@ -105,3 +105,4 @@ Next tranche write scope:
 | 2026-05-28 22:28 CST full-body refresh | Re-read all current root `README*`, all `docs/**/*.md`, tracked `agent/*/README.md` support indexes, core contracts, source/test inventory, package scripts, doctor output, generated interface read model, and OMA production-consumption ledger. | Folded into Current OMA Coverage State; no doc-path retirements or readiness wording changes were needed. |
 | 2026-05-29 OPL-series automation refresh | Re-read the exact OMA human-doc inventory, active truth owner, ideal-state reference, private implementation inventory, core contracts, generated interface read model, and OMA production-consumption ledger during the six-repo governance run. | Refreshed `Last semantic refresh`; current 17-doc inventory, refs-only generated surface boundary, verified production-consumption receipts, and evidence-tail wording remain unchanged. |
 | 2026-05-29 fixture wording cleanup | Re-read `build-agent-baseline`, stage-decomposition runner/materializer tests, decisions, invariants, private inventory and status wording after the stale scan found `compatibility fixture` phrasing. | Rewrote current docs so `fixture` means proof/test typed-closeout input only; no compatibility materialization path or doc-path retirement remains open. |
+| 2026-05-30 automation-2 frozen snapshot revalidation | At `RUN_SNAPSHOT_TS=2026-05-29T17:01:09Z`, re-read the exact OMA human-doc inventory, active truth owner, ideal-state reference, private implementation inventory, package scripts, core contracts, OPL generated interface read model, OMA production-consumption ledger, doctor output, and git/worktree status. | Refreshed `Last semantic refresh`; current 17-doc inventory, refs-only generated surface boundary, verified production-consumption receipts, and evidence-tail wording remain unchanged. |
