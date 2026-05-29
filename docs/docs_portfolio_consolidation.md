@@ -36,7 +36,7 @@ Machine boundary: 本文是人读治理入口和 coverage ledger。当前机器�
 
 ### Current OMA Coverage State
 
-Last semantic refresh: `2026-05-29T01:09:43+0800`.
+Last semantic refresh: `2026-05-29T22:47:00+0800`.
 
 This ledger records the current OMA README/docs portfolio state directly instead of appending repeated no-drift process packets. Prior dated tranches are folded into the compact history table below; their durable result is the current coverage state in this section.
 
@@ -65,7 +65,7 @@ Current semantic result:
 - `contracts/pack_compiler_input.json` keeps `agent/` as the canonical semantic pack root and lists only non-README pack files in `required_domain_pack_paths`; support README files are human indexes, not machine-required pack paths.
 - OPL registry/App projection contracts remain refs-only handoff material owned by OPL/App for generated/discovery/workbench surfaces; they do not close App live render/runtime drilldown, long-soak, target owner receipt, or promotion gates.
 - Fresh OPL read-model consumption remains consistent with that boundary: interface generation is ready and OMA production-consumption ledger receipts are verified, but both surfaces keep `refs_only=true`, cannot write target truth, cannot create owner receipts, cannot claim domain/production ready, and cannot promote defaults without a gate.
-- The obsolete `bootstrap:sample` npm alias and the no-`--domain-id` implicit fixture smoke are retired from package scripts, generated action command refs, active README/status wording, and build-agent-baseline materialization. `build-agent-baseline` is now the only public npm action entry for baseline generation, and it requires an explicit target `--domain-id`.
+- The obsolete `bootstrap:sample` npm alias, no-`--domain-id` implicit fixture smoke, and old direct graph compatibility wording are retired from package scripts, generated action command refs, active README/status wording, invariants, decisions, and build-agent-baseline materialization. `build-agent-baseline` is now the only public npm action entry for baseline generation, requires an explicit target `--domain-id`, and may use `--stage-runner fixture` only as an explicit proof/test typed-closeout producer for deterministic validation.
 
 Reviewed documents / sections:
 
@@ -75,7 +75,7 @@ Reviewed documents / sections:
 
 Archived / tombstoned / deleted docs:
 
-- none. The current OMA human-doc inventory has legitimate long-term roles as public entry, docs index, current truth, active plan, active inventory, target-state reference, docs lifecycle ledger, or domain-pack support index.
+- none. The current OMA human-doc inventory has legitimate long-term roles as public entry, docs index, current truth, active plan, active inventory, target-state reference, docs lifecycle ledger, or domain-pack support index. This tranche rewrote stale compatibility wording in existing docs instead of retiring a document path.
 
 Unreviewed docs:
 
@@ -85,6 +85,7 @@ Unreviewed docs:
 Remaining stale / retire candidates:
 
 - OMA doc-path retirement remains empty for the current exact inventory.
+- Any future doc sentence that calls the stage-decomposition `fixture` runner a compatibility route, fallback materialization path, direct script graph authority, public baseline path, or retained facade is stale pollution. It is only proof/test closeout input for deterministic validation of the same strict materializer.
 - Evidence/hygiene tails remain active: OPL registry/App live consumption receipts, repeat long-soak, more real target patch-loop owner receipt or typed blocker samples, independent Codex reviewer direct-evidence samples, standard target-agent handoff convergence, domain refs-only adapter thinning, and script-to-pack / OPL primitive hygiene.
 - Future prose that upgrades refs-only generated/registration/App projection, suite pass, schema completeness, work-order shape, source-shape conformance, support README indexes, or OPL refs-only consumption into target-domain readiness, App live rendering, owner receipt, artifact readiness, production ready, quality verdict, default promotion, or global OPL-series completion is stale pollution.
 
@@ -103,3 +104,4 @@ Next tranche write scope:
 | 2026-05-28 no-drift revalidations | Confirmed no new OMA human-doc path, no duplicate active truth owner, and no new readiness claim after OPL-series hygiene. | Replaced by this compact current-state ledger. |
 | 2026-05-28 22:28 CST full-body refresh | Re-read all current root `README*`, all `docs/**/*.md`, tracked `agent/*/README.md` support indexes, core contracts, source/test inventory, package scripts, doctor output, generated interface read model, and OMA production-consumption ledger. | Folded into Current OMA Coverage State; no doc-path retirements or readiness wording changes were needed. |
 | 2026-05-29 OPL-series automation refresh | Re-read the exact OMA human-doc inventory, active truth owner, ideal-state reference, private implementation inventory, core contracts, generated interface read model, and OMA production-consumption ledger during the six-repo governance run. | Refreshed `Last semantic refresh`; current 17-doc inventory, refs-only generated surface boundary, verified production-consumption receipts, and evidence-tail wording remain unchanged. |
+| 2026-05-29 fixture wording cleanup | Re-read `build-agent-baseline`, stage-decomposition runner/materializer tests, decisions, invariants, private inventory and status wording after the stale scan found `compatibility fixture` phrasing. | Rewrote current docs so `fixture` means proof/test typed-closeout input only; no compatibility materialization path or doc-path retirement remains open. |
