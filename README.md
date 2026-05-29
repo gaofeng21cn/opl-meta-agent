@@ -8,22 +8,22 @@
 
 <h1 align="center">OPL Meta Agent</h1>
 
-<p align="center"><strong>A Foundry Agent for building, testing, and delivering new high-value knowledge-work agents on OPL Framework</strong></p>
-<p align="center">Agent Building · Agent Lab Evaluation · Mechanism Evolution</p>
+<p align="center"><strong>Turn a professional workflow into a testable, OPL-ready AI agent that can keep improving</strong></p>
+<p align="center">From idea to tested baseline: define delivery · map the work · generate the skeleton · run tests · propose improvements</p>
 
 <table>
   <tr>
     <td width="33%" valign="top">
       <strong>Who It Serves</strong><br/>
-      Developers, maintainers, and operators who want to turn a high-value knowledge workflow into an OPL-compatible domain agent
+      Developers and teams who want to turn research, writing, review, delivery, or operations workflows into AI agents
     </td>
     <td width="33%" valign="top">
-      <strong>What It Organizes</strong><br/>
-      User intent, public patterns, stage plans, agent skeletons, Agent Lab suites, baseline receipts, and mechanism patch proposals
+      <strong>Problem It Solves</strong><br/>
+      A new agent needs more than a prompt: it needs a goal, a boundary, tests, and a path for improvement
     </td>
     <td width="33%" valign="top">
       <strong>How To Start</strong><br/>
-      Describe the target agent deliverable, authority boundary, quality bar, and runtime constraints, then generate a tested baseline
+      Describe what the target agent should deliver, what it must not do, and what counts as good enough, then generate a tested baseline
     </td>
   </tr>
 </table>
@@ -32,29 +32,56 @@
   <img src="assets/branding/opl-meta-agent-overview.png" alt="OPL Meta Agent overview" width="100%" />
 </p>
 
-> `opl-meta-agent` is an independent OPL-compatible domain agent. It owns agent-building domain semantics; OPL Framework owns the generic runtime, Agent Lab, scaffold surface, queue, attempt ledger, observability, optimizer / RL transition refs, and promotion gates.
+> `OPL Meta Agent` is built for the work of building AI agents. Describe the professional agent you want, and it turns the goal, boundary, working steps, tests, and improvement candidates into a practical baseline.
 
-## One-Sentence Quick Start
+## Why It Exists
 
-You can start with prompts like:
+It is easy to start an agent with a prompt. It is much harder to make that agent useful for papers, grants, reviews, presentations, operations, or other high-value work.
 
-- "Turn this high-value knowledge workflow into an OPL-compatible agent, and first define the deliverable, boundary, and quality bar."
-- "Take over testing for this existing agent repo, generate an Agent Lab suite, takeover receipt, and self-evolution candidate, but keep its domain truth with the owner."
-- "After an Agent Lab run, convert the failure evidence into a mechanism patch proposal and wait for an explicit gate before adopting it."
+- What exactly should this agent deliver, and what should remain outside its scope?
+- How should the work be broken down, and what inputs or tools does each step need?
+- If all you have is a prompt, how do you know the agent can deliver reliably?
+- When tests fail, should you change the prompt, skills, workflow, or quality bar?
+- Can an existing agent be tested systematically without rewriting its domain judgment?
+
+**OPL Meta Agent is designed for that gap.** It moves from "I want an agent" to "I have a testable, reviewable, improvable baseline."
+
+## Core Highlights
+
+**Generate an agent blueprint from a plain-language goal**<br/>
+You do not need a full spec on day one. Describe the work, the desired deliverable, and the constraints; the system helps organize goals, boundaries, inputs, outputs, and working steps.
+
+**Set the boundary and quality bar first**<br/>
+Every agent needs to know what it should do, what it should not do, and what "good enough" means. OPL Meta Agent puts those rules into the baseline instead of leaving them as informal notes.
+
+**Make the agent testable**<br/>
+The output is not just a bundle of files. It comes with test suites, run evidence, and a baseline result so you can judge whether the agent can actually do the job.
+
+**Turn failures into improvement proposals**<br/>
+When a run exposes a weakness, the system turns the evidence into next-version suggestions, such as prompt policy, skill strategy, workflow design, test strategy, or quality-gate changes.
+
+**Take over testing for existing agents**<br/>
+For an existing agent, it can organize tests and evidence first, then propose improvements without taking over that agent's domain truth or delivery authority.
+
+## How To Start
+
+- "Turn this research workflow into an AI agent, and first define the deliverable, boundary, and quality bar."
+- "Take over testing for this existing agent repo and propose improvements, but keep its domain judgment with the owner."
+- "Run an Agent Lab pass and turn the failure evidence into next-version mechanism proposals for review."
 
 ## What It Helps With
 
-- Decomposing a new agent idea into intent analysis, public-pattern research, stage planning, agent skeletons, eval suites, baseline runs, delivery, and online learning.
-- Generating OPL-compatible descriptors, stage/action metadata, memory/artifact locators, quality gates, and owner receipts through OPL scaffold surfaces.
-- Building Agent Lab external suites, recovery probes, scorecard refs, and promotion gates for new or existing external agents.
-- Producing baseline delivery receipts, gated online-learning candidates, and mechanism patch proposals.
-- Turning real Agent Lab evidence into reviewable, rollback-friendly, gate-controlled next mechanism candidates.
+- Turning a new agent idea into intent analysis, public-pattern research, working steps, an agent skeleton, test suites, baseline runs, and improvement candidates.
+- Creating practical agent baselines for papers, grants, presentations, reviews, operations, and other high-value workflows.
+- Organizing tests, recovery probes, scorecard refs, and adoption gates for new agents or existing external agents.
+- Producing baseline delivery records, gated learning candidates, and mechanism improvement proposals.
+- Turning real run evidence into reviewable, rollback-friendly next-version candidates that still require approval before adoption.
 
 ## How It Works
 
 - The user provides the target domain, deliverable, quality bar, non-goals, and runtime constraints.
-- `opl-meta-agent` organizes public patterns, decomposes stages, generates a candidate agent package, and runs suites through OPL Agent Lab.
-- Agent Lab returns refs-only suite results; this repo turns them into baseline receipts, online-learning candidates, and mechanism patch proposals.
+- `OPL Meta Agent` organizes public patterns and working steps, then generates a candidate agent package.
+- The candidate agent goes through Agent Lab testing; the results are organized into baseline records, learning candidates, and mechanism improvement proposals.
 - Mechanism changes, default-agent promotion, quality adoption, and real delivery authority require an explicit gate or the target domain owner.
 
 ## Agent Lab Self-Evolution Loop
