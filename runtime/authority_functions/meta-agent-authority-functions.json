@@ -147,21 +147,6 @@
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/lib/bootstrap-domain-packs.ts",
-        "classes": [
-          "fixture_or_proof_helper"
-        ],
-        "authority_function_refs": [],
-        "consumes_opl_surfaces": [],
-        "writes_only": [
-          "candidate_agent_action_catalog_ref",
-          "candidate_agent_stage_control_plane_ref",
-          "real_target_agent_action_catalog_ref",
-          "real_target_agent_stage_control_plane_ref"
-        ],
-        "forbidden_roles": []
-      },
-      {
         "script_ref": "scripts/lib/domain-pack.ts",
         "classes": [
           "fixture_or_proof_helper"
@@ -426,7 +411,6 @@
       "scripts/improve-from-agent-lab-suite.ts",
       "scripts/lib/agent-evidence-contracts.ts",
       "scripts/lib/agent-evidence-materializer.ts",
-      "scripts/lib/bootstrap-domain-packs.ts",
       "scripts/lib/domain-pack.ts",
       "scripts/lib/external-suite-materializer.ts",
       "scripts/lib/meta-agent-loop-ai-reviewer.ts",
