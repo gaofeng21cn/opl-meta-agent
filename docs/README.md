@@ -19,6 +19,7 @@ Machine boundary: 本文是人读文档入口。机器真相继续归 `contracts
 | 目标态 | [opl-meta-agent 理想目标态](./references/opl-meta-agent-ideal-state.md) |
 | 当前差距与完善顺序 | [opl-meta-agent 理想目标态差距与完善计划](./active/opl-meta-agent-ideal-state-gap-plan.md) |
 | 私有实现迁移台账 | [opl-meta-agent 私有实现与 OPL 迁移台账](./active/opl-private-implementation-migration-inventory.md) |
+| 历史过程与 provenance | [历史索引](./history/README.md) |
 
 ## OPL 系列分层
 
@@ -35,8 +36,9 @@ MAS、MAG、RCA 等目标 agent 只应作为 target-agent refs、owner routes、
 | `docs/` root | 文档索引、核心五件套。 |
 | `docs/active/` | 当前差距、迁移台账和 active baton。 |
 | `docs/references/` | 目标态与支撑参考。 |
+| `docs/history/` | 过程 ledger、retired/provenance 和 no-resurrection 历史归档。 |
 
-本仓当前保持轻量 OPL-compatible repo 文档形态。后续若出现长期 public、product、runtime、delivery、source、policies、specs 或 history 内容，再按 OPL-family canonical taxonomy 增加对应目录和索引；不要为了空目录对齐制造第二文档体系。
+本仓当前保持轻量 OPL-compatible repo 文档形态。`docs/history/` 只为已经出现的过程/provenance 材料提供归档，不承担当前 truth；后续若出现长期 public、product、runtime、delivery、source、policies 或 specs 内容，再按 OPL-family canonical taxonomy 增加对应目录和索引；不要为了空目录对齐制造第二文档体系。
 
 ## 文档规则
 
