@@ -66,7 +66,13 @@
         "target_owner_receipt_or_typed_blocker_ref",
         "patch_absorption_ref",
         "worktree_cleanup_ref",
-        "agent_lab_re_evaluation_ref"
+        "agent_lab_re_evaluation_ref",
+        "deliverable_progress_delta",
+        "platform_repair_delta",
+        "progress_delta_classification",
+        "substantive_deliverable_delta_refs",
+        "platform_interface_repair_refs",
+        "target_progress_accounting_ref"
       ],
       "write_boundary": "display_refs_only"
     },
@@ -153,6 +159,14 @@
       "patch_absorption_ref",
       "worktree_cleanup_ref",
       "agent_lab_re_evaluation_ref"
+    ],
+    "target_progress_accounting_fields": [
+      "deliverable_progress_delta",
+      "platform_repair_delta",
+      "progress_delta_classification",
+      "substantive_deliverable_delta_refs",
+      "platform_interface_repair_refs",
+      "target_progress_accounting_ref"
     ],
     "live_rendering_status": "not_claimed_by_contract",
     "verified_by_refs": [

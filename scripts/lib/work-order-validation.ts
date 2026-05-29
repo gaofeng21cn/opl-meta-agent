@@ -4,6 +4,15 @@ type DeveloperPatchWorkOrderValidationOptions = {
   allowMissingReviewerFields?: boolean;
 };
 
+const PROGRESS_DELTA_CLASSIFICATIONS = new Set([
+  'deliverable_progress',
+  'platform_repair',
+  'mixed',
+  'typed_blocker',
+  'human_gate',
+  'stop_loss',
+]);
+
 function requireNonEmptyStringArray(value: unknown, fieldName: string): void {
   if (!Array.isArray(value) || !value.some((entry) => typeof entry === 'string' && entry.trim().length > 0)) {
     throw new Error(`Invalid developer patch work order: ${fieldName} must be a non-empty string array.`);
@@ -20,6 +29,35 @@ function requireTypedBlockerRef(value: unknown, fieldName: string): void {
   requireNonEmptyString(value, fieldName);
   if (!String(value).startsWith('typed-blocker:')) {
     throw new Error(`Invalid developer patch work order: ${fieldName} must be a typed blocker ref.`);
+  }
+}
+
+function requireNonNegativeNumber(value: unknown, fieldName: string): void {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
+    throw new Error(`Invalid developer patch work order: ${fieldName} must be a non-negative number.`);
+  }
+}
+
+function requireProgressDeltaClassification(value: unknown, fieldName: string): void {
+  requireNonEmptyString(value, fieldName);
+  if (!PROGRESS_DELTA_CLASSIFICATIONS.has(String(value))) {
+    throw new Error(`Invalid developer patch work order: ${fieldName} must be an OPL progress delta classification.`);
+  }
+}
+
+function requireEqualString(value: unknown, expected: unknown, fieldName: string): void {
+  requireNonEmptyString(value, fieldName);
+  requireNonEmptyString(expected, `expected ${fieldName}`);
+  if (value !== expected) {
+    throw new Error(`Invalid developer patch work order: ${fieldName} must match current target/eval/work-order refs.`);
+  }
+}
+
+function requireIncludes(values: unknown, expected: unknown, fieldName: string): void {
+  requireNonEmptyStringArray(values, fieldName);
+  requireNonEmptyString(expected, `expected ${fieldName}`);
+  if (!(values as unknown[]).includes(expected)) {
+    throw new Error(`Invalid developer patch work order: ${fieldName} must include ${String(expected)}.`);
   }
 }
 
@@ -46,6 +84,38 @@ export function validateDeveloperPatchWorkOrder(
   requireNonEmptyString(workOrder.ahe_developer_work_order?.predicted_impact, 'ahe_developer_work_order.predicted_impact');
   requireNonEmptyStringArray(workOrder.required_verification_refs, 'required_verification_refs');
   requireNonEmptyStringArray(workOrder.owner_route_refs, 'owner_route_refs');
+  requireProgressDeltaClassification(
+    workOrder.target_progress_accounting?.progress_delta_classification,
+    'target_progress_accounting.progress_delta_classification',
+  );
+  requireNonNegativeNumber(
+    workOrder.target_progress_accounting?.deliverable_progress_delta?.count,
+    'target_progress_accounting.deliverable_progress_delta.count',
+  );
+  requireNonNegativeNumber(
+    workOrder.target_progress_accounting?.platform_repair_delta?.count,
+    'target_progress_accounting.platform_repair_delta.count',
+  );
+  requireEqualString(
+    workOrder.work_order_currentness?.target_agent_id,
+    workOrder.target_agent?.domain_id,
+    'work_order_currentness.target_agent_id',
+  );
+  requireEqualString(
+    workOrder.work_order_currentness?.eval_result_ref,
+    workOrder.source_agent_lab_result_ref,
+    'work_order_currentness.eval_result_ref',
+  );
+  requireEqualString(
+    workOrder.work_order_currentness?.work_order_ref,
+    workOrder.work_order_id,
+    'work_order_currentness.work_order_ref',
+  );
+  requireIncludes(
+    workOrder.owner_route_refs,
+    workOrder.work_order_currentness?.owner_route_ref,
+    'owner_route_refs',
+  );
   requireNonEmptyStringArray(workOrder.rollback_version_refs, 'rollback_version_refs');
   requireNonEmptyStringArray(workOrder.no_forbidden_write_proof?.proof_refs, 'no_forbidden_write_proof.proof_refs');
   if (!options.allowMissingReviewerFields) {
@@ -81,6 +151,11 @@ export function validateDeveloperPatchWorkOrder(
   );
   requireNonEmptyStringArray(
     workOrder.work_order_completeness?.owner_route?.route_refs,
+    'work_order_completeness.owner_route.route_refs',
+  );
+  requireIncludes(
+    workOrder.work_order_completeness?.owner_route?.route_refs,
+    workOrder.work_order_currentness?.owner_route_ref,
     'work_order_completeness.owner_route.route_refs',
   );
   requireNonEmptyStringArray(

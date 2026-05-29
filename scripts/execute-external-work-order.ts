@@ -7,6 +7,7 @@ import {
   writeJson,
 } from './lib/meta-agent-loop.ts';
 import type { JsonObject } from './lib/domain-pack.ts';
+import { validateDeveloperPatchWorkOrder } from './lib/work-order-validation.ts';
 
 type ExecuteArgs = {
   workOrderPath: string;
@@ -89,6 +90,13 @@ function requireStringArray(value: unknown, field: string): string[] {
   return value;
 }
 
+function stringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0);
+}
+
 function assertExternalWorkOrderIsDelegable(workOrder: JsonObject): void {
   requireString(workOrder.work_order_id, 'work_order_id');
   if (workOrder.surface_kind !== 'opl_meta_agent_developer_patch_work_order') {
@@ -120,6 +128,38 @@ function assertExternalWorkOrderIsDelegable(workOrder: JsonObject): void {
       throw new Error(`Invalid external work order: authority_boundary.${field} must be false.`);
     }
   });
+  validateDeveloperPatchWorkOrder(workOrder);
+}
+
+function hasTypedBlockerRefs(oplResult: JsonObject): boolean {
+  return stringArray(oplResult.typed_blocker_refs).length > 0
+    || stringArray(oplResult.closeout_refs?.typed_blocker_refs).length > 0
+    || typeof oplResult.typed_blocker_ref === 'string'
+    || typeof oplResult.closeout_refs?.typed_blocker_ref === 'string';
+}
+
+function assertOplResultHasCloseoutOrBlocker(oplResult: JsonObject): JsonObject {
+  const closeoutRefs = oplResult.closeout_refs as JsonObject | undefined;
+  const requiredCloseoutFields = [
+    'target_owner_receipt_or_typed_blocker_ref',
+    'patch_absorption_ref',
+    'worktree_cleanup_ref',
+    'agent_lab_re_evaluation_ref',
+  ];
+  const hasCloseoutRefs = Boolean(closeoutRefs)
+    && requiredCloseoutFields.every((field) =>
+      typeof closeoutRefs?.[field] === 'string' && String(closeoutRefs[field]).trim().length > 0
+    );
+  const hasBlockerRefs = hasTypedBlockerRefs(oplResult);
+  if (!hasCloseoutRefs && !hasBlockerRefs) {
+    throw new Error(
+      'OPL work-order result must include target owner closeout, cleanup, absorption, Agent Lab re-evaluation refs, or typed blocker refs.',
+    );
+  }
+  return {
+    closeout_refs_verified: hasCloseoutRefs,
+    typed_blocker_refs_present: hasBlockerRefs,
+  };
 }
 
 function buildOplArgs(args: ExecuteArgs): string[] {
@@ -140,6 +180,7 @@ function main(): void {
 
   const oplArgs = buildOplArgs(args);
   const oplResult = runOpl(args.oplBin, oplArgs);
+  const oplResultCurrentness = assertOplResultHasCloseoutOrBlocker(oplResult);
   const payload = {
     surface_kind: 'opl_meta_agent_external_work_order_execution_delegation',
     version: 'opl-meta-agent.external-work-order-execution-delegation.v1',
@@ -174,6 +215,7 @@ function main(): void {
       can_promote_default_agent_without_gate: false,
     },
     opl_result: oplResult,
+    opl_result_currentness: oplResultCurrentness,
   };
 
   if (args.outputPath) {

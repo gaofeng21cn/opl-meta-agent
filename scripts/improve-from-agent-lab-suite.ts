@@ -427,6 +427,21 @@ export function runImproveFromAgentLabSuite({
     capabilityCandidate,
     policy,
   });
+  Object.assign(mechanismPatchProposal, {
+    repeat_budget: {
+      max_attempts: 2,
+      remaining_attempts: 1,
+      repeat_scope: 'same_target_eval_work_order_owner_route_tuple',
+    },
+    dead_letter_refs: [
+      `dead-letter:opl-meta-agent/${targetAgent.domain_id}/${mechanismPatchProposal.proposal_id}`,
+    ],
+    escalation_refs: [
+      `escalation:target-owner/${targetAgent.domain_id}/external-suite-self-evolution`,
+      String(developerPatchWorkOrder.work_order_completeness?.fail_closed_blocker_ref),
+    ],
+    next_allowed_action: 'delegate_to_opl_work_order_execute_after_currentness_gate',
+  });
   validateDeveloperPatchWorkOrder(developerPatchWorkOrder);
 
   const artifacts = writeExternalSuiteArtifacts({

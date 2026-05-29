@@ -16,8 +16,10 @@ import {
   buildRefsOnlyWorkOrderCompleteness,
   buildRuntimeConsumptionVerification,
   buildTargetPatchLoopMachineRefs,
+  buildTargetProgressAccounting,
   buildTargetWorkspaceEnvironmentVerification,
   buildWorkOrderBundleRefs,
+  buildWorkOrderCurrentness,
   targetPatchLoopCloseoutEvidence,
 } from './work-order-builders.ts';
 import {
@@ -169,6 +171,10 @@ export function buildDeveloperPatchWorkOrder({
     reviewerRefs: reviewerPoolRefs,
     machineCloseoutRefs,
   });
+  const ownerRouteRef = `target-agent-owner:${capabilityCandidate.target_agent.domain_id}`;
+  const substantiveDeliverableDeltaRefs = noPatchRequired
+    ? []
+    : capabilityCandidate.proposed_change_refs;
   return {
     surface_kind: 'opl_meta_agent_developer_patch_work_order',
     version: 'opl-meta-agent.developer-patch-work-order.v1',
@@ -177,6 +183,12 @@ export function buildDeveloperPatchWorkOrder({
     product_id: 'opl-meta-agent',
     target_agent: capabilityCandidate.target_agent,
     source_agent_lab_result_ref: suiteResult.result_id,
+    work_order_currentness: buildWorkOrderCurrentness({
+      domainId: targetAgent.domain_id,
+      suiteResultRef: suiteResult.result_id,
+      workOrderId,
+      ownerRouteRef,
+    }),
     target_capability_improvement_candidate_ref: capabilityCandidate.candidate_id,
     owner_receipt_ref: receipt.receipt_id,
     ai_reviewer_evaluation_ref: capabilityCandidate.ai_reviewer_evaluation_ref,
@@ -203,7 +215,7 @@ export function buildDeveloperPatchWorkOrder({
         noPatchRequired ? 'target_owner_receipt_projection_ref' : 'target_repo_test_receipt',
       ],
       ownerRouteRefs: [
-        `target-agent-owner:${capabilityCandidate.target_agent.domain_id}`,
+        ownerRouteRef,
         `target-owner-receipt-or-typed-blocker:${capabilityCandidate.target_agent.domain_id}/${workOrderId}`,
       ],
       noForbiddenWriteProofRefs,
@@ -245,10 +257,14 @@ export function buildDeveloperPatchWorkOrder({
         ? 'Agent Lab result passed; remaining work is coordination and owner receipt projection proof.'
         : 'Agent Lab and independent AI reviewer evidence identify target-agent capability gaps that require owner-gated source changes.',
       targeted_fix: noPatchRequired
-        ? ['record coordination result and preserve target owner receipt authority']
+        ? ['owner_receipt_coordination_record']
         : capabilityCandidate.proposed_change_refs,
       predicted_impact: capabilityCandidate.ai_reviewer_review.predicted_impact,
     },
+    target_progress_accounting: buildTargetProgressAccounting({
+      substantiveDeliverableDeltaRefs,
+      machineCloseoutRefs,
+    }),
     required_patch_surfaces: noPatchRequired ? [] : capabilityCandidate.target_editable_surface_refs,
     allowed_editable_surfaces: noPatchRequired ? [] : capabilityCandidate.target_editable_surface_refs,
     target_repo_file_hints: noPatchRequired ? [] : targetRepoFileHints,
@@ -258,7 +274,7 @@ export function buildDeveloperPatchWorkOrder({
       ? ['owner_receipt_coordination_record']
       : ['git_commit', 'target_agent_previous_head_ref', 'temporary_worktree_ref'],
     owner_route_refs: [
-      `target-agent-owner:${targetAgent.domain_id}`,
+      ownerRouteRef,
       `promotion-gate:opl-meta-agent/${targetAgent.domain_id}/external-suite-self-evolution`,
     ],
     no_forbidden_write_proof: {
@@ -356,6 +372,18 @@ export function buildEfficiencyTypedBlocker({
     blocker_id: stableId('oma_efficiency_blocker', [workOrderId]),
     status: 'blocked_efficiency_quality_floor_missing',
     blocked_reason: 'efficiency_evidence_requires_quality_floor_refs',
+    repeat_budget: {
+      max_attempts: 2,
+      remaining_attempts: 0,
+      repeat_scope: 'same_target_eval_work_order_owner_route_tuple',
+    },
+    dead_letter_refs: [
+      `dead-letter:opl-meta-agent/${targetAgent.domain_id}/${workOrderId}`,
+    ],
+    escalation_refs: [
+      `escalation:target-owner/${targetAgent.domain_id}/efficiency-non-regression`,
+    ],
+    next_allowed_action: 'supply_quality_floor_refs_or_escalate_to_target_owner',
     target_agent: capabilityCandidate.target_agent,
     source_agent_lab_result_ref: suiteResult.result_id,
     target_capability_improvement_candidate_ref: capabilityCandidate.candidate_id,
