@@ -13,8 +13,10 @@ import {
   buildRefsOnlyWorkOrderCompleteness,
   buildRuntimeConsumptionVerification,
   buildTargetPatchLoopMachineRefs,
+  buildTargetProgressAccounting,
   buildTargetWorkspaceEnvironmentVerification,
   buildWorkOrderBundleRefs,
+  buildWorkOrderCurrentness,
   targetPatchLoopCloseoutEvidence,
 } from './work-order-builders.ts';
 import {
@@ -315,6 +317,8 @@ export function buildDeveloperWorkOrder({
     reviewerRefs: reviewerPoolRefs,
     machineCloseoutRefs,
   });
+  const ownerRouteRefs = productionEvidenceGate(contracts, targetAgent).owner_route_refs as string[];
+  const ownerRouteRef = ownerRouteRefs[0] ?? `owner-route:${targetAgent.domainId}/${targetAgent.owner}`;
   return {
     surface_kind: 'opl_meta_agent_target_developer_patch_work_order',
     version: 'opl-meta-agent.target-developer-patch-work-order.v1',
@@ -324,6 +328,12 @@ export function buildDeveloperWorkOrder({
       : 'blocked_missing_ai_reviewer_evaluation',
     target_agent: capabilityCandidate.target_agent,
     source_agent_lab_result_ref: suiteResult.result_id,
+    work_order_currentness: buildWorkOrderCurrentness({
+      domainId: targetAgent.domainId,
+      suiteResultRef: stringValue(suiteResult.result_id) ?? stableId('agent_lab_result', [workOrderId]),
+      workOrderId,
+      ownerRouteRef,
+    }),
     target_capability_improvement_candidate_ref: capabilityCandidate.candidate_id,
     owner_receipt_refs_ref: ownerReceiptRefsPath,
     target_owner_route: capabilityCandidate.target_owner_route,
@@ -336,7 +346,7 @@ export function buildDeveloperWorkOrder({
       'developer_patch_branch_or_worktree_ref',
       'owner_receipt_or_typed_blocker_version_ref',
     ],
-    owner_route_refs: productionEvidenceGate(contracts, targetAgent).owner_route_refs,
+    owner_route_refs: ownerRouteRefs,
     proposed_change_refs: capabilityCandidate.proposed_change_refs,
     ai_reviewer_evaluation_ref: capabilityCandidate.ai_reviewer_evaluation_ref,
     ai_reviewer_status: capabilityCandidate.ai_reviewer_status,
@@ -377,7 +387,7 @@ export function buildDeveloperWorkOrder({
         'target_owner_receipt_or_typed_blocker',
         'no_forbidden_write_proof',
       ],
-      ownerRouteRefs: [`owner-route:${targetAgent.domainId}/${targetAgent.owner}`],
+      ownerRouteRefs,
       noForbiddenWriteProofRefs: noForbiddenRefs,
       executorAllowedScope: 'refs_only_target_agent_owner_gated_patch_proposal',
       executorAllowedWriteSurfaces: TARGET_AGENT_EDITABLE_SURFACES,
@@ -422,6 +432,10 @@ export function buildDeveloperWorkOrder({
         ? capabilityCandidate.ai_reviewer_review.predicted_impact
         : 'Blocks delivery receipt and preserves target owner authority until reviewer evidence is supplied.',
     },
+    target_progress_accounting: buildTargetProgressAccounting({
+      substantiveDeliverableDeltaRefs: stringList(capabilityCandidate.proposed_change_refs),
+      machineCloseoutRefs,
+    }),
     implementation_controls: {
       proposal_only: true,
       refs_only: true,
@@ -547,6 +561,19 @@ export function buildTypedBlocker({
     blocker_id: stableId('oma_agent_evidence_blocker', [suite.suite_id, suiteResult.result_id, workOrder.work_order_id]),
     status,
     blocked_reason: blockedReason,
+    repeat_budget: {
+      max_attempts: 2,
+      remaining_attempts: 0,
+      repeat_scope: 'same_target_eval_work_order_owner_route_tuple',
+    },
+    dead_letter_refs: [
+      `dead-letter:opl-meta-agent/${String(workOrder.target_agent?.domain_id ?? 'target-agent')}/${workOrder.work_order_id}`,
+    ],
+    escalation_refs: [
+      ...stringList(workOrder.owner_route_refs),
+      String(workOrder.work_order_completeness?.fail_closed_blocker_ref),
+    ],
+    next_allowed_action: 'supply_missing_refs_or_escalate_to_target_owner',
     next_owner: 'opl-meta-agent',
     target_owner_route: targetOwnerRoute(contracts),
     blocked_suite_result_ref: workOrder.source_agent_lab_result_ref,

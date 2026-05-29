@@ -41,7 +41,13 @@ process.stdout.write(JSON.stringify({
   delegated_work_order_ref: workOrder.work_order_id,
   primitive_owner: 'one-person-lab/OPL',
   target_worktree_lifecycle_owner: 'one-person-lab/OPL',
-  oma_owned_target_worktree_lifecycle: false
+  oma_owned_target_worktree_lifecycle: false,
+  closeout_refs: {
+    target_owner_receipt_or_typed_blocker_ref: 'target-owner-receipt-or-typed-blocker:example-agent/oma_developer_patch_work_order_test',
+    patch_absorption_ref: 'patch-absorption:example-agent/oma_developer_patch_work_order_test/source-patch',
+    worktree_cleanup_ref: 'worktree-cleanup:example-agent/oma_developer_patch_work_order_test/source-patch',
+    agent_lab_re_evaluation_ref: 'agent-lab-re-evaluation:example-agent/agent-lab-result-ref/oma_developer_patch_work_order_test'
+  }
 }, null, 2) + '\\n');
 `,
   );
@@ -73,25 +79,107 @@ function buildWorkOrder(): JsonObject {
       domain_id: 'example-agent',
       repo_dir: '/tmp/example-agent',
     },
+    source_agent_lab_result_ref: 'agent-lab-result-ref',
     executor_lease_ref: 'executor-lease:codex-cli/oma_developer_patch_work_order_test',
     reviewer_pool_refs: ['reviewer:example/direct-evidence'],
+    ai_reviewer_evidence: {
+      source_refs: ['reviewer:example/source'],
+      direct_evidence_refs: ['reviewer:example/direct-evidence'],
+    },
+    ai_reviewer_scorecard: {
+      verdict: 'blocked_requires_developer_patch',
+    },
+    ai_reviewer_review: {
+      predicted_impact: 'The target agent source patch should close the observed capability gap.',
+    },
     patch_execution_bundle_ref: 'patch-execution-bundle:target-agent/example-agent/oma_developer_patch_work_order_test',
     target_closeout_refs: [
       'target-owner-receipt-or-typed-blocker:example-agent/oma_developer_patch_work_order_test',
       'worktree-cleanup:example-agent/oma_developer_patch_work_order_test/source-patch',
+      'patch-absorption:example-agent/oma_developer_patch_work_order_test/source-patch',
+      'agent-lab-re-evaluation:example-agent/agent-lab-result-ref/oma_developer_patch_work_order_test',
     ],
+    owner_route_refs: ['target-agent-owner:example-agent'],
+    required_verification_refs: ['npm test'],
+    rollback_version_refs: ['target_agent_previous_head_ref'],
+    no_forbidden_write_proof: {
+      proof_refs: ['no_target_domain_truth_write_proof'],
+    },
+    ahe_developer_work_order: {
+      failure_evidence: ['reviewer:example/direct-evidence'],
+      root_cause: 'The target agent capability gap requires an owner-gated source patch.',
+      targeted_fix: ['target-agent-change-ref:example'],
+      predicted_impact: 'The target agent source patch should close the observed capability gap.',
+    },
+    work_order_currentness: {
+      target_agent_id: 'example-agent',
+      eval_result_ref: 'agent-lab-result-ref',
+      work_order_ref: 'oma_developer_patch_work_order_test',
+      owner_route_ref: 'target-agent-owner:example-agent',
+    },
+    target_progress_accounting: {
+      progress_delta_classification: 'mixed',
+      deliverable_progress_delta: {
+        count: 1,
+        refs: ['target-agent-change-ref:example'],
+        domain_alias: 'target_agent_substantive_delta',
+      },
+      platform_repair_delta: {
+        count: 4,
+        refs: [
+          'no_target_domain_truth_write_proof',
+          'patch-absorption:example-agent/oma_developer_patch_work_order_test/source-patch',
+          'worktree-cleanup:example-agent/oma_developer_patch_work_order_test/source-patch',
+          'agent-lab-re-evaluation:example-agent/agent-lab-result-ref/oma_developer_patch_work_order_test',
+        ],
+        domain_alias: 'platform_interface_repair_delta',
+      },
+      substantive_deliverable_delta_refs: ['target-agent-change-ref:example'],
+      platform_interface_repair_refs: [
+        'no_target_domain_truth_write_proof',
+        'patch-absorption:example-agent/oma_developer_patch_work_order_test/source-patch',
+        'worktree-cleanup:example-agent/oma_developer_patch_work_order_test/source-patch',
+        'agent-lab-re-evaluation:example-agent/agent-lab-result-ref/oma_developer_patch_work_order_test',
+      ],
+      accounting_policy: 'deliverable_delta_is_not_closed_by_platform_interface_repair',
+    },
     work_order_completeness: {
       required_fields_present: true,
+      executor_lease_ref: 'executor-lease:codex-cli/oma_developer_patch_work_order_test',
+      executor_aperture: {
+        executor_lease_ref: 'executor-lease:codex-cli/oma_developer_patch_work_order_test',
+      },
+      reviewer_refs: ['reviewer:example/direct-evidence'],
+      reviewer_pool_refs: ['reviewer:example/direct-evidence'],
+      patch_execution_bundle_ref: 'patch-execution-bundle:target-agent/example-agent/oma_developer_patch_work_order_test',
+      target_closeout_refs: [
+        'target-owner-receipt-or-typed-blocker:example-agent/oma_developer_patch_work_order_test',
+        'worktree-cleanup:example-agent/oma_developer_patch_work_order_test/source-patch',
+        'patch-absorption:example-agent/oma_developer_patch_work_order_test/source-patch',
+        'agent-lab-re-evaluation:example-agent/agent-lab-result-ref/oma_developer_patch_work_order_test',
+      ],
+      patch_traceability: {
+        matrix_ref: 'oma_developer_patch_work_order_test#/patch_traceability_matrix',
+      },
       target_verification: {
         required_refs: ['npm test'],
       },
+      owner_route: {
+        route_refs: ['target-agent-owner:example-agent'],
+      },
       no_forbidden_write_proof: {
         required: true,
+        proof_refs: ['no_target_domain_truth_write_proof'],
         can_write_target_domain_truth: false,
         can_write_target_domain_memory_body: false,
         can_mutate_target_domain_artifact_body: false,
         can_authorize_target_quality_or_export: false,
       },
+      canary_refs: ['canary:example-agent/source-patch'],
+      rollback_refs: ['target_agent_previous_head_ref'],
+      version_refs: ['target_agent_current_head_ref'],
+      fail_closed_blocker_ref:
+        'typed-blocker:opl-meta-agent/example-agent/oma_developer_patch_work_order_test/missing-required-work-order-field',
     },
     version_management: {
       absorb_back_required: true,
@@ -171,6 +259,11 @@ test('execute external work order delegates execution and lifecycle to the OPL w
   assert.equal(payload.work_order_ref, 'oma_developer_patch_work_order_test');
   assert.equal(payload.opl_result.primitive_owner, 'one-person-lab/OPL');
   assert.equal(payload.opl_result.target_worktree_lifecycle_owner, 'one-person-lab/OPL');
+  assert.equal(
+    payload.opl_result.closeout_refs.target_owner_receipt_or_typed_blocker_ref,
+    'target-owner-receipt-or-typed-blocker:example-agent/oma_developer_patch_work_order_test',
+  );
+  assert.equal(payload.opl_result_currentness.closeout_refs_verified, true);
 });
 
 test('execute external work order rejects non Codex CLI leases before delegation', () => {
@@ -203,4 +296,150 @@ test('execute external work order rejects non Codex CLI leases before delegation
 
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /executor_lease_ref must be a Codex CLI lease/);
+});
+
+test('execute external work order rejects stale target currentness before delegation', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-execute-work-order-currentness-test-'));
+  const workOrderPath = path.join(tempDir, 'developer-patch-work-order.json');
+  writeJson(workOrderPath, {
+    ...buildWorkOrder(),
+    work_order_currentness: {
+      target_agent_id: 'other-agent',
+      eval_result_ref: 'agent-lab-result-ref',
+      work_order_ref: 'oma_developer_patch_work_order_test',
+      owner_route_ref: 'target-agent-owner:example-agent',
+    },
+  });
+
+  const result = spawnSync(
+    process.execPath,
+    [
+      '--experimental-strip-types',
+      path.join(repoRoot, 'scripts/execute-external-work-order.ts'),
+      '--work-order',
+      workOrderPath,
+      '--opl-bin',
+      path.join(tempDir, 'opl-not-called'),
+    ],
+    {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        NODE_NO_WARNINGS: '1',
+      },
+    },
+  );
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /work_order_currentness.target_agent_id/);
+});
+
+test('execute external work order rejects OPL result without closeout refs or typed blocker', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-execute-work-order-opl-closeout-test-'));
+  const fakeBinDir = path.join(tempDir, 'bin');
+  fs.mkdirSync(fakeBinDir, { recursive: true });
+
+  const workOrderPath = path.join(tempDir, 'developer-patch-work-order.json');
+  const outputPath = path.join(tempDir, 'execution-result.json');
+  const oplLogPath = path.join(tempDir, 'fake-opl-argv.json');
+  const fakeOplPath = path.join(fakeBinDir, 'opl');
+
+  writeJson(workOrderPath, buildWorkOrder());
+  fs.writeFileSync(
+    fakeOplPath,
+    `#!/usr/bin/env node
+const fs = require('node:fs');
+fs.writeFileSync(${JSON.stringify(oplLogPath)}, JSON.stringify({ argv: process.argv.slice(2) }, null, 2) + '\\n');
+process.stdout.write(JSON.stringify({
+  surface_kind: 'opl_work_order_execute_result',
+  status: 'delegated',
+  delegated_work_order_ref: 'oma_developer_patch_work_order_test',
+  primitive_owner: 'one-person-lab/OPL'
+}, null, 2) + '\\n');
+`,
+  );
+  fs.chmodSync(fakeOplPath, 0o755);
+
+  const result = spawnSync(
+    process.execPath,
+    [
+      '--experimental-strip-types',
+      path.join(repoRoot, 'scripts/execute-external-work-order.ts'),
+      '--work-order',
+      workOrderPath,
+      '--output',
+      outputPath,
+      '--opl-bin',
+      fakeOplPath,
+    ],
+    {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        PATH: `${fakeBinDir}${path.delimiter}${process.env.PATH ?? ''}`,
+        NODE_NO_WARNINGS: '1',
+      },
+    },
+  );
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /OPL work-order result must include target owner closeout, cleanup, absorption, Agent Lab re-evaluation refs, or typed blocker refs/);
+});
+
+test('execute external work order accepts OPL typed blocker refs as closed delegation result', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-execute-work-order-opl-blocker-test-'));
+  const fakeBinDir = path.join(tempDir, 'bin');
+  fs.mkdirSync(fakeBinDir, { recursive: true });
+
+  const workOrderPath = path.join(tempDir, 'developer-patch-work-order.json');
+  const outputPath = path.join(tempDir, 'execution-result.json');
+  const oplLogPath = path.join(tempDir, 'fake-opl-argv.json');
+  const fakeOplPath = path.join(fakeBinDir, 'opl');
+
+  writeJson(workOrderPath, buildWorkOrder());
+  fs.writeFileSync(
+    fakeOplPath,
+    `#!/usr/bin/env node
+const fs = require('node:fs');
+fs.writeFileSync(${JSON.stringify(oplLogPath)}, JSON.stringify({ argv: process.argv.slice(2) }, null, 2) + '\\n');
+process.stdout.write(JSON.stringify({
+  surface_kind: 'opl_work_order_execute_result',
+  status: 'blocked_typed_blocker_returned',
+  delegated_work_order_ref: 'oma_developer_patch_work_order_test',
+  primitive_owner: 'one-person-lab/OPL',
+  typed_blocker_refs: ['typed-blocker:target-agent/example-agent/owner-closeout-required']
+}, null, 2) + '\\n');
+`,
+  );
+  fs.chmodSync(fakeOplPath, 0o755);
+
+  const result = spawnSync(
+    process.execPath,
+    [
+      '--experimental-strip-types',
+      path.join(repoRoot, 'scripts/execute-external-work-order.ts'),
+      '--work-order',
+      workOrderPath,
+      '--output',
+      outputPath,
+      '--opl-bin',
+      fakeOplPath,
+    ],
+    {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        PATH: `${fakeBinDir}${path.delimiter}${process.env.PATH ?? ''}`,
+        NODE_NO_WARNINGS: '1',
+      },
+    },
+  );
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const payload = readJson(outputPath);
+  assert.equal(payload.opl_result_currentness.closeout_refs_verified, false);
+  assert.equal(payload.opl_result_currentness.typed_blocker_refs_present, true);
 });

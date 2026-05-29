@@ -897,6 +897,11 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     assert.ok(mechanism.edit.proposed_change_refs.includes('quality_contract_ref:prediction_model_first_draft_quality'));
     assert.ok(mechanism.observe.source_refs.includes(reviewerEvaluationPath));
     assert.ok(mechanism.diagnose.source_refs.includes('artifacts/publication_eval/latest.json'));
+    assert.equal(mechanism.repeat_budget.max_attempts, 2);
+    assert.equal(mechanism.repeat_budget.remaining_attempts, 1);
+    assert.ok(mechanism.dead_letter_refs.includes(`dead-letter:opl-meta-agent/med-autoscience/${mechanism.proposal_id}`));
+    assert.ok(mechanism.escalation_refs.includes('escalation:target-owner/med-autoscience/external-suite-self-evolution'));
+    assert.equal(mechanism.next_allowed_action, 'delegate_to_opl_work_order_execute_after_currentness_gate');
 
     const receipt = readJson(payload.artifacts.meta_agent_improvement_receipt_path);
     assert.equal(receipt.receipt_class, 'external_suite_quality_failure_self_evolution_receipt');
@@ -912,6 +917,42 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
     assert.equal(workOrder.surface_kind, 'opl_meta_agent_developer_patch_work_order');
     assert.equal(workOrder.status, 'ready_for_target_agent_source_patch');
+    assert.deepEqual(workOrder.work_order_currentness, {
+      target_agent_id: 'med-autoscience',
+      eval_result_ref: workOrder.source_agent_lab_result_ref,
+      work_order_ref: workOrder.work_order_id,
+      owner_route_ref: 'target-agent-owner:med-autoscience',
+    });
+    assert.deepEqual(workOrder.target_progress_accounting, {
+      progress_delta_classification: 'mixed',
+      deliverable_progress_delta: {
+        count: workOrder.proposed_change_refs.length,
+        refs: workOrder.proposed_change_refs,
+        domain_alias: 'target_agent_substantive_delta',
+      },
+      platform_repair_delta: {
+        count: 6,
+        refs: [
+          workOrder.machine_closeout_refs.target_runtime_read_model_consumption_ref,
+          workOrder.machine_closeout_refs.workspace_environment_proof_ref,
+          workOrder.machine_closeout_refs.no_forbidden_write_proof_ref,
+          workOrder.machine_closeout_refs.patch_absorption_ref,
+          workOrder.machine_closeout_refs.worktree_cleanup_ref,
+          workOrder.machine_closeout_refs.agent_lab_re_evaluation_ref,
+        ],
+        domain_alias: 'platform_interface_repair_delta',
+      },
+      substantive_deliverable_delta_refs: workOrder.proposed_change_refs,
+      platform_interface_repair_refs: [
+        workOrder.machine_closeout_refs.target_runtime_read_model_consumption_ref,
+        workOrder.machine_closeout_refs.workspace_environment_proof_ref,
+        workOrder.machine_closeout_refs.no_forbidden_write_proof_ref,
+        workOrder.machine_closeout_refs.patch_absorption_ref,
+        workOrder.machine_closeout_refs.worktree_cleanup_ref,
+        workOrder.machine_closeout_refs.agent_lab_re_evaluation_ref,
+      ],
+      accounting_policy: 'deliverable_delta_is_not_closed_by_platform_interface_repair',
+    });
     assert.equal(workOrder.ai_reviewer_evaluation_ref, reviewerEvaluationPath);
     assert.deepEqual(workOrder.ai_reviewer_review.suggestions, reviewerEvaluation.suggestions);
     assert.equal(workOrder.ai_reviewer_review.predicted_impact, reviewerEvaluation.predicted_impact);
@@ -1138,6 +1179,14 @@ test('target-agent owner receipt Agent Lab suite becomes a no-patch result-consu
 
     const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
     assert.equal(workOrder.status, 'no_patch_required');
+    assert.equal(workOrder.target_progress_accounting.progress_delta_classification, 'platform_repair');
+    assert.equal(workOrder.target_progress_accounting.deliverable_progress_delta.domain_alias, 'target_agent_substantive_delta');
+    assert.equal(workOrder.target_progress_accounting.deliverable_progress_delta.count, 0);
+    assert.equal(workOrder.target_progress_accounting.platform_repair_delta.domain_alias, 'platform_interface_repair_delta');
+    assert.deepEqual(workOrder.target_progress_accounting.substantive_deliverable_delta_refs, []);
+    assert.ok(workOrder.target_progress_accounting.platform_interface_repair_refs.includes(
+      workOrder.machine_closeout_refs.agent_lab_re_evaluation_ref,
+    ));
     assert.deepEqual(workOrder.required_patch_surfaces, []);
     assert.deepEqual(workOrder.allowed_editable_surfaces, []);
     assert.ok(workOrder.required_verification_refs.includes('target_owner_receipt_projection_ref'));
@@ -1258,6 +1307,20 @@ test('workbench and scaleout contracts expose target patch-loop machine refs onl
   targetPatchLoopMachineRefFields.forEach((field) => {
     assert.ok((developerWorkOrderSection.projection_fields as string[]).includes(field));
   });
+  assert.ok((developerWorkOrderSection.projection_fields as string[]).includes('substantive_deliverable_delta_refs'));
+  assert.ok((developerWorkOrderSection.projection_fields as string[]).includes('platform_interface_repair_refs'));
+  assert.ok((developerWorkOrderSection.projection_fields as string[]).includes('deliverable_progress_delta'));
+  assert.ok((developerWorkOrderSection.projection_fields as string[]).includes('platform_repair_delta'));
+  assert.ok((developerWorkOrderSection.projection_fields as string[]).includes('progress_delta_classification'));
+  assert.ok((developerWorkOrderSection.projection_fields as string[]).includes('target_progress_accounting_ref'));
+  assert.deepEqual(appProjection.drilldown_readiness_receipt.target_progress_accounting_fields, [
+    'deliverable_progress_delta',
+    'platform_repair_delta',
+    'progress_delta_classification',
+    'substantive_deliverable_delta_refs',
+    'platform_interface_repair_refs',
+    'target_progress_accounting_ref',
+  ]);
   assert.equal(appProjection.authority_boundary.refs_only, true);
   assert.equal(scaleoutEvidence.authority_boundary.can_write_target_domain_truth, false);
 });

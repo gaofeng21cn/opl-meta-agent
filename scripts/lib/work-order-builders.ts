@@ -51,6 +51,61 @@ type WorkOrderBundleRefOptions = {
   machineCloseoutRefs: JsonObject;
 };
 
+export function buildWorkOrderCurrentness({
+  domainId,
+  suiteResultRef,
+  workOrderId,
+  ownerRouteRef,
+}: {
+  domainId: string;
+  suiteResultRef: string;
+  workOrderId: string;
+  ownerRouteRef: string;
+}): JsonObject {
+  return {
+    target_agent_id: domainId,
+    eval_result_ref: suiteResultRef,
+    work_order_ref: workOrderId,
+    owner_route_ref: ownerRouteRef,
+  };
+}
+
+export function buildTargetProgressAccounting({
+  substantiveDeliverableDeltaRefs,
+  machineCloseoutRefs,
+}: {
+  substantiveDeliverableDeltaRefs: string[];
+  machineCloseoutRefs: JsonObject;
+}): JsonObject {
+  const deliverableRefs = uniqueRefs(substantiveDeliverableDeltaRefs);
+  const platformRefs = uniqueRefs([
+    machineCloseoutRefs.target_runtime_read_model_consumption_ref,
+    machineCloseoutRefs.workspace_environment_proof_ref,
+    machineCloseoutRefs.no_forbidden_write_proof_ref,
+    machineCloseoutRefs.patch_absorption_ref,
+    machineCloseoutRefs.worktree_cleanup_ref,
+    machineCloseoutRefs.agent_lab_re_evaluation_ref,
+  ].filter((value): value is string => typeof value === 'string' && value.trim().length > 0));
+  return {
+    progress_delta_classification: deliverableRefs.length > 0
+      ? (platformRefs.length > 0 ? 'mixed' : 'deliverable_progress')
+      : (platformRefs.length > 0 ? 'platform_repair' : 'typed_blocker'),
+    deliverable_progress_delta: {
+      count: deliverableRefs.length,
+      refs: deliverableRefs,
+      domain_alias: 'target_agent_substantive_delta',
+    },
+    platform_repair_delta: {
+      count: platformRefs.length,
+      refs: platformRefs,
+      domain_alias: 'platform_interface_repair_delta',
+    },
+    substantive_deliverable_delta_refs: deliverableRefs,
+    platform_interface_repair_refs: platformRefs,
+    accounting_policy: 'deliverable_delta_is_not_closed_by_platform_interface_repair',
+  };
+}
+
 function buildNoForbiddenWriteReadiness({
   proofRefs,
   authorityFieldNames = {},
