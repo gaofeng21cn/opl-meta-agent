@@ -26,7 +26,7 @@
       "owner": "opl-meta-agent",
       "effect": "mutating",
       "source_command": {
-        "command": "npm run bootstrap:sample -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief>",
+        "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief>",
         "surface_kind": "domain_smoke_cli"
       },
       "input_schema_ref": "contracts/schemas/build-agent-baseline.input.schema.json",
@@ -45,7 +45,7 @@
       ],
       "supported_surfaces": {
         "cli": {
-          "command": "npm run bootstrap:sample -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief>",
+          "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief>",
           "surface_kind": "domain_smoke_cli"
         },
         "mcp": {
@@ -61,7 +61,7 @@
         },
         "product_entry": {
           "action_key": "build-agent-baseline",
-          "command": "npm run bootstrap:sample -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief>",
+          "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief>",
           "surface_kind": "domain_product_entry_action"
         },
         "openai": {
