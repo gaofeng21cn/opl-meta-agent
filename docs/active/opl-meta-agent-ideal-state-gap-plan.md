@@ -4,11 +4,12 @@ Owner: `opl-meta-agent`
 Purpose: `ideal_state_gap_plan`
 State: `active_plan`
 Machine boundary: 本文是人读 gap / completion plan。机器真相继续归 `contracts/`、`agent/`、`runtime/authority_functions/`、source、OPL Agent Lab result refs、developer work-order receipts、owner receipts、candidate refs 和未来 delivery receipts。
-Date: `2026-05-24`
 
 ## 当前唯一真相
 
 本文是 `opl-meta-agent` 当前完成进度、功能/结构差距、测试/证据差距和近期完善计划的 single Active Truth owner。North-star 目标态只维护在 [opl-meta-agent 理想目标态](../references/opl-meta-agent-ideal-state.md)；私有实现分类、脚本收薄和上收候选只维护在 [opl-meta-agent 私有实现与 OPL 迁移台账](./opl-private-implementation-migration-inventory.md)；公开状态、架构边界、硬约束和决策分别回到核心五件套。
+
+Currentness policy：本文维护当前 completion/gap/prompt，不冻结 run date、branch、worktree、commit SHA、receipt id、动态 counts、read-model 输出或 closeout 流程。带日期的 refs 只作为证据 provenance 读取；当前状态仍以 live contracts、source、tests、OPL read models 和本仓最新核心 docs 为准。
 
 当前结论：
 

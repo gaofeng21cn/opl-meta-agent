@@ -4,11 +4,11 @@ Owner: `opl-meta-agent`
 Purpose: `north_star_reference`
 State: `active_support`
 Machine boundary: 本文是人读目标态参考。机器真相继续归 `contracts/`、`runtime/authority_functions/`、OPL Agent Lab result refs、owner receipts、candidate refs 和未来 delivery receipts。
-Date: `2026-05-24`
 
 ## 文档读法
 
 - 本文只写 `opl-meta-agent` 的 north-star 目标态和长期 owner boundary；当前差距、完善顺序和证据缺口回到 [opl-meta-agent 理想目标态差距与完善计划](../active/opl-meta-agent-ideal-state-gap-plan.md)。
+- 本文不冻结 run date、branch、worktree、commit SHA、receipt id、动态 counts、read-model 输出或 closeout 流程；dated refs 只作为 provenance，当前 completion/gap/prompt 回到 active plan 和 live machine truth。
 - `opl-meta-agent` 是 OPL-compatible Foundry Agent，不是 OPL Framework 内置模块。OPL Framework 持有 runtime、Agent Lab、standard scaffold、generated interface bundle、queue、attempt ledger、provider receipt、observability、optimizer / RL transition refs 和 promotion gate。
 - Agent Lab 与 `opl-meta-agent` 都是标准消费者，不是为 MAS、MAG、RCA 或任一单仓定制的兼容层。标准 OPL Agent 必须提供可被 Agent Lab / OMA 消费的 handoff、suite seed、owner route、receipt、no-forbidden-write 和 patch-work-order 输入；不能把叙事写成 Agent Lab 或 OMA 为每个 agent 单独实现一套能力。
 - 目标态优先于当前脚本形态。仓内脚本可以作为 domain smoke 或 minimal authority function implementation refs 存在，但不能变成 repo-owned generic runtime、generic CLI/MCP/Skill/product-entry wrapper、generic scheduler、queue、attempt ledger、operator workbench 或默认 promotion engine。
