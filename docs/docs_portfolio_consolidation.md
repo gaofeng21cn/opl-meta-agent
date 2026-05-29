@@ -65,7 +65,7 @@ Current semantic result:
 - `contracts/pack_compiler_input.json` keeps `agent/` as the canonical semantic pack root and lists only non-README pack files in `required_domain_pack_paths`; support README files are human indexes, not machine-required pack paths.
 - OPL registry/App projection contracts remain refs-only handoff material owned by OPL/App for generated/discovery/workbench surfaces; they do not close App live render/runtime drilldown, long-soak, target owner receipt, or promotion gates.
 - Fresh OPL read-model consumption remains consistent with that boundary: interface generation is ready and OMA production-consumption ledger receipts are verified, but both surfaces keep `refs_only=true`, cannot write target truth, cannot create owner receipts, cannot claim domain/production ready, and cannot promote defaults without a gate.
-- The obsolete `bootstrap:sample` npm alias is retired from package scripts, generated action command refs, and active README/status wording. `build-agent-baseline` is now the only public npm action entry for baseline generation; the remaining no-`--domain-id` sample smoke stays tracked as evidence/proof fixture debt, not as a public compatibility alias.
+- The obsolete `bootstrap:sample` npm alias and the no-`--domain-id` implicit fixture smoke are retired from package scripts, generated action command refs, active README/status wording, and build-agent-baseline materialization. `build-agent-baseline` is now the only public npm action entry for baseline generation, and it requires an explicit target `--domain-id`.
 
 Reviewed documents / sections:
 

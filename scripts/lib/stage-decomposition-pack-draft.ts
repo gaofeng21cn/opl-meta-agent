@@ -197,11 +197,9 @@ function buildActionCatalog({
 }): JsonObject {
   const domainId = targetAgent.domain_id;
   const brief = targetBriefFor(targetAgent);
-  const actionSummary = actionId === 'draft-brief'
-    ? 'Draft a source-grounded knowledge brief from declared workspace refs.'
-    : actionId === 'draft-agent-output'
-      ? `Draft the owner-gated ${owner} delivery from declared workspace refs.`
-      : `Run the owner-gated ${owner} stage from declared workspace refs.`;
+  const actionSummary = actionId === 'draft-agent-output'
+    ? `Draft the owner-gated ${owner} delivery from declared workspace refs.`
+    : `Run the owner-gated ${owner} stage from declared workspace refs.`;
   return {
     surface_kind: 'family_action_catalog',
     version: 'family-action-catalog.v1',
@@ -489,45 +487,15 @@ function buildFiles({
 export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec): StageDecompositionCloseoutPacket {
   const targetAgent = input.targetAgent;
   const owner = domainLabelFor(targetAgent);
-  const stageId = input.stageId ?? (
-    targetAgent.domain_id === 'sample-brief-agent' ? 'brief-draft' : 'agent-output-draft'
-  );
-  const actionId = input.actionId ?? (
-    targetAgent.domain_id === 'sample-brief-agent' ? 'draft-brief' : 'draft-agent-output'
-  );
-  const title = input.title ?? (
-    targetAgent.domain_id === 'sample-brief-agent' ? 'Brief Draft' : 'Agent Output Draft'
-  );
-  const summary = input.summary ?? (
-    targetAgent.domain_id === 'sample-brief-agent'
-      ? 'Draft the sample brief.'
-      : `Draft the owner-gated ${owner} delivery.`
-  );
-  const promptPath = input.promptPath ?? (
-    targetAgent.domain_id === 'sample-brief-agent'
-      ? 'agent/prompts/brief-draft.md'
-      : 'agent/prompts/agent-output-draft.md'
-  );
-  const stagePath = input.stagePath ?? (
-    targetAgent.domain_id === 'sample-brief-agent'
-      ? 'agent/stages/brief-draft.md'
-      : 'agent/stages/agent-output-draft.md'
-  );
-  const skillPath = input.skillPath ?? (
-    targetAgent.domain_id === 'sample-brief-agent'
-      ? 'agent/skills/sample-brief-agent-domain-skill.md'
-      : 'agent/skills/target-agent-domain-skill.md'
-  );
-  const knowledgePath = input.knowledgePath ?? (
-    targetAgent.domain_id === 'sample-brief-agent'
-      ? 'agent/knowledge/sample-brief-boundary-policy.md'
-      : 'agent/knowledge/target-agent-boundary-policy.md'
-  );
-  const qualityGatePath = input.qualityGatePath ?? (
-    targetAgent.domain_id === 'sample-brief-agent'
-      ? 'agent/quality_gates/brief-draft-quality-gate.md'
-      : 'agent/quality_gates/agent-output-draft-quality-gate.md'
-  );
+  const stageId = input.stageId ?? 'agent-output-draft';
+  const actionId = input.actionId ?? 'draft-agent-output';
+  const title = input.title ?? 'Agent Output Draft';
+  const summary = input.summary ?? `Draft the owner-gated ${owner} delivery.`;
+  const promptPath = input.promptPath ?? 'agent/prompts/agent-output-draft.md';
+  const stagePath = input.stagePath ?? 'agent/stages/agent-output-draft.md';
+  const skillPath = input.skillPath ?? 'agent/skills/target-agent-domain-skill.md';
+  const knowledgePath = input.knowledgePath ?? 'agent/knowledge/target-agent-boundary-policy.md';
+  const qualityGatePath = input.qualityGatePath ?? 'agent/quality_gates/agent-output-draft-quality-gate.md';
   const spec = {
     targetAgent,
     stageId,

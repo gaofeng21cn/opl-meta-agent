@@ -112,7 +112,7 @@
       "authority_function_ref": "authority-function-ref:opl-meta-agent/candidate-agent-package-builder",
       "authority_function_contract_ref": "runtime/authority_functions/meta-agent-authority-functions.json",
       "implementation_refs": [
-        "scripts/bootstrap-sample-agent.ts",
+        "scripts/build-agent-baseline.ts",
         "scripts/lib/meta-agent-loop.ts"
       ],
       "code_paths": [
@@ -130,7 +130,7 @@
       "classification": "refs_only_domain_adapter",
       "owner": "opl-meta-agent",
       "code_paths": [
-        "scripts/bootstrap-sample-agent.ts",
+        "scripts/build-agent-baseline.ts",
         "scripts/takeover-agent.ts",
         "scripts/lib/meta-agent-loop.ts"
       ],

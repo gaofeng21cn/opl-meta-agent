@@ -41,12 +41,11 @@ import {
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-export type BootstrapArgs = {
+export type BuildAgentBaselineArgs = {
   outputDir: string;
   oplBin: string;
   aiReviewerEvaluationPath: string;
   targetAgent: TargetAgent;
-  sampleMode: boolean;
   stageRunner: StageRunnerKind;
   stageCloseoutPacketPath: string | null;
 };
@@ -62,7 +61,7 @@ function nonEmptyValue(flag: string, value: string | undefined): string {
   return trimmed;
 }
 
-export function parseBootstrapSampleAgentArgs(argv: string[]): BootstrapArgs {
+export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineArgs {
   const parsed: {
     outputDir: string | null;
     oplBin: string;
@@ -145,36 +144,25 @@ export function parseBootstrapSampleAgentArgs(argv: string[]): BootstrapArgs {
       'Missing required --ai-reviewer-evaluation <path>; baseline delivery fails closed without structured AI reviewer evaluation.',
     );
   }
-  parsed.outputDir ??= fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-bootstrap-'));
-  const sampleMode = parsed.domainId === null;
-  let targetAgent: TargetAgent;
-  if (sampleMode) {
-    targetAgent = {
-      domain_id: 'sample-brief-agent',
-      domain_label: 'Sample Brief Agent',
-      delivery_domain: 'knowledge_briefing',
-      target_brief: 'Create a source-grounded knowledge brief from workspace refs.',
-    };
-  } else {
-    const domainId = parsed.domainId;
-    if (!domainId) {
-      throw new Error('Missing required --domain-id <domain_id>.');
-    }
-    const domainLabel = parsed.domainLabel ?? domainId;
-    targetAgent = {
-      domain_id: domainId,
-      domain_label: domainLabel,
-      delivery_domain: parsed.deliveryDomain ?? 'knowledge_delivery',
-      target_brief: parsed.targetBrief
-        ?? `Create an owner-gated ${domainLabel} delivery from declared workspace refs.`,
-    };
+  if (!parsed.domainId) {
+    throw new Error(
+      'Missing required --domain-id <domain_id>; build-agent-baseline requires an explicit target agent.',
+    );
   }
+  parsed.outputDir ??= fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-bootstrap-'));
+  const domainLabel = parsed.domainLabel ?? parsed.domainId;
+  const targetAgent: TargetAgent = {
+    domain_id: parsed.domainId,
+    domain_label: domainLabel,
+    delivery_domain: parsed.deliveryDomain ?? 'knowledge_delivery',
+    target_brief: parsed.targetBrief
+      ?? `Create an owner-gated ${domainLabel} delivery from declared workspace refs.`,
+  };
   return {
     outputDir: parsed.outputDir,
     oplBin: parsed.oplBin,
     aiReviewerEvaluationPath: parsed.aiReviewerEvaluationPath,
     targetAgent,
-    sampleMode,
     stageRunner: parsed.stageRunner,
     stageCloseoutPacketPath: parsed.stageCloseoutPacketPath,
   };
@@ -269,9 +257,7 @@ function buildAgentLabSuite({
   aiReviewerEvaluationRef: string;
 }): JsonObject {
   return buildExternalSuite({
-    suiteId: targetAgent.domain_id === 'sample-brief-agent'
-      ? 'opl-meta-agent-self-bootstrap-suite'
-      : `opl-meta-agent-baseline-suite:${targetAgent.domain_id}`,
+    suiteId: `opl-meta-agent-baseline-suite:${targetAgent.domain_id}`,
     taskId: `agent-lab-task:opl-meta-agent/${targetAgent.domain_id}-baseline`,
     taskFamily: 'agent_building_baseline',
     targetAgent: {
@@ -435,15 +421,14 @@ function buildRealTargetAgentSuite({
   });
 }
 
-export function runBootstrapSampleAgent({
+export function runBuildAgentBaseline({
     outputDir,
     oplBin,
     aiReviewerEvaluationPath,
     targetAgent,
-    sampleMode,
     stageRunner,
     stageCloseoutPacketPath,
-  }: BootstrapArgs): JsonObject {
+  }: BuildAgentBaselineArgs): JsonObject {
   fs.mkdirSync(outputDir, { recursive: true });
   const domainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
   const aiReviewerEvaluation = loadAiReviewerEvaluation(aiReviewerEvaluationPath);
@@ -542,118 +527,48 @@ export function runBootstrapSampleAgent({
   writeJson(learningPath, learningCandidate);
   writeJson(mechanismPath, mechanismPatchProposal);
 
-  let realTargetDelivery: JsonObject | null = null;
-  if (sampleMode) {
-    const realTargetAgent: TargetAgent = {
-      domain_id: 'real-target-brief-agent',
-      domain_label: 'Real Target Brief Agent',
-      delivery_domain: 'knowledge_briefing',
-    };
-    const realTargetAgentDir = path.join(outputDir, realTargetAgent.domain_id);
-    runOpl(oplBin, [
-      'agents',
-      'scaffold',
-      '--target-dir',
-      realTargetAgentDir,
-      '--domain-id',
-      realTargetAgent.domain_id,
-      '--domain-label',
-      realTargetAgent.domain_label ?? realTargetAgent.domain_id,
-      '--force',
-      '--json',
-    ]);
-    writeMinimalAgentDomainPack(realTargetAgentDir, realTargetAgent);
-    const realTargetStageOutputDir = path.join(outputDir, `${realTargetAgent.domain_id}-stage-decomposition`);
-    let realTargetStageDecompositionAttempt: StageDecompositionAttemptReceipt;
-    try {
-      realTargetStageDecompositionAttempt = materializeStageDecompositionAttempt({
-        targetAgent: realTargetAgent,
-        targetAgentDir: realTargetAgentDir,
-        outputDir: realTargetStageOutputDir,
-        oplBin,
-        stageRunner,
-        stageCloseoutPacketPath: null,
-      });
-    } catch (error) {
-      const blocker = stageDecompositionBlockerFromError(error, realTargetAgent);
-      const blockerPath = writeStageDecompositionBlocker(realTargetStageOutputDir, realTargetAgent, blocker);
-      throw new Error(`Real-target stage decomposition failed closed; typed blocker written to ${blockerPath}.`);
-    }
-    const realTargetScaffoldValidation = runOpl(oplBin, [
-      'agents',
-      'scaffold',
-      '--validate',
-      realTargetAgentDir,
-      '--json',
-    ]);
-    const realTargetInterfaces = runOpl(oplBin, [
-      'agents',
-      'interfaces',
-      '--repo-dir',
-      realTargetAgentDir,
-      '--json',
-    ]);
-    const realTargetSuitePath = path.join(outputDir, 'real-target-agent-lab-suite.json');
-    const realTargetSuite = buildRealTargetAgentSuite({
-      realTargetAgent,
-      realTargetAgentDir,
-      aiReviewerEvaluation,
-      aiReviewerEvaluationRef: aiReviewerEvaluationPath,
-    });
-    writeJson(realTargetSuitePath, realTargetSuite);
-    const realTargetAgentLabRun = runOpl(oplBin, ['agent-lab', 'run', '--suite', realTargetSuitePath, '--json']);
-    const realTargetSuiteResult = realTargetAgentLabRun.agent_lab_run.suite_result as SuiteResult;
-    const realTargetReceipt = buildOwnerReceipt({
-      receiptClass: 'real_target_baseline_delivery_receipt',
-      status: 'real_target_baseline_delivered',
-      targetAgent: {
-        ...realTargetAgent,
-        repo_dir: realTargetAgentDir,
-        descriptor_ref: path.join(realTargetAgentDir, 'contracts', 'domain_descriptor.json'),
-      },
-      suiteResult: realTargetSuiteResult,
-      extraAcceptanceGates: {
-        real_target_agent_delivery: true,
-        sample_smoke_counted_as_real_target_delivery: false,
-        ...aiReviewerAcceptanceGates(),
-      },
-    });
-    const realTargetDeliveryReceipt = buildRealTargetDeliveryReceipt({
-      targetAgent: {
-        ...realTargetAgent,
-        repo_dir: realTargetAgentDir,
-        descriptor_ref: path.join(realTargetAgentDir, 'contracts', 'domain_descriptor.json'),
-      },
-      suiteResult: realTargetSuiteResult,
-      baselineDeliveryReceipt: realTargetReceipt,
-      candidateAgentPackageRef: `candidate-agent-package:${realTargetAgent.domain_id}`,
-      agentLabSuiteRef: realTargetSuitePath,
-      promotionGateRefs: [`promotion-gate:opl-meta-agent/${realTargetAgent.domain_id}`],
-      noForbiddenWriteProofRefs: [
-        `no-forbidden-write:opl-meta-agent/${realTargetAgent.domain_id}/real_target_delivery`,
-      ],
-      sampleTargetAgentRef: `domain-agent:${targetAgent.domain_id}`,
-      sampleReceiptRef: baselineReceipt.receipt_id,
-    });
-    const scaleoutEvidenceLedger = buildScaleoutEvidenceLedger({
-      deliveryReceipts: [realTargetDeliveryReceipt],
-      sampleReceiptRefs: [baselineReceipt.receipt_id],
-    });
-    writeJson(realTargetReceiptPath, realTargetDeliveryReceipt);
-    writeJson(scaleoutLedgerPath, scaleoutEvidenceLedger);
-    realTargetDelivery = {
-      target_agent: {
-        ...realTargetAgent,
-        repo_dir: realTargetAgentDir,
-        scaffold_validation_status: realTargetScaffoldValidation.standard_domain_agent_scaffold.validation.status,
-        generated_interface_status: realTargetInterfaces.generated_agent_interfaces.status,
-      },
-      agent_lab_run: realTargetAgentLabRun.agent_lab_run,
-      delivery_receipt: realTargetDeliveryReceipt,
-      scaleout_evidence_ledger: scaleoutEvidenceLedger,
-      stage_decomposition_attempt: realTargetStageDecompositionAttempt,
-    };
-  }
+  const realTargetAgent: TargetAgent = {
+    ...targetAgent,
+    repo_dir: targetAgentDir,
+    descriptor_ref: path.join(targetAgentDir, 'contracts', 'domain_descriptor.json'),
+  };
+  const realTargetSuitePath = path.join(outputDir, 'real-target-agent-lab-suite.json');
+  const realTargetSuite = buildRealTargetAgentSuite({
+    realTargetAgent,
+    realTargetAgentDir: targetAgentDir,
+    aiReviewerEvaluation,
+    aiReviewerEvaluationRef: aiReviewerEvaluationPath,
+  });
+  writeJson(realTargetSuitePath, realTargetSuite);
+  const realTargetAgentLabRun = runOpl(oplBin, ['agent-lab', 'run', '--suite', realTargetSuitePath, '--json']);
+  const realTargetSuiteResult = realTargetAgentLabRun.agent_lab_run.suite_result as SuiteResult;
+  const realTargetDeliveryReceipt = buildRealTargetDeliveryReceipt({
+    targetAgent: realTargetAgent,
+    suiteResult: realTargetSuiteResult,
+    baselineDeliveryReceipt: baselineReceipt,
+    candidateAgentPackageRef: `candidate-agent-package:${targetAgent.domain_id}`,
+    agentLabSuiteRef: realTargetSuitePath,
+    promotionGateRefs: [`promotion-gate:opl-meta-agent/${targetAgent.domain_id}`],
+    noForbiddenWriteProofRefs: [
+      `no-forbidden-write:opl-meta-agent/${targetAgent.domain_id}/real_target_delivery`,
+    ],
+  });
+  const scaleoutEvidenceLedger = buildScaleoutEvidenceLedger({
+    deliveryReceipts: [realTargetDeliveryReceipt],
+  });
+  writeJson(realTargetReceiptPath, realTargetDeliveryReceipt);
+  writeJson(scaleoutLedgerPath, scaleoutEvidenceLedger);
+  const realTargetDelivery = {
+    target_agent: {
+      ...realTargetAgent,
+      scaffold_validation_status: scaffoldValidation.standard_domain_agent_scaffold.validation.status,
+      generated_interface_status: generatedInterfaces.generated_agent_interfaces.status,
+    },
+    agent_lab_run: realTargetAgentLabRun.agent_lab_run,
+    delivery_receipt: realTargetDeliveryReceipt,
+    scaleout_evidence_ledger: scaleoutEvidenceLedger,
+    stage_decomposition_attempt: stageDecompositionAttempt,
+  };
 
   return {
     surface_kind: 'opl_meta_agent_self_learning_loop_result',
@@ -680,13 +595,9 @@ export function runBootstrapSampleAgent({
       baseline_delivery_receipt_path: receiptPath,
       online_learning_candidate_path: learningPath,
       mechanism_patch_proposal_path: mechanismPath,
-      ...(realTargetDelivery
-        ? {
-            real_target_agent_lab_suite_path: path.join(outputDir, 'real-target-agent-lab-suite.json'),
-            real_target_delivery_receipt_path: realTargetReceiptPath,
-            real_target_scaleout_evidence_ledger_path: scaleoutLedgerPath,
-          }
-        : {}),
+      real_target_agent_lab_suite_path: path.join(outputDir, 'real-target-agent-lab-suite.json'),
+      real_target_delivery_receipt_path: realTargetReceiptPath,
+      real_target_scaleout_evidence_ledger_path: scaleoutLedgerPath,
     },
     opl_agent_lab: agentLabRun.agent_lab_run,
     opl_generated_interfaces: generatedInterfaces.generated_agent_interfaces,
@@ -697,16 +608,12 @@ export function runBootstrapSampleAgent({
       online_learning_policy: learningCandidate.online_learning_policy,
       mechanism_patch_proposal: mechanismPatchProposal,
     },
-    ...(realTargetDelivery
-      ? {
-          real_target_delivery: realTargetDelivery,
-        }
-      : {}),
+    real_target_delivery: realTargetDelivery,
   };
 }
 
 function main() {
-  const payload = runBootstrapSampleAgent(parseBootstrapSampleAgentArgs(process.argv.slice(2)));
+  const payload = runBuildAgentBaseline(parseBuildAgentBaselineArgs(process.argv.slice(2)));
 
   process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
 }

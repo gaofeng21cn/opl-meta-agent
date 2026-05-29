@@ -157,7 +157,7 @@
       "proposal and materializer refs present",
       "review and audit receipt refs present",
       "real target delivery receipt and scaleout ledger surfaces supported",
-      "new-agent consumption sample passed Stage Pack v2 conformance and Agent Lab baseline while leaving production tail open",
+      "new-agent consumption fixture passed Stage Pack v2 conformance and Agent Lab baseline while leaving production tail open",
       "no target-domain authority writes allowed",
       "new-agent morphology and conformance fixture required"
     ]
@@ -202,7 +202,7 @@
     "verified_by_refs": [
       "tests/bootstrap-loop.test.ts"
     ],
-    "sample_smoke_counted_as_real_target_delivery": false
+    "implicit_fixture_smoke_retired": true
   },
   "authority_boundary": {
     "refs_only": true,

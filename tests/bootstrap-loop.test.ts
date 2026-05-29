@@ -6,9 +6,9 @@ import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import {
-  parseBootstrapSampleAgentArgs,
-  runBootstrapSampleAgent,
-} from '../scripts/bootstrap-sample-agent.ts';
+  parseBuildAgentBaselineArgs,
+  runBuildAgentBaseline,
+} from '../scripts/build-agent-baseline.ts';
 import type { JsonObject } from '../scripts/lib/domain-pack.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -17,8 +17,8 @@ function readJson(filePath: string): JsonObject {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
-function runBootstrapArgs(args: string[]): JsonObject {
-  return runBootstrapSampleAgent(parseBootstrapSampleAgentArgs(args));
+function runBaselineArgs(args: string[]): JsonObject {
+  return runBuildAgentBaseline(parseBuildAgentBaselineArgs(args));
 }
 
 function assertGeneratedTargetStagePack(
@@ -110,9 +110,9 @@ function writeAiReviewerEvaluation(filePath: string, overrides: JsonObject = {})
   const evaluation = {
     reviewer_kind: 'ai_reviewer',
     model_or_provider: 'gpt-5.5',
-    run_ref: 'run:ai-reviewer/opl-meta-agent/sample-brief-agent/baseline',
-    execution_attempt_ref: 'attempt:executor/opl-meta-agent/sample-brief-agent/baseline',
-    review_attempt_ref: 'attempt:ai-reviewer/opl-meta-agent/sample-brief-agent/baseline',
+    run_ref: 'run:ai-reviewer/opl-meta-agent/baseline-fixture-agent/baseline',
+    execution_attempt_ref: 'attempt:executor/opl-meta-agent/baseline-fixture-agent/baseline',
+    review_attempt_ref: 'attempt:ai-reviewer/opl-meta-agent/baseline-fixture-agent/baseline',
     no_shared_context: true,
     independent_attempt: true,
     critique: 'The baseline is structurally valid but needs explicit source coverage and operator handoff evidence.',
@@ -121,18 +121,18 @@ function writeAiReviewerEvaluation(filePath: string, overrides: JsonObject = {})
       'Require operator handoff evidence before signing the baseline receipt.',
     ],
     source_refs: [
-      'review-ref:opl-meta-agent/sample-brief-agent/ai-reviewer',
-      'evidence-ref:sample-brief-agent/scaffold-validation',
+      'review-ref:opl-meta-agent/baseline-fixture-agent/ai-reviewer',
+      'evidence-ref:baseline-fixture-agent/scaffold-validation',
       'scorecard-ref:opl-meta-agent/baseline-acceptance',
     ],
     direct_evidence_refs: [
-      'artifact-ref:sample-brief-agent/package',
+      'artifact-ref:baseline-fixture-agent/package',
       'receipt-ref:opl-meta-agent/baseline-delivery',
     ],
     verdict: 'baseline_ready_with_owner_gate',
     predicted_impact: 'The baseline should remain owner-gated while making source coverage and operator handoff evidence auditable.',
     provenance: {
-      artifact_ref: 'artifact-ref:ai-reviewer/sample-brief-agent-baseline',
+      artifact_ref: 'artifact-ref:ai-reviewer/baseline-fixture-agent-baseline',
       reviewer_prompt_ref: 'agent/prompts/baseline-delivery.md',
       created_by: 'test-fixture',
     },
@@ -143,7 +143,7 @@ function writeAiReviewerEvaluation(filePath: string, overrides: JsonObject = {})
   return evaluation;
 }
 
-test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agent Lab', () => {
+test('opl-meta-agent bootstraps an explicit target agent and validates it through OPL Agent Lab', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-loop-'));
   const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
   const reviewerEvaluation = writeAiReviewerEvaluation(reviewerEvaluationPath);
@@ -151,35 +151,43 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
     ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
 
   try {
-    const payload = runBootstrapArgs([
+    const payload = runBaselineArgs([
       '--output-dir',
       outputRoot,
       '--opl-bin',
       oplBin,
       '--ai-reviewer-evaluation',
       reviewerEvaluationPath,
+      '--domain-id',
+      'baseline-fixture-agent',
+      '--domain-label',
+      'Baseline Fixture Agent',
+      '--delivery-domain',
+      'baseline_fixture',
+      '--target-brief',
+      'Create an owner-gated baseline fixture agent for build-agent-baseline verification.',
     ]);
 
     assert.equal(payload.surface_kind, 'opl_meta_agent_self_learning_loop_result');
     assert.equal(payload.status, 'passed');
     assert.equal(payload.product_id, 'opl-meta-agent');
     assert.equal(payload.meta_agent_kind, 'opl_compatible_meta_agent');
-    assert.equal(payload.target_agent.domain_id, 'sample-brief-agent');
+    assert.equal(payload.target_agent.domain_id, 'baseline-fixture-agent');
     assert.equal(payload.target_agent.generated_interface_status, 'ready');
     assert.equal(payload.opl_generated_interfaces.surface_kind, 'opl_generated_agent_interface_bundle');
     assert.equal(payload.opl_generated_interfaces.owner, 'one-person-lab');
     assert.equal(payload.opl_generated_interfaces.domain_repo_can_own_generated_surface, false);
-    assert.equal(payload.opl_generated_interfaces.cli.descriptors[0].action_id, 'draft-brief');
+    assert.equal(payload.opl_generated_interfaces.cli.descriptors[0].action_id, 'draft-agent-output');
     assert.equal(payload.opl_generated_interfaces.mcp.descriptors[0].descriptor_only, true);
-    assert.equal(payload.opl_generated_interfaces.skill.descriptors[0].command_contract_id, 'sample-brief-agent.draft-brief');
-    assert.equal(payload.opl_generated_interfaces.product_entry.descriptors[0].action_key, 'draft-brief');
+    assert.equal(payload.opl_generated_interfaces.skill.descriptors[0].command_contract_id, 'baseline-fixture-agent.draft-agent-output');
+    assert.equal(payload.opl_generated_interfaces.product_entry.descriptors[0].action_key, 'draft-agent-output');
     assert.equal(payload.opl_agent_lab.suite_result.status, 'passed');
     assert.equal(payload.opl_agent_lab.suite_result.suite_kind, 'agent_lab_external_suite');
     assert.equal(payload.learning_loop.online_learning_policy.can_promote_without_gate, false);
     assert.equal(payload.learning_loop.online_learning_policy.can_train_or_deploy_model_weights, false);
     assert.equal(payload.learning_loop.mechanism_patch_proposal.status, 'proposal_recorded_requires_explicit_gate');
     assert.equal(payload.learning_loop.mechanism_patch_proposal.observe.segment_run_ref, payload.opl_agent_lab.suite_result.result_id);
-    assert.equal(payload.learning_loop.mechanism_patch_proposal.diagnose.evidence_delta_ref, 'evidence-delta:opl-meta-agent/sample-brief-agent/baseline');
+    assert.equal(payload.learning_loop.mechanism_patch_proposal.diagnose.evidence_delta_ref, 'evidence-delta:opl-meta-agent/baseline-fixture-agent/baseline');
     assert.equal(payload.learning_loop.mechanism_patch_proposal.edit.next_mechanism_candidate_ref, payload.learning_loop.online_learning_candidate.candidate_id);
     assert.equal(payload.learning_loop.mechanism_patch_proposal.authority_boundary.can_write_target_domain_truth, false);
     assert.equal(payload.learning_loop.mechanism_patch_proposal.authority_boundary.can_write_target_domain_memory_body, false);
@@ -229,7 +237,7 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
     assert.equal(payload.learning_loop.baseline_receipt.acceptance_gates.ai_reviewer_attempt_refs_distinct, true);
     assert.equal(payload.learning_loop.baseline_receipt.acceptance_gates.ai_reviewer_direct_evidence_refs_present, true);
 
-    const targetDir = path.join(outputRoot, 'sample-brief-agent');
+    const targetDir = path.join(outputRoot, 'baseline-fixture-agent');
     const suitePath = path.join(outputRoot, 'agent-lab-suite.json');
     const receiptPath = path.join(outputRoot, 'baseline-delivery-receipt.json');
     const learningPath = path.join(outputRoot, 'online-learning-candidate.json');
@@ -256,12 +264,12 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
     const fixture = readJson(fixturePath);
     const stageControl = readJson(path.join(targetDir, 'contracts', 'stage_control_plane.json'));
     assertGeneratedTargetStagePack(targetDir, stageControl, {
-      stageId: 'brief-draft',
-      actionRef: 'draft-brief',
+      stageId: 'agent-output-draft',
+      actionRef: 'draft-agent-output',
     });
 
     assert.equal(fixture.surface_kind, 'generated_agent_morphology_conformance_fixture');
-    assert.equal(fixture.domain_id, 'sample-brief-agent');
+    assert.equal(fixture.domain_id, 'baseline-fixture-agent');
     assert.equal(fixture.fixture_status, 'required_by_default_generated_agent');
     assert.equal(fixture.canonical_semantic_pack_root, 'agent/');
     assert.ok(fixture.required_check_refs.includes('check-ref:generated-agent/domain-pack-files-present'));
@@ -279,7 +287,7 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
     assert.equal(fixture.authority_boundary.can_promote_default_agent_without_gate, false);
 
     const suite = readJson(suitePath);
-    assert.equal(suite.suite_id, 'opl-meta-agent-self-bootstrap-suite');
+    assert.equal(suite.suite_id, 'opl-meta-agent-baseline-suite:baseline-fixture-agent');
     assert.equal(suite.tasks[0].domain_id, 'opl-meta-agent');
     assert.equal(suite.tasks[0].trajectory.memory_body, undefined);
     assert.ok(suite.tasks[0].scorecard.evidence_refs.includes(reviewerEvaluationPath));
@@ -289,7 +297,7 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
 
     const receipt = readJson(receiptPath);
     assert.equal(receipt.receipt_class, 'baseline_delivery_receipt');
-    assert.equal(receipt.target_agent.domain_id, 'sample-brief-agent');
+    assert.equal(receipt.target_agent.domain_id, 'baseline-fixture-agent');
     assert.equal(receipt.agent_lab_result_ref, payload.opl_agent_lab.suite_result.result_id);
     assert.equal(receipt.status, 'baseline_delivered');
     assert.equal(receipt.ai_reviewer_evaluation_ref, reviewerEvaluationPath);
@@ -305,12 +313,12 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
 
     const mechanism = readJson(mechanismPath);
     assert.equal(mechanism.surface_kind, 'opl_meta_agent_mechanism_patch_proposal');
-    assert.equal(mechanism.mechanism_ref, 'mechanism:opl-meta-agent/sample-brief-agent/self-learning-loop');
+    assert.equal(mechanism.mechanism_ref, 'mechanism:opl-meta-agent/baseline-fixture-agent/self-learning-loop');
     assert.equal(mechanism.version, 'opl-meta-agent.mechanism-patch-proposal.v1');
     assert.ok(mechanism.editable_surfaces.includes('prompt_policy_ref'));
     assert.ok(mechanism.editable_surfaces.includes('quality_gate_policy_ref'));
     assert.equal(mechanism.segment_run_ref, payload.opl_agent_lab.suite_result.result_id);
-    assert.equal(mechanism.evidence_delta_ref, 'evidence-delta:opl-meta-agent/sample-brief-agent/baseline');
+    assert.equal(mechanism.evidence_delta_ref, 'evidence-delta:opl-meta-agent/baseline-fixture-agent/baseline');
     assert.equal(mechanism.next_mechanism_candidate_ref, learning.candidate_id);
 
     const realTargetReceipt = readJson(realTargetReceiptPath);
@@ -318,20 +326,21 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
     assert.equal(realTargetReceipt.receipt_class, 'real_target_agent_delivery_receipt');
     assert.equal(realTargetReceipt.evidence_class, 'real_target_agent_delivery');
     assert.equal(realTargetReceipt.status, 'real_target_delivery_evidence_recorded');
-    assert.equal(realTargetReceipt.target_agent.domain_id, 'real-target-brief-agent');
-    assert.notEqual(realTargetReceipt.target_agent.domain_id, payload.target_agent.domain_id);
-    assert.equal(realTargetReceipt.sample_smoke.counted_as_real_target_delivery, false);
-    assert.equal(realTargetReceipt.sample_smoke.sample_target_agent_ref, 'domain-agent:sample-brief-agent');
-    assert.equal(realTargetReceipt.sample_smoke.sample_receipt_ref, receipt.receipt_id);
+    assert.equal(realTargetReceipt.target_agent.domain_id, 'baseline-fixture-agent');
+    assert.equal(realTargetReceipt.target_agent.domain_id, payload.target_agent.domain_id);
+    assert.equal(realTargetReceipt.baseline_source.source_kind, 'explicit_target_agent_baseline');
+    assert.equal(realTargetReceipt.baseline_source.target_agent_ref, 'domain-agent:baseline-fixture-agent');
+    assert.equal(realTargetReceipt.baseline_source.baseline_receipt_ref, receipt.receipt_id);
+    assert.equal(realTargetReceipt.baseline_source.implicit_fixture_smoke_retired, true);
     assert.equal(realTargetReceipt.owner_receipt_refs.length, 1);
     assert.equal(realTargetReceipt.owner_receipt_refs[0], realTargetReceipt.baseline_delivery_receipt_ref);
     assert.ok(realTargetReceipt.owner_receipt_refs[0].startsWith('oma_receipt_'));
     assert.equal(realTargetReceipt.agent_lab_result_ref, payload.real_target_delivery.agent_lab_run.suite_result.result_id);
     assert.deepEqual(realTargetReceipt.no_forbidden_write_proof_refs, [
-      'no-forbidden-write:opl-meta-agent/real-target-brief-agent/real_target_delivery',
+      'no-forbidden-write:opl-meta-agent/baseline-fixture-agent/real_target_delivery',
     ]);
     assert.deepEqual(realTargetReceipt.promotion_gate_refs, [
-      'promotion-gate:opl-meta-agent/real-target-brief-agent',
+      'promotion-gate:opl-meta-agent/baseline-fixture-agent',
     ]);
     assert.equal(realTargetReceipt.authority_boundary.refs_only, true);
     assert.equal(realTargetReceipt.authority_boundary.can_write_target_domain_truth, false);
@@ -354,8 +363,9 @@ test('opl-meta-agent bootstraps a sample agent and validates it through OPL Agen
     assert.deepEqual(scaleoutLedger.agent_lab_result_refs, [realTargetReceipt.agent_lab_result_ref]);
     assert.deepEqual(scaleoutLedger.no_forbidden_write_proof_refs, realTargetReceipt.no_forbidden_write_proof_refs);
     assert.deepEqual(scaleoutLedger.promotion_gate_refs, realTargetReceipt.promotion_gate_refs);
-    assert.equal(scaleoutLedger.sample_smoke.counted_as_real_target_delivery, false);
-    assert.deepEqual(scaleoutLedger.sample_smoke.sample_receipt_refs, [receipt.receipt_id]);
+    assert.equal(scaleoutLedger.baseline_source.source_kind, 'explicit_target_agent_delivery_receipts');
+    assert.equal(scaleoutLedger.baseline_source.implicit_fixture_smoke_retired, true);
+    assert.deepEqual(scaleoutLedger.baseline_source.baseline_receipt_refs, [receipt.receipt_id]);
     assert.equal(scaleoutLedger.authority_boundary.refs_only, true);
     assert.equal(scaleoutLedger.authority_boundary.can_write_target_domain_truth, false);
     assert.equal(scaleoutLedger.authority_boundary.can_write_target_domain_memory_body, false);
@@ -394,7 +404,7 @@ test('build-agent-baseline bootstraps a requested target agent from structured s
   ].join(' ');
 
   try {
-    const payload = runBootstrapArgs([
+    const payload = runBaselineArgs([
       '--output-dir',
       outputRoot,
       '--opl-bin',
@@ -417,6 +427,8 @@ test('build-agent-baseline bootstraps a requested target agent from structured s
     const suite = readJson(path.join(outputRoot, 'agent-lab-suite.json'));
     const receipt = readJson(path.join(outputRoot, 'baseline-delivery-receipt.json'));
     const mechanism = readJson(path.join(outputRoot, 'mechanism-patch-proposal.json'));
+    const realTargetReceipt = readJson(path.join(outputRoot, 'real-target-delivery-receipt.json'));
+    const scaleoutLedger = readJson(path.join(outputRoot, 'real-target-scaleout-evidence-ledger.json'));
 
     assert.equal(payload.target_agent.domain_id, 'research-workbench-agent');
     assert.equal(payload.target_agent.domain_label, 'Research Workbench Agent');
@@ -425,7 +437,7 @@ test('build-agent-baseline bootstraps a requested target agent from structured s
     assert.equal(payload.target_agent.target_brief, targetBrief);
     assert.equal(payload.opl_generated_interfaces.skill.descriptors[0].command_contract_id, 'research-workbench-agent.draft-agent-output');
     assert.equal(payload.opl_generated_interfaces.product_entry.descriptors[0].action_key, 'draft-agent-output');
-    assert.equal(payload.real_target_delivery, undefined);
+    assert.equal(payload.real_target_delivery.target_agent.domain_id, 'research-workbench-agent');
 
     assert.equal(descriptor.domain_id, 'research-workbench-agent');
     assert.equal(descriptor.domain_label, 'Research Workbench Agent');
@@ -465,6 +477,9 @@ test('build-agent-baseline bootstraps a requested target agent from structured s
 
     assert.equal(mechanism.mechanism_ref, 'mechanism:opl-meta-agent/research-workbench-agent/self-learning-loop');
     assert.equal(mechanism.evidence_delta_ref, 'evidence-delta:opl-meta-agent/research-workbench-agent/baseline');
+    assert.equal(realTargetReceipt.target_agent.domain_id, 'research-workbench-agent');
+    assert.equal(realTargetReceipt.baseline_source.implicit_fixture_smoke_retired, true);
+    assert.deepEqual(scaleoutLedger.baseline_source.baseline_receipt_refs, [receipt.receipt_id]);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }
@@ -487,13 +502,21 @@ test('baseline delivery rejects AI reviewer evaluation without independent attem
     const result = spawnSync(
       process.execPath,
       [
-        path.join(repoRoot, 'scripts/bootstrap-sample-agent.ts'),
+        path.join(repoRoot, 'scripts/build-agent-baseline.ts'),
         '--output-dir',
         outputRoot,
         '--opl-bin',
         oplBin,
         '--ai-reviewer-evaluation',
         reviewerEvaluationPath,
+        '--domain-id',
+        'reviewer-gate-fixture-agent',
+        '--domain-label',
+        'Reviewer Gate Fixture Agent',
+        '--delivery-domain',
+        'reviewer_gate_fixture',
+        '--target-brief',
+        'Create an OPL-compatible reviewer gate fixture agent.',
       ],
       {
         cwd: repoRoot,
@@ -513,6 +536,41 @@ test('baseline delivery rejects AI reviewer evaluation without independent attem
   }
 });
 
+test('build-agent-baseline requires an explicit target domain id before materialization', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-loop-missing-domain-'));
+  const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+  writeAiReviewerEvaluation(reviewerEvaluationPath);
+  const oplBin = process.env.OPL_BIN
+    ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
+
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [
+        path.join(repoRoot, 'scripts/build-agent-baseline.ts'),
+        '--output-dir',
+        outputRoot,
+        '--opl-bin',
+        oplBin,
+        '--ai-reviewer-evaluation',
+        reviewerEvaluationPath,
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        maxBuffer: 16 * 1024 * 1024,
+      },
+    );
+
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /--domain-id/i);
+    assert.match(result.stderr, /explicit target agent/i);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'baseline-delivery-receipt.json')), false);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
 test('baseline delivery fails closed when AI reviewer evaluation is missing', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-loop-missing-reviewer-'));
   const oplBin = process.env.OPL_BIN
@@ -522,7 +580,7 @@ test('baseline delivery fails closed when AI reviewer evaluation is missing', ()
     const result = spawnSync(
       process.execPath,
       [
-        path.join(repoRoot, 'scripts/bootstrap-sample-agent.ts'),
+        path.join(repoRoot, 'scripts/build-agent-baseline.ts'),
         '--output-dir',
         outputRoot,
         '--opl-bin',
@@ -557,13 +615,21 @@ test('baseline delivery rejects empty AI reviewer critique and suggestions witho
     const result = spawnSync(
       process.execPath,
       [
-        path.join(repoRoot, 'scripts/bootstrap-sample-agent.ts'),
+        path.join(repoRoot, 'scripts/build-agent-baseline.ts'),
         '--output-dir',
         outputRoot,
         '--opl-bin',
         oplBin,
         '--ai-reviewer-evaluation',
         reviewerEvaluationPath,
+        '--domain-id',
+        'empty-reviewer-fixture-agent',
+        '--domain-label',
+        'Empty Reviewer Fixture Agent',
+        '--delivery-domain',
+        'reviewer_gate_fixture',
+        '--target-brief',
+        'Create an OPL-compatible reviewer critique fixture agent.',
       ],
       {
         cwd: repoRoot,

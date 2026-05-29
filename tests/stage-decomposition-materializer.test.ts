@@ -209,7 +209,7 @@ test('build-agent-baseline consumes supplied fixture closeout instead of scripti
     const result = spawnSync(
       process.execPath,
       [
-        path.join(repoRoot, 'scripts/bootstrap-sample-agent.ts'),
+        path.join(repoRoot, 'scripts/build-agent-baseline.ts'),
         '--output-dir',
         outputRoot,
         '--stage-runner',
@@ -282,7 +282,7 @@ test('build-agent-baseline writes a typed blocker when stage-decomposition close
     const result = spawnSync(
       process.execPath,
       [
-        path.join(repoRoot, 'scripts/bootstrap-sample-agent.ts'),
+        path.join(repoRoot, 'scripts/build-agent-baseline.ts'),
         '--output-dir',
         outputRoot,
         '--stage-runner',

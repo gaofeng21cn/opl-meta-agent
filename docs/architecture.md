@@ -77,7 +77,7 @@ Patch-loop closeout 现在固定为 11 个 refs：blocked suite result、develop
 
 上述 registration / App projection 是 landing 的消费输入，不是 landing 完成证明。当前 OPL generated interface read-model 可消费本仓 contracts，OPL App/operator drilldown 可消费 OMA patch-loop refs；production completion 仍必须来自 OPL 主仓或 App 侧的 registry discovery receipt、App render / screenshot / runtime drilldown receipt、`long_soak_refs` closeout，以及目标 agent owner receipt。
 
-`contracts/real_target_agent_scaleout_evidence.json` 定义真实目标 agent delivery 与多目标 scaleout 的 evidence gate。当前它只声明必须收集的 target repo ref、candidate package ref、Agent Lab result ref、owner receipt ref、promotion gate ref、no-forbidden-write proof ref 和 cleanup closeout ref；它不把 sample bootstrap、testing takeover smoke、suite pass 或 mechanism patch proposal 升级成真实线上交付完成。
+`contracts/real_target_agent_scaleout_evidence.json` 定义真实目标 agent delivery 与多目标 scaleout 的 evidence gate。当前它只声明必须收集的 target repo ref、candidate package ref、Agent Lab result ref、owner receipt ref、promotion gate ref、no-forbidden-write proof ref 和 cleanup closeout ref；它不把 implicit fixture bootstrap、testing takeover smoke、suite pass 或 mechanism patch proposal 升级成真实线上交付完成。
 
 ## Generated Interfaces
 
@@ -95,7 +95,7 @@ CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framewo
 
 当前 `build-agent-baseline` 闭环按以下顺序运行；入口可以来自 Codex Skill 的自然语言请求，也可以来自参数化 CLI：
 
-1. `agent-skeleton-build`：Codex 从用户自然语言归一 `domain_id`、`domain_label`、`delivery_domain`、`target_brief` 和 stage-decomposition attempt input 后，启动或消费 Codex `stage-decomposition` typed closeout；该 closeout 持有目标 stage graph、action refs、pack 文件、independent gate policy 和 quality gate declaration。脚本只校验并物化 pack draft，再调用 OPL `agents scaffold` 校验用户指定的目标 agent package；未传 `--domain-id` 时保留 `sample-brief-agent` 兼容 smoke，但仍走 typed fixture closeout。
+1. `agent-skeleton-build`：Codex 从用户自然语言归一 `domain_id`、`domain_label`、`delivery_domain`、`target_brief` 和 stage-decomposition attempt input 后，启动或消费 Codex `stage-decomposition` typed closeout；该 closeout 持有目标 stage graph、action refs、pack 文件、independent gate policy 和 quality gate declaration。脚本只校验并物化 pack draft，再调用 OPL `agents scaffold` 校验用户指定的目标 agent package；`--domain-id` 是硬要求；脚本不再保留隐式 fixture smoke 或兼容 fallback。
 2. `eval-suite-build`：写入 `agent-lab-suite.json`，只包含 refs、recovery probes、scorecard refs 和 promotion gate。
 3. `baseline-run`：调用 OPL `agent-lab run --suite`，由 OPL Agent Lab 返回 suite result。
 4. `baseline-delivery`：消费结构化 AI reviewer evaluation 和 stage-decomposition closeout proof，写入 `baseline-delivery-receipt.json`，只声明 baseline package refs、review provenance、generated-from-closeout proof 和 acceptance gates；缺 reviewer evaluation、空 critique/suggestions、source refs 只有 suite/scaffold refs、缺 typed closeout proof、free text closeout、partial refs、缺 independent gate policy、缺 quality gate declaration 或 self-review 时 fail closed。

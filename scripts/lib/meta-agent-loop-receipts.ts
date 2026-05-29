@@ -94,13 +94,10 @@ type RealTargetDeliveryReceiptOptions = {
   agentLabSuiteRef: string;
   promotionGateRefs: string[];
   noForbiddenWriteProofRefs: string[];
-  sampleTargetAgentRef: string;
-  sampleReceiptRef: string;
 };
 
 type ScaleoutEvidenceLedgerOptions = {
   deliveryReceipts: JsonObject[];
-  sampleReceiptRefs: string[];
   realTargetAgentDeliveryCountMin?: number;
   multiTargetScaleoutDeliveryCountMin?: number;
 };
@@ -383,8 +380,6 @@ export function buildRealTargetDeliveryReceipt({
   agentLabSuiteRef,
   promotionGateRefs,
   noForbiddenWriteProofRefs,
-  sampleTargetAgentRef,
-  sampleReceiptRef,
 }: RealTargetDeliveryReceiptOptions): JsonObject {
   const receiptId = stableId('oma_real_target_delivery', [
     targetAgent.domain_id,
@@ -415,10 +410,11 @@ export function buildRealTargetDeliveryReceipt({
     owner_receipt_refs: [baselineDeliveryReceipt.receipt_id],
     promotion_gate_refs: promotionGateRefs,
     no_forbidden_write_proof_refs: noForbiddenWriteProofRefs,
-    sample_smoke: {
-      counted_as_real_target_delivery: false,
-      sample_target_agent_ref: sampleTargetAgentRef,
-      sample_receipt_ref: sampleReceiptRef,
+    baseline_source: {
+      source_kind: 'explicit_target_agent_baseline',
+      target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
+      baseline_receipt_ref: baselineDeliveryReceipt.receipt_id,
+      implicit_fixture_smoke_retired: true,
     },
     completion_gate: {
       real_target_agent_delivery_count_min: 1,
@@ -445,7 +441,6 @@ export function buildRealTargetDeliveryReceipt({
 
 export function buildScaleoutEvidenceLedger({
   deliveryReceipts,
-  sampleReceiptRefs,
   realTargetAgentDeliveryCountMin = 1,
   multiTargetScaleoutDeliveryCountMin = 2,
 }: ScaleoutEvidenceLedgerOptions): JsonObject {
@@ -480,9 +475,10 @@ export function buildScaleoutEvidenceLedger({
       requires_no_forbidden_write_proof_refs: noForbiddenWriteProofRefs.length >= realTargetAgentDeliveryCount,
       requires_promotion_gate_refs_for_default_agent_changes: promotionGateRefs.length >= realTargetAgentDeliveryCount,
     },
-    sample_smoke: {
-      counted_as_real_target_delivery: false,
-      sample_receipt_refs: sampleReceiptRefs,
+    baseline_source: {
+      source_kind: 'explicit_target_agent_delivery_receipts',
+      implicit_fixture_smoke_retired: true,
+      baseline_receipt_refs: targetAgentOwnerReceiptRefs,
     },
     authority_boundary: {
       refs_only: true,

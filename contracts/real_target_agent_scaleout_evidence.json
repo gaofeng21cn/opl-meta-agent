@@ -76,7 +76,8 @@
     "verified_by_refs": [
       "tests/bootstrap-loop.test.ts"
     ],
-    "sample_smoke_counted_as_real_target_delivery": false,
+    "implicit_fixture_smoke_retired": true,
+    "receipt_baseline_source_kind": "explicit_target_agent_baseline",
     "real_target_agent_delivery_count_min_supported": true,
     "multi_target_scaleout_pending": false,
     "multi_target_scaleout_closed": true,
@@ -167,11 +168,11 @@
     "can_mutate_target_domain_artifact_body": false,
     "can_authorize_target_domain_quality_or_export": false,
     "can_promote_default_agent_without_gate": false,
-    "can_treat_sample_smoke_as_real_delivery": false,
+    "implicit_fixture_smoke_retired": true,
     "can_treat_suite_pass_as_default_promotion": false
   },
   "forbidden_evidence_shortcuts": [
-    "sample_agent_bootstrap_as_real_target_delivery",
+    "implicit_fixture_agent_bootstrap_as_real_target_delivery",
     "testing_takeover_smoke_as_multi_target_scaleout",
     "agent_lab_suite_pass_as_default_promotion",
     "mechanism_patch_proposal_as_applied_runtime_change",

@@ -109,7 +109,7 @@ test('minimal authority functions are explicit refs, not generic runtime owners'
       moduleId: 'candidate_agent_package_builder',
       authorityRef: 'authority-function-ref:opl-meta-agent/candidate-agent-package-builder',
       implementationRefs: [
-        'scripts/bootstrap-sample-agent.ts',
+        'scripts/build-agent-baseline.ts',
         'scripts/lib/meta-agent-loop.ts',
       ],
       invokedByRefs: ['action-ref:build-agent-baseline'],

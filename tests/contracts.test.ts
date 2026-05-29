@@ -885,10 +885,15 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
   assert.equal(scaleoutEvidence.role, 'refs_only_scaleout_evidence_gate');
   assertNoForbiddenAuthority(scaleoutEvidence, 'scaleoutEvidence');
   assert.equal(scaleoutEvidence.authority_boundary.not_target_domain_truth_writer, true);
-  assert.equal(scaleoutEvidence.authority_boundary.can_treat_sample_smoke_as_real_delivery, false);
+  assert.equal(scaleoutEvidence.authority_boundary.implicit_fixture_smoke_retired, true);
   assert.equal(scaleoutEvidence.authority_boundary.can_treat_suite_pass_as_default_promotion, false);
   assert.equal(scaleoutEvidence.implemented_receipt_surfaces.real_target_delivery_receipt_surface_kind, 'opl_meta_agent_real_target_agent_delivery_receipt');
   assert.equal(scaleoutEvidence.implemented_receipt_surfaces.scaleout_evidence_ledger_surface_kind, 'opl_meta_agent_real_target_agent_scaleout_evidence_ledger');
+  assert.equal(scaleoutEvidence.implemented_receipt_surfaces.implicit_fixture_smoke_retired, true);
+  assert.equal(
+    scaleoutEvidence.implemented_receipt_surfaces.receipt_baseline_source_kind,
+    'explicit_target_agent_baseline',
+  );
   assert.equal(scaleoutEvidence.implemented_receipt_surfaces.real_target_agent_delivery_count_min_supported, true);
   assert.equal(scaleoutEvidence.implemented_receipt_surfaces.multi_target_scaleout_pending, false);
   assert.equal(scaleoutEvidence.implemented_receipt_surfaces.multi_target_scaleout_closed, true);

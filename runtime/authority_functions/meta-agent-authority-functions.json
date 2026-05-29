@@ -50,7 +50,7 @@
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/bootstrap-sample-agent.ts",
+        "script_ref": "scripts/build-agent-baseline.ts",
         "classes": [
           "authority_function_implementation_ref",
           "smoke_helper",
@@ -406,7 +406,7 @@
     ],
     "scanned_script_refs": [
       "scripts/agent-evidence-takeover.ts",
-      "scripts/bootstrap-sample-agent.ts",
+      "scripts/build-agent-baseline.ts",
       "scripts/execute-external-work-order.ts",
       "scripts/improve-from-agent-lab-suite.ts",
       "scripts/lib/agent-evidence-contracts.ts",
@@ -505,7 +505,7 @@
       "classification": "minimal_authority_function",
       "authority_ref": "authority-function-ref:opl-meta-agent/candidate-agent-package-builder",
       "implementation_refs": [
-        "scripts/bootstrap-sample-agent.ts",
+        "scripts/build-agent-baseline.ts",
         "scripts/lib/meta-agent-loop.ts"
       ],
       "invoked_by_refs": [
