@@ -140,6 +140,7 @@
 <details>
   <summary><strong>如果你准备把这个仓直接交给 Codex 或其他智能体，先看这里</strong></summary>
 
+- 不会自动安装。单独 clone 这个仓不会把 OPL Framework 或运行时 substrate 一起装好。要把 OPL Meta Agent 用到能用，先准备好当前的 `one-person-lab` checkout 或 release bundle，然后再运行本仓自己的测试和 baseline 命令。
 - 先读本 README、[项目概览](./docs/project.md)、[当前状态](./docs/status.md)、[架构](./docs/architecture.md)、[不可变约束](./docs/invariants.md) 和 [关键决策](./docs/decisions.md)。
 - 修改 contracts、README、docs 或 smoke scripts 时，同步更新 `tests/*.test.ts`，确保边界标记仍然证明本仓只产出建议和引用，不直接采用或写入目标领域内容。
 - 本仓只负责智能体构建语义、测试编排和自进化候选组织。需要真实运行、长线测试、机制读模型或演化片段时，调用 OPL Agent Lab。

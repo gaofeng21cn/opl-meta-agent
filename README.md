@@ -139,6 +139,7 @@ The loop does not directly rewrite final answers. It turns each run into an audi
 <details>
   <summary><strong>Start here if you are handing this repo to Codex or another agent</strong></summary>
 
+- No. Cloning this repo does not auto-install OPL Framework or the runtime substrate. To make OPL Meta Agent usable, first make the current `one-person-lab` checkout or release bundle available, then run the repo's own test and baseline commands below.
 - Read this README plus [Project](./docs/project.md), [Status](./docs/status.md), [Architecture](./docs/architecture.md), [Invariants](./docs/invariants.md), and [Decisions](./docs/decisions.md).
 - When changing contracts, README, docs, or smoke scripts, update `tests/*.test.ts` so boundary flags still prove proposal-only / refs-only behavior.
 - This repo owns agent-building semantics and testing/self-evolution orchestration. Use OPL Agent Lab for real runs, longline suites, mechanism read models, and evolution segments.
