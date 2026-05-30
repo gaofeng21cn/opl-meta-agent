@@ -372,6 +372,8 @@ test('stage launch contract is Codex-first, receipted, and OPL-10 bounded', () =
     const hardBlockerRefs = asStrings(stage.hard_blocker_refs);
     const stageContract = stage.stage_contract;
     const userStageLog = stageContract.user_stage_log_contract;
+    const progressDeltaPolicy = stageContract.progress_delta_policy;
+    const typedBlockerLineagePolicy = stageContract.typed_blocker_lineage_policy;
 
     assert.ok(requires.includes(`stage:${label}`), `${label}.requires should include stage ref`);
     assert.ok(requires.includes('runtime-ref:stage-attempt-ledger'), `${label}.requires should include stage ledger`);
@@ -441,6 +443,90 @@ test('stage launch contract is Codex-first, receipted, and OPL-10 bounded', () =
       userStageLog.authority_boundary.opl_can_write_domain_truth,
       false,
       `${label}.user_stage_log.no_truth_write`,
+    );
+    assert.equal(
+      progressDeltaPolicy.surface_kind,
+      'opl_stage_progress_delta_policy',
+      `${label}.progress_delta_policy.surface_kind`,
+    );
+    assert.equal(
+      progressDeltaPolicy.version,
+      'progress-delta-policy.v1',
+      `${label}.progress_delta_policy.version`,
+    );
+    assert.ok(
+      asStrings(progressDeltaPolicy.required_fields).includes('progress_delta_classification'),
+      `${label}.progress_delta_policy.progress_delta_classification`,
+    );
+    assert.ok(
+      asStrings(progressDeltaPolicy.required_fields).includes('deliverable_progress_delta'),
+      `${label}.progress_delta_policy.deliverable_progress_delta`,
+    );
+    assert.ok(
+      asStrings(progressDeltaPolicy.required_fields).includes('platform_repair_delta'),
+      `${label}.progress_delta_policy.platform_repair_delta`,
+    );
+    assert.ok(
+      asStrings(progressDeltaPolicy.required_fields).includes('next_forced_delta'),
+      `${label}.progress_delta_policy.next_forced_delta`,
+    );
+    assert.equal(
+      progressDeltaPolicy.deliverable_delta_aliases.target_agent_progress,
+      'deliverable_progress_delta',
+      `${label}.progress_delta_policy.target_agent_progress`,
+    );
+    assert.equal(
+      progressDeltaPolicy.platform_delta_aliases.platform_interface_repair,
+      'platform_repair_delta',
+      `${label}.progress_delta_policy.platform_interface_repair`,
+    );
+    assert.equal(
+      progressDeltaPolicy.platform_only_is_not_deliverable_progress,
+      true,
+      `${label}.progress_delta_policy.platform_only_guard`,
+    );
+    assert.equal(
+      progressDeltaPolicy.authority_boundary.opl_can_write_domain_truth,
+      false,
+      `${label}.progress_delta_policy.no_truth_write`,
+    );
+    assert.equal(
+      typedBlockerLineagePolicy.surface_kind,
+      'family-stall-lineage.v1',
+      `${label}.typed_blocker_lineage_policy.surface_kind`,
+    );
+    assert.equal(
+      typedBlockerLineagePolicy.version,
+      'family-stall-lineage.v1',
+      `${label}.typed_blocker_lineage_policy.version`,
+    );
+    [
+      'blocker_family',
+      'study_id_or_domain_identity',
+      'work_unit_id',
+      'eval_id_or_review_ref',
+      'source_fingerprint',
+      'repeat_count',
+      'next_forced_delta',
+      'escalation_owner',
+    ].forEach((field) => {
+      assert.ok(
+        asStrings(typedBlockerLineagePolicy.required_fields).includes(field),
+        `${label}.typed_blocker_lineage_policy.${field}`,
+      );
+    });
+    assert.deepEqual(
+      typedBlockerLineagePolicy.repeat_budget,
+      {
+        mechanism_repair_after_repeat_count: 2,
+        human_gate_or_stop_loss_after_repeat_count: 3,
+      },
+      `${label}.typed_blocker_lineage_policy.repeat_budget`,
+    );
+    assert.equal(
+      typedBlockerLineagePolicy.authority_boundary.opl_can_generate_domain_blocker,
+      false,
+      `${label}.typed_blocker_lineage_policy.no_generated_domain_blocker`,
     );
 
     asObjects(stage.prompt_refs).forEach((entry) => {
@@ -516,6 +602,27 @@ test('stage launch contract is Codex-first, receipted, and OPL-10 bounded', () =
       assert.ok(hardBlockerRefs.includes(blockerRef), `${label}.hard_blocker_refs ${blockerRef}`);
     });
   });
+});
+
+test('foundry agent series contract binds OMA to shared Progress-First projection', () => {
+  const series = readJson('contracts/foundry_agent_series.json');
+
+  assert.equal(series.surface_kind, 'opl_foundry_agent_series_contract');
+  assert.equal(series.version, 'foundry-agent-series.v1');
+  assert.equal(series.owner, 'one-person-lab');
+  assert.equal(series.product_layer, 'foundry_agent');
+  assert.equal(series.domain_id, 'opl-meta-agent');
+  assert.equal(series.stage_control_plane_ref, 'contracts/stage_control_plane.json');
+  assert.equal(series.stage_control_plane_target_domain_id, 'opl-meta-agent');
+  assert.ok(asStrings(series.required_stage_packets).includes('progress_delta_policy'));
+  assert.ok(asStrings(series.required_stage_packets).includes('typed_blocker_lineage_policy'));
+  assert.ok(asStrings(series.shared_progress_projection_fields).includes('deliverable_progress_delta'));
+  assert.ok(asStrings(series.shared_progress_projection_fields).includes('platform_repair_delta'));
+  assert.equal(series.domain_adapter_policy.no_parallel_progress_schema, true);
+  assert.equal(series.domain_adapter_policy.no_parallel_blocker_lineage_schema, true);
+  assert.equal(series.app_projection_policy.app_consumes_shared_progress_projection_only, true);
+  assert.equal(series.app_projection_policy.app_can_read_domain_body, false);
+  assert.equal(series.authority_boundary.generated_surface_can_claim_domain_ready, false);
 });
 
 test('stage executor policy candidates stay gated, refs-only, and non-default explicit', () => {

@@ -83,6 +83,7 @@ export type StageDecompositionPackDraft = {
   no_forbidden_write_policy: JsonObject;
   action_catalog: JsonObject;
   stage_control_plane: JsonObject;
+  foundry_agent_series: JsonObject;
   files: StageDecompositionFileDraft[];
 };
 
@@ -393,6 +394,71 @@ function buildStageControlPlane({
   };
 }
 
+function buildFoundryAgentSeriesContract(targetAgent: TargetAgent, stageControlPlane: JsonObject, owner: string): JsonObject {
+  const domainId = targetAgent.domain_id;
+  return {
+    surface_kind: 'opl_foundry_agent_series_contract',
+    version: 'foundry-agent-series.v1',
+    owner: 'one-person-lab',
+    product_layer: 'foundry_agent',
+    product_model: 'OPL Framework -> One Person Lab App -> Foundry Agents',
+    standard_agent_requirement:
+      'foundry_agents_share_identity_stage_authority_progress_currentness_closeout_and_app_projection_packets',
+    domain_id: domainId,
+    foundry_agent_id: domainId,
+    domain_label: targetAgent.domain_label ?? domainId,
+    domain_aliases: [],
+    authority_owner: owner,
+    stage_control_plane_ref: 'contracts/stage_control_plane.json',
+    stage_control_plane_target_domain_id: stageControlPlane.target_domain_id,
+    app_projection_ref: 'contracts/generated_surface_handoff.json#/product_entry',
+    required_identity_fields: [
+      'domain_id',
+      'foundry_agent_id',
+      'product_layer',
+      'domain_label',
+      'authority_owner',
+      'stage_control_plane_ref',
+    ],
+    required_stage_packets: [
+      'user_stage_log_contract',
+      'progress_delta_policy',
+      'typed_blocker_lineage_policy',
+      'effective_current_context',
+      'owner_receipt_or_typed_blocker_closeout',
+    ],
+    shared_progress_projection_fields: [
+      'progress_delta_classification',
+      'deliverable_progress_delta',
+      'platform_repair_delta',
+      'next_forced_delta',
+    ],
+    domain_progress_aliases: {
+      deliverable: ['target_agent_progress', 'foundry_agent_progress', 'agent_build_progress'],
+      platform: ['platform_interface_repair', 'agent_lab_or_opl_surface_repair', 'platform_repair_delta'],
+    },
+    domain_adapter_policy: {
+      domain_specific_aliases_only: true,
+      no_parallel_progress_schema: true,
+      no_parallel_blocker_lineage_schema: true,
+      no_domain_runtime_fork: true,
+    },
+    app_projection_policy: {
+      app_consumes_shared_progress_projection_only: true,
+      app_can_read_domain_body: false,
+      app_can_write_domain_truth: false,
+      app_can_claim_quality_or_export: false,
+      display_policy: 'classification_only_no_domain_artifact_body',
+    },
+    authority_boundary: {
+      opl_owns_series_contract: true,
+      domain_owns_truth_quality_artifact_memory_and_receipts: true,
+      app_owns_display_and_user_action_shell: true,
+      generated_surface_can_claim_domain_ready: false,
+    },
+  };
+}
+
 function buildFiles({
   targetAgent,
   stageId,
@@ -509,6 +575,7 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
     qualityGatePath,
     owner,
   };
+  const stageControlPlane = buildStageControlPlane(spec);
   const draft: StageDecompositionPackDraft = {
     surface_kind: 'opl_meta_agent_stage_decomposition_pack_draft',
     version: 'opl-meta-agent.stage-decomposition-pack-draft.v1',
@@ -521,7 +588,8 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
     },
     no_forbidden_write_policy: noForbiddenWritePolicy(owner),
     action_catalog: buildActionCatalog({ targetAgent, actionId, owner }),
-    stage_control_plane: buildStageControlPlane(spec),
+    stage_control_plane: stageControlPlane,
+    foundry_agent_series: buildFoundryAgentSeriesContract(targetAgent, stageControlPlane, owner),
     files: buildFiles(spec),
   };
   return {
@@ -846,4 +914,5 @@ export function materializeStageDecompositionPackDraft(
   }
   writeJson(path.join(targetAgentDir, 'contracts', 'action_catalog.json'), draft.action_catalog);
   writeJson(path.join(targetAgentDir, 'contracts', 'stage_control_plane.json'), draft.stage_control_plane);
+  writeJson(path.join(targetAgentDir, 'contracts', 'foundry_agent_series.json'), draft.foundry_agent_series);
 }

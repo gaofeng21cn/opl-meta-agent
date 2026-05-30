@@ -244,6 +244,7 @@ export function writeMinimalAgentDomainPack(targetAgentDir: string, targetAgent:
       ],
       conformance_refs: [
         'contracts/domain_descriptor.json',
+        'contracts/foundry_agent_series.json',
         'contracts/action_catalog.json',
         'contracts/stage_control_plane.json',
         'agent/prompts/README.md',
