@@ -10,6 +10,9 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'
 const oplBin = process.env.OPL_BIN
   ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
 const placeholderPattern = new RegExp(`\\b(?:TO${'DO'}|T${'BD'})\\b`, 'i');
+const oplSharedReleaseDependency =
+  'git+https://github.com/gaofeng21cn/one-person-lab.git#c5d4a93bd4bb64adf1228ecf7f2a9038c7dce278';
+const oplSharedReleaseCommit = 'c5d4a93bd4bb64adf1228ecf7f2a9038c7dce278';
 
 function asObjects(value: unknown): JsonObject[] {
   return value as JsonObject[];
@@ -606,6 +609,8 @@ test('stage launch contract is Codex-first, receipted, and OPL-10 bounded', () =
 
 test('foundry agent series contract binds OMA to shared Progress-First projection', () => {
   const series = readJson('contracts/foundry_agent_series.json');
+  const packageJson = readJson('package.json');
+  const packageLock = readJson('package-lock.json');
 
   assert.equal(series.surface_kind, 'opl_foundry_agent_series_contract');
   assert.equal(series.version, 'foundry-agent-series.v1');
@@ -652,6 +657,15 @@ test('foundry agent series contract binds OMA to shared Progress-First projectio
   assert.equal(series.app_projection_policy.app_consumes_shared_progress_projection_only, true);
   assert.equal(series.app_projection_policy.app_can_read_domain_body, false);
   assert.equal(series.authority_boundary.generated_surface_can_claim_domain_ready, false);
+  assert.equal((packageJson.dependencies as JsonObject)['opl-framework-shared'], oplSharedReleaseDependency);
+  const rootPackageLock = (packageLock.packages as JsonObject)[''] as JsonObject;
+  assert.equal((rootPackageLock.dependencies as JsonObject)['opl-framework-shared'], oplSharedReleaseDependency);
+  const sharedPackageLock = (packageLock.packages as JsonObject)['node_modules/opl-framework-shared'] as JsonObject;
+  assert.equal(
+    String(sharedPackageLock.resolved).endsWith(`#${oplSharedReleaseCommit}`),
+    true,
+    'opl-framework-shared lockfile entry must pin the OPL shared release commit',
+  );
 });
 
 test('stage executor policy candidates stay gated, refs-only, and non-default explicit', () => {

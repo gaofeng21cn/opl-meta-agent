@@ -16,6 +16,9 @@
     "test": "scripts/run-with-repo-temp-env.sh node --test tests/*.test.ts"
   },
   "license": "Apache-2.0",
+  "dependencies": {
+    "opl-framework-shared": "git+https://github.com/gaofeng21cn/one-person-lab.git#c5d4a93bd4bb64adf1228ecf7f2a9038c7dce278"
+  },
   "devDependencies": {
     "@types/node": "^25.9.0",
     "typescript": "^6.0.3"
