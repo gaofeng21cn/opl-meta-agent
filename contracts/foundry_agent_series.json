@@ -76,6 +76,97 @@
     "app_owns_display_and_user_action_shell": true,
     "generated_surface_can_claim_domain_ready": false
   },
+  "series_design_profile": {
+    "surface_kind": "opl_foundry_agent_series_design_profile",
+    "version": "foundry-agent-series-design-profile.v1",
+    "profile_id": "opl_foundry_agent_series_design_profile.v1",
+    "profile_summary": "All Foundry Agents share the same OPL domain-pack to stage-led execution to gate/receipt to handoff lifecycle; domain inputs, outputs, aliases, and authority functions vary by agent.",
+    "shared_lifecycle_pipeline": [
+      "domain_material_intake",
+      "domain_pack_interpretation",
+      "stage_led_agent_execution",
+      "independent_quality_gate_or_owner_review",
+      "owner_receipt_or_typed_blocker_closeout",
+      "artifact_or_deliverable_handoff",
+      "opl_refs_only_projection_and_recovery"
+    ],
+    "domain_io_profile": {
+      "input_slot": "domain_materials_or_task_request",
+      "output_slot": "domain_deliverable_or_owner_handoff",
+      "input_is_domain_specific": true,
+      "output_is_domain_specific": true,
+      "shared_runtime_interpretation": "OPL treats input/output as opaque domain refs and projects identity, stage, progress, closeout, evidence, and recovery metadata only."
+    },
+    "stage_pack_sections": [
+      "prompts",
+      "stages",
+      "skills",
+      "knowledge",
+      "quality_gates"
+    ],
+    "shared_closeout_contract": {
+      "success_shape": "domain_owner_receipt_ref",
+      "blocked_shape": "domain_owned_typed_blocker_ref",
+      "route_back_shape": "route_back_or_human_gate_ref",
+      "provider_completion_is_closeout": false
+    },
+    "authority_invariants": {
+      "opl_can_infer_domain_output": false,
+      "opl_can_read_domain_body": false,
+      "opl_can_write_domain_truth": false,
+      "opl_can_authorize_quality_or_export": false,
+      "domain_owns_input_truth_and_output_authority": true
+    }
+  },
+  "domain_specific_profile": {
+    "profile_id": "oma_domain_specific_series_profile.v1",
+    "series_member_kind": "opl_foundry_agent",
+    "series_peers": [
+      "mas",
+      "mag",
+      "rca"
+    ],
+    "domain_design_center": "agent_building_and_improvement",
+    "packaging_model": "opl_generated_skill_surface_not_plugin_packaged",
+    "plugin_packaged_structure_required": false,
+    "shared_opl_agent_lifecycle": {
+      "shared_with_series_peers": true,
+      "lifecycle_packets": [
+        "identity",
+        "stage_control",
+        "authority_boundary",
+        "progress_projection",
+        "currentness",
+        "owner_receipt_or_typed_blocker_closeout",
+        "app_projection"
+      ],
+      "stage_control_plane_ref": "contracts/stage_control_plane.json",
+      "app_projection_ref": "contracts/generated_surface_handoff.json#/product_entry"
+    },
+    "oma_specific_inputs": [
+      "target_agent_spec_refs",
+      "target_agent_evidence_refs",
+      "agent_lab_handoff_refs",
+      "owner_route_refs",
+      "no_forbidden_write_proof_refs"
+    ],
+    "oma_specific_outputs": [
+      "candidate_agent_package_ref",
+      "developer_patch_work_order_ref",
+      "target_capability_improvement_candidate_ref",
+      "mechanism_patch_proposal_ref",
+      "typed_blocker_ref"
+    ],
+    "series_difference": "OMA builds and improves agents; MAS/MAG/RCA execute domain delivery. OMA uses the same OPL agent lifecycle packets while changing only the domain-specific input and output semantics.",
+    "authority_boundary": {
+      "can_write_target_domain_truth": false,
+      "can_write_target_domain_memory_body": false,
+      "can_mutate_target_domain_artifact_body": false,
+      "can_authorize_target_domain_quality_or_export": false,
+      "can_claim_target_domain_ready": false,
+      "can_promote_default_agent_without_gate": false
+    }
+  },
   "domain_id": "opl-meta-agent",
   "foundry_agent_id": "opl-meta-agent",
   "domain_label": "Agent Foundry",

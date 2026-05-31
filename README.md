@@ -99,7 +99,7 @@ The loop does not directly rewrite final answers. It turns each run into an audi
 
 ## Current Position And Boundary
 
-- `opl-meta-agent` is an agent-building `Foundry Agent`: an independent domain agent that turns target-agent requirements into a tested, deliverable, continuously improvable baseline agent package.
+- `opl-meta-agent` is the agent-building / improvement member of the OPL Foundry Agent series. It shares the canonical OPL agent lifecycle, generic slots, stage sections, closeout shape, and authority invariants used by MAS/MAG/RCA; its domain-specific profile changes the inputs to target-agent spec / evidence refs and the outputs to candidate packages, developer patch work orders, capability-improvement candidates, mechanism patch proposals, or typed blockers.
 - The design has moved from contract-ready to a Codex-attempt-native usable landing plan: the next target is to launch a real stage contract, run an independent Codex reviewer attempt against direct evidence, have OPL registry / App consume the projection, drive a real blocked target through patch -> rerun -> owner receipt, and keep script-to-pack hygiene by moving growing agent-building rules back into the pack or explicit authority refs.
 - `agent/` is the real domain pack entry for this repo. `knowledge/`, `prompts/`, `quality_gates/`, `skills/`, and `stages/` must expose resolvable, non-empty, placeholder-free domain-owned files, and `contracts/stage_control_plane.json` stage prompt, skill, knowledge, and evaluation refs must resolve to those files.
 - `opl-meta-agent` is an OPL-compatible package built on OPL Framework. It consumes OPL scaffold, Agent Lab, queue/projection, and promotion gates without rebuilding generic runtime.

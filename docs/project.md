@@ -5,7 +5,7 @@ Purpose: `opl_based_agent_builder_foundry_agent`
 State: `real_target_delivery_minimum_and_codex_first_pack_ready`
 Machine boundary: 本文是人读项目概览。机器真相归 `contracts/`、运行 receipts、OPL Agent Lab result refs 和未来 delivery receipts。
 
-`opl-meta-agent` 是基于 OPL Framework 的独立 Foundry Agent。它面向“开发新的 OPL-compatible 高价值知识交付智能体”，交付物是达到 baseline 要求的 agent package / repo。
+`opl-meta-agent` 是基于 OPL Framework 的独立 Foundry Agent，也是 OPL Foundry Agent 系列成员。`contracts/foundry_agent_series.json#/series_design_profile` 使用与 MAS、MAG、RCA 同形的 canonical `opl_foundry_agent_series_design_profile.v1`，声明同一 lifecycle、generic input/output slots、stage pack sections、closeout shape 和 authority invariants；OMA 的 agent-building / improvement 差异写在 `domain_specific_profile`、stage/action contracts 和 authority refs 中，输入是 target agent specs 与 evidence refs，输出是 candidate package、developer work order、target capability candidate、mechanism patch proposal 或 typed blocker。
 
 本仓持有 agent-building domain semantics：用户意图理解、公开经验调研、阶段拆解、agent skeleton / prompt / skill / contract 生成策略、Agent Lab suite 组织、baseline 验收、optimizer candidate、在线学习审阅策略和 mechanism patch proposal 记录。
 
@@ -23,7 +23,7 @@ Agent Lab 与 `opl-meta-agent` 的长期关系是标准消费者关系：OPL Age
 
 `execute:external-work-order` 是 OMA 对 OPL `work-order execute` primitive 的薄委托入口。它可以声明 post-absorb target-domain owner closeout hook 已委托给 OPL，并记录 `target_owner_closeout_owner=target-domain via OPL`；它不能直接调用 hook，不能把 OPL result 转写成 owner receipt body，也不能写 target truth、memory body、artifact body 或 quality/export verdict。
 
-CLI、MCP、Skill、product-entry 和 tool 描述不是本仓私有实现；它们由 OPL Framework 从本仓标准 action / stage contracts 统一生成。本仓只保留智能体构建语义、refs-only Agent Lab suite 组织和 minimal authority outputs。生成接口可以调用已声明的 minimal authority functions 和 smoke action，但权限保持为投影、回执、blocker、候选引用，不升级为领域事实、记忆正文、产物正文、质量/导出裁决或默认 agent promotion。
+CLI、MCP、Skill、product-entry 和 tool 描述不是本仓私有实现；它们由 OPL Framework 从本仓标准 action / stage contracts 统一生成。OMA 不采用 MAS/MAG/RCA 的 plugin packaged repo structure，而是保留 OPL generated skill surface / generated interface bundle 作为外显入口。本仓只保留智能体构建语义、refs-only Agent Lab suite 组织和 minimal authority outputs。生成接口可以调用已声明的 minimal authority functions 和 smoke action，但权限保持为投影、回执、blocker、候选引用，不升级为领域事实、记忆正文、产物正文、质量/导出裁决或默认 agent promotion。
 
 当前最小闭环是 `scripts/build-agent-baseline.ts` 承载的 `build-agent-baseline` action implementation：Codex Skill 先把用户自然语言需求归一成 `domain_id`、`domain_label`、`delivery_domain`、`target_brief`、`output_dir`、`opl_bin`、stage-decomposition runner 设置和 `ai_reviewer_evaluation`，脚本随后启动或消费 Codex `stage-decomposition` typed closeout，并只校验/物化 closeout 里的 stage graph、action refs、pack 文件、independent gate policy、quality gate declaration 和 no-forbidden-write policy；脚本不再自行决定目标 stage graph。物化后再调用 OPL scaffold validate 和 `opl agents interfaces --repo-dir`，生成 Agent Lab external suite，交给 `opl agent-lab run --suite` 运行，再把 suite result 转成 baseline delivery receipt、gated online-learning candidate refs 和 mechanism patch proposal refs。`--domain-id` 是硬要求；已退役的隐式 fixture smoke 不再作为物化路径存在。真实目标 delivery receipt 与 scaleout evidence ledger 直接为显式目标 agent 生成，并以 `baseline_source.source_kind=explicit_target_agent_baseline` 关联 baseline receipt。
 

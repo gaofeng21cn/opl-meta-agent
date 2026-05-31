@@ -5,7 +5,7 @@ Purpose: `architecture_and_owner_boundary`
 State: `active_truth`
 Machine boundary: 本文是人读架构说明。机器真相继续归 `contracts/`、`agent/`、`runtime/authority_functions/`、source、CLI/API 行为、OPL Agent Lab result refs 和测试。
 
-`opl-meta-agent` 是 OPL-based Foundry Agent，不是 OPL Framework 内置模块。
+`opl-meta-agent` 是 OPL-based Foundry Agent，不是 OPL Framework 内置模块。它作为 OPL Foundry Agent 系列的 Agent Foundry 成员，复用 MAS、MAG、RCA 所用的 canonical `opl_foundry_agent_series_design_profile.v1`；系列差异只落在 `domain_specific_profile`、stage/action contracts 和 authority refs 中。OMA 读取 target agent spec / evidence / Agent Lab handoff，产出 candidate agent package、developer patch work order、target capability improvement candidate、mechanism patch proposal 或 typed blocker。
 
 ## Owner Split
 
@@ -81,7 +81,7 @@ Patch-loop closeout 现在固定为 11 个 refs：blocked suite result、develop
 
 ## Generated Interfaces
 
-CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framework 通过 `opl agents interfaces --repo-dir <repo>` 从 `contracts/action_catalog.json` 与 `contracts/stage_control_plane.json` 统一生成。本仓不实现私有 MCP server、通用 CLI wrapper、product-entry shell 或 Skill 包装层；仓内脚本只作为领域 smoke / minimal authority action 的可调用目标。生成接口的权限上限写入 `contracts/pack_compiler_input.json` 与 `contracts/generated_surface_handoff.json`：它可以 invoke/project 已声明 action、registration refs、App projection refs、scaleout evidence refs 与 minimal authority function，不能写 domain truth、memory body、artifact body、quality/export verdict，也不能成为 generated surface owner。
+CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framework 通过 `opl agents interfaces --repo-dir <repo>` 从 `contracts/action_catalog.json` 与 `contracts/stage_control_plane.json` 统一生成。本仓不实现私有 MCP server、通用 CLI wrapper、product-entry shell 或 Skill 包装层；OMA 也不采用 plugin packaged structure，外显形态是 OPL generated skill surface / generated interface bundle。仓内脚本只作为领域 smoke / minimal authority action 的可调用目标。生成接口的权限上限写入 `contracts/pack_compiler_input.json`、`contracts/generated_surface_handoff.json` 与 `contracts/foundry_agent_series.json` 的 canonical `series_design_profile` / OMA-owned `domain_specific_profile`：它可以 invoke/project 已声明 action、registration refs、App projection refs、scaleout evidence refs 与 minimal authority function，不能写 domain truth、memory body、artifact body、quality/export verdict，也不能成为 generated surface owner。
 
 ## Domain Pack Structure
 

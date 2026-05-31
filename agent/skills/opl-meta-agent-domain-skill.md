@@ -2,7 +2,7 @@
 
 ## 用途
 
-当用户要把一个高价值知识交付流程做成 OPL-compatible Foundry Agent 时，使用本 skill 驱动从 intent intake 到 baseline delivery 的完整 domain pack 构建。面向 Codex 的默认入口是用户自然语言，例如“帮我做一个能交付 X 的智能体”；本 skill 负责把自然语言归一成 `build-agent-baseline` 的目标 agent 字段。
+当用户要把一个高价值知识交付流程做成 OPL-compatible Foundry Agent 时，使用本 skill 驱动从 intent intake 到 baseline delivery 的完整 domain pack 构建。OMA 是 OPL Foundry Agent 系列里的 agent-building / improvement 成员，复用 MAS/MAG/RCA 同一 canonical OPL agent lifecycle、generic slots、stage sections、closeout shape 和 authority invariants，但外显入口是 OPL generated skill surface，不走 plugin packaged structure。面向 Codex 的默认入口是用户自然语言，例如“帮我做一个能交付 X 的智能体”；本 skill 负责把自然语言归一成 `build-agent-baseline` 的目标 agent 字段。
 
 ## 输入
 

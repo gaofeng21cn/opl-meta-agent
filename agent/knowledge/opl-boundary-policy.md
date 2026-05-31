@@ -2,7 +2,7 @@
 
 ## 核心边界
 
-`opl-meta-agent` 是 OPL-based Foundry Agent，持有 agent-building domain semantics。OPL Framework 持有 runtime/control-plane/generated-interface 能力。Target domain agent 持有自己的 truth、memory body、artifact authority 和 quality verdict。
+`opl-meta-agent` 是 OPL-based Foundry Agent，持有 agent-building domain semantics。它与 MAS、MAG、RCA 共享 canonical OPL Foundry Agent lifecycle、generic slots、stage sections、closeout shape 和 authority invariants；区别写在 domain-specific profile 中：OMA 消费 target agent spec / evidence refs，并产出 candidate package、developer work order、target capability candidate、mechanism patch proposal 或 typed blocker。OPL Framework 持有 runtime/control-plane/generated-interface 能力。Target domain agent 持有自己的 truth、memory body、artifact authority 和 quality verdict。
 
 ## Codex-first 原则
 

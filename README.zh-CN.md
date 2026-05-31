@@ -99,7 +99,7 @@
 
 ## 当前定位与边界
 
-- `OPL Meta Agent` 面向“开发智能体的智能体”：它把目标智能体需求推进成可测试、可交付、可持续优化的基线包。
+- `OPL Meta Agent` 是 OPL Foundry Agent 系列里的 agent-building / improvement 成员：它与 MAS/MAG/RCA 共享同一 canonical OPL agent lifecycle、generic slots、stage sections、closeout shape 和 authority invariants；它的 domain-specific profile 把输入换成目标智能体 spec / evidence refs，把输出换成候选包、开发补丁工单、能力改进候选、机制补丁建议或 typed blocker。
 - 当前设计已经从 contract-ready 收敛到 Codex-attempt-native 的 usable landing plan：下一目标是直接发起真实 stage launch contract、由独立 Codex reviewer 读取证据并尝试评审、让 OPL registry / App 实际消费投影、对真实 blocked target 形成 patch -> rerun -> owner receipt 闭环，并把仍在 `scripts/` 中增长的构建规则收敛回 pack 或 authority refs。
 - `agent/` 是本仓真实 domain pack 入口：`knowledge/`、`prompts/`、`quality_gates/`、`skills/`、`stages/` 至少提供可解析、非空、无占位的 domain-owned 文件，`contracts/stage_control_plane.json` 的 stage prompt、skill、knowledge、evaluation refs 必须指向这些真实文件。
 - 本仓复用 OPL Framework 的脚手架、Agent Lab、队列、状态投影和采用门槛，不在本仓重建通用运行框架。
