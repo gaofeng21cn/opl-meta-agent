@@ -116,6 +116,18 @@ function buildWorkOrder(): JsonObject {
       eval_result_ref: 'agent-lab-result-ref',
       work_order_ref: 'oma_developer_patch_work_order_test',
       owner_route_ref: 'target-agent-owner:example-agent',
+      provider_owner_route_index_evidence: {
+        provider: 'opl_work_order_execute',
+        owner_route_index_ref: 'owner-route-index:example-agent/oma_developer_patch_work_order_test',
+        owner_route_ledger_ref: 'owner-route-ledger:example-agent/oma_developer_patch_work_order_test',
+        stage_attempt_ledger_ref: 'stage-attempt-ledger:example-agent/oma_developer_patch_work_order_test',
+        route_binding_ref:
+          'route-binding:example-agent/agent-lab-result-ref/oma_developer_patch_work_order_test',
+        target_eval_work_order_owner_route_tuple:
+          'example-agent|agent-lab-result-ref|oma_developer_patch_work_order_test|target-agent-owner:example-agent',
+        derived_from_current_opl_route_ledger: true,
+        fail_closed_without_route_or_ledger_proof: true,
+      },
     },
     target_progress_accounting: {
       progress_delta_classification: 'mixed',
@@ -125,9 +137,10 @@ function buildWorkOrder(): JsonObject {
         domain_alias: 'target_agent_substantive_delta',
       },
       platform_repair_delta: {
-        count: 4,
+        count: 5,
         refs: [
           'no_target_domain_truth_write_proof',
+          'target-owner-receipt-or-typed-blocker:example-agent/oma_developer_patch_work_order_test',
           'patch-absorption:example-agent/oma_developer_patch_work_order_test/source-patch',
           'worktree-cleanup:example-agent/oma_developer_patch_work_order_test/source-patch',
           'agent-lab-re-evaluation:example-agent/agent-lab-result-ref/oma_developer_patch_work_order_test',
@@ -137,9 +150,20 @@ function buildWorkOrder(): JsonObject {
       substantive_deliverable_delta_refs: ['target-agent-change-ref:example'],
       platform_interface_repair_refs: [
         'no_target_domain_truth_write_proof',
+        'target-owner-receipt-or-typed-blocker:example-agent/oma_developer_patch_work_order_test',
         'patch-absorption:example-agent/oma_developer_patch_work_order_test/source-patch',
         'worktree-cleanup:example-agent/oma_developer_patch_work_order_test/source-patch',
         'agent-lab-re-evaluation:example-agent/agent-lab-result-ref/oma_developer_patch_work_order_test',
+      ],
+      excluded_from_substantive_deliverable_progress_refs: [],
+      non_substantive_progress_ref_kinds: [
+        'platform_interface_repair',
+        'closeout_plumbing',
+        'patch_absorption',
+        'worktree_cleanup',
+        'agent_lab_re_evaluation',
+        'currentness_repair',
+        'refs_only_ledger_work',
       ],
       accounting_policy: 'deliverable_delta_is_not_closed_by_platform_interface_repair',
     },
@@ -308,6 +332,18 @@ test('execute external work order rejects stale target currentness before delega
       eval_result_ref: 'agent-lab-result-ref',
       work_order_ref: 'oma_developer_patch_work_order_test',
       owner_route_ref: 'target-agent-owner:example-agent',
+      provider_owner_route_index_evidence: {
+        provider: 'opl_work_order_execute',
+        owner_route_index_ref: 'owner-route-index:example-agent/oma_developer_patch_work_order_test',
+        owner_route_ledger_ref: 'owner-route-ledger:example-agent/oma_developer_patch_work_order_test',
+        stage_attempt_ledger_ref: 'stage-attempt-ledger:example-agent/oma_developer_patch_work_order_test',
+        route_binding_ref:
+          'route-binding:example-agent/agent-lab-result-ref/oma_developer_patch_work_order_test',
+        target_eval_work_order_owner_route_tuple:
+          'example-agent|agent-lab-result-ref|oma_developer_patch_work_order_test|target-agent-owner:example-agent',
+        derived_from_current_opl_route_ledger: true,
+        fail_closed_without_route_or_ledger_proof: true,
+      },
     },
   });
 
@@ -333,6 +369,81 @@ test('execute external work order rejects stale target currentness before delega
 
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /work_order_currentness.target_agent_id/);
+});
+
+test('execute external work order rejects missing provider owner route ledger proof before delegation', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-execute-work-order-route-proof-test-'));
+  const workOrderPath = path.join(tempDir, 'developer-patch-work-order.json');
+  const workOrder = buildWorkOrder();
+  delete (workOrder.work_order_currentness as JsonObject).provider_owner_route_index_evidence;
+  writeJson(workOrderPath, workOrder);
+
+  const result = spawnSync(
+    process.execPath,
+    [
+      '--experimental-strip-types',
+      path.join(repoRoot, 'scripts/execute-external-work-order.ts'),
+      '--work-order',
+      workOrderPath,
+      '--opl-bin',
+      path.join(tempDir, 'opl-not-called'),
+    ],
+    {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        NODE_NO_WARNINGS: '1',
+      },
+    },
+  );
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /provider_owner_route_index_evidence/);
+});
+
+test('execute external work order rejects platform-only refs counted as deliverable progress', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-execute-work-order-platform-progress-test-'));
+  const workOrderPath = path.join(tempDir, 'developer-patch-work-order.json');
+  const workOrder = buildWorkOrder();
+  workOrder.target_progress_accounting = {
+    ...(workOrder.target_progress_accounting as JsonObject),
+    progress_delta_classification: 'deliverable_progress',
+    deliverable_progress_delta: {
+      count: 1,
+      refs: [
+        'agent-lab-re-evaluation:example-agent/agent-lab-result-ref/oma_developer_patch_work_order_test',
+      ],
+      domain_alias: 'target_agent_substantive_delta',
+    },
+    substantive_deliverable_delta_refs: [
+      'agent-lab-re-evaluation:example-agent/agent-lab-result-ref/oma_developer_patch_work_order_test',
+    ],
+  };
+  writeJson(workOrderPath, workOrder);
+
+  const result = spawnSync(
+    process.execPath,
+    [
+      '--experimental-strip-types',
+      path.join(repoRoot, 'scripts/execute-external-work-order.ts'),
+      '--work-order',
+      workOrderPath,
+      '--opl-bin',
+      path.join(tempDir, 'opl-not-called'),
+    ],
+    {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        NODE_NO_WARNINGS: '1',
+      },
+    },
+  );
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /platform-only repair refs cannot be counted as target-agent substantive deliverable progress/);
 });
 
 test('execute external work order rejects OPL result without closeout refs or typed blocker', () => {
