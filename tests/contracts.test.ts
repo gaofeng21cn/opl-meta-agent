@@ -614,6 +614,27 @@ test('foundry agent series contract binds OMA to shared Progress-First projectio
   assert.equal(series.domain_id, 'opl-meta-agent');
   assert.equal(series.stage_control_plane_ref, 'contracts/stage_control_plane.json');
   assert.equal(series.stage_control_plane_target_domain_id, 'opl-meta-agent');
+  assert.deepEqual(series.contract_version_policy, {
+    current_version: 'foundry-agent-series.v1',
+    domain_contract_ref: 'contracts/foundry_agent_series.json',
+    exact_version_pin_required: true,
+    compatible_version_range: ['foundry-agent-series.v1'],
+    breaking_change_requires_new_version: true,
+    domain_descriptor_must_reference_domain_contract: true,
+  });
+  assert.deepEqual(series.shared_release_pin_strategy, {
+    owner_release_contract_ref: 'contracts/family-release/shared-owner-release.json',
+    owner_commit_pin_required: true,
+    domain_dependency_pin_required: true,
+    supported_pin_sources: [
+      'pyproject.toml',
+      'uv.lock',
+      'package.json',
+      'package-lock.json',
+    ],
+    consumer_alignment_check: 'family:shared-release',
+    domain_contract_version_pin_does_not_authorize_domain_truth: true,
+  });
   assert.ok(asStrings(series.required_stage_packets).includes('progress_delta_policy'));
   assert.ok(asStrings(series.required_stage_packets).includes('typed_blocker_lineage_policy'));
   assert.ok(asStrings(series.shared_progress_projection_fields).includes('deliverable_progress_delta'));
@@ -1222,6 +1243,40 @@ test('production acceptance evidence closes conformance evidence tail through re
   assert.deepEqual(acceptance.refs.new_agent_consumption_evidence_refs, [
     'contracts/production_acceptance/new_agent_consumption_evidence.json',
   ]);
+  const stageReplayBlocker = acceptance.stage_replay_human_gate_blocker_summary as JsonObject;
+  const stageReplayTarget = stageReplayBlocker.target_identity as JsonObject;
+  const stageReplayBoundary = stageReplayBlocker.authority_boundary as JsonObject;
+  assert.equal(
+    stageReplayBlocker.surface_kind,
+    'opl_meta_agent_stage_replay_human_gate_blocker_summary',
+  );
+  assert.equal(stageReplayBlocker.owner, 'opl-meta-agent');
+  assert.equal(
+    stageReplayBlocker.role,
+    'domain_owned_body_free_typed_blocker_for_stage_replay_missing_receipt',
+  );
+  assert.equal(stageReplayTarget.domain_id, 'opl-meta-agent');
+  assert.equal(stageReplayTarget.stage_id, 'stage-decomposition');
+  assert.equal(stageReplayTarget.missing_ref, 'human_gate:oma_baseline_owner_review');
+  assert.equal(stageReplayBlocker.missing_ref_kind, 'human_gate_ref');
+  assert.equal(stageReplayBlocker.payload_path, 'typed_blocker_path');
+  assert.deepEqual(asStrings(stageReplayBlocker.typed_blocker_refs), [
+    'oma-typed-blocker:stage-replay-human-gate:stage-decomposition:oma_baseline_owner_review/baseline-owner-review-receipt-pending',
+  ]);
+  assert.equal(stageReplayBlocker.success_claimed, false);
+  assert.equal(stageReplayBlocker.human_gate_approval_claimed, false);
+  assert.equal(stageReplayBlocker.domain_ready_claimed, false);
+  assert.equal(stageReplayBlocker.production_ready_claimed, false);
+  assert.equal(stageReplayBoundary.refs_only, true);
+  assert.equal(stageReplayBoundary.can_requery_human, false);
+  assert.equal(stageReplayBoundary.can_write_owner_receipt, false);
+  assert.equal(stageReplayBoundary.can_write_target_domain_truth, false);
+  assert.equal(stageReplayBoundary.can_write_target_domain_memory_body, false);
+  assert.equal(stageReplayBoundary.can_mutate_target_domain_artifact_body, false);
+  assert.equal(stageReplayBoundary.can_authorize_target_domain_quality_or_export, false);
+  assert.equal(stageReplayBoundary.can_promote_default_agent_without_gate, false);
+  assert.equal(stageReplayBoundary.can_close_replay_success_path, false);
+  assertRepoRefExists((stageReplayBlocker.source_ref as string).split('#')[0]);
   assert.equal(
     acceptance.production_consumption_followthrough.status,
     'production_consumption_refs_projected',
