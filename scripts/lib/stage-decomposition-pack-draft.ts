@@ -31,6 +31,14 @@ const placeholderPattern = new RegExp(`\\b(?:TO${'DO'}|T${'BD'})\\b`, 'i');
 
 const STANDARD_STAGE_PACK_CONFORMANCE_VERSION = 'standard-stage-pack.v2';
 const DEFAULT_STAGE_EXECUTOR_BINDING_REF = 'default_codex_cli';
+const SHARED_POLICY_RELEASE = {
+  policy_release_contract_ref: 'contracts/opl-framework/foundry-agent-series-policy-release.json',
+  policy_bundle_fingerprint: 'sha256:5d77102e99e6e49acd88714cd94dcafe0969b8f2a5529928d753002ac3d4619d',
+  fingerprint_algorithm: 'sha256:stable-json',
+  domain_contract_policy_release_pin_required: true,
+  domain_adapter_must_not_copy_policy_body_as_authority: true,
+  consumer_alignment_check: 'foundry:policy-release',
+} as const;
 
 const USER_STAGE_LOG_REQUIRED_FIELDS = [
   'stage_name',
@@ -425,6 +433,7 @@ function buildFoundryAgentSeriesContract(targetAgent: TargetAgent, stageControlP
       consumer_alignment_check: 'family:shared-release',
       domain_contract_version_pin_does_not_authorize_domain_truth: true,
     },
+    shared_policy_release: SHARED_POLICY_RELEASE,
     domain_id: domainId,
     foundry_agent_id: domainId,
     domain_label: targetAgent.domain_label ?? domainId,

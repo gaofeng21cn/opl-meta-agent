@@ -51,6 +51,48 @@ type WorkOrderBundleRefOptions = {
   machineCloseoutRefs: JsonObject;
 };
 
+function workOrderRouteTuple({
+  domainId,
+  suiteResultRef,
+  workOrderId,
+  ownerRouteRef,
+}: {
+  domainId: string;
+  suiteResultRef: string;
+  workOrderId: string;
+  ownerRouteRef: string;
+}): string {
+  return [domainId, suiteResultRef, workOrderId, ownerRouteRef].join('|');
+}
+
+function buildProviderOwnerRouteIndexEvidence({
+  domainId,
+  suiteResultRef,
+  workOrderId,
+  ownerRouteRef,
+}: {
+  domainId: string;
+  suiteResultRef: string;
+  workOrderId: string;
+  ownerRouteRef: string;
+}): JsonObject {
+  return {
+    provider: 'opl_work_order_execute',
+    owner_route_index_ref: `owner-route-index:${domainId}/${workOrderId}`,
+    owner_route_ledger_ref: `owner-route-ledger:${domainId}/${workOrderId}`,
+    stage_attempt_ledger_ref: `stage-attempt-ledger:${domainId}/${workOrderId}`,
+    route_binding_ref: `route-binding:${domainId}/${suiteResultRef}/${workOrderId}`,
+    target_eval_work_order_owner_route_tuple: workOrderRouteTuple({
+      domainId,
+      suiteResultRef,
+      workOrderId,
+      ownerRouteRef,
+    }),
+    derived_from_current_opl_route_ledger: true,
+    fail_closed_without_route_or_ledger_proof: true,
+  };
+}
+
 export function buildWorkOrderCurrentness({
   domainId,
   suiteResultRef,
@@ -67,7 +109,27 @@ export function buildWorkOrderCurrentness({
     eval_result_ref: suiteResultRef,
     work_order_ref: workOrderId,
     owner_route_ref: ownerRouteRef,
+    provider_owner_route_index_evidence: buildProviderOwnerRouteIndexEvidence({
+      domainId,
+      suiteResultRef,
+      workOrderId,
+      ownerRouteRef,
+    }),
   };
+}
+
+function valuesAsStrings(record: JsonObject): string[] {
+  return Object.values(record)
+    .flatMap((value) => Array.isArray(value) ? value : [value])
+    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0);
+}
+
+export function platformOnlyProgressRefs(machineCloseoutRefs: JsonObject): string[] {
+  return uniqueRefs([
+    ...valuesAsStrings(machineCloseoutRefs),
+    'owner_receipt_coordination_record',
+    'target_owner_receipt_projection_ref',
+  ]);
 }
 
 export function buildTargetProgressAccounting({
@@ -77,15 +139,20 @@ export function buildTargetProgressAccounting({
   substantiveDeliverableDeltaRefs: string[];
   machineCloseoutRefs: JsonObject;
 }): JsonObject {
-  const deliverableRefs = uniqueRefs(substantiveDeliverableDeltaRefs);
+  const platformOnlyRefs = platformOnlyProgressRefs(machineCloseoutRefs);
+  const deliverableRefs = uniqueRefs(substantiveDeliverableDeltaRefs)
+    .filter((ref) => !platformOnlyRefs.includes(ref));
   const platformRefs = uniqueRefs([
     machineCloseoutRefs.target_runtime_read_model_consumption_ref,
     machineCloseoutRefs.workspace_environment_proof_ref,
     machineCloseoutRefs.no_forbidden_write_proof_ref,
+    machineCloseoutRefs.target_owner_receipt_or_typed_blocker_ref,
     machineCloseoutRefs.patch_absorption_ref,
     machineCloseoutRefs.worktree_cleanup_ref,
     machineCloseoutRefs.agent_lab_re_evaluation_ref,
   ].filter((value): value is string => typeof value === 'string' && value.trim().length > 0));
+  const excludedRefs = uniqueRefs(substantiveDeliverableDeltaRefs)
+    .filter((ref) => platformOnlyRefs.includes(ref));
   return {
     progress_delta_classification: deliverableRefs.length > 0
       ? (platformRefs.length > 0 ? 'mixed' : 'deliverable_progress')
@@ -102,6 +169,16 @@ export function buildTargetProgressAccounting({
     },
     substantive_deliverable_delta_refs: deliverableRefs,
     platform_interface_repair_refs: platformRefs,
+    excluded_from_substantive_deliverable_progress_refs: excludedRefs,
+    non_substantive_progress_ref_kinds: [
+      'platform_interface_repair',
+      'closeout_plumbing',
+      'patch_absorption',
+      'worktree_cleanup',
+      'agent_lab_re_evaluation',
+      'currentness_repair',
+      'refs_only_ledger_work',
+    ],
     accounting_policy: 'deliverable_delta_is_not_closed_by_platform_interface_repair',
   };
 }

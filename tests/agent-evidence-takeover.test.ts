@@ -560,6 +560,17 @@ test('agent:evidence generates domain Agent Lab suite and proposal artifacts fro
     assert.ok(workOrder.required_verification_refs.includes('scripts/verify.sh'));
     assert.ok(workOrder.rollback_version_refs.includes('target_agent_current_head_ref'));
     assert.ok(workOrder.owner_route_refs.includes('owner-route:med-autoscience/MedAutoScience'));
+    assert.deepEqual(workOrder.work_order_currentness.provider_owner_route_index_evidence, {
+      provider: 'opl_work_order_execute',
+      owner_route_index_ref: `owner-route-index:med-autoscience/${workOrder.work_order_id}`,
+      owner_route_ledger_ref: `owner-route-ledger:med-autoscience/${workOrder.work_order_id}`,
+      stage_attempt_ledger_ref: `stage-attempt-ledger:med-autoscience/${workOrder.work_order_id}`,
+      route_binding_ref: `route-binding:med-autoscience/${workOrder.source_agent_lab_result_ref}/${workOrder.work_order_id}`,
+      target_eval_work_order_owner_route_tuple:
+        `med-autoscience|${workOrder.source_agent_lab_result_ref}|${workOrder.work_order_id}|owner-route:med-autoscience/MedAutoScience`,
+      derived_from_current_opl_route_ledger: true,
+      fail_closed_without_route_or_ledger_proof: true,
+    });
     assert.ok(workOrder.ahe_developer_work_order.failure_evidence.includes('contracts/production_acceptance/mas-production-acceptance.json'));
     assert.match(workOrder.ahe_developer_work_order.root_cause, /Production evidence tail/);
     assert.ok(workOrder.ahe_developer_work_order.targeted_fix.includes('agent:evidence-tail/med-autoscience/no-forbidden-write-proof'));

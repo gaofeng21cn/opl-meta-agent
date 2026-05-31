@@ -922,6 +922,17 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
       eval_result_ref: workOrder.source_agent_lab_result_ref,
       work_order_ref: workOrder.work_order_id,
       owner_route_ref: 'target-agent-owner:med-autoscience',
+      provider_owner_route_index_evidence: {
+        provider: 'opl_work_order_execute',
+        owner_route_index_ref: `owner-route-index:med-autoscience/${workOrder.work_order_id}`,
+        owner_route_ledger_ref: `owner-route-ledger:med-autoscience/${workOrder.work_order_id}`,
+        stage_attempt_ledger_ref: `stage-attempt-ledger:med-autoscience/${workOrder.work_order_id}`,
+        route_binding_ref: `route-binding:med-autoscience/${workOrder.source_agent_lab_result_ref}/${workOrder.work_order_id}`,
+        target_eval_work_order_owner_route_tuple:
+          `med-autoscience|${workOrder.source_agent_lab_result_ref}|${workOrder.work_order_id}|target-agent-owner:med-autoscience`,
+        derived_from_current_opl_route_ledger: true,
+        fail_closed_without_route_or_ledger_proof: true,
+      },
     });
     assert.deepEqual(workOrder.target_progress_accounting, {
       progress_delta_classification: 'mixed',
@@ -931,11 +942,12 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
         domain_alias: 'target_agent_substantive_delta',
       },
       platform_repair_delta: {
-        count: 6,
+        count: 7,
         refs: [
           workOrder.machine_closeout_refs.target_runtime_read_model_consumption_ref,
           workOrder.machine_closeout_refs.workspace_environment_proof_ref,
           workOrder.machine_closeout_refs.no_forbidden_write_proof_ref,
+          workOrder.machine_closeout_refs.target_owner_receipt_or_typed_blocker_ref,
           workOrder.machine_closeout_refs.patch_absorption_ref,
           workOrder.machine_closeout_refs.worktree_cleanup_ref,
           workOrder.machine_closeout_refs.agent_lab_re_evaluation_ref,
@@ -947,9 +959,20 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
         workOrder.machine_closeout_refs.target_runtime_read_model_consumption_ref,
         workOrder.machine_closeout_refs.workspace_environment_proof_ref,
         workOrder.machine_closeout_refs.no_forbidden_write_proof_ref,
+        workOrder.machine_closeout_refs.target_owner_receipt_or_typed_blocker_ref,
         workOrder.machine_closeout_refs.patch_absorption_ref,
         workOrder.machine_closeout_refs.worktree_cleanup_ref,
         workOrder.machine_closeout_refs.agent_lab_re_evaluation_ref,
+      ],
+      excluded_from_substantive_deliverable_progress_refs: [],
+      non_substantive_progress_ref_kinds: [
+        'platform_interface_repair',
+        'closeout_plumbing',
+        'patch_absorption',
+        'worktree_cleanup',
+        'agent_lab_re_evaluation',
+        'currentness_repair',
+        'refs_only_ledger_work',
       ],
       accounting_policy: 'deliverable_delta_is_not_closed_by_platform_interface_repair',
     });

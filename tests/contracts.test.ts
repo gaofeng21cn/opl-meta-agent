@@ -635,6 +635,14 @@ test('foundry agent series contract binds OMA to shared Progress-First projectio
     consumer_alignment_check: 'family:shared-release',
     domain_contract_version_pin_does_not_authorize_domain_truth: true,
   });
+  assert.deepEqual(series.shared_policy_release, {
+    policy_release_contract_ref: 'contracts/opl-framework/foundry-agent-series-policy-release.json',
+    policy_bundle_fingerprint: 'sha256:5d77102e99e6e49acd88714cd94dcafe0969b8f2a5529928d753002ac3d4619d',
+    fingerprint_algorithm: 'sha256:stable-json',
+    domain_contract_policy_release_pin_required: true,
+    domain_adapter_must_not_copy_policy_body_as_authority: true,
+    consumer_alignment_check: 'foundry:policy-release',
+  });
   assert.ok(asStrings(series.required_stage_packets).includes('progress_delta_policy'));
   assert.ok(asStrings(series.required_stage_packets).includes('typed_blocker_lineage_policy'));
   assert.ok(asStrings(series.shared_progress_projection_fields).includes('deliverable_progress_delta'));

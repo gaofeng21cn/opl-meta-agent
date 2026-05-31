@@ -19,10 +19,22 @@ function requireNonEmptyStringArray(value: unknown, fieldName: string): void {
   }
 }
 
+function requireStringArray(value: unknown, fieldName: string): string[] {
+  if (!Array.isArray(value) || !value.every((entry) => typeof entry === 'string' && entry.trim().length > 0)) {
+    throw new Error(`Invalid developer patch work order: ${fieldName} must be a string array.`);
+  }
+  return value.map((entry) => entry.trim());
+}
+
 function requireNonEmptyString(value: unknown, fieldName: string): void {
   if (typeof value !== 'string' || value.trim().length === 0) {
     throw new Error(`Invalid developer patch work order: ${fieldName} must be a non-empty string.`);
   }
+}
+
+function asNonEmptyString(value: unknown, fieldName: string): string {
+  requireNonEmptyString(value, fieldName);
+  return String(value).trim();
 }
 
 function requireTypedBlockerRef(value: unknown, fieldName: string): void {
@@ -58,6 +70,105 @@ function requireIncludes(values: unknown, expected: unknown, fieldName: string):
   requireNonEmptyString(expected, `expected ${fieldName}`);
   if (!(values as unknown[]).includes(expected)) {
     throw new Error(`Invalid developer patch work order: ${fieldName} must include ${String(expected)}.`);
+  }
+}
+
+function requireCurrentnessRouteEvidence(workOrder: JsonObject): void {
+  const currentness = workOrder.work_order_currentness;
+  const evidence = currentness?.provider_owner_route_index_evidence;
+  if (!evidence || typeof evidence !== 'object' || Array.isArray(evidence)) {
+    throw new Error(
+      'Invalid developer patch work order: work_order_currentness.provider_owner_route_index_evidence must prove the current OPL route/ledger binding.',
+    );
+  }
+  const routeEvidence = evidence as JsonObject;
+  const requiredFields = [
+    'provider',
+    'owner_route_index_ref',
+    'owner_route_ledger_ref',
+    'stage_attempt_ledger_ref',
+    'route_binding_ref',
+    'target_eval_work_order_owner_route_tuple',
+  ];
+  requiredFields.forEach((field) => {
+    requireNonEmptyString(
+      routeEvidence[field],
+      `work_order_currentness.provider_owner_route_index_evidence.${field}`,
+    );
+  });
+  if (routeEvidence.derived_from_current_opl_route_ledger !== true) {
+    throw new Error(
+      'Invalid developer patch work order: work_order_currentness.provider_owner_route_index_evidence.derived_from_current_opl_route_ledger must be true.',
+    );
+  }
+  if (routeEvidence.fail_closed_without_route_or_ledger_proof !== true) {
+    throw new Error(
+      'Invalid developer patch work order: work_order_currentness.provider_owner_route_index_evidence.fail_closed_without_route_or_ledger_proof must be true.',
+    );
+  }
+  const expectedTuple = [
+    asNonEmptyString(workOrder.target_agent?.domain_id, 'target_agent.domain_id'),
+    asNonEmptyString(workOrder.source_agent_lab_result_ref, 'source_agent_lab_result_ref'),
+    asNonEmptyString(workOrder.work_order_id, 'work_order_id'),
+    asNonEmptyString(currentness?.owner_route_ref, 'work_order_currentness.owner_route_ref'),
+  ].join('|');
+  if (routeEvidence.target_eval_work_order_owner_route_tuple !== expectedTuple) {
+    throw new Error(
+      'Invalid developer patch work order: work_order_currentness.provider_owner_route_index_evidence.target_eval_work_order_owner_route_tuple must match current target/eval/work-order/owner-route refs.',
+    );
+  }
+}
+
+function isPlatformOnlyProgressRef(ref: string): boolean {
+  return [
+    'target-runtime-read-model-consumption:',
+    'workspace-environment-proof:',
+    'no-forbidden-write:',
+    'target-owner-receipt-or-typed-blocker:',
+    'patch-absorption:',
+    'worktree-cleanup:',
+    'agent-lab-re-evaluation:',
+    'owner_receipt_coordination_record',
+    'target_owner_receipt_projection_ref',
+    'target_runtime_consumption_verification_receipt',
+    'target_workspace_environment_consumption_receipt',
+    'repo_hygiene_no_checkout_venv_proof',
+    'no_target_domain_truth_write_proof',
+  ].some((prefix) => ref === prefix || ref.startsWith(prefix));
+}
+
+function requireTargetProgressAccounting(workOrder: JsonObject): void {
+  const accounting = workOrder.target_progress_accounting;
+  const deliverableRefs = requireStringArray(
+    accounting?.deliverable_progress_delta?.refs,
+    'target_progress_accounting.deliverable_progress_delta.refs',
+  );
+  const substantiveRefs = requireStringArray(
+    accounting?.substantive_deliverable_delta_refs,
+    'target_progress_accounting.substantive_deliverable_delta_refs',
+  );
+  const platformRefs = requireStringArray(
+    accounting?.platform_interface_repair_refs,
+    'target_progress_accounting.platform_interface_repair_refs',
+  );
+  const forbiddenDeliverableRefs = [...new Set([...deliverableRefs, ...substantiveRefs])]
+    .filter(isPlatformOnlyProgressRef);
+  if (forbiddenDeliverableRefs.length > 0) {
+    throw new Error(
+      `Invalid developer patch work order: platform-only repair refs cannot be counted as target-agent substantive deliverable progress: ${forbiddenDeliverableRefs.join(', ')}`,
+    );
+  }
+  const deliverableCount = accounting?.deliverable_progress_delta?.count;
+  if (deliverableCount !== deliverableRefs.length || deliverableCount !== substantiveRefs.length) {
+    throw new Error(
+      'Invalid developer patch work order: target_progress_accounting deliverable count must match target-agent substantive deliverable refs.',
+    );
+  }
+  const platformCount = accounting?.platform_repair_delta?.count;
+  if (platformCount !== platformRefs.length) {
+    throw new Error(
+      'Invalid developer patch work order: target_progress_accounting platform repair count must match platform/interface repair refs.',
+    );
   }
 }
 
@@ -111,11 +222,13 @@ export function validateDeveloperPatchWorkOrder(
     workOrder.work_order_id,
     'work_order_currentness.work_order_ref',
   );
+  requireCurrentnessRouteEvidence(workOrder);
   requireIncludes(
     workOrder.owner_route_refs,
     workOrder.work_order_currentness?.owner_route_ref,
     'owner_route_refs',
   );
+  requireTargetProgressAccounting(workOrder);
   requireNonEmptyStringArray(workOrder.rollback_version_refs, 'rollback_version_refs');
   requireNonEmptyStringArray(workOrder.no_forbidden_write_proof?.proof_refs, 'no_forbidden_write_proof.proof_refs');
   if (!options.allowMissingReviewerFields) {

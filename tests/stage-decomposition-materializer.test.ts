@@ -62,9 +62,18 @@ test('materializer writes the target stage pack from typed stage-decomposition c
 
     const actionCatalog = readJson(path.join(targetAgentDir, 'contracts/action_catalog.json'));
     const stageControl = readJson(path.join(targetAgentDir, 'contracts/stage_control_plane.json'));
+    const foundrySeries = readJson(path.join(targetAgentDir, 'contracts/foundry_agent_series.json'));
     const stage = stageById(stageControl, 'evidence-synthesis-plan');
 
     assert.equal(actionCatalog.actions[0].action_id, 'plan-evidence-synthesis');
+    assert.deepEqual(foundrySeries.shared_policy_release, {
+      policy_release_contract_ref: 'contracts/opl-framework/foundry-agent-series-policy-release.json',
+      policy_bundle_fingerprint: 'sha256:5d77102e99e6e49acd88714cd94dcafe0969b8f2a5529928d753002ac3d4619d',
+      fingerprint_algorithm: 'sha256:stable-json',
+      domain_contract_policy_release_pin_required: true,
+      domain_adapter_must_not_copy_policy_body_as_authority: true,
+      consumer_alignment_check: 'foundry:policy-release',
+    });
     assert.equal(stageControl.stage_pack_conformance_version, 'standard-stage-pack.v2');
     assert.equal(stage.goal, targetAgent.target_brief);
     assert.deepEqual(stage.allowed_action_refs, ['plan-evidence-synthesis']);
