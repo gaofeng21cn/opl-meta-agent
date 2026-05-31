@@ -446,6 +446,172 @@ test('execute external work order rejects platform-only refs counted as delivera
   assert.match(result.stderr, /platform-only repair refs cannot be counted as target-agent substantive deliverable progress/);
 });
 
+test('execute external work order rejects deliverable progress when platform repairs are also counted', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-execute-work-order-classification-test-'));
+  const workOrderPath = path.join(tempDir, 'developer-patch-work-order.json');
+  const workOrder = buildWorkOrder();
+  workOrder.target_progress_accounting = {
+    ...(workOrder.target_progress_accounting as JsonObject),
+    progress_delta_classification: 'deliverable_progress',
+  };
+  writeJson(workOrderPath, workOrder);
+
+  const result = spawnSync(
+    process.execPath,
+    [
+      '--experimental-strip-types',
+      path.join(repoRoot, 'scripts/execute-external-work-order.ts'),
+      '--work-order',
+      workOrderPath,
+      '--opl-bin',
+      path.join(tempDir, 'opl-not-called'),
+    ],
+    {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        NODE_NO_WARNINGS: '1',
+      },
+    },
+  );
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /deliverable_progress requires deliverable refs and no platform repair refs/);
+});
+
+test('execute external work order rejects platform repair when deliverable refs are also counted', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-execute-work-order-platform-mixed-test-'));
+  const workOrderPath = path.join(tempDir, 'developer-patch-work-order.json');
+  const workOrder = buildWorkOrder();
+  workOrder.target_progress_accounting = {
+    ...(workOrder.target_progress_accounting as JsonObject),
+    progress_delta_classification: 'platform_repair',
+  };
+  writeJson(workOrderPath, workOrder);
+
+  const result = spawnSync(
+    process.execPath,
+    [
+      '--experimental-strip-types',
+      path.join(repoRoot, 'scripts/execute-external-work-order.ts'),
+      '--work-order',
+      workOrderPath,
+      '--opl-bin',
+      path.join(tempDir, 'opl-not-called'),
+    ],
+    {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        NODE_NO_WARNINGS: '1',
+      },
+    },
+  );
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /platform_repair requires platform repair refs and no deliverable refs/);
+});
+
+test('execute external work order rejects typed blockers without next forced delta', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-execute-work-order-typed-blocker-test-'));
+  const workOrderPath = path.join(tempDir, 'developer-patch-work-order.json');
+  const workOrder = buildWorkOrder();
+  workOrder.target_progress_accounting = {
+    ...(workOrder.target_progress_accounting as JsonObject),
+    progress_delta_classification: 'typed_blocker',
+    deliverable_progress_delta: {
+      count: 0,
+      refs: [],
+      domain_alias: 'target_agent_substantive_delta',
+    },
+    platform_repair_delta: {
+      count: 0,
+      refs: [],
+      domain_alias: 'platform_interface_repair_delta',
+    },
+    substantive_deliverable_delta_refs: [],
+    platform_interface_repair_refs: [],
+    typed_blocker_lineage: {
+      blocker_family: 'owner_closeout_required',
+      study_id_or_domain_identity: 'example-agent',
+      work_unit_id: 'oma_developer_patch_work_order_test',
+      eval_id_or_review_ref: 'agent-lab-result-ref',
+      source_fingerprint: 'sha256:example',
+      repeat_count: 1,
+      repeat_budget: {
+        mechanism_repair_after_repeat_count: 2,
+        human_gate_or_stop_loss_after_repeat_count: 3,
+      },
+      first_seen: '2026-05-31T00:00:00Z',
+      last_seen: '2026-05-31T00:00:00Z',
+      last_deliverable_delta: 'none',
+      escalation_owner: 'target-agent-owner:example-agent',
+      terminal: false,
+    },
+    next_allowed_action: 'repair_target_agent_source',
+  };
+  writeJson(workOrderPath, workOrder);
+
+  const result = spawnSync(
+    process.execPath,
+    [
+      '--experimental-strip-types',
+      path.join(repoRoot, 'scripts/execute-external-work-order.ts'),
+      '--work-order',
+      workOrderPath,
+      '--opl-bin',
+      path.join(tempDir, 'opl-not-called'),
+    ],
+    {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        NODE_NO_WARNINGS: '1',
+      },
+    },
+  );
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /typed_blocker requires target_progress_accounting.next_forced_delta/);
+});
+
+test('execute external work order rejects human gates counted as deliverable progress', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-execute-work-order-human-gate-progress-test-'));
+  const workOrderPath = path.join(tempDir, 'developer-patch-work-order.json');
+  const workOrder = buildWorkOrder();
+  workOrder.target_progress_accounting = {
+    ...(workOrder.target_progress_accounting as JsonObject),
+    progress_delta_classification: 'human_gate',
+  };
+  writeJson(workOrderPath, workOrder);
+
+  const result = spawnSync(
+    process.execPath,
+    [
+      '--experimental-strip-types',
+      path.join(repoRoot, 'scripts/execute-external-work-order.ts'),
+      '--work-order',
+      workOrderPath,
+      '--opl-bin',
+      path.join(tempDir, 'opl-not-called'),
+    ],
+    {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        NODE_NO_WARNINGS: '1',
+      },
+    },
+  );
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /human_gate must not carry deliverable progress refs/);
+});
+
 test('execute external work order rejects OPL result without closeout refs or typed blocker', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-execute-work-order-opl-closeout-test-'));
   const fakeBinDir = path.join(tempDir, 'bin');

@@ -26,6 +26,13 @@ function requireStringArray(value: unknown, fieldName: string): string[] {
   return value.map((entry) => entry.trim());
 }
 
+function requireObject(value: unknown, fieldName: string): JsonObject {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error(`Invalid developer patch work order: ${fieldName} must be an object.`);
+  }
+  return value as JsonObject;
+}
+
 function requireNonEmptyString(value: unknown, fieldName: string): void {
   if (typeof value !== 'string' || value.trim().length === 0) {
     throw new Error(`Invalid developer patch work order: ${fieldName} must be a non-empty string.`);
@@ -47,6 +54,12 @@ function requireTypedBlockerRef(value: unknown, fieldName: string): void {
 function requireNonNegativeNumber(value: unknown, fieldName: string): void {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
     throw new Error(`Invalid developer patch work order: ${fieldName} must be a non-negative number.`);
+  }
+}
+
+function requireBoolean(value: unknown, fieldName: string): void {
+  if (typeof value !== 'boolean') {
+    throw new Error(`Invalid developer patch work order: ${fieldName} must be a boolean.`);
   }
 }
 
@@ -137,18 +150,87 @@ function isPlatformOnlyProgressRef(ref: string): boolean {
   ].some((prefix) => ref === prefix || ref.startsWith(prefix));
 }
 
+function requireSameStringArray(left: string[], right: string[], fieldName: string): void {
+  if (left.length !== right.length || left.some((entry, index) => entry !== right[index])) {
+    throw new Error(`Invalid developer patch work order: ${fieldName} must match target_progress_accounting shared refs.`);
+  }
+}
+
+function requireTypedBlockerProgressLineage(accounting: JsonObject): void {
+  if (typeof accounting.next_forced_delta !== 'string' || accounting.next_forced_delta.trim().length === 0) {
+    throw new Error(
+      'Invalid developer patch work order: typed_blocker requires target_progress_accounting.next_forced_delta.',
+    );
+  }
+  if (typeof accounting.next_allowed_action !== 'string' || accounting.next_allowed_action.trim().length === 0) {
+    throw new Error(
+      'Invalid developer patch work order: typed_blocker requires target_progress_accounting.next_allowed_action.',
+    );
+  }
+  const lineage = requireObject(
+    accounting.typed_blocker_lineage,
+    'target_progress_accounting.typed_blocker_lineage',
+  );
+  [
+    'blocker_family',
+    'study_id_or_domain_identity',
+    'work_unit_id',
+    'eval_id_or_review_ref',
+    'source_fingerprint',
+    'first_seen',
+    'last_seen',
+    'last_deliverable_delta',
+    'next_forced_delta',
+    'escalation_owner',
+  ].forEach((field) => {
+    requireNonEmptyString(lineage[field], `target_progress_accounting.typed_blocker_lineage.${field}`);
+  });
+  requireNonNegativeNumber(
+    lineage.repeat_count,
+    'target_progress_accounting.typed_blocker_lineage.repeat_count',
+  );
+  requireBoolean(lineage.terminal, 'target_progress_accounting.typed_blocker_lineage.terminal');
+  const repeatBudget = requireObject(
+    lineage.repeat_budget,
+    'target_progress_accounting.typed_blocker_lineage.repeat_budget',
+  );
+  requireNonNegativeNumber(
+    repeatBudget.mechanism_repair_after_repeat_count,
+    'target_progress_accounting.typed_blocker_lineage.repeat_budget.mechanism_repair_after_repeat_count',
+  );
+  requireNonNegativeNumber(
+    repeatBudget.human_gate_or_stop_loss_after_repeat_count,
+    'target_progress_accounting.typed_blocker_lineage.repeat_budget.human_gate_or_stop_loss_after_repeat_count',
+  );
+}
+
 function requireTargetProgressAccounting(workOrder: JsonObject): void {
-  const accounting = workOrder.target_progress_accounting;
+  const accounting = requireObject(workOrder.target_progress_accounting, 'target_progress_accounting');
+  const classification = String(accounting.progress_delta_classification);
   const deliverableRefs = requireStringArray(
-    accounting?.deliverable_progress_delta?.refs,
+    accounting.deliverable_progress_delta?.refs,
     'target_progress_accounting.deliverable_progress_delta.refs',
   );
   const substantiveRefs = requireStringArray(
-    accounting?.substantive_deliverable_delta_refs,
+    accounting.substantive_deliverable_delta_refs,
+    'target_progress_accounting.substantive_deliverable_delta_refs',
+  );
+  requireSameStringArray(
+    deliverableRefs,
+    substantiveRefs,
     'target_progress_accounting.substantive_deliverable_delta_refs',
   );
   const platformRefs = requireStringArray(
-    accounting?.platform_interface_repair_refs,
+    accounting.platform_interface_repair_refs,
+    'target_progress_accounting.platform_interface_repair_refs',
+  );
+  const sharedPlatformRefs = requireStringArray(
+    accounting.platform_repair_delta?.refs,
+    'target_progress_accounting.platform_repair_delta.refs',
+  );
+  requireSameStringArray(
+    sharedPlatformRefs,
+    platformRefs,
     'target_progress_accounting.platform_interface_repair_refs',
   );
   const forbiddenDeliverableRefs = [...new Set([...deliverableRefs, ...substantiveRefs])]
@@ -168,6 +250,41 @@ function requireTargetProgressAccounting(workOrder: JsonObject): void {
   if (platformCount !== platformRefs.length) {
     throw new Error(
       'Invalid developer patch work order: target_progress_accounting platform repair count must match platform/interface repair refs.',
+    );
+  }
+  const deliverableRefCount = deliverableRefs.length;
+  const platformRefCount = platformRefs.length;
+  if (classification === 'deliverable_progress' && (deliverableRefCount === 0 || platformRefCount !== 0)) {
+    throw new Error(
+      'Invalid developer patch work order: deliverable_progress requires deliverable refs and no platform repair refs.',
+    );
+  }
+  if (classification === 'platform_repair' && (platformRefCount === 0 || deliverableRefCount !== 0)) {
+    throw new Error(
+      'Invalid developer patch work order: platform_repair requires platform repair refs and no deliverable refs.',
+    );
+  }
+  if (classification === 'mixed' && (deliverableRefCount === 0 || platformRefCount === 0)) {
+    throw new Error(
+      'Invalid developer patch work order: mixed requires both deliverable refs and platform repair refs.',
+    );
+  }
+  if (classification === 'typed_blocker') {
+    if (deliverableRefCount !== 0 || platformRefCount !== 0) {
+      throw new Error(
+        'Invalid developer patch work order: typed_blocker requires zero deliverable refs and zero platform repair refs.',
+      );
+    }
+    requireTypedBlockerProgressLineage(accounting);
+  }
+  if (classification === 'human_gate' && deliverableRefCount !== 0) {
+    throw new Error(
+      'Invalid developer patch work order: human_gate must not carry deliverable progress refs.',
+    );
+  }
+  if (classification === 'stop_loss' && deliverableRefCount !== 0) {
+    throw new Error(
+      'Invalid developer patch work order: stop_loss must not carry deliverable progress refs.',
     );
   }
 }

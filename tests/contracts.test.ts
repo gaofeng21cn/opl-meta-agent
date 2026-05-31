@@ -9,6 +9,8 @@ import type { JsonObject } from '../scripts/lib/domain-pack.ts';
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const oplBin = process.env.OPL_BIN
   ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
+const oplOwnerRepoRoot = process.env.OPL_OWNER_REPO_ROOT
+  ?? '/Users/gaofeng/workspace/one-person-lab';
 const placeholderPattern = new RegExp(`\\b(?:TO${'DO'}|T${'BD'})\\b`, 'i');
 const oplSharedReleaseDependency =
   'git+https://github.com/gaofeng21cn/one-person-lab.git#c5d4a93bd4bb64adf1228ecf7f2a9038c7dce278';
@@ -28,6 +30,10 @@ function readJson(relativePath: string): JsonObject {
 
 function readText(relativePath: string): string {
   return fs.readFileSync(path.join(repoRoot, relativePath), 'utf8');
+}
+
+function readOwnerJson(relativePath: string): JsonObject {
+  return JSON.parse(fs.readFileSync(path.join(oplOwnerRepoRoot, relativePath), 'utf8'));
 }
 
 function listMarkdownFiles(relativeDir: string): string[] {
@@ -665,6 +671,27 @@ test('foundry agent series contract binds OMA to shared Progress-First projectio
     String(sharedPackageLock.resolved).endsWith(`#${oplSharedReleaseCommit}`),
     true,
     'opl-framework-shared lockfile entry must pin the OPL shared release commit',
+  );
+});
+
+test('foundry agent series policy fingerprint matches the OPL owner release contract', () => {
+  const series = readJson('contracts/foundry_agent_series.json');
+  const ownerPolicyRelease = readOwnerJson(
+    series.shared_policy_release.policy_release_contract_ref as string,
+  );
+
+  assert.equal(ownerPolicyRelease.owner, 'one-person-lab');
+  assert.equal(
+    series.shared_policy_release.policy_bundle_fingerprint,
+    ownerPolicyRelease.policy_bundle_fingerprint,
+  );
+  assert.equal(
+    series.shared_policy_release.fingerprint_algorithm,
+    ownerPolicyRelease.fingerprint_algorithm,
+  );
+  assert.equal(
+    ownerPolicyRelease.domain_pin_requirements.domain_adapter_must_not_copy_policy_body_as_authority,
+    true,
   );
 });
 
