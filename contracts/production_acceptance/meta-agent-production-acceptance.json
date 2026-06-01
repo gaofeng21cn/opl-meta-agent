@@ -173,6 +173,50 @@
       "can_promote_default_agent_without_gate": false
     }
   },
+  "purpose_first_owner_delta_gate": {
+    "surface_kind": "opl_meta_agent_purpose_first_owner_delta_gate",
+    "owner": "opl-meta-agent",
+    "status": "active",
+    "role": "constrain production evidence and work-order followthrough to target-agent semantics, explicit owner delta, or typed blocker",
+    "accepted_output_refs": [
+      "target_agent_semantic_delta_ref",
+      "developer_patch_work_order_ref",
+      "target_capability_improvement_candidate_ref",
+      "mechanism_patch_proposal_ref",
+      "typed_blocker_ref"
+    ],
+    "required_next_owner_delta_refs": [
+      "next_forced_delta_ref",
+      "target_owner_route_ref",
+      "target_verification_ref",
+      "no_forbidden_write_proof_ref",
+      "target_owner_receipt_or_typed_blocker_ref"
+    ],
+    "delegated_owner_surfaces": {
+      "agent_lab_runner_owner": "one-person-lab",
+      "promotion_gate_owner": "one-person-lab",
+      "registry_owner": "one-person-lab",
+      "app_shell_owner": "one-person-lab-app via OPL/App contracts",
+      "target_worktree_lifecycle_owner": "one-person-lab work-order execute primitive",
+      "target_owner_closeout_owner": "target-domain via OPL"
+    },
+    "materializer_boundary": {
+      "scripts_may_materialize_refs_only_outputs": true,
+      "scripts_can_become_second_agent_lab": false,
+      "scripts_can_become_promotion_gate": false,
+      "scripts_can_close_default_promotion": false,
+      "scripts_can_write_target_owner_receipt_body": false,
+      "scripts_can_write_target_domain_truth": false,
+      "scripts_can_claim_domain_or_production_ready": false
+    },
+    "fail_closed_typed_blocker_when_missing": [
+      "next_forced_delta_ref",
+      "target_owner_route_ref",
+      "target_verification_ref",
+      "no_forbidden_write_proof_ref",
+      "target_owner_receipt_or_typed_blocker_ref"
+    ]
+  },
   "acceptance_receipt": {
     "receipt_class": "external_agent_takeover_improve_loop_acceptance_receipt",
     "receipt_ref": "production-acceptance-receipt:opl-meta-agent/external-agent-takeover-improve-loop/2026-05-19",

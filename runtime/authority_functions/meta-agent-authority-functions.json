@@ -394,6 +394,47 @@
       }
     ]
   },
+  "purpose_first_owner_delta_gate": {
+    "gate_id": "purpose-first-owner-delta-gate",
+    "status": "active",
+    "default_output_shape": "target_agent_semantics_or_work_order_or_candidate_or_typed_blocker",
+    "allowed_output_refs": [
+      "target_agent_semantic_delta_ref",
+      "developer_patch_work_order_ref",
+      "target_capability_improvement_candidate_ref",
+      "mechanism_patch_proposal_ref",
+      "typed_blocker_ref"
+    ],
+    "required_owner_delta_refs": [
+      "next_forced_delta_ref",
+      "target_owner_route_ref",
+      "target_verification_ref",
+      "no_forbidden_write_proof_ref",
+      "target_owner_receipt_or_typed_blocker_ref"
+    ],
+    "stable_policy_home_refs": [
+      "agent/",
+      "contracts/",
+      "runtime/authority_functions/",
+      "opl_framework_primitive_ref"
+    ],
+    "materializer_boundary": {
+      "scripts_may_materialize_refs_only_outputs": true,
+      "scripts_can_own_agent_lab_runner": false,
+      "scripts_can_own_promotion_gate": false,
+      "scripts_can_own_registry_or_app_shell": false,
+      "scripts_can_own_target_worktree_lifecycle": false,
+      "scripts_can_write_target_owner_receipt_body": false,
+      "scripts_can_write_target_truth_or_verdict": false
+    },
+    "fail_closed_when_missing": [
+      "next_forced_delta_ref",
+      "target_owner_route_ref",
+      "target_verification_ref",
+      "no_forbidden_write_proof_ref",
+      "target_owner_receipt_or_typed_blocker_ref"
+    ]
+  },
   "source_purity_scan_receipt": {
     "receipt_id": "source-purity-scan:opl-meta-agent/2026-05-25/strict-standard-agent",
     "status": "passed",
@@ -469,7 +510,7 @@
         "repo_owned_status_read_model_materializer",
         "repo_owned_workbench_wrapper_materializer"
       ],
-      "retained_materializer_role": "refs_only_developer_work_order_or_evidence_materializer",
+      "retained_materializer_role": "refs_only_target_agent_semantics_work_order_candidate_or_typed_blocker_materializer",
       "excluded_standard_surface_paths": [
         "agent/",
         "contracts/",
@@ -491,6 +532,7 @@
       "repo_owned_generic_cli_mcp_skill_product_status_workbench_wrapper",
       "agent_lab_runner_or_promotion_gate",
       "generic_queue_attempt_ledger_or_worktree_lifecycle",
+      "registry_app_shell_or_target_owner_closeout_hook_owner",
       "target_truth_memory_artifact_quality_or_owner_receipt_writer"
     ],
     "verification_refs": [
