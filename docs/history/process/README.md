@@ -10,3 +10,4 @@ Machine boundary: 本目录只记录人读治理过程、覆盖 ledger、退役 
 | 文件 | 内容 | 当前读法 |
 | --- | --- | --- |
 | [`2026-05-30-oma-private-inventory-process-ledger.md`](./2026-05-30-oma-private-inventory-process-ledger.md) | OPL series automation-2 对 OMA private implementation inventory 的 active-path process-log cleanup ledger。 | 当前迁移门仍以 `docs/active/opl-private-implementation-migration-inventory.md` 为准；本文只记录被移出的 dated process/proof 语境。 |
+| [`2026-06-02-oma-docs-portfolio-coverage-ledger-archive.md`](./2026-06-02-oma-docs-portfolio-coverage-ledger-archive.md) | 原 `docs/docs_portfolio_consolidation.md` 中的 OMA dated coverage tranche 与 folded tranche history。 | 当前 coverage state 仍以 `docs/docs_portfolio_consolidation.md` 为准；本文只记录被移出的 dated process/proof 语境。 |
