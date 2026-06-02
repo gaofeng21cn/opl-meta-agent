@@ -72,6 +72,17 @@ function assertNoForbiddenAuthority(surface: JsonObject, label: string): void {
   assert.equal(surface.authority_boundary.can_promote_default_agent_without_gate, false);
 }
 
+function assertNoActiveMorphologyForbiddenOwnerTokens(surface: JsonObject, label: string): void {
+  const serialized = JSON.stringify(surface);
+  for (const token of ['app_shell_owner', 'promotion_gate_owner']) {
+    assert.equal(
+      serialized.includes(token),
+      false,
+      `${label} should not carry active forbidden morphology token ${token}`,
+    );
+  }
+}
+
 function assertNoForbiddenDesignCenterVocabulary(relativePath: string): void {
   const content = readText(relativePath).toLowerCase();
   [
@@ -1418,6 +1429,18 @@ test('production acceptance evidence closes conformance evidence tail through re
     'production_consumption_refs_projected',
   );
   assert.equal(acceptance.production_consumption_followthrough.production_consumption_ready, true);
+  assert.equal(
+    acceptance.production_consumption_followthrough.production_consumption_ready_semantics,
+    'refs_only_current_cohort_consumption_gate_ready_not_production_readiness_verdict',
+  );
+  assert.equal(
+    acceptance.production_consumption_followthrough.current_cohort_refs_only_consumption_ready,
+    true,
+  );
+  assert.equal(
+    acceptance.production_consumption_followthrough.production_readiness_verdict_claimed,
+    false,
+  );
   assert.equal(acceptance.production_consumption_followthrough.open_gate_count, 0);
   assert.equal(acceptance.production_consumption_followthrough.gate_count, 4);
   assert.equal(acceptance.production_consumption_followthrough.long_soak_claimed, false);
@@ -1458,6 +1481,12 @@ test('production acceptance evidence closes conformance evidence tail through re
   assert.equal(productionConsumptionBlocker.superseded_by_status, 'production_consumption_refs_projected');
   assert.equal(productionConsumptionBlocker.blocked_gate, 'long_soak_refs');
   assert.equal(productionConsumptionBlocker.production_consumption_ready, true);
+  assert.equal(
+    productionConsumptionBlocker.production_consumption_ready_semantics,
+    'refs_only_current_cohort_consumption_gate_ready_not_production_readiness_verdict',
+  );
+  assert.equal(productionConsumptionBlocker.current_cohort_refs_only_consumption_ready, true);
+  assert.equal(productionConsumptionBlocker.production_readiness_verdict_claimed, false);
   assert.equal(productionConsumptionBlocker.open_gate_count, 0);
   assert.equal(productionConsumptionBlocker.long_soak_claimed, false);
   assert.equal(productionConsumptionBlocker.active_blocker, false);
@@ -1495,6 +1524,15 @@ test('production acceptance evidence closes conformance evidence tail through re
     acceptance.acceptance_receipt.receipt_class,
     'external_agent_takeover_improve_loop_acceptance_receipt',
   );
+  assert.deepEqual(acceptance.purpose_first_owner_delta_gate.delegated_surface_owners, {
+    agent_lab_runner_delegated_to: 'one-person-lab',
+    promotion_gate_delegated_to: 'one-person-lab',
+    registry_delegated_to: 'one-person-lab',
+    app_shell_delegated_to: 'one-person-lab-app via OPL/App contracts',
+    target_worktree_lifecycle_delegated_to: 'one-person-lab work-order execute primitive',
+    target_owner_closeout_delegated_to: 'target-domain via OPL',
+  });
+  assertNoActiveMorphologyForbiddenOwnerTokens(acceptance, 'productionAcceptance');
   assert.equal(acceptance.promotion_gate.promotion_status, 'gated');
   assert.ok(acceptance.promotion_gate.required_next_verification_command_refs.includes('cmd:rtk npm test'));
   assert.ok(acceptance.promotion_gate.required_next_verification_command_refs.includes('cmd:rtk npm run typecheck'));

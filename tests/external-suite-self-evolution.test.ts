@@ -1020,6 +1020,14 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
       workOrder.required_opl_work_order_primitive_refs.promotion_readiness_primitive_ref,
       /^opl-work-order-primitive:promotion-readiness\/med-autoscience\//,
     );
+    assert.match(
+      workOrder.required_opl_work_order_primitive_refs.promotion_gate_projection_ref,
+      /^opl-work-order-primitive:promotion-gate-projection\/med-autoscience\//,
+    );
+    assert.match(
+      workOrder.required_opl_work_order_primitive_refs.owner_gated_promotion_projection_ref,
+      /^opl-work-order-primitive:owner-gated-promotion-projection\/med-autoscience\//,
+    );
     assert.equal(workOrder.no_forbidden_write_proof.can_write_target_domain_truth, false);
     assert.equal(workOrder.work_order_completeness.required_fields_present, true);
     assert.ok(workOrder.work_order_completeness.reviewer_refs.includes(reviewerEvaluationPath));

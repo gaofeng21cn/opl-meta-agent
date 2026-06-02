@@ -70,6 +70,73 @@
       "agent-lab-result-ref:opl-meta-agent/publication-brief-agent/baseline/2026-05-28"
     ]
   },
+  "repeat_consumption_scaleout": {
+    "status": "verified_repeat_new_agent_consumption_current_scaffold",
+    "cohort_count": 2,
+    "latest_evidence_ref": "new-agent-consumption:opl-meta-agent/handoff-analyst-agent/2026-06-01",
+    "generator_drift_closed": true,
+    "closed_generator_drift_refs": [
+      "blocker:generated-target-stage-progress-delta-policy-missing",
+      "blocker:generated-target-typed-blocker-lineage-policy-missing",
+      "blocker:generated-target-foundry-series-design-profile-missing"
+    ],
+    "cohorts": [
+      {
+        "evidence_ref": "new-agent-consumption:opl-meta-agent/publication-brief-agent/2026-05-28",
+        "target_agent_id": "publication-brief-agent",
+        "structural_conformance_status": "passed",
+        "generated_interface_status": "ready",
+        "readiness_status": "passed_with_production_evidence_tail",
+        "agent_lab_result_ref": "oals_95a2f0173d0e6e3742e15c26",
+        "baseline_delivery_receipt_ref": "oma_receipt_0c569641739e",
+        "tail_status": "open_tail_remains"
+      },
+      {
+        "evidence_ref": "new-agent-consumption:opl-meta-agent/handoff-analyst-agent/2026-06-01",
+        "target_agent_id": "handoff-analyst-agent",
+        "target_brief_ref": "brief-ref:opl-meta-agent/handoff-analyst-agent/operator-handoff-analysis-typed-blocker-agent",
+        "generated_package_ref": "artifact-ref:handoff-analyst-agent/generated-package/2026-06-01",
+        "stage_decomposition_attempt_ref": "fixture-attempt:opl-meta-agent/handoff-analyst-agent/stage-decomposition",
+        "stage_decomposition_closeout_ref": "closeout-packet:opl-meta-agent/handoff-analyst-agent/stage-decomposition",
+        "agent_lab_result_ref": "oals_09c09f653fc8908cfdc48a85",
+        "baseline_delivery_receipt_ref": "oma_receipt_1f147adc86a7",
+        "real_target_agent_lab_result_ref": "oals_1443545290921cfab875e2d1",
+        "real_target_delivery_receipt_ref": "oma_real_target_delivery_aa02f281d0bd",
+        "stage_pack_v2_status": "passed",
+        "progress_delta_policy_status": "present",
+        "typed_blocker_lineage_policy_status": "present",
+        "foundry_series_design_profile": "opl_foundry_agent_series_design_profile.v1",
+        "structural_conformance_status": "passed",
+        "generated_interface_status": "ready",
+        "product_entry_descriptor_status": "ready",
+        "workbench_descriptor_status": "ready_from_stage_control_plane",
+        "readiness_status": "passed_with_production_evidence_tail",
+        "production_ready_claimed": false,
+        "domain_ready_claimed": false,
+        "default_promotion_claimed": false,
+        "long_soak_claimed": false,
+        "tail_status": "open_tail_remains"
+      }
+    ],
+    "minimum_current_scaffold_consumption_checks": [
+      "stage_pack_v2_conformance_passed",
+      "progress_delta_policy_present",
+      "typed_blocker_lineage_policy_present",
+      "foundry_series_design_profile_present",
+      "generated_interface_ready",
+      "product_entry_descriptor_ready",
+      "workbench_descriptor_ready",
+      "readiness_passed_with_production_evidence_tail"
+    ],
+    "authority_boundary": {
+      "refs_only": true,
+      "can_claim_domain_ready": false,
+      "can_claim_production_ready": false,
+      "can_close_long_soak_gate": false,
+      "can_promote_default_agent_without_gate": false,
+      "can_write_opl_runtime_state": false
+    }
+  },
   "production_evidence_tail": {
     "status": "open_tail_remains",
     "tail_items": [
@@ -101,6 +168,11 @@
     "cmd:rtk /Users/gaofeng/workspace/one-person-lab/bin/opl agents conformance --agent publication-brief-agent=/tmp/oma-new-agent-consumption-20260528/build-v2/publication-brief-agent --json",
     "cmd:rtk /Users/gaofeng/workspace/one-person-lab/bin/opl agents interfaces --repo-dir /tmp/oma-new-agent-consumption-20260528/build-v2/publication-brief-agent --json",
     "cmd:rtk /Users/gaofeng/workspace/one-person-lab/bin/opl agents readiness --repo-dir /tmp/oma-new-agent-consumption-20260528/build-v2/publication-brief-agent --json",
+    "cmd:rtk npm run build-agent-baseline -- --output-dir /tmp/oma-new-agent-consumption-20260601-green/build-v2 --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl --stage-runner fixture --domain-id handoff-analyst-agent --domain-label 'Handoff Analyst Agent' --delivery-domain 'operator handoff analysis' --target-brief <brief> --ai-reviewer-evaluation /tmp/oma-new-agent-consumption-20260601-green/ai-reviewer-evaluation.json",
+    "cmd:rtk /Users/gaofeng/workspace/one-person-lab/bin/opl agents scaffold --validate /tmp/oma-new-agent-consumption-20260601-green/build-v2/handoff-analyst-agent --json",
+    "cmd:rtk /Users/gaofeng/workspace/one-person-lab/bin/opl agents conformance --agent handoff-analyst-agent=/tmp/oma-new-agent-consumption-20260601-green/build-v2/handoff-analyst-agent --json",
+    "cmd:rtk /Users/gaofeng/workspace/one-person-lab/bin/opl agents interfaces --repo-dir /tmp/oma-new-agent-consumption-20260601-green/build-v2/handoff-analyst-agent --json",
+    "cmd:rtk /Users/gaofeng/workspace/one-person-lab/bin/opl agents readiness --repo-dir /tmp/oma-new-agent-consumption-20260601-green/build-v2/handoff-analyst-agent --json",
     "cmd:rtk node --test tests/stage-decomposition-materializer.test.ts tests/bootstrap-loop.test.ts"
   ],
   "next_required_evidence_refs": [

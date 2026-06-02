@@ -139,6 +139,9 @@
   "production_consumption_followthrough": {
     "status": "production_consumption_refs_projected",
     "production_consumption_ready": true,
+    "production_consumption_ready_semantics": "refs_only_current_cohort_consumption_gate_ready_not_production_readiness_verdict",
+    "current_cohort_refs_only_consumption_ready": true,
+    "production_readiness_verdict_claimed": false,
     "open_gate_count": 0,
     "gate_count": 4,
     "long_soak_claimed": false,
@@ -192,13 +195,13 @@
       "no_forbidden_write_proof_ref",
       "target_owner_receipt_or_typed_blocker_ref"
     ],
-    "delegated_owner_surfaces": {
-      "agent_lab_runner_owner": "one-person-lab",
-      "promotion_gate_owner": "one-person-lab",
-      "registry_owner": "one-person-lab",
-      "app_shell_owner": "one-person-lab-app via OPL/App contracts",
-      "target_worktree_lifecycle_owner": "one-person-lab work-order execute primitive",
-      "target_owner_closeout_owner": "target-domain via OPL"
+    "delegated_surface_owners": {
+      "agent_lab_runner_delegated_to": "one-person-lab",
+      "promotion_gate_delegated_to": "one-person-lab",
+      "registry_delegated_to": "one-person-lab",
+      "app_shell_delegated_to": "one-person-lab-app via OPL/App contracts",
+      "target_worktree_lifecycle_delegated_to": "one-person-lab work-order execute primitive",
+      "target_owner_closeout_delegated_to": "target-domain via OPL"
     },
     "materializer_boundary": {
       "scripts_may_materialize_refs_only_outputs": true,
@@ -253,11 +256,17 @@
     "fixture_status": "required_by_default_generated_agent",
     "fixture_ref": "contracts/production_acceptance/morphology_conformance_fixture.json",
     "latest_new_agent_consumption_evidence_ref": "contracts/production_acceptance/new_agent_consumption_evidence.json",
+    "new_agent_consumption_repeat_cohort_count": 2,
+    "latest_new_agent_consumption_cohort_ref": "new-agent-consumption:opl-meta-agent/handoff-analyst-agent/2026-06-01",
+    "current_scaffold_generator_drift_closed": true,
     "required_check_refs": [
       "check-ref:generated-agent/domain-pack-files-present",
       "check-ref:generated-agent/stage-action-contracts-present",
       "check-ref:generated-agent/stage-pack-v2-conformance-passed",
       "check-ref:generated-agent/default-codex-cli-binding-present",
+      "check-ref:generated-agent/progress-delta-policy-present",
+      "check-ref:generated-agent/typed-blocker-lineage-policy-present",
+      "check-ref:generated-agent/foundry-series-design-profile-present",
       "check-ref:generated-agent/independent-gate-file-ref-present",
       "check-ref:generated-agent/OPL-generated-interface-owner",
       "check-ref:generated-agent/no-target-domain-truth-write",

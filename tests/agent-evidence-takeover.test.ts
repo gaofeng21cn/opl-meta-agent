@@ -552,6 +552,14 @@ test('agent:evidence generates domain Agent Lab suite and proposal artifacts fro
       workOrder.required_opl_work_order_primitive_refs.promotion_readiness_primitive_ref,
       /^opl-work-order-primitive:promotion-readiness\/med-autoscience\//,
     );
+    assert.match(
+      workOrder.required_opl_work_order_primitive_refs.promotion_gate_projection_ref,
+      /^opl-work-order-primitive:promotion-gate-projection\/med-autoscience\//,
+    );
+    assert.match(
+      workOrder.required_opl_work_order_primitive_refs.owner_gated_promotion_projection_ref,
+      /^opl-work-order-primitive:owner-gated-promotion-projection\/med-autoscience\//,
+    );
     assert.equal(workOrder.implementation_controls.no_forbidden_write_proof_required, true);
     assert.ok(workOrder.editable_surface_limits.editable_surfaces.includes('agent/prompts'));
     assert.ok(workOrder.allowed_editable_surfaces.includes('agent/prompts'));

@@ -269,6 +269,23 @@
         "forbidden_roles": []
       },
       {
+        "script_ref": "scripts/lib/standard-foundry-policies.ts",
+        "classes": [
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [
+          "opl_standard_domain_agent_scaffold"
+        ],
+        "writes_only": [
+          "standard_foundry_policy_ref",
+          "stage_progress_delta_policy_ref",
+          "typed_blocker_lineage_policy_ref",
+          "foundry_agent_series_design_profile_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
         "script_ref": "scripts/lib/stage-decomposition-runner.ts",
         "classes": [
           "smoke_helper",
@@ -317,7 +334,9 @@
           "workspace_environment_proof_ref",
           "no_forbidden_write_proof_ref",
           "opl_work_order_readiness_primitive_ref",
-          "opl_work_order_promotion_readiness_primitive_ref"
+          "opl_work_order_promotion_readiness_primitive_ref",
+          "opl_work_order_promotion_gate_projection_ref",
+          "opl_work_order_owner_gated_promotion_projection_ref"
         ],
         "forbidden_roles": []
       },
@@ -459,6 +478,7 @@
       "scripts/lib/meta-agent-loop-receipts.ts",
       "scripts/lib/meta-agent-loop.ts",
       "scripts/lib/stage-decomposition-pack-draft.ts",
+      "scripts/lib/standard-foundry-policies.ts",
       "scripts/lib/stage-decomposition-runner.ts",
       "scripts/lib/target-improvement-policy.ts",
       "scripts/lib/work-order-builders.ts",

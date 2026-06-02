@@ -203,7 +203,7 @@ test('script morphology stays limited to authority refs, materializers, and help
   ]);
   assert.equal(
     materializerScan.retained_materializer_role,
-    'refs_only_developer_work_order_or_evidence_materializer',
+    'refs_only_target_agent_semantics_work_order_candidate_or_typed_blocker_materializer',
   );
 
   const implementationRefs = new Map<string, string[]>();

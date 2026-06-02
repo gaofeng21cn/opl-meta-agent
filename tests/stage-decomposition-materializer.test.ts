@@ -102,6 +102,49 @@ test('materializer writes the target stage pack from typed stage-decomposition c
         'evidence_refs',
       ],
     );
+    assert.equal(
+      stage.stage_contract.progress_delta_policy.surface_kind,
+      'opl_stage_progress_delta_policy',
+    );
+    assert.deepEqual(
+      stage.stage_contract.progress_delta_policy.required_fields,
+      [
+        'progress_delta_classification',
+        'deliverable_progress_delta',
+        'platform_repair_delta',
+        'next_forced_delta',
+      ],
+    );
+    assert.equal(
+      stage.stage_contract.progress_delta_policy.deliverable_delta_aliases.target_agent_progress,
+      'deliverable_progress_delta',
+    );
+    assert.equal(
+      stage.stage_contract.progress_delta_policy.platform_delta_aliases.platform_interface_repair,
+      'platform_repair_delta',
+    );
+    assert.equal(stage.stage_contract.progress_delta_policy.platform_only_is_not_deliverable_progress, true);
+    assert.equal(
+      stage.stage_contract.typed_blocker_lineage_policy.surface_kind,
+      'family-stall-lineage.v1',
+    );
+    assert.ok(
+      stage.stage_contract.typed_blocker_lineage_policy.required_fields.includes('next_forced_delta'),
+    );
+    assert.equal(
+      stage.stage_contract.typed_blocker_lineage_policy.repeat_budget.mechanism_repair_after_repeat_count,
+      2,
+    );
+    assert.equal(foundrySeries.series_design_profile.profile_id, 'opl_foundry_agent_series_design_profile.v1');
+    assert.deepEqual(foundrySeries.series_design_profile.stage_pack_sections, [
+      'prompts',
+      'stages',
+      'skills',
+      'knowledge',
+      'quality_gates',
+    ]);
+    assert.equal(foundrySeries.series_design_profile.shared_closeout_contract.provider_completion_is_closeout, false);
+    assert.equal(foundrySeries.series_design_profile.authority_invariants.opl_can_write_domain_truth, false);
 
     [
       'agent/prompts/evidence-synthesis-plan.md',

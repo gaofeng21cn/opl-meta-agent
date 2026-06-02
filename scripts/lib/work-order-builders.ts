@@ -217,6 +217,10 @@ export function buildOplWorkOrderPrimitiveRefs({
       `opl-work-order-primitive:work-order-readiness/${domainId}/${workOrderId}${modeSuffix}`,
     promotion_readiness_primitive_ref:
       `opl-work-order-primitive:promotion-readiness/${domainId}/${workOrderId}${modeSuffix}`,
+    promotion_gate_projection_ref:
+      `opl-work-order-primitive:promotion-gate-projection/${domainId}/${workOrderId}${modeSuffix}`,
+    owner_gated_promotion_projection_ref:
+      `opl-work-order-primitive:owner-gated-promotion-projection/${domainId}/${workOrderId}${modeSuffix}`,
     target_owner_return_primitive_ref:
       `opl-work-order-primitive:target-owner-return/${domainId}/${workOrderId}`,
     patch_traceability_primitive_ref:

@@ -3,6 +3,13 @@ import path from 'node:path';
 import type { JsonObject } from './domain-pack.ts';
 import type { TargetAgent } from './meta-agent-loop.ts';
 import { writeJson } from './meta-agent-loop.ts';
+import {
+  SERIES_DESIGN_PROFILE,
+  STAGE_PROGRESS_DELTA_POLICY,
+  TYPED_BLOCKER_LINEAGE_POLICY,
+  USER_STAGE_LOG_CONTRACT,
+  USER_STAGE_LOG_REQUIRED_FIELDS,
+} from './standard-foundry-policies.ts';
 
 const FORBIDDEN_GENERIC_OWNER_ROLES = [
   'generic_scheduler_owner',
@@ -39,42 +46,6 @@ const SHARED_POLICY_RELEASE = {
   domain_adapter_must_not_copy_policy_body_as_authority: true,
   consumer_alignment_check: 'foundry:policy-release',
 } as const;
-
-const USER_STAGE_LOG_REQUIRED_FIELDS = [
-  'stage_name',
-  'problem_summary',
-  'stage_goal',
-  'stage_work_done',
-  'changed_stage_surfaces',
-  'outcome',
-  'remaining_blockers',
-  'evidence_refs',
-];
-
-const USER_STAGE_LOG_CONTRACT = {
-  surface_kind: 'opl_standard_agent_user_stage_log_contract',
-  version: 'standard-user-stage-log.v1',
-  owner: 'one-person-lab',
-  standard_agent_requirement: 'domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker',
-  opl_projection_surface: 'stage_progress_log.user_stage_log',
-  domain_semantic_sources: [
-    'typed_closeout_packet.user_stage_log',
-    'typed_closeout_packet.stage_log_summary',
-    'route_impact.user_stage_log',
-    'route_impact.stage_log_summary',
-  ],
-  required_domain_semantic_fields: USER_STAGE_LOG_REQUIRED_FIELDS,
-  required_observability_fields: ['duration', 'token_usage', 'cost'],
-  missing_semantics_policy: 'typed_blocker_or_missing_domain_semantic_summary_no_opl_inference',
-  token_policy: 'observed_or_explicit_missing_null_no_zero_fill',
-  authority_boundary: {
-    opl_can_infer_domain_semantics: false,
-    opl_can_read_artifact_body: false,
-    opl_can_write_domain_truth: false,
-    opl_can_authorize_quality_or_export: false,
-    provider_completion_can_claim_stage_semantics_complete: false,
-  },
-};
 
 export type StageRunnerKind = 'fixture' | 'live';
 
@@ -388,6 +359,8 @@ function buildStageControlPlane({
           artifact_scope_refs: [ref('artifact_scope_ref', `artifact-scope:${stageId}`)],
           workspace_scope_refs: [ref('workspace_scope_ref', `workspace-scope:${stageId}`)],
           user_stage_log_contract: USER_STAGE_LOG_CONTRACT,
+          progress_delta_policy: STAGE_PROGRESS_DELTA_POLICY,
+          typed_blocker_lineage_policy: TYPED_BLOCKER_LINEAGE_POLICY,
         },
         trust_boundary: {
           lane: 'domain_agent',
@@ -486,6 +459,7 @@ function buildFoundryAgentSeriesContract(targetAgent: TargetAgent, stageControlP
       app_owns_display_and_user_action_shell: true,
       generated_surface_can_claim_domain_ready: false,
     },
+    series_design_profile: SERIES_DESIGN_PROFILE,
   };
 }
 
@@ -872,6 +846,45 @@ function validateStageControlPlane(
         throw new Error(`stage-decomposition pack draft stage ${stageId} user_stage_log_contract missing field ${field}.`);
       }
     }
+    const progressDeltaPolicy = asRecord(contract.progress_delta_policy, `stage ${stageId}.stage_contract.progress_delta_policy`);
+    if (progressDeltaPolicy.surface_kind !== STAGE_PROGRESS_DELTA_POLICY.surface_kind) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} progress_delta_policy.surface_kind is invalid.`);
+    }
+    const progressRequiredFields = asStringArray(
+      progressDeltaPolicy.required_fields,
+      `stage ${stageId}.stage_contract.progress_delta_policy.required_fields`,
+    );
+    [
+      'progress_delta_classification',
+      'deliverable_progress_delta',
+      'platform_repair_delta',
+      'next_forced_delta',
+    ].forEach((field) => {
+      if (!progressRequiredFields.includes(field)) {
+        throw new Error(`stage-decomposition pack draft stage ${stageId} progress_delta_policy missing field ${field}.`);
+      }
+    });
+    const typedBlockerLineagePolicy = asRecord(
+      contract.typed_blocker_lineage_policy,
+      `stage ${stageId}.stage_contract.typed_blocker_lineage_policy`,
+    );
+    if (typedBlockerLineagePolicy.surface_kind !== TYPED_BLOCKER_LINEAGE_POLICY.surface_kind) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} typed_blocker_lineage_policy.surface_kind is invalid.`);
+    }
+    const blockerRequiredFields = asStringArray(
+      typedBlockerLineagePolicy.required_fields,
+      `stage ${stageId}.stage_contract.typed_blocker_lineage_policy.required_fields`,
+    );
+    [
+      'blocker_family',
+      'repeat_count',
+      'next_forced_delta',
+      'escalation_owner',
+    ].forEach((field) => {
+      if (!blockerRequiredFields.includes(field)) {
+        throw new Error(`stage-decomposition pack draft stage ${stageId} typed_blocker_lineage_policy missing field ${field}.`);
+      }
+    });
     const boundary = asRecord(stage.authority_boundary, `stage ${stageId}.authority_boundary`);
     [
       'can_write_target_domain_truth',
@@ -925,8 +938,38 @@ export function validateStageDecompositionCloseoutPacket(
   const stageControl = asRecord(draft.stage_control_plane, 'stage_control_plane');
   validateActionCatalog(actionCatalog, targetAgent);
   validateStageControlPlane(stageControl, actionCatalog, targetAgent, files);
+  const foundrySeries = asRecord(draft.foundry_agent_series, 'foundry_agent_series');
+  const seriesDesignProfile = asRecord(foundrySeries.series_design_profile, 'foundry_agent_series.series_design_profile');
+  if (seriesDesignProfile.surface_kind !== SERIES_DESIGN_PROFILE.surface_kind) {
+    throw new Error('stage-decomposition pack draft foundry_agent_series.series_design_profile.surface_kind is invalid.');
+  }
+  if (seriesDesignProfile.profile_id !== SERIES_DESIGN_PROFILE.profile_id) {
+    throw new Error('stage-decomposition pack draft foundry_agent_series.series_design_profile.profile_id is invalid.');
+  }
+  const stagePackSections = asStringArray(
+    seriesDesignProfile.stage_pack_sections,
+    'foundry_agent_series.series_design_profile.stage_pack_sections',
+  );
+  asStringArray(
+    SERIES_DESIGN_PROFILE.stage_pack_sections,
+    'standard_foundry_policy.series_design_profile.stage_pack_sections',
+  ).forEach((section) => {
+    if (!stagePackSections.includes(section)) {
+      throw new Error(`stage-decomposition pack draft foundry_agent_series.series_design_profile missing ${section} section.`);
+    }
+  });
+  const sharedCloseout = asRecord(
+    seriesDesignProfile.shared_closeout_contract,
+    'foundry_agent_series.series_design_profile.shared_closeout_contract',
+  );
+  assertBooleanFalse(
+    sharedCloseout,
+    'provider_completion_is_closeout',
+    'foundry_agent_series.series_design_profile.shared_closeout_contract.provider_completion_is_closeout',
+  );
   return {
     ...draft,
+    foundry_agent_series: foundrySeries,
     files: [...files.entries()].map(([filePath, body]) => ({ path: filePath, body })),
   };
 }
