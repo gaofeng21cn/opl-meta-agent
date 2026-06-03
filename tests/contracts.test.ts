@@ -382,6 +382,8 @@ test('trajectory learning contract absorbs xskill patterns as OMA-native refs-on
 
 test('opl-meta-agent stage plan covers research, build, eval, optimization, delivery, and learning', () => {
   const stageControl = readJson('contracts/stage_control_plane.json');
+  const stageArtifactKernelAdoption = readJson('contracts/stage_artifact_kernel_adoption.json');
+  const stateIndexKernelAdoption = stageArtifactKernelAdoption.state_index_kernel_adoption;
 
   assert.equal(stageControl.surface_kind, 'family_stage_control_plane');
   assert.equal(stageControl.version, 'family-stage-control-plane.v1');
@@ -413,6 +415,62 @@ test('opl-meta-agent stage plan covers research, build, eval, optimization, deli
   assert.equal(stageControl.opl_runtime_dependency.agent_lab_complete_control_plane, true);
   assert.equal(stageControl.opl_runtime_dependency.standard_domain_agent_scaffold, true);
   assert.equal(stageControl.opl_runtime_dependency.generated_interface_bundle, true);
+  assert.equal(stateIndexKernelAdoption.surface_kind, 'opl_state_index_kernel_sqlite_sidecar_adoption');
+  assert.equal(stateIndexKernelAdoption.kernel_owner, 'one-person-lab');
+  assert.equal(stateIndexKernelAdoption.index_owner, 'one-person-lab');
+  assert.equal(stateIndexKernelAdoption.index_kind, 'sqlite_sidecar_index');
+  assert.equal(stateIndexKernelAdoption.oma_role, 'refs_only_index_source');
+  assert.equal(stateIndexKernelAdoption.sidecar_index_authority, 'derived_read_model_only');
+  assert.equal(stateIndexKernelAdoption.derived_index_rebuildable, true);
+  assert.equal(stateIndexKernelAdoption.indexed_subjects_must_be_refs_only, true);
+  assert.deepEqual(asStrings(stateIndexKernelAdoption.allowed_index_ref_classes), [
+    'candidate_package_ref',
+    'agent_lab_result_ref',
+    'developer_work_order_ref',
+    'typed_blocker_ref',
+    'mechanism_patch_proposal_ref',
+  ]);
+  assert.deepEqual(asStrings(stateIndexKernelAdoption.allowed_index_payload_roles), [
+    'ref',
+    'status',
+    'source_ref',
+    'receipt_ref',
+    'blocker_ref',
+    'proposal_ref',
+  ]);
+  assert.deepEqual(asStrings(stateIndexKernelAdoption.forbidden_index_payload_roles), [
+    'target_truth_body',
+    'target_runtime_state_body',
+    'target_artifact_body',
+    'target_memory_body',
+    'target_quality_verdict_body',
+    'target_export_verdict_body',
+    'target_owner_receipt_body',
+    'target_worktree_lifecycle_state',
+    'queue_state',
+    'attempt_ledger_body',
+    'promotion_gate_verdict',
+  ]);
+  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_own_state_index_kernel, false);
+  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_own_sqlite_sidecar_index, false);
+  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_manage_queue, false);
+  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_manage_attempt_ledger, false);
+  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_manage_target_runtime, false);
+  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_manage_target_worktree_lifecycle, false);
+  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_manage_promotion_gate, false);
+  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_write_target_truth, false);
+  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_write_target_artifact_body, false);
+  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_write_target_memory_body, false);
+  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_write_target_quality_or_export_verdict, false);
+  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_write_target_owner_receipt_body, false);
+  assert.equal(stageControl.authority_boundary.oma_can_own_state_index_kernel, false);
+  assert.equal(stageControl.authority_boundary.oma_can_own_sqlite_sidecar_index, false);
+  assert.equal(stageControl.authority_boundary.oma_can_manage_target_runtime, false);
+  assert.equal(stageControl.authority_boundary.oma_can_manage_queue, false);
+  assert.equal(stageControl.authority_boundary.oma_can_manage_attempt_ledger, false);
+  assert.equal(stageControl.authority_boundary.oma_can_manage_promotion_gate, false);
+  assert.equal(stageControl.authority_boundary.oma_can_manage_target_worktree_lifecycle, false);
+  assert.equal(stageControl.authority_boundary.oma_can_write_target_owner_receipt_body, false);
   assert.equal(stageControl.stage_native_artifact_contract.surface_kind, 'opl_stage_native_artifact_contract_bundle');
   assert.equal(stageControl.stage_native_artifact_contract.target_domain_id, 'opl-meta-agent');
   assert.equal(stageControl.stage_native_artifact_contract.authority_boundary.oma_can_generate_target_domain_owner_receipt, false);

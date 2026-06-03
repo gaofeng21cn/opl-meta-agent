@@ -33,6 +33,59 @@
     "derived_index_rebuildable": true,
     "manifest_receipt_hash_required": true
   },
+  "state_index_kernel_adoption": {
+    "surface_kind": "opl_state_index_kernel_sqlite_sidecar_adoption",
+    "version": "opl-state-index-kernel-sqlite-sidecar-adoption.v1",
+    "kernel_owner": "one-person-lab",
+    "index_owner": "one-person-lab",
+    "index_kind": "sqlite_sidecar_index",
+    "oma_role": "refs_only_index_source",
+    "sidecar_index_authority": "derived_read_model_only",
+    "derived_index_rebuildable": true,
+    "indexed_subjects_must_be_refs_only": true,
+    "allowed_index_ref_classes": [
+      "candidate_package_ref",
+      "agent_lab_result_ref",
+      "developer_work_order_ref",
+      "typed_blocker_ref",
+      "mechanism_patch_proposal_ref"
+    ],
+    "allowed_index_payload_roles": [
+      "ref",
+      "status",
+      "source_ref",
+      "receipt_ref",
+      "blocker_ref",
+      "proposal_ref"
+    ],
+    "forbidden_index_payload_roles": [
+      "target_truth_body",
+      "target_runtime_state_body",
+      "target_artifact_body",
+      "target_memory_body",
+      "target_quality_verdict_body",
+      "target_export_verdict_body",
+      "target_owner_receipt_body",
+      "target_worktree_lifecycle_state",
+      "queue_state",
+      "attempt_ledger_body",
+      "promotion_gate_verdict"
+    ],
+    "authority_boundary": {
+      "oma_can_own_state_index_kernel": false,
+      "oma_can_own_sqlite_sidecar_index": false,
+      "oma_can_manage_queue": false,
+      "oma_can_manage_attempt_ledger": false,
+      "oma_can_manage_target_runtime": false,
+      "oma_can_manage_target_worktree_lifecycle": false,
+      "oma_can_manage_promotion_gate": false,
+      "oma_can_write_target_truth": false,
+      "oma_can_write_target_artifact_body": false,
+      "oma_can_write_target_memory_body": false,
+      "oma_can_write_target_quality_or_export_verdict": false,
+      "oma_can_write_target_owner_receipt_body": false
+    }
+  },
   "domain_pack_binding": {
     "accepted_source_refs": [
       "contracts/stage_control_plane.json",

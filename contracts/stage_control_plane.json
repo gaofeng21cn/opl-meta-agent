@@ -11,7 +11,15 @@
     "opl_can_write_memory_body": false,
     "opl_can_authorize_quality_or_export": false,
     "opl_can_switch_default_executor": false,
-    "oma_can_switch_default_executor": false
+    "oma_can_switch_default_executor": false,
+    "oma_can_own_state_index_kernel": false,
+    "oma_can_own_sqlite_sidecar_index": false,
+    "oma_can_manage_target_runtime": false,
+    "oma_can_manage_queue": false,
+    "oma_can_manage_attempt_ledger": false,
+    "oma_can_manage_promotion_gate": false,
+    "oma_can_manage_target_worktree_lifecycle": false,
+    "oma_can_write_target_owner_receipt_body": false
   },
   "stages": [
     {
