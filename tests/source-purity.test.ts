@@ -240,6 +240,34 @@ test('script morphology stays limited to authority refs, materializers, and help
       `${gate.gate_id} should declare forbidden long-term claims`,
     );
   });
+  const buildBaselineGate = retirementGates.find((gate) => (
+    gate.gate_id === 'build_agent_baseline_and_stage_decomposition_materializers'
+  ));
+  assert.ok(buildBaselineGate, 'build-agent-baseline retirement gate should exist');
+  assert.ok(
+    asStrings(buildBaselineGate.required_before_retire_or_absorb).includes(
+      'opl_physical_kernel_locator_conformance_workbench_consumption_parity_ref',
+    ),
+    'stage materializer retirement should require OPL physical kernel/conformance/workbench parity',
+  );
+  assert.ok(
+    asStrings(buildBaselineGate.required_before_retire_or_absorb).includes(
+      'no_oma_runtime_state_owner_promotion_worktree_or_receipt_body_ref',
+    ),
+    'stage materializer retirement should prove no OMA runtime state, promotion, worktree, or receipt body ownership',
+  );
+  [
+    'physical_kernel_runtime_state_owner',
+    'conformance_gate_owner',
+    'workbench_consumption_owner',
+    'owner_promotion_or_receipt_body_authority',
+    'target_worktree_lifecycle_owner',
+  ].forEach((claim) => {
+    assert.ok(
+      asStrings(buildBaselineGate.forbidden_long_term_claims).includes(claim),
+      `build-agent-baseline retirement gate should forbid ${claim}`,
+    );
+  });
 
   const implementationRefs = new Map<string, string[]>();
   asObjects(authorityFunctions.functions).forEach((functionRef) => {
@@ -274,6 +302,26 @@ test('script morphology stays limited to authority refs, materializers, and help
       assert.deepEqual(asStrings(entry.retired_tail_refs), [
         'retired-tail:opl-meta-agent/build-agent-baseline/no-closeout-implicit-fixture-graph',
       ]);
+    }
+    if (entry.script_ref === 'scripts/lib/stage-decomposition-pack-draft.ts') {
+      [
+        'stage_native_artifact_contract_ref',
+        'stage_native_artifact_ref_template_ref',
+        'opl_physical_kernel_locator_ref',
+        'stage_artifact_conformance_ref',
+        'stage_artifact_workbench_consumption_ref',
+      ].forEach((writeRef) => {
+        assert.ok(asStrings(entry.writes_only).includes(writeRef), `${entry.script_ref} writes_only ${writeRef}`);
+      });
+    }
+    if (entry.script_ref === 'scripts/lib/stage-native-artifact-contract.ts') {
+      [
+        'opl_physical_kernel_locator_ref',
+        'stage_artifact_conformance_ref',
+        'stage_artifact_workbench_consumption_ref',
+      ].forEach((writeRef) => {
+        assert.ok(asStrings(entry.writes_only).includes(writeRef), `${entry.script_ref} writes_only ${writeRef}`);
+      });
     }
 
     const declaredAuthorityRefs = entry.authority_function_refs ?? [];
@@ -322,6 +370,8 @@ test('purpose-first gate prevents OMA scripts from becoming a second framework',
   assert.equal(materializerBoundary.scripts_can_own_queue_or_attempt_ledger, false);
   assert.equal(materializerBoundary.scripts_can_own_work_order_absorb_or_cleanup, false);
   assert.equal(materializerBoundary.scripts_can_own_target_worktree_lifecycle, false);
+  assert.equal(materializerBoundary.scripts_can_create_stage_folder_runtime_state, false);
+  assert.equal(materializerBoundary.scripts_can_create_owner_promotion, false);
   assert.equal(materializerBoundary.scripts_can_write_target_owner_receipt_body, false);
 
   assert.equal(secondFrameworkGuard.oma_is_agent_lab_or_opl_framework_replacement, false);
@@ -336,9 +386,13 @@ test('purpose-first gate prevents OMA scripts from becoming a second framework',
     'agent_lab_runner',
     'promotion_gate',
     'queue_attempt_ledger',
+    'physical_stage_kernel',
+    'stage_artifact_conformance',
+    'stage_artifact_workbench_consumption',
     'target_worktree_lifecycle',
     'work_order_absorb_cleanup',
     'target_owner_closeout_hook_invocation',
+    'owner_promotion_or_receipt_body_authority',
     'registry_owner',
     'app_shell_owner',
     'target_domain_truth_or_verdict_writer',

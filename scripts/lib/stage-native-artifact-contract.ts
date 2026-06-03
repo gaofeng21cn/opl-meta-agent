@@ -22,13 +22,17 @@ function stageNativeAuthorityBoundary(): JsonObject {
     oma_can_own_promotion_gate: false,
     oma_can_own_app_shell: false,
     oma_can_write_target_owner_closeout: false,
+    oma_can_create_stage_folder_runtime_state: false,
     oma_can_write_stage_folder_runtime_state: false,
     oma_can_generate_target_domain_owner_receipt: false,
+    oma_can_write_target_owner_receipt_body: false,
     oma_can_write_target_domain_truth: false,
     oma_can_write_target_domain_memory_body: false,
     oma_can_mutate_target_domain_artifact_body: false,
     oma_can_authorize_target_quality_or_export: false,
+    oma_can_owner_promote_target_agent: false,
     oma_can_promote_default_agent_without_gate: false,
+    oma_can_manage_target_worktree_lifecycle: false,
   };
 }
 
@@ -55,6 +59,9 @@ export function stageNativeArtifactRefs({
     export_ref: `stage-export-ref:${domainId}/${stageId}/${attemptId}`,
     lineage_ref: `stage-lineage-ref:${domainId}/${stageId}/${attemptId}`,
     retention_ref: `stage-retention-ref:${domainId}/${stageId}/${attemptId}`,
+    physical_kernel_locator_ref: `opl-physical-kernel-locator-ref:${domainId}/${stageId}`,
+    conformance_ref: `stage-artifact-conformance-ref:${domainId}/${stageId}`,
+    workbench_consumption_ref: `stage-artifact-workbench-consumption-ref:${domainId}/${stageId}`,
   };
 }
 
@@ -88,6 +95,9 @@ export function buildStageFolderContract({
     export_ref: refs.export_ref,
     lineage_ref: refs.lineage_ref,
     retention_ref: refs.retention_ref,
+    physical_kernel_locator_ref: refs.physical_kernel_locator_ref,
+    conformance_ref: refs.conformance_ref,
+    workbench_consumption_ref: refs.workbench_consumption_ref,
     required_files: [
       'stage.json',
       'attempt.json',
@@ -98,6 +108,9 @@ export function buildStageFolderContract({
       'export.json',
       'lineage.json',
       'retention.json',
+      'physical_kernel_locator.json',
+      'conformance.json',
+      'workbench_consumption.json',
     ],
   };
 }
@@ -139,6 +152,9 @@ export function buildStageNativeArtifactContract({
         'export_ref_template',
         'lineage_ref_template',
         'retention_ref_template',
+        'physical_kernel_locator_ref',
+        'conformance_ref',
+        'workbench_consumption_ref',
       ],
       body_policy: 'refs_only_stage_descriptor_no_target_artifact_body',
     },
@@ -180,6 +196,9 @@ export function buildStageNativeArtifactContract({
         'export_ref',
         'lineage_ref',
         'retention_ref',
+        'physical_kernel_locator_ref',
+        'conformance_ref',
+        'workbench_consumption_ref',
         'export_eligibility',
         'repair_classification',
       ],
@@ -244,6 +263,84 @@ export function buildStageNativeArtifactContract({
       retention_policy: 'attempt_refs_retained_as_evidence_until_opl_retention_gate',
       oma_can_delete_stage_attempt_history: false,
     },
+    physical_kernel_locator_contract: {
+      physical_kernel_locator_ref: refs.physical_kernel_locator_ref,
+      physical_kernel_locator_file_name: 'physical_kernel_locator.json',
+      source_contract_ref: 'contracts/opl-framework/stage-artifact-runtime-contract.json',
+      source_surface_kind: 'opl_stage_artifact_runtime_contract',
+      attempt_root_pattern:
+        'runtime-state/domains/<domain>/deliverables/<program>/<topic>/<deliverable>/stages/<nn-stage>/attempts/<attempt_id>',
+      folder_path_template: `stages/${stageId}/attempts/{stage_attempt_id}`,
+      required_attempt_entries: [
+        'attempt.json',
+        'manifest.json',
+        'inputs/',
+        'outputs/',
+        'evidence/',
+        'receipts/',
+      ],
+      current_pointer_role: 'refs_only_current_or_canonical_artifact_pointer',
+      derived_index_role: 'rebuildable_projection_not_primary_truth',
+      status_source_of_truth: 'physical_stage_folder',
+      oma_materializes_ref_template_only: true,
+      oma_can_create_runtime_state: false,
+    },
+    conformance_contract: {
+      surface_kind: 'opl_stage_artifact_runtime_conformance',
+      conformance_ref: refs.conformance_ref,
+      conformance_file_name: 'conformance.json',
+      source_contract_ref: 'contracts/opl-framework/stage-artifact-runtime-contract.json',
+      conformance_owner: 'one-person-lab',
+      strict_units: [
+        'Stage Folder',
+        'Manifest',
+        'Receipt',
+        'content_hashes',
+        'latest_pointer',
+        'current_pointer',
+        'lineage_events',
+      ],
+      fails_on: [
+        'missing_deliverable_json',
+        'missing_stage_json',
+        'missing_required_attempt_entry',
+        'missing_latest_pointer',
+        'latest_pointer_missing_attempt',
+        'missing_current_pointer',
+        'missing_manifest_hash_entry',
+        'manifest_content_hash_mismatch',
+        'attempt_broken',
+        'attempt_orphan',
+      ],
+      domain_readiness_claim: false,
+      oma_materializes_ref_template_only: true,
+      oma_can_claim_conformance_pass: false,
+    },
+    workbench_consumption_contract: {
+      surface_kind: 'opl_stage_artifact_runtime_workbench_consumption',
+      workbench_consumption_ref: refs.workbench_consumption_ref,
+      workbench_consumption_file_name: 'workbench_consumption.json',
+      source_contract_ref: 'contracts/opl-framework/stage-artifact-runtime-contract.json',
+      workbench_owner: 'one-person-lab-app via OPL/App contracts',
+      projects: [
+        'current_pointer',
+        'stage_status',
+        'attempt_manifest_refs',
+        'owner_receipt_refs',
+        'typed_blocker_refs',
+        'decision_receipt_refs',
+        'content_hashes',
+        'canonical_artifacts',
+        'export_artifacts',
+        'lineage_refs',
+        'retention_policy',
+        'conformance_summary',
+      ],
+      artifact_body_access: false,
+      domain_verdict_authority: false,
+      oma_materializes_ref_template_only: true,
+      oma_can_write_workbench_state: false,
+    },
     output_roles: [
       {
         role_id: 'stage_json',
@@ -297,6 +394,24 @@ export function buildStageNativeArtifactContract({
         role_id: 'retention_ref',
         ref_kind: 'stage_retention_ref',
         body_owner: 'one-person-lab',
+        contains_target_artifact_body: false,
+      },
+      {
+        role_id: 'physical_kernel_locator_ref',
+        ref_kind: 'opl_physical_kernel_locator_ref',
+        body_owner: 'one-person-lab',
+        contains_target_artifact_body: false,
+      },
+      {
+        role_id: 'conformance_ref',
+        ref_kind: 'stage_artifact_conformance_ref',
+        body_owner: 'one-person-lab',
+        contains_target_artifact_body: false,
+      },
+      {
+        role_id: 'workbench_consumption_ref',
+        ref_kind: 'stage_artifact_workbench_consumption_ref',
+        body_owner: 'one-person-lab-app via OPL/App contracts',
         contains_target_artifact_body: false,
       },
     ],
@@ -356,6 +471,15 @@ export function buildStageNativeArtifactContractBundle({
     retention_ref_templates: stageIds.map((stageId) => (
       `stage-retention-ref:${domainId}/${stageId}/{stage_attempt_id}`
     )),
+    physical_kernel_locator_refs: stageIds.map((stageId) => (
+      `opl-physical-kernel-locator-ref:${domainId}/${stageId}`
+    )),
+    conformance_refs: stageIds.map((stageId) => (
+      `stage-artifact-conformance-ref:${domainId}/${stageId}`
+    )),
+    workbench_consumption_refs: stageIds.map((stageId) => (
+      `stage-artifact-workbench-consumption-ref:${domainId}/${stageId}`
+    )),
     contracts: stageIds.map((stageId) => buildStageNativeArtifactContract({
       domainId,
       stageId,
@@ -393,12 +517,16 @@ export function buildStageNativeArtifactAttemptRefs({
     can_own_promotion_gate: false,
     can_own_app_shell: false,
     can_write_target_owner_closeout: false,
+    can_create_stage_folder_runtime_state: false,
     can_write_stage_folder_runtime_state: false,
     can_generate_target_domain_owner_receipt: false,
+    can_write_target_owner_receipt_body: false,
     can_write_target_domain_truth: false,
     can_write_target_domain_memory_body: false,
     can_mutate_target_domain_artifact_body: false,
     can_authorize_target_quality_or_export: false,
+    can_owner_promote_target_agent: false,
     can_promote_default_agent_without_gate: false,
+    can_manage_target_worktree_lifecycle: false,
   };
 }

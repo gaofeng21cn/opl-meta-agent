@@ -161,6 +161,9 @@ function stageNativeRefsFor(domainId: string, stageId: string) {
     exportRef: `stage-export-ref:${domainId}/${stageId}/{stage_attempt_id}`,
     lineageRef: `stage-lineage-ref:${domainId}/${stageId}/{stage_attempt_id}`,
     retentionRef: `stage-retention-ref:${domainId}/${stageId}/{stage_attempt_id}`,
+    physicalKernelLocatorRef: `opl-physical-kernel-locator-ref:${domainId}/${stageId}`,
+    conformanceRef: `stage-artifact-conformance-ref:${domainId}/${stageId}`,
+    workbenchConsumptionRef: `stage-artifact-workbench-consumption-ref:${domainId}/${stageId}`,
   };
 }
 
@@ -386,6 +389,9 @@ function buildStageControlPlane({
             stageNativeRefs.exportRef,
             stageNativeRefs.lineageRef,
             stageNativeRefs.retentionRef,
+            stageNativeRefs.physicalKernelLocatorRef,
+            stageNativeRefs.conformanceRef,
+            stageNativeRefs.workbenchConsumptionRef,
           ],
           expected_receipt_refs: [
             ref('stage_attempt_receipt_ref', `stage-attempt-receipt-ref:${stageId}`),
@@ -405,6 +411,9 @@ function buildStageControlPlane({
             ref('stage_export_ref', stageNativeRefs.exportRef),
             ref('stage_lineage_ref', stageNativeRefs.lineageRef),
             ref('stage_retention_ref', stageNativeRefs.retentionRef),
+            ref('opl_physical_kernel_locator_ref', stageNativeRefs.physicalKernelLocatorRef),
+            ref('stage_artifact_conformance_ref', stageNativeRefs.conformanceRef),
+            ref('stage_artifact_workbench_consumption_ref', stageNativeRefs.workbenchConsumptionRef),
           ],
           source_scope_refs: [ref('source_scope_ref', `source-scope:${stageId}`)],
           artifact_scope_refs: [ref('artifact_scope_ref', `artifact-scope:${stageId}`)],
@@ -888,6 +897,9 @@ function validateStageControlPlane(
     const expectedExportRef = stageNativeRefs.exportRef;
     const expectedLineageRef = stageNativeRefs.lineageRef;
     const expectedRetentionRef = stageNativeRefs.retentionRef;
+    const expectedPhysicalKernelLocatorRef = stageNativeRefs.physicalKernelLocatorRef;
+    const expectedConformanceRef = stageNativeRefs.conformanceRef;
+    const expectedWorkbenchConsumptionRef = stageNativeRefs.workbenchConsumptionRef;
     [
       expectedArtifactNativeContractRef,
       ...promptRefs.map((entry) => `prompt-ref:${entry}`),
@@ -923,6 +935,9 @@ function validateStageControlPlane(
       expectedExportRef,
       expectedLineageRef,
       expectedRetentionRef,
+      expectedPhysicalKernelLocatorRef,
+      expectedConformanceRef,
+      expectedWorkbenchConsumptionRef,
     ].forEach((ensuredRef) => {
       if (!ensures.includes(ensuredRef)) {
         throw new Error(`stage-decomposition pack draft stage ${stageId} missing stage-native ensure ${ensuredRef}.`);
@@ -948,6 +963,9 @@ function validateStageControlPlane(
       expectedExportRef,
       expectedLineageRef,
       expectedRetentionRef,
+      expectedPhysicalKernelLocatorRef,
+      expectedConformanceRef,
+      expectedWorkbenchConsumptionRef,
     ].forEach((expectedRef) => {
       if (!expectedReceiptRefs.some((entry) => entry.ref === expectedRef)) {
         throw new Error(`stage-decomposition pack draft stage ${stageId} missing expected stage-native ref ${expectedRef}.`);
@@ -996,6 +1014,15 @@ function validateStageControlPlane(
     if (stageNativeArtifactContract.retention_ref !== expectedRetentionRef) {
       throw new Error(`stage-decomposition pack draft stage ${stageId} retention_ref is invalid.`);
     }
+    if (stageNativeArtifactContract.physical_kernel_locator_ref !== expectedPhysicalKernelLocatorRef) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} physical_kernel_locator_ref is invalid.`);
+    }
+    if (stageNativeArtifactContract.conformance_ref !== expectedConformanceRef) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} conformance_ref is invalid.`);
+    }
+    if (stageNativeArtifactContract.workbench_consumption_ref !== expectedWorkbenchConsumptionRef) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} workbench_consumption_ref is invalid.`);
+    }
     const folderContract = asRecord(
       stageNativeArtifactContract.stage_folder_contract,
       `stage ${stageId}.stage_contract.stage_native_artifact_contract.stage_folder_contract`,
@@ -1012,11 +1039,77 @@ function validateStageControlPlane(
       ['export_ref', expectedExportRef],
       ['lineage_ref', expectedLineageRef],
       ['retention_ref', expectedRetentionRef],
+      ['physical_kernel_locator_ref', expectedPhysicalKernelLocatorRef],
+      ['conformance_ref', expectedConformanceRef],
+      ['workbench_consumption_ref', expectedWorkbenchConsumptionRef],
     ].forEach(([field, expectedValue]) => {
       if (folderContract[field] !== expectedValue) {
         throw new Error(`stage-decomposition pack draft stage ${stageId} stage_folder_contract.${field} is invalid.`);
       }
     });
+    const physicalKernelLocatorContract = asRecord(
+      stageNativeArtifactContract.physical_kernel_locator_contract,
+      `stage ${stageId}.stage_contract.stage_native_artifact_contract.physical_kernel_locator_contract`,
+    );
+    if (physicalKernelLocatorContract.physical_kernel_locator_ref !== expectedPhysicalKernelLocatorRef) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} physical_kernel_locator_contract ref is invalid.`);
+    }
+    if (physicalKernelLocatorContract.source_contract_ref !== 'contracts/opl-framework/stage-artifact-runtime-contract.json') {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} physical_kernel_locator_contract source contract is invalid.`);
+    }
+    if (physicalKernelLocatorContract.oma_materializes_ref_template_only !== true) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} physical kernel locator must be refs-only.`);
+    }
+    assertBooleanFalse(
+      physicalKernelLocatorContract,
+      'oma_can_create_runtime_state',
+      `stage ${stageId}.physical_kernel_locator_contract.oma_can_create_runtime_state`,
+    );
+    const conformanceContract = asRecord(
+      stageNativeArtifactContract.conformance_contract,
+      `stage ${stageId}.stage_contract.stage_native_artifact_contract.conformance_contract`,
+    );
+    if (conformanceContract.surface_kind !== 'opl_stage_artifact_runtime_conformance') {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} conformance_contract.surface_kind is invalid.`);
+    }
+    if (conformanceContract.conformance_ref !== expectedConformanceRef) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} conformance_contract ref is invalid.`);
+    }
+    assertBooleanFalse(
+      conformanceContract,
+      'domain_readiness_claim',
+      `stage ${stageId}.conformance_contract.domain_readiness_claim`,
+    );
+    assertBooleanFalse(
+      conformanceContract,
+      'oma_can_claim_conformance_pass',
+      `stage ${stageId}.conformance_contract.oma_can_claim_conformance_pass`,
+    );
+    const workbenchConsumptionContract = asRecord(
+      stageNativeArtifactContract.workbench_consumption_contract,
+      `stage ${stageId}.stage_contract.stage_native_artifact_contract.workbench_consumption_contract`,
+    );
+    if (workbenchConsumptionContract.surface_kind !== 'opl_stage_artifact_runtime_workbench_consumption') {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} workbench_consumption_contract.surface_kind is invalid.`);
+    }
+    if (workbenchConsumptionContract.workbench_consumption_ref !== expectedWorkbenchConsumptionRef) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} workbench_consumption_contract ref is invalid.`);
+    }
+    assertBooleanFalse(
+      workbenchConsumptionContract,
+      'artifact_body_access',
+      `stage ${stageId}.workbench_consumption_contract.artifact_body_access`,
+    );
+    assertBooleanFalse(
+      workbenchConsumptionContract,
+      'domain_verdict_authority',
+      `stage ${stageId}.workbench_consumption_contract.domain_verdict_authority`,
+    );
+    assertBooleanFalse(
+      workbenchConsumptionContract,
+      'oma_can_write_workbench_state',
+      `stage ${stageId}.workbench_consumption_contract.oma_can_write_workbench_state`,
+    );
     const stageNativeBoundary = asRecord(
       stageNativeArtifactContract.authority_boundary,
       `stage ${stageId}.stage_contract.stage_native_artifact_contract.authority_boundary`,
@@ -1036,6 +1129,10 @@ function validateStageControlPlane(
       'oma_can_own_promotion_gate',
       'oma_can_own_app_shell',
       'oma_can_write_target_owner_closeout',
+      'oma_can_create_stage_folder_runtime_state',
+      'oma_can_write_target_owner_receipt_body',
+      'oma_can_owner_promote_target_agent',
+      'oma_can_manage_target_worktree_lifecycle',
     ].forEach((field) => assertBooleanFalse(
       stageNativeBoundary,
       field,
@@ -1160,6 +1257,18 @@ function validateStageNativeArtifactContractBundle(
     bundle.retention_ref_templates,
     'stage_native_artifact_contract.retention_ref_templates',
   );
+  const physicalKernelLocatorRefs = asStringArray(
+    bundle.physical_kernel_locator_refs,
+    'stage_native_artifact_contract.physical_kernel_locator_refs',
+  );
+  const conformanceRefs = asStringArray(
+    bundle.conformance_refs,
+    'stage_native_artifact_contract.conformance_refs',
+  );
+  const workbenchConsumptionRefs = asStringArray(
+    bundle.workbench_consumption_refs,
+    'stage_native_artifact_contract.workbench_consumption_refs',
+  );
   stages.forEach((stage) => {
     const stageId = asString(stage.stage_id, 'stage.stage_id');
     const stageNativeRefs = stageNativeRefsFor(targetAgent.domain_id, stageId);
@@ -1175,6 +1284,9 @@ function validateStageNativeArtifactContractBundle(
       [exportRefs, stageNativeRefs.exportRef],
       [lineageRefs, stageNativeRefs.lineageRef],
       [retentionRefs, stageNativeRefs.retentionRef],
+      [physicalKernelLocatorRefs, stageNativeRefs.physicalKernelLocatorRef],
+      [conformanceRefs, stageNativeRefs.conformanceRef],
+      [workbenchConsumptionRefs, stageNativeRefs.workbenchConsumptionRef],
     ] as const;
     expectedRefs.forEach(([refs, expectedRef]) => {
       if (!refs.includes(expectedRef)) {
@@ -1213,6 +1325,10 @@ function validateStageNativeArtifactContractBundle(
     'oma_can_own_promotion_gate',
     'oma_can_own_app_shell',
     'oma_can_write_target_owner_closeout',
+    'oma_can_create_stage_folder_runtime_state',
+    'oma_can_write_target_owner_receipt_body',
+    'oma_can_owner_promote_target_agent',
+    'oma_can_manage_target_worktree_lifecycle',
   ].forEach((field) => assertBooleanFalse(boundary, field, `stage_native_artifact_contract.authority_boundary.${field}`));
 }
 
@@ -1237,6 +1353,10 @@ function refTemplateRecord({
     ref: refValue,
     materialized_by: 'opl-meta-agent',
     materialization_kind: 'compiler_ref_template_only_not_runtime_state',
+    runtime_state_created: false,
+    owner_promotion_created: false,
+    target_worktree_lifecycle_managed: false,
+    owner_receipt_body_created: false,
     contains_target_artifact_body: false,
     authority_boundary: contract.authority_boundary,
   };
@@ -1258,6 +1378,9 @@ function materializeStageNativeArtifactRefFiles(targetAgentDir: string, draft: S
       ['export.json', 'stage_export_ref', String(contract.export_ref)],
       ['lineage.json', 'stage_lineage_ref', String(contract.lineage_ref)],
       ['retention.json', 'stage_retention_ref', String(contract.retention_ref)],
+      ['physical_kernel_locator.json', 'opl_physical_kernel_locator_ref', String(contract.physical_kernel_locator_ref)],
+      ['conformance.json', 'stage_artifact_conformance_ref', String(contract.conformance_ref)],
+      ['workbench_consumption.json', 'stage_artifact_workbench_consumption_ref', String(contract.workbench_consumption_ref)],
     ] as const;
     fileRefs.forEach(([fileName, refKind, refValue]) => {
       writeJson(path.join(outputDir, fileName), refTemplateRecord({

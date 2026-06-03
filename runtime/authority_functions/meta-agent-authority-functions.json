@@ -264,6 +264,11 @@
           "domain_pack_file_ref",
           "action_catalog_ref",
           "stage_control_plane_ref",
+          "stage_native_artifact_contract_ref",
+          "stage_native_artifact_ref_template_ref",
+          "opl_physical_kernel_locator_ref",
+          "stage_artifact_conformance_ref",
+          "stage_artifact_workbench_consumption_ref",
           "typed_blocker_ref"
         ],
         "forbidden_roles": []
@@ -291,7 +296,10 @@
           "canonical_artifact_ref",
           "stage_export_ref",
           "stage_lineage_ref",
-          "stage_retention_ref"
+          "stage_retention_ref",
+          "opl_physical_kernel_locator_ref",
+          "stage_artifact_conformance_ref",
+          "stage_artifact_workbench_consumption_ref"
         ],
         "forbidden_roles": []
       },
@@ -494,8 +502,10 @@
         "required_before_retire_or_absorb": [
           "opl_stage_attempt_launch_and_read_model_parity_ref",
           "opl_pack_compiler_typed_closeout_materializer_parity_ref",
+          "opl_physical_kernel_locator_conformance_workbench_consumption_parity_ref",
           "explicit_fixture_or_proof_path_if_retained_ref",
           "no_implicit_fixture_graph_ref",
+          "no_oma_runtime_state_owner_promotion_worktree_or_receipt_body_ref",
           "no_active_npm_or_test_caller_ref",
           "tombstone_or_provenance_ref"
         ],
@@ -504,7 +514,12 @@
           "agent_lab_runner",
           "fallback_graph_authority",
           "implicit_fixture_public_entry",
-          "target_pack_authority"
+          "target_pack_authority",
+          "physical_kernel_runtime_state_owner",
+          "conformance_gate_owner",
+          "workbench_consumption_owner",
+          "owner_promotion_or_receipt_body_authority",
+          "target_worktree_lifecycle_owner"
         ]
       },
       {
@@ -566,6 +581,8 @@
       "scripts_can_own_target_worktree_lifecycle": false,
       "scripts_can_own_queue_or_attempt_ledger": false,
       "scripts_can_own_work_order_absorb_or_cleanup": false,
+      "scripts_can_create_stage_folder_runtime_state": false,
+      "scripts_can_create_owner_promotion": false,
       "scripts_can_write_target_owner_receipt_body": false,
       "scripts_can_write_target_truth_or_verdict": false
     },
@@ -582,6 +599,9 @@
         "agent_lab_runner": "one-person-lab",
         "promotion_gate": "one-person-lab",
         "queue_attempt_ledger": "one-person-lab",
+        "physical_stage_kernel": "one-person-lab",
+        "stage_artifact_conformance": "one-person-lab",
+        "stage_artifact_workbench_consumption": "one-person-lab-app via OPL/App contracts",
         "work_order_execute_absorb_cleanup": "one-person-lab",
         "target_owner_closeout_hook_invocation": "target-domain via OPL",
         "registry_and_generated_interfaces": "one-person-lab",
@@ -591,9 +611,13 @@
         "agent_lab_runner",
         "promotion_gate",
         "queue_attempt_ledger",
+        "physical_stage_kernel",
+        "stage_artifact_conformance",
+        "stage_artifact_workbench_consumption",
         "target_worktree_lifecycle",
         "work_order_absorb_cleanup",
         "target_owner_closeout_hook_invocation",
+        "owner_promotion_or_receipt_body_authority",
         "registry_owner",
         "app_shell_owner",
         "target_domain_truth_or_verdict_writer"
