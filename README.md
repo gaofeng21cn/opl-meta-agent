@@ -34,6 +34,13 @@
 
 > `OPL Meta Agent` is built for the work of building AI agents. Describe the professional agent you want, and it turns the goal, boundary, working steps, tests, and improvement candidates into a practical baseline.
 
+## Repository Boundary
+
+Owner: `opl-meta-agent`
+Purpose: `public_repository_entry`
+State: `public_entry`
+Machine boundary: This README is a human-facing repository overview. Machine truth remains in `contracts/`, `agent/`, `runtime/authority_functions/`, source, CLI/API behavior, OPL Agent Lab result refs, work-order receipts, target owner receipts / typed blockers, and tests.
+
 ## Why It Exists
 
 It is easy to start an agent with a prompt. It is much harder to make that agent useful for papers, grants, reviews, presentations, operations, or other high-value work.

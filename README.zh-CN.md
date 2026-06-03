@@ -34,6 +34,13 @@
 
 > `OPL Meta Agent` 面向“开发 AI Agent”这件事本身：你描述一个想要的专业 Agent，它帮助你把目标、边界、工作步骤、测试和改进建议组织成一套可落地的 Agent 基线。
 
+## 仓库边界
+
+Owner: `opl-meta-agent`
+Purpose: `public_repository_entry`
+State: `public_entry`
+Machine boundary: 本 README 是人读仓库入口。机器真相继续归 `contracts/`、`agent/`、`runtime/authority_functions/`、source、CLI/API 行为、OPL Agent Lab result refs、work-order receipts、target owner receipts / typed blockers 和 tests。
+
 ## 为什么需要它
 
 现在做一个 Agent 很容易从 prompt 开始，但真正要把它用于论文、基金、审核、汇报、运营或其他高价值工作时，问题会很快变复杂：

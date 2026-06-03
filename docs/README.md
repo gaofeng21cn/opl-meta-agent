@@ -5,7 +5,7 @@ Purpose: `docs_entry_index`
 State: `active_index`
 Machine boundary: 本文是人读文档入口。机器真相继续归 `contracts/`、`agent/`、`runtime/authority_functions/`、CLI/API 行为、OPL Agent Lab result refs、work-order receipts 和测试。
 
-这个目录是 `opl-meta-agent` 的开发与维护文档面。仓库首页说明项目角色；本索引负责把当前 truth、架构、约束、决策、目标态、差距和私有实现迁移台账分层。
+这个目录是 `opl-meta-agent` 的开发与维护文档面。仓库首页说明项目角色；本索引负责把当前 truth、架构、约束、决策、目标态、差距、私有实现迁移台账和历史过程分层。
 
 ## 先读这里
 
@@ -19,6 +19,7 @@ Machine boundary: 本文是人读文档入口。机器真相继续归 `contracts
 | 目标态 | [opl-meta-agent 理想目标态](./references/opl-meta-agent-ideal-state.md) |
 | 当前差距与完善顺序 | [opl-meta-agent 理想目标态差距与完善计划](./active/opl-meta-agent-ideal-state-gap-plan.md) |
 | 私有实现迁移台账 | [opl-meta-agent 私有实现与 OPL 迁移台账](./active/opl-private-implementation-migration-inventory.md) |
+| 文档生命周期与唯一职责 | [文档组合治理](./docs_portfolio_consolidation.md) |
 | 历史过程与 provenance | [历史索引](./history/README.md) |
 
 ## OPL 系列分层
@@ -34,9 +35,9 @@ MAS、MAG、RCA 等目标 agent 只应作为 target-agent refs、owner routes、
 | 目录 | 当前职责 |
 | --- | --- |
 | `docs/` root | 文档索引、核心五件套。 |
-| `docs/active/` | 当前差距、迁移台账和 active baton。 |
+| `docs/active/` | 当前差距、迁移台账和 active baton；不保存 dated closeout 或 coverage tranche。 |
 | `docs/references/` | 目标态与支撑参考。 |
-| `docs/history/` | 过程 ledger、retired/provenance 和 no-resurrection 历史归档。 |
+| `docs/history/` | 过程 ledger、retired/provenance 和 no-resurrection 历史归档；不承担当前 truth。 |
 
 本仓当前保持轻量 OPL-compatible repo 文档形态。`docs/history/` 只为已经出现的过程/provenance 材料提供归档，不承担当前 truth；后续若出现长期 public、product、runtime、delivery、source、policies 或 specs 内容，再按 OPL-family canonical taxonomy 增加对应目录和索引；不要为了空目录对齐制造第二文档体系。
 
@@ -45,4 +46,5 @@ MAS、MAG、RCA 等目标 agent 只应作为 target-agent refs、owner routes、
 - `README*` 与 `docs/**` 是人读材料；机器消费者应读取 contracts、source、tests、CLI/API 行为或语义化 refs。
 - 长期文档必须能说明 owner、purpose、state 和 machine boundary。
 - Active 文档只保留当前计划、差距和迁移门；过程 proof、dated closeout 和历史路线应进入 history/provenance 语境后再保留。
+- `docs/docs_portfolio_consolidation.md` 只维护 lifecycle role map、inventory 和 reopening conditions，不追加 dated coverage ledger。
 - Generated interface readiness、suite pass、schema completeness、App projection readiness 或 work-order shape 不能写成 target domain ready、quality verdict、artifact readiness、owner receipt 或 default promotion。
