@@ -46,7 +46,7 @@ export function parseTakeoverAgentArgs(argv: string[]): TakeoverArgs {
   for (let index = 0; index < argv.length; index += 1) {
     const token = argv[index];
     const value = argv[index + 1];
-    if (token === '--agent-dir' || token === '--fixture') {
+    if (token === '--agent-dir') {
       if (!value) {
         throw new Error(`Missing value for ${token}.`);
       }
@@ -70,11 +70,14 @@ export function parseTakeoverAgentArgs(argv: string[]): TakeoverArgs {
       index += 1;
       continue;
     }
+    if (token === '--fixture') {
+      throw new Error('The --fixture alias has been retired; use --agent-dir <path> for explicit target agent intake.');
+    }
     throw new Error(`Unknown argument: ${token}.`);
   }
 
   if (!parsed.targetAgentDir) {
-    throw new Error('Missing required --agent-dir <path> or --fixture <path>.');
+    throw new Error('Missing required --agent-dir <path>.');
   }
   if (!fs.existsSync(parsed.targetAgentDir)) {
     throw new Error(`Target agent path does not exist: ${parsed.targetAgentDir}`);

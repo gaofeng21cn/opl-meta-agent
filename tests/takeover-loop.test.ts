@@ -13,6 +13,9 @@ import {
   runTakeoverAgent,
 } from '../scripts/takeover-agent.ts';
 import type { JsonObject } from '../scripts/lib/domain-pack.ts';
+import {
+  buildFixtureStageDecompositionCloseout,
+} from '../scripts/lib/stage-decomposition-pack-draft.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -52,16 +55,34 @@ function writeAiReviewerEvaluation(filePath: string): void {
   fs.writeFileSync(filePath, `${JSON.stringify(evaluation, null, 2)}\n`);
 }
 
+function writeStageCloseout(filePath: string, targetAgent: {
+  domain_id: string;
+  domain_label: string;
+  delivery_domain: string;
+  target_brief: string;
+}): void {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(buildFixtureStageDecompositionCloseout({ targetAgent }), null, 2)}\n`);
+}
+
 test('opl-meta-agent takes over testing for an existing external agent without authority writes or default promotion', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-takeover-'));
   const bootstrapRoot = path.join(outputRoot, 'bootstrap');
   const takeoverRoot = path.join(outputRoot, 'takeover');
   const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+  const stageCloseoutPath = path.join(outputRoot, 'stage-decomposition-closeout.json');
+  const targetAgent = {
+    domain_id: 'takeover-fixture-agent',
+    domain_label: 'Takeover Fixture Agent',
+    delivery_domain: 'takeover_fixture',
+    target_brief: 'Create an OPL-compatible takeover fixture agent for external testing takeover verification.',
+  };
   const oplBin = process.env.OPL_BIN
     ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
 
   try {
     writeAiReviewerEvaluation(reviewerEvaluationPath);
+    writeStageCloseout(stageCloseoutPath, targetAgent);
     runBuildAgentBaseline(parseBuildAgentBaselineArgs([
       '--output-dir',
       bootstrapRoot,
@@ -69,14 +90,18 @@ test('opl-meta-agent takes over testing for an existing external agent without a
       oplBin,
       '--ai-reviewer-evaluation',
       reviewerEvaluationPath,
+      '--stage-runner',
+      'fixture',
+      '--stage-decomposition-closeout',
+      stageCloseoutPath,
       '--domain-id',
-      'takeover-fixture-agent',
+      targetAgent.domain_id,
       '--domain-label',
-      'Takeover Fixture Agent',
+      targetAgent.domain_label,
       '--delivery-domain',
-      'takeover_fixture',
+      targetAgent.delivery_domain,
       '--target-brief',
-      'Create an OPL-compatible takeover fixture agent for external testing takeover verification.',
+      targetAgent.target_brief,
     ]));
 
     const targetDir = path.join(bootstrapRoot, 'takeover-fixture-agent');
@@ -148,4 +173,11 @@ test('opl-meta-agent takes over testing for an existing external agent without a
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }
+});
+
+test('takeover parser rejects retired fixture alias', () => {
+  assert.throws(
+    () => parseTakeoverAgentArgs(['--fixture', '/tmp/retired-fixture-agent']),
+    /--fixture alias has been retired/i,
+  );
 });

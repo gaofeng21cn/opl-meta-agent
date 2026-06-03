@@ -84,6 +84,12 @@
     "multi_target_scaleout_verified_by_real_targets": [
       "med-autoscience",
       "med-autogrant"
+    ],
+    "implicit_fixture_graph_retired": true,
+    "fixture_runner_requires_explicit_closeout": true,
+    "retired_tail_verification_refs": [
+      "tests/stage-decomposition-materializer.test.ts",
+      "tests/bootstrap-loop.test.ts"
     ]
   },
   "multi_target_scaleout_closeout": {

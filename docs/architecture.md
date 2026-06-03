@@ -95,7 +95,7 @@ CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framewo
 
 当前 `build-agent-baseline` 闭环按以下顺序运行；入口可以来自 Codex Skill 的自然语言请求，也可以来自参数化 CLI：
 
-1. `agent-skeleton-build`：Codex 从用户自然语言归一 `domain_id`、`domain_label`、`delivery_domain`、`target_brief` 和 stage-decomposition attempt input 后，启动或消费 Codex `stage-decomposition` typed closeout；该 closeout 持有目标 stage graph、action refs、pack 文件、independent gate policy 和 quality gate declaration。脚本只校验并物化 pack draft，再调用 OPL `agents scaffold` 校验用户指定的目标 agent package；`--domain-id` 是硬要求；脚本不再保留隐式 fixture smoke 或兼容 fallback。
+1. `agent-skeleton-build`：Codex 从用户自然语言归一 `domain_id`、`domain_label`、`delivery_domain`、`target_brief` 和 stage-decomposition attempt input 后，启动 live Codex `stage-decomposition` attempt，或消费显式 typed closeout packet；该 closeout 持有目标 stage graph、action refs、pack 文件、independent gate policy 和 quality gate declaration。脚本只校验并物化 pack draft，再调用 OPL `agents scaffold` 校验用户指定的目标 agent package；`--domain-id` 是硬要求；脚本不再保留隐式 fixture smoke、隐式 default graph 或兼容 fallback。
 2. `eval-suite-build`：写入 `agent-lab-suite.json`，只包含 refs、recovery probes、scorecard refs 和 promotion gate。
 3. `baseline-run`：调用 OPL `agent-lab run --suite`，由 OPL Agent Lab 返回 suite result。
 4. `baseline-delivery`：消费结构化 AI reviewer evaluation 和 stage-decomposition closeout proof，写入 `baseline-delivery-receipt.json`，只声明 baseline package refs、review provenance、generated-from-closeout proof 和 acceptance gates；缺 reviewer evaluation、空 critique/suggestions、source refs 只有 suite/scaffold refs、缺 typed closeout proof、free text closeout、partial refs、缺 independent gate policy、缺 quality gate declaration 或 self-review 时 fail closed。

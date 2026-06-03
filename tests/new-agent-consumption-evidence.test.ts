@@ -81,4 +81,8 @@ test('new-agent consumption evidence records repeat current-scaffold cohorts wit
   assert.equal(evidence.repeat_consumption_scaleout.authority_boundary.can_claim_production_ready, false);
   assert.equal(evidence.repeat_consumption_scaleout.authority_boundary.can_close_long_soak_gate, false);
   assert.equal(evidence.repeat_consumption_scaleout.authority_boundary.can_promote_default_agent_without_gate, false);
+  assert.equal(evidence.historical_fixture_proof_lane.status, 'historical_provenance_only');
+  assert.equal(evidence.historical_fixture_proof_lane.explicit_closeout_path_required_now, true);
+  assert.equal(evidence.historical_fixture_proof_lane.implicit_fixture_graph_retired, true);
+  assert.equal(evidence.historical_fixture_proof_lane.cannot_claim_current_public_entry, true);
 });

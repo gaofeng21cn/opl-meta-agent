@@ -300,7 +300,11 @@
           "stage_packet_ref",
           "stage_decomposition_closeout_ref",
           "stage_decomposition_attempt_receipt_ref",
+          "fixture_closeout_packet_required_typed_blocker_ref",
           "typed_blocker_ref"
+        ],
+        "retired_tail_refs": [
+          "retired-tail:opl-meta-agent/build-agent-baseline/no-closeout-implicit-fixture-graph"
         ],
         "forbidden_roles": []
       },
@@ -531,6 +535,14 @@
         "repo_owned_workbench_wrapper_materializer"
       ],
       "retained_materializer_role": "refs_only_target_agent_semantics_work_order_candidate_or_typed_blocker_materializer",
+      "retired_materializer_tails": [
+        "build_agent_baseline_no_closeout_implicit_fixture_graph",
+        "takeover_fixture_alias"
+      ],
+      "retired_materializer_tail_verification_refs": [
+        "tests/stage-decomposition-materializer.test.ts",
+        "tests/takeover-loop.test.ts"
+      ],
       "excluded_standard_surface_paths": [
         "agent/",
         "contracts/",

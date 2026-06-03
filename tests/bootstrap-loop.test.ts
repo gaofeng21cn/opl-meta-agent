@@ -10,6 +10,9 @@ import {
   runBuildAgentBaseline,
 } from '../scripts/build-agent-baseline.ts';
 import type { JsonObject } from '../scripts/lib/domain-pack.ts';
+import {
+  buildFixtureStageDecompositionCloseout,
+} from '../scripts/lib/stage-decomposition-pack-draft.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -143,10 +146,28 @@ function writeAiReviewerEvaluation(filePath: string, overrides: JsonObject = {})
   return evaluation;
 }
 
+function writeStageCloseout(filePath: string, targetAgent: {
+  domain_id: string;
+  domain_label: string;
+  delivery_domain: string;
+  target_brief: string;
+}): void {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(buildFixtureStageDecompositionCloseout({ targetAgent }), null, 2)}\n`);
+}
+
 test('opl-meta-agent bootstraps an explicit target agent and validates it through OPL Agent Lab', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-loop-'));
   const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+  const stageCloseoutPath = path.join(outputRoot, 'stage-decomposition-closeout.json');
+  const targetAgent = {
+    domain_id: 'baseline-fixture-agent',
+    domain_label: 'Baseline Fixture Agent',
+    delivery_domain: 'baseline_fixture',
+    target_brief: 'Create an owner-gated baseline fixture agent for build-agent-baseline verification.',
+  };
   const reviewerEvaluation = writeAiReviewerEvaluation(reviewerEvaluationPath);
+  writeStageCloseout(stageCloseoutPath, targetAgent);
   const oplBin = process.env.OPL_BIN
     ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
 
@@ -158,14 +179,18 @@ test('opl-meta-agent bootstraps an explicit target agent and validates it throug
       oplBin,
       '--ai-reviewer-evaluation',
       reviewerEvaluationPath,
+      '--stage-runner',
+      'fixture',
+      '--stage-decomposition-closeout',
+      stageCloseoutPath,
       '--domain-id',
-      'baseline-fixture-agent',
+      targetAgent.domain_id,
       '--domain-label',
-      'Baseline Fixture Agent',
+      targetAgent.domain_label,
       '--delivery-domain',
-      'baseline_fixture',
+      targetAgent.delivery_domain,
       '--target-brief',
-      'Create an owner-gated baseline fixture agent for build-agent-baseline verification.',
+      targetAgent.target_brief,
     ]);
 
     assert.equal(payload.surface_kind, 'opl_meta_agent_self_learning_loop_result');
@@ -381,6 +406,18 @@ test('opl-meta-agent bootstraps an explicit target agent and validates it throug
 test('build-agent-baseline bootstraps a requested target agent from structured skill inputs', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-loop-requested-target-'));
   const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+  const stageCloseoutPath = path.join(outputRoot, 'stage-decomposition-closeout.json');
+  const targetBrief = [
+    'Create an OPL-compatible research workbench agent.',
+    'It should turn a user research question into a scoped plan, evidence ledger, and owner-gated brief.',
+    'It must not write target domain truth or promote itself without explicit gates.',
+  ].join(' ');
+  const targetAgent = {
+    domain_id: 'research-workbench-agent',
+    domain_label: 'Research Workbench Agent',
+    delivery_domain: 'research_workbench',
+    target_brief: targetBrief,
+  };
   const reviewerEvaluation = writeAiReviewerEvaluation(reviewerEvaluationPath, {
     run_ref: 'run:ai-reviewer/opl-meta-agent/research-workbench-agent/baseline',
     execution_attempt_ref: 'attempt:executor/opl-meta-agent/research-workbench-agent/baseline',
@@ -395,13 +432,9 @@ test('build-agent-baseline bootstraps a requested target agent from structured s
       'receipt-ref:opl-meta-agent/baseline-delivery',
     ],
   });
+  writeStageCloseout(stageCloseoutPath, targetAgent);
   const oplBin = process.env.OPL_BIN
     ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
-  const targetBrief = [
-    'Create an OPL-compatible research workbench agent.',
-    'It should turn a user research question into a scoped plan, evidence ledger, and owner-gated brief.',
-    'It must not write target domain truth or promote itself without explicit gates.',
-  ].join(' ');
 
   try {
     const payload = runBaselineArgs([
@@ -411,14 +444,18 @@ test('build-agent-baseline bootstraps a requested target agent from structured s
       oplBin,
       '--ai-reviewer-evaluation',
       reviewerEvaluationPath,
+      '--stage-runner',
+      'fixture',
+      '--stage-decomposition-closeout',
+      stageCloseoutPath,
       '--domain-id',
-      'research-workbench-agent',
+      targetAgent.domain_id,
       '--domain-label',
-      'Research Workbench Agent',
+      targetAgent.domain_label,
       '--delivery-domain',
-      'research_workbench',
+      targetAgent.delivery_domain,
       '--target-brief',
-      targetBrief,
+      targetAgent.target_brief,
     ]);
     const targetDir = path.join(outputRoot, 'research-workbench-agent');
     const descriptor = readJson(path.join(targetDir, 'contracts', 'domain_descriptor.json'));

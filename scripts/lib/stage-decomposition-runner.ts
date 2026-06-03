@@ -4,7 +4,6 @@ import type { JsonObject } from './domain-pack.ts';
 import type { TargetAgent } from './meta-agent-loop.ts';
 import { runOpl, writeJson } from './meta-agent-loop.ts';
 import {
-  buildFixtureStageDecompositionCloseout,
   type StageDecompositionCloseoutPacket,
   type StageRunnerKind,
 } from './stage-decomposition-pack-draft.ts';
@@ -174,7 +173,15 @@ function fixtureCloseoutPacket(input: StageDecompositionAttemptInput): StageDeco
   if (input.closeoutPacketPath) {
     return asCloseoutPacket(readJsonFile(input.closeoutPacketPath));
   }
-  return buildFixtureStageDecompositionCloseout({ targetAgent: input.targetAgent });
+  throw new Error(JSON.stringify(
+    typedBlocker('fixture_closeout_packet_required', {
+      required_flag: '--stage-decomposition-closeout',
+      runner_kind: input.runnerKind,
+      implicit_fixture_materialization_allowed: false,
+    }),
+    null,
+    2,
+  ));
 }
 
 function typedBlocker(reason: string, details: JsonObject = {}): JsonObject {

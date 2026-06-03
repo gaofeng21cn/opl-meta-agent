@@ -156,6 +156,7 @@
   },
   "source_refs": [
     "scripts/lib/stage-decomposition-pack-draft.ts",
+    "scripts/lib/stage-decomposition-runner.ts",
     "tests/bootstrap-loop.test.ts",
     "tests/stage-decomposition-materializer.test.ts",
     "contracts/production_acceptance/meta-agent-production-acceptance.json",
@@ -163,6 +164,18 @@
     "docs/status.md",
     "docs/active/opl-meta-agent-ideal-state-gap-plan.md"
   ],
+  "historical_fixture_proof_lane": {
+    "status": "historical_provenance_only",
+    "used_fixture_runner": true,
+    "explicit_closeout_path_required_now": true,
+    "implicit_fixture_graph_retired": true,
+    "current_behavior_verification_refs": [
+      "tests/stage-decomposition-materializer.test.ts#/build-agent-baseline rejects implicit fixture closeout materialization",
+      "tests/bootstrap-loop.test.ts#/explicit stage-decomposition closeout fixture setup"
+    ],
+    "cannot_claim_current_public_entry": true,
+    "cannot_generate_default_stage_graph_without_closeout": true
+  },
   "verification_refs": [
     "cmd:rtk npm run build-agent-baseline -- --output-dir /tmp/oma-new-agent-consumption-20260528/build-v2 --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl --stage-runner fixture --domain-id publication-brief-agent --domain-label 'Publication Brief Agent' --delivery-domain 'publication briefing' --target-brief <brief> --ai-reviewer-evaluation /tmp/oma-new-agent-consumption-20260528/ai-reviewer-evaluation.json",
     "cmd:rtk /Users/gaofeng/workspace/one-person-lab/bin/opl agents conformance --agent publication-brief-agent=/tmp/oma-new-agent-consumption-20260528/build-v2/publication-brief-agent --json",

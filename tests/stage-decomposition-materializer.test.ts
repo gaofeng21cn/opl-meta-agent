@@ -300,6 +300,67 @@ test('build-agent-baseline consumes supplied fixture closeout instead of scripti
   }
 });
 
+test('build-agent-baseline rejects implicit fixture closeout materialization', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-bootstrap-implicit-fixture-'));
+  try {
+    const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+    fs.writeFileSync(reviewerEvaluationPath, `${JSON.stringify({
+      reviewer_kind: 'ai_reviewer',
+      model_or_provider: 'gpt-5.5',
+      run_ref: 'run:ai-reviewer/opl-meta-agent/research-workbench-agent/baseline',
+      execution_attempt_ref: 'attempt:executor/opl-meta-agent/research-workbench-agent/baseline',
+      review_attempt_ref: 'attempt:ai-reviewer/opl-meta-agent/research-workbench-agent/baseline',
+      no_shared_context: true,
+      independent_attempt: true,
+      critique: 'The implicit fixture path should fail before materialization.',
+      suggestions: ['Require an explicit typed closeout fixture file for deterministic tests.'],
+      source_refs: ['review-ref:opl-meta-agent/research-workbench-agent/ai-reviewer'],
+      direct_evidence_refs: ['artifact-ref:research-workbench-agent/package'],
+      verdict: 'blocked',
+      predicted_impact: 'Implicit fixture smoke can no longer create an unstated stage graph.',
+      provenance: {
+        artifact_ref: 'artifact-ref:ai-reviewer/research-workbench-agent-baseline',
+        reviewer_prompt_ref: 'agent/prompts/baseline-delivery.md',
+        created_by: 'test-fixture',
+      },
+    }, null, 2)}\n`);
+
+    const result = spawnSync(
+      process.execPath,
+      [
+        path.join(repoRoot, 'scripts/build-agent-baseline.ts'),
+        '--output-dir',
+        outputRoot,
+        '--stage-runner',
+        'fixture',
+        '--opl-bin',
+        process.env.OPL_BIN ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl',
+        '--ai-reviewer-evaluation',
+        reviewerEvaluationPath,
+        '--domain-id',
+        targetAgent.domain_id,
+        '--domain-label',
+        targetAgent.domain_label,
+        '--delivery-domain',
+        targetAgent.delivery_domain,
+        '--target-brief',
+        targetAgent.target_brief,
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        maxBuffer: 16 * 1024 * 1024,
+      },
+    );
+
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /fixture runner only consumes an explicit typed closeout packet/i);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'baseline-delivery-receipt.json')), false);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
 test('build-agent-baseline writes a typed blocker when stage-decomposition closeout is invalid', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-bootstrap-closeout-blocker-'));
   try {

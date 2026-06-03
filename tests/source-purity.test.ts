@@ -205,6 +205,14 @@ test('script morphology stays limited to authority refs, materializers, and help
     materializerScan.retained_materializer_role,
     'refs_only_target_agent_semantics_work_order_candidate_or_typed_blocker_materializer',
   );
+  assert.deepEqual(asStrings(materializerScan.retired_materializer_tails), [
+    'build_agent_baseline_no_closeout_implicit_fixture_graph',
+    'takeover_fixture_alias',
+  ]);
+  assert.deepEqual(asStrings(materializerScan.retired_materializer_tail_verification_refs), [
+    'tests/stage-decomposition-materializer.test.ts',
+    'tests/takeover-loop.test.ts',
+  ]);
 
   const implementationRefs = new Map<string, string[]>();
   asObjects(authorityFunctions.functions).forEach((functionRef) => {
@@ -232,6 +240,14 @@ test('script morphology stays limited to authority refs, materializers, and help
     });
     assert.deepEqual(entry.forbidden_roles, [], `${entry.script_ref} must not declare forbidden roles`);
     assert.ok(entry.writes_only.length > 0, `${entry.script_ref} should declare refs-only writes`);
+    if (entry.script_ref === 'scripts/lib/stage-decomposition-runner.ts') {
+      assert.ok(
+        asStrings(entry.writes_only).includes('fixture_closeout_packet_required_typed_blocker_ref'),
+      );
+      assert.deepEqual(asStrings(entry.retired_tail_refs), [
+        'retired-tail:opl-meta-agent/build-agent-baseline/no-closeout-implicit-fixture-graph',
+      ]);
+    }
 
     const declaredAuthorityRefs = entry.authority_function_refs ?? [];
     const expectedAuthorityRefs = implementationRefs.get(entry.script_ref) ?? [];

@@ -1172,6 +1172,12 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
   assert.equal(scaleoutEvidence.implemented_receipt_surfaces.real_target_agent_delivery_count_min_supported, true);
   assert.equal(scaleoutEvidence.implemented_receipt_surfaces.multi_target_scaleout_pending, false);
   assert.equal(scaleoutEvidence.implemented_receipt_surfaces.multi_target_scaleout_closed, true);
+  assert.equal(scaleoutEvidence.implemented_receipt_surfaces.implicit_fixture_graph_retired, true);
+  assert.equal(scaleoutEvidence.implemented_receipt_surfaces.fixture_runner_requires_explicit_closeout, true);
+  assert.deepEqual(scaleoutEvidence.implemented_receipt_surfaces.retired_tail_verification_refs, [
+    'tests/stage-decomposition-materializer.test.ts',
+    'tests/bootstrap-loop.test.ts',
+  ]);
   assert.deepEqual(scaleoutEvidence.implemented_receipt_surfaces.multi_target_scaleout_verified_by_real_targets, [
     'med-autoscience',
     'med-autogrant',
@@ -1589,6 +1595,12 @@ test('production acceptance evidence closes conformance evidence tail through re
   assert.equal(newAgentConsumption.production_evidence_tail.domain_ready_claimed, false);
   assert.equal(newAgentConsumption.production_evidence_tail.default_promotion_claimed, false);
   assert.equal(newAgentConsumption.production_evidence_tail.long_soak_claimed, false);
+  assert.equal(newAgentConsumption.historical_fixture_proof_lane.status, 'historical_provenance_only');
+  assert.equal(newAgentConsumption.historical_fixture_proof_lane.used_fixture_runner, true);
+  assert.equal(newAgentConsumption.historical_fixture_proof_lane.explicit_closeout_path_required_now, true);
+  assert.equal(newAgentConsumption.historical_fixture_proof_lane.implicit_fixture_graph_retired, true);
+  assert.equal(newAgentConsumption.historical_fixture_proof_lane.cannot_claim_current_public_entry, true);
+  assert.equal(newAgentConsumption.historical_fixture_proof_lane.cannot_generate_default_stage_graph_without_closeout, true);
   assertNoForbiddenAuthority(newAgentConsumption, 'newAgentConsumption');
   assert.equal(newAgentConsumption.authority_boundary.can_claim_domain_ready, false);
   assert.equal(newAgentConsumption.authority_boundary.can_claim_production_ready, false);

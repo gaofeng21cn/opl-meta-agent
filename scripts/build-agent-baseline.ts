@@ -80,7 +80,7 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
     domainLabel: null,
     deliveryDomain: null,
     targetBrief: null,
-    stageRunner: 'fixture',
+    stageRunner: 'live',
     stageCloseoutPacketPath: null,
   };
 
@@ -147,6 +147,11 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
   if (!parsed.domainId) {
     throw new Error(
       'Missing required --domain-id <domain_id>; build-agent-baseline requires an explicit target agent.',
+    );
+  }
+  if (parsed.stageRunner === 'fixture' && !parsed.stageCloseoutPacketPath) {
+    throw new Error(
+      'Missing required --stage-decomposition-closeout <path>; fixture runner only consumes an explicit typed closeout packet.',
     );
   }
   parsed.outputDir ??= fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-bootstrap-'));
