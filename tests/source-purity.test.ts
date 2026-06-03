@@ -214,6 +214,33 @@ test('script morphology stays limited to authority refs, materializers, and help
     'tests/takeover-loop.test.ts',
   ]);
 
+  const retirementGates = asObjects(morphologyPolicy.script_to_pack_retirement_gates);
+  assert.deepEqual(retirementGates.map((entry) => entry.gate_id), [
+    'agent_evidence_and_external_suite_materializers',
+    'build_agent_baseline_and_stage_decomposition_materializers',
+    'external_work_order_execution_delegation',
+  ]);
+  retirementGates.forEach((gate) => {
+    const trackedScriptRefs = asStrings(gate.tracked_script_refs);
+    assert.ok(trackedScriptRefs.length > 0, `${gate.gate_id} should track at least one script`);
+    trackedScriptRefs.forEach((scriptRef) => {
+      assertRepoRefExists(scriptRef);
+      assert.ok(scripts.includes(scriptRef), `${scriptRef} should be part of the tracked script set`);
+    });
+    assert.ok(
+      asStrings(gate.required_before_retire_or_absorb).includes('no_active_npm_or_test_caller_ref'),
+      `${gate.gate_id} should require no active caller evidence before retirement`,
+    );
+    assert.ok(
+      asStrings(gate.required_before_retire_or_absorb).includes('tombstone_or_provenance_ref'),
+      `${gate.gate_id} should require tombstone or provenance evidence`,
+    );
+    assert.ok(
+      asStrings(gate.forbidden_long_term_claims).length > 0,
+      `${gate.gate_id} should declare forbidden long-term claims`,
+    );
+  });
+
   const implementationRefs = new Map<string, string[]>();
   asObjects(authorityFunctions.functions).forEach((functionRef) => {
     asStrings(functionRef.implementation_refs).forEach((scriptRef) => {
@@ -279,4 +306,43 @@ test('script morphology stays limited to authority refs, materializers, and help
     'scripts authority/materializer/helper refs',
   ]);
   assert.ok(asStrings(receipt.forbidden_long_term_composition_claims).includes('repo_owned_generic_cli_mcp_skill_product_status_workbench_wrapper'));
+});
+
+test('purpose-first gate prevents OMA scripts from becoming a second framework', () => {
+  const authorityFunctions = readJson('runtime/authority_functions/meta-agent-authority-functions.json');
+  const gate = authorityFunctions.purpose_first_owner_delta_gate as JsonObject;
+  const materializerBoundary = gate.materializer_boundary as JsonObject;
+  const secondFrameworkGuard = gate.second_framework_guard as JsonObject;
+
+  assert.equal(materializerBoundary.scripts_may_materialize_refs_only_outputs, true);
+  assert.equal(materializerBoundary.scripts_can_become_second_agent_lab, false);
+  assert.equal(materializerBoundary.scripts_can_become_second_opl_framework, false);
+  assert.equal(materializerBoundary.scripts_can_own_agent_lab_runner, false);
+  assert.equal(materializerBoundary.scripts_can_own_promotion_gate, false);
+  assert.equal(materializerBoundary.scripts_can_own_queue_or_attempt_ledger, false);
+  assert.equal(materializerBoundary.scripts_can_own_work_order_absorb_or_cleanup, false);
+  assert.equal(materializerBoundary.scripts_can_own_target_worktree_lifecycle, false);
+  assert.equal(materializerBoundary.scripts_can_write_target_owner_receipt_body, false);
+
+  assert.equal(secondFrameworkGuard.oma_is_agent_lab_or_opl_framework_replacement, false);
+  assert.deepEqual(asStrings(secondFrameworkGuard.allowed_oma_products), [
+    'candidate_agent_package_ref',
+    'developer_patch_work_order_ref',
+    'target_capability_improvement_candidate_ref',
+    'mechanism_patch_proposal_ref',
+    'typed_blocker_ref',
+  ]);
+  [
+    'agent_lab_runner',
+    'promotion_gate',
+    'queue_attempt_ledger',
+    'target_worktree_lifecycle',
+    'work_order_absorb_cleanup',
+    'target_owner_closeout_hook_invocation',
+    'registry_owner',
+    'app_shell_owner',
+    'target_domain_truth_or_verdict_writer',
+  ].forEach((surface) => {
+    assert.ok(asStrings(secondFrameworkGuard.forbidden_oma_owned_surfaces).includes(surface));
+  });
 });

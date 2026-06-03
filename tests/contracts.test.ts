@@ -714,6 +714,31 @@ test('foundry agent series contract binds OMA to shared Progress-First projectio
       'typed_blocker_ref',
     ],
     series_difference: 'OMA builds and improves agents; MAS/MAG/RCA execute domain delivery. OMA uses the same OPL agent lifecycle packets while changing only the domain-specific input and output semantics.',
+    target_agent_generic_vocabulary_policy: {
+      top_level_command_family_scope: 'target_agent_generic_only',
+      top_level_suite_kind_scope: 'target_agent_generic_only',
+      allowed_top_level_suite_kinds: [
+        'agent_lab_external_suite',
+        'agent_production_evidence_suite',
+      ],
+      forbidden_domain_specific_suite_kind_prefixes: [
+        'mas',
+        'mag',
+        'rca',
+        'med_autoscience',
+        'med_autogrant',
+        'redcube_ai',
+      ],
+      domain_names_allowed_only_as: [
+        'target_agent_id',
+        'target_agent_ref',
+        'owner_route_ref',
+        'fixture_ref',
+        'receipt_provenance_ref',
+        'real_target_smoke_evidence_ref',
+      ],
+      oma_must_not_add_target_domain_compatibility_layer: true,
+    },
     authority_boundary: {
       can_write_target_domain_truth: false,
       can_write_target_domain_memory_body: false,
@@ -1284,6 +1309,7 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
 });
 
 test('top-level OMA commands and materializers stay target-agent generic', () => {
+  const series = readJson('contracts/foundry_agent_series.json');
   [
     'package.json',
     'contracts/action_catalog.json',
@@ -1300,6 +1326,22 @@ test('top-level OMA commands and materializers stay target-agent generic', () =>
   assert.ok(actionIds.includes('improve-from-external-agent-lab-suite'));
   assert.ok(actionIds.includes('materialize-trajectory-learning-proposal'));
   assert.equal(actionIds.some((actionId) => /mas|mag|medical|grant|manuscript|publication|fundability/i.test(actionId)), false);
+
+  const vocabularyPolicy = series.domain_specific_profile.target_agent_generic_vocabulary_policy;
+  assert.deepEqual(asStrings(vocabularyPolicy.allowed_top_level_suite_kinds), [
+    'agent_lab_external_suite',
+    'agent_production_evidence_suite',
+  ]);
+  assert.equal(vocabularyPolicy.top_level_suite_kind_scope, 'target_agent_generic_only');
+  assert.equal(vocabularyPolicy.top_level_command_family_scope, 'target_agent_generic_only');
+  assert.equal(vocabularyPolicy.oma_must_not_add_target_domain_compatibility_layer, true);
+  asStrings(vocabularyPolicy.forbidden_domain_specific_suite_kind_prefixes).forEach((prefix) => {
+    assert.equal(
+      asStrings(vocabularyPolicy.allowed_top_level_suite_kinds).some((suiteKind) => suiteKind.startsWith(prefix)),
+      false,
+      `${prefix} must not become a top-level OMA suite kind`,
+    );
+  });
 
   const statusDoc = readText('docs/references/opl-meta-agent-ideal-state.md');
   assert.match(statusDoc, /target-agent generic artifacts/);

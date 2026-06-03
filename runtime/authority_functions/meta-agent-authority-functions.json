@@ -415,6 +415,93 @@
         ],
         "forbidden_roles": []
       }
+    ],
+    "script_to_pack_retirement_gates": [
+      {
+        "gate_id": "agent_evidence_and_external_suite_materializers",
+        "tracked_script_refs": [
+          "scripts/agent-evidence-takeover.ts",
+          "scripts/improve-from-agent-lab-suite.ts",
+          "scripts/lib/agent-evidence-contracts.ts",
+          "scripts/lib/agent-evidence-materializer.ts",
+          "scripts/lib/external-suite-materializer.ts",
+          "scripts/lib/target-improvement-policy.ts",
+          "scripts/lib/work-order-builders.ts",
+          "scripts/lib/work-order-efficiency.ts",
+          "scripts/lib/work-order-policy-constants.ts",
+          "scripts/lib/work-order-refs.ts",
+          "scripts/lib/work-order-validation.ts"
+        ],
+        "current_role": "target_agent_generic_work_order_candidate_proposal_or_typed_blocker_materializer",
+        "allowed_until": "active_npm_or_test_caller_requires_refs_only_artifact_materialization",
+        "required_before_retire_or_absorb": [
+          "stable_policy_moved_to_agent_contracts_authority_or_opl_primitive_ref",
+          "opl_agent_lab_runner_parity_ref",
+          "opl_work_order_readiness_or_target_owner_return_primitive_ref",
+          "target_agent_generic_handoff_consumption_ref",
+          "no_forbidden_write_proof_ref",
+          "no_active_npm_or_test_caller_ref",
+          "tombstone_or_provenance_ref"
+        ],
+        "forbidden_long_term_claims": [
+          "agent_lab_runner",
+          "promotion_gate",
+          "target_worktree_lifecycle_owner",
+          "target_owner_closeout_hook_owner",
+          "target_truth_or_quality_writer",
+          "domain_specific_command_family"
+        ]
+      },
+      {
+        "gate_id": "build_agent_baseline_and_stage_decomposition_materializers",
+        "tracked_script_refs": [
+          "scripts/build-agent-baseline.ts",
+          "scripts/lib/stage-decomposition-runner.ts",
+          "scripts/lib/stage-decomposition-pack-draft.ts",
+          "scripts/lib/standard-foundry-policies.ts",
+          "scripts/lib/domain-pack.ts"
+        ],
+        "current_role": "typed_stage_closeout_validator_and_candidate_pack_materializer",
+        "allowed_until": "opl_stage_attempt_and_pack_materializer_parity_can_replace_local_smoke_path",
+        "required_before_retire_or_absorb": [
+          "opl_stage_attempt_launch_and_read_model_parity_ref",
+          "opl_pack_compiler_typed_closeout_materializer_parity_ref",
+          "explicit_fixture_or_proof_path_if_retained_ref",
+          "no_implicit_fixture_graph_ref",
+          "no_active_npm_or_test_caller_ref",
+          "tombstone_or_provenance_ref"
+        ],
+        "forbidden_long_term_claims": [
+          "scaffold_generator_owner",
+          "agent_lab_runner",
+          "fallback_graph_authority",
+          "implicit_fixture_public_entry",
+          "target_pack_authority"
+        ]
+      },
+      {
+        "gate_id": "external_work_order_execution_delegation",
+        "tracked_script_refs": [
+          "scripts/execute-external-work-order.ts"
+        ],
+        "current_role": "thin_validation_and_opl_work_order_execute_delegation",
+        "allowed_until": "opl_generated_action_can_validate_and_delegate_same_work_order_shape",
+        "required_before_retire_or_absorb": [
+          "opl_work_order_execute_primitive_parity_ref",
+          "target_owner_closeout_hook_delegation_ref",
+          "no_oma_target_worktree_lifecycle_proof_ref",
+          "no_oma_owner_receipt_write_proof_ref",
+          "no_active_npm_or_test_caller_ref",
+          "tombstone_or_provenance_ref"
+        ],
+        "forbidden_long_term_claims": [
+          "generic_runner",
+          "queue_or_attempt_ledger",
+          "target_worktree_lifecycle_owner",
+          "absorb_or_cleanup_owner",
+          "target_owner_receipt_body_writer"
+        ]
+      }
     ]
   },
   "purpose_first_owner_delta_gate": {
@@ -443,12 +530,46 @@
     ],
     "materializer_boundary": {
       "scripts_may_materialize_refs_only_outputs": true,
+      "scripts_can_become_second_agent_lab": false,
+      "scripts_can_become_second_opl_framework": false,
       "scripts_can_own_agent_lab_runner": false,
       "scripts_can_own_promotion_gate": false,
       "scripts_can_own_registry_or_app_shell": false,
       "scripts_can_own_target_worktree_lifecycle": false,
+      "scripts_can_own_queue_or_attempt_ledger": false,
+      "scripts_can_own_work_order_absorb_or_cleanup": false,
       "scripts_can_write_target_owner_receipt_body": false,
       "scripts_can_write_target_truth_or_verdict": false
+    },
+    "second_framework_guard": {
+      "oma_is_agent_lab_or_opl_framework_replacement": false,
+      "allowed_oma_products": [
+        "candidate_agent_package_ref",
+        "developer_patch_work_order_ref",
+        "target_capability_improvement_candidate_ref",
+        "mechanism_patch_proposal_ref",
+        "typed_blocker_ref"
+      ],
+      "delegated_framework_surfaces": {
+        "agent_lab_runner": "one-person-lab",
+        "promotion_gate": "one-person-lab",
+        "queue_attempt_ledger": "one-person-lab",
+        "work_order_execute_absorb_cleanup": "one-person-lab",
+        "target_owner_closeout_hook_invocation": "target-domain via OPL",
+        "registry_and_generated_interfaces": "one-person-lab",
+        "app_shell_and_workbench": "one-person-lab-app via OPL/App contracts"
+      },
+      "forbidden_oma_owned_surfaces": [
+        "agent_lab_runner",
+        "promotion_gate",
+        "queue_attempt_ledger",
+        "target_worktree_lifecycle",
+        "work_order_absorb_cleanup",
+        "target_owner_closeout_hook_invocation",
+        "registry_owner",
+        "app_shell_owner",
+        "target_domain_truth_or_verdict_writer"
+      ]
     },
     "fail_closed_when_missing": [
       "next_forced_delta_ref",
