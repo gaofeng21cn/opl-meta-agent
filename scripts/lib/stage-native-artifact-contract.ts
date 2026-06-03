@@ -11,6 +11,27 @@ export type StageNativeArtifactAttemptRefsInput = StageNativeArtifactContractInp
   attemptId?: string;
 };
 
+function stageNativeAuthorityBoundary(): JsonObject {
+  return {
+    opl_framework_owns_stage_folder_lifecycle: true,
+    oma_role: 'contract_compiler_and_refs_materializer',
+    oma_can_own_agent_lab_runner: false,
+    oma_can_own_queue: false,
+    oma_can_own_attempt_ledger: false,
+    oma_can_own_worktree_lifecycle: false,
+    oma_can_own_promotion_gate: false,
+    oma_can_own_app_shell: false,
+    oma_can_write_target_owner_closeout: false,
+    oma_can_write_stage_folder_runtime_state: false,
+    oma_can_generate_target_domain_owner_receipt: false,
+    oma_can_write_target_domain_truth: false,
+    oma_can_write_target_domain_memory_body: false,
+    oma_can_mutate_target_domain_artifact_body: false,
+    oma_can_authorize_target_quality_or_export: false,
+    oma_can_promote_default_agent_without_gate: false,
+  };
+}
+
 export function stageNativeArtifactRefs({
   domainId,
   stageId,
@@ -24,11 +45,60 @@ export function stageNativeArtifactRefs({
     artifact_native_contract_ref: `artifact-native-contract-ref:${domainId}/${stageId}`,
     stage_folder_contract_ref: `stage-folder-contract-ref:${domainId}/${stageId}`,
     stage_folder_ref: `stage-folder-ref:${domainId}/${stageId}/${attemptId}`,
+    stage_json_ref: `stage-json-ref:${domainId}/${stageId}`,
+    attempt_json_ref: `stage-attempt-json-ref:${domainId}/${stageId}/${attemptId}`,
     manifest_ref: `stage-manifest-ref:${domainId}/${stageId}/${attemptId}`,
     receipt_ref: `stage-attempt-receipt-ref:${domainId}/${stageId}/${attemptId}`,
     blocker_ref: `stage-typed-blocker-ref:${domainId}/${stageId}/${attemptId}`,
     current_pointer_ref: `stage-current-pointer-ref:${domainId}/${stageId}`,
     canonical_artifact_ref: `canonical-artifact-ref:${domainId}/${stageId}`,
+    export_ref: `stage-export-ref:${domainId}/${stageId}/${attemptId}`,
+    lineage_ref: `stage-lineage-ref:${domainId}/${stageId}/${attemptId}`,
+    retention_ref: `stage-retention-ref:${domainId}/${stageId}/${attemptId}`,
+  };
+}
+
+export function buildStageFolderContract({
+  domainId,
+  stageId,
+  attemptId = '{stage_attempt_id}',
+}: {
+  domainId: string;
+  stageId: string;
+  attemptId?: string;
+}): JsonObject {
+  const refs = stageNativeArtifactRefs({ domainId, stageId, attemptId });
+  return {
+    artifact_native_contract_ref: refs.artifact_native_contract_ref,
+    stage_folder_contract_ref: refs.stage_folder_contract_ref,
+    stage_folder_ref: refs.stage_folder_ref,
+    folder_path_template: `stages/${stageId}/attempts/{stage_attempt_id}`,
+    folder_role: 'stage_native_attempt_artifact_folder',
+    body_policy: 'refs_and_manifests_only_no_target_artifact_body',
+    lifecycle_owner: 'one-person-lab',
+    runtime_state_owner: 'one-person-lab',
+    materialization_kind: 'compiler_ref_template_only_not_runtime_state',
+    stage_json_ref: refs.stage_json_ref,
+    attempt_json_ref: refs.attempt_json_ref,
+    manifest_ref: refs.manifest_ref,
+    receipt_ref: refs.receipt_ref,
+    blocker_ref: refs.blocker_ref,
+    current_pointer_ref: refs.current_pointer_ref,
+    canonical_artifact_ref: refs.canonical_artifact_ref,
+    export_ref: refs.export_ref,
+    lineage_ref: refs.lineage_ref,
+    retention_ref: refs.retention_ref,
+    required_files: [
+      'stage.json',
+      'attempt.json',
+      'stage.manifest.json',
+      'receipt.json',
+      'current.json',
+      'canonical.json',
+      'export.json',
+      'lineage.json',
+      'retention.json',
+    ],
   };
 }
 
@@ -39,6 +109,7 @@ export function buildStageNativeArtifactContract({
   materializedBy = 'opl-meta-agent',
 }: StageNativeArtifactContractInput): JsonObject {
   const refs = stageNativeArtifactRefs({ domainId, stageId });
+  const stageFolderContract = buildStageFolderContract({ domainId, stageId });
   return {
     surface_kind: 'opl_stage_native_artifact_contract',
     version: 'stage-native-artifact-contract.v1',
@@ -49,17 +120,52 @@ export function buildStageNativeArtifactContract({
     domain_truth_owner: domainTruthOwner,
     role: 'stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only',
     ...refs,
-    stage_folder_contract: {
-      stage_folder_contract_ref: refs.stage_folder_contract_ref,
-      folder_path_template: `stages/${stageId}/attempts/{stage_attempt_id}`,
-      folder_role: 'stage_native_attempt_artifact_folder',
-      body_policy: 'refs_and_manifests_only_no_target_artifact_body',
-      lifecycle_owner: 'one-person-lab',
+    stage_folder_contract: stageFolderContract,
+    stage_json_contract: {
+      stage_json_ref: refs.stage_json_ref,
+      stage_json_file_name: 'stage.json',
+      body_owner: 'one-person-lab',
+      materialized_by: materializedBy,
+      required_fields: [
+        'stage_id',
+        'target_domain_id',
+        'stage_folder_contract_ref',
+        'artifact_native_contract_ref',
+        'attempt_json_ref_template',
+        'manifest_ref_template',
+        'receipt_ref_template',
+        'current_pointer_ref',
+        'canonical_artifact_ref',
+        'export_ref_template',
+        'lineage_ref_template',
+        'retention_ref_template',
+      ],
+      body_policy: 'refs_only_stage_descriptor_no_target_artifact_body',
+    },
+    attempt_json_contract: {
+      attempt_json_ref_template: refs.attempt_json_ref,
+      attempt_json_file_name: 'attempt.json',
+      body_owner: 'one-person-lab',
+      materialized_by: materializedBy,
+      runtime_state_owner: 'one-person-lab',
+      oma_materializes_ref_template_only: true,
+      required_fields: [
+        'stage_id',
+        'stage_attempt_id',
+        'attempt_json_ref',
+        'manifest_ref',
+        'receipt_ref',
+        'blocker_ref',
+        'lineage_ref',
+        'retention_ref',
+      ],
     },
     manifest_contract: {
       manifest_ref_template: `stage-manifest-ref:${domainId}/${stageId}/{stage_attempt_id}`,
       manifest_file_name: 'stage.manifest.json',
       required_fields: [
+        'stage_json_ref',
+        'attempt_json_ref',
         'stage_id',
         'stage_attempt_id',
         'physical_output_path',
@@ -71,6 +177,9 @@ export function buildStageNativeArtifactContract({
         'receipt_refs',
         'current_pointer_ref',
         'canonical_artifact_ref',
+        'export_ref',
+        'lineage_ref',
+        'retention_ref',
         'export_eligibility',
         'repair_classification',
       ],
@@ -85,12 +194,69 @@ export function buildStageNativeArtifactContract({
       blocked_requires_typed_blocker_ref: true,
       skipped_or_deferred_requires_decision_receipt_ref: true,
     },
+    receipt_contract: {
+      receipt_ref_template: refs.receipt_ref,
+      receipt_file_name: 'receipt.json',
+      receipt_owner: 'one-person-lab',
+      owner_receipt_body_owner: domainTruthOwner,
+      oma_can_generate_target_domain_owner_receipt: false,
+      required_return_shape: 'stage_attempt_receipt_or_typed_blocker_ref',
+    },
     current_pointer_contract: {
       current_pointer_ref: refs.current_pointer_ref,
+      current_file_name: 'current.json',
       pointer_owner: 'one-person-lab',
+      oma_materializes_ref_template_only: true,
       old_attempts_not_pointed_by_current_are_historical_evidence_only: true,
     },
+    canonical_artifact_contract: {
+      canonical_artifact_ref: refs.canonical_artifact_ref,
+      canonical_file_name: 'canonical.json',
+      body_owner: domainTruthOwner,
+      contains_target_artifact_body: false,
+      canonical_body_requires_target_owner_receipt: true,
+    },
+    export_contract: {
+      export_ref_template: refs.export_ref,
+      export_file_name: 'export.json',
+      export_owner: domainTruthOwner,
+      oma_can_authorize_target_quality_or_export: false,
+      export_requires_target_owner_gate: true,
+    },
+    lineage_contract: {
+      lineage_ref_template: refs.lineage_ref,
+      lineage_file_name: 'lineage.json',
+      lineage_owner: 'one-person-lab',
+      required_fields: [
+        'stage_id',
+        'stage_attempt_id',
+        'input_refs',
+        'source_refs',
+        'producer_refs',
+        'parent_attempt_refs',
+        'repair_refs',
+      ],
+    },
+    retention_contract: {
+      retention_ref_template: refs.retention_ref,
+      retention_file_name: 'retention.json',
+      retention_owner: 'one-person-lab',
+      retention_policy: 'attempt_refs_retained_as_evidence_until_opl_retention_gate',
+      oma_can_delete_stage_attempt_history: false,
+    },
     output_roles: [
+      {
+        role_id: 'stage_json',
+        ref_kind: 'stage_json_ref',
+        body_owner: 'one-person-lab',
+        contains_target_artifact_body: false,
+      },
+      {
+        role_id: 'attempt_json',
+        ref_kind: 'stage_attempt_json_ref',
+        body_owner: 'one-person-lab',
+        contains_target_artifact_body: false,
+      },
       {
         role_id: 'stage_manifest',
         ref_kind: 'stage_manifest_ref',
@@ -115,18 +281,26 @@ export function buildStageNativeArtifactContract({
         body_owner: domainTruthOwner,
         contains_target_artifact_body: false,
       },
+      {
+        role_id: 'export_ref',
+        ref_kind: 'stage_export_ref',
+        body_owner: domainTruthOwner,
+        contains_target_artifact_body: false,
+      },
+      {
+        role_id: 'lineage_ref',
+        ref_kind: 'stage_lineage_ref',
+        body_owner: 'one-person-lab',
+        contains_target_artifact_body: false,
+      },
+      {
+        role_id: 'retention_ref',
+        ref_kind: 'stage_retention_ref',
+        body_owner: 'one-person-lab',
+        contains_target_artifact_body: false,
+      },
     ],
-    authority_boundary: {
-      opl_framework_owns_stage_folder_lifecycle: true,
-      oma_role: 'contract_compiler_and_refs_materializer',
-      oma_can_write_stage_folder_runtime_state: false,
-      oma_can_generate_target_domain_owner_receipt: false,
-      oma_can_write_target_domain_truth: false,
-      oma_can_write_target_domain_memory_body: false,
-      oma_can_mutate_target_domain_artifact_body: false,
-      oma_can_authorize_target_quality_or_export: false,
-      oma_can_promote_default_agent_without_gate: false,
-    },
+    authority_boundary: stageNativeAuthorityBoundary(),
   };
 }
 
@@ -155,23 +329,40 @@ export function buildStageNativeArtifactContractBundle({
     stage_folder_contract_refs: stageIds.map((stageId) => (
       `stage-folder-contract-ref:${domainId}/${stageId}`
     )),
+    stage_json_refs: stageIds.map((stageId) => (
+      `stage-json-ref:${domainId}/${stageId}`
+    )),
+    attempt_json_ref_templates: stageIds.map((stageId) => (
+      `stage-attempt-json-ref:${domainId}/${stageId}/{stage_attempt_id}`
+    )),
+    manifest_ref_templates: stageIds.map((stageId) => (
+      `stage-manifest-ref:${domainId}/${stageId}/{stage_attempt_id}`
+    )),
+    receipt_ref_templates: stageIds.map((stageId) => (
+      `stage-attempt-receipt-ref:${domainId}/${stageId}/{stage_attempt_id}`
+    )),
+    current_pointer_refs: stageIds.map((stageId) => (
+      `stage-current-pointer-ref:${domainId}/${stageId}`
+    )),
+    canonical_artifact_refs: stageIds.map((stageId) => (
+      `canonical-artifact-ref:${domainId}/${stageId}`
+    )),
+    export_ref_templates: stageIds.map((stageId) => (
+      `stage-export-ref:${domainId}/${stageId}/{stage_attempt_id}`
+    )),
+    lineage_ref_templates: stageIds.map((stageId) => (
+      `stage-lineage-ref:${domainId}/${stageId}/{stage_attempt_id}`
+    )),
+    retention_ref_templates: stageIds.map((stageId) => (
+      `stage-retention-ref:${domainId}/${stageId}/{stage_attempt_id}`
+    )),
     contracts: stageIds.map((stageId) => buildStageNativeArtifactContract({
       domainId,
       stageId,
       domainTruthOwner,
       materializedBy,
     })),
-    authority_boundary: {
-      oma_role: 'contract_compiler_and_refs_materializer',
-      oma_can_write_stage_folder_runtime_state: false,
-      oma_can_generate_target_domain_owner_receipt: false,
-      oma_can_write_target_domain_truth: false,
-      oma_can_write_target_domain_memory_body: false,
-      oma_can_mutate_target_domain_artifact_body: false,
-      oma_can_authorize_target_quality_or_export: false,
-      oma_can_promote_default_agent_without_gate: false,
-      opl_framework_owns_stage_folder_lifecycle: true,
-    },
+    authority_boundary: stageNativeAuthorityBoundary(),
   };
 }
 
@@ -193,6 +384,16 @@ export function buildStageNativeArtifactAttemptRefs({
     domain_truth_owner: domainTruthOwner,
     ...refs,
     refs_only: true,
+    stage_folder_contract: buildStageFolderContract({ domainId, stageId, attemptId }),
+    authority_boundary: stageNativeAuthorityBoundary(),
+    can_own_agent_lab_runner: false,
+    can_own_queue: false,
+    can_own_attempt_ledger: false,
+    can_own_worktree_lifecycle: false,
+    can_own_promotion_gate: false,
+    can_own_app_shell: false,
+    can_write_target_owner_closeout: false,
+    can_write_stage_folder_runtime_state: false,
     can_generate_target_domain_owner_receipt: false,
     can_write_target_domain_truth: false,
     can_write_target_domain_memory_body: false,

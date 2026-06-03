@@ -31,6 +31,18 @@ function stageById(stageControl: JsonObject, stageId: string): JsonObject {
   return stage;
 }
 
+function assertCompleteStageNativeRefs(container: JsonObject, domainId: string, stageId: string): void {
+  assert.equal(container.stage_json_ref, `stage-json-ref:${domainId}/${stageId}`);
+  assert.equal(container.attempt_json_ref, `stage-attempt-json-ref:${domainId}/${stageId}/{stage_attempt_id}`);
+  assert.equal(container.manifest_ref, `stage-manifest-ref:${domainId}/${stageId}/{stage_attempt_id}`);
+  assert.equal(container.receipt_ref, `stage-attempt-receipt-ref:${domainId}/${stageId}/{stage_attempt_id}`);
+  assert.equal(container.current_pointer_ref, `stage-current-pointer-ref:${domainId}/${stageId}`);
+  assert.equal(container.canonical_artifact_ref, `canonical-artifact-ref:${domainId}/${stageId}`);
+  assert.equal(container.export_ref, `stage-export-ref:${domainId}/${stageId}/{stage_attempt_id}`);
+  assert.equal(container.lineage_ref, `stage-lineage-ref:${domainId}/${stageId}/{stage_attempt_id}`);
+  assert.equal(container.retention_ref, `stage-retention-ref:${domainId}/${stageId}/{stage_attempt_id}`);
+}
+
 test('materializer writes the target stage pack from typed stage-decomposition closeout', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-stage-materializer-'));
   try {
@@ -93,14 +105,49 @@ test('materializer writes the target stage pack from typed stage-decomposition c
     assert.ok(stage.stage_contract.requires.includes('artifact-native-contract-ref:research-workbench-agent/evidence-synthesis-plan'));
     assert.ok(stage.stage_contract.ensures.includes('stage-user-log-ref:evidence-synthesis-plan'));
     assert.ok(stage.stage_contract.ensures.includes('stage-folder-contract-ref:research-workbench-agent/evidence-synthesis-plan'));
+    assert.ok(stage.stage_contract.ensures.includes('stage-json-ref:research-workbench-agent/evidence-synthesis-plan'));
+    assert.ok(stage.stage_contract.ensures.includes('stage-attempt-json-ref:research-workbench-agent/evidence-synthesis-plan/{stage_attempt_id}'));
     assert.ok(stage.stage_contract.ensures.includes('stage-manifest-ref:research-workbench-agent/evidence-synthesis-plan/{stage_attempt_id}'));
+    assert.ok(stage.stage_contract.ensures.includes('stage-export-ref:research-workbench-agent/evidence-synthesis-plan/{stage_attempt_id}'));
+    assert.ok(stage.stage_contract.ensures.includes('stage-lineage-ref:research-workbench-agent/evidence-synthesis-plan/{stage_attempt_id}'));
+    assert.ok(stage.stage_contract.ensures.includes('stage-retention-ref:research-workbench-agent/evidence-synthesis-plan/{stage_attempt_id}'));
     assert.equal(
       stage.stage_contract.stage_native_artifact_contract.artifact_native_contract_ref,
       'artifact-native-contract-ref:research-workbench-agent/evidence-synthesis-plan',
     );
+    assertCompleteStageNativeRefs(
+      stage.stage_contract.stage_native_artifact_contract,
+      'research-workbench-agent',
+      'evidence-synthesis-plan',
+    );
     assert.equal(
       stage.stage_contract.stage_native_artifact_contract.stage_folder_contract.stage_folder_contract_ref,
       'stage-folder-contract-ref:research-workbench-agent/evidence-synthesis-plan',
+    );
+    assertCompleteStageNativeRefs(
+      stage.stage_contract.stage_native_artifact_contract.stage_folder_contract,
+      'research-workbench-agent',
+      'evidence-synthesis-plan',
+    );
+    assert.equal(
+      stage.stage_contract.stage_native_artifact_contract.stage_json_contract.stage_json_file_name,
+      'stage.json',
+    );
+    assert.equal(
+      stage.stage_contract.stage_native_artifact_contract.attempt_json_contract.attempt_json_file_name,
+      'attempt.json',
+    );
+    assert.equal(
+      stage.stage_contract.stage_native_artifact_contract.export_contract.export_file_name,
+      'export.json',
+    );
+    assert.equal(
+      stage.stage_contract.stage_native_artifact_contract.lineage_contract.lineage_file_name,
+      'lineage.json',
+    );
+    assert.equal(
+      stage.stage_contract.stage_native_artifact_contract.retention_contract.retention_file_name,
+      'retention.json',
     );
     assert.equal(
       stage.stage_contract.stage_native_artifact_contract.manifest_contract.missing_owner_receipt_projection,
@@ -114,11 +161,67 @@ test('materializer writes the target stage pack from typed stage-decomposition c
     assert.deepEqual(stageNativeArtifactContract.artifact_native_contract_refs, [
       'artifact-native-contract-ref:research-workbench-agent/evidence-synthesis-plan',
     ]);
+    assert.deepEqual(stageNativeArtifactContract.stage_json_refs, [
+      'stage-json-ref:research-workbench-agent/evidence-synthesis-plan',
+    ]);
+    assert.deepEqual(stageNativeArtifactContract.attempt_json_ref_templates, [
+      'stage-attempt-json-ref:research-workbench-agent/evidence-synthesis-plan/{stage_attempt_id}',
+    ]);
+    assert.deepEqual(stageNativeArtifactContract.export_ref_templates, [
+      'stage-export-ref:research-workbench-agent/evidence-synthesis-plan/{stage_attempt_id}',
+    ]);
+    assert.deepEqual(stageNativeArtifactContract.lineage_ref_templates, [
+      'stage-lineage-ref:research-workbench-agent/evidence-synthesis-plan/{stage_attempt_id}',
+    ]);
+    assert.deepEqual(stageNativeArtifactContract.retention_ref_templates, [
+      'stage-retention-ref:research-workbench-agent/evidence-synthesis-plan/{stage_attempt_id}',
+    ]);
     assert.equal(
       stageNativeArtifactContract.contracts[0].canonical_artifact_ref,
       'canonical-artifact-ref:research-workbench-agent/evidence-synthesis-plan',
     );
+    assertCompleteStageNativeRefs(
+      stageNativeArtifactContract.contracts[0],
+      'research-workbench-agent',
+      'evidence-synthesis-plan',
+    );
+    assert.equal(stageNativeArtifactContract.authority_boundary.oma_can_own_agent_lab_runner, false);
+    assert.equal(stageNativeArtifactContract.authority_boundary.oma_can_own_queue, false);
+    assert.equal(stageNativeArtifactContract.authority_boundary.oma_can_own_attempt_ledger, false);
+    assert.equal(stageNativeArtifactContract.authority_boundary.oma_can_own_worktree_lifecycle, false);
+    assert.equal(stageNativeArtifactContract.authority_boundary.oma_can_own_promotion_gate, false);
+    assert.equal(stageNativeArtifactContract.authority_boundary.oma_can_own_app_shell, false);
+    assert.equal(stageNativeArtifactContract.authority_boundary.oma_can_write_target_owner_closeout, false);
     assert.equal(stageNativeArtifactContract.authority_boundary.oma_can_write_target_domain_truth, false);
+    const materializedStageNativeDir = path.join(
+      targetAgentDir,
+      'contracts',
+      'stage_native_artifacts',
+      'evidence-synthesis-plan',
+    );
+    [
+      'stage.json',
+      'attempt.json',
+      'stage.manifest.json',
+      'receipt.json',
+      'current.json',
+      'canonical.json',
+      'export.json',
+      'lineage.json',
+      'retention.json',
+    ].forEach((fileName) => {
+      assert.equal(fs.existsSync(path.join(materializedStageNativeDir, fileName)), true, `${fileName} materialized ref`);
+    });
+    const attemptRefs = readJson(path.join(materializedStageNativeDir, 'attempt.json'));
+    assert.equal(attemptRefs.materialization_kind, 'compiler_ref_template_only_not_runtime_state');
+    assert.equal(attemptRefs.ref, 'stage-attempt-json-ref:research-workbench-agent/evidence-synthesis-plan/{stage_attempt_id}');
+    assert.equal(attemptRefs.authority_boundary.oma_can_write_stage_folder_runtime_state, false);
+    const exportRefs = readJson(path.join(materializedStageNativeDir, 'export.json'));
+    assert.equal(exportRefs.ref, 'stage-export-ref:research-workbench-agent/evidence-synthesis-plan/{stage_attempt_id}');
+    const lineageRefs = readJson(path.join(materializedStageNativeDir, 'lineage.json'));
+    assert.equal(lineageRefs.ref, 'stage-lineage-ref:research-workbench-agent/evidence-synthesis-plan/{stage_attempt_id}');
+    const retentionRefs = readJson(path.join(materializedStageNativeDir, 'retention.json'));
+    assert.equal(retentionRefs.ref, 'stage-retention-ref:research-workbench-agent/evidence-synthesis-plan/{stage_attempt_id}');
     assert.deepEqual(
       stage.stage_contract.user_stage_log_contract.required_domain_semantic_fields,
       [

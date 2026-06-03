@@ -162,13 +162,7 @@ function buildTakeoverSuite(targetAgent: TargetAgent, targetAgentDir: string): J
       ...task,
       stage_native_artifact_refs: stageNativeArtifactRefs,
       artifact_native_contract_ref: stageNativeArtifactRefs.artifact_native_contract_ref,
-      stage_folder_contract: {
-        stage_folder_contract_ref: stageNativeArtifactRefs.stage_folder_contract_ref,
-        manifest_ref: stageNativeArtifactRefs.manifest_ref,
-        receipt_ref: stageNativeArtifactRefs.receipt_ref,
-        blocker_ref: stageNativeArtifactRefs.blocker_ref,
-        canonical_artifact_ref: stageNativeArtifactRefs.canonical_artifact_ref,
-      },
+      stage_folder_contract: stageNativeArtifactRefs.stage_folder_contract,
     })),
   };
 }

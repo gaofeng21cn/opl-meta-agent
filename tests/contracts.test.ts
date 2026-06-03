@@ -61,6 +61,50 @@ function assertRepoRefExists(relativePath: string): void {
   assert.equal(fs.existsSync(path.join(repoRoot, relativePath)), true, `${relativePath} should exist`);
 }
 
+function assertCompleteStageNativeRefs(surface: JsonObject, label: string): void {
+  assert.equal(surface.stage_json_ref, `stage-json-ref:opl-meta-agent/${label}`, `${label}.stage_json_ref`);
+  assert.equal(
+    surface.attempt_json_ref,
+    `stage-attempt-json-ref:opl-meta-agent/${label}/{stage_attempt_id}`,
+    `${label}.attempt_json_ref`,
+  );
+  assert.equal(
+    surface.manifest_ref,
+    `stage-manifest-ref:opl-meta-agent/${label}/{stage_attempt_id}`,
+    `${label}.manifest_ref`,
+  );
+  assert.equal(
+    surface.receipt_ref,
+    `stage-attempt-receipt-ref:opl-meta-agent/${label}/{stage_attempt_id}`,
+    `${label}.receipt_ref`,
+  );
+  assert.equal(
+    surface.current_pointer_ref,
+    `stage-current-pointer-ref:opl-meta-agent/${label}`,
+    `${label}.current_pointer_ref`,
+  );
+  assert.equal(
+    surface.canonical_artifact_ref,
+    `canonical-artifact-ref:opl-meta-agent/${label}`,
+    `${label}.canonical_artifact_ref`,
+  );
+  assert.equal(
+    surface.export_ref,
+    `stage-export-ref:opl-meta-agent/${label}/{stage_attempt_id}`,
+    `${label}.export_ref`,
+  );
+  assert.equal(
+    surface.lineage_ref,
+    `stage-lineage-ref:opl-meta-agent/${label}/{stage_attempt_id}`,
+    `${label}.lineage_ref`,
+  );
+  assert.equal(
+    surface.retention_ref,
+    `stage-retention-ref:opl-meta-agent/${label}/{stage_attempt_id}`,
+    `${label}.retention_ref`,
+  );
+}
+
 function assertNoForbiddenAuthority(surface: JsonObject, label: string): void {
   assert.equal(surface.owner, 'opl-meta-agent', `${label}.owner`);
   assert.equal(surface.authority_boundary.refs_only, true, `${label} should be refs-only`);
@@ -366,6 +410,33 @@ test('opl-meta-agent stage plan covers research, build, eval, optimization, deli
     asStrings(stageControl.stage_native_artifact_contract.stage_folder_contract_refs),
     asObjects(stageControl.stages).map((stage) => `stage-folder-contract-ref:opl-meta-agent/${stage.stage_id}`),
   );
+  assert.deepEqual(
+    asStrings(stageControl.stage_native_artifact_contract.stage_json_refs),
+    asObjects(stageControl.stages).map((stage) => `stage-json-ref:opl-meta-agent/${stage.stage_id}`),
+  );
+  assert.deepEqual(
+    asStrings(stageControl.stage_native_artifact_contract.attempt_json_ref_templates),
+    asObjects(stageControl.stages).map((stage) => `stage-attempt-json-ref:opl-meta-agent/${stage.stage_id}/{stage_attempt_id}`),
+  );
+  assert.deepEqual(
+    asStrings(stageControl.stage_native_artifact_contract.export_ref_templates),
+    asObjects(stageControl.stages).map((stage) => `stage-export-ref:opl-meta-agent/${stage.stage_id}/{stage_attempt_id}`),
+  );
+  assert.deepEqual(
+    asStrings(stageControl.stage_native_artifact_contract.lineage_ref_templates),
+    asObjects(stageControl.stages).map((stage) => `stage-lineage-ref:opl-meta-agent/${stage.stage_id}/{stage_attempt_id}`),
+  );
+  assert.deepEqual(
+    asStrings(stageControl.stage_native_artifact_contract.retention_ref_templates),
+    asObjects(stageControl.stages).map((stage) => `stage-retention-ref:opl-meta-agent/${stage.stage_id}/{stage_attempt_id}`),
+  );
+  assert.equal(stageControl.stage_native_artifact_contract.authority_boundary.oma_can_own_agent_lab_runner, false);
+  assert.equal(stageControl.stage_native_artifact_contract.authority_boundary.oma_can_own_queue, false);
+  assert.equal(stageControl.stage_native_artifact_contract.authority_boundary.oma_can_own_attempt_ledger, false);
+  assert.equal(stageControl.stage_native_artifact_contract.authority_boundary.oma_can_own_worktree_lifecycle, false);
+  assert.equal(stageControl.stage_native_artifact_contract.authority_boundary.oma_can_own_promotion_gate, false);
+  assert.equal(stageControl.stage_native_artifact_contract.authority_boundary.oma_can_own_app_shell, false);
+  assert.equal(stageControl.stage_native_artifact_contract.authority_boundary.oma_can_write_target_owner_closeout, false);
   assert.equal(stageControl.authority_boundary.opl_can_write_domain_truth, false);
   assert.equal(stageControl.authority_boundary.opl_can_write_memory_body, false);
   assert.equal(stageControl.authority_boundary.opl_can_authorize_quality_or_export, false);
@@ -432,8 +503,20 @@ test('stage launch contract is Codex-first, receipted, and OPL-10 bounded', () =
       `${label}.ensures stage folder contract`,
     );
     assert.ok(
+      ensures.includes(`stage-json-ref:opl-meta-agent/${label}`),
+      `${label}.ensures stage json`,
+    );
+    assert.ok(
+      ensures.includes(`stage-attempt-json-ref:opl-meta-agent/${label}/{stage_attempt_id}`),
+      `${label}.ensures attempt json`,
+    );
+    assert.ok(
       ensures.includes(`stage-manifest-ref:opl-meta-agent/${label}/{stage_attempt_id}`),
       `${label}.ensures stage manifest`,
+    );
+    assert.ok(
+      ensures.includes(`stage-attempt-receipt-ref:opl-meta-agent/${label}/{stage_attempt_id}`),
+      `${label}.ensures stage-native receipt`,
     );
     assert.ok(
       ensures.includes(`stage-current-pointer-ref:opl-meta-agent/${label}`),
@@ -442,6 +525,18 @@ test('stage launch contract is Codex-first, receipted, and OPL-10 bounded', () =
     assert.ok(
       ensures.includes(`canonical-artifact-ref:opl-meta-agent/${label}`),
       `${label}.ensures canonical artifact ref`,
+    );
+    assert.ok(
+      ensures.includes(`stage-export-ref:opl-meta-agent/${label}/{stage_attempt_id}`),
+      `${label}.ensures export ref`,
+    );
+    assert.ok(
+      ensures.includes(`stage-lineage-ref:opl-meta-agent/${label}/{stage_attempt_id}`),
+      `${label}.ensures lineage ref`,
+    );
+    assert.ok(
+      ensures.includes(`stage-retention-ref:opl-meta-agent/${label}/{stage_attempt_id}`),
+      `${label}.ensures retention ref`,
     );
     assert.ok(
       expectedReceiptRefs.includes(`boundary-receipt-ref:${label}/refs-only`),
@@ -464,16 +559,44 @@ test('stage launch contract is Codex-first, receipted, and OPL-10 bounded', () =
       `${label}.expected_receipt_refs stage folder`,
     );
     assert.ok(
+      expectedReceiptRefs.includes(`stage-json-ref:opl-meta-agent/${label}`),
+      `${label}.expected_receipt_refs stage json`,
+    );
+    assert.ok(
+      expectedReceiptRefs.includes(`stage-attempt-json-ref:opl-meta-agent/${label}/{stage_attempt_id}`),
+      `${label}.expected_receipt_refs attempt json`,
+    );
+    assert.ok(
       expectedReceiptRefs.includes(`stage-manifest-ref:opl-meta-agent/${label}/{stage_attempt_id}`),
       `${label}.expected_receipt_refs manifest`,
+    );
+    assert.ok(
+      expectedReceiptRefs.includes(`stage-attempt-receipt-ref:opl-meta-agent/${label}/{stage_attempt_id}`),
+      `${label}.expected_receipt_refs stage-native receipt`,
     );
     assert.ok(
       expectedReceiptRefs.includes(`stage-typed-blocker-ref:opl-meta-agent/${label}/{stage_attempt_id}`),
       `${label}.expected_receipt_refs blocker`,
     );
     assert.ok(
+      expectedReceiptRefs.includes(`stage-current-pointer-ref:opl-meta-agent/${label}`),
+      `${label}.expected_receipt_refs current pointer`,
+    );
+    assert.ok(
       expectedReceiptRefs.includes(`canonical-artifact-ref:opl-meta-agent/${label}`),
       `${label}.expected_receipt_refs canonical artifact`,
+    );
+    assert.ok(
+      expectedReceiptRefs.includes(`stage-export-ref:opl-meta-agent/${label}/{stage_attempt_id}`),
+      `${label}.expected_receipt_refs export`,
+    );
+    assert.ok(
+      expectedReceiptRefs.includes(`stage-lineage-ref:opl-meta-agent/${label}/{stage_attempt_id}`),
+      `${label}.expected_receipt_refs lineage`,
+    );
+    assert.ok(
+      expectedReceiptRefs.includes(`stage-retention-ref:opl-meta-agent/${label}/{stage_attempt_id}`),
+      `${label}.expected_receipt_refs retention`,
     );
     assert.equal(
       stageNativeArtifactContract.surface_kind,
@@ -490,6 +613,16 @@ test('stage launch contract is Codex-first, receipted, and OPL-10 bounded', () =
       `stage-folder-contract-ref:opl-meta-agent/${label}`,
       `${label}.stage_folder_contract_ref`,
     );
+    assertCompleteStageNativeRefs(stageNativeArtifactContract, label);
+    assertCompleteStageNativeRefs(stageNativeArtifactContract.stage_folder_contract, label);
+    assert.equal(stageNativeArtifactContract.stage_json_contract.stage_json_file_name, 'stage.json');
+    assert.equal(stageNativeArtifactContract.attempt_json_contract.attempt_json_file_name, 'attempt.json');
+    assert.equal(stageNativeArtifactContract.receipt_contract.receipt_file_name, 'receipt.json');
+    assert.equal(stageNativeArtifactContract.current_pointer_contract.current_file_name, 'current.json');
+    assert.equal(stageNativeArtifactContract.canonical_artifact_contract.canonical_file_name, 'canonical.json');
+    assert.equal(stageNativeArtifactContract.export_contract.export_file_name, 'export.json');
+    assert.equal(stageNativeArtifactContract.lineage_contract.lineage_file_name, 'lineage.json');
+    assert.equal(stageNativeArtifactContract.retention_contract.retention_file_name, 'retention.json');
     assert.equal(
       stageNativeArtifactContract.manifest_contract.missing_owner_receipt_projection,
       'orphan_artifact',
@@ -519,6 +652,41 @@ test('stage launch contract is Codex-first, receipted, and OPL-10 bounded', () =
       stageNativeArtifactContract.authority_boundary.oma_can_write_target_domain_truth,
       false,
       `${label}.no_target_truth_write`,
+    );
+    assert.equal(
+      stageNativeArtifactContract.authority_boundary.oma_can_own_agent_lab_runner,
+      false,
+      `${label}.no_agent_lab_runner_owner`,
+    );
+    assert.equal(
+      stageNativeArtifactContract.authority_boundary.oma_can_own_queue,
+      false,
+      `${label}.no_queue_owner`,
+    );
+    assert.equal(
+      stageNativeArtifactContract.authority_boundary.oma_can_own_attempt_ledger,
+      false,
+      `${label}.no_attempt_ledger_owner`,
+    );
+    assert.equal(
+      stageNativeArtifactContract.authority_boundary.oma_can_own_worktree_lifecycle,
+      false,
+      `${label}.no_worktree_lifecycle_owner`,
+    );
+    assert.equal(
+      stageNativeArtifactContract.authority_boundary.oma_can_own_promotion_gate,
+      false,
+      `${label}.no_promotion_gate_owner`,
+    );
+    assert.equal(
+      stageNativeArtifactContract.authority_boundary.oma_can_own_app_shell,
+      false,
+      `${label}.no_app_shell_owner`,
+    );
+    assert.equal(
+      stageNativeArtifactContract.authority_boundary.oma_can_write_target_owner_closeout,
+      false,
+      `${label}.no_target_owner_closeout_write`,
     );
     assert.equal(userStageLog.surface_kind, 'opl_standard_agent_user_stage_log_contract', `${label}.user_stage_log`);
     assert.equal(userStageLog.version, 'standard-user-stage-log.v1', `${label}.user_stage_log.version`);

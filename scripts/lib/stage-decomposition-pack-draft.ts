@@ -147,6 +147,23 @@ function ref(refKind: string, refValue: string) {
   };
 }
 
+function stageNativeRefsFor(domainId: string, stageId: string) {
+  return {
+    artifactNativeContractRef: `artifact-native-contract-ref:${domainId}/${stageId}`,
+    stageFolderContractRef: `stage-folder-contract-ref:${domainId}/${stageId}`,
+    stageJsonRef: `stage-json-ref:${domainId}/${stageId}`,
+    attemptJsonRef: `stage-attempt-json-ref:${domainId}/${stageId}/{stage_attempt_id}`,
+    manifestRef: `stage-manifest-ref:${domainId}/${stageId}/{stage_attempt_id}`,
+    receiptRef: `stage-attempt-receipt-ref:${domainId}/${stageId}/{stage_attempt_id}`,
+    blockerRef: `stage-typed-blocker-ref:${domainId}/${stageId}/{stage_attempt_id}`,
+    currentPointerRef: `stage-current-pointer-ref:${domainId}/${stageId}`,
+    canonicalArtifactRef: `canonical-artifact-ref:${domainId}/${stageId}`,
+    exportRef: `stage-export-ref:${domainId}/${stageId}/{stage_attempt_id}`,
+    lineageRef: `stage-lineage-ref:${domainId}/${stageId}/{stage_attempt_id}`,
+    retentionRef: `stage-retention-ref:${domainId}/${stageId}/{stage_attempt_id}`,
+  };
+}
+
 function authorityBoundary(domainTruthOwner: string) {
   return {
     domain_truth_owner: domainTruthOwner,
@@ -267,6 +284,7 @@ function buildStageControlPlane({
     stageId,
     domainTruthOwner: owner,
   });
+  const stageNativeRefs = stageNativeRefsFor(domainId, stageId);
   return {
     surface_kind: 'family_stage_control_plane',
     version: 'family-stage-control-plane.v1',
@@ -341,7 +359,7 @@ function buildStageControlPlane({
         stage_contract: {
           requires: [
             `stage:${stageId}`,
-            `artifact-native-contract-ref:${domainId}/${stageId}`,
+            stageNativeRefs.artifactNativeContractRef,
             `prompt-ref:${promptPath}`,
             `skill-ref:${skillPath}`,
             `knowledge-ref:${knowledgePath}`,
@@ -358,10 +376,16 @@ function buildStageControlPlane({
             `independent-gate-receipt-ref:${stageId}`,
             `owner-handoff-ref:${stageId}`,
             `stage-user-log-ref:${stageId}`,
-            `stage-folder-contract-ref:${domainId}/${stageId}`,
-            `stage-manifest-ref:${domainId}/${stageId}/{stage_attempt_id}`,
-            `stage-current-pointer-ref:${domainId}/${stageId}`,
-            `canonical-artifact-ref:${domainId}/${stageId}`,
+            stageNativeRefs.stageFolderContractRef,
+            stageNativeRefs.stageJsonRef,
+            stageNativeRefs.attemptJsonRef,
+            stageNativeRefs.manifestRef,
+            stageNativeRefs.receiptRef,
+            stageNativeRefs.currentPointerRef,
+            stageNativeRefs.canonicalArtifactRef,
+            stageNativeRefs.exportRef,
+            stageNativeRefs.lineageRef,
+            stageNativeRefs.retentionRef,
           ],
           expected_receipt_refs: [
             ref('stage_attempt_receipt_ref', `stage-attempt-receipt-ref:${stageId}`),
@@ -369,11 +393,18 @@ function buildStageControlPlane({
             ref('boundary_receipt_ref', `boundary-receipt-ref:${stageId}/refs-only`),
             ref('independent_gate_receipt_ref', `independent-gate-receipt-ref:${stageId}`),
             ref('user_stage_log_ref', `stage-user-log-ref:${stageId}`),
-            ref('artifact_native_contract_ref', `artifact-native-contract-ref:${domainId}/${stageId}`),
-            ref('stage_folder_contract_ref', `stage-folder-contract-ref:${domainId}/${stageId}`),
-            ref('stage_manifest_ref', `stage-manifest-ref:${domainId}/${stageId}/{stage_attempt_id}`),
-            ref('stage_typed_blocker_ref', `stage-typed-blocker-ref:${domainId}/${stageId}/{stage_attempt_id}`),
-            ref('canonical_artifact_ref', `canonical-artifact-ref:${domainId}/${stageId}`),
+            ref('artifact_native_contract_ref', stageNativeRefs.artifactNativeContractRef),
+            ref('stage_folder_contract_ref', stageNativeRefs.stageFolderContractRef),
+            ref('stage_json_ref', stageNativeRefs.stageJsonRef),
+            ref('stage_attempt_json_ref', stageNativeRefs.attemptJsonRef),
+            ref('stage_manifest_ref', stageNativeRefs.manifestRef),
+            ref('stage_attempt_receipt_ref', stageNativeRefs.receiptRef),
+            ref('stage_typed_blocker_ref', stageNativeRefs.blockerRef),
+            ref('stage_current_pointer_ref', stageNativeRefs.currentPointerRef),
+            ref('canonical_artifact_ref', stageNativeRefs.canonicalArtifactRef),
+            ref('stage_export_ref', stageNativeRefs.exportRef),
+            ref('stage_lineage_ref', stageNativeRefs.lineageRef),
+            ref('stage_retention_ref', stageNativeRefs.retentionRef),
           ],
           source_scope_refs: [ref('source_scope_ref', `source-scope:${stageId}`)],
           artifact_scope_refs: [ref('artifact_scope_ref', `artifact-scope:${stageId}`)],
@@ -844,11 +875,19 @@ function validateStageControlPlane(
     const contract = asRecord(stage.stage_contract, `stage ${stageId}.stage_contract`);
     const requires = asStringArray(contract.requires, `stage ${stageId}.stage_contract.requires`);
     const ensures = asStringArray(contract.ensures, `stage ${stageId}.stage_contract.ensures`);
-    const expectedArtifactNativeContractRef = `artifact-native-contract-ref:${targetAgent.domain_id}/${stageId}`;
-    const expectedStageFolderContractRef = `stage-folder-contract-ref:${targetAgent.domain_id}/${stageId}`;
-    const expectedManifestRef = `stage-manifest-ref:${targetAgent.domain_id}/${stageId}/{stage_attempt_id}`;
-    const expectedBlockerRef = `stage-typed-blocker-ref:${targetAgent.domain_id}/${stageId}/{stage_attempt_id}`;
-    const expectedCanonicalArtifactRef = `canonical-artifact-ref:${targetAgent.domain_id}/${stageId}`;
+    const stageNativeRefs = stageNativeRefsFor(targetAgent.domain_id, stageId);
+    const expectedArtifactNativeContractRef = stageNativeRefs.artifactNativeContractRef;
+    const expectedStageFolderContractRef = stageNativeRefs.stageFolderContractRef;
+    const expectedStageJsonRef = stageNativeRefs.stageJsonRef;
+    const expectedAttemptJsonRef = stageNativeRefs.attemptJsonRef;
+    const expectedManifestRef = stageNativeRefs.manifestRef;
+    const expectedReceiptRef = stageNativeRefs.receiptRef;
+    const expectedBlockerRef = stageNativeRefs.blockerRef;
+    const expectedCurrentPointerRef = stageNativeRefs.currentPointerRef;
+    const expectedCanonicalArtifactRef = stageNativeRefs.canonicalArtifactRef;
+    const expectedExportRef = stageNativeRefs.exportRef;
+    const expectedLineageRef = stageNativeRefs.lineageRef;
+    const expectedRetentionRef = stageNativeRefs.retentionRef;
     [
       expectedArtifactNativeContractRef,
       ...promptRefs.map((entry) => `prompt-ref:${entry}`),
@@ -875,9 +914,15 @@ function validateStageControlPlane(
     }
     [
       expectedStageFolderContractRef,
+      expectedStageJsonRef,
+      expectedAttemptJsonRef,
       expectedManifestRef,
-      `stage-current-pointer-ref:${targetAgent.domain_id}/${stageId}`,
+      expectedReceiptRef,
+      expectedCurrentPointerRef,
       expectedCanonicalArtifactRef,
+      expectedExportRef,
+      expectedLineageRef,
+      expectedRetentionRef,
     ].forEach((ensuredRef) => {
       if (!ensures.includes(ensuredRef)) {
         throw new Error(`stage-decomposition pack draft stage ${stageId} missing stage-native ensure ${ensuredRef}.`);
@@ -893,9 +938,16 @@ function validateStageControlPlane(
     [
       expectedArtifactNativeContractRef,
       expectedStageFolderContractRef,
+      expectedStageJsonRef,
+      expectedAttemptJsonRef,
       expectedManifestRef,
+      expectedReceiptRef,
       expectedBlockerRef,
+      expectedCurrentPointerRef,
       expectedCanonicalArtifactRef,
+      expectedExportRef,
+      expectedLineageRef,
+      expectedRetentionRef,
     ].forEach((expectedRef) => {
       if (!expectedReceiptRefs.some((entry) => entry.ref === expectedRef)) {
         throw new Error(`stage-decomposition pack draft stage ${stageId} missing expected stage-native ref ${expectedRef}.`);
@@ -914,15 +966,57 @@ function validateStageControlPlane(
     if (stageNativeArtifactContract.stage_folder_contract_ref !== expectedStageFolderContractRef) {
       throw new Error(`stage-decomposition pack draft stage ${stageId} stage_folder_contract_ref is invalid.`);
     }
+    if (stageNativeArtifactContract.stage_json_ref !== expectedStageJsonRef) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} stage_json_ref is invalid.`);
+    }
+    if (stageNativeArtifactContract.attempt_json_ref !== expectedAttemptJsonRef) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} attempt_json_ref is invalid.`);
+    }
     if (stageNativeArtifactContract.manifest_ref !== expectedManifestRef) {
       throw new Error(`stage-decomposition pack draft stage ${stageId} manifest_ref is invalid.`);
+    }
+    if (stageNativeArtifactContract.receipt_ref !== expectedReceiptRef) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} receipt_ref is invalid.`);
     }
     if (stageNativeArtifactContract.blocker_ref !== expectedBlockerRef) {
       throw new Error(`stage-decomposition pack draft stage ${stageId} blocker_ref is invalid.`);
     }
+    if (stageNativeArtifactContract.current_pointer_ref !== expectedCurrentPointerRef) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} current_pointer_ref is invalid.`);
+    }
     if (stageNativeArtifactContract.canonical_artifact_ref !== expectedCanonicalArtifactRef) {
       throw new Error(`stage-decomposition pack draft stage ${stageId} canonical_artifact_ref is invalid.`);
     }
+    if (stageNativeArtifactContract.export_ref !== expectedExportRef) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} export_ref is invalid.`);
+    }
+    if (stageNativeArtifactContract.lineage_ref !== expectedLineageRef) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} lineage_ref is invalid.`);
+    }
+    if (stageNativeArtifactContract.retention_ref !== expectedRetentionRef) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} retention_ref is invalid.`);
+    }
+    const folderContract = asRecord(
+      stageNativeArtifactContract.stage_folder_contract,
+      `stage ${stageId}.stage_contract.stage_native_artifact_contract.stage_folder_contract`,
+    );
+    [
+      ['stage_folder_contract_ref', expectedStageFolderContractRef],
+      ['stage_json_ref', expectedStageJsonRef],
+      ['attempt_json_ref', expectedAttemptJsonRef],
+      ['manifest_ref', expectedManifestRef],
+      ['receipt_ref', expectedReceiptRef],
+      ['blocker_ref', expectedBlockerRef],
+      ['current_pointer_ref', expectedCurrentPointerRef],
+      ['canonical_artifact_ref', expectedCanonicalArtifactRef],
+      ['export_ref', expectedExportRef],
+      ['lineage_ref', expectedLineageRef],
+      ['retention_ref', expectedRetentionRef],
+    ].forEach(([field, expectedValue]) => {
+      if (folderContract[field] !== expectedValue) {
+        throw new Error(`stage-decomposition pack draft stage ${stageId} stage_folder_contract.${field} is invalid.`);
+      }
+    });
     const stageNativeBoundary = asRecord(
       stageNativeArtifactContract.authority_boundary,
       `stage ${stageId}.stage_contract.stage_native_artifact_contract.authority_boundary`,
@@ -935,6 +1029,13 @@ function validateStageControlPlane(
       'oma_can_mutate_target_domain_artifact_body',
       'oma_can_authorize_target_quality_or_export',
       'oma_can_promote_default_agent_without_gate',
+      'oma_can_own_agent_lab_runner',
+      'oma_can_own_queue',
+      'oma_can_own_attempt_ledger',
+      'oma_can_own_worktree_lifecycle',
+      'oma_can_own_promotion_gate',
+      'oma_can_own_app_shell',
+      'oma_can_write_target_owner_closeout',
     ].forEach((field) => assertBooleanFalse(
       stageNativeBoundary,
       field,
@@ -1023,23 +1124,74 @@ function validateStageNativeArtifactContractBundle(
     bundle.stage_folder_contract_refs,
     'stage_native_artifact_contract.stage_folder_contract_refs',
   );
+  const stageJsonRefs = asStringArray(
+    bundle.stage_json_refs,
+    'stage_native_artifact_contract.stage_json_refs',
+  );
+  const attemptJsonRefs = asStringArray(
+    bundle.attempt_json_ref_templates,
+    'stage_native_artifact_contract.attempt_json_ref_templates',
+  );
+  const manifestRefs = asStringArray(
+    bundle.manifest_ref_templates,
+    'stage_native_artifact_contract.manifest_ref_templates',
+  );
+  const receiptRefs = asStringArray(
+    bundle.receipt_ref_templates,
+    'stage_native_artifact_contract.receipt_ref_templates',
+  );
+  const currentPointerRefs = asStringArray(
+    bundle.current_pointer_refs,
+    'stage_native_artifact_contract.current_pointer_refs',
+  );
+  const canonicalRefs = asStringArray(
+    bundle.canonical_artifact_refs,
+    'stage_native_artifact_contract.canonical_artifact_refs',
+  );
+  const exportRefs = asStringArray(
+    bundle.export_ref_templates,
+    'stage_native_artifact_contract.export_ref_templates',
+  );
+  const lineageRefs = asStringArray(
+    bundle.lineage_ref_templates,
+    'stage_native_artifact_contract.lineage_ref_templates',
+  );
+  const retentionRefs = asStringArray(
+    bundle.retention_ref_templates,
+    'stage_native_artifact_contract.retention_ref_templates',
+  );
   stages.forEach((stage) => {
     const stageId = asString(stage.stage_id, 'stage.stage_id');
-    const expectedContractRef = `artifact-native-contract-ref:${targetAgent.domain_id}/${stageId}`;
-    const expectedFolderRef = `stage-folder-contract-ref:${targetAgent.domain_id}/${stageId}`;
-    if (!contractRefs.includes(expectedContractRef)) {
-      throw new Error(`stage-decomposition pack draft stage_native_artifact_contract missing ${expectedContractRef}.`);
-    }
-    if (!folderRefs.includes(expectedFolderRef)) {
-      throw new Error(`stage-decomposition pack draft stage_native_artifact_contract missing ${expectedFolderRef}.`);
-    }
+    const stageNativeRefs = stageNativeRefsFor(targetAgent.domain_id, stageId);
+    const expectedRefs = [
+      [contractRefs, stageNativeRefs.artifactNativeContractRef],
+      [folderRefs, stageNativeRefs.stageFolderContractRef],
+      [stageJsonRefs, stageNativeRefs.stageJsonRef],
+      [attemptJsonRefs, stageNativeRefs.attemptJsonRef],
+      [manifestRefs, stageNativeRefs.manifestRef],
+      [receiptRefs, stageNativeRefs.receiptRef],
+      [currentPointerRefs, stageNativeRefs.currentPointerRef],
+      [canonicalRefs, stageNativeRefs.canonicalArtifactRef],
+      [exportRefs, stageNativeRefs.exportRef],
+      [lineageRefs, stageNativeRefs.lineageRef],
+      [retentionRefs, stageNativeRefs.retentionRef],
+    ] as const;
+    expectedRefs.forEach(([refs, expectedRef]) => {
+      if (!refs.includes(expectedRef)) {
+        throw new Error(`stage-decomposition pack draft stage_native_artifact_contract missing ${expectedRef}.`);
+      }
+    });
     const embedded = asRecord(
       asRecord(stage.stage_contract, `stage ${stageId}.stage_contract`).stage_native_artifact_contract,
       `stage ${stageId}.stage_contract.stage_native_artifact_contract`,
     );
-    const matching = contracts.find((contract) => contract.artifact_native_contract_ref === expectedContractRef);
+    const matching = contracts.find((contract) => (
+      contract.artifact_native_contract_ref === stageNativeRefs.artifactNativeContractRef
+    ));
     if (!matching) {
-      throw new Error(`stage-decomposition pack draft stage_native_artifact_contract missing stage contract ${expectedContractRef}.`);
+      throw new Error(
+        `stage-decomposition pack draft stage_native_artifact_contract missing stage contract ${stageNativeRefs.artifactNativeContractRef}.`,
+      );
     }
     if (JSON.stringify(matching) !== JSON.stringify(embedded)) {
       throw new Error(`stage-decomposition pack draft stage ${stageId} embedded and bundled stage-native contracts must match.`);
@@ -1054,7 +1206,68 @@ function validateStageNativeArtifactContractBundle(
     'oma_can_mutate_target_domain_artifact_body',
     'oma_can_authorize_target_quality_or_export',
     'oma_can_promote_default_agent_without_gate',
+    'oma_can_own_agent_lab_runner',
+    'oma_can_own_queue',
+    'oma_can_own_attempt_ledger',
+    'oma_can_own_worktree_lifecycle',
+    'oma_can_own_promotion_gate',
+    'oma_can_own_app_shell',
+    'oma_can_write_target_owner_closeout',
   ].forEach((field) => assertBooleanFalse(boundary, field, `stage_native_artifact_contract.authority_boundary.${field}`));
+}
+
+function refTemplateRecord({
+  contract,
+  fileName,
+  refKind,
+  refValue,
+}: {
+  contract: JsonObject;
+  fileName: string;
+  refKind: string;
+  refValue: string;
+}): JsonObject {
+  return {
+    surface_kind: 'opl_stage_native_artifact_materialized_ref',
+    version: 'stage-native-artifact-materialized-ref.v1',
+    target_domain_id: contract.target_domain_id,
+    stage_id: contract.stage_id,
+    file_name: fileName,
+    ref_kind: refKind,
+    ref: refValue,
+    materialized_by: 'opl-meta-agent',
+    materialization_kind: 'compiler_ref_template_only_not_runtime_state',
+    contains_target_artifact_body: false,
+    authority_boundary: contract.authority_boundary,
+  };
+}
+
+function materializeStageNativeArtifactRefFiles(targetAgentDir: string, draft: StageDecompositionPackDraft): void {
+  const contracts = asRecordArray(draft.stage_native_artifact_contract.contracts, 'stage_native_artifact_contract.contracts');
+  for (const contract of contracts) {
+    const stageId = asString(contract.stage_id, 'stage_native_artifact_contract.contracts[].stage_id');
+    const outputDir = path.join(targetAgentDir, 'contracts', 'stage_native_artifacts', stageId);
+    fs.mkdirSync(outputDir, { recursive: true });
+    const fileRefs = [
+      ['stage.json', 'stage_json_ref', String(contract.stage_json_ref)],
+      ['attempt.json', 'stage_attempt_json_ref', String(contract.attempt_json_ref)],
+      ['stage.manifest.json', 'stage_manifest_ref', String(contract.manifest_ref)],
+      ['receipt.json', 'stage_attempt_receipt_ref', String(contract.receipt_ref)],
+      ['current.json', 'stage_current_pointer_ref', String(contract.current_pointer_ref)],
+      ['canonical.json', 'canonical_artifact_ref', String(contract.canonical_artifact_ref)],
+      ['export.json', 'stage_export_ref', String(contract.export_ref)],
+      ['lineage.json', 'stage_lineage_ref', String(contract.lineage_ref)],
+      ['retention.json', 'stage_retention_ref', String(contract.retention_ref)],
+    ] as const;
+    fileRefs.forEach(([fileName, refKind, refValue]) => {
+      writeJson(path.join(outputDir, fileName), refTemplateRecord({
+        contract,
+        fileName,
+        refKind,
+        refValue,
+      }));
+    });
+  }
 }
 
 export function validateStageDecompositionCloseoutPacket(
@@ -1159,5 +1372,6 @@ export function materializeStageDecompositionPackDraft(
     path.join(targetAgentDir, 'contracts', 'stage_native_artifact_contract.json'),
     draft.stage_native_artifact_contract,
   );
+  materializeStageNativeArtifactRefFiles(targetAgentDir, draft);
   writeJson(path.join(targetAgentDir, 'contracts', 'foundry_agent_series.json'), draft.foundry_agent_series);
 }

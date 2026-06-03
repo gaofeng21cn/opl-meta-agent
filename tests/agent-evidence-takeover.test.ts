@@ -31,6 +31,25 @@ function readJson(filePath: string): JsonObject {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
+function assertStageFolderContractRefs(
+  contract: JsonObject,
+  domainId: string,
+  stageId: string,
+  attemptId: string,
+): void {
+  assert.equal(contract.stage_folder_contract_ref, `stage-folder-contract-ref:${domainId}/${stageId}`);
+  assert.equal(contract.stage_json_ref, `stage-json-ref:${domainId}/${stageId}`);
+  assert.equal(contract.attempt_json_ref, `stage-attempt-json-ref:${domainId}/${stageId}/${attemptId}`);
+  assert.equal(contract.manifest_ref, `stage-manifest-ref:${domainId}/${stageId}/${attemptId}`);
+  assert.equal(contract.receipt_ref, `stage-attempt-receipt-ref:${domainId}/${stageId}/${attemptId}`);
+  assert.equal(contract.current_pointer_ref, `stage-current-pointer-ref:${domainId}/${stageId}`);
+  assert.equal(contract.canonical_artifact_ref, `canonical-artifact-ref:${domainId}/${stageId}`);
+  assert.equal(contract.export_ref, `stage-export-ref:${domainId}/${stageId}/${attemptId}`);
+  assert.equal(contract.lineage_ref, `stage-lineage-ref:${domainId}/${stageId}/${attemptId}`);
+  assert.equal(contract.retention_ref, `stage-retention-ref:${domainId}/${stageId}/${attemptId}`);
+  assert.equal(contract.materialization_kind, 'compiler_ref_template_only_not_runtime_state');
+}
+
 function assertTargetPatchLoopMachineRefs(refs: JsonObject, expected: {
   blockedSuiteResultRef: string;
   developerPatchWorkOrderRef: string;
@@ -485,6 +504,16 @@ test('agent:evidence generates domain Agent Lab suite and proposal artifacts fro
       suite.stage_native_artifact_refs.artifact_native_contract_ref,
       'artifact-native-contract-ref:med-autoscience/agent-evidence-takeover',
     );
+    assert.equal(
+      suite.stage_native_artifact_refs.attempt_json_ref,
+      'stage-attempt-json-ref:med-autoscience/agent-evidence-takeover/production-evidence-tail',
+    );
+    assertStageFolderContractRefs(
+      suite.stage_native_artifact_refs.stage_folder_contract,
+      'med-autoscience',
+      'agent-evidence-takeover',
+      'production-evidence-tail',
+    );
     assert.equal(suite.authority_boundary.can_generate_target_domain_owner_receipt, false);
     assert.ok(suite.source_contract_refs.includes('contracts/agent_lab_handoff.json'));
     assert.deepEqual(suite.production_evidence_gate.gate_ids, [
@@ -515,6 +544,12 @@ test('agent:evidence generates domain Agent Lab suite and proposal artifacts fro
       suite.tasks[0].stage_folder_contract.manifest_ref,
       'stage-manifest-ref:med-autoscience/agent-evidence-takeover/production-evidence-tail',
     );
+    assertStageFolderContractRefs(
+      suite.tasks[0].stage_folder_contract,
+      'med-autoscience',
+      'agent-evidence-takeover',
+      'production-evidence-tail',
+    );
     assert.equal(
       suite.tasks[0].stage_folder_contract.canonical_artifact_ref,
       'canonical-artifact-ref:med-autoscience/agent-evidence-takeover',
@@ -536,6 +571,16 @@ test('agent:evidence generates domain Agent Lab suite and proposal artifacts fro
     assert.equal(
       workOrder.stage_folder_contract.stage_folder_contract_ref,
       'stage-folder-contract-ref:med-autoscience/agent-evidence-takeover',
+    );
+    assertStageFolderContractRefs(
+      workOrder.stage_folder_contract,
+      'med-autoscience',
+      'agent-evidence-takeover',
+      String(workOrder.work_order_id),
+    );
+    assert.equal(
+      workOrder.stage_native_artifact_refs.export_ref,
+      `stage-export-ref:med-autoscience/agent-evidence-takeover/${workOrder.work_order_id}`,
     );
     assert.equal(workOrder.implementation_controls.target_owner_receipt_generated_by_oma, false);
     assert.equal(workOrder.implementation_controls.stage_folder_runtime_state_written_by_oma, false);
@@ -727,6 +772,12 @@ test('agent:evidence emits typed blocker and no delivery receipt when reviewer e
       typedBlocker.blocked_reason,
       'independent_ai_reviewer_attempt_required_before_mechanism_patch_proposal_or_delivery_receipt',
     );
+    assertStageFolderContractRefs(
+      typedBlocker.stage_folder_contract,
+      'med-autoscience',
+      'agent-evidence-takeover',
+      String(typedBlocker.work_order_ref),
+    );
     assert.ok(typedBlocker.required_ai_reviewer_independence_fields.includes('no_shared_context=true'));
     assert.ok(typedBlocker.required_ai_reviewer_independence_fields.includes('execution_attempt_ref != review_attempt_ref'));
     assert.equal(typedBlocker.authority_boundary.no_delivery_receipt_signed, true);
@@ -765,6 +816,12 @@ test('agent:evidence emits typed blocker and no delivery receipt when reviewer e
 
     const workOrder = readJson(path.join(outputDir, 'developer-patch-work-order.json'));
     assert.equal(workOrder.status, 'blocked_missing_ai_reviewer_evaluation');
+    assertStageFolderContractRefs(
+      workOrder.stage_folder_contract,
+      'med-autoscience',
+      'agent-evidence-takeover',
+      String(workOrder.work_order_id),
+    );
     assert.equal(workOrder.executor_lease_ref, `executor-lease:codex-cli/${workOrder.work_order_id}`);
     assert.deepEqual(workOrder.reviewer_pool_refs, []);
     assert.equal(

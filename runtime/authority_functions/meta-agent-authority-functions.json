@@ -269,6 +269,33 @@
         "forbidden_roles": []
       },
       {
+        "script_ref": "scripts/lib/stage-native-artifact-contract.ts",
+        "classes": [
+          "fixture_or_proof_helper",
+          "developer_work_order_materializer"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [
+          "opl_stage_native_artifact_contract",
+          "opl_stage_folder_contract"
+        ],
+        "writes_only": [
+          "artifact_native_contract_ref",
+          "stage_folder_contract_ref",
+          "stage_json_ref",
+          "stage_attempt_json_ref",
+          "stage_manifest_ref",
+          "stage_attempt_receipt_ref",
+          "stage_typed_blocker_ref",
+          "stage_current_pointer_ref",
+          "canonical_artifact_ref",
+          "stage_export_ref",
+          "stage_lineage_ref",
+          "stage_retention_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
         "script_ref": "scripts/lib/standard-foundry-policies.ts",
         "classes": [
           "fixture_or_proof_helper"
@@ -458,6 +485,7 @@
           "scripts/build-agent-baseline.ts",
           "scripts/lib/stage-decomposition-runner.ts",
           "scripts/lib/stage-decomposition-pack-draft.ts",
+          "scripts/lib/stage-native-artifact-contract.ts",
           "scripts/lib/standard-foundry-policies.ts",
           "scripts/lib/domain-pack.ts"
         ],
@@ -603,8 +631,9 @@
       "scripts/lib/meta-agent-loop-receipts.ts",
       "scripts/lib/meta-agent-loop.ts",
       "scripts/lib/stage-decomposition-pack-draft.ts",
-      "scripts/lib/standard-foundry-policies.ts",
       "scripts/lib/stage-decomposition-runner.ts",
+      "scripts/lib/stage-native-artifact-contract.ts",
+      "scripts/lib/standard-foundry-policies.ts",
       "scripts/lib/target-improvement-policy.ts",
       "scripts/lib/work-order-builders.ts",
       "scripts/lib/work-order-efficiency.ts",

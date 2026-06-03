@@ -122,14 +122,7 @@ function buildAgentLabSuite({
           `scorer:${targetAgent.domainId}/refs-only-evidence-tail-handoff`,
         ],
         stage_native_artifact_refs: stageNativeArtifactRefs,
-        stage_folder_contract: {
-          artifact_native_contract_ref: stageNativeArtifactRefs.artifact_native_contract_ref,
-          stage_folder_contract_ref: stageNativeArtifactRefs.stage_folder_contract_ref,
-          manifest_ref: stageNativeArtifactRefs.manifest_ref,
-          receipt_ref: stageNativeArtifactRefs.receipt_ref,
-          blocker_ref: stageNativeArtifactRefs.blocker_ref,
-          canonical_artifact_ref: stageNativeArtifactRefs.canonical_artifact_ref,
-        },
+        stage_folder_contract: stageNativeArtifactRefs.stage_folder_contract,
         recovery_probes: [
           {
             probe_ref: `recovery-probe:${targetAgent.domainId}/production-evidence-tail/no-forbidden-write`,
@@ -164,14 +157,7 @@ function buildAgentLabSuite({
             String(stageNativeArtifactRefs.blocker_ref),
           ],
           stage_native_artifact_refs: stageNativeArtifactRefs,
-          stage_folder_contract: {
-            artifact_native_contract_ref: stageNativeArtifactRefs.artifact_native_contract_ref,
-            stage_folder_contract_ref: stageNativeArtifactRefs.stage_folder_contract_ref,
-            manifest_ref: stageNativeArtifactRefs.manifest_ref,
-            receipt_ref: stageNativeArtifactRefs.receipt_ref,
-            blocker_ref: stageNativeArtifactRefs.blocker_ref,
-            canonical_artifact_ref: stageNativeArtifactRefs.canonical_artifact_ref,
-          },
+          stage_folder_contract: stageNativeArtifactRefs.stage_folder_contract,
           repair_refs: [
             `repair-ref:${targetAgent.domainId}/evidence-tail/no-active-caller-proof`,
             `repair-ref:${targetAgent.domainId}/evidence-tail/opl-generated-surface-parity`,

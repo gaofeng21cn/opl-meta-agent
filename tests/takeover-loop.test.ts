@@ -23,6 +23,25 @@ function readJson(filePath: string): JsonObject {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
+function assertStageFolderContractRefs(
+  contract: JsonObject,
+  domainId: string,
+  stageId: string,
+  attemptId: string,
+): void {
+  assert.equal(contract.stage_folder_contract_ref, `stage-folder-contract-ref:${domainId}/${stageId}`);
+  assert.equal(contract.stage_json_ref, `stage-json-ref:${domainId}/${stageId}`);
+  assert.equal(contract.attempt_json_ref, `stage-attempt-json-ref:${domainId}/${stageId}/${attemptId}`);
+  assert.equal(contract.manifest_ref, `stage-manifest-ref:${domainId}/${stageId}/${attemptId}`);
+  assert.equal(contract.receipt_ref, `stage-attempt-receipt-ref:${domainId}/${stageId}/${attemptId}`);
+  assert.equal(contract.current_pointer_ref, `stage-current-pointer-ref:${domainId}/${stageId}`);
+  assert.equal(contract.canonical_artifact_ref, `canonical-artifact-ref:${domainId}/${stageId}`);
+  assert.equal(contract.export_ref, `stage-export-ref:${domainId}/${stageId}/${attemptId}`);
+  assert.equal(contract.lineage_ref, `stage-lineage-ref:${domainId}/${stageId}/${attemptId}`);
+  assert.equal(contract.retention_ref, `stage-retention-ref:${domainId}/${stageId}/${attemptId}`);
+  assert.equal(contract.materialization_kind, 'compiler_ref_template_only_not_runtime_state');
+}
+
 function writeAiReviewerEvaluation(filePath: string): void {
   const evaluation = {
     reviewer_kind: 'ai_reviewer',
@@ -139,6 +158,16 @@ test('opl-meta-agent takes over testing for an existing external agent without a
       suite.stage_native_artifact_refs.artifact_native_contract_ref,
       'artifact-native-contract-ref:takeover-fixture-agent/external-agent-takeover',
     );
+    assert.equal(
+      suite.stage_native_artifact_refs.attempt_json_ref,
+      'stage-attempt-json-ref:takeover-fixture-agent/external-agent-takeover/testing-takeover',
+    );
+    assertStageFolderContractRefs(
+      suite.stage_native_artifact_refs.stage_folder_contract,
+      'takeover-fixture-agent',
+      'external-agent-takeover',
+      'testing-takeover',
+    );
     assert.equal(suite.authority_boundary.can_generate_target_domain_owner_receipt, false);
     assert.equal(suite.authority_boundary.can_write_target_artifact_body, false);
     assert.equal(suite.authority_boundary.can_write_memory_body, false);
@@ -147,6 +176,12 @@ test('opl-meta-agent takes over testing for an existing external agent without a
     assert.equal(
       suite.tasks[0].stage_folder_contract.manifest_ref,
       'stage-manifest-ref:takeover-fixture-agent/external-agent-takeover/testing-takeover',
+    );
+    assertStageFolderContractRefs(
+      suite.tasks[0].stage_folder_contract,
+      'takeover-fixture-agent',
+      'external-agent-takeover',
+      'testing-takeover',
     );
     assert.equal(
       suite.tasks[0].stage_folder_contract.canonical_artifact_ref,
@@ -164,6 +199,12 @@ test('opl-meta-agent takes over testing for an existing external agent without a
     assert.equal(
       receipt.artifact_native_contract_ref,
       'artifact-native-contract-ref:takeover-fixture-agent/external-agent-takeover',
+    );
+    assertStageFolderContractRefs(
+      receipt.stage_folder_contract,
+      'takeover-fixture-agent',
+      'external-agent-takeover',
+      'testing-takeover',
     );
     assert.equal(receipt.stage_folder_contract.blocker_ref, 'stage-typed-blocker-ref:takeover-fixture-agent/external-agent-takeover/testing-takeover');
     assert.equal(receipt.can_generate_target_domain_owner_receipt, false);
