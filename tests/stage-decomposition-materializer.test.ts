@@ -52,6 +52,7 @@ test('materializer writes the target stage pack from typed stage-decomposition c
     assert.deepEqual(packet.user_stage_log.changed_stage_surfaces, [
       'action_catalog',
       'stage_control_plane',
+      'stage_native_artifact_contract',
       'agent/prompts',
       'agent/stages',
       'agent/skills',
@@ -62,6 +63,7 @@ test('materializer writes the target stage pack from typed stage-decomposition c
 
     const actionCatalog = readJson(path.join(targetAgentDir, 'contracts/action_catalog.json'));
     const stageControl = readJson(path.join(targetAgentDir, 'contracts/stage_control_plane.json'));
+    const stageNativeArtifactContract = readJson(path.join(targetAgentDir, 'contracts/stage_native_artifact_contract.json'));
     const foundrySeries = readJson(path.join(targetAgentDir, 'contracts/foundry_agent_series.json'));
     const stage = stageById(stageControl, 'evidence-synthesis-plan');
 
@@ -88,7 +90,35 @@ test('materializer writes the target stage pack from typed stage-decomposition c
     assert.equal(stage.authority_boundary.can_write_target_domain_truth, false);
     assert.equal(stage.authority_boundary.can_authorize_target_domain_quality_or_export, false);
     assert.ok(stage.stage_contract.requires.includes('runtime-ref:stage-progress-log-user-stage-log'));
+    assert.ok(stage.stage_contract.requires.includes('artifact-native-contract-ref:research-workbench-agent/evidence-synthesis-plan'));
     assert.ok(stage.stage_contract.ensures.includes('stage-user-log-ref:evidence-synthesis-plan'));
+    assert.ok(stage.stage_contract.ensures.includes('stage-folder-contract-ref:research-workbench-agent/evidence-synthesis-plan'));
+    assert.ok(stage.stage_contract.ensures.includes('stage-manifest-ref:research-workbench-agent/evidence-synthesis-plan/{stage_attempt_id}'));
+    assert.equal(
+      stage.stage_contract.stage_native_artifact_contract.artifact_native_contract_ref,
+      'artifact-native-contract-ref:research-workbench-agent/evidence-synthesis-plan',
+    );
+    assert.equal(
+      stage.stage_contract.stage_native_artifact_contract.stage_folder_contract.stage_folder_contract_ref,
+      'stage-folder-contract-ref:research-workbench-agent/evidence-synthesis-plan',
+    );
+    assert.equal(
+      stage.stage_contract.stage_native_artifact_contract.manifest_contract.missing_owner_receipt_projection,
+      'orphan_artifact',
+    );
+    assert.equal(
+      stage.stage_contract.stage_native_artifact_contract.authority_boundary.oma_can_generate_target_domain_owner_receipt,
+      false,
+    );
+    assert.equal(stageNativeArtifactContract.surface_kind, 'opl_stage_native_artifact_contract_bundle');
+    assert.deepEqual(stageNativeArtifactContract.artifact_native_contract_refs, [
+      'artifact-native-contract-ref:research-workbench-agent/evidence-synthesis-plan',
+    ]);
+    assert.equal(
+      stageNativeArtifactContract.contracts[0].canonical_artifact_ref,
+      'canonical-artifact-ref:research-workbench-agent/evidence-synthesis-plan',
+    );
+    assert.equal(stageNativeArtifactContract.authority_boundary.oma_can_write_target_domain_truth, false);
     assert.deepEqual(
       stage.stage_contract.user_stage_log_contract.required_domain_semantic_fields,
       [
@@ -218,6 +248,15 @@ test('stage-decomposition closeout validator rejects missing gate declarations a
   assert.throws(
     () => validateStageDecompositionCloseoutPacket(missingUserLogPacket, { targetAgent }),
     /user_stage_log_contract/i,
+  );
+
+  const missingStageNativePacket = buildFixtureStageDecompositionCloseout({ targetAgent });
+  const missingStageNativeDraft = missingStageNativePacket.stage_decomposition_pack_draft as JsonObject;
+  const missingStageNativeStage = ((missingStageNativeDraft.stage_control_plane as JsonObject).stages as JsonObject[])[0];
+  delete missingStageNativeStage.stage_contract.stage_native_artifact_contract;
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(missingStageNativePacket, { targetAgent }),
+    /stage_native_artifact_contract/i,
   );
 });
 

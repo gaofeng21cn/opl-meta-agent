@@ -7,6 +7,9 @@ import {
   type StageDecompositionCloseoutPacket,
   type StageRunnerKind,
 } from './stage-decomposition-pack-draft.ts';
+import {
+  buildStageNativeArtifactAttemptRefs,
+} from './stage-native-artifact-contract.ts';
 
 export type StageDecompositionAttemptReceipt = {
   surface_kind: 'opl_meta_agent_stage_decomposition_attempt_receipt';
@@ -18,6 +21,7 @@ export type StageDecompositionAttemptReceipt = {
   closeout_packet_ref: string;
   closeout_packet_path: string;
   closeout_refs: string[];
+  stage_native_artifact_refs: JsonObject;
   attempt_ref: string | null;
   provider_kind: 'fixture' | 'temporal';
   authority_boundary: {
@@ -90,6 +94,7 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
       required_pack_sections: [
         'action_catalog',
         'stage_control_plane',
+        'stage_native_artifact_contract',
         'agent/prompts',
         'agent/stages',
         'agent/skills',
@@ -104,8 +109,19 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
         'evaluation',
         'independent_gate_policy',
         'stage_contract.expected_receipt_refs',
+        'stage_contract.stage_native_artifact_contract',
         'authority_boundary',
       ],
+      required_stage_native_artifact_contract: {
+        artifact_native_contract_ref_required: true,
+        stage_folder_contract_required: true,
+        manifest_ref_required: true,
+        receipt_ref_required: true,
+        blocker_ref_required: true,
+        canonical_artifact_ref_required: true,
+        oma_can_write_stage_folder_runtime_state: false,
+        oma_can_generate_target_domain_owner_receipt: false,
+      },
     },
   };
 }
@@ -159,6 +175,12 @@ function receiptFor({
     closeout_packet_ref: closeoutPacketLocation.ref,
     closeout_packet_path: closeoutPacketLocation.path,
     closeout_refs: closeoutPacket.closeout_refs,
+    stage_native_artifact_refs: buildStageNativeArtifactAttemptRefs({
+      domainId: targetAgent.domain_id,
+      stageId: 'stage-decomposition',
+      domainTruthOwner: 'opl-meta-agent',
+      attemptId: attemptRef ?? `fixture-attempt:${targetAgent.domain_id}/stage-decomposition`,
+    }),
     attempt_ref: attemptRef ?? `fixture-attempt:opl-meta-agent/${targetAgent.domain_id}/stage-decomposition`,
     provider_kind: providerKind,
     authority_boundary: {

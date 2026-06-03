@@ -481,6 +481,11 @@ test('agent:evidence generates domain Agent Lab suite and proposal artifacts fro
     const suite = readJson(path.join(outputDir, 'agent-lab-suite.json'));
     assert.equal(suite.suite_kind, 'agent_production_evidence_suite');
     assert.equal(suite.suite_role, 'target_agent_production_evidence_tail_testing_takeover');
+    assert.equal(
+      suite.stage_native_artifact_refs.artifact_native_contract_ref,
+      'artifact-native-contract-ref:med-autoscience/agent-evidence-takeover',
+    );
+    assert.equal(suite.authority_boundary.can_generate_target_domain_owner_receipt, false);
     assert.ok(suite.source_contract_refs.includes('contracts/agent_lab_handoff.json'));
     assert.deepEqual(suite.production_evidence_gate.gate_ids, [
       'real_paper_line_provider_canary',
@@ -503,6 +508,18 @@ test('agent:evidence generates domain Agent Lab suite and proposal artifacts fro
     assert.ok(suite.authority_boundary.forbidden_write_surfaces.includes('target quality verdict'));
     assert.ok(suite.tasks[0].scorecard.evidence_refs.includes('contracts/owner_receipt_contract.json'));
     assert.ok(
+      suite.tasks[0].scorecard.evidence_refs
+        .includes('artifact-native-contract-ref:med-autoscience/agent-evidence-takeover'),
+    );
+    assert.equal(
+      suite.tasks[0].stage_folder_contract.manifest_ref,
+      'stage-manifest-ref:med-autoscience/agent-evidence-takeover/production-evidence-tail',
+    );
+    assert.equal(
+      suite.tasks[0].stage_folder_contract.canonical_artifact_ref,
+      'canonical-artifact-ref:med-autoscience/agent-evidence-takeover',
+    );
+    assert.ok(
       suite.tasks[0].scorecard.evidence_refs.includes(
         'scripts/run-pytest-clean.sh -q tests/test_mas_production_acceptance.py',
       ),
@@ -512,6 +529,18 @@ test('agent:evidence generates domain Agent Lab suite and proposal artifacts fro
 
     const workOrder = readJson(path.join(outputDir, 'developer-patch-work-order.json'));
     assert.equal(workOrder.status, 'ready_for_target_agent_source_patch_proposal');
+    assert.equal(
+      workOrder.artifact_native_contract_ref,
+      'artifact-native-contract-ref:med-autoscience/agent-evidence-takeover',
+    );
+    assert.equal(
+      workOrder.stage_folder_contract.stage_folder_contract_ref,
+      'stage-folder-contract-ref:med-autoscience/agent-evidence-takeover',
+    );
+    assert.equal(workOrder.implementation_controls.target_owner_receipt_generated_by_oma, false);
+    assert.equal(workOrder.implementation_controls.stage_folder_runtime_state_written_by_oma, false);
+    assert.equal(workOrder.authority_boundary.can_generate_target_domain_owner_receipt, false);
+    assert.equal(workOrder.authority_boundary.can_write_stage_folder_runtime_state, false);
     assert.equal(workOrder.ai_reviewer_independence.no_shared_context, true);
     assert.equal(workOrder.ai_reviewer_independence.independent_attempt, true);
     assert.equal(workOrder.ai_reviewer_independence.execution_attempt_ref, 'attempt:executor/mas/production-evidence-tail');

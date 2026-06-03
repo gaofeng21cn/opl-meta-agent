@@ -24,6 +24,9 @@ import {
   hasEfficiencyNonRegressionEvidence,
 } from './work-order-efficiency.ts';
 import {
+  buildStageNativeArtifactAttemptRefs,
+} from './stage-native-artifact-contract.ts';
+import {
   firstString,
   forbiddenWriteSurfaces,
   noForbiddenWriteProofRefs,
@@ -319,6 +322,12 @@ export function buildDeveloperWorkOrder({
   });
   const ownerRouteRefs = productionEvidenceGate(contracts, targetAgent).owner_route_refs as string[];
   const ownerRouteRef = ownerRouteRefs[0] ?? `owner-route:${targetAgent.domainId}/${targetAgent.owner}`;
+  const stageNativeArtifactRefs = buildStageNativeArtifactAttemptRefs({
+    domainId: targetAgent.domainId,
+    stageId: 'agent-evidence-takeover',
+    domainTruthOwner: 'opl-meta-agent',
+    attemptId: workOrderId,
+  });
   return {
     surface_kind: 'opl_meta_agent_target_developer_patch_work_order',
     version: 'opl-meta-agent.target-developer-patch-work-order.v1',
@@ -336,6 +345,16 @@ export function buildDeveloperWorkOrder({
     }),
     target_capability_improvement_candidate_ref: capabilityCandidate.candidate_id,
     owner_receipt_refs_ref: ownerReceiptRefsPath,
+    stage_native_artifact_refs: stageNativeArtifactRefs,
+    artifact_native_contract_ref: stageNativeArtifactRefs.artifact_native_contract_ref,
+    stage_folder_contract: {
+      artifact_native_contract_ref: stageNativeArtifactRefs.artifact_native_contract_ref,
+      stage_folder_contract_ref: stageNativeArtifactRefs.stage_folder_contract_ref,
+      manifest_ref: stageNativeArtifactRefs.manifest_ref,
+      receipt_ref: stageNativeArtifactRefs.receipt_ref,
+      blocker_ref: stageNativeArtifactRefs.blocker_ref,
+      canonical_artifact_ref: stageNativeArtifactRefs.canonical_artifact_ref,
+    },
     target_owner_route: capabilityCandidate.target_owner_route,
     editable_surface_limits: capabilityCandidate.editable_surface_limits,
     allowed_editable_surfaces: capabilityCandidate.editable_surface_limits.editable_surfaces,
@@ -442,6 +461,8 @@ export function buildDeveloperWorkOrder({
       patch_must_be_limited_to_editable_surfaces: true,
       developer_must_read_target_agent_repo_context_before_editing: true,
       target_owner_receipt_or_typed_blocker_required: true,
+      target_owner_receipt_generated_by_oma: false,
+      stage_folder_runtime_state_written_by_oma: false,
       independent_reviewer_or_auditor_receipt_required: true,
       no_forbidden_write_proof_required: true,
       quality_floor_non_regression_required: hasEfficiencyEvidence,
@@ -462,6 +483,8 @@ export function buildDeveloperWorkOrder({
       can_modify_target_agent_source_repo: reviewerPresent,
       can_modify_target_agent_tests: reviewerPresent,
       can_modify_target_agent_docs: reviewerPresent,
+      can_generate_target_domain_owner_receipt: false,
+      can_write_stage_folder_runtime_state: false,
       can_write_target_domain_truth: false,
       can_write_target_memory_body: false,
       can_write_target_domain_memory_body: false,
@@ -578,6 +601,9 @@ export function buildTypedBlocker({
     target_owner_route: targetOwnerRoute(contracts),
     blocked_suite_result_ref: workOrder.source_agent_lab_result_ref,
     work_order_ref: workOrder.work_order_id,
+    stage_native_artifact_refs: workOrder.stage_native_artifact_refs,
+    artifact_native_contract_ref: workOrder.artifact_native_contract_ref,
+    stage_folder_contract: workOrder.stage_folder_contract,
     required_input_refs: ['--ai-reviewer-evaluation <json>'],
     required_source_refs: [
       contracts.productionAcceptanceRef,
@@ -611,6 +637,8 @@ export function buildTypedBlocker({
       typed_blocker_only: true,
       no_delivery_receipt_signed: true,
       no_executable_work_order_issued: true,
+      can_generate_target_domain_owner_receipt: false,
+      can_write_stage_folder_runtime_state: false,
       can_write_target_domain_truth: false,
       can_authorize_target_quality_or_export: false,
       can_mutate_target_artifact_body: false,

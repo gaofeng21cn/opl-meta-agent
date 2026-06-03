@@ -38,6 +38,9 @@ import {
 import {
   validateDeveloperPatchWorkOrder,
 } from './lib/work-order-validation.ts';
+import {
+  buildStageNativeArtifactAttemptRefs,
+} from './lib/stage-native-artifact-contract.ts';
 
 function buildAgentLabSuite({
   agentRepo,
@@ -57,6 +60,12 @@ function buildAgentLabSuite({
   const reviewerEvidenceRefs = aiReviewerEvaluation && aiReviewerEvaluationPath
     ? [aiReviewerEvaluationPath, ...aiReviewerEvaluation.source_refs, ...aiReviewerEvaluation.direct_evidence_refs]
     : [];
+  const stageNativeArtifactRefs = buildStageNativeArtifactAttemptRefs({
+    domainId: targetAgent.domainId,
+    stageId: 'agent-evidence-takeover',
+    domainTruthOwner: 'opl-meta-agent',
+    attemptId: 'production-evidence-tail',
+  });
   const suiteSeed = [
     agentRepo,
     contracts.productionAcceptanceRef,
@@ -71,9 +80,11 @@ function buildAgentLabSuite({
     suite_role: 'target_agent_production_evidence_tail_testing_takeover',
     target_agent_ref: targetAgent.targetAgentRef,
     source_contract_refs: sourceContractRefs(contracts),
+    stage_native_artifact_refs: stageNativeArtifactRefs,
     production_evidence_gate: productionEvidenceGate(contracts, targetAgent),
     authority_boundary: {
       refs_only: true,
+      can_generate_target_domain_owner_receipt: false,
       can_write_target_domain_truth: false,
       can_write_target_memory_body: false,
       can_mutate_target_artifact_body: false,
@@ -110,6 +121,15 @@ function buildAgentLabSuite({
           `scorer:${targetAgent.domainId}/no-forbidden-write-proof`,
           `scorer:${targetAgent.domainId}/refs-only-evidence-tail-handoff`,
         ],
+        stage_native_artifact_refs: stageNativeArtifactRefs,
+        stage_folder_contract: {
+          artifact_native_contract_ref: stageNativeArtifactRefs.artifact_native_contract_ref,
+          stage_folder_contract_ref: stageNativeArtifactRefs.stage_folder_contract_ref,
+          manifest_ref: stageNativeArtifactRefs.manifest_ref,
+          receipt_ref: stageNativeArtifactRefs.receipt_ref,
+          blocker_ref: stageNativeArtifactRefs.blocker_ref,
+          canonical_artifact_ref: stageNativeArtifactRefs.canonical_artifact_ref,
+        },
         recovery_probes: [
           {
             probe_ref: `recovery-probe:${targetAgent.domainId}/production-evidence-tail/no-forbidden-write`,
@@ -135,8 +155,23 @@ function buildAgentLabSuite({
             'developer-patch-work-order.json',
             'target-capability-improvement-candidate.json',
             'mechanism-patch-proposal.json',
+            String(stageNativeArtifactRefs.manifest_ref),
+            String(stageNativeArtifactRefs.canonical_artifact_ref),
           ],
-          receipt_refs: receiptRefs,
+          receipt_refs: [
+            ...receiptRefs,
+            String(stageNativeArtifactRefs.receipt_ref),
+            String(stageNativeArtifactRefs.blocker_ref),
+          ],
+          stage_native_artifact_refs: stageNativeArtifactRefs,
+          stage_folder_contract: {
+            artifact_native_contract_ref: stageNativeArtifactRefs.artifact_native_contract_ref,
+            stage_folder_contract_ref: stageNativeArtifactRefs.stage_folder_contract_ref,
+            manifest_ref: stageNativeArtifactRefs.manifest_ref,
+            receipt_ref: stageNativeArtifactRefs.receipt_ref,
+            blocker_ref: stageNativeArtifactRefs.blocker_ref,
+            canonical_artifact_ref: stageNativeArtifactRefs.canonical_artifact_ref,
+          },
           repair_refs: [
             `repair-ref:${targetAgent.domainId}/evidence-tail/no-active-caller-proof`,
             `repair-ref:${targetAgent.domainId}/evidence-tail/opl-generated-surface-parity`,
@@ -161,6 +196,8 @@ function buildAgentLabSuite({
           ],
           evidence_refs: [
             contracts.productionAcceptanceRef,
+            String(stageNativeArtifactRefs.artifact_native_contract_ref),
+            String(stageNativeArtifactRefs.stage_folder_contract_ref),
             'contracts/generated_surface_handoff.json',
             'contracts/owner_receipt_contract.json',
             ...receiptRefs,

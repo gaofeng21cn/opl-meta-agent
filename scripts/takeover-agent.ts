@@ -23,6 +23,9 @@ import {
   runOpl,
   writeJson,
 } from './lib/meta-agent-loop.ts';
+import {
+  buildStageNativeArtifactAttemptRefs,
+} from './lib/stage-native-artifact-contract.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -92,7 +95,13 @@ export function parseTakeoverAgentArgs(argv: string[]): TakeoverArgs {
 }
 
 function buildTakeoverSuite(targetAgent: TargetAgent, targetAgentDir: string): JsonObject {
-  return buildAgentLabSuite({
+  const stageNativeArtifactRefs = buildStageNativeArtifactAttemptRefs({
+    domainId: targetAgent.domain_id,
+    stageId: 'external-agent-takeover',
+    domainTruthOwner: 'opl-meta-agent',
+    attemptId: 'testing-takeover',
+  });
+  const suite = buildAgentLabSuite({
     suiteId: `opl-meta-agent-takeover-suite:${targetAgent.domain_id}`,
     taskId: `agent-lab-task:opl-meta-agent/${targetAgent.domain_id}/takeover`,
     taskFamily: 'agent_testing_takeover',
@@ -112,15 +121,27 @@ function buildTakeoverSuite(targetAgent: TargetAgent, targetAgentDir: string): J
     scorerRefs: [`scorer:opl-meta-agent/${targetAgent.domain_id}/takeover-acceptance`],
     trajectoryRef: `trajectory:opl-meta-agent/${targetAgent.domain_id}/testing-takeover`,
     runRef: `run:opl-meta-agent/${targetAgent.domain_id}/testing-takeover`,
-    artifactRefs: [`artifact-ref:${targetAgent.domain_id}/external-agent-package`],
-    receiptRefs: [`owner-receipt:opl-meta-agent/${targetAgent.domain_id}/testing-takeover`],
+    artifactRefs: [
+      `artifact-ref:${targetAgent.domain_id}/external-agent-package`,
+      String(stageNativeArtifactRefs.canonical_artifact_ref),
+      String(stageNativeArtifactRefs.manifest_ref),
+    ],
+    receiptRefs: [
+      `owner-receipt:opl-meta-agent/${targetAgent.domain_id}/testing-takeover`,
+      String(stageNativeArtifactRefs.receipt_ref),
+      String(stageNativeArtifactRefs.blocker_ref),
+    ],
     scorecardRef: `quality-scorecard:opl-meta-agent/${targetAgent.domain_id}/takeover-acceptance`,
     metricRefs: [
       'metric-ref:descriptor-valid',
       'metric-ref:agent-lab-external-suite-passed',
       'metric-ref:forbidden-authority-write-absent',
     ],
-    evidenceRefs: [`evidence-ref:${targetAgent.domain_id}/descriptor-contract-read`],
+    evidenceRefs: [
+      `evidence-ref:${targetAgent.domain_id}/descriptor-contract-read`,
+      String(stageNativeArtifactRefs.artifact_native_contract_ref),
+      String(stageNativeArtifactRefs.stage_folder_contract_ref),
+    ],
     reviewRefs: [`review-ref:opl-meta-agent/${targetAgent.domain_id}/takeover-review`],
     qualityGateRefs: [`quality-gate:opl-meta-agent/${targetAgent.domain_id}/domain-owner-boundary`],
     improvementCandidateRef: `improvement-candidate:opl-meta-agent/${targetAgent.domain_id}/gated-self-evolution`,
@@ -129,6 +150,27 @@ function buildTakeoverSuite(targetAgent: TargetAgent, targetAgentDir: string): J
     promotionGateRef: `promotion-gate:opl-meta-agent/${targetAgent.domain_id}/takeover`,
     regressionSuiteRefs: [`regression-suite:opl-meta-agent/${targetAgent.domain_id}/takeover`],
   });
+  return {
+    ...suite,
+    stage_native_artifact_refs: stageNativeArtifactRefs,
+    authority_boundary: {
+      ...suite.authority_boundary,
+      can_generate_target_domain_owner_receipt: false,
+      can_write_target_artifact_body: false,
+    },
+    tasks: suite.tasks.map((task: JsonObject) => ({
+      ...task,
+      stage_native_artifact_refs: stageNativeArtifactRefs,
+      artifact_native_contract_ref: stageNativeArtifactRefs.artifact_native_contract_ref,
+      stage_folder_contract: {
+        stage_folder_contract_ref: stageNativeArtifactRefs.stage_folder_contract_ref,
+        manifest_ref: stageNativeArtifactRefs.manifest_ref,
+        receipt_ref: stageNativeArtifactRefs.receipt_ref,
+        blocker_ref: stageNativeArtifactRefs.blocker_ref,
+        canonical_artifact_ref: stageNativeArtifactRefs.canonical_artifact_ref,
+      },
+    })),
+  };
 }
 
 function buildTakeoverMechanismPatchProposal(
@@ -193,6 +235,10 @@ export function runTakeoverAgent({ targetAgentDir, outputDir, oplBin }: Takeover
     }),
     ...domainPackReceiptFields(domainPackSummary),
     source_domain_pack: domainPackSummary,
+    stage_native_artifact_refs: suite.stage_native_artifact_refs,
+    artifact_native_contract_ref: suite.stage_native_artifact_refs.artifact_native_contract_ref,
+    stage_folder_contract: suite.tasks[0].stage_folder_contract,
+    can_generate_target_domain_owner_receipt: false,
   };
 
   const learningCandidate = buildLearningCandidate({

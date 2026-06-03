@@ -91,7 +91,8 @@
         "runtime-ref:stage-attempt-ledger",
         "runtime-ref:generated-interface-bundle",
         "runtime-ref:stage-executor-policy-gate",
-        "runtime-ref:stage-progress-log-user-stage-log"
+        "runtime-ref:stage-progress-log-user-stage-log",
+        "artifact-native-contract-ref:opl-meta-agent/intent-intake"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:intent-intake",
@@ -101,7 +102,11 @@
         "output-ref:intent_brief_ref",
         "output-ref:acceptance_criteria_ref",
         "output-ref:authority_boundary_ref",
-        "stage-user-log-ref:intent-intake"
+        "stage-user-log-ref:intent-intake",
+        "stage-folder-contract-ref:opl-meta-agent/intent-intake",
+        "stage-manifest-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+        "stage-current-pointer-ref:opl-meta-agent/intent-intake",
+        "canonical-artifact-ref:opl-meta-agent/intent-intake"
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:intent-intake",
@@ -109,7 +114,12 @@
         "boundary-receipt-ref:intent-intake/refs-only",
         "no-forbidden-write-proof-ref:intent-intake",
         "independent-ai-review-ref:intent-intake",
-        "stage-user-log-ref:intent-intake"
+        "stage-user-log-ref:intent-intake",
+        "artifact-native-contract-ref:opl-meta-agent/intent-intake",
+        "stage-folder-contract-ref:opl-meta-agent/intent-intake",
+        "stage-manifest-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+        "stage-typed-blocker-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+        "canonical-artifact-ref:opl-meta-agent/intent-intake"
       ],
       "verified_static_core": {
         "status": "required_before_launch",
@@ -317,6 +327,102 @@
             "opl_can_claim_deliverable_progress_from_platform_repair": false,
             "oma_retains_typed_blocker_authority": true
           }
+        },
+        "stage_native_artifact_contract": {
+          "surface_kind": "opl_stage_native_artifact_contract",
+          "version": "stage-native-artifact-contract.v1",
+          "target_domain_id": "opl-meta-agent",
+          "stage_id": "intent-intake",
+          "owner": "one-person-lab",
+          "materialized_by": "opl-meta-agent",
+          "domain_truth_owner": "opl-meta-agent",
+          "role": "stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only",
+          "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/intent-intake",
+          "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/intent-intake",
+          "stage_folder_ref": "stage-folder-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+          "manifest_ref": "stage-manifest-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+          "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+          "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+          "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/intent-intake",
+          "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/intent-intake",
+          "stage_folder_contract": {
+            "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/intent-intake",
+            "folder_path_template": "stages/intent-intake/attempts/{stage_attempt_id}",
+            "folder_role": "stage_native_attempt_artifact_folder",
+            "body_policy": "refs_and_manifests_only_no_target_artifact_body",
+            "lifecycle_owner": "one-person-lab"
+          },
+          "manifest_contract": {
+            "manifest_ref_template": "stage-manifest-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+            "manifest_file_name": "stage.manifest.json",
+            "required_fields": [
+              "stage_id",
+              "stage_attempt_id",
+              "physical_output_path",
+              "role",
+              "content_hash",
+              "producer",
+              "input_refs",
+              "lineage_refs",
+              "receipt_refs",
+              "current_pointer_ref",
+              "canonical_artifact_ref",
+              "export_eligibility",
+              "repair_classification"
+            ],
+            "missing_or_hash_mismatch_projection": "broken_artifact",
+            "missing_owner_receipt_projection": "orphan_artifact"
+          },
+          "terminal_receipts": {
+            "success_receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+            "blocked_typed_blocker_ref_template": "stage-typed-blocker-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+            "skipped_or_deferred_decision_ref_template": "stage-decision-receipt-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+            "success_requires_owner_receipt_ref": true,
+            "blocked_requires_typed_blocker_ref": true,
+            "skipped_or_deferred_requires_decision_receipt_ref": true
+          },
+          "current_pointer_contract": {
+            "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/intent-intake",
+            "pointer_owner": "one-person-lab",
+            "old_attempts_not_pointed_by_current_are_historical_evidence_only": true
+          },
+          "output_roles": [
+            {
+              "role_id": "stage_manifest",
+              "ref_kind": "stage_manifest_ref",
+              "body_owner": "one-person-lab",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "stage_attempt_receipt",
+              "ref_kind": "stage_attempt_receipt_ref",
+              "body_owner": "one-person-lab",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "typed_blocker",
+              "ref_kind": "stage_typed_blocker_ref",
+              "body_owner": "opl-meta-agent",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "canonical_artifact_ref",
+              "ref_kind": "canonical_artifact_ref",
+              "body_owner": "opl-meta-agent",
+              "contains_target_artifact_body": false
+            }
+          ],
+          "authority_boundary": {
+            "opl_framework_owns_stage_folder_lifecycle": true,
+            "oma_role": "contract_compiler_and_refs_materializer",
+            "oma_can_write_stage_folder_runtime_state": false,
+            "oma_can_generate_target_domain_owner_receipt": false,
+            "oma_can_write_target_domain_truth": false,
+            "oma_can_write_target_domain_memory_body": false,
+            "oma_can_mutate_target_domain_artifact_body": false,
+            "oma_can_authorize_target_quality_or_export": false,
+            "oma_can_promote_default_agent_without_gate": false
+          }
         }
       }
     },
@@ -397,7 +503,8 @@
         "runtime-ref:stage-attempt-ledger",
         "runtime-ref:generated-interface-bundle",
         "runtime-ref:stage-executor-policy-gate",
-        "runtime-ref:stage-progress-log-user-stage-log"
+        "runtime-ref:stage-progress-log-user-stage-log",
+        "artifact-native-contract-ref:opl-meta-agent/web-experience-research"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:web-experience-research",
@@ -407,7 +514,11 @@
         "output-ref:research_brief_ref",
         "output-ref:source_refs",
         "output-ref:pattern_disposition_refs",
-        "stage-user-log-ref:web-experience-research"
+        "stage-user-log-ref:web-experience-research",
+        "stage-folder-contract-ref:opl-meta-agent/web-experience-research",
+        "stage-manifest-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+        "stage-current-pointer-ref:opl-meta-agent/web-experience-research",
+        "canonical-artifact-ref:opl-meta-agent/web-experience-research"
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:web-experience-research",
@@ -415,7 +526,12 @@
         "boundary-receipt-ref:web-experience-research/refs-only",
         "no-forbidden-write-proof-ref:web-experience-research",
         "independent-ai-review-ref:web-experience-research",
-        "stage-user-log-ref:web-experience-research"
+        "stage-user-log-ref:web-experience-research",
+        "artifact-native-contract-ref:opl-meta-agent/web-experience-research",
+        "stage-folder-contract-ref:opl-meta-agent/web-experience-research",
+        "stage-manifest-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+        "stage-typed-blocker-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+        "canonical-artifact-ref:opl-meta-agent/web-experience-research"
       ],
       "verified_static_core": {
         "status": "required_before_launch",
@@ -624,6 +740,102 @@
             "opl_can_claim_deliverable_progress_from_platform_repair": false,
             "oma_retains_typed_blocker_authority": true
           }
+        },
+        "stage_native_artifact_contract": {
+          "surface_kind": "opl_stage_native_artifact_contract",
+          "version": "stage-native-artifact-contract.v1",
+          "target_domain_id": "opl-meta-agent",
+          "stage_id": "web-experience-research",
+          "owner": "one-person-lab",
+          "materialized_by": "opl-meta-agent",
+          "domain_truth_owner": "opl-meta-agent",
+          "role": "stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only",
+          "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/web-experience-research",
+          "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/web-experience-research",
+          "stage_folder_ref": "stage-folder-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+          "manifest_ref": "stage-manifest-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+          "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+          "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+          "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/web-experience-research",
+          "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/web-experience-research",
+          "stage_folder_contract": {
+            "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/web-experience-research",
+            "folder_path_template": "stages/web-experience-research/attempts/{stage_attempt_id}",
+            "folder_role": "stage_native_attempt_artifact_folder",
+            "body_policy": "refs_and_manifests_only_no_target_artifact_body",
+            "lifecycle_owner": "one-person-lab"
+          },
+          "manifest_contract": {
+            "manifest_ref_template": "stage-manifest-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+            "manifest_file_name": "stage.manifest.json",
+            "required_fields": [
+              "stage_id",
+              "stage_attempt_id",
+              "physical_output_path",
+              "role",
+              "content_hash",
+              "producer",
+              "input_refs",
+              "lineage_refs",
+              "receipt_refs",
+              "current_pointer_ref",
+              "canonical_artifact_ref",
+              "export_eligibility",
+              "repair_classification"
+            ],
+            "missing_or_hash_mismatch_projection": "broken_artifact",
+            "missing_owner_receipt_projection": "orphan_artifact"
+          },
+          "terminal_receipts": {
+            "success_receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+            "blocked_typed_blocker_ref_template": "stage-typed-blocker-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+            "skipped_or_deferred_decision_ref_template": "stage-decision-receipt-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+            "success_requires_owner_receipt_ref": true,
+            "blocked_requires_typed_blocker_ref": true,
+            "skipped_or_deferred_requires_decision_receipt_ref": true
+          },
+          "current_pointer_contract": {
+            "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/web-experience-research",
+            "pointer_owner": "one-person-lab",
+            "old_attempts_not_pointed_by_current_are_historical_evidence_only": true
+          },
+          "output_roles": [
+            {
+              "role_id": "stage_manifest",
+              "ref_kind": "stage_manifest_ref",
+              "body_owner": "one-person-lab",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "stage_attempt_receipt",
+              "ref_kind": "stage_attempt_receipt_ref",
+              "body_owner": "one-person-lab",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "typed_blocker",
+              "ref_kind": "stage_typed_blocker_ref",
+              "body_owner": "opl-meta-agent",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "canonical_artifact_ref",
+              "ref_kind": "canonical_artifact_ref",
+              "body_owner": "opl-meta-agent",
+              "contains_target_artifact_body": false
+            }
+          ],
+          "authority_boundary": {
+            "opl_framework_owns_stage_folder_lifecycle": true,
+            "oma_role": "contract_compiler_and_refs_materializer",
+            "oma_can_write_stage_folder_runtime_state": false,
+            "oma_can_generate_target_domain_owner_receipt": false,
+            "oma_can_write_target_domain_truth": false,
+            "oma_can_write_target_domain_memory_body": false,
+            "oma_can_mutate_target_domain_artifact_body": false,
+            "oma_can_authorize_target_quality_or_export": false,
+            "oma_can_promote_default_agent_without_gate": false
+          }
         }
       }
     },
@@ -704,7 +916,8 @@
         "runtime-ref:stage-attempt-ledger",
         "runtime-ref:generated-interface-bundle",
         "runtime-ref:stage-executor-policy-gate",
-        "runtime-ref:stage-progress-log-user-stage-log"
+        "runtime-ref:stage-progress-log-user-stage-log",
+        "artifact-native-contract-ref:opl-meta-agent/stage-decomposition"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:stage-decomposition",
@@ -714,7 +927,11 @@
         "output-ref:stage_control_plane_ref",
         "output-ref:action_catalog_ref",
         "output-ref:memory_descriptor_ref",
-        "stage-user-log-ref:stage-decomposition"
+        "stage-user-log-ref:stage-decomposition",
+        "stage-folder-contract-ref:opl-meta-agent/stage-decomposition",
+        "stage-manifest-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+        "stage-current-pointer-ref:opl-meta-agent/stage-decomposition",
+        "canonical-artifact-ref:opl-meta-agent/stage-decomposition"
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:stage-decomposition",
@@ -722,7 +939,12 @@
         "boundary-receipt-ref:stage-decomposition/refs-only",
         "no-forbidden-write-proof-ref:stage-decomposition",
         "independent-ai-review-ref:stage-decomposition",
-        "stage-user-log-ref:stage-decomposition"
+        "stage-user-log-ref:stage-decomposition",
+        "artifact-native-contract-ref:opl-meta-agent/stage-decomposition",
+        "stage-folder-contract-ref:opl-meta-agent/stage-decomposition",
+        "stage-manifest-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+        "stage-typed-blocker-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+        "canonical-artifact-ref:opl-meta-agent/stage-decomposition"
       ],
       "verified_static_core": {
         "status": "required_before_launch",
@@ -930,6 +1152,102 @@
             "opl_can_claim_deliverable_progress_from_platform_repair": false,
             "oma_retains_typed_blocker_authority": true
           }
+        },
+        "stage_native_artifact_contract": {
+          "surface_kind": "opl_stage_native_artifact_contract",
+          "version": "stage-native-artifact-contract.v1",
+          "target_domain_id": "opl-meta-agent",
+          "stage_id": "stage-decomposition",
+          "owner": "one-person-lab",
+          "materialized_by": "opl-meta-agent",
+          "domain_truth_owner": "opl-meta-agent",
+          "role": "stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only",
+          "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/stage-decomposition",
+          "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/stage-decomposition",
+          "stage_folder_ref": "stage-folder-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+          "manifest_ref": "stage-manifest-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+          "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+          "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+          "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/stage-decomposition",
+          "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/stage-decomposition",
+          "stage_folder_contract": {
+            "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/stage-decomposition",
+            "folder_path_template": "stages/stage-decomposition/attempts/{stage_attempt_id}",
+            "folder_role": "stage_native_attempt_artifact_folder",
+            "body_policy": "refs_and_manifests_only_no_target_artifact_body",
+            "lifecycle_owner": "one-person-lab"
+          },
+          "manifest_contract": {
+            "manifest_ref_template": "stage-manifest-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+            "manifest_file_name": "stage.manifest.json",
+            "required_fields": [
+              "stage_id",
+              "stage_attempt_id",
+              "physical_output_path",
+              "role",
+              "content_hash",
+              "producer",
+              "input_refs",
+              "lineage_refs",
+              "receipt_refs",
+              "current_pointer_ref",
+              "canonical_artifact_ref",
+              "export_eligibility",
+              "repair_classification"
+            ],
+            "missing_or_hash_mismatch_projection": "broken_artifact",
+            "missing_owner_receipt_projection": "orphan_artifact"
+          },
+          "terminal_receipts": {
+            "success_receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+            "blocked_typed_blocker_ref_template": "stage-typed-blocker-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+            "skipped_or_deferred_decision_ref_template": "stage-decision-receipt-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+            "success_requires_owner_receipt_ref": true,
+            "blocked_requires_typed_blocker_ref": true,
+            "skipped_or_deferred_requires_decision_receipt_ref": true
+          },
+          "current_pointer_contract": {
+            "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/stage-decomposition",
+            "pointer_owner": "one-person-lab",
+            "old_attempts_not_pointed_by_current_are_historical_evidence_only": true
+          },
+          "output_roles": [
+            {
+              "role_id": "stage_manifest",
+              "ref_kind": "stage_manifest_ref",
+              "body_owner": "one-person-lab",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "stage_attempt_receipt",
+              "ref_kind": "stage_attempt_receipt_ref",
+              "body_owner": "one-person-lab",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "typed_blocker",
+              "ref_kind": "stage_typed_blocker_ref",
+              "body_owner": "opl-meta-agent",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "canonical_artifact_ref",
+              "ref_kind": "canonical_artifact_ref",
+              "body_owner": "opl-meta-agent",
+              "contains_target_artifact_body": false
+            }
+          ],
+          "authority_boundary": {
+            "opl_framework_owns_stage_folder_lifecycle": true,
+            "oma_role": "contract_compiler_and_refs_materializer",
+            "oma_can_write_stage_folder_runtime_state": false,
+            "oma_can_generate_target_domain_owner_receipt": false,
+            "oma_can_write_target_domain_truth": false,
+            "oma_can_write_target_domain_memory_body": false,
+            "oma_can_mutate_target_domain_artifact_body": false,
+            "oma_can_authorize_target_quality_or_export": false,
+            "oma_can_promote_default_agent_without_gate": false
+          }
         }
       }
     },
@@ -1019,7 +1337,8 @@
         "runtime-ref:stage-attempt-ledger",
         "runtime-ref:generated-interface-bundle",
         "runtime-ref:stage-executor-policy-gate",
-        "runtime-ref:stage-progress-log-user-stage-log"
+        "runtime-ref:stage-progress-log-user-stage-log",
+        "artifact-native-contract-ref:opl-meta-agent/agent-skeleton-build"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:agent-skeleton-build",
@@ -1030,7 +1349,11 @@
         "output-ref:skill_refs",
         "output-ref:prompt_refs",
         "output-ref:candidate_agent_package_ref",
-        "stage-user-log-ref:agent-skeleton-build"
+        "stage-user-log-ref:agent-skeleton-build",
+        "stage-folder-contract-ref:opl-meta-agent/agent-skeleton-build",
+        "stage-manifest-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+        "stage-current-pointer-ref:opl-meta-agent/agent-skeleton-build",
+        "canonical-artifact-ref:opl-meta-agent/agent-skeleton-build"
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:agent-skeleton-build",
@@ -1038,7 +1361,12 @@
         "boundary-receipt-ref:agent-skeleton-build/refs-only",
         "no-forbidden-write-proof-ref:agent-skeleton-build",
         "independent-ai-review-ref:agent-skeleton-build",
-        "stage-user-log-ref:agent-skeleton-build"
+        "stage-user-log-ref:agent-skeleton-build",
+        "artifact-native-contract-ref:opl-meta-agent/agent-skeleton-build",
+        "stage-folder-contract-ref:opl-meta-agent/agent-skeleton-build",
+        "stage-manifest-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+        "stage-typed-blocker-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+        "canonical-artifact-ref:opl-meta-agent/agent-skeleton-build"
       ],
       "verified_static_core": {
         "status": "required_before_launch",
@@ -1246,6 +1574,102 @@
             "opl_can_claim_deliverable_progress_from_platform_repair": false,
             "oma_retains_typed_blocker_authority": true
           }
+        },
+        "stage_native_artifact_contract": {
+          "surface_kind": "opl_stage_native_artifact_contract",
+          "version": "stage-native-artifact-contract.v1",
+          "target_domain_id": "opl-meta-agent",
+          "stage_id": "agent-skeleton-build",
+          "owner": "one-person-lab",
+          "materialized_by": "opl-meta-agent",
+          "domain_truth_owner": "opl-meta-agent",
+          "role": "stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only",
+          "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/agent-skeleton-build",
+          "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/agent-skeleton-build",
+          "stage_folder_ref": "stage-folder-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+          "manifest_ref": "stage-manifest-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+          "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+          "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+          "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/agent-skeleton-build",
+          "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/agent-skeleton-build",
+          "stage_folder_contract": {
+            "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/agent-skeleton-build",
+            "folder_path_template": "stages/agent-skeleton-build/attempts/{stage_attempt_id}",
+            "folder_role": "stage_native_attempt_artifact_folder",
+            "body_policy": "refs_and_manifests_only_no_target_artifact_body",
+            "lifecycle_owner": "one-person-lab"
+          },
+          "manifest_contract": {
+            "manifest_ref_template": "stage-manifest-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+            "manifest_file_name": "stage.manifest.json",
+            "required_fields": [
+              "stage_id",
+              "stage_attempt_id",
+              "physical_output_path",
+              "role",
+              "content_hash",
+              "producer",
+              "input_refs",
+              "lineage_refs",
+              "receipt_refs",
+              "current_pointer_ref",
+              "canonical_artifact_ref",
+              "export_eligibility",
+              "repair_classification"
+            ],
+            "missing_or_hash_mismatch_projection": "broken_artifact",
+            "missing_owner_receipt_projection": "orphan_artifact"
+          },
+          "terminal_receipts": {
+            "success_receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+            "blocked_typed_blocker_ref_template": "stage-typed-blocker-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+            "skipped_or_deferred_decision_ref_template": "stage-decision-receipt-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+            "success_requires_owner_receipt_ref": true,
+            "blocked_requires_typed_blocker_ref": true,
+            "skipped_or_deferred_requires_decision_receipt_ref": true
+          },
+          "current_pointer_contract": {
+            "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/agent-skeleton-build",
+            "pointer_owner": "one-person-lab",
+            "old_attempts_not_pointed_by_current_are_historical_evidence_only": true
+          },
+          "output_roles": [
+            {
+              "role_id": "stage_manifest",
+              "ref_kind": "stage_manifest_ref",
+              "body_owner": "one-person-lab",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "stage_attempt_receipt",
+              "ref_kind": "stage_attempt_receipt_ref",
+              "body_owner": "one-person-lab",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "typed_blocker",
+              "ref_kind": "stage_typed_blocker_ref",
+              "body_owner": "opl-meta-agent",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "canonical_artifact_ref",
+              "ref_kind": "canonical_artifact_ref",
+              "body_owner": "opl-meta-agent",
+              "contains_target_artifact_body": false
+            }
+          ],
+          "authority_boundary": {
+            "opl_framework_owns_stage_folder_lifecycle": true,
+            "oma_role": "contract_compiler_and_refs_materializer",
+            "oma_can_write_stage_folder_runtime_state": false,
+            "oma_can_generate_target_domain_owner_receipt": false,
+            "oma_can_write_target_domain_truth": false,
+            "oma_can_write_target_domain_memory_body": false,
+            "oma_can_mutate_target_domain_artifact_body": false,
+            "oma_can_authorize_target_quality_or_export": false,
+            "oma_can_promote_default_agent_without_gate": false
+          }
         }
       }
     },
@@ -1331,7 +1755,8 @@
         "runtime-ref:stage-attempt-ledger",
         "runtime-ref:generated-interface-bundle",
         "runtime-ref:stage-executor-policy-gate",
-        "runtime-ref:stage-progress-log-user-stage-log"
+        "runtime-ref:stage-progress-log-user-stage-log",
+        "artifact-native-contract-ref:opl-meta-agent/eval-suite-build"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:eval-suite-build",
@@ -1341,7 +1766,11 @@
         "output-ref:agent_lab_task_manifest_refs",
         "output-ref:scorecard_refs",
         "output-ref:promotion_gate_refs",
-        "stage-user-log-ref:eval-suite-build"
+        "stage-user-log-ref:eval-suite-build",
+        "stage-folder-contract-ref:opl-meta-agent/eval-suite-build",
+        "stage-manifest-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+        "stage-current-pointer-ref:opl-meta-agent/eval-suite-build",
+        "canonical-artifact-ref:opl-meta-agent/eval-suite-build"
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:eval-suite-build",
@@ -1349,7 +1778,12 @@
         "boundary-receipt-ref:eval-suite-build/refs-only",
         "no-forbidden-write-proof-ref:eval-suite-build",
         "independent-ai-review-ref:eval-suite-build",
-        "stage-user-log-ref:eval-suite-build"
+        "stage-user-log-ref:eval-suite-build",
+        "artifact-native-contract-ref:opl-meta-agent/eval-suite-build",
+        "stage-folder-contract-ref:opl-meta-agent/eval-suite-build",
+        "stage-manifest-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+        "stage-typed-blocker-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+        "canonical-artifact-ref:opl-meta-agent/eval-suite-build"
       ],
       "verified_static_core": {
         "status": "required_before_launch",
@@ -1560,6 +1994,102 @@
             "opl_can_claim_deliverable_progress_from_platform_repair": false,
             "oma_retains_typed_blocker_authority": true
           }
+        },
+        "stage_native_artifact_contract": {
+          "surface_kind": "opl_stage_native_artifact_contract",
+          "version": "stage-native-artifact-contract.v1",
+          "target_domain_id": "opl-meta-agent",
+          "stage_id": "eval-suite-build",
+          "owner": "one-person-lab",
+          "materialized_by": "opl-meta-agent",
+          "domain_truth_owner": "opl-meta-agent",
+          "role": "stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only",
+          "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/eval-suite-build",
+          "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/eval-suite-build",
+          "stage_folder_ref": "stage-folder-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+          "manifest_ref": "stage-manifest-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+          "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+          "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+          "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/eval-suite-build",
+          "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/eval-suite-build",
+          "stage_folder_contract": {
+            "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/eval-suite-build",
+            "folder_path_template": "stages/eval-suite-build/attempts/{stage_attempt_id}",
+            "folder_role": "stage_native_attempt_artifact_folder",
+            "body_policy": "refs_and_manifests_only_no_target_artifact_body",
+            "lifecycle_owner": "one-person-lab"
+          },
+          "manifest_contract": {
+            "manifest_ref_template": "stage-manifest-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+            "manifest_file_name": "stage.manifest.json",
+            "required_fields": [
+              "stage_id",
+              "stage_attempt_id",
+              "physical_output_path",
+              "role",
+              "content_hash",
+              "producer",
+              "input_refs",
+              "lineage_refs",
+              "receipt_refs",
+              "current_pointer_ref",
+              "canonical_artifact_ref",
+              "export_eligibility",
+              "repair_classification"
+            ],
+            "missing_or_hash_mismatch_projection": "broken_artifact",
+            "missing_owner_receipt_projection": "orphan_artifact"
+          },
+          "terminal_receipts": {
+            "success_receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+            "blocked_typed_blocker_ref_template": "stage-typed-blocker-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+            "skipped_or_deferred_decision_ref_template": "stage-decision-receipt-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+            "success_requires_owner_receipt_ref": true,
+            "blocked_requires_typed_blocker_ref": true,
+            "skipped_or_deferred_requires_decision_receipt_ref": true
+          },
+          "current_pointer_contract": {
+            "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/eval-suite-build",
+            "pointer_owner": "one-person-lab",
+            "old_attempts_not_pointed_by_current_are_historical_evidence_only": true
+          },
+          "output_roles": [
+            {
+              "role_id": "stage_manifest",
+              "ref_kind": "stage_manifest_ref",
+              "body_owner": "one-person-lab",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "stage_attempt_receipt",
+              "ref_kind": "stage_attempt_receipt_ref",
+              "body_owner": "one-person-lab",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "typed_blocker",
+              "ref_kind": "stage_typed_blocker_ref",
+              "body_owner": "opl-meta-agent",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "canonical_artifact_ref",
+              "ref_kind": "canonical_artifact_ref",
+              "body_owner": "opl-meta-agent",
+              "contains_target_artifact_body": false
+            }
+          ],
+          "authority_boundary": {
+            "opl_framework_owns_stage_folder_lifecycle": true,
+            "oma_role": "contract_compiler_and_refs_materializer",
+            "oma_can_write_stage_folder_runtime_state": false,
+            "oma_can_generate_target_domain_owner_receipt": false,
+            "oma_can_write_target_domain_truth": false,
+            "oma_can_write_target_domain_memory_body": false,
+            "oma_can_mutate_target_domain_artifact_body": false,
+            "oma_can_authorize_target_quality_or_export": false,
+            "oma_can_promote_default_agent_without_gate": false
+          }
         }
       }
     },
@@ -1643,7 +2173,8 @@
         "runtime-ref:stage-attempt-ledger",
         "runtime-ref:generated-interface-bundle",
         "runtime-ref:stage-executor-policy-gate",
-        "runtime-ref:stage-progress-log-user-stage-log"
+        "runtime-ref:stage-progress-log-user-stage-log",
+        "artifact-native-contract-ref:opl-meta-agent/baseline-run"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:baseline-run",
@@ -1653,7 +2184,11 @@
         "output-ref:trajectory_refs",
         "output-ref:receipt_refs",
         "output-ref:failure_taxonomy_refs",
-        "stage-user-log-ref:baseline-run"
+        "stage-user-log-ref:baseline-run",
+        "stage-folder-contract-ref:opl-meta-agent/baseline-run",
+        "stage-manifest-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "stage-current-pointer-ref:opl-meta-agent/baseline-run",
+        "canonical-artifact-ref:opl-meta-agent/baseline-run"
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:baseline-run",
@@ -1661,7 +2196,12 @@
         "boundary-receipt-ref:baseline-run/refs-only",
         "no-forbidden-write-proof-ref:baseline-run",
         "independent-ai-review-ref:baseline-run",
-        "stage-user-log-ref:baseline-run"
+        "stage-user-log-ref:baseline-run",
+        "artifact-native-contract-ref:opl-meta-agent/baseline-run",
+        "stage-folder-contract-ref:opl-meta-agent/baseline-run",
+        "stage-manifest-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "stage-typed-blocker-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "canonical-artifact-ref:opl-meta-agent/baseline-run"
       ],
       "verified_static_core": {
         "status": "required_before_launch",
@@ -1869,6 +2409,102 @@
             "opl_can_claim_deliverable_progress_from_platform_repair": false,
             "oma_retains_typed_blocker_authority": true
           }
+        },
+        "stage_native_artifact_contract": {
+          "surface_kind": "opl_stage_native_artifact_contract",
+          "version": "stage-native-artifact-contract.v1",
+          "target_domain_id": "opl-meta-agent",
+          "stage_id": "baseline-run",
+          "owner": "one-person-lab",
+          "materialized_by": "opl-meta-agent",
+          "domain_truth_owner": "opl-meta-agent",
+          "role": "stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only",
+          "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/baseline-run",
+          "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/baseline-run",
+          "stage_folder_ref": "stage-folder-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+          "manifest_ref": "stage-manifest-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+          "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+          "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+          "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/baseline-run",
+          "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/baseline-run",
+          "stage_folder_contract": {
+            "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/baseline-run",
+            "folder_path_template": "stages/baseline-run/attempts/{stage_attempt_id}",
+            "folder_role": "stage_native_attempt_artifact_folder",
+            "body_policy": "refs_and_manifests_only_no_target_artifact_body",
+            "lifecycle_owner": "one-person-lab"
+          },
+          "manifest_contract": {
+            "manifest_ref_template": "stage-manifest-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+            "manifest_file_name": "stage.manifest.json",
+            "required_fields": [
+              "stage_id",
+              "stage_attempt_id",
+              "physical_output_path",
+              "role",
+              "content_hash",
+              "producer",
+              "input_refs",
+              "lineage_refs",
+              "receipt_refs",
+              "current_pointer_ref",
+              "canonical_artifact_ref",
+              "export_eligibility",
+              "repair_classification"
+            ],
+            "missing_or_hash_mismatch_projection": "broken_artifact",
+            "missing_owner_receipt_projection": "orphan_artifact"
+          },
+          "terminal_receipts": {
+            "success_receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+            "blocked_typed_blocker_ref_template": "stage-typed-blocker-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+            "skipped_or_deferred_decision_ref_template": "stage-decision-receipt-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+            "success_requires_owner_receipt_ref": true,
+            "blocked_requires_typed_blocker_ref": true,
+            "skipped_or_deferred_requires_decision_receipt_ref": true
+          },
+          "current_pointer_contract": {
+            "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/baseline-run",
+            "pointer_owner": "one-person-lab",
+            "old_attempts_not_pointed_by_current_are_historical_evidence_only": true
+          },
+          "output_roles": [
+            {
+              "role_id": "stage_manifest",
+              "ref_kind": "stage_manifest_ref",
+              "body_owner": "one-person-lab",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "stage_attempt_receipt",
+              "ref_kind": "stage_attempt_receipt_ref",
+              "body_owner": "one-person-lab",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "typed_blocker",
+              "ref_kind": "stage_typed_blocker_ref",
+              "body_owner": "opl-meta-agent",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "canonical_artifact_ref",
+              "ref_kind": "canonical_artifact_ref",
+              "body_owner": "opl-meta-agent",
+              "contains_target_artifact_body": false
+            }
+          ],
+          "authority_boundary": {
+            "opl_framework_owns_stage_folder_lifecycle": true,
+            "oma_role": "contract_compiler_and_refs_materializer",
+            "oma_can_write_stage_folder_runtime_state": false,
+            "oma_can_generate_target_domain_owner_receipt": false,
+            "oma_can_write_target_domain_truth": false,
+            "oma_can_write_target_domain_memory_body": false,
+            "oma_can_mutate_target_domain_artifact_body": false,
+            "oma_can_authorize_target_quality_or_export": false,
+            "oma_can_promote_default_agent_without_gate": false
+          }
         }
       }
     },
@@ -1972,7 +2608,8 @@
         "runtime-ref:stage-attempt-ledger",
         "runtime-ref:generated-interface-bundle",
         "runtime-ref:stage-executor-policy-gate",
-        "runtime-ref:stage-progress-log-user-stage-log"
+        "runtime-ref:stage-progress-log-user-stage-log",
+        "artifact-native-contract-ref:opl-meta-agent/external-agent-takeover"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:external-agent-takeover",
@@ -1983,7 +2620,11 @@
         "output-ref:testing_takeover_receipt_ref",
         "output-ref:gated_self_evolution_candidate_ref",
         "output-ref:mechanism_patch_proposal_ref",
-        "stage-user-log-ref:external-agent-takeover"
+        "stage-user-log-ref:external-agent-takeover",
+        "stage-folder-contract-ref:opl-meta-agent/external-agent-takeover",
+        "stage-manifest-ref:opl-meta-agent/external-agent-takeover/{stage_attempt_id}",
+        "stage-current-pointer-ref:opl-meta-agent/external-agent-takeover",
+        "canonical-artifact-ref:opl-meta-agent/external-agent-takeover"
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:external-agent-takeover",
@@ -1991,7 +2632,12 @@
         "boundary-receipt-ref:external-agent-takeover/refs-only",
         "no-forbidden-write-proof-ref:external-agent-takeover",
         "independent-ai-review-ref:external-agent-takeover",
-        "stage-user-log-ref:external-agent-takeover"
+        "stage-user-log-ref:external-agent-takeover",
+        "artifact-native-contract-ref:opl-meta-agent/external-agent-takeover",
+        "stage-folder-contract-ref:opl-meta-agent/external-agent-takeover",
+        "stage-manifest-ref:opl-meta-agent/external-agent-takeover/{stage_attempt_id}",
+        "stage-typed-blocker-ref:opl-meta-agent/external-agent-takeover/{stage_attempt_id}",
+        "canonical-artifact-ref:opl-meta-agent/external-agent-takeover"
       ],
       "verified_static_core": {
         "status": "required_before_launch",
@@ -2199,6 +2845,102 @@
             "opl_can_claim_deliverable_progress_from_platform_repair": false,
             "oma_retains_typed_blocker_authority": true
           }
+        },
+        "stage_native_artifact_contract": {
+          "surface_kind": "opl_stage_native_artifact_contract",
+          "version": "stage-native-artifact-contract.v1",
+          "target_domain_id": "opl-meta-agent",
+          "stage_id": "external-agent-takeover",
+          "owner": "one-person-lab",
+          "materialized_by": "opl-meta-agent",
+          "domain_truth_owner": "opl-meta-agent",
+          "role": "stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only",
+          "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/external-agent-takeover",
+          "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/external-agent-takeover",
+          "stage_folder_ref": "stage-folder-ref:opl-meta-agent/external-agent-takeover/{stage_attempt_id}",
+          "manifest_ref": "stage-manifest-ref:opl-meta-agent/external-agent-takeover/{stage_attempt_id}",
+          "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/external-agent-takeover/{stage_attempt_id}",
+          "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/external-agent-takeover/{stage_attempt_id}",
+          "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/external-agent-takeover",
+          "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/external-agent-takeover",
+          "stage_folder_contract": {
+            "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/external-agent-takeover",
+            "folder_path_template": "stages/external-agent-takeover/attempts/{stage_attempt_id}",
+            "folder_role": "stage_native_attempt_artifact_folder",
+            "body_policy": "refs_and_manifests_only_no_target_artifact_body",
+            "lifecycle_owner": "one-person-lab"
+          },
+          "manifest_contract": {
+            "manifest_ref_template": "stage-manifest-ref:opl-meta-agent/external-agent-takeover/{stage_attempt_id}",
+            "manifest_file_name": "stage.manifest.json",
+            "required_fields": [
+              "stage_id",
+              "stage_attempt_id",
+              "physical_output_path",
+              "role",
+              "content_hash",
+              "producer",
+              "input_refs",
+              "lineage_refs",
+              "receipt_refs",
+              "current_pointer_ref",
+              "canonical_artifact_ref",
+              "export_eligibility",
+              "repair_classification"
+            ],
+            "missing_or_hash_mismatch_projection": "broken_artifact",
+            "missing_owner_receipt_projection": "orphan_artifact"
+          },
+          "terminal_receipts": {
+            "success_receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/external-agent-takeover/{stage_attempt_id}",
+            "blocked_typed_blocker_ref_template": "stage-typed-blocker-ref:opl-meta-agent/external-agent-takeover/{stage_attempt_id}",
+            "skipped_or_deferred_decision_ref_template": "stage-decision-receipt-ref:opl-meta-agent/external-agent-takeover/{stage_attempt_id}",
+            "success_requires_owner_receipt_ref": true,
+            "blocked_requires_typed_blocker_ref": true,
+            "skipped_or_deferred_requires_decision_receipt_ref": true
+          },
+          "current_pointer_contract": {
+            "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/external-agent-takeover",
+            "pointer_owner": "one-person-lab",
+            "old_attempts_not_pointed_by_current_are_historical_evidence_only": true
+          },
+          "output_roles": [
+            {
+              "role_id": "stage_manifest",
+              "ref_kind": "stage_manifest_ref",
+              "body_owner": "one-person-lab",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "stage_attempt_receipt",
+              "ref_kind": "stage_attempt_receipt_ref",
+              "body_owner": "one-person-lab",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "typed_blocker",
+              "ref_kind": "stage_typed_blocker_ref",
+              "body_owner": "opl-meta-agent",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "canonical_artifact_ref",
+              "ref_kind": "canonical_artifact_ref",
+              "body_owner": "opl-meta-agent",
+              "contains_target_artifact_body": false
+            }
+          ],
+          "authority_boundary": {
+            "opl_framework_owns_stage_folder_lifecycle": true,
+            "oma_role": "contract_compiler_and_refs_materializer",
+            "oma_can_write_stage_folder_runtime_state": false,
+            "oma_can_generate_target_domain_owner_receipt": false,
+            "oma_can_write_target_domain_truth": false,
+            "oma_can_write_target_domain_memory_body": false,
+            "oma_can_mutate_target_domain_artifact_body": false,
+            "oma_can_authorize_target_quality_or_export": false,
+            "oma_can_promote_default_agent_without_gate": false
+          }
         }
       }
     },
@@ -2291,7 +3033,8 @@
         "runtime-ref:stage-attempt-ledger",
         "runtime-ref:generated-interface-bundle",
         "runtime-ref:stage-executor-policy-gate",
-        "runtime-ref:stage-progress-log-user-stage-log"
+        "runtime-ref:stage-progress-log-user-stage-log",
+        "artifact-native-contract-ref:opl-meta-agent/optimizer-iteration"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:optimizer-iteration",
@@ -2305,7 +3048,11 @@
         "output-ref:target_agent_version_receipt_refs",
         "output-ref:candidate_branch_refs",
         "output-ref:regression_result_refs",
-        "stage-user-log-ref:optimizer-iteration"
+        "stage-user-log-ref:optimizer-iteration",
+        "stage-folder-contract-ref:opl-meta-agent/optimizer-iteration",
+        "stage-manifest-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+        "stage-current-pointer-ref:opl-meta-agent/optimizer-iteration",
+        "canonical-artifact-ref:opl-meta-agent/optimizer-iteration"
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:optimizer-iteration",
@@ -2313,7 +3060,12 @@
         "boundary-receipt-ref:optimizer-iteration/refs-only",
         "no-forbidden-write-proof-ref:optimizer-iteration",
         "independent-ai-review-ref:optimizer-iteration",
-        "stage-user-log-ref:optimizer-iteration"
+        "stage-user-log-ref:optimizer-iteration",
+        "artifact-native-contract-ref:opl-meta-agent/optimizer-iteration",
+        "stage-folder-contract-ref:opl-meta-agent/optimizer-iteration",
+        "stage-manifest-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+        "stage-typed-blocker-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+        "canonical-artifact-ref:opl-meta-agent/optimizer-iteration"
       ],
       "verified_static_core": {
         "status": "required_before_launch",
@@ -2521,6 +3273,102 @@
             "opl_can_claim_deliverable_progress_from_platform_repair": false,
             "oma_retains_typed_blocker_authority": true
           }
+        },
+        "stage_native_artifact_contract": {
+          "surface_kind": "opl_stage_native_artifact_contract",
+          "version": "stage-native-artifact-contract.v1",
+          "target_domain_id": "opl-meta-agent",
+          "stage_id": "optimizer-iteration",
+          "owner": "one-person-lab",
+          "materialized_by": "opl-meta-agent",
+          "domain_truth_owner": "opl-meta-agent",
+          "role": "stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only",
+          "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/optimizer-iteration",
+          "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/optimizer-iteration",
+          "stage_folder_ref": "stage-folder-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+          "manifest_ref": "stage-manifest-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+          "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+          "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+          "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/optimizer-iteration",
+          "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/optimizer-iteration",
+          "stage_folder_contract": {
+            "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/optimizer-iteration",
+            "folder_path_template": "stages/optimizer-iteration/attempts/{stage_attempt_id}",
+            "folder_role": "stage_native_attempt_artifact_folder",
+            "body_policy": "refs_and_manifests_only_no_target_artifact_body",
+            "lifecycle_owner": "one-person-lab"
+          },
+          "manifest_contract": {
+            "manifest_ref_template": "stage-manifest-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+            "manifest_file_name": "stage.manifest.json",
+            "required_fields": [
+              "stage_id",
+              "stage_attempt_id",
+              "physical_output_path",
+              "role",
+              "content_hash",
+              "producer",
+              "input_refs",
+              "lineage_refs",
+              "receipt_refs",
+              "current_pointer_ref",
+              "canonical_artifact_ref",
+              "export_eligibility",
+              "repair_classification"
+            ],
+            "missing_or_hash_mismatch_projection": "broken_artifact",
+            "missing_owner_receipt_projection": "orphan_artifact"
+          },
+          "terminal_receipts": {
+            "success_receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+            "blocked_typed_blocker_ref_template": "stage-typed-blocker-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+            "skipped_or_deferred_decision_ref_template": "stage-decision-receipt-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+            "success_requires_owner_receipt_ref": true,
+            "blocked_requires_typed_blocker_ref": true,
+            "skipped_or_deferred_requires_decision_receipt_ref": true
+          },
+          "current_pointer_contract": {
+            "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/optimizer-iteration",
+            "pointer_owner": "one-person-lab",
+            "old_attempts_not_pointed_by_current_are_historical_evidence_only": true
+          },
+          "output_roles": [
+            {
+              "role_id": "stage_manifest",
+              "ref_kind": "stage_manifest_ref",
+              "body_owner": "one-person-lab",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "stage_attempt_receipt",
+              "ref_kind": "stage_attempt_receipt_ref",
+              "body_owner": "one-person-lab",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "typed_blocker",
+              "ref_kind": "stage_typed_blocker_ref",
+              "body_owner": "opl-meta-agent",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "canonical_artifact_ref",
+              "ref_kind": "canonical_artifact_ref",
+              "body_owner": "opl-meta-agent",
+              "contains_target_artifact_body": false
+            }
+          ],
+          "authority_boundary": {
+            "opl_framework_owns_stage_folder_lifecycle": true,
+            "oma_role": "contract_compiler_and_refs_materializer",
+            "oma_can_write_stage_folder_runtime_state": false,
+            "oma_can_generate_target_domain_owner_receipt": false,
+            "oma_can_write_target_domain_truth": false,
+            "oma_can_write_target_domain_memory_body": false,
+            "oma_can_mutate_target_domain_artifact_body": false,
+            "oma_can_authorize_target_quality_or_export": false,
+            "oma_can_promote_default_agent_without_gate": false
+          }
         }
       }
     },
@@ -2609,7 +3457,8 @@
         "runtime-ref:stage-attempt-ledger",
         "runtime-ref:generated-interface-bundle",
         "runtime-ref:stage-executor-policy-gate",
-        "runtime-ref:stage-progress-log-user-stage-log"
+        "runtime-ref:stage-progress-log-user-stage-log",
+        "artifact-native-contract-ref:opl-meta-agent/baseline-delivery"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:baseline-delivery",
@@ -2619,7 +3468,11 @@
         "output-ref:baseline_agent_package_ref",
         "output-ref:delivery_receipt_ref",
         "output-ref:operator_runbook_ref",
-        "stage-user-log-ref:baseline-delivery"
+        "stage-user-log-ref:baseline-delivery",
+        "stage-folder-contract-ref:opl-meta-agent/baseline-delivery",
+        "stage-manifest-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+        "stage-current-pointer-ref:opl-meta-agent/baseline-delivery",
+        "canonical-artifact-ref:opl-meta-agent/baseline-delivery"
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:baseline-delivery",
@@ -2627,7 +3480,12 @@
         "boundary-receipt-ref:baseline-delivery/refs-only",
         "no-forbidden-write-proof-ref:baseline-delivery",
         "independent-ai-review-ref:baseline-delivery",
-        "stage-user-log-ref:baseline-delivery"
+        "stage-user-log-ref:baseline-delivery",
+        "artifact-native-contract-ref:opl-meta-agent/baseline-delivery",
+        "stage-folder-contract-ref:opl-meta-agent/baseline-delivery",
+        "stage-manifest-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+        "stage-typed-blocker-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+        "canonical-artifact-ref:opl-meta-agent/baseline-delivery"
       ],
       "verified_static_core": {
         "status": "required_before_launch",
@@ -2835,6 +3693,102 @@
             "opl_can_claim_deliverable_progress_from_platform_repair": false,
             "oma_retains_typed_blocker_authority": true
           }
+        },
+        "stage_native_artifact_contract": {
+          "surface_kind": "opl_stage_native_artifact_contract",
+          "version": "stage-native-artifact-contract.v1",
+          "target_domain_id": "opl-meta-agent",
+          "stage_id": "baseline-delivery",
+          "owner": "one-person-lab",
+          "materialized_by": "opl-meta-agent",
+          "domain_truth_owner": "opl-meta-agent",
+          "role": "stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only",
+          "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/baseline-delivery",
+          "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/baseline-delivery",
+          "stage_folder_ref": "stage-folder-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+          "manifest_ref": "stage-manifest-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+          "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+          "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+          "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/baseline-delivery",
+          "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/baseline-delivery",
+          "stage_folder_contract": {
+            "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/baseline-delivery",
+            "folder_path_template": "stages/baseline-delivery/attempts/{stage_attempt_id}",
+            "folder_role": "stage_native_attempt_artifact_folder",
+            "body_policy": "refs_and_manifests_only_no_target_artifact_body",
+            "lifecycle_owner": "one-person-lab"
+          },
+          "manifest_contract": {
+            "manifest_ref_template": "stage-manifest-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+            "manifest_file_name": "stage.manifest.json",
+            "required_fields": [
+              "stage_id",
+              "stage_attempt_id",
+              "physical_output_path",
+              "role",
+              "content_hash",
+              "producer",
+              "input_refs",
+              "lineage_refs",
+              "receipt_refs",
+              "current_pointer_ref",
+              "canonical_artifact_ref",
+              "export_eligibility",
+              "repair_classification"
+            ],
+            "missing_or_hash_mismatch_projection": "broken_artifact",
+            "missing_owner_receipt_projection": "orphan_artifact"
+          },
+          "terminal_receipts": {
+            "success_receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+            "blocked_typed_blocker_ref_template": "stage-typed-blocker-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+            "skipped_or_deferred_decision_ref_template": "stage-decision-receipt-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+            "success_requires_owner_receipt_ref": true,
+            "blocked_requires_typed_blocker_ref": true,
+            "skipped_or_deferred_requires_decision_receipt_ref": true
+          },
+          "current_pointer_contract": {
+            "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/baseline-delivery",
+            "pointer_owner": "one-person-lab",
+            "old_attempts_not_pointed_by_current_are_historical_evidence_only": true
+          },
+          "output_roles": [
+            {
+              "role_id": "stage_manifest",
+              "ref_kind": "stage_manifest_ref",
+              "body_owner": "one-person-lab",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "stage_attempt_receipt",
+              "ref_kind": "stage_attempt_receipt_ref",
+              "body_owner": "one-person-lab",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "typed_blocker",
+              "ref_kind": "stage_typed_blocker_ref",
+              "body_owner": "opl-meta-agent",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "canonical_artifact_ref",
+              "ref_kind": "canonical_artifact_ref",
+              "body_owner": "opl-meta-agent",
+              "contains_target_artifact_body": false
+            }
+          ],
+          "authority_boundary": {
+            "opl_framework_owns_stage_folder_lifecycle": true,
+            "oma_role": "contract_compiler_and_refs_materializer",
+            "oma_can_write_stage_folder_runtime_state": false,
+            "oma_can_generate_target_domain_owner_receipt": false,
+            "oma_can_write_target_domain_truth": false,
+            "oma_can_write_target_domain_memory_body": false,
+            "oma_can_mutate_target_domain_artifact_body": false,
+            "oma_can_authorize_target_quality_or_export": false,
+            "oma_can_promote_default_agent_without_gate": false
+          }
         }
       }
     },
@@ -2930,7 +3884,8 @@
         "runtime-ref:generated-interface-bundle",
         "runtime-ref:stage-executor-policy-gate",
         "runtime-ref:agent-lab-promotion-gate",
-        "runtime-ref:stage-progress-log-user-stage-log"
+        "runtime-ref:stage-progress-log-user-stage-log",
+        "artifact-native-contract-ref:opl-meta-agent/trajectory-learning-intake"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:trajectory-learning-intake",
@@ -2945,7 +3900,11 @@
         "output-ref:stage_policy_candidate_ref",
         "output-ref:mechanism_patch_proposal_ref",
         "output-ref:typed_blocker_refs",
-        "stage-user-log-ref:trajectory-learning-intake"
+        "stage-user-log-ref:trajectory-learning-intake",
+        "stage-folder-contract-ref:opl-meta-agent/trajectory-learning-intake",
+        "stage-manifest-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+        "stage-current-pointer-ref:opl-meta-agent/trajectory-learning-intake",
+        "canonical-artifact-ref:opl-meta-agent/trajectory-learning-intake"
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:trajectory-learning-intake",
@@ -2957,7 +3916,12 @@
         "trajectory-atomization-receipt-ref:trajectory-learning-intake",
         "candidate-buffer-receipt-ref:trajectory-learning-intake",
         "agent-lab-promotion-gate-ref:trajectory-learning-intake",
-        "stage-user-log-ref:trajectory-learning-intake"
+        "stage-user-log-ref:trajectory-learning-intake",
+        "artifact-native-contract-ref:opl-meta-agent/trajectory-learning-intake",
+        "stage-folder-contract-ref:opl-meta-agent/trajectory-learning-intake",
+        "stage-manifest-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+        "stage-typed-blocker-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+        "canonical-artifact-ref:opl-meta-agent/trajectory-learning-intake"
       ],
       "verified_static_core": {
         "status": "required_before_launch",
@@ -3173,6 +4137,102 @@
             "opl_can_claim_deliverable_progress_from_platform_repair": false,
             "oma_retains_typed_blocker_authority": true
           }
+        },
+        "stage_native_artifact_contract": {
+          "surface_kind": "opl_stage_native_artifact_contract",
+          "version": "stage-native-artifact-contract.v1",
+          "target_domain_id": "opl-meta-agent",
+          "stage_id": "trajectory-learning-intake",
+          "owner": "one-person-lab",
+          "materialized_by": "opl-meta-agent",
+          "domain_truth_owner": "opl-meta-agent",
+          "role": "stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only",
+          "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/trajectory-learning-intake",
+          "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/trajectory-learning-intake",
+          "stage_folder_ref": "stage-folder-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+          "manifest_ref": "stage-manifest-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+          "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+          "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+          "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/trajectory-learning-intake",
+          "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/trajectory-learning-intake",
+          "stage_folder_contract": {
+            "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/trajectory-learning-intake",
+            "folder_path_template": "stages/trajectory-learning-intake/attempts/{stage_attempt_id}",
+            "folder_role": "stage_native_attempt_artifact_folder",
+            "body_policy": "refs_and_manifests_only_no_target_artifact_body",
+            "lifecycle_owner": "one-person-lab"
+          },
+          "manifest_contract": {
+            "manifest_ref_template": "stage-manifest-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+            "manifest_file_name": "stage.manifest.json",
+            "required_fields": [
+              "stage_id",
+              "stage_attempt_id",
+              "physical_output_path",
+              "role",
+              "content_hash",
+              "producer",
+              "input_refs",
+              "lineage_refs",
+              "receipt_refs",
+              "current_pointer_ref",
+              "canonical_artifact_ref",
+              "export_eligibility",
+              "repair_classification"
+            ],
+            "missing_or_hash_mismatch_projection": "broken_artifact",
+            "missing_owner_receipt_projection": "orphan_artifact"
+          },
+          "terminal_receipts": {
+            "success_receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+            "blocked_typed_blocker_ref_template": "stage-typed-blocker-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+            "skipped_or_deferred_decision_ref_template": "stage-decision-receipt-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+            "success_requires_owner_receipt_ref": true,
+            "blocked_requires_typed_blocker_ref": true,
+            "skipped_or_deferred_requires_decision_receipt_ref": true
+          },
+          "current_pointer_contract": {
+            "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/trajectory-learning-intake",
+            "pointer_owner": "one-person-lab",
+            "old_attempts_not_pointed_by_current_are_historical_evidence_only": true
+          },
+          "output_roles": [
+            {
+              "role_id": "stage_manifest",
+              "ref_kind": "stage_manifest_ref",
+              "body_owner": "one-person-lab",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "stage_attempt_receipt",
+              "ref_kind": "stage_attempt_receipt_ref",
+              "body_owner": "one-person-lab",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "typed_blocker",
+              "ref_kind": "stage_typed_blocker_ref",
+              "body_owner": "opl-meta-agent",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "canonical_artifact_ref",
+              "ref_kind": "canonical_artifact_ref",
+              "body_owner": "opl-meta-agent",
+              "contains_target_artifact_body": false
+            }
+          ],
+          "authority_boundary": {
+            "opl_framework_owns_stage_folder_lifecycle": true,
+            "oma_role": "contract_compiler_and_refs_materializer",
+            "oma_can_write_stage_folder_runtime_state": false,
+            "oma_can_generate_target_domain_owner_receipt": false,
+            "oma_can_write_target_domain_truth": false,
+            "oma_can_write_target_domain_memory_body": false,
+            "oma_can_mutate_target_domain_artifact_body": false,
+            "oma_can_authorize_target_quality_or_export": false,
+            "oma_can_promote_default_agent_without_gate": false
+          }
         }
       }
     },
@@ -3262,7 +4322,8 @@
         "runtime-ref:stage-attempt-ledger",
         "runtime-ref:generated-interface-bundle",
         "runtime-ref:stage-executor-policy-gate",
-        "runtime-ref:stage-progress-log-user-stage-log"
+        "runtime-ref:stage-progress-log-user-stage-log",
+        "artifact-native-contract-ref:opl-meta-agent/online-learning"
       ],
       "ensures": [
         "stage-attempt-receipt-ref:online-learning",
@@ -3273,7 +4334,11 @@
         "output-ref:human_review_refs",
         "output-ref:mechanism_patch_proposal_refs",
         "output-ref:future_candidate_refs",
-        "stage-user-log-ref:online-learning"
+        "stage-user-log-ref:online-learning",
+        "stage-folder-contract-ref:opl-meta-agent/online-learning",
+        "stage-manifest-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+        "stage-current-pointer-ref:opl-meta-agent/online-learning",
+        "canonical-artifact-ref:opl-meta-agent/online-learning"
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:online-learning",
@@ -3281,7 +4346,12 @@
         "boundary-receipt-ref:online-learning/refs-only",
         "no-forbidden-write-proof-ref:online-learning",
         "independent-ai-review-ref:online-learning",
-        "stage-user-log-ref:online-learning"
+        "stage-user-log-ref:online-learning",
+        "artifact-native-contract-ref:opl-meta-agent/online-learning",
+        "stage-folder-contract-ref:opl-meta-agent/online-learning",
+        "stage-manifest-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+        "stage-typed-blocker-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+        "canonical-artifact-ref:opl-meta-agent/online-learning"
       ],
       "verified_static_core": {
         "status": "required_before_launch",
@@ -3489,6 +4559,102 @@
             "opl_can_claim_deliverable_progress_from_platform_repair": false,
             "oma_retains_typed_blocker_authority": true
           }
+        },
+        "stage_native_artifact_contract": {
+          "surface_kind": "opl_stage_native_artifact_contract",
+          "version": "stage-native-artifact-contract.v1",
+          "target_domain_id": "opl-meta-agent",
+          "stage_id": "online-learning",
+          "owner": "one-person-lab",
+          "materialized_by": "opl-meta-agent",
+          "domain_truth_owner": "opl-meta-agent",
+          "role": "stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only",
+          "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/online-learning",
+          "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/online-learning",
+          "stage_folder_ref": "stage-folder-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+          "manifest_ref": "stage-manifest-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+          "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+          "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+          "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/online-learning",
+          "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/online-learning",
+          "stage_folder_contract": {
+            "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/online-learning",
+            "folder_path_template": "stages/online-learning/attempts/{stage_attempt_id}",
+            "folder_role": "stage_native_attempt_artifact_folder",
+            "body_policy": "refs_and_manifests_only_no_target_artifact_body",
+            "lifecycle_owner": "one-person-lab"
+          },
+          "manifest_contract": {
+            "manifest_ref_template": "stage-manifest-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+            "manifest_file_name": "stage.manifest.json",
+            "required_fields": [
+              "stage_id",
+              "stage_attempt_id",
+              "physical_output_path",
+              "role",
+              "content_hash",
+              "producer",
+              "input_refs",
+              "lineage_refs",
+              "receipt_refs",
+              "current_pointer_ref",
+              "canonical_artifact_ref",
+              "export_eligibility",
+              "repair_classification"
+            ],
+            "missing_or_hash_mismatch_projection": "broken_artifact",
+            "missing_owner_receipt_projection": "orphan_artifact"
+          },
+          "terminal_receipts": {
+            "success_receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+            "blocked_typed_blocker_ref_template": "stage-typed-blocker-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+            "skipped_or_deferred_decision_ref_template": "stage-decision-receipt-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+            "success_requires_owner_receipt_ref": true,
+            "blocked_requires_typed_blocker_ref": true,
+            "skipped_or_deferred_requires_decision_receipt_ref": true
+          },
+          "current_pointer_contract": {
+            "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/online-learning",
+            "pointer_owner": "one-person-lab",
+            "old_attempts_not_pointed_by_current_are_historical_evidence_only": true
+          },
+          "output_roles": [
+            {
+              "role_id": "stage_manifest",
+              "ref_kind": "stage_manifest_ref",
+              "body_owner": "one-person-lab",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "stage_attempt_receipt",
+              "ref_kind": "stage_attempt_receipt_ref",
+              "body_owner": "one-person-lab",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "typed_blocker",
+              "ref_kind": "stage_typed_blocker_ref",
+              "body_owner": "opl-meta-agent",
+              "contains_target_artifact_body": false
+            },
+            {
+              "role_id": "canonical_artifact_ref",
+              "ref_kind": "canonical_artifact_ref",
+              "body_owner": "opl-meta-agent",
+              "contains_target_artifact_body": false
+            }
+          ],
+          "authority_boundary": {
+            "opl_framework_owns_stage_folder_lifecycle": true,
+            "oma_role": "contract_compiler_and_refs_materializer",
+            "oma_can_write_stage_folder_runtime_state": false,
+            "oma_can_generate_target_domain_owner_receipt": false,
+            "oma_can_write_target_domain_truth": false,
+            "oma_can_write_target_domain_memory_body": false,
+            "oma_can_mutate_target_domain_artifact_body": false,
+            "oma_can_authorize_target_quality_or_export": false,
+            "oma_can_promote_default_agent_without_gate": false
+          }
         }
       }
     }
@@ -3505,5 +4671,1109 @@
     "OPL Framework owns generated CLI/MCP/Skill/product-entry/tool descriptors for this stage plane.",
     "This repo owns agent-building stage semantics and owner receipt refs only."
   ],
-  "marker": "generated_by_opl_standard_domain_agent_scaffold_v1"
+  "marker": "generated_by_opl_standard_domain_agent_scaffold_v1",
+  "stage_native_artifact_contract": {
+    "surface_kind": "opl_stage_native_artifact_contract_bundle",
+    "version": "stage-native-artifact-contract-bundle.v1",
+    "target_domain_id": "opl-meta-agent",
+    "owner": "one-person-lab",
+    "materialized_by": "opl-meta-agent",
+    "domain_truth_owner": "opl-meta-agent",
+    "bundle_role": "stage_native_artifact_contract_refs_only",
+    "artifact_native_contract_refs": [
+      "artifact-native-contract-ref:opl-meta-agent/intent-intake",
+      "artifact-native-contract-ref:opl-meta-agent/web-experience-research",
+      "artifact-native-contract-ref:opl-meta-agent/stage-decomposition",
+      "artifact-native-contract-ref:opl-meta-agent/agent-skeleton-build",
+      "artifact-native-contract-ref:opl-meta-agent/eval-suite-build",
+      "artifact-native-contract-ref:opl-meta-agent/baseline-run",
+      "artifact-native-contract-ref:opl-meta-agent/external-agent-takeover",
+      "artifact-native-contract-ref:opl-meta-agent/optimizer-iteration",
+      "artifact-native-contract-ref:opl-meta-agent/baseline-delivery",
+      "artifact-native-contract-ref:opl-meta-agent/trajectory-learning-intake",
+      "artifact-native-contract-ref:opl-meta-agent/online-learning"
+    ],
+    "stage_folder_contract_refs": [
+      "stage-folder-contract-ref:opl-meta-agent/intent-intake",
+      "stage-folder-contract-ref:opl-meta-agent/web-experience-research",
+      "stage-folder-contract-ref:opl-meta-agent/stage-decomposition",
+      "stage-folder-contract-ref:opl-meta-agent/agent-skeleton-build",
+      "stage-folder-contract-ref:opl-meta-agent/eval-suite-build",
+      "stage-folder-contract-ref:opl-meta-agent/baseline-run",
+      "stage-folder-contract-ref:opl-meta-agent/external-agent-takeover",
+      "stage-folder-contract-ref:opl-meta-agent/optimizer-iteration",
+      "stage-folder-contract-ref:opl-meta-agent/baseline-delivery",
+      "stage-folder-contract-ref:opl-meta-agent/trajectory-learning-intake",
+      "stage-folder-contract-ref:opl-meta-agent/online-learning"
+    ],
+    "contracts": [
+      {
+        "surface_kind": "opl_stage_native_artifact_contract",
+        "version": "stage-native-artifact-contract.v1",
+        "target_domain_id": "opl-meta-agent",
+        "stage_id": "intent-intake",
+        "owner": "one-person-lab",
+        "materialized_by": "opl-meta-agent",
+        "domain_truth_owner": "opl-meta-agent",
+        "role": "stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only",
+        "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/intent-intake",
+        "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/intent-intake",
+        "stage_folder_ref": "stage-folder-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+        "manifest_ref": "stage-manifest-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+        "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+        "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+        "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/intent-intake",
+        "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/intent-intake",
+        "stage_folder_contract": {
+          "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/intent-intake",
+          "folder_path_template": "stages/intent-intake/attempts/{stage_attempt_id}",
+          "folder_role": "stage_native_attempt_artifact_folder",
+          "body_policy": "refs_and_manifests_only_no_target_artifact_body",
+          "lifecycle_owner": "one-person-lab"
+        },
+        "manifest_contract": {
+          "manifest_ref_template": "stage-manifest-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+          "manifest_file_name": "stage.manifest.json",
+          "required_fields": [
+            "stage_id",
+            "stage_attempt_id",
+            "physical_output_path",
+            "role",
+            "content_hash",
+            "producer",
+            "input_refs",
+            "lineage_refs",
+            "receipt_refs",
+            "current_pointer_ref",
+            "canonical_artifact_ref",
+            "export_eligibility",
+            "repair_classification"
+          ],
+          "missing_or_hash_mismatch_projection": "broken_artifact",
+          "missing_owner_receipt_projection": "orphan_artifact"
+        },
+        "terminal_receipts": {
+          "success_receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+          "blocked_typed_blocker_ref_template": "stage-typed-blocker-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+          "skipped_or_deferred_decision_ref_template": "stage-decision-receipt-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+          "success_requires_owner_receipt_ref": true,
+          "blocked_requires_typed_blocker_ref": true,
+          "skipped_or_deferred_requires_decision_receipt_ref": true
+        },
+        "current_pointer_contract": {
+          "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/intent-intake",
+          "pointer_owner": "one-person-lab",
+          "old_attempts_not_pointed_by_current_are_historical_evidence_only": true
+        },
+        "output_roles": [
+          {
+            "role_id": "stage_manifest",
+            "ref_kind": "stage_manifest_ref",
+            "body_owner": "one-person-lab",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "stage_attempt_receipt",
+            "ref_kind": "stage_attempt_receipt_ref",
+            "body_owner": "one-person-lab",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "typed_blocker",
+            "ref_kind": "stage_typed_blocker_ref",
+            "body_owner": "opl-meta-agent",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "canonical_artifact_ref",
+            "ref_kind": "canonical_artifact_ref",
+            "body_owner": "opl-meta-agent",
+            "contains_target_artifact_body": false
+          }
+        ],
+        "authority_boundary": {
+          "opl_framework_owns_stage_folder_lifecycle": true,
+          "oma_role": "contract_compiler_and_refs_materializer",
+          "oma_can_write_stage_folder_runtime_state": false,
+          "oma_can_generate_target_domain_owner_receipt": false,
+          "oma_can_write_target_domain_truth": false,
+          "oma_can_write_target_domain_memory_body": false,
+          "oma_can_mutate_target_domain_artifact_body": false,
+          "oma_can_authorize_target_quality_or_export": false,
+          "oma_can_promote_default_agent_without_gate": false
+        }
+      },
+      {
+        "surface_kind": "opl_stage_native_artifact_contract",
+        "version": "stage-native-artifact-contract.v1",
+        "target_domain_id": "opl-meta-agent",
+        "stage_id": "web-experience-research",
+        "owner": "one-person-lab",
+        "materialized_by": "opl-meta-agent",
+        "domain_truth_owner": "opl-meta-agent",
+        "role": "stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only",
+        "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/web-experience-research",
+        "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/web-experience-research",
+        "stage_folder_ref": "stage-folder-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+        "manifest_ref": "stage-manifest-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+        "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+        "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+        "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/web-experience-research",
+        "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/web-experience-research",
+        "stage_folder_contract": {
+          "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/web-experience-research",
+          "folder_path_template": "stages/web-experience-research/attempts/{stage_attempt_id}",
+          "folder_role": "stage_native_attempt_artifact_folder",
+          "body_policy": "refs_and_manifests_only_no_target_artifact_body",
+          "lifecycle_owner": "one-person-lab"
+        },
+        "manifest_contract": {
+          "manifest_ref_template": "stage-manifest-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+          "manifest_file_name": "stage.manifest.json",
+          "required_fields": [
+            "stage_id",
+            "stage_attempt_id",
+            "physical_output_path",
+            "role",
+            "content_hash",
+            "producer",
+            "input_refs",
+            "lineage_refs",
+            "receipt_refs",
+            "current_pointer_ref",
+            "canonical_artifact_ref",
+            "export_eligibility",
+            "repair_classification"
+          ],
+          "missing_or_hash_mismatch_projection": "broken_artifact",
+          "missing_owner_receipt_projection": "orphan_artifact"
+        },
+        "terminal_receipts": {
+          "success_receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+          "blocked_typed_blocker_ref_template": "stage-typed-blocker-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+          "skipped_or_deferred_decision_ref_template": "stage-decision-receipt-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+          "success_requires_owner_receipt_ref": true,
+          "blocked_requires_typed_blocker_ref": true,
+          "skipped_or_deferred_requires_decision_receipt_ref": true
+        },
+        "current_pointer_contract": {
+          "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/web-experience-research",
+          "pointer_owner": "one-person-lab",
+          "old_attempts_not_pointed_by_current_are_historical_evidence_only": true
+        },
+        "output_roles": [
+          {
+            "role_id": "stage_manifest",
+            "ref_kind": "stage_manifest_ref",
+            "body_owner": "one-person-lab",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "stage_attempt_receipt",
+            "ref_kind": "stage_attempt_receipt_ref",
+            "body_owner": "one-person-lab",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "typed_blocker",
+            "ref_kind": "stage_typed_blocker_ref",
+            "body_owner": "opl-meta-agent",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "canonical_artifact_ref",
+            "ref_kind": "canonical_artifact_ref",
+            "body_owner": "opl-meta-agent",
+            "contains_target_artifact_body": false
+          }
+        ],
+        "authority_boundary": {
+          "opl_framework_owns_stage_folder_lifecycle": true,
+          "oma_role": "contract_compiler_and_refs_materializer",
+          "oma_can_write_stage_folder_runtime_state": false,
+          "oma_can_generate_target_domain_owner_receipt": false,
+          "oma_can_write_target_domain_truth": false,
+          "oma_can_write_target_domain_memory_body": false,
+          "oma_can_mutate_target_domain_artifact_body": false,
+          "oma_can_authorize_target_quality_or_export": false,
+          "oma_can_promote_default_agent_without_gate": false
+        }
+      },
+      {
+        "surface_kind": "opl_stage_native_artifact_contract",
+        "version": "stage-native-artifact-contract.v1",
+        "target_domain_id": "opl-meta-agent",
+        "stage_id": "stage-decomposition",
+        "owner": "one-person-lab",
+        "materialized_by": "opl-meta-agent",
+        "domain_truth_owner": "opl-meta-agent",
+        "role": "stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only",
+        "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/stage-decomposition",
+        "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/stage-decomposition",
+        "stage_folder_ref": "stage-folder-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+        "manifest_ref": "stage-manifest-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+        "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+        "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+        "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/stage-decomposition",
+        "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/stage-decomposition",
+        "stage_folder_contract": {
+          "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/stage-decomposition",
+          "folder_path_template": "stages/stage-decomposition/attempts/{stage_attempt_id}",
+          "folder_role": "stage_native_attempt_artifact_folder",
+          "body_policy": "refs_and_manifests_only_no_target_artifact_body",
+          "lifecycle_owner": "one-person-lab"
+        },
+        "manifest_contract": {
+          "manifest_ref_template": "stage-manifest-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+          "manifest_file_name": "stage.manifest.json",
+          "required_fields": [
+            "stage_id",
+            "stage_attempt_id",
+            "physical_output_path",
+            "role",
+            "content_hash",
+            "producer",
+            "input_refs",
+            "lineage_refs",
+            "receipt_refs",
+            "current_pointer_ref",
+            "canonical_artifact_ref",
+            "export_eligibility",
+            "repair_classification"
+          ],
+          "missing_or_hash_mismatch_projection": "broken_artifact",
+          "missing_owner_receipt_projection": "orphan_artifact"
+        },
+        "terminal_receipts": {
+          "success_receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+          "blocked_typed_blocker_ref_template": "stage-typed-blocker-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+          "skipped_or_deferred_decision_ref_template": "stage-decision-receipt-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+          "success_requires_owner_receipt_ref": true,
+          "blocked_requires_typed_blocker_ref": true,
+          "skipped_or_deferred_requires_decision_receipt_ref": true
+        },
+        "current_pointer_contract": {
+          "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/stage-decomposition",
+          "pointer_owner": "one-person-lab",
+          "old_attempts_not_pointed_by_current_are_historical_evidence_only": true
+        },
+        "output_roles": [
+          {
+            "role_id": "stage_manifest",
+            "ref_kind": "stage_manifest_ref",
+            "body_owner": "one-person-lab",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "stage_attempt_receipt",
+            "ref_kind": "stage_attempt_receipt_ref",
+            "body_owner": "one-person-lab",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "typed_blocker",
+            "ref_kind": "stage_typed_blocker_ref",
+            "body_owner": "opl-meta-agent",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "canonical_artifact_ref",
+            "ref_kind": "canonical_artifact_ref",
+            "body_owner": "opl-meta-agent",
+            "contains_target_artifact_body": false
+          }
+        ],
+        "authority_boundary": {
+          "opl_framework_owns_stage_folder_lifecycle": true,
+          "oma_role": "contract_compiler_and_refs_materializer",
+          "oma_can_write_stage_folder_runtime_state": false,
+          "oma_can_generate_target_domain_owner_receipt": false,
+          "oma_can_write_target_domain_truth": false,
+          "oma_can_write_target_domain_memory_body": false,
+          "oma_can_mutate_target_domain_artifact_body": false,
+          "oma_can_authorize_target_quality_or_export": false,
+          "oma_can_promote_default_agent_without_gate": false
+        }
+      },
+      {
+        "surface_kind": "opl_stage_native_artifact_contract",
+        "version": "stage-native-artifact-contract.v1",
+        "target_domain_id": "opl-meta-agent",
+        "stage_id": "agent-skeleton-build",
+        "owner": "one-person-lab",
+        "materialized_by": "opl-meta-agent",
+        "domain_truth_owner": "opl-meta-agent",
+        "role": "stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only",
+        "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/agent-skeleton-build",
+        "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/agent-skeleton-build",
+        "stage_folder_ref": "stage-folder-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+        "manifest_ref": "stage-manifest-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+        "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+        "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+        "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/agent-skeleton-build",
+        "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/agent-skeleton-build",
+        "stage_folder_contract": {
+          "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/agent-skeleton-build",
+          "folder_path_template": "stages/agent-skeleton-build/attempts/{stage_attempt_id}",
+          "folder_role": "stage_native_attempt_artifact_folder",
+          "body_policy": "refs_and_manifests_only_no_target_artifact_body",
+          "lifecycle_owner": "one-person-lab"
+        },
+        "manifest_contract": {
+          "manifest_ref_template": "stage-manifest-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+          "manifest_file_name": "stage.manifest.json",
+          "required_fields": [
+            "stage_id",
+            "stage_attempt_id",
+            "physical_output_path",
+            "role",
+            "content_hash",
+            "producer",
+            "input_refs",
+            "lineage_refs",
+            "receipt_refs",
+            "current_pointer_ref",
+            "canonical_artifact_ref",
+            "export_eligibility",
+            "repair_classification"
+          ],
+          "missing_or_hash_mismatch_projection": "broken_artifact",
+          "missing_owner_receipt_projection": "orphan_artifact"
+        },
+        "terminal_receipts": {
+          "success_receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+          "blocked_typed_blocker_ref_template": "stage-typed-blocker-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+          "skipped_or_deferred_decision_ref_template": "stage-decision-receipt-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+          "success_requires_owner_receipt_ref": true,
+          "blocked_requires_typed_blocker_ref": true,
+          "skipped_or_deferred_requires_decision_receipt_ref": true
+        },
+        "current_pointer_contract": {
+          "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/agent-skeleton-build",
+          "pointer_owner": "one-person-lab",
+          "old_attempts_not_pointed_by_current_are_historical_evidence_only": true
+        },
+        "output_roles": [
+          {
+            "role_id": "stage_manifest",
+            "ref_kind": "stage_manifest_ref",
+            "body_owner": "one-person-lab",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "stage_attempt_receipt",
+            "ref_kind": "stage_attempt_receipt_ref",
+            "body_owner": "one-person-lab",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "typed_blocker",
+            "ref_kind": "stage_typed_blocker_ref",
+            "body_owner": "opl-meta-agent",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "canonical_artifact_ref",
+            "ref_kind": "canonical_artifact_ref",
+            "body_owner": "opl-meta-agent",
+            "contains_target_artifact_body": false
+          }
+        ],
+        "authority_boundary": {
+          "opl_framework_owns_stage_folder_lifecycle": true,
+          "oma_role": "contract_compiler_and_refs_materializer",
+          "oma_can_write_stage_folder_runtime_state": false,
+          "oma_can_generate_target_domain_owner_receipt": false,
+          "oma_can_write_target_domain_truth": false,
+          "oma_can_write_target_domain_memory_body": false,
+          "oma_can_mutate_target_domain_artifact_body": false,
+          "oma_can_authorize_target_quality_or_export": false,
+          "oma_can_promote_default_agent_without_gate": false
+        }
+      },
+      {
+        "surface_kind": "opl_stage_native_artifact_contract",
+        "version": "stage-native-artifact-contract.v1",
+        "target_domain_id": "opl-meta-agent",
+        "stage_id": "eval-suite-build",
+        "owner": "one-person-lab",
+        "materialized_by": "opl-meta-agent",
+        "domain_truth_owner": "opl-meta-agent",
+        "role": "stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only",
+        "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/eval-suite-build",
+        "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/eval-suite-build",
+        "stage_folder_ref": "stage-folder-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+        "manifest_ref": "stage-manifest-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+        "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+        "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+        "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/eval-suite-build",
+        "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/eval-suite-build",
+        "stage_folder_contract": {
+          "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/eval-suite-build",
+          "folder_path_template": "stages/eval-suite-build/attempts/{stage_attempt_id}",
+          "folder_role": "stage_native_attempt_artifact_folder",
+          "body_policy": "refs_and_manifests_only_no_target_artifact_body",
+          "lifecycle_owner": "one-person-lab"
+        },
+        "manifest_contract": {
+          "manifest_ref_template": "stage-manifest-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+          "manifest_file_name": "stage.manifest.json",
+          "required_fields": [
+            "stage_id",
+            "stage_attempt_id",
+            "physical_output_path",
+            "role",
+            "content_hash",
+            "producer",
+            "input_refs",
+            "lineage_refs",
+            "receipt_refs",
+            "current_pointer_ref",
+            "canonical_artifact_ref",
+            "export_eligibility",
+            "repair_classification"
+          ],
+          "missing_or_hash_mismatch_projection": "broken_artifact",
+          "missing_owner_receipt_projection": "orphan_artifact"
+        },
+        "terminal_receipts": {
+          "success_receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+          "blocked_typed_blocker_ref_template": "stage-typed-blocker-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+          "skipped_or_deferred_decision_ref_template": "stage-decision-receipt-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+          "success_requires_owner_receipt_ref": true,
+          "blocked_requires_typed_blocker_ref": true,
+          "skipped_or_deferred_requires_decision_receipt_ref": true
+        },
+        "current_pointer_contract": {
+          "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/eval-suite-build",
+          "pointer_owner": "one-person-lab",
+          "old_attempts_not_pointed_by_current_are_historical_evidence_only": true
+        },
+        "output_roles": [
+          {
+            "role_id": "stage_manifest",
+            "ref_kind": "stage_manifest_ref",
+            "body_owner": "one-person-lab",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "stage_attempt_receipt",
+            "ref_kind": "stage_attempt_receipt_ref",
+            "body_owner": "one-person-lab",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "typed_blocker",
+            "ref_kind": "stage_typed_blocker_ref",
+            "body_owner": "opl-meta-agent",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "canonical_artifact_ref",
+            "ref_kind": "canonical_artifact_ref",
+            "body_owner": "opl-meta-agent",
+            "contains_target_artifact_body": false
+          }
+        ],
+        "authority_boundary": {
+          "opl_framework_owns_stage_folder_lifecycle": true,
+          "oma_role": "contract_compiler_and_refs_materializer",
+          "oma_can_write_stage_folder_runtime_state": false,
+          "oma_can_generate_target_domain_owner_receipt": false,
+          "oma_can_write_target_domain_truth": false,
+          "oma_can_write_target_domain_memory_body": false,
+          "oma_can_mutate_target_domain_artifact_body": false,
+          "oma_can_authorize_target_quality_or_export": false,
+          "oma_can_promote_default_agent_without_gate": false
+        }
+      },
+      {
+        "surface_kind": "opl_stage_native_artifact_contract",
+        "version": "stage-native-artifact-contract.v1",
+        "target_domain_id": "opl-meta-agent",
+        "stage_id": "baseline-run",
+        "owner": "one-person-lab",
+        "materialized_by": "opl-meta-agent",
+        "domain_truth_owner": "opl-meta-agent",
+        "role": "stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only",
+        "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/baseline-run",
+        "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/baseline-run",
+        "stage_folder_ref": "stage-folder-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "manifest_ref": "stage-manifest-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/baseline-run",
+        "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/baseline-run",
+        "stage_folder_contract": {
+          "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/baseline-run",
+          "folder_path_template": "stages/baseline-run/attempts/{stage_attempt_id}",
+          "folder_role": "stage_native_attempt_artifact_folder",
+          "body_policy": "refs_and_manifests_only_no_target_artifact_body",
+          "lifecycle_owner": "one-person-lab"
+        },
+        "manifest_contract": {
+          "manifest_ref_template": "stage-manifest-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+          "manifest_file_name": "stage.manifest.json",
+          "required_fields": [
+            "stage_id",
+            "stage_attempt_id",
+            "physical_output_path",
+            "role",
+            "content_hash",
+            "producer",
+            "input_refs",
+            "lineage_refs",
+            "receipt_refs",
+            "current_pointer_ref",
+            "canonical_artifact_ref",
+            "export_eligibility",
+            "repair_classification"
+          ],
+          "missing_or_hash_mismatch_projection": "broken_artifact",
+          "missing_owner_receipt_projection": "orphan_artifact"
+        },
+        "terminal_receipts": {
+          "success_receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+          "blocked_typed_blocker_ref_template": "stage-typed-blocker-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+          "skipped_or_deferred_decision_ref_template": "stage-decision-receipt-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+          "success_requires_owner_receipt_ref": true,
+          "blocked_requires_typed_blocker_ref": true,
+          "skipped_or_deferred_requires_decision_receipt_ref": true
+        },
+        "current_pointer_contract": {
+          "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/baseline-run",
+          "pointer_owner": "one-person-lab",
+          "old_attempts_not_pointed_by_current_are_historical_evidence_only": true
+        },
+        "output_roles": [
+          {
+            "role_id": "stage_manifest",
+            "ref_kind": "stage_manifest_ref",
+            "body_owner": "one-person-lab",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "stage_attempt_receipt",
+            "ref_kind": "stage_attempt_receipt_ref",
+            "body_owner": "one-person-lab",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "typed_blocker",
+            "ref_kind": "stage_typed_blocker_ref",
+            "body_owner": "opl-meta-agent",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "canonical_artifact_ref",
+            "ref_kind": "canonical_artifact_ref",
+            "body_owner": "opl-meta-agent",
+            "contains_target_artifact_body": false
+          }
+        ],
+        "authority_boundary": {
+          "opl_framework_owns_stage_folder_lifecycle": true,
+          "oma_role": "contract_compiler_and_refs_materializer",
+          "oma_can_write_stage_folder_runtime_state": false,
+          "oma_can_generate_target_domain_owner_receipt": false,
+          "oma_can_write_target_domain_truth": false,
+          "oma_can_write_target_domain_memory_body": false,
+          "oma_can_mutate_target_domain_artifact_body": false,
+          "oma_can_authorize_target_quality_or_export": false,
+          "oma_can_promote_default_agent_without_gate": false
+        }
+      },
+      {
+        "surface_kind": "opl_stage_native_artifact_contract",
+        "version": "stage-native-artifact-contract.v1",
+        "target_domain_id": "opl-meta-agent",
+        "stage_id": "external-agent-takeover",
+        "owner": "one-person-lab",
+        "materialized_by": "opl-meta-agent",
+        "domain_truth_owner": "opl-meta-agent",
+        "role": "stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only",
+        "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/external-agent-takeover",
+        "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/external-agent-takeover",
+        "stage_folder_ref": "stage-folder-ref:opl-meta-agent/external-agent-takeover/{stage_attempt_id}",
+        "manifest_ref": "stage-manifest-ref:opl-meta-agent/external-agent-takeover/{stage_attempt_id}",
+        "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/external-agent-takeover/{stage_attempt_id}",
+        "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/external-agent-takeover/{stage_attempt_id}",
+        "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/external-agent-takeover",
+        "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/external-agent-takeover",
+        "stage_folder_contract": {
+          "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/external-agent-takeover",
+          "folder_path_template": "stages/external-agent-takeover/attempts/{stage_attempt_id}",
+          "folder_role": "stage_native_attempt_artifact_folder",
+          "body_policy": "refs_and_manifests_only_no_target_artifact_body",
+          "lifecycle_owner": "one-person-lab"
+        },
+        "manifest_contract": {
+          "manifest_ref_template": "stage-manifest-ref:opl-meta-agent/external-agent-takeover/{stage_attempt_id}",
+          "manifest_file_name": "stage.manifest.json",
+          "required_fields": [
+            "stage_id",
+            "stage_attempt_id",
+            "physical_output_path",
+            "role",
+            "content_hash",
+            "producer",
+            "input_refs",
+            "lineage_refs",
+            "receipt_refs",
+            "current_pointer_ref",
+            "canonical_artifact_ref",
+            "export_eligibility",
+            "repair_classification"
+          ],
+          "missing_or_hash_mismatch_projection": "broken_artifact",
+          "missing_owner_receipt_projection": "orphan_artifact"
+        },
+        "terminal_receipts": {
+          "success_receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/external-agent-takeover/{stage_attempt_id}",
+          "blocked_typed_blocker_ref_template": "stage-typed-blocker-ref:opl-meta-agent/external-agent-takeover/{stage_attempt_id}",
+          "skipped_or_deferred_decision_ref_template": "stage-decision-receipt-ref:opl-meta-agent/external-agent-takeover/{stage_attempt_id}",
+          "success_requires_owner_receipt_ref": true,
+          "blocked_requires_typed_blocker_ref": true,
+          "skipped_or_deferred_requires_decision_receipt_ref": true
+        },
+        "current_pointer_contract": {
+          "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/external-agent-takeover",
+          "pointer_owner": "one-person-lab",
+          "old_attempts_not_pointed_by_current_are_historical_evidence_only": true
+        },
+        "output_roles": [
+          {
+            "role_id": "stage_manifest",
+            "ref_kind": "stage_manifest_ref",
+            "body_owner": "one-person-lab",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "stage_attempt_receipt",
+            "ref_kind": "stage_attempt_receipt_ref",
+            "body_owner": "one-person-lab",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "typed_blocker",
+            "ref_kind": "stage_typed_blocker_ref",
+            "body_owner": "opl-meta-agent",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "canonical_artifact_ref",
+            "ref_kind": "canonical_artifact_ref",
+            "body_owner": "opl-meta-agent",
+            "contains_target_artifact_body": false
+          }
+        ],
+        "authority_boundary": {
+          "opl_framework_owns_stage_folder_lifecycle": true,
+          "oma_role": "contract_compiler_and_refs_materializer",
+          "oma_can_write_stage_folder_runtime_state": false,
+          "oma_can_generate_target_domain_owner_receipt": false,
+          "oma_can_write_target_domain_truth": false,
+          "oma_can_write_target_domain_memory_body": false,
+          "oma_can_mutate_target_domain_artifact_body": false,
+          "oma_can_authorize_target_quality_or_export": false,
+          "oma_can_promote_default_agent_without_gate": false
+        }
+      },
+      {
+        "surface_kind": "opl_stage_native_artifact_contract",
+        "version": "stage-native-artifact-contract.v1",
+        "target_domain_id": "opl-meta-agent",
+        "stage_id": "optimizer-iteration",
+        "owner": "one-person-lab",
+        "materialized_by": "opl-meta-agent",
+        "domain_truth_owner": "opl-meta-agent",
+        "role": "stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only",
+        "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/optimizer-iteration",
+        "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/optimizer-iteration",
+        "stage_folder_ref": "stage-folder-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+        "manifest_ref": "stage-manifest-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+        "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+        "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+        "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/optimizer-iteration",
+        "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/optimizer-iteration",
+        "stage_folder_contract": {
+          "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/optimizer-iteration",
+          "folder_path_template": "stages/optimizer-iteration/attempts/{stage_attempt_id}",
+          "folder_role": "stage_native_attempt_artifact_folder",
+          "body_policy": "refs_and_manifests_only_no_target_artifact_body",
+          "lifecycle_owner": "one-person-lab"
+        },
+        "manifest_contract": {
+          "manifest_ref_template": "stage-manifest-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+          "manifest_file_name": "stage.manifest.json",
+          "required_fields": [
+            "stage_id",
+            "stage_attempt_id",
+            "physical_output_path",
+            "role",
+            "content_hash",
+            "producer",
+            "input_refs",
+            "lineage_refs",
+            "receipt_refs",
+            "current_pointer_ref",
+            "canonical_artifact_ref",
+            "export_eligibility",
+            "repair_classification"
+          ],
+          "missing_or_hash_mismatch_projection": "broken_artifact",
+          "missing_owner_receipt_projection": "orphan_artifact"
+        },
+        "terminal_receipts": {
+          "success_receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+          "blocked_typed_blocker_ref_template": "stage-typed-blocker-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+          "skipped_or_deferred_decision_ref_template": "stage-decision-receipt-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+          "success_requires_owner_receipt_ref": true,
+          "blocked_requires_typed_blocker_ref": true,
+          "skipped_or_deferred_requires_decision_receipt_ref": true
+        },
+        "current_pointer_contract": {
+          "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/optimizer-iteration",
+          "pointer_owner": "one-person-lab",
+          "old_attempts_not_pointed_by_current_are_historical_evidence_only": true
+        },
+        "output_roles": [
+          {
+            "role_id": "stage_manifest",
+            "ref_kind": "stage_manifest_ref",
+            "body_owner": "one-person-lab",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "stage_attempt_receipt",
+            "ref_kind": "stage_attempt_receipt_ref",
+            "body_owner": "one-person-lab",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "typed_blocker",
+            "ref_kind": "stage_typed_blocker_ref",
+            "body_owner": "opl-meta-agent",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "canonical_artifact_ref",
+            "ref_kind": "canonical_artifact_ref",
+            "body_owner": "opl-meta-agent",
+            "contains_target_artifact_body": false
+          }
+        ],
+        "authority_boundary": {
+          "opl_framework_owns_stage_folder_lifecycle": true,
+          "oma_role": "contract_compiler_and_refs_materializer",
+          "oma_can_write_stage_folder_runtime_state": false,
+          "oma_can_generate_target_domain_owner_receipt": false,
+          "oma_can_write_target_domain_truth": false,
+          "oma_can_write_target_domain_memory_body": false,
+          "oma_can_mutate_target_domain_artifact_body": false,
+          "oma_can_authorize_target_quality_or_export": false,
+          "oma_can_promote_default_agent_without_gate": false
+        }
+      },
+      {
+        "surface_kind": "opl_stage_native_artifact_contract",
+        "version": "stage-native-artifact-contract.v1",
+        "target_domain_id": "opl-meta-agent",
+        "stage_id": "baseline-delivery",
+        "owner": "one-person-lab",
+        "materialized_by": "opl-meta-agent",
+        "domain_truth_owner": "opl-meta-agent",
+        "role": "stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only",
+        "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/baseline-delivery",
+        "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/baseline-delivery",
+        "stage_folder_ref": "stage-folder-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+        "manifest_ref": "stage-manifest-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+        "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+        "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+        "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/baseline-delivery",
+        "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/baseline-delivery",
+        "stage_folder_contract": {
+          "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/baseline-delivery",
+          "folder_path_template": "stages/baseline-delivery/attempts/{stage_attempt_id}",
+          "folder_role": "stage_native_attempt_artifact_folder",
+          "body_policy": "refs_and_manifests_only_no_target_artifact_body",
+          "lifecycle_owner": "one-person-lab"
+        },
+        "manifest_contract": {
+          "manifest_ref_template": "stage-manifest-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+          "manifest_file_name": "stage.manifest.json",
+          "required_fields": [
+            "stage_id",
+            "stage_attempt_id",
+            "physical_output_path",
+            "role",
+            "content_hash",
+            "producer",
+            "input_refs",
+            "lineage_refs",
+            "receipt_refs",
+            "current_pointer_ref",
+            "canonical_artifact_ref",
+            "export_eligibility",
+            "repair_classification"
+          ],
+          "missing_or_hash_mismatch_projection": "broken_artifact",
+          "missing_owner_receipt_projection": "orphan_artifact"
+        },
+        "terminal_receipts": {
+          "success_receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+          "blocked_typed_blocker_ref_template": "stage-typed-blocker-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+          "skipped_or_deferred_decision_ref_template": "stage-decision-receipt-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+          "success_requires_owner_receipt_ref": true,
+          "blocked_requires_typed_blocker_ref": true,
+          "skipped_or_deferred_requires_decision_receipt_ref": true
+        },
+        "current_pointer_contract": {
+          "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/baseline-delivery",
+          "pointer_owner": "one-person-lab",
+          "old_attempts_not_pointed_by_current_are_historical_evidence_only": true
+        },
+        "output_roles": [
+          {
+            "role_id": "stage_manifest",
+            "ref_kind": "stage_manifest_ref",
+            "body_owner": "one-person-lab",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "stage_attempt_receipt",
+            "ref_kind": "stage_attempt_receipt_ref",
+            "body_owner": "one-person-lab",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "typed_blocker",
+            "ref_kind": "stage_typed_blocker_ref",
+            "body_owner": "opl-meta-agent",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "canonical_artifact_ref",
+            "ref_kind": "canonical_artifact_ref",
+            "body_owner": "opl-meta-agent",
+            "contains_target_artifact_body": false
+          }
+        ],
+        "authority_boundary": {
+          "opl_framework_owns_stage_folder_lifecycle": true,
+          "oma_role": "contract_compiler_and_refs_materializer",
+          "oma_can_write_stage_folder_runtime_state": false,
+          "oma_can_generate_target_domain_owner_receipt": false,
+          "oma_can_write_target_domain_truth": false,
+          "oma_can_write_target_domain_memory_body": false,
+          "oma_can_mutate_target_domain_artifact_body": false,
+          "oma_can_authorize_target_quality_or_export": false,
+          "oma_can_promote_default_agent_without_gate": false
+        }
+      },
+      {
+        "surface_kind": "opl_stage_native_artifact_contract",
+        "version": "stage-native-artifact-contract.v1",
+        "target_domain_id": "opl-meta-agent",
+        "stage_id": "trajectory-learning-intake",
+        "owner": "one-person-lab",
+        "materialized_by": "opl-meta-agent",
+        "domain_truth_owner": "opl-meta-agent",
+        "role": "stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only",
+        "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/trajectory-learning-intake",
+        "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/trajectory-learning-intake",
+        "stage_folder_ref": "stage-folder-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+        "manifest_ref": "stage-manifest-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+        "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+        "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+        "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/trajectory-learning-intake",
+        "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/trajectory-learning-intake",
+        "stage_folder_contract": {
+          "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/trajectory-learning-intake",
+          "folder_path_template": "stages/trajectory-learning-intake/attempts/{stage_attempt_id}",
+          "folder_role": "stage_native_attempt_artifact_folder",
+          "body_policy": "refs_and_manifests_only_no_target_artifact_body",
+          "lifecycle_owner": "one-person-lab"
+        },
+        "manifest_contract": {
+          "manifest_ref_template": "stage-manifest-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+          "manifest_file_name": "stage.manifest.json",
+          "required_fields": [
+            "stage_id",
+            "stage_attempt_id",
+            "physical_output_path",
+            "role",
+            "content_hash",
+            "producer",
+            "input_refs",
+            "lineage_refs",
+            "receipt_refs",
+            "current_pointer_ref",
+            "canonical_artifact_ref",
+            "export_eligibility",
+            "repair_classification"
+          ],
+          "missing_or_hash_mismatch_projection": "broken_artifact",
+          "missing_owner_receipt_projection": "orphan_artifact"
+        },
+        "terminal_receipts": {
+          "success_receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+          "blocked_typed_blocker_ref_template": "stage-typed-blocker-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+          "skipped_or_deferred_decision_ref_template": "stage-decision-receipt-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+          "success_requires_owner_receipt_ref": true,
+          "blocked_requires_typed_blocker_ref": true,
+          "skipped_or_deferred_requires_decision_receipt_ref": true
+        },
+        "current_pointer_contract": {
+          "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/trajectory-learning-intake",
+          "pointer_owner": "one-person-lab",
+          "old_attempts_not_pointed_by_current_are_historical_evidence_only": true
+        },
+        "output_roles": [
+          {
+            "role_id": "stage_manifest",
+            "ref_kind": "stage_manifest_ref",
+            "body_owner": "one-person-lab",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "stage_attempt_receipt",
+            "ref_kind": "stage_attempt_receipt_ref",
+            "body_owner": "one-person-lab",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "typed_blocker",
+            "ref_kind": "stage_typed_blocker_ref",
+            "body_owner": "opl-meta-agent",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "canonical_artifact_ref",
+            "ref_kind": "canonical_artifact_ref",
+            "body_owner": "opl-meta-agent",
+            "contains_target_artifact_body": false
+          }
+        ],
+        "authority_boundary": {
+          "opl_framework_owns_stage_folder_lifecycle": true,
+          "oma_role": "contract_compiler_and_refs_materializer",
+          "oma_can_write_stage_folder_runtime_state": false,
+          "oma_can_generate_target_domain_owner_receipt": false,
+          "oma_can_write_target_domain_truth": false,
+          "oma_can_write_target_domain_memory_body": false,
+          "oma_can_mutate_target_domain_artifact_body": false,
+          "oma_can_authorize_target_quality_or_export": false,
+          "oma_can_promote_default_agent_without_gate": false
+        }
+      },
+      {
+        "surface_kind": "opl_stage_native_artifact_contract",
+        "version": "stage-native-artifact-contract.v1",
+        "target_domain_id": "opl-meta-agent",
+        "stage_id": "online-learning",
+        "owner": "one-person-lab",
+        "materialized_by": "opl-meta-agent",
+        "domain_truth_owner": "opl-meta-agent",
+        "role": "stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only",
+        "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/online-learning",
+        "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/online-learning",
+        "stage_folder_ref": "stage-folder-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+        "manifest_ref": "stage-manifest-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+        "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+        "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+        "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/online-learning",
+        "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/online-learning",
+        "stage_folder_contract": {
+          "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/online-learning",
+          "folder_path_template": "stages/online-learning/attempts/{stage_attempt_id}",
+          "folder_role": "stage_native_attempt_artifact_folder",
+          "body_policy": "refs_and_manifests_only_no_target_artifact_body",
+          "lifecycle_owner": "one-person-lab"
+        },
+        "manifest_contract": {
+          "manifest_ref_template": "stage-manifest-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+          "manifest_file_name": "stage.manifest.json",
+          "required_fields": [
+            "stage_id",
+            "stage_attempt_id",
+            "physical_output_path",
+            "role",
+            "content_hash",
+            "producer",
+            "input_refs",
+            "lineage_refs",
+            "receipt_refs",
+            "current_pointer_ref",
+            "canonical_artifact_ref",
+            "export_eligibility",
+            "repair_classification"
+          ],
+          "missing_or_hash_mismatch_projection": "broken_artifact",
+          "missing_owner_receipt_projection": "orphan_artifact"
+        },
+        "terminal_receipts": {
+          "success_receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+          "blocked_typed_blocker_ref_template": "stage-typed-blocker-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+          "skipped_or_deferred_decision_ref_template": "stage-decision-receipt-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+          "success_requires_owner_receipt_ref": true,
+          "blocked_requires_typed_blocker_ref": true,
+          "skipped_or_deferred_requires_decision_receipt_ref": true
+        },
+        "current_pointer_contract": {
+          "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/online-learning",
+          "pointer_owner": "one-person-lab",
+          "old_attempts_not_pointed_by_current_are_historical_evidence_only": true
+        },
+        "output_roles": [
+          {
+            "role_id": "stage_manifest",
+            "ref_kind": "stage_manifest_ref",
+            "body_owner": "one-person-lab",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "stage_attempt_receipt",
+            "ref_kind": "stage_attempt_receipt_ref",
+            "body_owner": "one-person-lab",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "typed_blocker",
+            "ref_kind": "stage_typed_blocker_ref",
+            "body_owner": "opl-meta-agent",
+            "contains_target_artifact_body": false
+          },
+          {
+            "role_id": "canonical_artifact_ref",
+            "ref_kind": "canonical_artifact_ref",
+            "body_owner": "opl-meta-agent",
+            "contains_target_artifact_body": false
+          }
+        ],
+        "authority_boundary": {
+          "opl_framework_owns_stage_folder_lifecycle": true,
+          "oma_role": "contract_compiler_and_refs_materializer",
+          "oma_can_write_stage_folder_runtime_state": false,
+          "oma_can_generate_target_domain_owner_receipt": false,
+          "oma_can_write_target_domain_truth": false,
+          "oma_can_write_target_domain_memory_body": false,
+          "oma_can_mutate_target_domain_artifact_body": false,
+          "oma_can_authorize_target_quality_or_export": false,
+          "oma_can_promote_default_agent_without_gate": false
+        }
+      }
+    ],
+    "authority_boundary": {
+      "oma_role": "contract_compiler_and_refs_materializer",
+      "oma_can_write_stage_folder_runtime_state": false,
+      "oma_can_generate_target_domain_owner_receipt": false,
+      "oma_can_write_target_domain_truth": false,
+      "oma_can_write_target_domain_memory_body": false,
+      "oma_can_mutate_target_domain_artifact_body": false,
+      "oma_can_authorize_target_quality_or_export": false,
+      "oma_can_promote_default_agent_without_gate": false,
+      "opl_framework_owns_stage_folder_lifecycle": true
+    }
+  }
 }
