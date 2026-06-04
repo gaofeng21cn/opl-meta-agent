@@ -56,6 +56,7 @@ Owner split 固定为：
 | Area | 当前状态 | 主要证据 | 边界 |
 | --- | --- | --- | --- |
 | Standard domain pack | `done` | `agent/` pack、`contracts/pack_compiler_input.json`、`contracts/stage_control_plane.json`、`tests/contracts.test.ts` | README 和 prose 章节不作为 machine required path。 |
+| Cognitive Kernel adoption | `done_as_advisory_contract` | `contracts/cognitive_kernel_adoption.json`、`contracts/golden_path_profile.json`、`agent/tools/domain_affordances.md`、`contracts/pack_compiler_input.json`、`contracts/stage_control_plane.json`、`tests/cognitive-kernel-adoption.test.ts` | 只约束 OMA stage-internal tool affordance、strategy refs、candidate policy、independent gate 和 owner-delta handoff；不把脚本、tool catalog 或 OMA work order 写成第二 Agent Lab、promotion gate、worktree lifecycle owner、registry/App shell、target truth writer 或 target owner receipt body owner。 |
 | Foundry Agent series pin | `done_for_structural_conformance` | `contracts/foundry_agent_series.json`、package dependency pin tests | 关闭 structural conformance blocker；不授权 domain ready、quality/export verdict、artifact/memory body、owner receipt 或 default promotion。 |
 | Generated / registration / App projection | `done_with_external_consumption_tail` | `contracts/generated_surface_handoff.json`、`contracts/opl_domain_manifest_registration.json`、`contracts/app_workbench_projection.json` | OPL owns generated interfaces、registry 和 App shell；OMA 只提供 refs-only inputs。 |
 | Work-order materialization | `done_with_more_real_loop_tail` | `npm run build-agent-baseline`、`takeover:test`、`improve:external-suite`、`agent:evidence`、work-order tests | 可输出 executable work order 或 typed blocker；目标 truth、quality、artifact、memory body、owner receipt 仍归 target owner。 |
@@ -126,7 +127,7 @@ Owner split 固定为：
    推动 MAS/MAG/RCA 和新 Foundry Agent 用同一 target-agent vocabulary 暴露 production/live acceptance、Agent Lab handoff、owner route、editable surface policy、required return shapes、verification refs 和 no-forbidden-write proof。
 
 6. `script_to_pack_hygiene`
-   持续把稳定 policy 迁入 declarative pack、contracts 或 OPL primitive；保留脚本必须能指向 `runtime/authority_functions`、smoke action、fixture/proof helper 或 developer work-order materializer。每次新增或收薄脚本，都要更新 `script_to_pack_retirement_gates` 或证明该脚本已有 gate 覆盖，并跑 `tests/source-purity.test.ts`。
+   持续把稳定 policy 迁入 declarative pack、contracts、cognitive-kernel refs 或 OPL primitive；保留脚本必须能指向 `runtime/authority_functions`、smoke action、fixture/proof helper 或 developer work-order materializer。每次新增或收薄脚本，都要更新 `script_to_pack_retirement_gates` 或证明该脚本已有 gate 覆盖，并跑 `tests/source-purity.test.ts`。
 
 ## 下一轮 Agent prompt
 

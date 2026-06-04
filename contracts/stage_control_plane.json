@@ -732,6 +732,81 @@
             "oma_can_manage_target_worktree_lifecycle": false
           }
         }
+      },
+      "tool_refs": [
+        {
+          "ref": "agent/tools/domain_affordances.md",
+          "ref_kind": "repo_path",
+          "role": "stage_tool_affordance_catalog",
+          "catalog_role": "available_affordance_catalog_not_workflow_script"
+        }
+      ],
+      "strategy_refs": [
+        {
+          "ref": "target_agent_candidate_generation",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "mechanism_proposal_grounded_reflection",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "agent_pack_comparative_selection",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "eval_suite_independent_gate",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "trajectory_learning_meta_review",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        }
+      ],
+      "candidate_pool_policy": {
+        "candidate_pool_is_stage_internal_artifact": true,
+        "candidate_lineage_required": true,
+        "accepted_artifact_mutation_requires_owner_receipt": true,
+        "candidate_body_stays_in_domain_workspace": true
+      },
+      "independent_gate_policy": {
+        "gate_owner": "opl-meta-agent",
+        "gate_ref": "agent/quality_gates/baseline-delivery.md",
+        "execution_review_separation_required": true,
+        "same_attempt_self_review_can_close_quality_gate": false,
+        "mechanical_completion_can_close_stage": false,
+        "provider_completion_can_claim_domain_ready": false,
+        "generated_surface_readiness_can_claim_quality_or_export": false,
+        "allowed_closeout_refs": [
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "route_back_ref",
+          "no_regression_evidence_ref"
+        ]
+      },
+      "handoff_policy": {
+        "owner_delta_first": true,
+        "required_return_shapes": [
+          "deliverable_delta_ref",
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "quality_gate_receipt_ref",
+          "no_regression_evidence_ref"
+        ],
+        "framework_transport_cannot_claim_domain_ready": true
+      },
+      "tool_affordance_boundary_ref": {
+        "ref": "contracts/cognitive_kernel_adoption.json#/tool_affordance_boundary",
+        "ref_kind": "json_pointer",
+        "stage_id": "intent-intake",
+        "role": "stage_tool_affordance_boundary"
       }
     },
     {
@@ -790,7 +865,18 @@
         "domain_truth_owner": "opl-meta-agent",
         "opl_role": "projection_only"
       },
-      "selected_executor": "codex_cli",
+      "selected_executor": {
+        "executor_kind": "codex_cli",
+        "default_executor": false,
+        "executor_binding_ref": "default_codex_cli",
+        "binding_policy": "codex_cli_stage_executor_not_ordinary_default_route",
+        "required_capabilities": [
+          "repo_context_reading",
+          "domain_skill_invocation",
+          "receipt_or_typed_blocker_return",
+          "no_forbidden_write_guard"
+        ]
+      },
       "executor_binding": {
         "binding_kind": "codex_cli_first_class_stage_executor",
         "executor_ref": "executor:codex-cli",
@@ -1434,6 +1520,81 @@
             "oma_can_manage_target_worktree_lifecycle": false
           }
         }
+      },
+      "tool_refs": [
+        {
+          "ref": "agent/tools/domain_affordances.md",
+          "ref_kind": "repo_path",
+          "role": "stage_tool_affordance_catalog",
+          "catalog_role": "available_affordance_catalog_not_workflow_script"
+        }
+      ],
+      "strategy_refs": [
+        {
+          "ref": "target_agent_candidate_generation",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "mechanism_proposal_grounded_reflection",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "agent_pack_comparative_selection",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "eval_suite_independent_gate",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "trajectory_learning_meta_review",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        }
+      ],
+      "candidate_pool_policy": {
+        "candidate_pool_is_stage_internal_artifact": true,
+        "candidate_lineage_required": true,
+        "accepted_artifact_mutation_requires_owner_receipt": true,
+        "candidate_body_stays_in_domain_workspace": true
+      },
+      "independent_gate_policy": {
+        "gate_owner": "opl-meta-agent",
+        "gate_ref": "agent/quality_gates/baseline-delivery.md",
+        "execution_review_separation_required": true,
+        "same_attempt_self_review_can_close_quality_gate": false,
+        "mechanical_completion_can_close_stage": false,
+        "provider_completion_can_claim_domain_ready": false,
+        "generated_surface_readiness_can_claim_quality_or_export": false,
+        "allowed_closeout_refs": [
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "route_back_ref",
+          "no_regression_evidence_ref"
+        ]
+      },
+      "handoff_policy": {
+        "owner_delta_first": true,
+        "required_return_shapes": [
+          "deliverable_delta_ref",
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "quality_gate_receipt_ref",
+          "no_regression_evidence_ref"
+        ],
+        "framework_transport_cannot_claim_domain_ready": true
+      },
+      "tool_affordance_boundary_ref": {
+        "ref": "contracts/cognitive_kernel_adoption.json#/tool_affordance_boundary",
+        "ref_kind": "json_pointer",
+        "stage_id": "web-experience-research",
+        "role": "stage_tool_affordance_boundary"
       }
     },
     {
@@ -1492,7 +1653,18 @@
         "domain_truth_owner": "opl-meta-agent",
         "opl_role": "projection_only"
       },
-      "selected_executor": "codex_cli",
+      "selected_executor": {
+        "executor_kind": "codex_cli",
+        "default_executor": false,
+        "executor_binding_ref": "default_codex_cli",
+        "binding_policy": "codex_cli_stage_executor_not_ordinary_default_route",
+        "required_capabilities": [
+          "repo_context_reading",
+          "domain_skill_invocation",
+          "receipt_or_typed_blocker_return",
+          "no_forbidden_write_guard"
+        ]
+      },
       "executor_binding": {
         "binding_kind": "codex_cli_first_class_stage_executor",
         "executor_ref": "executor:codex-cli",
@@ -2135,6 +2307,81 @@
             "oma_can_manage_target_worktree_lifecycle": false
           }
         }
+      },
+      "tool_refs": [
+        {
+          "ref": "agent/tools/domain_affordances.md",
+          "ref_kind": "repo_path",
+          "role": "stage_tool_affordance_catalog",
+          "catalog_role": "available_affordance_catalog_not_workflow_script"
+        }
+      ],
+      "strategy_refs": [
+        {
+          "ref": "target_agent_candidate_generation",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "mechanism_proposal_grounded_reflection",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "agent_pack_comparative_selection",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "eval_suite_independent_gate",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "trajectory_learning_meta_review",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        }
+      ],
+      "candidate_pool_policy": {
+        "candidate_pool_is_stage_internal_artifact": true,
+        "candidate_lineage_required": true,
+        "accepted_artifact_mutation_requires_owner_receipt": true,
+        "candidate_body_stays_in_domain_workspace": true
+      },
+      "independent_gate_policy": {
+        "gate_owner": "opl-meta-agent",
+        "gate_ref": "agent/quality_gates/baseline-delivery.md",
+        "execution_review_separation_required": true,
+        "same_attempt_self_review_can_close_quality_gate": false,
+        "mechanical_completion_can_close_stage": false,
+        "provider_completion_can_claim_domain_ready": false,
+        "generated_surface_readiness_can_claim_quality_or_export": false,
+        "allowed_closeout_refs": [
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "route_back_ref",
+          "no_regression_evidence_ref"
+        ]
+      },
+      "handoff_policy": {
+        "owner_delta_first": true,
+        "required_return_shapes": [
+          "deliverable_delta_ref",
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "quality_gate_receipt_ref",
+          "no_regression_evidence_ref"
+        ],
+        "framework_transport_cannot_claim_domain_ready": true
+      },
+      "tool_affordance_boundary_ref": {
+        "ref": "contracts/cognitive_kernel_adoption.json#/tool_affordance_boundary",
+        "ref_kind": "json_pointer",
+        "stage_id": "stage-decomposition",
+        "role": "stage_tool_affordance_boundary"
       }
     },
     {
@@ -2200,7 +2447,18 @@
         "domain_truth_owner": "opl-meta-agent",
         "opl_role": "projection_only"
       },
-      "selected_executor": "codex_cli",
+      "selected_executor": {
+        "executor_kind": "codex_cli",
+        "default_executor": false,
+        "executor_binding_ref": "default_codex_cli",
+        "binding_policy": "codex_cli_stage_executor_not_ordinary_default_route",
+        "required_capabilities": [
+          "repo_context_reading",
+          "domain_skill_invocation",
+          "receipt_or_typed_blocker_return",
+          "no_forbidden_write_guard"
+        ]
+      },
       "executor_binding": {
         "binding_kind": "codex_cli_first_class_stage_executor",
         "executor_ref": "executor:codex-cli",
@@ -2846,6 +3104,81 @@
             "oma_can_manage_target_worktree_lifecycle": false
           }
         }
+      },
+      "tool_refs": [
+        {
+          "ref": "agent/tools/domain_affordances.md",
+          "ref_kind": "repo_path",
+          "role": "stage_tool_affordance_catalog",
+          "catalog_role": "available_affordance_catalog_not_workflow_script"
+        }
+      ],
+      "strategy_refs": [
+        {
+          "ref": "target_agent_candidate_generation",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "mechanism_proposal_grounded_reflection",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "agent_pack_comparative_selection",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "eval_suite_independent_gate",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "trajectory_learning_meta_review",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        }
+      ],
+      "candidate_pool_policy": {
+        "candidate_pool_is_stage_internal_artifact": true,
+        "candidate_lineage_required": true,
+        "accepted_artifact_mutation_requires_owner_receipt": true,
+        "candidate_body_stays_in_domain_workspace": true
+      },
+      "independent_gate_policy": {
+        "gate_owner": "opl-meta-agent",
+        "gate_ref": "agent/quality_gates/baseline-delivery.md",
+        "execution_review_separation_required": true,
+        "same_attempt_self_review_can_close_quality_gate": false,
+        "mechanical_completion_can_close_stage": false,
+        "provider_completion_can_claim_domain_ready": false,
+        "generated_surface_readiness_can_claim_quality_or_export": false,
+        "allowed_closeout_refs": [
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "route_back_ref",
+          "no_regression_evidence_ref"
+        ]
+      },
+      "handoff_policy": {
+        "owner_delta_first": true,
+        "required_return_shapes": [
+          "deliverable_delta_ref",
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "quality_gate_receipt_ref",
+          "no_regression_evidence_ref"
+        ],
+        "framework_transport_cannot_claim_domain_ready": true
+      },
+      "tool_affordance_boundary_ref": {
+        "ref": "contracts/cognitive_kernel_adoption.json#/tool_affordance_boundary",
+        "ref_kind": "json_pointer",
+        "stage_id": "agent-skeleton-build",
+        "role": "stage_tool_affordance_boundary"
       }
     },
     {
@@ -2908,7 +3241,18 @@
         "domain_truth_owner": "opl-meta-agent",
         "opl_role": "projection_only"
       },
-      "selected_executor": "codex_cli",
+      "selected_executor": {
+        "executor_kind": "codex_cli",
+        "default_executor": false,
+        "executor_binding_ref": "default_codex_cli",
+        "binding_policy": "codex_cli_stage_executor_not_ordinary_default_route",
+        "required_capabilities": [
+          "repo_context_reading",
+          "domain_skill_invocation",
+          "receipt_or_typed_blocker_return",
+          "no_forbidden_write_guard"
+        ]
+      },
       "executor_binding": {
         "binding_kind": "codex_cli_first_class_stage_executor",
         "executor_ref": "executor:codex-cli",
@@ -3555,6 +3899,81 @@
             "oma_can_manage_target_worktree_lifecycle": false
           }
         }
+      },
+      "tool_refs": [
+        {
+          "ref": "agent/tools/domain_affordances.md",
+          "ref_kind": "repo_path",
+          "role": "stage_tool_affordance_catalog",
+          "catalog_role": "available_affordance_catalog_not_workflow_script"
+        }
+      ],
+      "strategy_refs": [
+        {
+          "ref": "target_agent_candidate_generation",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "mechanism_proposal_grounded_reflection",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "agent_pack_comparative_selection",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "eval_suite_independent_gate",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "trajectory_learning_meta_review",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        }
+      ],
+      "candidate_pool_policy": {
+        "candidate_pool_is_stage_internal_artifact": true,
+        "candidate_lineage_required": true,
+        "accepted_artifact_mutation_requires_owner_receipt": true,
+        "candidate_body_stays_in_domain_workspace": true
+      },
+      "independent_gate_policy": {
+        "gate_owner": "opl-meta-agent",
+        "gate_ref": "agent/quality_gates/baseline-delivery.md",
+        "execution_review_separation_required": true,
+        "same_attempt_self_review_can_close_quality_gate": false,
+        "mechanical_completion_can_close_stage": false,
+        "provider_completion_can_claim_domain_ready": false,
+        "generated_surface_readiness_can_claim_quality_or_export": false,
+        "allowed_closeout_refs": [
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "route_back_ref",
+          "no_regression_evidence_ref"
+        ]
+      },
+      "handoff_policy": {
+        "owner_delta_first": true,
+        "required_return_shapes": [
+          "deliverable_delta_ref",
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "quality_gate_receipt_ref",
+          "no_regression_evidence_ref"
+        ],
+        "framework_transport_cannot_claim_domain_ready": true
+      },
+      "tool_affordance_boundary_ref": {
+        "ref": "contracts/cognitive_kernel_adoption.json#/tool_affordance_boundary",
+        "ref_kind": "json_pointer",
+        "stage_id": "eval-suite-build",
+        "role": "stage_tool_affordance_boundary"
       }
     },
     {
@@ -3615,7 +4034,18 @@
         "domain_truth_owner": "opl-meta-agent",
         "opl_role": "projection_only"
       },
-      "selected_executor": "codex_cli",
+      "selected_executor": {
+        "executor_kind": "codex_cli",
+        "default_executor": false,
+        "executor_binding_ref": "default_codex_cli",
+        "binding_policy": "codex_cli_stage_executor_not_ordinary_default_route",
+        "required_capabilities": [
+          "repo_context_reading",
+          "domain_skill_invocation",
+          "receipt_or_typed_blocker_return",
+          "no_forbidden_write_guard"
+        ]
+      },
       "executor_binding": {
         "binding_kind": "codex_cli_first_class_stage_executor",
         "executor_ref": "executor:codex-cli",
@@ -4259,6 +4689,81 @@
             "oma_can_manage_target_worktree_lifecycle": false
           }
         }
+      },
+      "tool_refs": [
+        {
+          "ref": "agent/tools/domain_affordances.md",
+          "ref_kind": "repo_path",
+          "role": "stage_tool_affordance_catalog",
+          "catalog_role": "available_affordance_catalog_not_workflow_script"
+        }
+      ],
+      "strategy_refs": [
+        {
+          "ref": "target_agent_candidate_generation",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "mechanism_proposal_grounded_reflection",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "agent_pack_comparative_selection",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "eval_suite_independent_gate",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "trajectory_learning_meta_review",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        }
+      ],
+      "candidate_pool_policy": {
+        "candidate_pool_is_stage_internal_artifact": true,
+        "candidate_lineage_required": true,
+        "accepted_artifact_mutation_requires_owner_receipt": true,
+        "candidate_body_stays_in_domain_workspace": true
+      },
+      "independent_gate_policy": {
+        "gate_owner": "opl-meta-agent",
+        "gate_ref": "agent/quality_gates/baseline-delivery.md",
+        "execution_review_separation_required": true,
+        "same_attempt_self_review_can_close_quality_gate": false,
+        "mechanical_completion_can_close_stage": false,
+        "provider_completion_can_claim_domain_ready": false,
+        "generated_surface_readiness_can_claim_quality_or_export": false,
+        "allowed_closeout_refs": [
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "route_back_ref",
+          "no_regression_evidence_ref"
+        ]
+      },
+      "handoff_policy": {
+        "owner_delta_first": true,
+        "required_return_shapes": [
+          "deliverable_delta_ref",
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "quality_gate_receipt_ref",
+          "no_regression_evidence_ref"
+        ],
+        "framework_transport_cannot_claim_domain_ready": true
+      },
+      "tool_affordance_boundary_ref": {
+        "ref": "contracts/cognitive_kernel_adoption.json#/tool_affordance_boundary",
+        "ref_kind": "json_pointer",
+        "stage_id": "baseline-run",
+        "role": "stage_tool_affordance_boundary"
       }
     },
     {
@@ -4337,7 +4842,18 @@
         "target_domain_truth_owner_preserved": true,
         "opl_role": "projection_only"
       },
-      "selected_executor": "codex_cli",
+      "selected_executor": {
+        "executor_kind": "codex_cli",
+        "default_executor": false,
+        "executor_binding_ref": "default_codex_cli",
+        "binding_policy": "codex_cli_stage_executor_not_ordinary_default_route",
+        "required_capabilities": [
+          "repo_context_reading",
+          "domain_skill_invocation",
+          "receipt_or_typed_blocker_return",
+          "no_forbidden_write_guard"
+        ]
+      },
       "executor_binding": {
         "binding_kind": "codex_cli_first_class_stage_executor",
         "executor_ref": "executor:codex-cli",
@@ -4984,6 +5500,81 @@
             "oma_can_manage_target_worktree_lifecycle": false
           }
         }
+      },
+      "tool_refs": [
+        {
+          "ref": "agent/tools/domain_affordances.md",
+          "ref_kind": "repo_path",
+          "role": "stage_tool_affordance_catalog",
+          "catalog_role": "available_affordance_catalog_not_workflow_script"
+        }
+      ],
+      "strategy_refs": [
+        {
+          "ref": "target_agent_candidate_generation",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "mechanism_proposal_grounded_reflection",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "agent_pack_comparative_selection",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "eval_suite_independent_gate",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "trajectory_learning_meta_review",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        }
+      ],
+      "candidate_pool_policy": {
+        "candidate_pool_is_stage_internal_artifact": true,
+        "candidate_lineage_required": true,
+        "accepted_artifact_mutation_requires_owner_receipt": true,
+        "candidate_body_stays_in_domain_workspace": true
+      },
+      "independent_gate_policy": {
+        "gate_owner": "opl-meta-agent",
+        "gate_ref": "agent/quality_gates/takeover.md",
+        "execution_review_separation_required": true,
+        "same_attempt_self_review_can_close_quality_gate": false,
+        "mechanical_completion_can_close_stage": false,
+        "provider_completion_can_claim_domain_ready": false,
+        "generated_surface_readiness_can_claim_quality_or_export": false,
+        "allowed_closeout_refs": [
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "route_back_ref",
+          "no_regression_evidence_ref"
+        ]
+      },
+      "handoff_policy": {
+        "owner_delta_first": true,
+        "required_return_shapes": [
+          "deliverable_delta_ref",
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "quality_gate_receipt_ref",
+          "no_regression_evidence_ref"
+        ],
+        "framework_transport_cannot_claim_domain_ready": true
+      },
+      "tool_affordance_boundary_ref": {
+        "ref": "contracts/cognitive_kernel_adoption.json#/tool_affordance_boundary",
+        "ref_kind": "json_pointer",
+        "stage_id": "external-agent-takeover",
+        "role": "stage_tool_affordance_boundary"
       }
     },
     {
@@ -5052,7 +5643,18 @@
         "domain_truth_owner": "opl-meta-agent",
         "opl_role": "projection_only"
       },
-      "selected_executor": "codex_cli",
+      "selected_executor": {
+        "executor_kind": "codex_cli",
+        "default_executor": false,
+        "executor_binding_ref": "default_codex_cli",
+        "binding_policy": "codex_cli_stage_executor_not_ordinary_default_route",
+        "required_capabilities": [
+          "repo_context_reading",
+          "domain_skill_invocation",
+          "receipt_or_typed_blocker_return",
+          "no_forbidden_write_guard"
+        ]
+      },
       "executor_binding": {
         "binding_kind": "codex_cli_first_class_stage_executor",
         "executor_ref": "executor:codex-cli",
@@ -5701,6 +6303,81 @@
             "oma_can_manage_target_worktree_lifecycle": false
           }
         }
+      },
+      "tool_refs": [
+        {
+          "ref": "agent/tools/domain_affordances.md",
+          "ref_kind": "repo_path",
+          "role": "stage_tool_affordance_catalog",
+          "catalog_role": "available_affordance_catalog_not_workflow_script"
+        }
+      ],
+      "strategy_refs": [
+        {
+          "ref": "target_agent_candidate_generation",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "mechanism_proposal_grounded_reflection",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "agent_pack_comparative_selection",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "eval_suite_independent_gate",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "trajectory_learning_meta_review",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        }
+      ],
+      "candidate_pool_policy": {
+        "candidate_pool_is_stage_internal_artifact": true,
+        "candidate_lineage_required": true,
+        "accepted_artifact_mutation_requires_owner_receipt": true,
+        "candidate_body_stays_in_domain_workspace": true
+      },
+      "independent_gate_policy": {
+        "gate_owner": "opl-meta-agent",
+        "gate_ref": "agent/quality_gates/external-suite-self-evolution.md",
+        "execution_review_separation_required": true,
+        "same_attempt_self_review_can_close_quality_gate": false,
+        "mechanical_completion_can_close_stage": false,
+        "provider_completion_can_claim_domain_ready": false,
+        "generated_surface_readiness_can_claim_quality_or_export": false,
+        "allowed_closeout_refs": [
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "route_back_ref",
+          "no_regression_evidence_ref"
+        ]
+      },
+      "handoff_policy": {
+        "owner_delta_first": true,
+        "required_return_shapes": [
+          "deliverable_delta_ref",
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "quality_gate_receipt_ref",
+          "no_regression_evidence_ref"
+        ],
+        "framework_transport_cannot_claim_domain_ready": true
+      },
+      "tool_affordance_boundary_ref": {
+        "ref": "contracts/cognitive_kernel_adoption.json#/tool_affordance_boundary",
+        "ref_kind": "json_pointer",
+        "stage_id": "optimizer-iteration",
+        "role": "stage_tool_affordance_boundary"
       }
     },
     {
@@ -5765,7 +6442,18 @@
         "domain_truth_owner": "opl-meta-agent",
         "opl_role": "projection_only"
       },
-      "selected_executor": "codex_cli",
+      "selected_executor": {
+        "executor_kind": "codex_cli",
+        "default_executor": false,
+        "executor_binding_ref": "default_codex_cli",
+        "binding_policy": "codex_cli_stage_executor_not_ordinary_default_route",
+        "required_capabilities": [
+          "repo_context_reading",
+          "domain_skill_invocation",
+          "receipt_or_typed_blocker_return",
+          "no_forbidden_write_guard"
+        ]
+      },
       "executor_binding": {
         "binding_kind": "codex_cli_first_class_stage_executor",
         "executor_ref": "executor:codex-cli",
@@ -6410,6 +7098,81 @@
             "oma_can_manage_target_worktree_lifecycle": false
           }
         }
+      },
+      "tool_refs": [
+        {
+          "ref": "agent/tools/domain_affordances.md",
+          "ref_kind": "repo_path",
+          "role": "stage_tool_affordance_catalog",
+          "catalog_role": "available_affordance_catalog_not_workflow_script"
+        }
+      ],
+      "strategy_refs": [
+        {
+          "ref": "target_agent_candidate_generation",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "mechanism_proposal_grounded_reflection",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "agent_pack_comparative_selection",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "eval_suite_independent_gate",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "trajectory_learning_meta_review",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        }
+      ],
+      "candidate_pool_policy": {
+        "candidate_pool_is_stage_internal_artifact": true,
+        "candidate_lineage_required": true,
+        "accepted_artifact_mutation_requires_owner_receipt": true,
+        "candidate_body_stays_in_domain_workspace": true
+      },
+      "independent_gate_policy": {
+        "gate_owner": "opl-meta-agent",
+        "gate_ref": "agent/quality_gates/baseline-delivery.md",
+        "execution_review_separation_required": true,
+        "same_attempt_self_review_can_close_quality_gate": false,
+        "mechanical_completion_can_close_stage": false,
+        "provider_completion_can_claim_domain_ready": false,
+        "generated_surface_readiness_can_claim_quality_or_export": false,
+        "allowed_closeout_refs": [
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "route_back_ref",
+          "no_regression_evidence_ref"
+        ]
+      },
+      "handoff_policy": {
+        "owner_delta_first": true,
+        "required_return_shapes": [
+          "deliverable_delta_ref",
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "quality_gate_receipt_ref",
+          "no_regression_evidence_ref"
+        ],
+        "framework_transport_cannot_claim_domain_ready": true
+      },
+      "tool_affordance_boundary_ref": {
+        "ref": "contracts/cognitive_kernel_adoption.json#/tool_affordance_boundary",
+        "ref_kind": "json_pointer",
+        "stage_id": "baseline-delivery",
+        "role": "stage_tool_affordance_boundary"
       }
     },
     {
@@ -6479,7 +7242,18 @@
         "domain_truth_owner": "opl-meta-agent",
         "opl_role": "projection_only"
       },
-      "selected_executor": "codex_cli",
+      "selected_executor": {
+        "executor_kind": "codex_cli",
+        "default_executor": false,
+        "executor_binding_ref": "default_codex_cli",
+        "binding_policy": "codex_cli_stage_executor_not_ordinary_default_route",
+        "required_capabilities": [
+          "repo_context_reading",
+          "domain_skill_invocation",
+          "receipt_or_typed_blocker_return",
+          "no_forbidden_write_guard"
+        ]
+      },
       "executor_binding": {
         "binding_kind": "codex_cli_first_class_stage_executor",
         "executor_ref": "executor:codex-cli",
@@ -7143,6 +7917,81 @@
             "oma_can_manage_target_worktree_lifecycle": false
           }
         }
+      },
+      "tool_refs": [
+        {
+          "ref": "agent/tools/domain_affordances.md",
+          "ref_kind": "repo_path",
+          "role": "stage_tool_affordance_catalog",
+          "catalog_role": "available_affordance_catalog_not_workflow_script"
+        }
+      ],
+      "strategy_refs": [
+        {
+          "ref": "target_agent_candidate_generation",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "mechanism_proposal_grounded_reflection",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "agent_pack_comparative_selection",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "eval_suite_independent_gate",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "trajectory_learning_meta_review",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        }
+      ],
+      "candidate_pool_policy": {
+        "candidate_pool_is_stage_internal_artifact": true,
+        "candidate_lineage_required": true,
+        "accepted_artifact_mutation_requires_owner_receipt": true,
+        "candidate_body_stays_in_domain_workspace": true
+      },
+      "independent_gate_policy": {
+        "gate_owner": "opl-meta-agent",
+        "gate_ref": "agent/quality_gates/trajectory-learning-proposal.md",
+        "execution_review_separation_required": true,
+        "same_attempt_self_review_can_close_quality_gate": false,
+        "mechanical_completion_can_close_stage": false,
+        "provider_completion_can_claim_domain_ready": false,
+        "generated_surface_readiness_can_claim_quality_or_export": false,
+        "allowed_closeout_refs": [
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "route_back_ref",
+          "no_regression_evidence_ref"
+        ]
+      },
+      "handoff_policy": {
+        "owner_delta_first": true,
+        "required_return_shapes": [
+          "deliverable_delta_ref",
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "quality_gate_receipt_ref",
+          "no_regression_evidence_ref"
+        ],
+        "framework_transport_cannot_claim_domain_ready": true
+      },
+      "tool_affordance_boundary_ref": {
+        "ref": "contracts/cognitive_kernel_adoption.json#/tool_affordance_boundary",
+        "ref_kind": "json_pointer",
+        "stage_id": "trajectory-learning-intake",
+        "role": "stage_tool_affordance_boundary"
       }
     },
     {
@@ -7208,7 +8057,18 @@
         "domain_truth_owner": "opl-meta-agent",
         "opl_role": "projection_only"
       },
-      "selected_executor": "codex_cli",
+      "selected_executor": {
+        "executor_kind": "codex_cli",
+        "default_executor": false,
+        "executor_binding_ref": "default_codex_cli",
+        "binding_policy": "codex_cli_stage_executor_not_ordinary_default_route",
+        "required_capabilities": [
+          "repo_context_reading",
+          "domain_skill_invocation",
+          "receipt_or_typed_blocker_return",
+          "no_forbidden_write_guard"
+        ]
+      },
       "executor_binding": {
         "binding_kind": "codex_cli_first_class_stage_executor",
         "executor_ref": "executor:codex-cli",
@@ -7854,6 +8714,81 @@
             "oma_can_manage_target_worktree_lifecycle": false
           }
         }
+      },
+      "tool_refs": [
+        {
+          "ref": "agent/tools/domain_affordances.md",
+          "ref_kind": "repo_path",
+          "role": "stage_tool_affordance_catalog",
+          "catalog_role": "available_affordance_catalog_not_workflow_script"
+        }
+      ],
+      "strategy_refs": [
+        {
+          "ref": "target_agent_candidate_generation",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "mechanism_proposal_grounded_reflection",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "agent_pack_comparative_selection",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "eval_suite_independent_gate",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        },
+        {
+          "ref": "trajectory_learning_meta_review",
+          "ref_kind": "strategy_ref",
+          "role": "cognitive_kernel_strategy"
+        }
+      ],
+      "candidate_pool_policy": {
+        "candidate_pool_is_stage_internal_artifact": true,
+        "candidate_lineage_required": true,
+        "accepted_artifact_mutation_requires_owner_receipt": true,
+        "candidate_body_stays_in_domain_workspace": true
+      },
+      "independent_gate_policy": {
+        "gate_owner": "opl-meta-agent",
+        "gate_ref": "agent/quality_gates/mechanism-patch-adoption.md",
+        "execution_review_separation_required": true,
+        "same_attempt_self_review_can_close_quality_gate": false,
+        "mechanical_completion_can_close_stage": false,
+        "provider_completion_can_claim_domain_ready": false,
+        "generated_surface_readiness_can_claim_quality_or_export": false,
+        "allowed_closeout_refs": [
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "route_back_ref",
+          "no_regression_evidence_ref"
+        ]
+      },
+      "handoff_policy": {
+        "owner_delta_first": true,
+        "required_return_shapes": [
+          "deliverable_delta_ref",
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "quality_gate_receipt_ref",
+          "no_regression_evidence_ref"
+        ],
+        "framework_transport_cannot_claim_domain_ready": true
+      },
+      "tool_affordance_boundary_ref": {
+        "ref": "contracts/cognitive_kernel_adoption.json#/tool_affordance_boundary",
+        "ref_kind": "json_pointer",
+        "stage_id": "online-learning",
+        "role": "stage_tool_affordance_boundary"
       }
     }
   ],
@@ -12110,5 +13045,19 @@
       "oma_can_promote_default_agent_without_gate": false,
       "oma_can_manage_target_worktree_lifecycle": false
     }
-  }
+  },
+  "cognitive_kernel_adoption_ref": "contracts/cognitive_kernel_adoption.json",
+  "golden_path_profile_ref": "contracts/golden_path_profile.json",
+  "stage_pack_required_sections": [
+    "prompt_refs",
+    "skill_refs",
+    "tool_refs",
+    "tool_affordance_boundary",
+    "knowledge_refs",
+    "quality_gate_refs",
+    "strategy_refs",
+    "candidate_pool_policy",
+    "independent_gate_policy",
+    "handoff_policy"
+  ]
 }

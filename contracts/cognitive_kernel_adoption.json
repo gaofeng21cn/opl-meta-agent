@@ -1,101 +1,16 @@
 {
-  "surface_kind": "opl_domain_pack_compiler_input",
-  "schema_version": 1,
+  "surface_kind": "opl_cognitive_kernel_adoption",
+  "version": "cognitive-kernel-adoption.v1",
+  "owner": "opl-meta-agent",
   "domain_id": "opl-meta-agent",
-  "domain_pack_owner": "opl-meta-agent",
-  "generated_surface_owner": "one-person-lab",
-  "required_domain_pack_paths": [
-    "agent/knowledge/opl-boundary-policy.md",
-    "agent/knowledge/project-maturity-signals.md",
-    "agent/knowledge/trajectory-learning-policy.md",
-    "agent/knowledge/transferable-agent-practices.md",
-    "agent/prompts/agent-skeleton-build.md",
-    "agent/prompts/baseline-delivery.md",
-    "agent/prompts/baseline-run.md",
-    "agent/prompts/eval-suite-build.md",
-    "agent/prompts/external-agent-takeover.md",
-    "agent/prompts/intent-intake.md",
-    "agent/prompts/online-learning.md",
-    "agent/prompts/optimizer-iteration.md",
-    "agent/prompts/stage-decomposition.md",
-    "agent/prompts/trajectory-learning-intake.md",
-    "agent/prompts/web-experience-research.md",
-    "agent/quality_gates/baseline-delivery.md",
-    "agent/quality_gates/external-suite-self-evolution.md",
-    "agent/quality_gates/external-work-order-execution.md",
-    "agent/quality_gates/mechanism-patch-adoption.md",
-    "agent/quality_gates/takeover.md",
-    "agent/quality_gates/trajectory-learning-proposal.md",
-    "agent/skills/agent-baseline-build.md",
-    "agent/skills/external-suite-improvement.md",
-    "agent/skills/external-work-order-execution.md",
-    "agent/skills/opl-meta-agent-domain-skill.md",
-    "agent/skills/trajectory-learning-intake.md",
-    "agent/stages/agent-skeleton-build.md",
-    "agent/stages/baseline-delivery.md",
-    "agent/stages/baseline-run.md",
-    "agent/stages/eval-suite-build.md",
-    "agent/stages/external-agent-takeover.md",
-    "agent/stages/intent-intake.md",
-    "agent/stages/online-learning.md",
-    "agent/stages/optimizer-iteration.md",
-    "agent/stages/stage-decomposition.md",
-    "agent/stages/trajectory-learning-intake.md",
-    "agent/stages/web-experience-research.md",
-    "agent/tools/domain_affordances.md"
-  ],
-  "declarative_domain_pack": [
-    "domain_truth_schema",
-    "stage_descriptors",
-    "transition_table",
-    "action_metadata",
-    "knowledge_refs",
-    "prompt_refs",
-    "skill_refs",
-    "policy_tables",
-    "quality_rubric_refs",
-    "artifact_authority_contract",
-    "memory_policy",
-    "owner_receipt_schema",
-    "target_owner_closeout_hook_delegation_policy",
-    "domain_fixtures",
-    "trajectory_atomization_policy",
-    "trajectory_candidate_buffer_policy",
-    "skill_prompt_stage_policy_proposal_contract",
-    "tool_affordance_catalog",
-    "cognitive_kernel_adoption_contract",
-    "golden_path_profile"
-  ],
-  "minimal_authority_functions": [
-    "candidate_agent_package_builder",
-    "mechanism_patch_proposal_authorizer"
-  ],
-  "generated_surfaces_requested": [
-    "cli",
-    "mcp",
-    "product_entry_manifest",
-    "domain_handler",
-    "status_read_model",
-    "workbench_drilldown",
-    "functional_harness_cases"
-  ],
-  "domain_repo_can_own_generated_surface": false,
-  "authority_boundary": {
-    "opl_can_write_domain_truth": false,
-    "opl_can_write_memory_body": false,
-    "opl_can_authorize_quality_or_export": false,
-    "domain_pack_can_supply_domain_truth_refs": true,
-    "domain_pack_can_supply_prompt_skill_stage_quality_refs": true,
-    "generated_interface_can_invoke_minimal_authority_functions": true,
-    "generated_interface_can_write_domain_truth": false,
-    "generated_interface_can_write_memory_body": false,
-    "generated_interface_can_authorize_quality_or_export": false,
-    "domain_can_claim_generated_surface_owner": false
-  },
-  "marker": "generated_by_opl_standard_domain_agent_scaffold_v1",
-  "canonical_semantic_pack_root": "agent/",
-  "canonical_semantic_pack_role": "repo_source_declarative_meta_agent_pack",
-  "trajectory_learning_contract_ref": "contracts/trajectory_learning_contract.json",
+  "state": "advisory_current_contract",
+  "purpose": "OPL Meta Agent declares repo-owned stage-internal cognitive-kernel refs, tool affordances, and independent gate boundaries for OPL-hosted Foundry Agent execution.",
+  "machine_boundary": "This contract is advisory/current adoption metadata. Domain truth, artifact bodies, quality verdicts, owner receipts, typed blockers, human gates, and export authority remain domain-owned; OPL owns transport, attempts, refs, receipts projection, and generated/hosted surfaces only.",
+  "framework_contract_ref": "one-person-lab/contracts/opl-framework/cognitive-computation-kernel.json",
+  "pack_compiler_input_ref": "contracts/pack_compiler_input.json",
+  "stage_control_plane_ref": "contracts/stage_control_plane.json",
+  "golden_path_profile_ref": "contracts/golden_path_profile.json",
+  "domain_affordance_catalog_ref": "agent/tools/domain_affordances.md",
   "stage_pack_required_sections": [
     "prompt_refs",
     "skill_refs",
@@ -107,14 +22,6 @@
     "candidate_pool_policy",
     "independent_gate_policy",
     "handoff_policy"
-  ],
-  "tool_refs": [
-    {
-      "ref": "agent/tools/domain_affordances.md",
-      "ref_kind": "repo_path",
-      "role": "domain_tool_affordance_catalog",
-      "catalog_role": "available_affordance_catalog_not_workflow_script"
-    }
   ],
   "tool_affordance_boundary": {
     "catalog_role": "available_affordance_catalog_not_workflow_script",
@@ -243,13 +150,43 @@
     },
     "policy": "opl-meta-agent tool refs declare available affordances and safety boundaries only; they do not prescribe executor order, stage strategy, stage goal, or forbidden writes."
   },
-  "cognitive_kernel_adoption_ref": "contracts/cognitive_kernel_adoption.json",
-  "golden_path_profile_ref": "contracts/golden_path_profile.json",
-  "cognitive_kernel_policy": {
-    "advisory_not_launch_hard_gate": true,
+  "authority_boundary": {
+    "domain_repo_declares_strategy_not_generic_runtime": true,
+    "domain_repo_can_claim_generated_surface_owner": false,
+    "opl_can_write_domain_truth": false,
+    "opl_can_read_domain_body": false,
+    "opl_can_create_owner_receipt": false,
+    "opl_can_create_typed_blocker": false,
+    "opl_can_claim_domain_ready": false,
+    "opl_can_claim_artifact_ready": false,
     "strategy_refs_completeness_is_launch_hard_gate": false,
     "independent_gate_receipt_required_for_quality_progression": true,
-    "same_attempt_self_review_can_close_quality_gate": false,
-    "route_can_execute_without_stage_attempt": false
-  }
+    "same_attempt_self_review_can_close_quality_gate": false
+  },
+  "adoption_policy": {
+    "advisory_not_launch_hard_gate": true,
+    "tool_catalog_is_not_workflow_script": true,
+    "route_is_not_stage_strategy": true,
+    "stage_attempt_is_required_for_execution": true,
+    "candidate_pool_is_stage_internal_artifact": true,
+    "meta_review_updates_are_proposals_until_owner_acceptance": true
+  },
+  "stage_strategy_refs": [
+    "target_agent_candidate_generation",
+    "mechanism_proposal_grounded_reflection",
+    "agent_pack_comparative_selection",
+    "eval_suite_independent_gate",
+    "trajectory_learning_meta_review"
+  ],
+  "stage_artifact_refs": [
+    "target_agent_intent_ref",
+    "public_experience_research_ref",
+    "stage_decomposition_ref",
+    "agent_skeleton_ref",
+    "eval_suite_ref",
+    "baseline_run_ref",
+    "takeover_evidence_ref",
+    "optimizer_iteration_ref",
+    "trajectory_learning_proposal_ref"
+  ]
 }

@@ -536,7 +536,13 @@ test('stage launch contract is Codex-first, receipted, and OPL-10 bounded', () =
 
   asObjects(stageControl.stages).forEach((stage) => {
     const label = String(stage.stage_id);
-    assert.equal(stage.selected_executor, 'codex_cli', `${label}.selected_executor`);
+    assert.equal(stage.selected_executor.executor_kind, 'codex_cli', `${label}.selected_executor.executor_kind`);
+    assert.equal(stage.selected_executor.executor_binding_ref, 'default_codex_cli', `${label}.selected_executor.executor_binding_ref`);
+    assert.equal(
+      stage.selected_executor.default_executor,
+      label === 'intent-intake',
+      `${label}.selected_executor.default_executor`,
+    );
     assert.equal(
       stage.executor_binding.binding_kind,
       'codex_cli_first_class_stage_executor',
@@ -1293,7 +1299,16 @@ test('stage executor policy candidates stay gated, refs-only, and non-default ex
 
   asObjects(stageControl.stages).forEach((stage) => {
     const label = String(stage.stage_id);
-    assert.equal(stage.selected_executor, 'codex_cli', `${label}.selected_executor remains Codex first-class`);
+    assert.equal(
+      stage.selected_executor.executor_kind,
+      'codex_cli',
+      `${label}.selected_executor remains Codex first-class`,
+    );
+    assert.equal(
+      stage.selected_executor.executor_binding_ref,
+      'default_codex_cli',
+      `${label}.selected_executor binding remains default Codex`,
+    );
     assert.ok(
       asStrings(stage.requires).includes('runtime-ref:stage-executor-policy-gate'),
       `${label}.requires stage executor policy gate`,
