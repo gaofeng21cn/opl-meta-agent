@@ -78,7 +78,18 @@
         "domain_truth_owner": "opl-meta-agent",
         "opl_role": "projection_only"
       },
-      "selected_executor": "codex_cli",
+      "selected_executor": {
+        "executor_kind": "codex_cli",
+        "default_executor": true,
+        "executor_binding_ref": "default_codex_cli",
+        "binding_policy": "default_first_class_executor_for_ai_first_stage_execution",
+        "required_capabilities": [
+          "repo_context_reading",
+          "domain_skill_invocation",
+          "receipt_or_typed_blocker_return",
+          "no_forbidden_write_guard"
+        ]
+      },
       "executor_binding": {
         "binding_kind": "codex_cli_first_class_stage_executor",
         "executor_ref": "executor:codex-cli",
