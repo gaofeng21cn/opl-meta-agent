@@ -51,6 +51,18 @@ Owner split 固定为：
 | OPL Framework / Agent Lab / App | generic runtime、standard scaffold、generated interfaces、queue、attempt ledger、provider receipt、Agent Lab execution、promotion gate、registry/discovery、App/workbench shell、work-order execute / absorb / cleanup |
 | target domain agent | domain truth、memory body、artifact body、quality/export verdict、owner receipt、default promotion authority、target owner closeout hook 和标准 handoff refs |
 
+## 当前完成进度
+
+| Progress item | Status | Current evidence | Remaining boundary |
+| --- | --- | --- | --- |
+| Standard domain pack and Foundry Agent identity | `done` | `agent/` pack、`contracts/pack_compiler_input.json`、`contracts/foundry_agent_series.json`、`tests/contracts.test.ts` | 不把 README、目录存在性或 human prose 当成 machine-required pack path。 |
+| Generated interface / registry / App projection input | `done_with_external_consumption_tail` | `contracts/generated_surface_handoff.json`、`contracts/opl_domain_manifest_registration.json`、`contracts/app_workbench_projection.json`、OPL generated interface read model | Generated / registry / App live rendering owner 仍是 OPL / App；OMA 不声明 generated surface ownership。 |
+| Work-order and mechanism proposal materialization | `done_with_more_real_loop_tail` | `build-agent-baseline`、`takeover:test`、`improve:external-suite`、`agent:evidence`、`execute:external-work-order`、matching tests | 只能输出 candidate package、developer work order、target capability candidate、mechanism proposal 或 typed blocker；target truth、artifact、memory、quality verdict 和 owner receipt body 仍归 target owner。 |
+| StageRun canary and overclaim guard | `done_as_controlled_canary` | `contracts/stage_run_kernel_profile.json`、`contracts/stage_run_canary_evidence.json`、`tests/contracts.test.ts` | Controlled fixture 只证明 repo-local canary shape；不声明 live domain progress、production readiness、human approval、App rendering 或 default promotion。 |
+| Source shape / no-resurrection guard | `generic_shell_absent_with_script_hygiene_tail` | `contracts/functional_privatization_audit.json`、`contracts/default_caller_deletion_evidence.json`、`runtime/authority_functions/meta-agent-authority-functions.json`、`tests/source-purity.test.ts` | `functional_structure_gap_count=0` 只证明 repo-owned wrapper/runtime/workbench shell absent；scripts/materializers 仍按 script-to-pack gate 持续收薄。 |
+| Retired legacy alias and wrapper tails | `retired_and_guarded` | `takeover:test --fixture` parser fail-closed、`bootstrap:sample` absence、no-closeout fixture graph negative tests、source-purity guards | 退役 refs 只允许出现在 negative guard、tombstone/provenance 和 history/process；不得恢复 compatibility alias、fallback route、repo-local plugin/Skill/product wrapper、sidecar/status/workbench shell。 |
+| Production-consumption / new-agent scaleout / patch-loop evidence | `open_evidence_tail` | production acceptance contracts、new-agent consumption evidence refs、OPL refs-only production-consumption read model、target patch-loop work-order shape | 仍需 OPL/App registry discovery、App render/runtime drilldown、更多 target cohorts、repeat long-soak、independent reviewer direct evidence 和 target owner receipt / typed blocker 样本。 |
+
 ## 已落地
 
 | Area | 当前状态 | 主要证据 | 边界 |
