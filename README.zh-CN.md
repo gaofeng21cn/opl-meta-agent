@@ -34,12 +34,12 @@
 
 > `OPL Meta Agent` 面向“开发 AI Agent”这件事本身：你描述一个想要的专业 Agent，它帮助你把目标、边界、工作步骤、测试和改进建议组织成一套可落地的 Agent 基线。
 
-## 仓库边界
-
+<!--
 Owner: `opl-meta-agent`
 Purpose: `public_repository_entry`
 State: `public_entry`
 Machine boundary: 本 README 是人读仓库入口。机器真相继续归 `contracts/`、`agent/`、`runtime/authority_functions/`、source、CLI/API 行为、OPL Agent Lab result refs、work-order receipts、target owner receipts / typed blockers 和 tests。
+-->
 
 ## 为什么需要它
 
@@ -52,6 +52,8 @@ Machine boundary: 本 README 是人读仓库入口。机器真相继续归 `cont
 - 已有 Agent 能不能被系统化接管测试，而不是靠人工经验反复调？
 
 **OPL Meta Agent 就是为了解决这些问题。** 它把“我想要一个 Agent”推进成“我有一套可测试、可审阅、可继续改进的 Agent 基线”。
+
+它不会把 Agent 开发简化成“写一段 prompt”。一个可用 Agent 需要先把目标、边界、工作步骤、测试和失败后的改进路径整理清楚；OPL Meta Agent 帮你把这些内容组织成可运行、可测试、可继续演进的基线。
 
 ## 核心亮点
 
@@ -68,7 +70,10 @@ Machine boundary: 本 README 是人读仓库入口。机器真相继续归 `cont
 当测试或运行暴露问题时，系统会把失败证据整理成下一版机制建议，例如调整提示词、技能、阶段设计、测试策略或质量门槛。
 
 **也能接管已有 Agent 的测试**<br/>
-对已经存在的 Agent，它可以先接管测试和证据整理，给出改进候选，而不是直接改写对方的领域事实或交付判断。
+对已经存在的 Agent，它可以先接管测试和证据整理，给出改进候选，而不是直接改写对方的专业判断或最终交付。
+
+**保留设计、测试和改进空间**<br/>
+新 Agent 往往需要比较多个工作拆解、提示策略、技能组合和测试方案。OPL Meta Agent 会把这些候选和失败证据整理成可审阅的下一版建议，而不是直接替目标领域做最终判断。
 
 ## 你可以这样开始
 
@@ -102,27 +107,23 @@ Machine boundary: 本 README 是人读仓库入口。机器真相继续归 `cont
 - **观察证据**：读取运行片段、轨迹、失败记录和候选引用。
 - **诊断瓶颈**：定位重复失败、预算浪费、校验缺口或阶段漂移。
 - **编辑机制**：只提出下一版机制候选，可能覆盖提示词策略、技能策略、阶段策略、测试套件策略、接管审阅策略、候选生成策略或质量门槛策略。
-- **门控采用**：机制补丁仍然只是建议；它不能写入目标智能体的领域事实、记忆正文、产物正文或质量裁决，也不能绕过显式采用门槛。
+- **门控采用**：改进补丁仍然只是建议；它不能直接改写目标 Agent 的专业内容、记忆正文、交付物或最终判断，也不能绕过显式采用门槛。
 
 ## 当前定位与边界
 
-- `OPL Meta Agent` 是 OPL Foundry Agent 系列里的 agent-building / improvement 成员：它与 MAS/MAG/RCA 共享同一 canonical OPL agent lifecycle、generic slots、stage sections、closeout shape 和 authority invariants；它的 domain-specific profile 把输入换成目标智能体 spec / evidence refs，把输出换成候选包、开发补丁工单、能力改进候选、机制补丁建议或 typed blocker。
-- 当前设计已经从 contract-ready 收敛到 Codex-attempt-native 的 usable landing plan：下一目标是直接发起真实 stage launch contract、由独立 Codex reviewer 读取证据并尝试评审、让 OPL registry / App 实际消费投影、对真实 blocked target 形成 patch -> rerun -> owner receipt 闭环，并把仍在 `scripts/` 中增长的构建规则收敛回 pack 或 authority refs。
-- `agent/` 是本仓真实 domain pack 入口：`knowledge/`、`prompts/`、`quality_gates/`、`skills/`、`stages/` 至少提供可解析、非空、无占位的 domain-owned 文件，`contracts/stage_control_plane.json` 的 stage prompt、skill、knowledge、evaluation refs 必须指向这些真实文件。
-- 本仓复用 OPL Framework 的脚手架、Agent Lab、队列、状态投影和采用门槛，不在本仓重建通用运行框架。
-- CLI、MCP、Skill、product-entry 和工具描述由 OPL Framework 根据本仓的 action / stage 合同统一生成；本仓不维护私有通用入口包装层。
-- 生成接口可以调用本仓声明的 minimal authority functions 和 domain smoke action，但只能投影 refs、回执、blocker 与候选，不能写领域事实、记忆正文、产物正文、质量/导出裁决或无 gate 推广默认 agent。
-- 已有 generated-surface / registration / App projection proof 只证明本仓可被 OPL 消费，不等于目标 domain ready、质量裁决完成、App live rendering 已发生或默认 agent 可以推广。
-- OPL Framework 持有通用运行时、Agent Lab、标准脚手架、队列、阶段尝试记录、提供者回执、观测、优化引用和采用门槛。
-- 目标领域智能体继续持有自己的领域事实、质量裁决、产物权威、记忆正文和拥有者回执。
-- 对第一步不是由 `OPL Meta Agent` 开发的智能体，本仓也可以接管测试编排和自进化候选生成；默认仍只产生测试套件、接管回执、受门控候选和机制补丁建议。
-- 本仓不训练或部署模型权重，不绕过门槛切换默认智能体，也不写入目标智能体的记忆正文、产物正文、质量裁决或领域事实。
+- `OPL Meta Agent` 是 OPL Foundry Agent 系列里的 agent-building / improvement 成员，面向“把一个专业工作流做成可测试 Agent”。
+- 它负责整理目标、边界、工作步骤、Agent 骨架、测试套件和下一版改进建议。
+- 它可以从零生成新 Agent 基线，也可以先接管已有 Agent 的测试和失败证据整理。
+- 它只提出候选、测试结果和改进建议，不替目标领域做最终判断，不直接改写目标 Agent 的领域内容、记忆正文或交付物。
+- 它复用 One Person Lab Framework 的脚手架、Agent Lab、队列、状态投影和采用门槛，不在本仓重建通用运行框架。
 
 <details>
   <summary><strong>给技术操作者看的机制说明</strong></summary>
 
 - 标准 Skill 入口是自然语言请求：用户可以直接对 Codex 说“帮我做一个能交付 X 的 OPL-compatible 智能体，输出到 `<repo-dir>`，质量门槛是 Y，禁止 Z”。Codex 先把这句话归一成 `domain_id`、`domain_label`、`delivery_domain`、`target_brief`、`output_dir`、`opl_bin`、stage-decomposition runner 设置和 `ai_reviewer_evaluation`，再调用 `build-agent-baseline` action。
 - 默认 `build-agent-baseline` 主路径会启动 live Codex `stage-decomposition` attempt，或消费一个显式 typed closeout packet。该 closeout 是目标 stage graph、action refs、pack 文件、independent gate policy 和 quality gate declaration 的来源；脚本只负责校验、物化、scaffold/Agent Lab 运行和 receipt 记录。
+- stage-decomposition attempt 是开放式认知计算边界：executor 可以自主选择读取哪些参考、生成几个候选、如何比较取舍、是否请求 reviewer 或 typed blocker；action implementation 只负责校验和物化，不承担专家推理。
+- 本仓工具目录遵循 Tool Affordance Boundary：声明脚手架、测试、evidence takeover、机制候选和 patch work-order 工具的能力、权限、凭据、可写范围和 forbidden authority；不规定 executor 必须按固定顺序调研、拆 stage、跑测试或生成候选。
 - 参数化 action implementation 是 `npm run build-agent-baseline -- --output-dir <dir> --opl-bin <opl> --ai-reviewer-evaluation <reviewer-eval.json> [--stage-runner live|fixture --stage-decomposition-closeout <closeout.json>] --domain-id <domain-id> --domain-label <label> --delivery-domain <delivery-domain> --target-brief <brief>`：根据 typed stage-decomposition packet 生成用户指定的目标 agent repo，调用 OPL 脚手架校验，生成 Agent Lab 外部测试套件，运行 `opl agent-lab run --suite`，消费结构化 AI reviewer evaluation，再写入基线回执、真实目标交付回执、scaleout evidence ledger、后续学习候选和 `mechanism-patch-proposal.json`。
 - free text closeout、partial refs、缺 independent gate policy、缺 quality gate declaration 或 self-review 必须在签发 baseline receipt 前 fail closed。
 - `--domain-id` 是硬要求。已退役的隐式 fixture smoke 不再作为物化路径存在；`fixture` runner 只消费显式 typed closeout packet，真实目标证据只为显式目标 agent 生成。
