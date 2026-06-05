@@ -102,7 +102,7 @@ Owner split 固定为：
 | Real blocked target patch loop scaleout | OMA work-order shape、MAG/MAS 类真实 target refs-only closeout evidence | 更多真实 target patch / rerun / owner receipt / typed blocker / no-forbidden-write / runtime-read-model consumption / workspace proof / cleanup / Agent Lab re-evaluation 样本。 |
 | Independent Codex reviewer attempt | structured reviewer schema、fail-closed rules、reviewer evidence projection | 独立 invocation/context/trace/receipt、direct evidence、source refs、critique/suggestions/verdict/provenance 与 rollback/canary/version refs 的真实样本。 |
 | Standard target-agent handoff convergence | OMA 侧 target-agent generic intake 已落地 | 目标 agent 侧持续提供同一 vocabulary，不在 OMA 或 Agent Lab 添加 domain-specific suite / command。 |
-| Script-to-pack evidence | 私有实现迁移台账、source-purity guards、当前实现文件 split-pressure 分类 | 后续增长时继续证明脚本只是 materializer/helper；稳定规则迁入 declarative pack、contracts 或 OPL primitive。 |
+| Script-to-pack evidence | 私有实现迁移台账、source-purity guards、当前实现文件 split-pressure 分类；所有 `scripts/**/*.ts` 都必须被 `script_to_pack_retirement_gates` 覆盖。 | 后续增长时继续证明脚本只是 materializer/helper；稳定规则迁入 declarative pack、contracts 或 OPL primitive；未进入 gate 的新增脚本必须 fail closed。 |
 | Mechanism proposal promotion | mechanism patch proposal 为 proposal-only surface | OPL / Agent Lab promotion gate receipt 与 target owner evidence，才能进入默认 agent 变更。 |
 
 ## 近期完善计划
@@ -123,7 +123,7 @@ Owner split 固定为：
    推动 MAS/MAG/RCA 和新 Foundry Agent 用同一 target-agent vocabulary 暴露 production/live acceptance、Agent Lab handoff、owner route、editable surface policy、required return shapes、verification refs 和 no-forbidden-write proof。
 
 6. `script_to_pack_hygiene`
-   持续把稳定 policy 迁入 declarative pack、contracts、cognitive-kernel refs 或 OPL primitive；保留脚本必须能指向 `runtime/authority_functions`、smoke action、fixture/proof helper 或 developer work-order materializer。每次新增或收薄脚本，都要更新 `script_to_pack_retirement_gates` 或证明该脚本已有 gate 覆盖，并跑 `tests/source-purity.test.ts`。
+   持续把稳定 policy 迁入 declarative pack、contracts、cognitive-kernel refs 或 OPL primitive；保留脚本必须能指向 `runtime/authority_functions`、smoke action、fixture/proof helper 或 developer work-order materializer。当前 machine gate 要求所有 `scripts/**/*.ts` 都同时完成 morphology classification 和 script-to-pack retirement/retention gate 覆盖；每次新增或收薄脚本，都要更新 `script_to_pack_retirement_gates`，并跑 `tests/source-purity.test.ts`。
 
 ## 下一轮 Agent prompt
 

@@ -219,7 +219,16 @@ test('script morphology stays limited to authority refs, materializers, and help
     'agent_evidence_and_external_suite_materializers',
     'build_agent_baseline_and_stage_decomposition_materializers',
     'external_work_order_execution_delegation',
+    'retained_thin_authority_helpers_and_takeover_smoke',
   ]);
+  const gatedScriptRefs = [...new Set(
+    retirementGates.flatMap((gate) => asStrings(gate.tracked_script_refs)),
+  )].sort();
+  assert.deepEqual(
+    gatedScriptRefs,
+    scripts,
+    'Every repo-local TypeScript script must have an explicit script-to-pack retirement or retention gate',
+  );
   retirementGates.forEach((gate) => {
     const trackedScriptRefs = asStrings(gate.tracked_script_refs);
     assert.ok(trackedScriptRefs.length > 0, `${gate.gate_id} should track at least one script`);
@@ -266,6 +275,40 @@ test('script morphology stays limited to authority refs, materializers, and help
     assert.ok(
       asStrings(buildBaselineGate.forbidden_long_term_claims).includes(claim),
       `build-agent-baseline retirement gate should forbid ${claim}`,
+    );
+  });
+  const retainedHelperGate = retirementGates.find((gate) => (
+    gate.gate_id === 'retained_thin_authority_helpers_and_takeover_smoke'
+  ));
+  assert.ok(retainedHelperGate, 'thin helper/takeover retention gate should exist');
+  assert.deepEqual(asStrings(retainedHelperGate.tracked_script_refs), [
+    'scripts/lib/meta-agent-loop.ts',
+    'scripts/lib/meta-agent-loop-ai-reviewer.ts',
+    'scripts/lib/meta-agent-loop-io.ts',
+    'scripts/lib/meta-agent-loop-receipts.ts',
+    'scripts/takeover-agent.ts',
+  ]);
+  [
+    'opl_generated_interface_or_invocation_helper_parity_ref',
+    'opl_agent_lab_takeover_handoff_parity_ref',
+    'no_target_truth_verdict_artifact_memory_or_owner_receipt_body_ref',
+    'no_agent_lab_runner_promotion_gate_registry_or_app_shell_owner_ref',
+  ].forEach((required) => {
+    assert.ok(
+      asStrings(retainedHelperGate.required_before_retire_or_absorb).includes(required),
+      `thin helper/takeover retention gate should require ${required}`,
+    );
+  });
+  [
+    'registry_owner',
+    'app_shell_owner',
+    'generated_interface_owner',
+    'target_owner_receipt_body_writer',
+    'generic_runtime_owner',
+  ].forEach((claim) => {
+    assert.ok(
+      asStrings(retainedHelperGate.forbidden_long_term_claims).includes(claim),
+      `thin helper/takeover retention gate should forbid ${claim}`,
     );
   });
 

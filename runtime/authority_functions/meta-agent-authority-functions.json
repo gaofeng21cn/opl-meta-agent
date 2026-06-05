@@ -544,6 +544,39 @@
           "absorb_or_cleanup_owner",
           "target_owner_receipt_body_writer"
         ]
+      },
+      {
+        "gate_id": "retained_thin_authority_helpers_and_takeover_smoke",
+        "tracked_script_refs": [
+          "scripts/lib/meta-agent-loop.ts",
+          "scripts/lib/meta-agent-loop-ai-reviewer.ts",
+          "scripts/lib/meta-agent-loop-io.ts",
+          "scripts/lib/meta-agent-loop-receipts.ts",
+          "scripts/takeover-agent.ts"
+        ],
+        "current_role": "thin_reexport_io_reviewer_receipt_helpers_and_external_takeover_smoke",
+        "allowed_until": "active_import_or_npm_test_caller_requires_refs_only_helper_or_takeover_receipt_materialization",
+        "required_before_retire_or_absorb": [
+          "stable_helper_policy_moved_to_agent_contracts_authority_or_opl_primitive_ref",
+          "opl_generated_interface_or_invocation_helper_parity_ref",
+          "opl_agent_lab_takeover_handoff_parity_ref",
+          "no_target_truth_verdict_artifact_memory_or_owner_receipt_body_ref",
+          "no_agent_lab_runner_promotion_gate_registry_or_app_shell_owner_ref",
+          "no_active_npm_or_test_caller_ref",
+          "tombstone_or_provenance_ref"
+        ],
+        "forbidden_long_term_claims": [
+          "agent_lab_runner",
+          "promotion_gate",
+          "registry_owner",
+          "app_shell_owner",
+          "generated_interface_owner",
+          "target_truth_or_quality_writer",
+          "target_owner_receipt_body_writer",
+          "generic_runtime_owner",
+          "target_worktree_lifecycle_owner",
+          "domain_specific_command_family"
+        ]
       }
     ]
   },
