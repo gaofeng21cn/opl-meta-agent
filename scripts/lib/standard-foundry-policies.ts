@@ -1,157 +1,77 @@
+import fs from 'node:fs';
 import type { JsonObject } from './domain-pack.ts';
 
-export const USER_STAGE_LOG_REQUIRED_FIELDS = [
-  'stage_name',
-  'problem_summary',
-  'stage_goal',
-  'stage_work_done',
-  'changed_stage_surfaces',
-  'outcome',
-  'remaining_blockers',
-  'evidence_refs',
-];
+export const STANDARD_FOUNDRY_POLICIES_CONTRACT_REF = 'contracts/standard_foundry_policies.json';
 
-export const USER_STAGE_LOG_CONTRACT: JsonObject = {
-  surface_kind: 'opl_standard_agent_user_stage_log_contract',
-  version: 'standard-user-stage-log.v1',
-  owner: 'one-person-lab',
-  standard_agent_requirement: 'domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker',
-  opl_projection_surface: 'stage_progress_log.user_stage_log',
-  domain_semantic_sources: [
-    'typed_closeout_packet.user_stage_log',
-    'typed_closeout_packet.stage_log_summary',
-    'route_impact.user_stage_log',
-    'route_impact.stage_log_summary',
-  ],
-  required_domain_semantic_fields: USER_STAGE_LOG_REQUIRED_FIELDS,
-  required_observability_fields: ['duration', 'token_usage', 'cost'],
-  missing_semantics_policy: 'typed_blocker_or_missing_domain_semantic_summary_no_opl_inference',
-  token_policy: 'observed_or_explicit_missing_null_no_zero_fill',
-  authority_boundary: {
-    opl_can_infer_domain_semantics: false,
-    opl_can_read_artifact_body: false,
-    opl_can_write_domain_truth: false,
-    opl_can_authorize_quality_or_export: false,
-    provider_completion_can_claim_stage_semantics_complete: false,
-  },
-};
+type StandardFoundryPolicies = Record<string, unknown>;
 
-export const STAGE_PROGRESS_DELTA_POLICY: JsonObject = {
-  surface_kind: 'opl_stage_progress_delta_policy',
-  version: 'progress-delta-policy.v1',
-  owner: 'one-person-lab',
-  standard_agent_requirement:
-    'stage_closeout_must_classify_deliverable_progress_vs_platform_repair_or_return_typed_blocker',
-  projection_surface: 'stage_progress_log.user_stage_log',
-  required_fields: [
-    'progress_delta_classification',
-    'deliverable_progress_delta',
-    'platform_repair_delta',
-    'next_forced_delta',
-  ],
-  classification_values: [
-    'deliverable_progress',
-    'platform_repair',
-    'mixed',
-    'typed_blocker',
-    'human_gate',
-    'stop_loss',
-  ],
-  deliverable_delta_aliases: {
-    target_agent_progress: 'deliverable_progress_delta',
-    foundry_agent_progress: 'deliverable_progress_delta',
-    agent_build_progress: 'deliverable_progress_delta',
-  },
-  platform_delta_aliases: {
-    platform_interface_repair: 'platform_repair_delta',
-    agent_lab_or_opl_surface_repair: 'platform_repair_delta',
-  },
-  platform_only_is_not_deliverable_progress: true,
-  missing_delta_policy:
-    'emit_zero_deliverable_delta_and_next_forced_delta_without_inventing_target_agent_work',
-  authority_boundary: {
-    opl_can_infer_domain_work: false,
-    opl_can_read_artifact_body: false,
-    opl_can_write_domain_truth: false,
-    opl_can_authorize_quality_or_export: false,
-    oma_retains_agent_building_semantics: true,
-  },
-};
+function isRecord(value: unknown): value is JsonObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
-export const TYPED_BLOCKER_LINEAGE_POLICY: JsonObject = {
-  surface_kind: 'family-stall-lineage.v1',
-  version: 'family-stall-lineage.v1',
-  owner: 'one-person-lab',
-  standard_agent_requirement:
-    'typed_blockers_must_include_repeat_budget_lineage_next_forced_delta_and_escalation_owner',
-  required_fields: [
-    'blocker_family',
-    'study_id_or_domain_identity',
-    'work_unit_id',
-    'eval_id_or_review_ref',
-    'source_fingerprint',
-    'repeat_count',
-    'first_seen',
-    'last_seen',
-    'last_deliverable_delta',
-    'next_forced_delta',
-    'escalation_owner',
-    'terminal',
-  ],
-  repeat_budget: {
-    mechanism_repair_after_repeat_count: 2,
-    human_gate_or_stop_loss_after_repeat_count: 3,
-  },
-  platform_only_delta_policy: 'does_not_reset_deliverable_stall_budget',
-  authority_boundary: {
-    opl_can_generate_domain_blocker: false,
-    opl_can_escalate_without_domain_or_human_gate_ref: false,
-    opl_can_claim_deliverable_progress_from_platform_repair: false,
-    oma_retains_typed_blocker_authority: true,
-  },
-};
+function stringList(policy: StandardFoundryPolicies, field: string): string[] {
+  const value = policy[field];
+  if (!Array.isArray(value) || value.some((entry) => typeof entry !== 'string' || !entry.trim())) {
+    throw new Error(`Standard Foundry policy ${field} must be a non-empty string array.`);
+  }
+  return value.map((entry) => entry.trim());
+}
 
-export const SERIES_DESIGN_PROFILE: JsonObject = {
-  surface_kind: 'opl_foundry_agent_series_design_profile',
-  version: 'foundry-agent-series-design-profile.v1',
-  profile_id: 'opl_foundry_agent_series_design_profile.v1',
-  profile_summary:
-    'All Foundry Agents share the same OPL domain-pack to stage-led execution to gate/receipt to handoff lifecycle; domain inputs, outputs, aliases, and authority functions vary by agent.',
-  shared_lifecycle_pipeline: [
-    'domain_material_intake',
-    'domain_pack_interpretation',
-    'stage_led_agent_execution',
-    'independent_quality_gate_or_owner_review',
-    'owner_receipt_or_typed_blocker_closeout',
-    'artifact_or_deliverable_handoff',
-    'opl_refs_only_projection_and_recovery',
-  ],
-  domain_io_profile: {
-    input_slot: 'domain_materials_or_task_request',
-    output_slot: 'domain_deliverable_or_owner_handoff',
-    input_is_domain_specific: true,
-    output_is_domain_specific: true,
-    shared_runtime_interpretation:
-      'OPL treats input/output as opaque domain refs and projects identity, stage, progress, closeout, evidence, and recovery metadata only.',
-  },
-  stage_pack_sections: [
-    'prompts',
-    'stages',
-    'skills',
-    'knowledge',
-    'quality_gates',
-  ],
-  shared_closeout_contract: {
-    success_shape: 'domain_owner_receipt_ref',
-    blocked_shape: 'domain_owned_typed_blocker_ref',
-    route_back_shape: 'route_back_or_human_gate_ref',
-    provider_completion_is_closeout: false,
-  },
-  authority_invariants: {
-    opl_can_infer_domain_output: false,
-    opl_can_read_domain_body: false,
-    opl_can_write_domain_truth: false,
-    opl_can_authorize_quality_or_export: false,
-    domain_owns_input_truth_and_output_authority: true,
-  },
-};
+function objectField(policy: StandardFoundryPolicies, field: string): JsonObject {
+  const value = policy[field];
+  if (!isRecord(value)) {
+    throw new Error(`Standard Foundry policy ${field} must be a JSON object.`);
+  }
+  return value;
+}
+
+function arraysMatch(left: unknown, right: string[]): boolean {
+  return Array.isArray(left)
+    && left.length === right.length
+    && left.every((entry, index) => entry === right[index]);
+}
+
+function readStandardFoundryPolicies(): StandardFoundryPolicies {
+  const policy = JSON.parse(
+    fs.readFileSync(new URL('../../contracts/standard_foundry_policies.json', import.meta.url), 'utf8'),
+  ) as StandardFoundryPolicies;
+  if (policy.surface_kind !== 'standard_foundry_policies') {
+    throw new Error('Standard Foundry policies contract has an unexpected surface_kind.');
+  }
+  if (policy.script_projection_ref !== 'scripts/lib/standard-foundry-policies.ts') {
+    throw new Error('Standard Foundry policies contract must name its script projection ref.');
+  }
+  const requiredFields = stringList(policy, 'user_stage_log_required_fields');
+  const userStageLogContract = objectField(policy, 'user_stage_log_contract');
+  if (!arraysMatch(userStageLogContract.required_domain_semantic_fields, requiredFields)) {
+    throw new Error('Standard Foundry policies contract stage-log fields drifted from required fields.');
+  }
+  return policy;
+}
+
+export const STANDARD_FOUNDRY_POLICIES = readStandardFoundryPolicies();
+
+export const USER_STAGE_LOG_REQUIRED_FIELDS = stringList(
+  STANDARD_FOUNDRY_POLICIES,
+  'user_stage_log_required_fields',
+);
+
+export const USER_STAGE_LOG_CONTRACT = objectField(
+  STANDARD_FOUNDRY_POLICIES,
+  'user_stage_log_contract',
+);
+
+export const STAGE_PROGRESS_DELTA_POLICY = objectField(
+  STANDARD_FOUNDRY_POLICIES,
+  'stage_progress_delta_policy',
+);
+
+export const TYPED_BLOCKER_LINEAGE_POLICY = objectField(
+  STANDARD_FOUNDRY_POLICIES,
+  'typed_blocker_lineage_policy',
+);
+
+export const SERIES_DESIGN_PROFILE = objectField(
+  STANDARD_FOUNDRY_POLICIES,
+  'series_design_profile',
+);

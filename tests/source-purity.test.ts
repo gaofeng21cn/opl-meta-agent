@@ -13,6 +13,14 @@ import {
   DEFAULT_TARGET_WORKSPACE_EXPECTED_OUTCOMES,
   DEFAULT_TARGET_WORKSPACE_REQUIRED_SURFACE_REFS,
 } from '../scripts/lib/work-order-policy-constants.ts';
+import {
+  SERIES_DESIGN_PROFILE,
+  STAGE_PROGRESS_DELTA_POLICY,
+  STANDARD_FOUNDRY_POLICIES_CONTRACT_REF,
+  TYPED_BLOCKER_LINEAGE_POLICY,
+  USER_STAGE_LOG_CONTRACT,
+  USER_STAGE_LOG_REQUIRED_FIELDS,
+} from '../scripts/lib/standard-foundry-policies.ts';
 
 type JsonObject = Record<string, any>;
 
@@ -265,6 +273,16 @@ test('script morphology stays limited to authority refs, materializers, and help
   assert.ok(buildBaselineGate, 'build-agent-baseline retirement gate should exist');
   assert.ok(
     asStrings(buildBaselineGate.required_before_retire_or_absorb).includes(
+      'stable_standard_foundry_policies_moved_to_contract_or_opl_primitive_ref',
+    ),
+    'stage materializer retirement should require stable Foundry policy contract or OPL primitive migration',
+  );
+  assert.ok(
+    asStrings(buildBaselineGate.closed_retention_refs).includes(STANDARD_FOUNDRY_POLICIES_CONTRACT_REF),
+    'stable Foundry policy body should be moved into a contract while script projection remains retained',
+  );
+  assert.ok(
+    asStrings(buildBaselineGate.required_before_retire_or_absorb).includes(
       'opl_physical_kernel_locator_conformance_workbench_consumption_parity_ref',
     ),
     'stage materializer retirement should require OPL physical kernel/conformance/workbench parity',
@@ -366,6 +384,14 @@ test('script morphology stays limited to authority refs, materializers, and help
       ].forEach((writeRef) => {
         assert.ok(asStrings(entry.writes_only).includes(writeRef), `${entry.script_ref} writes_only ${writeRef}`);
       });
+    }
+    if (entry.script_ref === 'scripts/lib/standard-foundry-policies.ts') {
+      assert.ok(
+        asStrings(entry.writes_only).includes('standard_foundry_policies_contract_projection_ref'),
+      );
+      assert.deepEqual(asStrings(entry.contract_refs), [
+        STANDARD_FOUNDRY_POLICIES_CONTRACT_REF,
+      ]);
     }
     if (entry.script_ref === 'scripts/lib/stage-native-artifact-contract.ts') {
       [
@@ -514,4 +540,42 @@ test('developer work-order policy defaults are contract-backed projections', () 
     DEFAULT_SOURCE_PATCH_CLOSEOUT_EVIDENCE,
     asStrings(contract.default_source_patch_closeout_evidence),
   );
+});
+
+test('standard Foundry policies are contract-backed projections', () => {
+  const contract = readJson(STANDARD_FOUNDRY_POLICIES_CONTRACT_REF);
+  const authorityFunctions = readJson('runtime/authority_functions/meta-agent-authority-functions.json');
+  const morphologyPolicy = authorityFunctions.script_morphology_policy as JsonObject;
+  const retirementGate = asObjects(morphologyPolicy.script_to_pack_retirement_gates)
+    .find((gate) => gate.gate_id === 'build_agent_baseline_and_stage_decomposition_materializers');
+  const policyProjection = asObjects(morphologyPolicy.script_classifications)
+    .find((entry) => entry.script_ref === 'scripts/lib/standard-foundry-policies.ts');
+
+  assert.equal(contract.surface_kind, 'standard_foundry_policies');
+  assert.equal(contract.state, 'active_contract');
+  assert.equal(contract.script_projection_ref, 'scripts/lib/standard-foundry-policies.ts');
+  assert.equal(contract.authority_boundary.can_write_target_domain_truth, false);
+  assert.equal(contract.authority_boundary.can_read_target_domain_body, false);
+  assert.equal(contract.authority_boundary.can_authorize_target_quality_or_export, false);
+  assert.equal(contract.authority_boundary.can_promote_default_agent, false);
+  assert.equal(contract.authority_boundary.can_replace_opl_framework_or_agent_lab, false);
+
+  assert.ok(policyProjection, 'standard Foundry policy projection script should be classified');
+  assert.deepEqual(asStrings(policyProjection.contract_refs), [
+    STANDARD_FOUNDRY_POLICIES_CONTRACT_REF,
+  ]);
+  assert.ok(
+    asStrings(policyProjection.writes_only).includes('standard_foundry_policies_contract_projection_ref'),
+  );
+  assert.ok(retirementGate, 'stage-decomposition materializer gate should exist');
+  assert.ok(
+    asStrings(retirementGate.closed_retention_refs).includes(STANDARD_FOUNDRY_POLICIES_CONTRACT_REF),
+    'stable Foundry policy should be moved into a contract while script projection remains retained',
+  );
+
+  assert.deepEqual(USER_STAGE_LOG_REQUIRED_FIELDS, asStrings(contract.user_stage_log_required_fields));
+  assert.deepEqual(USER_STAGE_LOG_CONTRACT, contract.user_stage_log_contract);
+  assert.deepEqual(STAGE_PROGRESS_DELTA_POLICY, contract.stage_progress_delta_policy);
+  assert.deepEqual(TYPED_BLOCKER_LINEAGE_POLICY, contract.typed_blocker_lineage_policy);
+  assert.deepEqual(SERIES_DESIGN_PROFILE, contract.series_design_profile);
 });

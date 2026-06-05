@@ -313,10 +313,14 @@
           "opl_standard_domain_agent_scaffold"
         ],
         "writes_only": [
+          "standard_foundry_policies_contract_projection_ref",
           "standard_foundry_policy_ref",
           "stage_progress_delta_policy_ref",
           "typed_blocker_lineage_policy_ref",
           "foundry_agent_series_design_profile_ref"
+        ],
+        "contract_refs": [
+          "contracts/standard_foundry_policies.json"
         ],
         "forbidden_roles": []
       },
@@ -508,6 +512,7 @@
         "required_before_retire_or_absorb": [
           "opl_stage_attempt_launch_and_read_model_parity_ref",
           "opl_pack_compiler_typed_closeout_materializer_parity_ref",
+          "stable_standard_foundry_policies_moved_to_contract_or_opl_primitive_ref",
           "opl_physical_kernel_locator_conformance_workbench_consumption_parity_ref",
           "explicit_fixture_or_proof_path_if_retained_ref",
           "no_implicit_fixture_graph_ref",
@@ -526,6 +531,9 @@
           "workbench_consumption_owner",
           "owner_promotion_or_receipt_body_authority",
           "target_worktree_lifecycle_owner"
+        ],
+        "closed_retention_refs": [
+          "contracts/standard_foundry_policies.json"
         ]
       },
       {
