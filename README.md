@@ -115,6 +115,7 @@ The loop turns each run into reviewable improvement material:
 - It organizes goals, boundaries, working steps, agent skeletons, test suites, and next-version improvement proposals.
 - It can generate a new agent baseline from scratch, and it can also take over testing and failure-evidence organization for an existing agent.
 - It emits candidates, test results, and improvement proposals only. It does not make the target domain's final judgment or directly rewrite that agent's domain content, memory body, or deliverables.
+- Its StageRun controlled canary includes an operator-readable summary, but that summary only describes controlled fixture refs and closeout shape. It does not claim live domain progress, target-agent readiness, production readiness, App live rendering, human approval, or default promotion.
 - It reuses One Person Lab Framework scaffold, Agent Lab, queue/projection, and promotion gates instead of rebuilding generic runtime in this repo.
 
 <details>
@@ -124,6 +125,8 @@ The loop turns each run into reviewable improvement material:
 - The default `build-agent-baseline` path launches a live Codex `stage-decomposition` attempt or consumes an explicit typed closeout packet. That closeout is the source of the target stage graph, action refs, pack files, independent gate policy, and quality gate declarations; scripts only validate, materialize, run scaffold/Agent Lab, and record receipts.
 - The stage-decomposition attempt is an open cognitive computation boundary: the executor may choose which references to read, how many candidates to generate, how to compare tradeoffs, and whether to request a reviewer or typed blocker. The action implementation validates and materializes; it does not perform the expert reasoning.
 - This repo's tool catalog follows a Tool Affordance Boundary: it declares capabilities, permissions, credentials, write scopes, and forbidden authority for scaffold, test, evidence takeover, mechanism-candidate, and patch-work-order tools. It does not require the executor to research, decompose stages, run tests, or generate candidates in a fixed order.
+- The StageRun controlled canary evidence lives in `contracts/stage_run_canary_evidence.json`. Its `operator_summary` is limited to stage refs, strategy refs, terminal owner receipt or typed blocker ref, blocked claims, and next owner delta ref; the overclaim boundary forbids upgrading those refs into live progress, readiness, quality/export verdicts, production completion, App rendering, human approval, owner receipt body materialization, or default-agent promotion.
+- The legacy runtime residue guard lives in `contracts/stage_run_kernel_profile.json`. It binds the canary to functional privatization, default-caller deletion, source-purity scan, and source-purity test refs; it cannot restore repo-owned runtime/status/workbench wrappers, write runtime/read-model state, authorize closeout, or authorize physical deletion.
 - The parameterized action implementation is `npm run build-agent-baseline -- --output-dir <dir> --opl-bin <opl> --ai-reviewer-evaluation <reviewer-eval.json> [--stage-runner live|fixture --stage-decomposition-closeout <closeout.json>] --domain-id <domain-id> --domain-label <label> --delivery-domain <delivery-domain> --target-brief <brief>`: generate the requested target agent repo from the typed stage-decomposition packet, call OPL scaffold validation, generate an Agent Lab external suite, run `opl agent-lab run --suite`, consume a structured AI reviewer evaluation, and write a baseline receipt, real-target delivery receipt, scaleout evidence ledger, online-learning candidate, and `mechanism-patch-proposal.json`.
 - Free text closeouts, partial refs, missing independent gate policy, missing quality gate declaration, or self-review fail closed before a baseline receipt is signed.
 - `--domain-id` is required. The retired implicit fixture smoke is no longer a materialization path; `fixture` runner only consumes an explicit typed closeout packet, and real-target evidence is emitted for the explicit target agent only.
@@ -152,6 +155,7 @@ The loop turns each run into reviewable improvement material:
 - When changing contracts, README, docs, or smoke scripts, update `tests/*.test.ts` so boundary flags still prove proposal-only / refs-only behavior.
 - This repo owns agent-building semantics and testing/self-evolution orchestration. Use OPL Agent Lab for real runs, longline suites, mechanism read models, and evolution segments.
 - Do not treat `mechanism_patch_proposal` as an adopted mechanism. It is only a candidate that may enter a gate.
+- Do not treat a controlled canary, operator summary, overclaim-boundary pass, or legacy residue guard as live progress, production readiness, target-owner approval, or App rendering proof.
 - Do not treat takeover as ownership of the target agent's domain truth, memory body, artifact authority, or quality verdict.
 
 </details>

@@ -2410,6 +2410,10 @@ test('StageRun Kernel profile keeps legacy wrappers retired and canaries tool re
   const canary = profile.agent_building_stage_run_canary as JsonObject;
   const toolPolicy = canary.tool_affordance_policy as JsonObject;
   const passCondition = canary.pass_condition as JsonObject;
+  const overclaimBoundary = canary.overclaim_boundary as JsonObject;
+  const legacyResidueGuard = canary.legacy_runtime_residue_guard as JsonObject;
+  const operatorSummary = canaryEvidence.operator_summary as JsonObject;
+  const evidenceOverclaimBoundary = canaryEvidence.overclaim_boundary as JsonObject;
   const canaryToolPolicy = canaryEvidence.tool_affordance_policy as JsonObject;
   const closeout = canaryEvidence.closeout as JsonObject;
   const authorityBoundary = canaryEvidence.authority_boundary as JsonObject;
@@ -2516,6 +2520,58 @@ test('StageRun Kernel profile keeps legacy wrappers retired and canaries tool re
   assert.equal(passCondition.file_presence_counts_as_pass, false);
   assert.equal(passCondition.read_model_counts_as_pass, false);
 
+  assert.equal(overclaimBoundary.boundary_kind, 'controlled_canary_overclaim_boundary');
+  assert.equal(overclaimBoundary.canary_evidence_ref, 'contracts/stage_run_canary_evidence.json');
+  assert.deepEqual(asStrings(overclaimBoundary.allowed_claims), [
+    'repo_local_stage_run_canary_shape_consumable',
+    'controlled_fixture_strategy_trace_refs_present',
+    'controlled_fixture_owner_receipt_or_typed_blocker_ref_present',
+    'legacy_runtime_residue_guard_declared',
+  ]);
+  assert.deepEqual(asStrings(overclaimBoundary.forbidden_claims), [
+    'live_domain_progress',
+    'target_agent_domain_ready',
+    'target_truth_ready',
+    'target_artifact_ready',
+    'target_quality_verdict',
+    'target_export_ready',
+    'agent_lab_promotion_ready',
+    'production_ready',
+    'app_live_rendering',
+    'human_approval',
+    'default_agent_promotion',
+    'owner_receipt_body_materialized_by_opl',
+  ]);
+  assert.equal(overclaimBoundary.evidence_scope_must_equal, 'controlled_fixture_not_live_domain_progress');
+  assert.equal(overclaimBoundary.authority_boundary.allowed_claims_can_authorize_closeout, false);
+  assert.equal(overclaimBoundary.authority_boundary.controlled_canary_can_claim_live_domain_progress, false);
+  assert.equal(overclaimBoundary.authority_boundary.operator_summary_can_upgrade_readiness, false);
+  assert.equal(overclaimBoundary.authority_boundary.contract_completeness_can_claim_quality_or_export, false);
+
+  assert.equal(legacyResidueGuard.guard_kind, 'legacy_runtime_residue_guard');
+  assert.equal(legacyResidueGuard.scan_scope, 'repo_tracked_source_contracts_docs_only');
+  assert.deepEqual(asStrings(legacyResidueGuard.forbidden_residue_roles), [
+    'repo_owned_runtime_wrapper',
+    'repo_owned_status_shell',
+    'repo_owned_operator_workbench',
+    'repo_owned_sidecar_or_projection_writer',
+    'repo_owned_queue_or_attempt_ledger',
+    'repo_owned_agent_lab_runner',
+    'repo_owned_worktree_lifecycle',
+    'compatibility_or_fallback_route',
+  ]);
+  assert.deepEqual(asStrings(legacyResidueGuard.required_guard_refs), [
+    'contracts/functional_privatization_audit.json',
+    'contracts/default_caller_deletion_evidence.json',
+    'runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt',
+    'tests/source-purity.test.ts',
+  ]);
+  assert.equal(legacyResidueGuard.authority_boundary.legacy_residue_can_be_active_runtime, false);
+  assert.equal(legacyResidueGuard.authority_boundary.legacy_residue_can_write_runtime_state, false);
+  assert.equal(legacyResidueGuard.authority_boundary.legacy_residue_can_write_read_model, false);
+  assert.equal(legacyResidueGuard.authority_boundary.legacy_residue_can_authorize_closeout, false);
+  assert.equal(legacyResidueGuard.authority_boundary.guard_can_physically_delete_files, false);
+
   assert.equal(canaryEvidence.surface_kind, 'opl_stage_run_controlled_canary_evidence');
   assert.equal(canaryEvidence.version, 'stage-run-controlled-canary.v1');
   assert.equal(canaryEvidence.domain_id, 'opl-meta-agent');
@@ -2528,6 +2584,30 @@ test('StageRun Kernel profile keeps legacy wrappers retired and canaries tool re
     canaryEvidence.current_pointer_ref,
     'stage-current-pointer-ref:opl-meta-agent/agent-building-controlled-canary',
   );
+
+  assert.equal(operatorSummary.summary_kind, 'controlled_canary_operator_summary');
+  assert.equal(operatorSummary.summary_scope, 'operator_readable_controlled_fixture_summary');
+  assert.equal(operatorSummary.evidence_scope, canaryEvidence.evidence_scope);
+  assert.equal(operatorSummary.stage_run_ref, canaryEvidence.stage_run_ref);
+  assert.equal(operatorSummary.stage_manifest_ref, canaryEvidence.stage_manifest_ref);
+  assert.equal(operatorSummary.current_pointer_ref, canaryEvidence.current_pointer_ref);
+  assert.deepEqual(asStrings(operatorSummary.visible_stage_sequence), asStrings(canary.stage_sequence));
+  assert.deepEqual(asStrings(operatorSummary.visible_claims), asStrings(overclaimBoundary.allowed_claims));
+  assert.deepEqual(asStrings(operatorSummary.blocked_claims), asStrings(overclaimBoundary.forbidden_claims));
+  assert.equal(operatorSummary.terminal_outcome, closeout.terminal_outcome);
+  assert.equal(operatorSummary.owner_receipt_ref_or_typed_blocker_ref, closeout.owner_receipt_ref);
+  assert.equal(operatorSummary.operator_next_delta_ref, 'next-owner-delta-ref:opl-meta-agent/stage-run-canary/controlled-fixture');
+  assert.equal(operatorSummary.summary_can_claim_live_domain_progress, false);
+  assert.equal(operatorSummary.summary_can_claim_target_agent_readiness, false);
+  assert.equal(operatorSummary.summary_can_claim_production_readiness, false);
+  assert.equal(operatorSummary.summary_can_authorize_default_promotion, false);
+
+  assert.deepEqual(evidenceOverclaimBoundary, {
+    boundary_kind: overclaimBoundary.boundary_kind,
+    allowed_claims: overclaimBoundary.allowed_claims,
+    forbidden_claims: overclaimBoundary.forbidden_claims,
+    authority_boundary: overclaimBoundary.authority_boundary,
+  });
 
   [
     'candidate_generation',

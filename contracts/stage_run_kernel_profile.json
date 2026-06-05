@@ -213,6 +213,64 @@
       "provider_completion_counts_as_pass": false,
       "file_presence_counts_as_pass": false,
       "read_model_counts_as_pass": false
+    },
+    "overclaim_boundary": {
+      "boundary_kind": "controlled_canary_overclaim_boundary",
+      "canary_evidence_ref": "contracts/stage_run_canary_evidence.json",
+      "allowed_claims": [
+        "repo_local_stage_run_canary_shape_consumable",
+        "controlled_fixture_strategy_trace_refs_present",
+        "controlled_fixture_owner_receipt_or_typed_blocker_ref_present",
+        "legacy_runtime_residue_guard_declared"
+      ],
+      "forbidden_claims": [
+        "live_domain_progress",
+        "target_agent_domain_ready",
+        "target_truth_ready",
+        "target_artifact_ready",
+        "target_quality_verdict",
+        "target_export_ready",
+        "agent_lab_promotion_ready",
+        "production_ready",
+        "app_live_rendering",
+        "human_approval",
+        "default_agent_promotion",
+        "owner_receipt_body_materialized_by_opl"
+      ],
+      "evidence_scope_must_equal": "controlled_fixture_not_live_domain_progress",
+      "authority_boundary": {
+        "allowed_claims_can_authorize_closeout": false,
+        "controlled_canary_can_claim_live_domain_progress": false,
+        "operator_summary_can_upgrade_readiness": false,
+        "contract_completeness_can_claim_quality_or_export": false
+      }
+    },
+    "legacy_runtime_residue_guard": {
+      "guard_kind": "legacy_runtime_residue_guard",
+      "scan_scope": "repo_tracked_source_contracts_docs_only",
+      "forbidden_residue_roles": [
+        "repo_owned_runtime_wrapper",
+        "repo_owned_status_shell",
+        "repo_owned_operator_workbench",
+        "repo_owned_sidecar_or_projection_writer",
+        "repo_owned_queue_or_attempt_ledger",
+        "repo_owned_agent_lab_runner",
+        "repo_owned_worktree_lifecycle",
+        "compatibility_or_fallback_route"
+      ],
+      "required_guard_refs": [
+        "contracts/functional_privatization_audit.json",
+        "contracts/default_caller_deletion_evidence.json",
+        "runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt",
+        "tests/source-purity.test.ts"
+      ],
+      "authority_boundary": {
+        "legacy_residue_can_be_active_runtime": false,
+        "legacy_residue_can_write_runtime_state": false,
+        "legacy_residue_can_write_read_model": false,
+        "legacy_residue_can_authorize_closeout": false,
+        "guard_can_physically_delete_files": false
+      }
     }
   }
 }

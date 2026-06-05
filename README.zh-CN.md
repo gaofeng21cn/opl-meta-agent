@@ -115,6 +115,7 @@ Machine boundary: 本 README 是人读仓库入口。机器真相继续归 `cont
 - 它负责整理目标、边界、工作步骤、Agent 骨架、测试套件和下一版改进建议。
 - 它可以从零生成新 Agent 基线，也可以先接管已有 Agent 的测试和失败证据整理。
 - 它只提出候选、测试结果和改进建议，不替目标领域做最终判断，不直接改写目标 Agent 的领域内容、记忆正文或交付物。
+- 它的 StageRun controlled canary 带有 operator 可读摘要，但该摘要只描述 controlled fixture refs 和 closeout shape，不声明 live domain progress、target-agent readiness、production readiness、App live rendering、human approval 或 default promotion。
 - 它复用 One Person Lab Framework 的脚手架、Agent Lab、队列、状态投影和采用门槛，不在本仓重建通用运行框架。
 
 <details>
@@ -124,6 +125,8 @@ Machine boundary: 本 README 是人读仓库入口。机器真相继续归 `cont
 - 默认 `build-agent-baseline` 主路径会启动 live Codex `stage-decomposition` attempt，或消费一个显式 typed closeout packet。该 closeout 是目标 stage graph、action refs、pack 文件、independent gate policy 和 quality gate declaration 的来源；脚本只负责校验、物化、scaffold/Agent Lab 运行和 receipt 记录。
 - stage-decomposition attempt 是开放式认知计算边界：executor 可以自主选择读取哪些参考、生成几个候选、如何比较取舍、是否请求 reviewer 或 typed blocker；action implementation 只负责校验和物化，不承担专家推理。
 - 本仓工具目录遵循 Tool Affordance Boundary：声明脚手架、测试、evidence takeover、机制候选和 patch work-order 工具的能力、权限、凭据、可写范围和 forbidden authority；不规定 executor 必须按固定顺序调研、拆 stage、跑测试或生成候选。
+- StageRun controlled canary evidence 位于 `contracts/stage_run_canary_evidence.json`。其中 `operator_summary` 只展示 stage refs、strategy refs、terminal owner receipt 或 typed blocker ref、blocked claims 和 next owner delta ref；overclaim boundary 禁止把这些 refs 升级为 live progress、readiness、quality/export verdict、production completion、App rendering、human approval、owner receipt body materialization 或 default-agent promotion。
+- legacy runtime residue guard 位于 `contracts/stage_run_kernel_profile.json`。它把 canary 绑定到 functional privatization、default-caller deletion、source-purity scan 和 source-purity test refs；它不能恢复 repo-owned runtime/status/workbench wrapper，不能写 runtime/read-model state，不能授权 closeout，也不能授权物理删除。
 - 参数化 action implementation 是 `npm run build-agent-baseline -- --output-dir <dir> --opl-bin <opl> --ai-reviewer-evaluation <reviewer-eval.json> [--stage-runner live|fixture --stage-decomposition-closeout <closeout.json>] --domain-id <domain-id> --domain-label <label> --delivery-domain <delivery-domain> --target-brief <brief>`：根据 typed stage-decomposition packet 生成用户指定的目标 agent repo，调用 OPL 脚手架校验，生成 Agent Lab 外部测试套件，运行 `opl agent-lab run --suite`，消费结构化 AI reviewer evaluation，再写入基线回执、真实目标交付回执、scaleout evidence ledger、后续学习候选和 `mechanism-patch-proposal.json`。
 - free text closeout、partial refs、缺 independent gate policy、缺 quality gate declaration 或 self-review 必须在签发 baseline receipt 前 fail closed。
 - `--domain-id` 是硬要求。已退役的隐式 fixture smoke 不再作为物化路径存在；`fixture` runner 只消费显式 typed closeout packet，真实目标证据只为显式目标 agent 生成。
@@ -153,6 +156,7 @@ Machine boundary: 本 README 是人读仓库入口。机器真相继续归 `cont
 - 修改 contracts、README、docs 或 smoke scripts 时，同步更新 `tests/*.test.ts`，确保边界标记仍然证明本仓只产出建议和引用，不直接采用或写入目标领域内容。
 - 本仓只负责智能体构建语义、测试编排和自进化候选组织。需要真实运行、长线测试、机制读模型或演化片段时，调用 OPL Agent Lab。
 - 不要把 `mechanism_patch_proposal` 当作已采用机制；它只是可进入门槛审查的候选。
+- 不要把 controlled canary、operator summary、overclaim-boundary pass 或 legacy residue guard 当成 live progress、production readiness、target-owner approval 或 App rendering proof。
 - 不要把测试接管理解成接管目标智能体的领域事实、记忆正文、产物权威或质量裁决。
 
 </details>
