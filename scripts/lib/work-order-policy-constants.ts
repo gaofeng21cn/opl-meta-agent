@@ -1,57 +1,63 @@
-export const DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES = [
-  'target domain truth surfaces',
-  'target domain memory body',
-  'target domain artifact body',
-  'target quality verdict bodies',
-  'submission readiness verdicts',
-  'export verdict bodies',
-];
+import fs from 'node:fs';
 
-export const DEFAULT_RUNTIME_REQUIRED_SURFACE_REFS = [
-  'target_agent_descriptor',
-  'target_agent_owner_route',
-  'target_agent_owner_receipt_contract',
-  'target_agent_quality_gate_projection',
-  'default_executor_dispatch_execution',
-  'target_agent_status_or_progress_projection',
-];
+export const DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF = 'contracts/developer_work_order_policy.json';
 
-export const DEFAULT_RUNTIME_EXPECTED_OUTCOMES = [
-  'patched quality contract, owner route, or owner receipt contract is visible in target runtime/read-model projection',
-  'blocked suite redrive no longer parks as stale human handoff when target owner work remains',
-  'no forbidden target domain truth, artifact, memory, quality verdict, or submission readiness surface is written by opl-meta-agent',
-];
+type DeveloperWorkOrderPolicy = Record<string, unknown>;
 
-export const DEFAULT_TARGET_WORKSPACE_REQUIRED_SURFACE_REFS = [
-  'target_workspace_pyproject_or_lock',
-  'target_workspace_profile_or_config_env',
-  'study_runtime_analysis_bundle',
-  'target_owner_entry_redrive_report',
-  'target_repo_hygiene_status',
-];
+function stringList(policy: DeveloperWorkOrderPolicy, field: string): string[] {
+  const value = policy[field];
+  if (!Array.isArray(value) || value.some((entry) => typeof entry !== 'string' || !entry.trim())) {
+    throw new Error(`Developer work-order policy ${field} must be a non-empty string array.`);
+  }
+  return value.map((entry) => entry.trim());
+}
 
-export const DEFAULT_TARGET_WORKSPACE_EXPECTED_OUTCOMES = [
-  'target workspace dependency lock/profile includes required runtime extras before owner redrive',
-  'owner runtime entry uses the target workspace interpreter rather than target repo checkout .venv',
-  'owner redrive reports the analysis/runtime bundle as ready under the target workspace interpreter',
-  'repo hygiene proof shows no target checkout .venv or generated egg-info pollution',
-];
+function readDeveloperWorkOrderPolicy(): DeveloperWorkOrderPolicy {
+  const policy = JSON.parse(
+    fs.readFileSync(new URL('../../contracts/developer_work_order_policy.json', import.meta.url), 'utf8'),
+  ) as DeveloperWorkOrderPolicy;
+  if (policy.surface_kind !== 'developer_work_order_policy') {
+    throw new Error('Developer work-order policy contract has an unexpected surface_kind.');
+  }
+  if (policy.script_projection_ref !== 'scripts/lib/work-order-policy-constants.ts') {
+    throw new Error('Developer work-order policy contract must name its script projection ref.');
+  }
+  return policy;
+}
 
-export const DEFAULT_NO_PATCH_CLOSEOUT_EVIDENCE = [
-  'target owner receipt projection consumed Agent Lab suite result',
-  'target owner receipt projection consumed opl-meta-agent coordination result',
-  'no target source patch was requested',
-  'no target domain truth, memory body, artifact body, quality verdict, or export verdict was written',
-];
+export const DEVELOPER_WORK_ORDER_POLICY = readDeveloperWorkOrderPolicy();
 
-export const DEFAULT_SOURCE_PATCH_CLOSEOUT_EVIDENCE = [
-  'patch_traceability_matrix addressed',
-  'target agent tests passed',
-  'target runtime/read-model consumed patched capability',
-  'target workspace dependency lock/profile migrated when runtime extras are required',
-  'target owner entry redrive consumed the migrated workspace environment',
-  'repo hygiene proof shows no target checkout .venv or generated egg-info pollution',
-  'developer patch receipt recorded',
-  'target agent status or decision docs updated',
-  'temporary worktree cleaned after absorb',
-];
+export const DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES = stringList(
+  DEVELOPER_WORK_ORDER_POLICY,
+  'default_forbidden_target_paths_or_surfaces',
+);
+
+export const DEFAULT_RUNTIME_REQUIRED_SURFACE_REFS = stringList(
+  DEVELOPER_WORK_ORDER_POLICY,
+  'default_runtime_required_surface_refs',
+);
+
+export const DEFAULT_RUNTIME_EXPECTED_OUTCOMES = stringList(
+  DEVELOPER_WORK_ORDER_POLICY,
+  'default_runtime_expected_outcomes',
+);
+
+export const DEFAULT_TARGET_WORKSPACE_REQUIRED_SURFACE_REFS = stringList(
+  DEVELOPER_WORK_ORDER_POLICY,
+  'default_target_workspace_required_surface_refs',
+);
+
+export const DEFAULT_TARGET_WORKSPACE_EXPECTED_OUTCOMES = stringList(
+  DEVELOPER_WORK_ORDER_POLICY,
+  'default_target_workspace_expected_outcomes',
+);
+
+export const DEFAULT_NO_PATCH_CLOSEOUT_EVIDENCE = stringList(
+  DEVELOPER_WORK_ORDER_POLICY,
+  'default_no_patch_closeout_evidence',
+);
+
+export const DEFAULT_SOURCE_PATCH_CLOSEOUT_EVIDENCE = stringList(
+  DEVELOPER_WORK_ORDER_POLICY,
+  'default_source_patch_closeout_evidence',
+);

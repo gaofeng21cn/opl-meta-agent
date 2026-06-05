@@ -1,0 +1,68 @@
+{
+  "surface_kind": "developer_work_order_policy",
+  "version": "developer-work-order-policy.v1",
+  "owner": "opl-meta-agent",
+  "purpose": "stable default policy for target-agent developer work orders",
+  "state": "active_contract",
+  "machine_boundary": "This contract is the stable policy home for OMA developer work-order defaults. scripts/lib/work-order-policy-constants.ts may project these arrays for active callers, but scripts do not own the policy truth.",
+  "script_projection_ref": "scripts/lib/work-order-policy-constants.ts",
+  "authority_boundary": {
+    "can_write_target_domain_truth": false,
+    "can_write_target_memory_body": false,
+    "can_write_target_artifact_body": false,
+    "can_authorize_target_quality_or_export": false,
+    "can_authorize_submission_readiness": false,
+    "can_promote_default_agent": false
+  },
+  "default_forbidden_target_paths_or_surfaces": [
+    "target domain truth surfaces",
+    "target domain memory body",
+    "target domain artifact body",
+    "target quality verdict bodies",
+    "submission readiness verdicts",
+    "export verdict bodies"
+  ],
+  "default_runtime_required_surface_refs": [
+    "target_agent_descriptor",
+    "target_agent_owner_route",
+    "target_agent_owner_receipt_contract",
+    "target_agent_quality_gate_projection",
+    "default_executor_dispatch_execution",
+    "target_agent_status_or_progress_projection"
+  ],
+  "default_runtime_expected_outcomes": [
+    "patched quality contract, owner route, or owner receipt contract is visible in target runtime/read-model projection",
+    "blocked suite redrive no longer parks as stale human handoff when target owner work remains",
+    "no forbidden target domain truth, artifact, memory, quality verdict, or submission readiness surface is written by opl-meta-agent"
+  ],
+  "default_target_workspace_required_surface_refs": [
+    "target_workspace_pyproject_or_lock",
+    "target_workspace_profile_or_config_env",
+    "study_runtime_analysis_bundle",
+    "target_owner_entry_redrive_report",
+    "target_repo_hygiene_status"
+  ],
+  "default_target_workspace_expected_outcomes": [
+    "target workspace dependency lock/profile includes required runtime extras before owner redrive",
+    "owner runtime entry uses the target workspace interpreter rather than target repo checkout .venv",
+    "owner redrive reports the analysis/runtime bundle as ready under the target workspace interpreter",
+    "repo hygiene proof shows no target checkout .venv or generated egg-info pollution"
+  ],
+  "default_no_patch_closeout_evidence": [
+    "target owner receipt projection consumed Agent Lab suite result",
+    "target owner receipt projection consumed opl-meta-agent coordination result",
+    "no target source patch was requested",
+    "no target domain truth, memory body, artifact body, quality verdict, or export verdict was written"
+  ],
+  "default_source_patch_closeout_evidence": [
+    "patch_traceability_matrix addressed",
+    "target agent tests passed",
+    "target runtime/read-model consumed patched capability",
+    "target workspace dependency lock/profile migrated when runtime extras are required",
+    "target owner entry redrive consumed the migrated workspace environment",
+    "repo hygiene proof shows no target checkout .venv or generated egg-info pollution",
+    "developer patch receipt recorded",
+    "target agent status or decision docs updated",
+    "temporary worktree cleaned after absorb"
+  ]
+}

@@ -88,7 +88,7 @@ Owner split 固定为：
 
 - OPL generated/default caller consumption tail 继续由 default-caller evidence、typed blocker/no-forbidden-write/provenance refs 和 OPL-side consumption receipt 管理。
 - domain refs-only adapter thinning 继续压缩 adapter/materializer 边界；无法证明为 OMA minimal authority implementation 的 helper 要迁入 OPL primitive 或删除。
-- `scripts/` 中稳定下来的 agent-building policy 继续迁回 `agent/`、`contracts/` 或 `runtime/authority_functions/`；脚本不得成为长期 private runner、Agent Lab replacement、workbench、promotion engine、worktree lifecycle owner、registry/App shell 或 compatibility facade。
+- `scripts/` 中稳定下来的 agent-building policy 继续迁回 `agent/`、`contracts/` 或 `runtime/authority_functions/`；developer work-order 默认 forbidden surfaces、runtime/workspace verification refs 和 closeout evidence policy 已迁到 `contracts/developer_work_order_policy.json`，`scripts/lib/work-order-policy-constants.ts` 只保留 contract projection 给 active callers；脚本不得成为长期 private runner、Agent Lab replacement、workbench、promotion engine、worktree lifecycle owner、registry/App shell 或 compatibility facade。
 - work order / candidate / typed blocker 的默认核查顺序改为 owner-delta first：先看 target-agent semantic delta 是否存在、下一 owner 是否明确、缺口是否返回 typed blocker，再看 suite / scaffold / generated interface / App descriptor 等 proof refs。
 - script-to-pack 退役不再按“脚本看起来可上收”判断；必须满足对应 machine gate 中的 parity / no-active-caller / no-forbidden-write / tombstone-or-provenance refs。Stage-decomposition materializer 还必须满足 physical kernel locator / conformance / workbench consumption parity 和 no OMA runtime state / owner promotion / target worktree / receipt body proof。没有 gate 证据时，脚本仍是当前 active materializer/helper，不得在 active docs 写成已退役或已由 OPL primitive 接管。
 - fallow production hygiene 继续作为 script surface 噪声门：unused export/type 不能重新进入 public API；复杂度热点只按真实职责边界拆成窄 helper，例如 target contract intake、artifact materialization、receipt materialization 或 policy projection。
@@ -106,7 +106,7 @@ Owner split 固定为：
 | Real blocked target patch loop scaleout | OMA work-order shape、MAG/MAS 类真实 target refs-only closeout evidence | 更多真实 target patch / rerun / owner receipt / typed blocker / no-forbidden-write / runtime-read-model consumption / workspace proof / cleanup / Agent Lab re-evaluation 样本。 |
 | Independent Codex reviewer attempt | structured reviewer schema、fail-closed rules、reviewer evidence projection | 独立 invocation/context/trace/receipt、direct evidence、source refs、critique/suggestions/verdict/provenance 与 rollback/canary/version refs 的真实样本。 |
 | Standard target-agent handoff convergence | OMA 侧 target-agent generic intake 已落地 | 目标 agent 侧持续提供同一 vocabulary，不在 OMA 或 Agent Lab 添加 domain-specific suite / command。 |
-| Script-to-pack evidence | 私有实现迁移台账、source-purity guards、当前实现文件 split-pressure 分类；所有 `scripts/**/*.ts` 都必须被 `script_to_pack_retirement_gates` 覆盖。 | 后续增长时继续证明脚本只是 materializer/helper；稳定规则迁入 declarative pack、contracts 或 OPL primitive；未进入 gate 的新增脚本必须 fail closed。 |
+| Script-to-pack evidence | 私有实现迁移台账、source-purity guards、当前实现文件 split-pressure 分类；所有 `scripts/**/*.ts` 都必须被 `script_to_pack_retirement_gates` 覆盖；developer work-order 默认 policy 已迁入 `contracts/developer_work_order_policy.json` 并由 script projection 测试守门。 | 后续增长时继续证明脚本只是 materializer/helper；剩余稳定规则继续迁入 declarative pack、contracts 或 OPL primitive；未进入 gate 的新增脚本必须 fail closed。 |
 | Mechanism proposal promotion | mechanism patch proposal 为 proposal-only surface | OPL / Agent Lab promotion gate receipt 与 target owner evidence，才能进入默认 agent 变更。 |
 
 ## 下一轮工作范围
@@ -127,7 +127,7 @@ Owner split 固定为：
    推动 MAS/MAG/RCA 和新 Foundry Agent 用同一 target-agent vocabulary 暴露 production/live acceptance、Agent Lab handoff、owner route、editable surface policy、required return shapes、verification refs 和 no-forbidden-write proof。
 
 6. `script_to_pack_hygiene`
-   持续把稳定 policy 迁入 declarative pack、contracts、cognitive-kernel refs 或 OPL primitive；保留脚本必须能指向 `runtime/authority_functions`、smoke action、fixture/proof helper 或 developer work-order materializer。当前 machine gate 要求所有 `scripts/**/*.ts` 都同时完成 morphology classification 和 script-to-pack retirement/retention gate 覆盖；每次新增或收薄脚本，都要更新 `script_to_pack_retirement_gates`，并跑 `tests/source-purity.test.ts`。
+   持续把稳定 policy 迁入 declarative pack、contracts、cognitive-kernel refs 或 OPL primitive；developer work-order 默认 policy 已有 contract-backed projection，下一步是继续减少仍需保留的 materializer/helper 语义。保留脚本必须能指向 `runtime/authority_functions`、smoke action、fixture/proof helper 或 developer work-order materializer。当前 machine gate 要求所有 `scripts/**/*.ts` 都同时完成 morphology classification 和 script-to-pack retirement/retention gate 覆盖；每次新增或收薄脚本，都要更新 `script_to_pack_retirement_gates`，并跑 `tests/source-purity.test.ts`。
 
 ## 下一轮 Agent prompt
 

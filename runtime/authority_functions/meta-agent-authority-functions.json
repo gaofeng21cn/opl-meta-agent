@@ -400,7 +400,10 @@
         "authority_function_refs": [],
         "consumes_opl_surfaces": [],
         "writes_only": [
-          "work_order_policy_constant_refs"
+          "developer_work_order_policy_contract_projection_ref"
+        ],
+        "contract_refs": [
+          "contracts/developer_work_order_policy.json"
         ],
         "forbidden_roles": []
       },
@@ -477,6 +480,9 @@
           "no_forbidden_write_proof_ref",
           "no_active_npm_or_test_caller_ref",
           "tombstone_or_provenance_ref"
+        ],
+        "closed_retention_refs": [
+          "contracts/developer_work_order_policy.json"
         ],
         "forbidden_long_term_claims": [
           "agent_lab_runner",

@@ -3,6 +3,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import {
+  DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF,
+  DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
+  DEFAULT_NO_PATCH_CLOSEOUT_EVIDENCE,
+  DEFAULT_RUNTIME_EXPECTED_OUTCOMES,
+  DEFAULT_RUNTIME_REQUIRED_SURFACE_REFS,
+  DEFAULT_SOURCE_PATCH_CLOSEOUT_EVIDENCE,
+  DEFAULT_TARGET_WORKSPACE_EXPECTED_OUTCOMES,
+  DEFAULT_TARGET_WORKSPACE_REQUIRED_SURFACE_REFS,
+} from '../scripts/lib/work-order-policy-constants.ts';
 
 type JsonObject = Record<string, any>;
 
@@ -442,4 +452,66 @@ test('purpose-first gate prevents OMA scripts from becoming a second framework',
   ].forEach((surface) => {
     assert.ok(asStrings(secondFrameworkGuard.forbidden_oma_owned_surfaces).includes(surface));
   });
+});
+
+test('developer work-order policy defaults are contract-backed projections', () => {
+  const contract = readJson(DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF);
+  const authorityFunctions = readJson('runtime/authority_functions/meta-agent-authority-functions.json');
+  const morphologyPolicy = authorityFunctions.script_morphology_policy as JsonObject;
+  const retirementGate = asObjects(morphologyPolicy.script_to_pack_retirement_gates)
+    .find((gate) => gate.gate_id === 'agent_evidence_and_external_suite_materializers');
+  const policyProjection = asObjects(morphologyPolicy.script_classifications)
+    .find((entry) => entry.script_ref === 'scripts/lib/work-order-policy-constants.ts');
+
+  assert.equal(contract.surface_kind, 'developer_work_order_policy');
+  assert.equal(contract.state, 'active_contract');
+  assert.equal(contract.script_projection_ref, 'scripts/lib/work-order-policy-constants.ts');
+  assert.equal(contract.authority_boundary.can_write_target_domain_truth, false);
+  assert.equal(contract.authority_boundary.can_write_target_memory_body, false);
+  assert.equal(contract.authority_boundary.can_write_target_artifact_body, false);
+  assert.equal(contract.authority_boundary.can_authorize_target_quality_or_export, false);
+  assert.equal(contract.authority_boundary.can_authorize_submission_readiness, false);
+  assert.equal(contract.authority_boundary.can_promote_default_agent, false);
+
+  assert.ok(policyProjection, 'work-order policy projection script should be classified');
+  assert.deepEqual(asStrings(policyProjection.writes_only), [
+    'developer_work_order_policy_contract_projection_ref',
+  ]);
+  assert.deepEqual(asStrings(policyProjection.contract_refs), [
+    DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF,
+  ]);
+  assert.ok(retirementGate, 'agent evidence materializer gate should exist');
+  assert.ok(
+    asStrings(retirementGate.closed_retention_refs).includes(DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF),
+    'stable developer work-order policy should be moved into a contract while script projection remains retained',
+  );
+
+  assert.deepEqual(
+    DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
+    asStrings(contract.default_forbidden_target_paths_or_surfaces),
+  );
+  assert.deepEqual(
+    DEFAULT_RUNTIME_REQUIRED_SURFACE_REFS,
+    asStrings(contract.default_runtime_required_surface_refs),
+  );
+  assert.deepEqual(
+    DEFAULT_RUNTIME_EXPECTED_OUTCOMES,
+    asStrings(contract.default_runtime_expected_outcomes),
+  );
+  assert.deepEqual(
+    DEFAULT_TARGET_WORKSPACE_REQUIRED_SURFACE_REFS,
+    asStrings(contract.default_target_workspace_required_surface_refs),
+  );
+  assert.deepEqual(
+    DEFAULT_TARGET_WORKSPACE_EXPECTED_OUTCOMES,
+    asStrings(contract.default_target_workspace_expected_outcomes),
+  );
+  assert.deepEqual(
+    DEFAULT_NO_PATCH_CLOSEOUT_EVIDENCE,
+    asStrings(contract.default_no_patch_closeout_evidence),
+  );
+  assert.deepEqual(
+    DEFAULT_SOURCE_PATCH_CLOSEOUT_EVIDENCE,
+    asStrings(contract.default_source_patch_closeout_evidence),
+  );
 });
