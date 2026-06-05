@@ -93,7 +93,7 @@ A new agent often needs multiple work decompositions, prompt strategies, skill c
 
 - The user provides the target domain, deliverable, quality bar, non-goals, and runtime constraints.
 - `OPL Meta Agent` organizes public patterns and working steps, then generates a candidate agent package.
-- The candidate agent goes through Agent Lab testing; the results are organized into baseline records, learning candidates, and mechanism improvement proposals.
+- The candidate agent goes through Agent Lab testing; the results are organized into reviewable baseline records, issue lists, and next-version improvement proposals.
 - Mechanism changes, default-agent promotion, quality adoption, and real delivery authority require an explicit gate or the target domain owner.
 
 ## Agent Lab Self-Evolution Loop
@@ -102,12 +102,12 @@ A new agent often needs multiple work decompositions, prompt strategies, skill c
   <img src="assets/branding/opl-meta-agent-evolution-loop.png" alt="OPL Meta Agent Agent Lab self-evolution loop" width="100%" />
 </p>
 
-The loop does not directly rewrite final answers. It turns each run into an auditable mechanism-improvement object:
+The loop turns each run into reviewable improvement material:
 
-- `observe`: read Agent Lab segment runs, trajectory refs, failure refs, and candidate refs.
-- `diagnose`: produce an `evidence_delta_ref` for repeated failures, wasted budget, validator gaps, or stage drift.
-- `edit`: emit only a `next_mechanism_candidate_ref` covering prompt policy, skill policy, stage policy, Agent Lab suite policy, takeover review policy, optimizer candidate policy, or quality gate policy.
-- `gate`: improvement patches remain proposals. They cannot directly rewrite the target agent's professional content, memory body, deliverables, or final judgment, and they cannot bypass explicit adoption gates.
+- **Read evidence**: inspect run segments, failure records, candidate outputs, and test refs.
+- **Find bottlenecks**: identify repeated failures, wasted budget, validation gaps, or work-step drift.
+- **Propose the next mechanism**: turn findings into prompt, skill, work-step, test, or quality-bar improvement candidates.
+- **Adopt with approval**: patches remain proposals; professional content, memory bodies, deliverables, and final judgment still require target-domain owner approval.
 
 ## Current Position And Boundary
 

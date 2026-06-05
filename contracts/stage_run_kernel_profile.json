@@ -1,0 +1,218 @@
+{
+  "surface_kind": "opl_stage_run_kernel_profile",
+  "version": "stage-run-kernel-profile.v1",
+  "domain_id": "opl-meta-agent",
+  "owner": "opl-meta-agent",
+  "state": "active_contract",
+  "purpose": "Machine-readable StageRun Kernel profile for Stage Native agent-building execution: stage folder, stage_manifest, role artifacts, and OMA owner receipt or typed blocker.",
+  "machine_boundary": "This profile defines a minimal StageRun state shell and authority boundary. It does not declare target-agent domain readiness, target truth readiness, target artifact readiness, target quality readiness, target export readiness, Agent Lab promotion readiness, or production readiness.",
+  "kernel_contract_ref": "contracts/opl-framework/stage-run-kernel-contract.json",
+  "stage_manifest_schema_ref": "contracts/opl-framework/stage-manifest.schema.json",
+  "role_artifact_ref_schema_ref": "contracts/opl-framework/role-artifact-ref.schema.json",
+  "owner_receipt_schema_ref": "contracts/opl-framework/stage-owner-receipt.schema.json",
+  "typed_blocker_schema_ref": "contracts/opl-framework/stage-typed-blocker.schema.json",
+  "stage_artifact_kernel_adoption_ref": "contracts/stage_artifact_kernel_adoption.json",
+  "owner_receipt_contract_ref": "contracts/owner_receipt_contract.json",
+  "opl_contract_refs": {
+    "owner": "one-person-lab",
+    "domain_repo_role": "consumer_profile_ref_only",
+    "repo_local_file_required": false,
+    "local_resolution_policy": "do_not_copy_opl_framework_contracts_into_domain_repo",
+    "refs": [
+      "contracts/opl-framework/stage-run-kernel-contract.json",
+      "contracts/opl-framework/stage-manifest.schema.json",
+      "contracts/opl-framework/role-artifact-ref.schema.json",
+      "contracts/opl-framework/stage-owner-receipt.schema.json",
+      "contracts/opl-framework/stage-typed-blocker.schema.json"
+    ]
+  },
+  "kernel_role": "minimal_state_shell_not_domain_controller_system",
+  "stage_native_unit": [
+    "stage_folder",
+    "stage_manifest",
+    "role_artifacts",
+    "owner_receipt_or_typed_blocker"
+  ],
+  "required_object_models": [
+    "StageRun",
+    "RoleArtifactRef",
+    "OwnerReceipt",
+    "TypedBlocker",
+    "ReadModel"
+  ],
+  "stage_run_state_machine": {
+    "provider_completion_counts_as_domain_accepted": false,
+    "file_presence_counts_as_stage_complete": false,
+    "latest_json_counts_as_domain_accepted": false,
+    "read_model_counts_as_transition_authority": false
+  },
+  "launch_admission_policy": {
+    "hard_blockers": [
+      "identity",
+      "owner",
+      "scope",
+      "selected_executor",
+      "authority_boundary",
+      "required_role_artifacts",
+      "receipt_or_blocker_shape",
+      "forbidden_write",
+      "replay_audit_lineage"
+    ],
+    "advisory_refs": [
+      "prompt_refs",
+      "skill_refs",
+      "tool_affordance_refs",
+      "knowledge_refs",
+      "rubric_refs",
+      "evaluation_refs"
+    ],
+    "advisory_refs_can_block_launch": false
+  },
+  "default_read_surface": {
+    "root": "stage_run_current_owner_delta",
+    "raw_worklist_default": false,
+    "readiness_default": false,
+    "replay_packet_default": false
+  },
+  "transition_authority": {
+    "terminal_transition_authority": "owner_receipt_or_typed_blocker",
+    "provider_completion_counts_as_transition": false,
+    "file_presence_counts_as_transition": false
+  },
+  "authority_boundary": {
+    "opl_can_write_domain_truth": false,
+    "opl_can_mutate_artifact_body": false,
+    "opl_can_sign_domain_owner_receipt": false,
+    "opl_can_create_typed_blocker": false,
+    "opl_can_authorize_quality_or_export": false,
+    "provider_completion_counts_as_domain_accepted": false,
+    "read_model_can_be_truth_source": false
+  },
+  "domain_authority_retained": [
+    "agent_building_semantics",
+    "developer_work_order_materialization",
+    "mechanism_patch_proposal_authorization",
+    "oma_owned_receipt_or_typed_blocker"
+  ],
+  "projection_boundary": {
+    "read_models_are_rebuildable": true,
+    "allowed_projection_inputs": [
+      "StageRun_event_log",
+      "stage_manifest_ref",
+      "role_artifact_refs",
+      "owner_receipt_refs",
+      "typed_blocker_refs",
+      "current_owner_delta_ref"
+    ],
+    "projection_can_write_truth": false,
+    "projection_can_authorize_next_stage": false
+  },
+  "target_domain_authority_boundary": {
+    "oma_can_write_target_truth": false,
+    "oma_can_write_target_artifact_body": false,
+    "oma_can_write_target_memory_body": false,
+    "oma_can_write_target_quality_or_export_verdict": false,
+    "oma_can_sign_target_owner_receipt": false,
+    "oma_can_become_second_opl_framework": false
+  },
+  "legacy_surface_retirement_policy": {
+    "policy_kind": "script_wrapper_status_workbench_retirement",
+    "retirement_state": "retained_only_as_migration_input_or_diagnostic_provenance",
+    "forbidden_repo_owned_surface_roles": [
+      "generic_runtime_wrapper_owner",
+      "generic_cli_mcp_skill_product_wrapper_owner",
+      "generic_status_shell_owner",
+      "generic_workbench_wrapper_owner",
+      "generic_sidecar_or_projection_owner",
+      "generic_agent_lab_runner_owner",
+      "generic_queue_or_attempt_ledger_owner",
+      "generic_worktree_lifecycle_owner",
+      "generic_promotion_gate_owner",
+      "compatibility_materialization_route_owner"
+    ],
+    "allowed_retained_roles": [
+      "agent_building_domain_truth_ref",
+      "agent_lab_quality_verdict_ref",
+      "artifact_authority_ref",
+      "owner_receipt_ref",
+      "typed_blocker_ref",
+      "domain_knowledge_skill_tool_quality_gate_ref",
+      "thin_authority_action_implementation",
+      "diagnostic_or_provenance_ref",
+      "explicit_migration_input_ref"
+    ],
+    "retirement_gate_refs": [
+      "runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy",
+      "runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt",
+      "contracts/default_caller_deletion_evidence.json",
+      "contracts/functional_privatization_audit.json",
+      "docs/active/opl-private-implementation-migration-inventory.md"
+    ],
+    "authority_boundary": {
+      "legacy_surfaces_can_be_active_workflow": false,
+      "legacy_surfaces_can_be_default_caller": false,
+      "legacy_surfaces_can_write_runtime_state": false,
+      "legacy_surfaces_can_write_read_model": false,
+      "legacy_surfaces_can_authorize_owner_receipt": false,
+      "legacy_surfaces_can_restore_repo_owned_wrapper": false,
+      "legacy_surfaces_can_create_fallback_or_compatibility_route": false
+    }
+  },
+  "agent_building_stage_run_canary": {
+    "canary_id": "oma-agent-building-stage-run-canary.v1",
+    "purpose": "Exercise the OMA agent-building StageRun path from user intent to owner receipt or typed blocker without turning tool refs into a hard-coded workflow.",
+    "controlled_canary_evidence_ref": "contracts/stage_run_canary_evidence.json",
+    "stage_sequence": [
+      "intent-intake",
+      "stage-decomposition-candidates",
+      "mechanism-and-test-review",
+      "owner-approval-or-typed-blocker"
+    ],
+    "required_stage_outputs": {
+      "intent-intake": [
+        "intent_brief_ref",
+        "target_agent_boundary_ref",
+        "quality_bar_ref",
+        "non_goals_ref"
+      ],
+      "stage-decomposition-candidates": [
+        "stage_decomposition_candidate_refs",
+        "candidate_tradeoff_review_ref",
+        "selected_stage_plan_candidate_ref"
+      ],
+      "mechanism-and-test-review": [
+        "mechanism_candidate_ref",
+        "agent_lab_suite_seed_ref",
+        "test_review_ref",
+        "quality_gate_ref"
+      ],
+      "owner-approval-or-typed-blocker": [
+        "oma_owner_receipt_ref_or_typed_blocker_ref",
+        "next_owner_delta_ref"
+      ]
+    },
+    "tool_affordance_policy": {
+      "tool_refs_role": "advisory_affordance_refs_only",
+      "tool_refs_can_define_fixed_workflow_order": false,
+      "tool_refs_can_replace_stage_reasoning": false,
+      "tool_refs_can_authorize_domain_verdict": false,
+      "tool_refs_can_bypass_owner_approval_or_typed_blocker": false,
+      "allowed_tool_ref_classes": [
+        "research_affordance_ref",
+        "scaffold_affordance_ref",
+        "agent_lab_affordance_ref",
+        "review_affordance_ref",
+        "artifact_materialization_affordance_ref"
+      ]
+    },
+    "pass_condition": {
+      "terminal_output": "oma_owner_receipt_or_typed_blocker",
+      "requires_owner_delta": true,
+      "requires_no_forbidden_legacy_surface": true,
+      "requires_tool_refs_as_affordances_only": true,
+      "provider_completion_counts_as_pass": false,
+      "file_presence_counts_as_pass": false,
+      "read_model_counts_as_pass": false
+    }
+  }
+}

@@ -57,6 +57,12 @@ Agent Lab 与 `opl-meta-agent` 是标准消费者。目标 agent 兼容它们，
 
 本仓只保留 `runtime/authority_functions/` 下的最小 authority refs。长期运行、唤醒、排队、恢复、attempt ledger、sidecar/projection dispatch、status read model 和 operator workbench 由 OPL Framework 生成或托管。
 
+`contracts/stage_run_kernel_profile.json` 持有 OMA 的 StageRun Kernel profile。当前 canary 固定为 `intent-intake -> stage-decomposition-candidates -> mechanism-and-test-review -> owner-approval-or-typed-blocker`，并通过 `contracts/stage_run_canary_evidence.json` 落一份 `controlled_fixture_not_live_domain_progress` evidence。该 fixture 只持有 stage_run / manifest / current pointer refs、candidate generation / grounded reflection / comparative selection / revision / meta-review / independent quality gate refs、role artifact refs 和 owner receipt 或 typed blocker closeout refs；它证明 canary shape 可被 repo-local contracts/tests 消费，不证明 live domain progress。
+
+canary 中的 tool refs 只表达 affordance：研究、脚手架、Agent Lab、review 和 artifact materialization 能力可以被 executor 选择使用，但不能写成硬编码 workflow、替代 stage reasoning、签发 domain verdict、触发 closeout、绕过 independent gate，或绕过 owner approval / typed blocker。provider completion、file presence、read model、conformance pass 与 same-attempt self review 都不能成为 StageRun closeout。
+
+旧 scripts/runtime wrapper/status shell/workbench wrapper 的当前身份是 OPL-hosted runtime/projection 的迁移输入、diagnostic 或 provenance refs。它们不得恢复为 repo-owned CLI/MCP/Skill/product wrapper、status/workbench shell、sidecar/projection owner、Agent Lab runner、queue/attempt ledger、worktree lifecycle、promotion gate 或 compatibility route。OMA 保留的是 agent-building domain truth、Agent Lab / quality verdict refs、artifact authority refs、owner receipt refs、typed blocker refs 和 domain knowledge / skills / tools / quality gate refs。
+
 ## Codex-Attempt-Native Landing
 
 当前 usable landing 机器面已经从 contract-ready 推进到 developer work order / patch-loop 控制面。`opl-meta-agent` 的 `improve:external-suite` 与 `agent:evidence` 以真实 target agent handoff 为输入，读取 allowed editable surfaces、blocked evidence、verification refs、owner route、no-forbidden-write refs 和 rollback/version refs，输出 stage attempt refs、developer patch work order、mechanism proposal 或 typed blocker。developer work order 必须包含 AHE-style failure evidence、root cause、targeted fix、predicted impact 四字段，以及 target repo file hints、required verification refs、rollback/version refs、owner route refs、no-forbidden-write proof 和 target runtime/read-model consumption verification。Codex 可以在 developer work order 授权的文件范围内实施 patch，但不能越权写 target truth、memory body、artifact body、quality/export verdict 或 owner receipt。
