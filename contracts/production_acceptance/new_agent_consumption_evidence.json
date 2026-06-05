@@ -156,6 +156,10 @@
   },
   "source_refs": [
     "scripts/lib/stage-decomposition-pack-draft.ts",
+    "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts",
+    "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts",
+    "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts",
+    "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts",
     "scripts/lib/stage-decomposition-runner.ts",
     "tests/bootstrap-loop.test.ts",
     "tests/stage-decomposition-materializer.test.ts",

@@ -274,6 +274,90 @@
         "forbidden_roles": []
       },
       {
+        "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts",
+        "classes": [
+          "fixture_or_proof_helper",
+          "developer_work_order_materializer"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [
+          "opl_family_runtime_stage_attempt",
+          "opl_standard_domain_agent_scaffold"
+        ],
+        "writes_only": [
+          "domain_pack_file_ref",
+          "action_catalog_ref",
+          "stage_control_plane_ref",
+          "stage_native_artifact_contract_ref",
+          "stage_native_artifact_ref_template_ref",
+          "opl_physical_kernel_locator_ref",
+          "stage_artifact_conformance_ref",
+          "stage_artifact_workbench_consumption_ref",
+          "typed_blocker_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
+        "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts",
+        "classes": [
+          "fixture_or_proof_helper",
+          "developer_work_order_materializer"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [
+          "opl_family_runtime_stage_attempt",
+          "opl_standard_domain_agent_scaffold"
+        ],
+        "writes_only": [
+          "domain_pack_file_ref",
+          "action_catalog_ref",
+          "stage_control_plane_ref",
+          "stage_native_artifact_contract_ref",
+          "stage_native_artifact_ref_template_ref",
+          "opl_physical_kernel_locator_ref",
+          "stage_artifact_conformance_ref",
+          "stage_artifact_workbench_consumption_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
+        "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts",
+        "classes": [
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [
+          "opl_standard_domain_agent_scaffold"
+        ],
+        "writes_only": [
+          "stage_decomposition_pack_helper_ref",
+          "stage_native_artifact_ref_template_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
+        "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts",
+        "classes": [
+          "fixture_or_proof_helper",
+          "developer_work_order_materializer"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [
+          "opl_family_runtime_stage_attempt",
+          "opl_standard_domain_agent_scaffold"
+        ],
+        "writes_only": [
+          "stage_decomposition_closeout_validation_ref",
+          "no_forbidden_write_proof_ref",
+          "stage_native_artifact_contract_ref",
+          "opl_physical_kernel_locator_ref",
+          "stage_artifact_conformance_ref",
+          "stage_artifact_workbench_consumption_ref",
+          "typed_blocker_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
         "script_ref": "scripts/lib/stage-native-artifact-contract.ts",
         "classes": [
           "fixture_or_proof_helper",
@@ -503,6 +587,10 @@
           "scripts/build-agent-baseline.ts",
           "scripts/lib/stage-decomposition-runner.ts",
           "scripts/lib/stage-decomposition-pack-draft.ts",
+          "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts",
+          "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts",
+          "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts",
+          "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts",
           "scripts/lib/stage-native-artifact-contract.ts",
           "scripts/lib/standard-foundry-policies.ts",
           "scripts/lib/domain-pack.ts"
@@ -701,6 +789,10 @@
       "scripts/lib/meta-agent-loop-io.ts",
       "scripts/lib/meta-agent-loop-receipts.ts",
       "scripts/lib/meta-agent-loop.ts",
+      "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts",
+      "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts",
+      "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts",
+      "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts",
       "scripts/lib/stage-decomposition-pack-draft.ts",
       "scripts/lib/stage-decomposition-runner.ts",
       "scripts/lib/stage-native-artifact-contract.ts",
