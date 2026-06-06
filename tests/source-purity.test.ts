@@ -38,6 +38,10 @@ function readJson(relativePath: string): JsonObject {
   return JSON.parse(fs.readFileSync(path.join(repoRoot, relativePath), 'utf8'));
 }
 
+function readText(relativePath: string): string {
+  return fs.readFileSync(path.join(repoRoot, relativePath), 'utf8');
+}
+
 function listFilesByExtension(relativeDir: string, extension: string): string[] {
   const absoluteDir = path.join(repoRoot, relativeDir);
   return fs.readdirSync(absoluteDir, { withFileTypes: true })
@@ -108,6 +112,20 @@ test('runtime source shape keeps generated and generic wrappers out of the repo'
     fs.readdirSync(path.join(repoRoot, 'runtime', 'authority_functions')).sort(),
     ['meta-agent-authority-functions.json'],
   );
+});
+
+test('test support does not reintroduce active forbidden owner morphology tokens', () => {
+  const testSupportContracts = readText('tests/support/contracts.ts');
+  [
+    'app_shell_owner',
+    'promotion_gate_owner',
+  ].forEach((token) => {
+    assert.equal(
+      testSupportContracts.includes(token),
+      false,
+      `tests/support/contracts.ts should not contain active forbidden owner token ${token}`,
+    );
+  });
 });
 
 test('minimal authority functions are explicit refs, not generic runtime owners', () => {

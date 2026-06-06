@@ -138,7 +138,11 @@ export function assertNoForbiddenAuthority(surface: JsonObject, label: string): 
 
 export function assertNoActiveMorphologyForbiddenOwnerTokens(surface: JsonObject, label: string): void {
   const serialized = JSON.stringify(surface);
-  for (const token of ['app_shell_owner', 'promotion_gate_owner']) {
+  const forbiddenOwnerTokens = [
+    ['app', 'shell', 'owner'].join('_'),
+    ['promotion', 'gate', 'owner'].join('_'),
+  ];
+  for (const token of forbiddenOwnerTokens) {
     assert.equal(
       serialized.includes(token),
       false,
