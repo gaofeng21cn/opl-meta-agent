@@ -3,7 +3,7 @@
 Owner: `opl-meta-agent`
 Purpose: `policy_contract_test_projection_helper_dependency_retirement`
 State: `historical_closeout`
-Machine boundary: 本文只记录测试层对 script policy projection helper 直接依赖的退役范围、保留边界、验证和 no-resurrection 规则。当前 policy truth 继续归 `contracts/developer_work_order_policy.json`、`contracts/standard_foundry_policies.json`、runtime authority refs、production helper active callers 和 repo-native tests。
+Machine boundary: 本文只记录测试层对 script policy projection helper 直接依赖的退役范围、当时保留边界、验证和 no-resurrection 规则。当前 policy truth 继续归 `contracts/developer_work_order_policy.json`、`contracts/standard_foundry_policies.json`、runtime authority refs、source owner helpers 和 repo-native tests；standalone helper 物理退役边界见 `2026-06-07-oma-policy-projection-helper-physical-retirement-closeout.md`。
 
 ## Retired test dependency
 
@@ -19,20 +19,20 @@ Replacement:
 - `tests/source-purity.test.ts` includes a no-import guard so test files do not restore direct imports from the two script policy projection helpers.
 - Tests still verify that the projection helper scripts are classified as retained contract projections in `runtime/authority_functions/meta-agent-authority-functions.json`.
 
-## Retained production helpers
+## Retained production helpers at this closeout
 
-The projection helpers remain in source because they still have active production callers:
+At this test-layer closeout, the projection helpers remained in source because they still had active production callers:
 
 - `scripts/lib/work-order-policy-constants.ts` is consumed by target-improvement policy, work-order builders, work-order refs and agent evidence materialization helpers.
 - `scripts/lib/standard-foundry-policies.ts` is consumed by stage-decomposition pack draft builder and validator.
 
-These helpers may continue projecting contract JSON for active callers. They do not own policy truth, and tests must not import them as the expected policy body.
+That retained-helper reading has since been superseded by `2026-06-07-oma-policy-projection-helper-physical-retirement-closeout.md`: active callers now read the policy contracts through their concrete owner helper modules, and the standalone projection helpers are physically retired. They did not own policy truth, and tests must not import them as the expected policy body.
 
 ## No-Resurrection Rule
 
 Do not restore test imports from `scripts/lib/work-order-policy-constants.ts` or `scripts/lib/standard-foundry-policies.ts` as policy truth assertions. New tests that need stable policy defaults must read the relevant contract JSON directly and assert contract shape, authority boundary and projection classification.
 
-Do not delete the script projection helpers while active production callers remain. Helper retirement requires fresh no-active-caller evidence plus a separate tombstone or provenance closeout.
+Do not restore standalone script projection helpers or test imports from them. Helper physical retirement required fresh no-active-caller evidence for those standalone import paths plus the separate provenance closeout recorded in `2026-06-07-oma-policy-projection-helper-physical-retirement-closeout.md`.
 
 ## Verification
 

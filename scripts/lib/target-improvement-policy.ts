@@ -7,8 +7,6 @@ import {
   DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
   DEFAULT_RUNTIME_EXPECTED_OUTCOMES,
   DEFAULT_RUNTIME_REQUIRED_SURFACE_REFS,
-} from './work-order-policy-constants.ts';
-import {
   records,
   stringList,
   stringValue,

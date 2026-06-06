@@ -8,9 +8,6 @@ import {
   stableId,
 } from './meta-agent-loop-io.ts';
 import {
-  DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
-} from './work-order-policy-constants.ts';
-import {
   buildOplWorkOrderPrimitiveRefs,
   buildRefsOnlyWorkOrderCompleteness,
   buildRuntimeConsumptionVerification,
@@ -29,6 +26,7 @@ import {
   buildStageNativeArtifactAttemptRefs,
 } from './stage-native-artifact-contract.ts';
 import {
+  DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
   firstString,
   forbiddenWriteSurfaces,
   noForbiddenWriteProofRefs,

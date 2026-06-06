@@ -4,8 +4,11 @@
   "owner": "opl-meta-agent",
   "purpose": "stable default policy for target-agent developer work orders",
   "state": "active_contract",
-  "machine_boundary": "This contract is the stable policy home for OMA developer work-order defaults. scripts/lib/work-order-policy-constants.ts may project these arrays for active callers, but scripts do not own the policy truth.",
-  "script_projection_ref": "scripts/lib/work-order-policy-constants.ts",
+  "machine_boundary": "This contract is the stable policy home for OMA developer work-order defaults. Active callers read this contract through their owner helper modules; no standalone policy projection helper owns this truth.",
+  "retired_script_projection_ref": "scripts/lib/work-order-policy-constants.ts",
+  "active_policy_consumer_refs": [
+    "scripts/lib/work-order-refs.ts"
+  ],
   "authority_boundary": {
     "can_write_target_domain_truth": false,
     "can_write_target_memory_body": false,

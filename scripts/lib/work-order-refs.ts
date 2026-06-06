@@ -1,5 +1,68 @@
+import fs from 'node:fs';
 import type { JsonObject } from './domain-pack.ts';
-import { DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES } from './work-order-policy-constants.ts';
+
+export const DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF = 'contracts/developer_work_order_policy.json';
+
+type DeveloperWorkOrderPolicy = JsonObject;
+
+function contractStringList(policy: DeveloperWorkOrderPolicy, field: string): string[] {
+  const value = policy[field];
+  if (!Array.isArray(value) || value.some((entry) => typeof entry !== 'string' || !entry.trim())) {
+    throw new Error(`Developer work-order policy ${field} must be a non-empty string array.`);
+  }
+  return value.map((entry) => entry.trim());
+}
+
+function readDeveloperWorkOrderPolicy(): DeveloperWorkOrderPolicy {
+  const policy = JSON.parse(
+    fs.readFileSync(new URL('../../contracts/developer_work_order_policy.json', import.meta.url), 'utf8'),
+  ) as DeveloperWorkOrderPolicy;
+  if (policy.surface_kind !== 'developer_work_order_policy') {
+    throw new Error('Developer work-order policy contract has an unexpected surface_kind.');
+  }
+  const consumers = stringList(policy.active_policy_consumer_refs);
+  if (!consumers.includes('scripts/lib/work-order-refs.ts')) {
+    throw new Error('Developer work-order policy contract must name work-order refs as an active consumer.');
+  }
+  return policy;
+}
+
+export const DEVELOPER_WORK_ORDER_POLICY = readDeveloperWorkOrderPolicy();
+
+export const DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES = contractStringList(
+  DEVELOPER_WORK_ORDER_POLICY,
+  'default_forbidden_target_paths_or_surfaces',
+);
+
+export const DEFAULT_RUNTIME_REQUIRED_SURFACE_REFS = contractStringList(
+  DEVELOPER_WORK_ORDER_POLICY,
+  'default_runtime_required_surface_refs',
+);
+
+export const DEFAULT_RUNTIME_EXPECTED_OUTCOMES = contractStringList(
+  DEVELOPER_WORK_ORDER_POLICY,
+  'default_runtime_expected_outcomes',
+);
+
+export const DEFAULT_TARGET_WORKSPACE_REQUIRED_SURFACE_REFS = contractStringList(
+  DEVELOPER_WORK_ORDER_POLICY,
+  'default_target_workspace_required_surface_refs',
+);
+
+export const DEFAULT_TARGET_WORKSPACE_EXPECTED_OUTCOMES = contractStringList(
+  DEVELOPER_WORK_ORDER_POLICY,
+  'default_target_workspace_expected_outcomes',
+);
+
+export const DEFAULT_NO_PATCH_CLOSEOUT_EVIDENCE = contractStringList(
+  DEVELOPER_WORK_ORDER_POLICY,
+  'default_no_patch_closeout_evidence',
+);
+
+export const DEFAULT_SOURCE_PATCH_CLOSEOUT_EVIDENCE = contractStringList(
+  DEVELOPER_WORK_ORDER_POLICY,
+  'default_source_patch_closeout_evidence',
+);
 
 export function uniqueRefs(values: string[]): string[] {
   return [...new Set(values.filter((value) => value.trim().length > 0))];

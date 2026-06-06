@@ -4,8 +4,11 @@
   "owner": "opl-meta-agent",
   "purpose": "stable OPL Foundry Agent policy bundle projected into stage-decomposition pack drafts",
   "state": "active_contract",
-  "machine_boundary": "This contract is the stable policy home for OMA Foundry Agent series defaults. scripts/lib/standard-foundry-policies.ts may project these objects for active callers, but scripts do not own the policy truth.",
-  "script_projection_ref": "scripts/lib/standard-foundry-policies.ts",
+  "machine_boundary": "This contract is the stable policy home for OMA Foundry Agent series defaults. Stage-decomposition materializers read this contract through their owner helper module; no standalone policy projection helper owns this truth.",
+  "retired_script_projection_ref": "scripts/lib/standard-foundry-policies.ts",
+  "active_policy_consumer_refs": [
+    "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts"
+  ],
   "authority_boundary": {
     "can_write_target_domain_truth": false,
     "can_read_target_domain_body": false,

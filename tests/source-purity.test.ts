@@ -486,13 +486,18 @@ test('script morphology stays limited to authority refs, materializers, and help
         assert.ok(asStrings(entry.writes_only).includes(writeRef), `${entry.script_ref} writes_only ${writeRef}`);
       });
     }
-    if (entry.script_ref === 'scripts/lib/standard-foundry-policies.ts') {
-      assert.ok(
-        asStrings(entry.writes_only).includes('standard_foundry_policies_contract_projection_ref'),
-      );
+    if (entry.script_ref === 'scripts/lib/stage-decomposition-pack-draft-parts/shared.ts') {
       assert.deepEqual(asStrings(entry.contract_refs), [
         STANDARD_FOUNDRY_POLICIES_CONTRACT_REF,
       ]);
+      [
+        'standard_foundry_policy_ref',
+        'stage_progress_delta_policy_ref',
+        'typed_blocker_lineage_policy_ref',
+        'foundry_agent_series_design_profile_ref',
+      ].forEach((writeRef) => {
+        assert.ok(asStrings(entry.writes_only).includes(writeRef), `${entry.script_ref} writes_only ${writeRef}`);
+      });
     }
     if (entry.script_ref === 'scripts/lib/stage-native-artifact-contract.ts') {
       [
@@ -519,6 +524,14 @@ test('script morphology stays limited to authority refs, materializers, and help
       ]);
       assert.ok(
         asStrings(entry.writes_only).includes('stage_control_plane_drift_check_ref'),
+      );
+    }
+    if (entry.script_ref === 'scripts/lib/work-order-refs.ts') {
+      assert.deepEqual(asStrings(entry.contract_refs), [
+        DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF,
+      ]);
+      assert.ok(
+        asStrings(entry.writes_only).includes('developer_work_order_policy_contract_consumer_ref'),
       );
     }
 
@@ -599,13 +612,16 @@ test('purpose-first gate prevents OMA scripts from becoming a second framework',
   });
 });
 
-test('developer work-order policy defaults are contract-backed projections', () => {
+test('developer work-order policy defaults are contract-owned and helper-projection free', () => {
   const contract = readJson(DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF);
   const authorityFunctions = readJson('runtime/authority_functions/meta-agent-authority-functions.json');
   const morphologyPolicy = authorityFunctions.script_morphology_policy as JsonObject;
+  const receipt = authorityFunctions.source_purity_scan_receipt as JsonObject;
   const retirementGate = asObjects(morphologyPolicy.script_to_pack_retirement_gates)
     .find((gate) => gate.gate_id === 'agent_evidence_and_external_suite_materializers');
-  const policyProjection = asObjects(morphologyPolicy.script_classifications)
+  const activeConsumer = asObjects(morphologyPolicy.script_classifications)
+    .find((entry) => entry.script_ref === 'scripts/lib/work-order-refs.ts');
+  const retiredProjection = asObjects(morphologyPolicy.script_classifications)
     .find((entry) => entry.script_ref === 'scripts/lib/work-order-policy-constants.ts');
   const defaultForbiddenTargetPathsOrSurfaces = assertPolicyStringList(
     contract,
@@ -638,7 +654,10 @@ test('developer work-order policy defaults are contract-backed projections', () 
 
   assert.equal(contract.surface_kind, 'developer_work_order_policy');
   assert.equal(contract.state, 'active_contract');
-  assert.equal(contract.script_projection_ref, 'scripts/lib/work-order-policy-constants.ts');
+  assert.equal(contract.retired_script_projection_ref, 'scripts/lib/work-order-policy-constants.ts');
+  assert.deepEqual(asStrings(contract.active_policy_consumer_refs), [
+    'scripts/lib/work-order-refs.ts',
+  ]);
   assert.equal(contract.authority_boundary.can_write_target_domain_truth, false);
   assert.equal(contract.authority_boundary.can_write_target_memory_body, false);
   assert.equal(contract.authority_boundary.can_write_target_artifact_body, false);
@@ -646,13 +665,24 @@ test('developer work-order policy defaults are contract-backed projections', () 
   assert.equal(contract.authority_boundary.can_authorize_submission_readiness, false);
   assert.equal(contract.authority_boundary.can_promote_default_agent, false);
 
-  assert.ok(policyProjection, 'work-order policy projection script should be classified');
-  assert.deepEqual(asStrings(policyProjection.writes_only), [
-    'developer_work_order_policy_contract_projection_ref',
-  ]);
-  assert.deepEqual(asStrings(policyProjection.contract_refs), [
+  assert.equal(
+    fs.existsSync(path.join(repoRoot, 'scripts/lib/work-order-policy-constants.ts')),
+    false,
+    'developer work-order policy projection helper should be physically retired',
+  );
+  assert.equal(retiredProjection, undefined, 'retired work-order policy projection script should not be classified');
+  assert.ok(activeConsumer, 'work-order refs helper should consume the developer work-order policy contract');
+  assert.deepEqual(asStrings(activeConsumer.contract_refs), [
     DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF,
   ]);
+  assert.ok(
+    asStrings(activeConsumer.writes_only).includes('developer_work_order_policy_contract_consumer_ref'),
+  );
+  assert.equal(
+    asStrings(receipt.scanned_script_refs).includes('scripts/lib/work-order-policy-constants.ts'),
+    false,
+    'retired work-order policy projection helper should not appear in scanned script refs',
+  );
   assert.ok(retirementGate, 'agent evidence materializer gate should exist');
   assert.ok(
     asStrings(retirementGate.closed_retention_refs).includes(DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF),
@@ -678,13 +708,16 @@ test('developer work-order policy defaults are contract-backed projections', () 
   assert.ok(defaultSourcePatchCloseoutEvidence.includes('temporary worktree cleaned after absorb'));
 });
 
-test('standard Foundry policies are contract-backed projections', () => {
+test('standard Foundry policies are contract-owned and helper-projection free', () => {
   const contract = readJson(STANDARD_FOUNDRY_POLICIES_CONTRACT_REF);
   const authorityFunctions = readJson('runtime/authority_functions/meta-agent-authority-functions.json');
   const morphologyPolicy = authorityFunctions.script_morphology_policy as JsonObject;
+  const receipt = authorityFunctions.source_purity_scan_receipt as JsonObject;
   const retirementGate = asObjects(morphologyPolicy.script_to_pack_retirement_gates)
     .find((gate) => gate.gate_id === 'build_agent_baseline_and_stage_decomposition_materializers');
-  const policyProjection = asObjects(morphologyPolicy.script_classifications)
+  const activeConsumer = asObjects(morphologyPolicy.script_classifications)
+    .find((entry) => entry.script_ref === 'scripts/lib/stage-decomposition-pack-draft-parts/shared.ts');
+  const retiredProjection = asObjects(morphologyPolicy.script_classifications)
     .find((entry) => entry.script_ref === 'scripts/lib/standard-foundry-policies.ts');
   const userStageLogRequiredFields = assertPolicyStringList(contract, 'user_stage_log_required_fields');
   const userStageLogContract = assertPolicyObject(contract, 'user_stage_log_contract');
@@ -694,19 +727,31 @@ test('standard Foundry policies are contract-backed projections', () => {
 
   assert.equal(contract.surface_kind, 'standard_foundry_policies');
   assert.equal(contract.state, 'active_contract');
-  assert.equal(contract.script_projection_ref, 'scripts/lib/standard-foundry-policies.ts');
+  assert.equal(contract.retired_script_projection_ref, 'scripts/lib/standard-foundry-policies.ts');
+  assert.deepEqual(asStrings(contract.active_policy_consumer_refs), [
+    'scripts/lib/stage-decomposition-pack-draft-parts/shared.ts',
+  ]);
   assert.equal(contract.authority_boundary.can_write_target_domain_truth, false);
   assert.equal(contract.authority_boundary.can_read_target_domain_body, false);
   assert.equal(contract.authority_boundary.can_authorize_target_quality_or_export, false);
   assert.equal(contract.authority_boundary.can_promote_default_agent, false);
   assert.equal(contract.authority_boundary.can_replace_opl_framework_or_agent_lab, false);
 
-  assert.ok(policyProjection, 'standard Foundry policy projection script should be classified');
-  assert.deepEqual(asStrings(policyProjection.contract_refs), [
+  assert.equal(
+    fs.existsSync(path.join(repoRoot, 'scripts/lib/standard-foundry-policies.ts')),
+    false,
+    'standard Foundry policy projection helper should be physically retired',
+  );
+  assert.equal(retiredProjection, undefined, 'retired standard Foundry projection script should not be classified');
+  assert.ok(activeConsumer, 'stage-decomposition shared helper should consume standard Foundry policies');
+  assert.deepEqual(asStrings(activeConsumer.contract_refs), [
     STANDARD_FOUNDRY_POLICIES_CONTRACT_REF,
   ]);
-  assert.ok(
-    asStrings(policyProjection.writes_only).includes('standard_foundry_policies_contract_projection_ref'),
+  assert.ok(asStrings(activeConsumer.writes_only).includes('standard_foundry_policy_ref'));
+  assert.equal(
+    asStrings(receipt.scanned_script_refs).includes('scripts/lib/standard-foundry-policies.ts'),
+    false,
+    'retired standard Foundry projection helper should not appear in scanned script refs',
   );
   assert.ok(retirementGate, 'stage-decomposition materializer gate should exist');
   assert.ok(

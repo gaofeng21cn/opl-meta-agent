@@ -1,12 +1,6 @@
 import type { JsonObject } from '../domain-pack.ts';
 import type { TargetAgent } from '../meta-agent-loop-io.ts';
 import {
-  SERIES_DESIGN_PROFILE,
-  STAGE_PROGRESS_DELTA_POLICY,
-  TYPED_BLOCKER_LINEAGE_POLICY,
-  USER_STAGE_LOG_CONTRACT,
-} from '../standard-foundry-policies.ts';
-import {
   buildStageNativeArtifactContract,
   buildStageNativeArtifactContractBundle,
 } from '../stage-native-artifact-contract.ts';
@@ -19,8 +13,12 @@ import type {
 import {
   DEFAULT_STAGE_EXECUTOR_BINDING_REF,
   FORBIDDEN_GENERIC_OWNER_ROLES,
+  SERIES_DESIGN_PROFILE,
   SHARED_POLICY_RELEASE,
   STANDARD_STAGE_PACK_CONFORMANCE_VERSION,
+  STAGE_PROGRESS_DELTA_POLICY,
+  TYPED_BLOCKER_LINEAGE_POLICY,
+  USER_STAGE_LOG_CONTRACT,
   commandPrefix,
   domainLabelFor,
   ref,

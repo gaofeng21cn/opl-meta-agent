@@ -1,15 +1,13 @@
 import type { JsonObject } from '../domain-pack.ts';
 import type { TargetAgent } from '../meta-agent-loop-io.ts';
-import {
-  SERIES_DESIGN_PROFILE,
-  STAGE_PROGRESS_DELTA_POLICY,
-  TYPED_BLOCKER_LINEAGE_POLICY,
-  USER_STAGE_LOG_REQUIRED_FIELDS,
-} from '../standard-foundry-policies.ts';
 import type { StageDecompositionPackDraft } from './shared.ts';
 import {
   DEFAULT_STAGE_EXECUTOR_BINDING_REF,
+  SERIES_DESIGN_PROFILE,
   STANDARD_STAGE_PACK_CONFORMANCE_VERSION,
+  STAGE_PROGRESS_DELTA_POLICY,
+  TYPED_BLOCKER_LINEAGE_POLICY,
+  USER_STAGE_LOG_REQUIRED_FIELDS,
   asRecord,
   asRecordArray,
   asString,

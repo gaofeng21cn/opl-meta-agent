@@ -6,12 +6,12 @@ import {
   DEFAULT_SOURCE_PATCH_CLOSEOUT_EVIDENCE,
   DEFAULT_TARGET_WORKSPACE_EXPECTED_OUTCOMES,
   DEFAULT_TARGET_WORKSPACE_REQUIRED_SURFACE_REFS,
-} from './work-order-policy-constants.ts';
+  uniqueRefs,
+} from './work-order-refs.ts';
 import {
   type EfficiencyNonRegressionRefs,
   hasEfficiencyNonRegressionEvidence,
 } from './work-order-efficiency.ts';
-import { uniqueRefs } from './work-order-refs.ts';
 
 type WorkOrderAuthorityFieldNames = {
   memoryWriteField?: string;
