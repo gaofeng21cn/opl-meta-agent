@@ -56,15 +56,27 @@ export function readJson(filePath: string): JsonObject {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
-export function readTargetAgent(targetAgentDir: string, fallback: Partial<TargetAgent> = {}): TargetAgent {
+function requireString(value: unknown, field: string, descriptorPath: string): string {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new Error(`Target agent descriptor is missing ${field}: ${descriptorPath}`);
+  }
+  return value.trim();
+}
+
+export function readTargetAgent(targetAgentDir: string): TargetAgent {
   const descriptorPath = path.join(targetAgentDir, 'contracts', 'domain_descriptor.json');
-  const descriptor = fs.existsSync(descriptorPath) ? readJson(descriptorPath) : null;
+  if (!fs.existsSync(descriptorPath)) {
+    throw new Error(`Target agent descriptor is required: ${descriptorPath}`);
+  }
+
+  const descriptor = readJson(descriptorPath);
+  const domainId = requireString(descriptor.domain_id, 'domain_id', descriptorPath);
 
   return {
-    domain_id: descriptor?.domain_id ?? fallback.domain_id,
-    domain_label: descriptor?.domain_label ?? fallback.domain_label,
-    delivery_domain: descriptor?.delivery_domain ?? fallback.delivery_domain,
-    target_brief: descriptor?.target_brief ?? fallback.target_brief,
+    domain_id: domainId,
+    domain_label: typeof descriptor.domain_label === 'string' ? descriptor.domain_label : null,
+    delivery_domain: typeof descriptor.delivery_domain === 'string' ? descriptor.delivery_domain : null,
+    target_brief: typeof descriptor.target_brief === 'string' ? descriptor.target_brief : null,
     descriptor_ref: descriptorPath,
     repo_dir: targetAgentDir,
     descriptor,

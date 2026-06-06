@@ -195,14 +195,7 @@ export function runTakeoverAgent({ targetAgentDir, outputDir, oplBin }: Takeover
   fs.mkdirSync(outputDir, { recursive: true });
   const domainPackSummary: DomainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
 
-  const targetAgent = readTargetAgent(targetAgentDir, {
-    domain_id: path.basename(targetAgentDir),
-    domain_label: path.basename(targetAgentDir),
-    delivery_domain: 'external_opl_compatible_agent',
-  });
-  if (!targetAgent.domain_id) {
-    throw new Error(`Target agent descriptor is missing domain_id: ${targetAgent.descriptor_ref}`);
-  }
+  const targetAgent = readTargetAgent(targetAgentDir);
 
   const suitePath = path.join(outputDir, 'agent-lab-takeover-suite.json');
   const receiptPath = path.join(outputDir, 'takeover-receipt.json');

@@ -301,14 +301,7 @@ export function runImproveFromAgentLabSuite({
   const aiReviewerEvaluation = loadAiReviewerEvaluation(aiReviewerEvaluationPath);
 
   const suite = readJson(suitePath);
-  const targetAgent = readTargetAgent(targetAgentDir, {
-    domain_id: path.basename(targetAgentDir),
-    domain_label: path.basename(targetAgentDir),
-    delivery_domain: 'external_opl_compatible_agent',
-  });
-  if (!targetAgent.domain_id) {
-    throw new Error(`Target agent descriptor is missing domain_id: ${targetAgent.descriptor_ref}`);
-  }
+  const targetAgent = readTargetAgent(targetAgentDir);
   const policy = targetImprovementPolicy(targetAgentDir);
 
   const agentLabRun = runOpl(oplBin, ['agent-lab', 'run', '--suite', suitePath, '--json']);

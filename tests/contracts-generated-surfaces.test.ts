@@ -7,7 +7,6 @@ import {
   asObjects,
   asStrings,
   readJson,
-  readText,
   assertRepoRefExists,
   assertNoForbiddenAuthority,
   assertNoForbiddenDesignCenterVocabulary,
@@ -243,6 +242,14 @@ test('top-level OMA commands and materializers stay target-agent generic', () =>
   assert.equal(vocabularyPolicy.top_level_suite_kind_scope, 'target_agent_generic_only');
   assert.equal(vocabularyPolicy.top_level_command_family_scope, 'target_agent_generic_only');
   assert.equal(vocabularyPolicy.oma_must_not_add_target_domain_compatibility_layer, true);
+  assert.deepEqual(asStrings(vocabularyPolicy.domain_names_allowed_only_as), [
+    'target_agent_id',
+    'target_agent_ref',
+    'owner_route_ref',
+    'fixture_ref',
+    'receipt_provenance_ref',
+    'real_target_smoke_evidence_ref',
+  ]);
   asStrings(vocabularyPolicy.forbidden_domain_specific_suite_kind_prefixes).forEach((prefix) => {
     assert.equal(
       asStrings(vocabularyPolicy.allowed_top_level_suite_kinds).some((suiteKind) => suiteKind.startsWith(prefix)),
@@ -250,11 +257,6 @@ test('top-level OMA commands and materializers stay target-agent generic', () =>
       `${prefix} must not become a top-level OMA suite kind`,
     );
   });
-
-  const statusDoc = readText('docs/references/opl-meta-agent-ideal-state.md');
-  assert.match(statusDoc, /target-agent generic artifacts/);
-  assert.match(statusDoc, /MAS 或 MAG/);
-  assert.match(statusDoc, /输出机制本身仍是通用 target-agent mechanism/);
 });
 
 test('registration, projection, and evidence contracts are represented in functional audit', () => {

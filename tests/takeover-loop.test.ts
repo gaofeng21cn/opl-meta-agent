@@ -23,6 +23,11 @@ function readJson(filePath: string): JsonObject {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
+function writeJson(filePath: string, payload: unknown): void {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`);
+}
+
 function assertStageFolderContractRefs(
   contract: JsonObject,
   domainId: string,
@@ -241,4 +246,57 @@ test('takeover parser rejects retired fixture alias', () => {
     () => parseTakeoverAgentArgs(['--fixture', '/tmp/retired-fixture-agent']),
     /--fixture alias has been retired/i,
   );
+});
+
+test('takeover fails closed when target agent descriptor is missing', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-takeover-missing-descriptor-'));
+  const targetAgentDir = path.join(outputRoot, 'target-agent');
+  const takeoverRoot = path.join(outputRoot, 'takeover');
+  const oplBin = process.env.OPL_BIN
+    ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
+
+  try {
+    fs.mkdirSync(targetAgentDir, { recursive: true });
+
+    assert.throws(
+      () => runTakeoverAgent({
+        targetAgentDir,
+        outputDir: takeoverRoot,
+        oplBin,
+      }),
+      /Target agent descriptor is required: .*contracts\/domain_descriptor\.json/,
+    );
+    assert.equal(fs.existsSync(path.join(takeoverRoot, 'agent-lab-takeover-suite.json')), false);
+    assert.equal(fs.existsSync(path.join(takeoverRoot, 'takeover-receipt.json')), false);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
+test('takeover fails closed when target agent descriptor domain_id is missing', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-takeover-missing-domain-id-'));
+  const targetAgentDir = path.join(outputRoot, 'target-agent');
+  const takeoverRoot = path.join(outputRoot, 'takeover');
+  const oplBin = process.env.OPL_BIN
+    ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
+
+  try {
+    writeJson(path.join(targetAgentDir, 'contracts/domain_descriptor.json'), {
+      domain_label: 'Target Agent',
+      delivery_domain: 'agent_building',
+    });
+
+    assert.throws(
+      () => runTakeoverAgent({
+        targetAgentDir,
+        outputDir: takeoverRoot,
+        oplBin,
+      }),
+      /Target agent descriptor is missing domain_id: .*contracts\/domain_descriptor\.json/,
+    );
+    assert.equal(fs.existsSync(path.join(takeoverRoot, 'agent-lab-takeover-suite.json')), false);
+    assert.equal(fs.existsSync(path.join(takeoverRoot, 'takeover-receipt.json')), false);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
 });

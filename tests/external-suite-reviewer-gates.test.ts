@@ -55,6 +55,93 @@ test('external suite improvement fails closed when AI reviewer evaluation is mis
   }
 });
 
+test('external suite improvement fails closed when target descriptor is missing', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-external-suite-missing-descriptor-'));
+  try {
+    const targetAgentDir = path.join(outputRoot, 'med-autoscience');
+    fs.mkdirSync(targetAgentDir, { recursive: true });
+    writeMedicalTargetImprovementPolicy(targetAgentDir);
+    const suitePath = path.join(outputRoot, 'medical-manuscript-quality-suite.json');
+    writeJson(suitePath, buildBlockedMedicalManuscriptSuite(suitePath));
+    const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+    writeAiReviewerEvaluation(reviewerEvaluationPath);
+
+    const result = spawnSync(
+      process.execPath,
+      [
+        path.join(repoRoot, 'scripts/improve-from-agent-lab-suite.ts'),
+        '--suite',
+        suitePath,
+        '--target-agent-dir',
+        targetAgentDir,
+        '--output-dir',
+        outputRoot,
+        '--ai-reviewer-evaluation',
+        reviewerEvaluationPath,
+        '--opl-bin',
+        oplBin,
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        maxBuffer: 16 * 1024 * 1024,
+      },
+    );
+
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /Target agent descriptor is required: .*contracts\/domain_descriptor\.json/);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'developer-patch-work-order.json')), false);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'target-capability-improvement-candidate.json')), false);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
+test('external suite improvement fails closed when target descriptor domain_id is missing', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-external-suite-missing-domain-id-'));
+  try {
+    const targetAgentDir = path.join(outputRoot, 'med-autoscience');
+    writeJson(path.join(targetAgentDir, 'contracts/domain_descriptor.json'), {
+      domain_label: 'MedAutoScience',
+      delivery_domain: 'medical_research',
+    });
+    writeMedicalTargetImprovementPolicy(targetAgentDir);
+    const suitePath = path.join(outputRoot, 'medical-manuscript-quality-suite.json');
+    writeJson(suitePath, buildBlockedMedicalManuscriptSuite(suitePath));
+    const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+    writeAiReviewerEvaluation(reviewerEvaluationPath);
+
+    const result = spawnSync(
+      process.execPath,
+      [
+        path.join(repoRoot, 'scripts/improve-from-agent-lab-suite.ts'),
+        '--suite',
+        suitePath,
+        '--target-agent-dir',
+        targetAgentDir,
+        '--output-dir',
+        outputRoot,
+        '--ai-reviewer-evaluation',
+        reviewerEvaluationPath,
+        '--opl-bin',
+        oplBin,
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        maxBuffer: 16 * 1024 * 1024,
+      },
+    );
+
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /Target agent descriptor is missing domain_id: .*contracts\/domain_descriptor\.json/);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'developer-patch-work-order.json')), false);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'target-capability-improvement-candidate.json')), false);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
 test('external suite improvement fails closed when AI reviewer predicted impact is missing', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-external-suite-missing-impact-'));
   try {
