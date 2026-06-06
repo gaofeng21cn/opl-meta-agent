@@ -75,14 +75,18 @@ rtk git diff --check
 rtk rg -n "^(<<<<<<<|=======|>>>>>>>)" README* docs agent/*/README.md
 rtk /Users/gaofeng/.local/bin/opl-doc-doctor doctor . --format json
 rtk rg -n "MAS .*command family|MAG .*command family|RCA .*command family|mas_.*suite|mag_.*suite|rca_.*suite|domain-specific suite|专用 suite|专用 command|兼容层|target-agent generic|standard target-agent|standard consumer|suite kind|command family" README* docs/**/*.md agent/*/README.md contracts tests package.json
+rtk rg -n "[[:blank:]]$" docs/history/process/2026-06-06-oma-standard-target-agent-handoff-vocabulary-ssot-closeout.md
+rtk rg -n "(mas|mag|rca|med_autoscience|med_autogrant|redcube_ai)[-_](agent_lab_external_suite|agent_production_evidence_suite|suite|command|cmd|work_order)|\"suite_kind\"\s*:\s*\"(mas|mag|rca|med_autoscience|med_autogrant|redcube_ai)|\"command_family\"\s*:\s*\"(mas|mag|rca|med_autoscience|med_autogrant|redcube_ai)" README* docs/**/*.md agent/*/README.md contracts tests package.json
 ```
 
 Result:
 
 - `git diff --check` passed.
 - Conflict-marker scan found no matches.
-- OPL Doc doctor passed with `finding_count = 0`.
+- OPL Doc doctor passed with `finding_count = 0`; doctor remains a preflight risk map, not semantic truth.
 - Targeted vocabulary scan returned only allowed current-boundary statements, machine policy/tests, history/provenance, or target-agent refs. No MAS/MAG/RCA-specific OMA command family, Agent Lab suite kind prefix, top-level OMA surface kind, or compatibility layer was found.
+- The new closeout file had no trailing whitespace.
+- Narrow forbidden top-level vocabulary scan returned no matches.
 
 ## Remaining Scope
 
