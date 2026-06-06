@@ -54,3 +54,13 @@ Expected behavior:
 - Generic external target policy test: no synthesized `external_agent/*` change refs.
 - Missing target-owned policy reviewer-gate test: process exits successfully with `blocked_target_improvement_policy_missing`, writes `typed-blocker.json`, and does not write `developer-patch-work-order.json`.
 - MAS developer work-order, owner-receipt no-patch and efficiency typed-blocker tests still pass with explicit target-owned policies or owner-receipt semantics.
+
+Result:
+
+- Focused Node tests passed: `13` tests, `0` failed.
+- `npm run typecheck` passed.
+- `npm test` passed: `79` tests, `0` failed.
+- `npm run verify` passed: `79` tests, `0` failed.
+- `git diff --check` passed.
+- Conflict-marker scan found no matches.
+- Source/test/contract no-resurrection scan for `GENERIC_IMPROVEMENT_POLICY`, `generic_patch_refs_only`, `external_agent/failure_taxonomy_to_mechanism_candidate` and `writeEfficiencyBlockerArtifacts` found no active matches outside this historical closeout.
