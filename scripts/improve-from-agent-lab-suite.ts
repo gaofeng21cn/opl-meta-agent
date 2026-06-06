@@ -55,8 +55,9 @@ import {
   type CapabilityCandidate,
   buildDeveloperPatchWorkOrder,
   buildEfficiencyTypedBlocker,
-  writeEfficiencyBlockerArtifacts,
+  buildTargetImprovementPolicyTypedBlocker,
   writeExternalSuiteArtifacts,
+  writeTypedBlockerArtifacts,
 } from './lib/external-suite-materializer.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -201,6 +202,43 @@ function targetCapabilityRef(targetAgent: TargetAgent): string {
   return `domain-agent:${targetAgent.domain_id}/agent-lab-result-consumption-capability`;
 }
 
+function traceabilityStatus({
+  suiteResult,
+  patchTraceabilityMatrix,
+}: {
+  suiteResult: SuiteResult;
+  patchTraceabilityMatrix: PatchTraceabilityEntry[];
+}): string {
+  if (patchTraceabilityMatrix.length > 0) {
+    return 'gap_to_patch_refs_mapped';
+  }
+  return suiteResult.status === 'passed'
+    ? 'no_source_patch_required'
+    : 'target_owned_patch_refs_missing';
+}
+
+function missingTargetImprovementPolicyFields({
+  suiteResult,
+  proposedChangeRefs,
+  patchTraceabilityMatrix,
+}: {
+  suiteResult: SuiteResult;
+  proposedChangeRefs: string[];
+  patchTraceabilityMatrix: PatchTraceabilityEntry[];
+}): string[] {
+  if (suiteResult.status === 'passed') {
+    return [];
+  }
+  const missing: string[] = [];
+  if (proposedChangeRefs.length === 0) {
+    missing.push('target_improvement_policy.proposed_change_refs');
+  }
+  if (patchTraceabilityMatrix.length === 0) {
+    missing.push('target_improvement_policy.patch_traceability_matrix');
+  }
+  return missing;
+}
+
 function buildCapabilityCandidate({
   targetAgent,
   suite,
@@ -268,9 +306,10 @@ function buildCapabilityCandidate({
     proposed_change_refs: proposedChangeRefs,
     patch_traceability_matrix: patchTraceabilityMatrix,
     efficiency_non_regression_refs: efficiencyNonRegressionRefs,
-    traceability_status: patchTraceabilityMatrix.length
-      ? 'gap_to_patch_refs_mapped'
-      : 'generic_patch_refs_only',
+    traceability_status: traceabilityStatus({
+      suiteResult,
+      patchTraceabilityMatrix,
+    }),
     ...domainPackReceiptFields(domainPackSummary),
     source_domain_pack: domainPackSummary,
     target_editable_surface_refs: targetEditableSurfaceRefs(proposedChangeRefs),
@@ -389,7 +428,7 @@ export function runImproveFromAgentLabSuite({
       capabilityCandidate,
       missingFields: missingEfficiencyFields,
     });
-    const artifacts = writeEfficiencyBlockerArtifacts({
+    const artifacts = writeTypedBlockerArtifacts({
       outputDir,
       capabilityCandidate,
       blocker,
@@ -399,6 +438,46 @@ export function runImproveFromAgentLabSuite({
       surface_kind: 'opl_meta_agent_external_suite_self_evolution_result',
       version: 'opl-meta-agent.external-suite-self-evolution.v1',
       status: 'blocked_efficiency_quality_floor_missing',
+      product_id: 'opl-meta-agent',
+      target_agent: capabilityCandidate.target_agent,
+      authority_boundary: {
+        ...capabilityCandidate.authority_boundary,
+        no_executable_work_order_issued: true,
+      },
+      artifacts: {
+        suite_path: suitePath,
+        ...artifacts,
+      },
+      opl_agent_lab: agentLabRun.agent_lab_run,
+      learning_loop: {
+        target_capability_improvement_candidate: capabilityCandidate,
+        typed_blocker: blocker,
+      },
+    };
+  }
+  const missingTargetImprovementPolicy = missingTargetImprovementPolicyFields({
+    suiteResult,
+    proposedChangeRefs,
+    patchTraceabilityMatrix,
+  });
+  if (missingTargetImprovementPolicy.length > 0) {
+    const blocker = buildTargetImprovementPolicyTypedBlocker({
+      targetAgent,
+      suite,
+      suiteResult,
+      capabilityCandidate,
+      missingFields: missingTargetImprovementPolicy,
+    });
+    const artifacts = writeTypedBlockerArtifacts({
+      outputDir,
+      capabilityCandidate,
+      blocker,
+      agentLabRun,
+    });
+    return {
+      surface_kind: 'opl_meta_agent_external_suite_self_evolution_result',
+      version: 'opl-meta-agent.external-suite-self-evolution.v1',
+      status: 'blocked_target_improvement_policy_missing',
       product_id: 'opl-meta-agent',
       target_agent: capabilityCandidate.target_agent,
       authority_boundary: {

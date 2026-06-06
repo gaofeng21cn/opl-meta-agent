@@ -63,7 +63,7 @@ function unique(values: string[]): string[] {
   return [...new Set(values.filter((value) => value.trim().length > 0))];
 }
 
-export function writeEfficiencyBlockerArtifacts({
+export function writeTypedBlockerArtifacts({
   outputDir,
   capabilityCandidate,
   blocker,
@@ -344,6 +344,68 @@ export function buildDeveloperPatchWorkOrder({
       can_authorize_target_domain_quality_or_export: false,
       can_promote_default_agent_without_gate: false,
       can_train_or_deploy_model_weights: false,
+    },
+  };
+}
+
+export function buildTargetImprovementPolicyTypedBlocker({
+  targetAgent,
+  suite,
+  suiteResult,
+  capabilityCandidate,
+  missingFields,
+}: {
+  targetAgent: TargetAgent;
+  suite: JsonObject;
+  suiteResult: SuiteResult;
+  capabilityCandidate: CapabilityCandidate;
+  missingFields: string[];
+}): JsonObject {
+  const workOrderId = stableId('oma_target_improvement_policy_blocker', [
+    targetAgent.domain_id,
+    suite.suite_id,
+    suiteResult.result_id,
+    capabilityCandidate.candidate_id,
+    missingFields,
+  ]);
+  return {
+    surface_kind: 'opl_meta_agent_target_improvement_policy_typed_blocker',
+    version: 'opl-meta-agent.target-improvement-policy-typed-blocker.v1',
+    blocker_id: stableId('oma_target_improvement_policy_blocker', [workOrderId]),
+    status: 'blocked_target_improvement_policy_missing',
+    blocked_reason: 'target_owned_change_refs_required',
+    repeat_budget: {
+      max_attempts: 2,
+      remaining_attempts: 0,
+      repeat_scope: 'same_target_eval_work_order_owner_route_tuple',
+    },
+    dead_letter_refs: [
+      `dead-letter:opl-meta-agent/${targetAgent.domain_id}/${workOrderId}`,
+    ],
+    escalation_refs: [
+      `escalation:target-owner/${targetAgent.domain_id}/target-improvement-policy`,
+    ],
+    next_allowed_action: 'supply_target_owned_change_refs_or_escalate_to_target_owner',
+    target_agent: capabilityCandidate.target_agent,
+    source_agent_lab_result_ref: suiteResult.result_id,
+    target_capability_improvement_candidate_ref: capabilityCandidate.candidate_id,
+    work_order_ref: workOrderId,
+    missing_required_fields: missingFields,
+    required_input_refs: [
+      'contracts/agent_lab_handoff.json#external_suite_improvement_policy.default_change_refs',
+      'contracts/agent_lab_handoff.json#external_suite_improvement_policy.change_ref_mappings',
+      'contracts/oma_handoff_refs.json#oma_handoff.default_change_refs',
+      'contracts/oma_handoff_refs.json#oma_handoff.change_ref_mappings',
+      'contracts/production_acceptance/*.json#meta_agent_work_order_contract.change_ref_mappings',
+    ],
+    authority_boundary: {
+      typed_blocker_only: true,
+      no_executable_work_order_issued: true,
+      can_write_target_domain_truth: false,
+      can_write_target_domain_memory_body: false,
+      can_mutate_target_domain_artifact_body: false,
+      can_authorize_target_domain_quality_or_export: false,
+      can_promote_default_agent_without_gate: false,
     },
   };
 }

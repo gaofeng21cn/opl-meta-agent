@@ -145,6 +145,56 @@ test('external suite efficiency handoff projection becomes a developer work orde
       domain_label: 'RedCube AI',
       delivery_domain: 'visual_deliverable',
     });
+    writeJson(path.join(targetAgentDir, 'contracts/agent_lab_handoff.json'), {
+      surface_kind: 'domain_agent_lab_efficiency_evidence_handoff',
+      domain_id: 'redcube-ai',
+      owner: 'RedCube AI',
+      handoff_status: 'ready_for_opl_meta_agent_efficiency_work_order',
+      external_suite_improvement_policy: {
+        default_change_ref_triggers: [
+          'efficiency',
+          'redundant review',
+          'latency',
+        ],
+        default_change_refs: [
+          'target_agent_efficiency_policy_ref:redcube-ai/redundant-review-calls',
+          'target_agent_runtime_contract_ref:redcube-ai/route-summary-cache-reuse',
+          'target_agent_regression_suite_ref:redcube-ai/efficiency-handoff',
+        ],
+        change_ref_mappings: [
+          {
+            token: 'redundant-review',
+            refs: [
+              'target_agent_efficiency_policy_ref:redcube-ai/redundant-review-calls',
+            ],
+          },
+          {
+            token: 'screenshot-review',
+            refs: [
+              'target_agent_runtime_contract_ref:redcube-ai/screenshot-review-gate',
+            ],
+          },
+        ],
+        patch_surface_hints: {
+          target_agent_efficiency_policy_ref: [
+            'packages/redcube-domain-entry/src/actions/domain-action-adapter-parts/visual-pack-compiler-handoff.ts',
+          ],
+          target_agent_runtime_contract_ref: [
+            'packages/redcube-runtime-family-ppt/src/ppt-deck-runtime-family-parts/native-ppt.ts',
+          ],
+          target_agent_regression_suite_ref: [
+            'tests/opl-family-contract-adoption.test.ts',
+          ],
+        },
+        runtime_required_surface_refs: [
+          'target_agent_efficiency_handoff_projection',
+          'target_agent_owner_route',
+        ],
+        runtime_expected_outcomes: [
+          'RedCube runtime projection preserves screenshot review and export authority while reducing redundant review calls',
+        ],
+      },
+    });
     const suitePath = path.join(outputRoot, 'efficiency-suite.json');
     writeJson(suitePath, buildEfficiencyHandoffSuite());
     const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');

@@ -365,6 +365,68 @@ export function writeMedicalTargetImprovementPolicy(targetAgentDir: string): voi
   });
 }
 
+export function writeEfficiencyTargetImprovementPolicy(targetAgentDir: string): void {
+  writeJson(path.join(targetAgentDir, 'contracts/agent_lab_handoff.json'), {
+    surface_kind: 'domain_agent_lab_efficiency_evidence_handoff',
+    domain_id: 'target-agent',
+    owner: 'target-agent',
+    handoff_status: 'ready_for_opl_meta_agent_efficiency_work_order',
+    external_suite_improvement_policy: {
+      default_change_ref_triggers: [
+        'efficiency',
+        'latency',
+        'usage cost',
+        'cache reuse',
+      ],
+      default_change_refs: [
+        'target_agent_efficiency_policy_ref:target-agent/non-regression-quality-floor',
+        'target_agent_runtime_contract_ref:target-agent/latency-and-cache-reuse',
+        'target_agent_regression_suite_ref:target-agent/efficiency-non-regression',
+      ],
+      change_ref_mappings: [
+        {
+          token: 'latency',
+          refs: [
+            'target_agent_runtime_contract_ref:target-agent/latency-and-cache-reuse',
+          ],
+        },
+        {
+          token: 'usage-cost',
+          refs: [
+            'target_agent_efficiency_policy_ref:target-agent/usage-cost-budget',
+          ],
+        },
+        {
+          token: 'cache-reuse',
+          refs: [
+            'target_agent_runtime_contract_ref:target-agent/cache-reuse',
+          ],
+        },
+      ],
+      patch_surface_hints: {
+        target_agent_efficiency_policy_ref: [
+          'contracts/efficiency-non-regression-policy.json',
+        ],
+        target_agent_runtime_contract_ref: [
+          'src/runtime/efficiency-policy.ts',
+        ],
+        target_agent_regression_suite_ref: [
+          'tests/efficiency-non-regression.test.ts',
+        ],
+      },
+      runtime_required_surface_refs: [
+        'target_agent_runtime_projection',
+        'target_agent_owner_route',
+        'target_agent_efficiency_handoff_projection',
+      ],
+      runtime_expected_outcomes: [
+        'target runtime/read-model exposes quality-floor-preserving efficiency evidence',
+        'target owner route can consume efficiency non-regression refs without quality/export authority transfer',
+      ],
+    },
+  });
+}
+
 export function writeOwnerReceiptAiReviewerEvaluation(filePath: string, overrides: JsonObject = {}): JsonObject {
   const evaluation = {
     reviewer_kind: 'ai_reviewer',

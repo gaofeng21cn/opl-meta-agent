@@ -9,6 +9,7 @@ import {
   readJson,
   runImproveArgs,
   buildBlockedEfficiencySuite,
+  writeEfficiencyTargetImprovementPolicy,
   writeEfficiencyReviewerEvaluation,
 } from './support/external-suite-fixtures.ts';
 import type { JsonObject } from './support/external-suite-fixtures.ts';
@@ -22,6 +23,7 @@ test('external suite efficiency evidence is projected into developer work order 
       domain_label: 'Target Agent',
       delivery_domain: 'generic_target_agent',
     });
+    writeEfficiencyTargetImprovementPolicy(targetAgentDir);
     const suitePath = path.join(outputRoot, 'efficiency-suite.json');
     writeJson(suitePath, buildBlockedEfficiencySuite());
     const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');

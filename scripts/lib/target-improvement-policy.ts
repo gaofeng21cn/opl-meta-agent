@@ -85,21 +85,6 @@ const OWNER_RECEIPT_DEFAULT_CHANGE_REFS = [
   'target_agent_regression_suite_ref:target_agent/owner-boundary',
 ];
 
-const GENERIC_IMPROVEMENT_POLICY: TargetImprovementPolicy = {
-  defaultChangeRefs: [
-    'target_agent_stage_policy_ref:external_agent/failure_taxonomy_to_mechanism_candidate',
-    'target_agent_rubric_ref:external_agent/domain_quality_scorecard',
-    'target_agent_regression_suite_ref:external_agent/blocked_suite_replay',
-  ],
-  defaultChangeRefTriggers: [],
-  changeRefMappings: [],
-  patchSurfaceHints: {},
-  externalLearningRefs: [],
-  forbiddenTargetPathsOrSurfaces: DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
-  runtimeRequiredSurfaceRefs: DEFAULT_RUNTIME_REQUIRED_SURFACE_REFS,
-  runtimeExpectedOutcomes: DEFAULT_RUNTIME_EXPECTED_OUTCOMES,
-};
-
 function optionalJson(targetAgentDir: string, relativePath: string): JsonObject | null {
   const filePath = path.join(targetAgentDir, relativePath);
   if (!fs.existsSync(filePath)) {
@@ -190,20 +175,20 @@ export function targetImprovementPolicy(targetAgentDir: string): TargetImproveme
     ...sources.flatMap((source) => stringList(source?.oma_handoff?.runtime_expected_outcomes)),
   ]);
   return {
-    defaultChangeRefs: defaultChangeRefs.length ? defaultChangeRefs : GENERIC_IMPROVEMENT_POLICY.defaultChangeRefs,
+    defaultChangeRefs,
     defaultChangeRefTriggers,
     changeRefMappings: collectMappings(...sources),
     patchSurfaceHints: collectPatchSurfaceHints(...sources),
     externalLearningRefs,
     forbiddenTargetPathsOrSurfaces: forbiddenTargetPathsOrSurfaces.length
       ? forbiddenTargetPathsOrSurfaces
-      : GENERIC_IMPROVEMENT_POLICY.forbiddenTargetPathsOrSurfaces,
+      : DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
     runtimeRequiredSurfaceRefs: runtimeRequiredSurfaceRefs.length
       ? runtimeRequiredSurfaceRefs
-      : GENERIC_IMPROVEMENT_POLICY.runtimeRequiredSurfaceRefs,
+      : DEFAULT_RUNTIME_REQUIRED_SURFACE_REFS,
     runtimeExpectedOutcomes: runtimeExpectedOutcomes.length
       ? runtimeExpectedOutcomes
-      : GENERIC_IMPROVEMENT_POLICY.runtimeExpectedOutcomes,
+      : DEFAULT_RUNTIME_EXPECTED_OUTCOMES,
   };
 }
 
@@ -261,9 +246,6 @@ export function inferProposedChangeRefs({
     if (combined.includes(mapping.token)) {
       mapping.refs.forEach((ref) => inferred.add(ref));
     }
-  }
-  if (inferred.size === 0) {
-    policy.defaultChangeRefs.forEach((ref) => inferred.add(ref));
   }
   return [...inferred].sort();
 }
