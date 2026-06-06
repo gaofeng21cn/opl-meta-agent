@@ -5,7 +5,7 @@ Purpose: `docs_entry_index`
 State: `active_index`
 Machine boundary: 本文是人读文档入口。机器真相继续归 `contracts/`、`agent/`、`runtime/authority_functions/`、CLI/API 行为、OPL Agent Lab result refs、work-order receipts 和测试。
 
-这个目录是 `opl-meta-agent` 的开发与维护文档面。仓库首页说明项目角色；本索引负责把当前 truth、架构、约束、决策、目标态、差距、私有实现迁移台账和历史过程分层。
+这个目录是 `opl-meta-agent` 的开发与维护文档入口。仓库首页说明公开角色；本索引只负责导航当前 truth、架构、约束、决策、目标态、差距、私有实现迁移台账和历史过程。文档生命周期、目录职责、inventory 和 reopening conditions 的 SSOT 是 [文档组合治理](./docs_portfolio_consolidation.md)。
 
 ## 先读这里
 
@@ -30,21 +30,10 @@ OPL Framework 持有通用 runtime、Agent Lab、queue、stage attempt ledger、
 
 MAS、MAG、RCA 等目标 agent 只应作为 target-agent refs、owner routes、fixtures、receipt refs 或 provenance 出现在本仓文档中；不能成为 OMA 顶层设计中心，也不能让 OMA 写 target-domain truth、memory body、artifact body、quality/export verdict 或 owner receipt body。
 
-## 目录职责
-
-| 目录 | 当前职责 |
-| --- | --- |
-| `docs/` root | 文档索引、核心五件套。 |
-| `docs/active/` | 当前差距、迁移台账和 active baton；不保存 dated closeout 或 coverage tranche。 |
-| `docs/references/` | 目标态与支撑参考。 |
-| `docs/history/` | 过程 ledger、retired/provenance 和 no-resurrection 历史归档；不承担当前 truth。 |
-
-本仓当前保持轻量 OPL-compatible repo 文档形态。`docs/history/` 只为已经出现的过程/provenance 材料提供归档，不承担当前 truth；后续若出现长期 public、product、runtime、delivery、source、policies 或 specs 内容，再按 OPL-family canonical taxonomy 增加对应目录和索引；不要为了空目录对齐制造第二文档体系。
-
 ## 文档规则
 
 - `README*` 与 `docs/**` 是人读材料；机器消费者应读取 contracts、source、tests、CLI/API 行为或语义化 refs。
 - 长期文档必须能说明 owner、purpose、state 和 machine boundary。
 - Active 文档只保留当前计划、差距和迁移门；过程 proof、dated closeout 和历史路线应进入 history/provenance 语境后再保留。
-- `docs/docs_portfolio_consolidation.md` 只维护 lifecycle role map、inventory 和 reopening conditions，不追加 dated coverage ledger。
+- Lifecycle role map、inventory、目录职责和 reopening conditions 只在 [文档组合治理](./docs_portfolio_consolidation.md) 维护；本索引不复制目录 taxonomy 或 dated coverage ledger。
 - Generated interface readiness、suite pass、schema completeness、App projection readiness、work-order shape 或 refs-only scaleout closeout 不能写成 target domain ready、quality verdict、artifact readiness、owner receipt body 或 default promotion。
