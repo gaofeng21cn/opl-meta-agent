@@ -3,8 +3,10 @@ import type { JsonObject } from './domain-pack.ts';
 import {
   type AiReviewerEvaluation,
   aiReviewerReceiptFields,
+} from './meta-agent-loop-ai-reviewer.ts';
+import {
   stableId,
-} from './meta-agent-loop.ts';
+} from './meta-agent-loop-io.ts';
 import {
   DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
 } from './work-order-policy-constants.ts';

@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import type { JsonObject } from './domain-pack.ts';
-import { readJson, resolveOplBin } from './meta-agent-loop.ts';
+import { readJson, resolveOplBin } from './meta-agent-loop-io.ts';
 import type { AgentContracts } from './agent-evidence-materializer.ts';
 
 type MutableAgentEvidenceArgs = {

@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { AiReviewerEvaluation, TargetAgent } from './meta-agent-loop.ts';
-import { readJson } from './meta-agent-loop.ts';
+import type { AiReviewerEvaluation } from './meta-agent-loop-ai-reviewer.ts';
+import { readJson, type TargetAgent } from './meta-agent-loop-io.ts';
 import type { JsonObject } from './domain-pack.ts';
 import {
   DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,

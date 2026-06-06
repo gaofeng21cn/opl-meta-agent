@@ -1,8 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { JsonObject } from './domain-pack.ts';
-import type { TargetAgent } from './meta-agent-loop.ts';
-import { runOpl, writeJson } from './meta-agent-loop.ts';
+import { runOpl, type TargetAgent, writeJson } from './meta-agent-loop-io.ts';
 import {
   type StageDecompositionCloseoutPacket,
   type StageRunnerKind,

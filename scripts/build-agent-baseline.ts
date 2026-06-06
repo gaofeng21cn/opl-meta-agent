@@ -21,23 +21,27 @@ import {
 } from './lib/stage-decomposition-runner.ts';
 import {
   type AiReviewerEvaluation,
+  aiReviewerAcceptanceGates,
+  aiReviewerReceiptFields,
+  loadAiReviewerEvaluation,
+} from './lib/meta-agent-loop-ai-reviewer.ts';
+import {
+  type TargetAgent,
+  resolveOplBin,
+  runOpl,
+  writeJson,
+} from './lib/meta-agent-loop-io.ts';
+import {
   type LearningCandidate,
   type OwnerReceipt,
   type SuiteResult,
-  type TargetAgent,
-  aiReviewerAcceptanceGates,
-  aiReviewerReceiptFields,
   buildAgentLabSuite as buildExternalSuite,
   buildLearningCandidate as buildGatedLearningCandidate,
   buildMechanismPatchProposal,
   buildOwnerReceipt,
   buildRealTargetDeliveryReceipt,
   buildScaleoutEvidenceLedger,
-  loadAiReviewerEvaluation,
-  resolveOplBin,
-  runOpl,
-  writeJson,
-} from './lib/meta-agent-loop.ts';
+} from './lib/meta-agent-loop-receipts.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 

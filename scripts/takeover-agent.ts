@@ -13,16 +13,18 @@ import {
   type LearningCandidate,
   type OwnerReceipt,
   type SuiteResult,
-  type TargetAgent,
   buildAgentLabSuite,
   buildLearningCandidate,
   buildMechanismPatchProposal,
   buildOwnerReceipt,
+} from './lib/meta-agent-loop-receipts.ts';
+import {
+  type TargetAgent,
   readTargetAgent,
   resolveOplBin,
   runOpl,
   writeJson,
-} from './lib/meta-agent-loop.ts';
+} from './lib/meta-agent-loop-io.ts';
 import {
   buildStageNativeArtifactAttemptRefs,
 } from './lib/stage-native-artifact-contract.ts';

@@ -1,6 +1,6 @@
 import path from 'node:path';
 import type { JsonObject } from '../domain-pack.ts';
-import type { TargetAgent } from '../meta-agent-loop.ts';
+import type { TargetAgent } from '../meta-agent-loop-io.ts';
 
 export const FORBIDDEN_GENERIC_OWNER_ROLES = [
   'generic_scheduler_owner',

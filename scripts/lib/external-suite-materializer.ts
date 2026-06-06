@@ -3,10 +3,12 @@ import type { JsonObject } from './domain-pack.ts';
 import {
   type OwnerReceipt,
   type SuiteResult,
+} from './meta-agent-loop-receipts.ts';
+import {
   type TargetAgent,
   stableId,
   writeJson,
-} from './meta-agent-loop.ts';
+} from './meta-agent-loop-io.ts';
 import type {
   PatchTraceabilityEntry,
   TargetImprovementPolicy,

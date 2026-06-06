@@ -1,5 +1,5 @@
 import type { JsonObject } from '../domain-pack.ts';
-import type { TargetAgent } from '../meta-agent-loop.ts';
+import type { TargetAgent } from '../meta-agent-loop-io.ts';
 import {
   SERIES_DESIGN_PROFILE,
   STAGE_PROGRESS_DELTA_POLICY,

@@ -11,22 +11,26 @@ import {
 } from './lib/domain-pack.ts';
 import {
   type AiReviewerEvaluation,
-  type LearningCandidate,
-  type OwnerReceipt,
-  type SuiteResult,
-  type TargetAgent,
   aiReviewerAcceptanceGates,
   aiReviewerReceiptFields,
-  buildLearningCandidate,
-  buildMechanismPatchProposal,
-  buildOwnerReceipt,
   loadAiReviewerEvaluation,
+} from './lib/meta-agent-loop-ai-reviewer.ts';
+import {
+  type TargetAgent,
   readJson,
   readTargetAgent,
   resolveOplBin,
   runOpl,
   stableId,
-} from './lib/meta-agent-loop.ts';
+} from './lib/meta-agent-loop-io.ts';
+import {
+  type LearningCandidate,
+  type OwnerReceipt,
+  type SuiteResult,
+  buildLearningCandidate,
+  buildMechanismPatchProposal,
+  buildOwnerReceipt,
+} from './lib/meta-agent-loop-receipts.ts';
 import {
   buildOplWorkOrderPrimitiveRefs,
 } from './lib/work-order-builders.ts';

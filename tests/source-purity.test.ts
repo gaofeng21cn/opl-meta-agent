@@ -146,7 +146,7 @@ test('minimal authority functions are explicit refs, not generic runtime owners'
       authorityRef: 'authority-function-ref:opl-meta-agent/candidate-agent-package-builder',
       implementationRefs: [
         'scripts/build-agent-baseline.ts',
-        'scripts/lib/meta-agent-loop.ts',
+        'scripts/lib/meta-agent-loop-receipts.ts',
       ],
       invokedByRefs: ['action-ref:build-agent-baseline'],
     },
@@ -154,7 +154,7 @@ test('minimal authority functions are explicit refs, not generic runtime owners'
       moduleId: 'mechanism_patch_proposal_authorizer',
       authorityRef: 'authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer',
       implementationRefs: [
-        'scripts/lib/meta-agent-loop.ts',
+        'scripts/lib/meta-agent-loop-receipts.ts',
       ],
       invokedByRefs: ['action-ref:generate-mechanism-patch-proposal'],
     },
@@ -243,9 +243,12 @@ test('script morphology stays limited to authority refs, materializers, and help
   );
   assert.deepEqual(asStrings(materializerScan.retired_materializer_tails), [
     'build_agent_baseline_no_closeout_implicit_fixture_graph',
+    'meta_agent_loop_reexport_facade',
     'takeover_fixture_alias',
   ]);
   assert.deepEqual(asStrings(materializerScan.retired_materializer_tail_verification_refs), [
+    'docs/history/process/2026-06-06-oma-meta-agent-loop-facade-retirement-closeout.md',
+    'tests/source-purity.test.ts',
     'tests/stage-decomposition-materializer.test.ts',
     'tests/takeover-loop.test.ts',
   ]);
@@ -329,12 +332,16 @@ test('script morphology stays limited to authority refs, materializers, and help
   ));
   assert.ok(retainedHelperGate, 'thin helper/takeover retention gate should exist');
   assert.deepEqual(asStrings(retainedHelperGate.tracked_script_refs), [
-    'scripts/lib/meta-agent-loop.ts',
     'scripts/lib/meta-agent-loop-ai-reviewer.ts',
     'scripts/lib/meta-agent-loop-io.ts',
     'scripts/lib/meta-agent-loop-receipts.ts',
     'scripts/takeover-agent.ts',
   ]);
+  assert.equal(
+    fs.existsSync(path.join(repoRoot, 'scripts/lib/meta-agent-loop.ts')),
+    false,
+    'retired scripts/lib/meta-agent-loop.ts re-export facade must not be restored',
+  );
   [
     'opl_generated_interface_or_invocation_helper_parity_ref',
     'opl_agent_lab_takeover_handoff_parity_ref',

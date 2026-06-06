@@ -219,10 +219,14 @@
       {
         "script_ref": "scripts/lib/meta-agent-loop-receipts.ts",
         "classes": [
+          "authority_function_implementation_ref",
           "fixture_or_proof_helper",
           "developer_work_order_materializer"
         ],
-        "authority_function_refs": [],
+        "authority_function_refs": [
+          "authority-function-ref:opl-meta-agent/candidate-agent-package-builder",
+          "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer"
+        ],
         "consumes_opl_surfaces": [],
         "writes_only": [
           "agent_lab_suite_ref",
@@ -231,30 +235,6 @@
           "mechanism_patch_proposal_ref",
           "real_target_delivery_receipt_ref",
           "scaleout_evidence_ledger_ref"
-        ],
-        "forbidden_roles": []
-      },
-      {
-        "script_ref": "scripts/lib/meta-agent-loop.ts",
-        "classes": [
-          "authority_function_implementation_ref",
-          "smoke_helper",
-          "fixture_or_proof_helper",
-          "developer_work_order_materializer"
-        ],
-        "authority_function_refs": [
-          "authority-function-ref:opl-meta-agent/candidate-agent-package-builder",
-          "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer"
-        ],
-        "consumes_opl_surfaces": [
-          "opl_agent_lab_complete_control_plane"
-        ],
-        "writes_only": [
-          "agent_lab_suite_ref",
-          "owner_receipt_ref",
-          "online_learning_candidate_ref",
-          "mechanism_patch_proposal_ref",
-          "developer_patch_work_order_ref"
         ],
         "forbidden_roles": []
       },
@@ -677,13 +657,12 @@
       {
         "gate_id": "retained_thin_authority_helpers_and_takeover_smoke",
         "tracked_script_refs": [
-          "scripts/lib/meta-agent-loop.ts",
           "scripts/lib/meta-agent-loop-ai-reviewer.ts",
           "scripts/lib/meta-agent-loop-io.ts",
           "scripts/lib/meta-agent-loop-receipts.ts",
           "scripts/takeover-agent.ts"
         ],
-        "current_role": "thin_reexport_io_reviewer_receipt_helpers_and_external_takeover_smoke",
+        "current_role": "direct_io_reviewer_receipt_helpers_and_external_takeover_smoke",
         "allowed_until": "active_import_or_npm_test_caller_requires_refs_only_helper_or_takeover_receipt_materialization",
         "required_before_retire_or_absorb": [
           "stable_helper_policy_moved_to_agent_contracts_authority_or_opl_primitive_ref",
@@ -816,7 +795,6 @@
       "scripts/lib/meta-agent-loop-ai-reviewer.ts",
       "scripts/lib/meta-agent-loop-io.ts",
       "scripts/lib/meta-agent-loop-receipts.ts",
-      "scripts/lib/meta-agent-loop.ts",
       "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts",
       "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts",
       "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts",
@@ -879,9 +857,12 @@
       "retained_materializer_role": "refs_only_target_agent_semantics_work_order_candidate_or_typed_blocker_materializer",
       "retired_materializer_tails": [
         "build_agent_baseline_no_closeout_implicit_fixture_graph",
+        "meta_agent_loop_reexport_facade",
         "takeover_fixture_alias"
       ],
       "retired_materializer_tail_verification_refs": [
+        "docs/history/process/2026-06-06-oma-meta-agent-loop-facade-retirement-closeout.md",
+        "tests/source-purity.test.ts",
         "tests/stage-decomposition-materializer.test.ts",
         "tests/takeover-loop.test.ts"
       ],
@@ -922,7 +903,7 @@
       "authority_ref": "authority-function-ref:opl-meta-agent/candidate-agent-package-builder",
       "implementation_refs": [
         "scripts/build-agent-baseline.ts",
-        "scripts/lib/meta-agent-loop.ts"
+        "scripts/lib/meta-agent-loop-receipts.ts"
       ],
       "invoked_by_refs": [
         "action-ref:build-agent-baseline"
@@ -945,7 +926,7 @@
       "classification": "minimal_authority_function",
       "authority_ref": "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer",
       "implementation_refs": [
-        "scripts/lib/meta-agent-loop.ts"
+        "scripts/lib/meta-agent-loop-receipts.ts"
       ],
       "invoked_by_refs": [
         "action-ref:generate-mechanism-patch-proposal"

@@ -5,7 +5,7 @@ import {
   resolveOplBin,
   runOpl,
   writeJson,
-} from './lib/meta-agent-loop.ts';
+} from './lib/meta-agent-loop-io.ts';
 import type { JsonObject } from './lib/domain-pack.ts';
 import { validateDeveloperPatchWorkOrder } from './lib/work-order-validation.ts';
 

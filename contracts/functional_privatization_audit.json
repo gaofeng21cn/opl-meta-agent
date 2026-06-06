@@ -113,7 +113,7 @@
       "authority_function_contract_ref": "runtime/authority_functions/meta-agent-authority-functions.json",
       "implementation_refs": [
         "scripts/build-agent-baseline.ts",
-        "scripts/lib/meta-agent-loop.ts"
+        "scripts/lib/meta-agent-loop-receipts.ts"
       ],
       "code_paths": [
         "runtime/authority_functions/meta-agent-authority-functions.json"
@@ -132,7 +132,8 @@
       "code_paths": [
         "scripts/build-agent-baseline.ts",
         "scripts/takeover-agent.ts",
-        "scripts/lib/meta-agent-loop.ts"
+        "scripts/lib/meta-agent-loop-io.ts",
+        "scripts/lib/meta-agent-loop-receipts.ts"
       ],
       "active_callers": [
         "build-agent-baseline action",
@@ -149,7 +150,7 @@
       "authority_function_ref": "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer",
       "authority_function_contract_ref": "runtime/authority_functions/meta-agent-authority-functions.json",
       "implementation_refs": [
-        "scripts/lib/meta-agent-loop.ts"
+        "scripts/lib/meta-agent-loop-receipts.ts"
       ],
       "code_paths": [
         "runtime/authority_functions/meta-agent-authority-functions.json"

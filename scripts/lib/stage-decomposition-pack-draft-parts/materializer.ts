@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { JsonObject } from '../domain-pack.ts';
-import { writeJson } from '../meta-agent-loop.ts';
+import { writeJson } from '../meta-agent-loop-io.ts';
 import type { StageDecompositionPackDraft } from './shared.ts';
 import {
   asRecordArray,

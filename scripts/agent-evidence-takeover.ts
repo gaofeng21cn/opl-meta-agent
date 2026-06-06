@@ -4,10 +4,12 @@ import path from 'node:path';
 import {
   type AiReviewerEvaluation,
   loadAiReviewerEvaluation,
+} from './lib/meta-agent-loop-ai-reviewer.ts';
+import {
   runOpl,
   stableId,
   writeJson,
-} from './lib/meta-agent-loop.ts';
+} from './lib/meta-agent-loop-io.ts';
 import type { JsonObject } from './lib/domain-pack.ts';
 import {
   loadAgentContracts,
