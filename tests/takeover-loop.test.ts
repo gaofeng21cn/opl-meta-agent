@@ -241,10 +241,10 @@ test('opl-meta-agent takes over testing for an existing external agent without a
   }
 });
 
-test('takeover parser rejects retired fixture alias', () => {
+test('takeover parser has no fixture alias branch', () => {
   assert.throws(
     () => parseTakeoverAgentArgs(['--fixture', '/tmp/retired-fixture-agent']),
-    /--fixture alias has been retired/i,
+    /Unknown argument: --fixture/,
   );
 });
 

@@ -75,9 +75,6 @@ export function parseTakeoverAgentArgs(argv: string[]): TakeoverArgs {
       index += 1;
       continue;
     }
-    if (token === '--fixture') {
-      throw new Error('The --fixture alias has been retired; use --agent-dir <path> for explicit target agent intake.');
-    }
     throw new Error(`Unknown argument: ${token}.`);
   }
 

@@ -265,7 +265,6 @@ test('script morphology stays limited to authority refs, materializers, and help
   assert.deepEqual(asStrings(materializerScan.retired_materializer_tails), [
     'build_agent_baseline_no_closeout_implicit_fixture_graph',
     'meta_agent_loop_reexport_facade',
-    'takeover_fixture_alias',
     'target_improvement_policy_generic_external_agent_patch_ref_fallback',
   ]);
   assert.deepEqual(asStrings(materializerScan.retired_materializer_tail_verification_refs), [
