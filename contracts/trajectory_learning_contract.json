@@ -177,7 +177,7 @@
     "docs/invariants.md"
   ],
   "verified_by_refs": [
-    "tests/contracts.test.ts"
+    "tests/contracts-domain-pack.test.ts"
   ],
   "authority_boundary": {
     "refs_only": true,

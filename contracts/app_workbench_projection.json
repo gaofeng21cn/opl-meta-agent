@@ -170,7 +170,8 @@
     ],
     "live_rendering_status": "not_claimed_by_contract",
     "verified_by_refs": [
-      "tests/contracts.test.ts"
+      "tests/contracts-generated-surfaces.test.ts",
+      "tests/external-suite-patch-loop-projection.test.ts"
     ],
     "authority_boundary": {
       "refs_only": true,

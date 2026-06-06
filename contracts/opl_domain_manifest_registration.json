@@ -75,7 +75,7 @@
       "ux_score_authorized_quality_verdict"
     ],
     "verified_by_refs": [
-      "tests/contracts.test.ts"
+      "tests/contracts-generated-surfaces.test.ts"
     ],
     "authority_boundary": {
       "refs_only": true,

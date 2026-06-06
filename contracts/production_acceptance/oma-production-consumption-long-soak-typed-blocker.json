@@ -41,7 +41,7 @@
     "docs/active/opl-meta-agent-ideal-state-gap-plan.md"
   ],
   "next_verification_command_refs": [
-    "cmd:rtk node --test tests/contracts.test.ts",
+    "cmd:rtk node --test tests/contracts-production-acceptance.test.ts",
     "cmd:rtk npm run typecheck",
     "cmd:rtk npm test",
     "cmd:rtk git diff --check"

@@ -9,7 +9,7 @@
   "doc_ref": "docs/status.md",
   "next_verification_command_refs": [
     "cmd:rtk npm test",
-    "cmd:rtk node --test tests/contracts.test.ts tests/bootstrap-loop.test.ts tests/takeover-loop.test.ts tests/external-suite-self-evolution.test.ts",
+    "cmd:rtk node --test tests/contracts-generated-surfaces.test.ts tests/contracts-production-acceptance.test.ts tests/bootstrap-loop.test.ts tests/takeover-loop.test.ts tests/external-suite-developer-work-order.test.ts tests/external-suite-owner-receipt-behavior.test.ts tests/external-suite-reviewer-gates.test.ts",
     "cmd:rtk npm run typecheck",
     "cmd:rtk git diff --check"
   ],
@@ -23,7 +23,7 @@
     ],
     "next_verification_command_refs": [
       "cmd:rtk npm test",
-      "cmd:rtk node --test tests/contracts.test.ts tests/bootstrap-loop.test.ts tests/takeover-loop.test.ts tests/external-suite-self-evolution.test.ts",
+      "cmd:rtk node --test tests/contracts-generated-surfaces.test.ts tests/contracts-production-acceptance.test.ts tests/bootstrap-loop.test.ts tests/takeover-loop.test.ts tests/external-suite-developer-work-order.test.ts tests/external-suite-owner-receipt-behavior.test.ts tests/external-suite-reviewer-gates.test.ts",
       "cmd:rtk npm run typecheck",
       "cmd:rtk git diff --check"
     ],
@@ -89,7 +89,8 @@
       "contracts/generated_surface_handoff.json",
       "runtime/authority_functions/meta-agent-authority-functions.json",
       "contracts/private_functional_surface_policy.json",
-      "tests/contracts.test.ts"
+      "tests/contracts-generated-surfaces.test.ts",
+      "tests/contracts-production-acceptance.test.ts"
     ],
     "not_domain_ready_authority_source": true,
     "not_production_soak_authority_source": true
@@ -115,7 +116,9 @@
       "agent/stages/optimizer-iteration.md",
       "scripts/improve-from-agent-lab-suite.ts",
       "scripts/lib/meta-agent-loop.ts",
-      "tests/external-suite-self-evolution.test.ts"
+      "tests/external-suite-developer-work-order.test.ts",
+      "tests/external-suite-owner-receipt-behavior.test.ts",
+      "tests/external-suite-reviewer-gates.test.ts"
     ],
     "review_audit_receipt_refs": [
       "contracts/owner_receipt_contract.json",
@@ -227,8 +230,11 @@
     "source_refs": [
       "contracts/production_acceptance/meta-agent-production-acceptance.json",
       "tests/takeover-loop.test.ts",
-      "tests/external-suite-self-evolution.test.ts",
-      "tests/contracts.test.ts"
+      "tests/external-suite-developer-work-order.test.ts",
+      "tests/external-suite-owner-receipt-behavior.test.ts",
+      "tests/external-suite-reviewer-gates.test.ts",
+      "tests/contracts-generated-surfaces.test.ts",
+      "tests/contracts-production-acceptance.test.ts"
     ],
     "accepted_evidence_tail": [
       "external agent intake refs present",
@@ -246,7 +252,7 @@
     "promotion_gate_ref": "promotion-gate:opl-meta-agent/external-agent-takeover-improve-loop",
     "required_next_verification_command_refs": [
       "cmd:rtk npm test",
-      "cmd:rtk node --test tests/contracts.test.ts tests/bootstrap-loop.test.ts tests/takeover-loop.test.ts tests/external-suite-self-evolution.test.ts",
+      "cmd:rtk node --test tests/contracts-generated-surfaces.test.ts tests/contracts-production-acceptance.test.ts tests/bootstrap-loop.test.ts tests/takeover-loop.test.ts tests/external-suite-developer-work-order.test.ts tests/external-suite-owner-receipt-behavior.test.ts tests/external-suite-reviewer-gates.test.ts",
       "cmd:rtk npm run typecheck",
       "cmd:rtk git diff --check"
     ],
@@ -274,7 +280,7 @@
     ],
     "verified_by_refs": [
       "tests/bootstrap-loop.test.ts",
-      "tests/contracts.test.ts"
+      "tests/contracts-production-acceptance.test.ts"
     ]
   },
   "real_target_delivery_minimum": {
