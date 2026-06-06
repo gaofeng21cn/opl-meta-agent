@@ -73,6 +73,15 @@
         "forbidden_roles": []
       },
       {
+        "script_ref": "scripts/check-source-structure.ts",
+        "classes": ["fixture_or_proof_helper"],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": ["source_structure_line_budget_receipt_ref", "generated_aggregate_exemption_validation_ref"],
+        "contract_refs": ["contracts/source_structure_policy.json"],
+        "forbidden_roles": []
+      },
+      {
         "script_ref": "scripts/execute-external-work-order.ts",
         "classes": [
           "smoke_helper",
@@ -524,6 +533,15 @@
         "forbidden_roles": []
       },
       {
+        "script_ref": "scripts/sync-stage-control-plane.ts",
+        "classes": ["fixture_or_proof_helper"],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": ["stage_control_plane_source_contract_ref", "stage_control_plane_leaf_index_ref", "stage_control_plane_aggregate_ref", "stage_control_plane_drift_check_ref"],
+        "contract_refs": ["contracts/stage_control_plane.json", "contracts/stage_control_plane.source.json", "contracts/stage_control_plane.leaf-index.json"],
+        "forbidden_roles": []
+      },
+      {
         "script_ref": "scripts/takeover-agent.ts",
         "classes": [
           "smoke_helper",
@@ -646,6 +664,15 @@
           "absorb_or_cleanup_owner",
           "target_owner_receipt_body_writer"
         ]
+      },
+      {
+        "gate_id": "source_structure_and_stage_control_maintenance_helpers",
+        "tracked_script_refs": ["scripts/check-source-structure.ts", "scripts/sync-stage-control-plane.ts"],
+        "current_role": "source_structure_line_budget_checker_and_stage_control_plane_split_aggregate_helper",
+        "allowed_until": "stage_control_plane_aggregate_consumer_path_requires_repo_local_split_checker",
+        "required_before_retire_or_absorb": ["opl_framework_source_structure_lane_parity_ref", "stage_control_plane_source_aggregate_sync_parity_ref", "no_generated_aggregate_drift_ref", "no_active_npm_or_test_caller_ref", "tombstone_or_provenance_ref"],
+        "closed_retention_refs": ["contracts/source_structure_policy.json", "contracts/stage_control_plane.source.json", "contracts/stage_control_plane.leaf-index.json"],
+        "forbidden_long_term_claims": ["generic_runtime_owner", "generated_interface_owner", "domain_truth_writer", "stage_runtime_owner", "line_budget_default_hard_gate"]
       },
       {
         "gate_id": "retained_thin_authority_helpers_and_takeover_smoke",
@@ -779,6 +806,7 @@
     "scanned_script_refs": [
       "scripts/agent-evidence-takeover.ts",
       "scripts/build-agent-baseline.ts",
+      "scripts/check-source-structure.ts",
       "scripts/execute-external-work-order.ts",
       "scripts/improve-from-agent-lab-suite.ts",
       "scripts/lib/agent-evidence-contracts.ts",
@@ -803,6 +831,7 @@
       "scripts/lib/work-order-policy-constants.ts",
       "scripts/lib/work-order-refs.ts",
       "scripts/lib/work-order-validation.ts",
+      "scripts/sync-stage-control-plane.ts",
       "scripts/takeover-agent.ts"
     ],
     "absent_repo_owned_surface_paths": [

@@ -11,6 +11,13 @@
     "takeover:test": "node --experimental-strip-types scripts/takeover-agent.ts",
     "repo:hygiene": "scripts/repo-hygiene.sh",
     "repo:hygiene:fix": "scripts/repo-hygiene.sh --fix",
+    "stage-control:check": "scripts/run-with-repo-temp-env.sh node scripts/sync-stage-control-plane.ts --check",
+    "stage-control:write": "scripts/run-with-repo-temp-env.sh node scripts/sync-stage-control-plane.ts --write",
+    "stage-control:split": "scripts/run-with-repo-temp-env.sh node scripts/sync-stage-control-plane.ts --split",
+    "source-structure": "scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --advisory",
+    "source-structure:strict": "scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --strict",
+    "line-budget": "scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --advisory",
+    "line-budget:strict": "scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --strict",
     "verify": "scripts/verify.sh",
     "typecheck": "scripts/run-with-repo-temp-env.sh tsc --noEmit",
     "test": "scripts/run-with-repo-temp-env.sh node --test tests/*.test.ts"

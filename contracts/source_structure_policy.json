@@ -1,0 +1,56 @@
+{
+  "surface_kind": "opl_family_source_structure_policy",
+  "version": "source-structure-policy.v1",
+  "owner": "opl-meta-agent",
+  "target_domain_id": "opl-meta-agent",
+  "purpose": "family_level_source_structure_and_line_budget_lane",
+  "state": "active_machine_policy",
+  "machine_boundary": "scripts/check-source-structure.ts consumes this policy; scripts/sync-stage-control-plane.ts consumes the stage control plane source contract.",
+  "scan_scope": {
+    "tracked_only": true,
+    "path_prefixes": [
+      "agent/",
+      "contracts/",
+      "runtime/",
+      "scripts/",
+      "tests/"
+    ],
+    "extensions": [
+      ".json",
+      ".md",
+      ".sh",
+      ".ts"
+    ],
+    "excluded_paths": []
+  },
+  "lanes": {
+    "advisory": {
+      "budget_lines": 1000,
+      "fail_on_over_budget": false,
+      "command_ref": "npm run source-structure"
+    },
+    "strict": {
+      "budget_lines": 1000,
+      "fail_on_over_budget": true,
+      "command_ref": "npm run source-structure:strict"
+    }
+  },
+  "generated_aggregate_exemptions": [
+    {
+      "aggregate_ref": "contracts/stage_control_plane.json",
+      "source_contract_ref": "contracts/stage_control_plane.source.json",
+      "leaf_index_ref": "contracts/stage_control_plane.leaf-index.json",
+      "check_command": "npm run stage-control:check",
+      "line_budget_exemption": "generated_aggregate_reconstructed_from_split_source",
+      "consumer_surface_must_remain": true
+    }
+  ],
+  "authority_boundary": {
+    "domain_truth_owner": "opl-meta-agent",
+    "source_structure_lane_owner": "opl-meta-agent",
+    "generated_interface_owner": "one-person-lab",
+    "can_write_target_domain_truth": false,
+    "can_write_target_owner_receipt_body": false,
+    "can_claim_quality_or_export": false
+  }
+}

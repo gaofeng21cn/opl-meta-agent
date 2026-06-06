@@ -46,11 +46,17 @@ OMA 的默认输出只允许是 target-agent semantics、developer work order、
 | External work-order execution | OMA 只做 shape validation 和 OPL primitive delegation | `npm run execute:external-work-order`、`tests/execute-external-work-order.test.ts` | target worktree lifecycle、runner、queue、attempt ledger、absorb、cleanup 和 owner closeout hook invocation 归 OPL / target owner。 |
 | Source-purity guard | repo-owned wrapper/runtime surface 仍保持缺席 | `contracts/functional_privatization_audit.json`、`runtime/authority_functions/meta-agent-authority-functions.json`、`tests/source-purity.test.ts` | `scripts/` 只能是 authority implementation、smoke/proof helper、fixture helper、thin delegation 或 developer work-order materializer。 |
 
-Line-budget 或 Sentrux 检查属于 daily / strict maintenance 的 source-size
-治理信号，不进入普通开发的 hard gate。`scripts/verify.sh smoke`、
-`npm test`、`npm run typecheck` 和 repo hygiene 继续只验证当前合同、源码、
-测试与生成物边界；若后续需要行数预算硬阻断，必须作为显式命名的维护 lane，
-不能并入默认 smoke/verify。
+Source-structure / line-budget 检查属于 daily / strict maintenance 的
+source-size 治理信号，不进入普通开发的 hard gate。`scripts/verify.sh
+structure`、`npm run source-structure` 和 `npm run line-budget` 执行 advisory
+lane；`scripts/verify.sh structure:strict`、`npm run source-structure:strict`
+和 `npm run line-budget:strict` 才作为硬失败。`contracts/stage_control_plane.json`
+仍是现有 consumer aggregate path；维护源是
+`contracts/stage_control_plane.source.json`、`contracts/stage_control_plane.leaf-index.json`
+和 `contracts/stage_control_plane.parts/**`，用 `npm run stage-control:write`
+重建 aggregate，用 `npm run stage-control:check` 防止 drift。`scripts/verify.sh
+smoke`、`npm test`、`npm run typecheck` 和 repo hygiene 继续验证当前合同、源码、
+测试与生成物边界，不把普通开发默认升级为行数硬门。
 
 ## 当前证据尾项
 

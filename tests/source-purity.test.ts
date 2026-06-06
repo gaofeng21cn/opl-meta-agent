@@ -255,6 +255,7 @@ test('script morphology stays limited to authority refs, materializers, and help
     'agent_evidence_and_external_suite_materializers',
     'build_agent_baseline_and_stage_decomposition_materializers',
     'external_work_order_execution_delegation',
+    'source_structure_and_stage_control_maintenance_helpers',
     'retained_thin_authority_helpers_and_takeover_smoke',
   ]);
   const gatedScriptRefs = [...new Set(
@@ -357,6 +358,36 @@ test('script morphology stays limited to authority refs, materializers, and help
       `thin helper/takeover retention gate should forbid ${claim}`,
     );
   });
+  const sourceStructureGate = retirementGates.find((gate) => (
+    gate.gate_id === 'source_structure_and_stage_control_maintenance_helpers'
+  ));
+  assert.ok(sourceStructureGate, 'source-structure maintenance gate should exist');
+  assert.deepEqual(asStrings(sourceStructureGate.tracked_script_refs), [
+    'scripts/check-source-structure.ts',
+    'scripts/sync-stage-control-plane.ts',
+  ]);
+  [
+    'opl_framework_source_structure_lane_parity_ref',
+    'stage_control_plane_source_aggregate_sync_parity_ref',
+    'no_generated_aggregate_drift_ref',
+  ].forEach((required) => {
+    assert.ok(
+      asStrings(sourceStructureGate.required_before_retire_or_absorb).includes(required),
+      `source-structure maintenance gate should require ${required}`,
+    );
+  });
+  [
+    'generic_runtime_owner',
+    'generated_interface_owner',
+    'domain_truth_writer',
+    'stage_runtime_owner',
+    'line_budget_default_hard_gate',
+  ].forEach((claim) => {
+    assert.ok(
+      asStrings(sourceStructureGate.forbidden_long_term_claims).includes(claim),
+      `source-structure maintenance gate should forbid ${claim}`,
+    );
+  });
 
   const implementationRefs = new Map<string, string[]>();
   asObjects(authorityFunctions.functions).forEach((functionRef) => {
@@ -419,6 +450,24 @@ test('script morphology stays limited to authority refs, materializers, and help
       ].forEach((writeRef) => {
         assert.ok(asStrings(entry.writes_only).includes(writeRef), `${entry.script_ref} writes_only ${writeRef}`);
       });
+    }
+    if (entry.script_ref === 'scripts/check-source-structure.ts') {
+      assert.deepEqual(asStrings(entry.contract_refs), [
+        'contracts/source_structure_policy.json',
+      ]);
+      assert.ok(
+        asStrings(entry.writes_only).includes('source_structure_line_budget_receipt_ref'),
+      );
+    }
+    if (entry.script_ref === 'scripts/sync-stage-control-plane.ts') {
+      assert.deepEqual(asStrings(entry.contract_refs), [
+        'contracts/stage_control_plane.json',
+        'contracts/stage_control_plane.source.json',
+        'contracts/stage_control_plane.leaf-index.json',
+      ]);
+      assert.ok(
+        asStrings(entry.writes_only).includes('stage_control_plane_drift_check_ref'),
+      );
     }
 
     const declaredAuthorityRefs = entry.authority_function_refs ?? [];

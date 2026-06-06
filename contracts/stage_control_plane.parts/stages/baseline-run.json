@@ -1,0 +1,790 @@
+{
+  "stage_id": "baseline-run",
+  "stage_kind": "review",
+  "title": "Baseline Run",
+  "summary": "Run the candidate agent through OPL Agent Lab and collect trajectories, receipts, and failure taxonomy.",
+  "goal": "Turn Agent Lab results into auditable baseline run refs.",
+  "owner": "opl-meta-agent",
+  "domain_stage_refs": [
+    "baseline-run"
+  ],
+  "inputs": [],
+  "knowledge_refs": [
+    {
+      "ref_kind": "domain_knowledge_ref",
+      "ref": "agent/knowledge/opl-boundary-policy.md"
+    },
+    {
+      "ref_kind": "domain_knowledge_ref",
+      "ref": "agent/knowledge/project-maturity-signals.md"
+    }
+  ],
+  "skills": [
+    {
+      "ref_kind": "domain_skill_ref",
+      "ref": "agent/skills/agent-baseline-build.md"
+    }
+  ],
+  "prompt_refs": [
+    {
+      "ref_kind": "domain_prompt_ref",
+      "ref": "agent/prompts/baseline-run.md"
+    }
+  ],
+  "allowed_action_refs": [
+    "build-agent-baseline"
+  ],
+  "outputs": [
+    {
+      "ref_kind": "domain_ref",
+      "ref": [
+        "trajectory_refs",
+        "receipt_refs",
+        "failure_taxonomy_refs"
+      ]
+    }
+  ],
+  "evaluation": [
+    {
+      "ref_kind": "domain_quality_gate_ref",
+      "ref": "agent/quality_gates/baseline-delivery.md"
+    }
+  ],
+  "handoff": null,
+  "source_refs": [],
+  "authority_boundary": {
+    "domain_truth_owner": "opl-meta-agent",
+    "opl_role": "projection_only"
+  },
+  "selected_executor": {
+    "executor_kind": "codex_cli",
+    "default_executor": false,
+    "executor_binding_ref": "default_codex_cli",
+    "binding_policy": "codex_cli_stage_executor_not_ordinary_default_route",
+    "required_capabilities": [
+      "repo_context_reading",
+      "domain_skill_invocation",
+      "receipt_or_typed_blocker_return",
+      "no_forbidden_write_guard"
+    ]
+  },
+  "executor_binding": {
+    "binding_kind": "codex_cli_first_class_stage_executor",
+    "executor_ref": "executor:codex-cli",
+    "executor_owner": "OPL Framework",
+    "launch_surface_owner": "one-person-lab",
+    "domain_pack_owner": "opl-meta-agent",
+    "adapter_required": false,
+    "non_codex_executor_requires_explicit_adapter": true,
+    "codex_first_expert_judgment_required": true
+  },
+  "requires": [
+    "stage:baseline-run",
+    "prompt-ref:agent/prompts/baseline-run.md",
+    "skill-ref:agent/skills/agent-baseline-build.md",
+    "knowledge-ref:agent/knowledge/opl-boundary-policy.md",
+    "knowledge-ref:agent/knowledge/project-maturity-signals.md",
+    "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
+    "action-ref:build-agent-baseline",
+    "runtime-ref:stage-attempt-ledger",
+    "runtime-ref:generated-interface-bundle",
+    "runtime-ref:stage-executor-policy-gate",
+    "runtime-ref:stage-progress-log-user-stage-log",
+    "artifact-native-contract-ref:opl-meta-agent/baseline-run"
+  ],
+  "ensures": [
+    "stage-attempt-receipt-ref:baseline-run",
+    "executor-receipt-ref:baseline-run/codex-cli",
+    "no-forbidden-write-proof-ref:baseline-run",
+    "independent-ai-review-ref:baseline-run",
+    "output-ref:trajectory_refs",
+    "output-ref:receipt_refs",
+    "output-ref:failure_taxonomy_refs",
+    "stage-user-log-ref:baseline-run",
+    "stage-folder-contract-ref:opl-meta-agent/baseline-run",
+    "stage-manifest-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+    "stage-current-pointer-ref:opl-meta-agent/baseline-run",
+    "canonical-artifact-ref:opl-meta-agent/baseline-run",
+    "stage-json-ref:opl-meta-agent/baseline-run",
+    "stage-attempt-json-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+    "stage-attempt-receipt-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+    "stage-export-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+    "stage-lineage-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+    "stage-retention-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+    "opl-physical-kernel-locator-ref:opl-meta-agent/baseline-run",
+    "stage-artifact-conformance-ref:opl-meta-agent/baseline-run",
+    "stage-artifact-workbench-consumption-ref:opl-meta-agent/baseline-run"
+  ],
+  "expected_receipt_refs": [
+    "stage-attempt-receipt-ref:baseline-run",
+    "executor-receipt-ref:baseline-run/codex-cli",
+    "boundary-receipt-ref:baseline-run/refs-only",
+    "no-forbidden-write-proof-ref:baseline-run",
+    "independent-ai-review-ref:baseline-run",
+    "stage-user-log-ref:baseline-run",
+    "artifact-native-contract-ref:opl-meta-agent/baseline-run",
+    "stage-folder-contract-ref:opl-meta-agent/baseline-run",
+    "stage-manifest-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+    "stage-typed-blocker-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+    "canonical-artifact-ref:opl-meta-agent/baseline-run",
+    "stage-json-ref:opl-meta-agent/baseline-run",
+    "stage-attempt-json-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+    "stage-attempt-receipt-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+    "stage-current-pointer-ref:opl-meta-agent/baseline-run",
+    "stage-export-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+    "stage-lineage-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+    "stage-retention-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+    "opl-physical-kernel-locator-ref:opl-meta-agent/baseline-run",
+    "stage-artifact-conformance-ref:opl-meta-agent/baseline-run",
+    "stage-artifact-workbench-consumption-ref:opl-meta-agent/baseline-run"
+  ],
+  "verified_static_core": {
+    "status": "required_before_launch",
+    "checks": [
+      "prompt_refs_resolve_to_domain_pack_files",
+      "skill_refs_resolve_to_domain_pack_files",
+      "knowledge_refs_resolve_to_domain_pack_files",
+      "quality_gate_refs_resolve_to_domain_pack_files",
+      "allowed_action_refs_resolve_to_action_catalog_when_present",
+      "authority_boundary_forbids_domain_truth_memory_quality_and_promotion_writes"
+    ]
+  },
+  "runtime_enforced_boundary": {
+    "opl_10_principle_refs": [
+      "opl10:codex_cli_first_class_executor",
+      "opl10:stage_led_execution",
+      "opl10:declarative_domain_pack",
+      "opl10:explicit_prompt_tools_knowledge",
+      "opl10:refs_only_domain_truth_boundary",
+      "opl10:receipted_handoff",
+      "opl10:independent_ai_review_gate",
+      "opl10:runtime_enforced_no_forbidden_writes",
+      "opl10:generated_surfaces_from_contracts",
+      "opl10:blockers_before_quality_or_promotion_claims"
+    ],
+    "codex_first": true,
+    "selected_executor_must_match_binding": true,
+    "stage_attempt_ledger_required": true,
+    "receipt_refs_required": true,
+    "independent_ai_review_required_before_promotion": true,
+    "no_shared_context_review_required": true,
+    "generated_surface_owner": "one-person-lab",
+    "domain_truth_owner": "opl-meta-agent",
+    "can_write_domain_truth": false,
+    "can_write_memory_body": false,
+    "can_mutate_target_domain_artifact_body": false,
+    "can_authorize_quality_or_export": false,
+    "can_promote_default_agent_without_gate": false,
+    "suite_pass_claims_domain_ready": false
+  },
+  "hard_blocker_refs": [
+    "blocker:missing_prompt_ref",
+    "blocker:missing_tool_or_skill_ref",
+    "blocker:missing_knowledge_or_memory_ref",
+    "blocker:missing_quality_gate_ref",
+    "blocker:missing_expected_receipt_ref",
+    "blocker:forbidden_domain_truth_or_memory_write",
+    "blocker:quality_or_promotion_claim_without_independent_ai_review",
+    "blocker:contract_completeness_claimed_as_quality_verdict",
+    "blocker:missing_non_default_executor_binding_ref",
+    "blocker:missing_user_stage_log_semantics"
+  ],
+  "executor_policy_capability": {
+    "supports_stage_level_executor_policy": true,
+    "default_executor_kind": "codex_cli",
+    "non_default_executor_policy_allowed": true,
+    "non_default_executor_requires_explicit_adapter": true,
+    "non_default_executor_requires_executor_binding_ref": true,
+    "policy_fields": [
+      "executor_kind",
+      "model",
+      "reasoning_effort",
+      "provider",
+      "executor_binding_ref",
+      "executor_labels",
+      "required_capabilities",
+      "receipt_requirements"
+    ],
+    "agent_lab_trial_required_before_default_promotion": true,
+    "quality_equivalence_claim_allowed": false,
+    "default_executor_switch_allowed_by_oma": false
+  },
+  "stage_executor_policy_candidates": [
+    {
+      "candidate_kind": "stage_executor_policy_candidate",
+      "stage_id": "baseline-run",
+      "default_executor_kind": "codex_cli",
+      "candidate_status": "candidate_ref_only_requires_agent_lab_trial",
+      "model": "inherited_codex_default",
+      "reasoning_effort": "inherited_codex_default",
+      "provider": "openai",
+      "executor_binding_ref": "opl://executors/codex-cli/default",
+      "required_capabilities": [
+        "agentic_repo_work",
+        "tool_use",
+        "structured_receipt"
+      ],
+      "receipt_requirements": [
+        "stage-attempt-receipt-ref:baseline-run",
+        "executor-receipt-ref:baseline-run/codex-cli",
+        "no-forbidden-write-proof-ref:baseline-run"
+      ],
+      "can_launch_without_explicit_binding": true,
+      "can_claim_quality_equivalence": false,
+      "can_change_default_executor": false,
+      "candidate_ref": "stage-executor-policy-candidate:opl-meta-agent/baseline-run/codex-default",
+      "executor_kind": "codex_cli",
+      "optimization_hypothesis_ref": "hypothesis-ref:opl-meta-agent/baseline-run/codex-default-baseline"
+    }
+  ],
+  "stage_contract": {
+    "user_stage_log_contract": {
+      "surface_kind": "opl_standard_agent_user_stage_log_contract",
+      "version": "standard-user-stage-log.v1",
+      "owner": "one-person-lab",
+      "standard_agent_requirement": "domain_stage_closeout_must_return_user_readable_stage_semantics_or_typed_blocker",
+      "opl_projection_surface": "stage_progress_log.user_stage_log",
+      "domain_semantic_sources": [
+        "typed_closeout_packet.user_stage_log",
+        "typed_closeout_packet.stage_log_summary",
+        "route_impact.user_stage_log",
+        "route_impact.stage_log_summary"
+      ],
+      "required_domain_semantic_fields": [
+        "stage_name",
+        "problem_summary",
+        "stage_goal",
+        "stage_work_done",
+        "changed_stage_surfaces",
+        "outcome",
+        "remaining_blockers",
+        "evidence_refs"
+      ],
+      "required_observability_fields": [
+        "duration",
+        "token_usage",
+        "cost"
+      ],
+      "missing_semantics_policy": "typed_blocker_or_missing_domain_semantic_summary_no_opl_inference",
+      "token_policy": "observed_or_explicit_missing_null_no_zero_fill",
+      "authority_boundary": {
+        "opl_can_infer_domain_semantics": false,
+        "opl_can_read_artifact_body": false,
+        "opl_can_write_domain_truth": false,
+        "opl_can_authorize_quality_or_export": false,
+        "provider_completion_can_claim_stage_semantics_complete": false
+      }
+    },
+    "progress_delta_policy": {
+      "surface_kind": "opl_stage_progress_delta_policy",
+      "version": "progress-delta-policy.v1",
+      "owner": "one-person-lab",
+      "standard_agent_requirement": "stage_closeout_must_classify_deliverable_progress_vs_platform_repair_or_return_typed_blocker",
+      "projection_surface": "stage_progress_log.user_stage_log",
+      "required_fields": [
+        "progress_delta_classification",
+        "deliverable_progress_delta",
+        "platform_repair_delta",
+        "next_forced_delta"
+      ],
+      "classification_values": [
+        "deliverable_progress",
+        "platform_repair",
+        "mixed",
+        "typed_blocker",
+        "human_gate",
+        "stop_loss"
+      ],
+      "deliverable_delta_aliases": {
+        "target_agent_progress": "deliverable_progress_delta",
+        "foundry_agent_progress": "deliverable_progress_delta",
+        "agent_build_progress": "deliverable_progress_delta"
+      },
+      "platform_delta_aliases": {
+        "platform_interface_repair": "platform_repair_delta",
+        "agent_lab_or_opl_surface_repair": "platform_repair_delta"
+      },
+      "platform_only_is_not_deliverable_progress": true,
+      "missing_delta_policy": "emit_zero_deliverable_delta_and_next_forced_delta_without_inventing_target_agent_work",
+      "authority_boundary": {
+        "opl_can_infer_domain_work": false,
+        "opl_can_read_artifact_body": false,
+        "opl_can_write_domain_truth": false,
+        "opl_can_authorize_quality_or_export": false,
+        "oma_retains_agent_building_semantics": true
+      }
+    },
+    "typed_blocker_lineage_policy": {
+      "surface_kind": "family-stall-lineage.v1",
+      "version": "family-stall-lineage.v1",
+      "owner": "one-person-lab",
+      "standard_agent_requirement": "typed_blockers_must_include_repeat_budget_lineage_next_forced_delta_and_escalation_owner",
+      "required_fields": [
+        "blocker_family",
+        "study_id_or_domain_identity",
+        "work_unit_id",
+        "eval_id_or_review_ref",
+        "source_fingerprint",
+        "repeat_count",
+        "first_seen",
+        "last_seen",
+        "last_deliverable_delta",
+        "next_forced_delta",
+        "escalation_owner",
+        "terminal"
+      ],
+      "repeat_budget": {
+        "mechanism_repair_after_repeat_count": 2,
+        "human_gate_or_stop_loss_after_repeat_count": 3
+      },
+      "platform_only_delta_policy": "does_not_reset_deliverable_stall_budget",
+      "authority_boundary": {
+        "opl_can_generate_domain_blocker": false,
+        "opl_can_escalate_without_domain_or_human_gate_ref": false,
+        "opl_can_claim_deliverable_progress_from_platform_repair": false,
+        "oma_retains_typed_blocker_authority": true
+      }
+    },
+    "stage_native_artifact_contract": {
+      "surface_kind": "opl_stage_native_artifact_contract",
+      "version": "stage-native-artifact-contract.v1",
+      "target_domain_id": "opl-meta-agent",
+      "stage_id": "baseline-run",
+      "owner": "one-person-lab",
+      "materialized_by": "opl-meta-agent",
+      "domain_truth_owner": "opl-meta-agent",
+      "role": "stage_folder_manifest_receipt_blocker_current_pointer_and_canonical_refs_only",
+      "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/baseline-run",
+      "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/baseline-run",
+      "stage_folder_ref": "stage-folder-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+      "stage_json_ref": "stage-json-ref:opl-meta-agent/baseline-run",
+      "attempt_json_ref": "stage-attempt-json-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+      "manifest_ref": "stage-manifest-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+      "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+      "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+      "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/baseline-run",
+      "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/baseline-run",
+      "export_ref": "stage-export-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+      "lineage_ref": "stage-lineage-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+      "retention_ref": "stage-retention-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+      "physical_kernel_locator_ref": "opl-physical-kernel-locator-ref:opl-meta-agent/baseline-run",
+      "conformance_ref": "stage-artifact-conformance-ref:opl-meta-agent/baseline-run",
+      "workbench_consumption_ref": "stage-artifact-workbench-consumption-ref:opl-meta-agent/baseline-run",
+      "stage_folder_contract": {
+        "artifact_native_contract_ref": "artifact-native-contract-ref:opl-meta-agent/baseline-run",
+        "stage_folder_contract_ref": "stage-folder-contract-ref:opl-meta-agent/baseline-run",
+        "stage_folder_ref": "stage-folder-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "folder_path_template": "stages/baseline-run/attempts/{stage_attempt_id}",
+        "folder_role": "stage_native_attempt_artifact_folder",
+        "body_policy": "refs_and_manifests_only_no_target_artifact_body",
+        "lifecycle_owner": "one-person-lab",
+        "runtime_state_owner": "one-person-lab",
+        "materialization_kind": "compiler_ref_template_only_not_runtime_state",
+        "stage_json_ref": "stage-json-ref:opl-meta-agent/baseline-run",
+        "attempt_json_ref": "stage-attempt-json-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "manifest_ref": "stage-manifest-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "receipt_ref": "stage-attempt-receipt-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "blocker_ref": "stage-typed-blocker-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/baseline-run",
+        "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/baseline-run",
+        "export_ref": "stage-export-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "lineage_ref": "stage-lineage-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "retention_ref": "stage-retention-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "physical_kernel_locator_ref": "opl-physical-kernel-locator-ref:opl-meta-agent/baseline-run",
+        "conformance_ref": "stage-artifact-conformance-ref:opl-meta-agent/baseline-run",
+        "workbench_consumption_ref": "stage-artifact-workbench-consumption-ref:opl-meta-agent/baseline-run",
+        "required_files": [
+          "stage.json",
+          "attempt.json",
+          "stage.manifest.json",
+          "receipt.json",
+          "current.json",
+          "canonical.json",
+          "export.json",
+          "lineage.json",
+          "retention.json",
+          "physical_kernel_locator.json",
+          "conformance.json",
+          "workbench_consumption.json"
+        ]
+      },
+      "stage_json_contract": {
+        "stage_json_ref": "stage-json-ref:opl-meta-agent/baseline-run",
+        "stage_json_file_name": "stage.json",
+        "body_owner": "one-person-lab",
+        "materialized_by": "opl-meta-agent",
+        "required_fields": [
+          "stage_id",
+          "target_domain_id",
+          "stage_folder_contract_ref",
+          "artifact_native_contract_ref",
+          "attempt_json_ref_template",
+          "manifest_ref_template",
+          "receipt_ref_template",
+          "current_pointer_ref",
+          "canonical_artifact_ref",
+          "export_ref_template",
+          "lineage_ref_template",
+          "retention_ref_template",
+          "physical_kernel_locator_ref",
+          "conformance_ref",
+          "workbench_consumption_ref"
+        ],
+        "body_policy": "refs_only_stage_descriptor_no_target_artifact_body"
+      },
+      "attempt_json_contract": {
+        "attempt_json_ref_template": "stage-attempt-json-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "attempt_json_file_name": "attempt.json",
+        "body_owner": "one-person-lab",
+        "materialized_by": "opl-meta-agent",
+        "runtime_state_owner": "one-person-lab",
+        "oma_materializes_ref_template_only": true,
+        "required_fields": [
+          "stage_id",
+          "stage_attempt_id",
+          "attempt_json_ref",
+          "manifest_ref",
+          "receipt_ref",
+          "blocker_ref",
+          "lineage_ref",
+          "retention_ref"
+        ]
+      },
+      "manifest_contract": {
+        "manifest_ref_template": "stage-manifest-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "manifest_file_name": "stage.manifest.json",
+        "required_fields": [
+          "stage_json_ref",
+          "attempt_json_ref",
+          "stage_id",
+          "stage_attempt_id",
+          "physical_output_path",
+          "role",
+          "content_hash",
+          "producer",
+          "input_refs",
+          "lineage_refs",
+          "receipt_refs",
+          "current_pointer_ref",
+          "canonical_artifact_ref",
+          "export_ref",
+          "lineage_ref",
+          "retention_ref",
+          "physical_kernel_locator_ref",
+          "conformance_ref",
+          "workbench_consumption_ref",
+          "export_eligibility",
+          "repair_classification"
+        ],
+        "missing_or_hash_mismatch_projection": "broken_artifact",
+        "missing_owner_receipt_projection": "orphan_artifact"
+      },
+      "terminal_receipts": {
+        "success_receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "blocked_typed_blocker_ref_template": "stage-typed-blocker-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "skipped_or_deferred_decision_ref_template": "stage-decision-receipt-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "success_requires_owner_receipt_ref": true,
+        "blocked_requires_typed_blocker_ref": true,
+        "skipped_or_deferred_requires_decision_receipt_ref": true
+      },
+      "receipt_contract": {
+        "receipt_ref_template": "stage-attempt-receipt-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "receipt_file_name": "receipt.json",
+        "receipt_owner": "one-person-lab",
+        "owner_receipt_body_owner": "opl-meta-agent",
+        "oma_can_generate_target_domain_owner_receipt": false,
+        "required_return_shape": "stage_attempt_receipt_or_typed_blocker_ref"
+      },
+      "current_pointer_contract": {
+        "current_pointer_ref": "stage-current-pointer-ref:opl-meta-agent/baseline-run",
+        "current_file_name": "current.json",
+        "pointer_owner": "one-person-lab",
+        "oma_materializes_ref_template_only": true,
+        "old_attempts_not_pointed_by_current_are_historical_evidence_only": true
+      },
+      "canonical_artifact_contract": {
+        "canonical_artifact_ref": "canonical-artifact-ref:opl-meta-agent/baseline-run",
+        "canonical_file_name": "canonical.json",
+        "body_owner": "opl-meta-agent",
+        "contains_target_artifact_body": false,
+        "canonical_body_requires_target_owner_receipt": true
+      },
+      "export_contract": {
+        "export_ref_template": "stage-export-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "export_file_name": "export.json",
+        "export_owner": "opl-meta-agent",
+        "oma_can_authorize_target_quality_or_export": false,
+        "export_requires_target_owner_gate": true
+      },
+      "lineage_contract": {
+        "lineage_ref_template": "stage-lineage-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "lineage_file_name": "lineage.json",
+        "lineage_owner": "one-person-lab",
+        "required_fields": [
+          "stage_id",
+          "stage_attempt_id",
+          "input_refs",
+          "source_refs",
+          "producer_refs",
+          "parent_attempt_refs",
+          "repair_refs"
+        ]
+      },
+      "retention_contract": {
+        "retention_ref_template": "stage-retention-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+        "retention_file_name": "retention.json",
+        "retention_owner": "one-person-lab",
+        "retention_policy": "attempt_refs_retained_as_evidence_until_opl_retention_gate",
+        "oma_can_delete_stage_attempt_history": false
+      },
+      "physical_kernel_locator_contract": {
+        "physical_kernel_locator_ref": "opl-physical-kernel-locator-ref:opl-meta-agent/baseline-run",
+        "physical_kernel_locator_file_name": "physical_kernel_locator.json",
+        "source_contract_ref": "contracts/opl-framework/stage-artifact-runtime-contract.json",
+        "source_surface_kind": "opl_stage_artifact_runtime_contract",
+        "attempt_root_pattern": "runtime-state/domains/<domain>/deliverables/<program>/<topic>/<deliverable>/stages/<nn-stage>/attempts/<attempt_id>",
+        "folder_path_template": "stages/baseline-run/attempts/{stage_attempt_id}",
+        "required_attempt_entries": [
+          "attempt.json",
+          "manifest.json",
+          "inputs/",
+          "outputs/",
+          "evidence/",
+          "receipts/"
+        ],
+        "current_pointer_role": "refs_only_current_or_canonical_artifact_pointer",
+        "derived_index_role": "rebuildable_projection_not_primary_truth",
+        "status_source_of_truth": "physical_stage_folder",
+        "oma_materializes_ref_template_only": true,
+        "oma_can_create_runtime_state": false
+      },
+      "conformance_contract": {
+        "surface_kind": "opl_stage_artifact_runtime_conformance",
+        "conformance_ref": "stage-artifact-conformance-ref:opl-meta-agent/baseline-run",
+        "conformance_file_name": "conformance.json",
+        "source_contract_ref": "contracts/opl-framework/stage-artifact-runtime-contract.json",
+        "conformance_owner": "one-person-lab",
+        "strict_units": [
+          "Stage Folder",
+          "Manifest",
+          "Receipt",
+          "content_hashes",
+          "latest_pointer",
+          "current_pointer",
+          "lineage_events"
+        ],
+        "fails_on": [
+          "missing_deliverable_json",
+          "missing_stage_json",
+          "missing_required_attempt_entry",
+          "missing_latest_pointer",
+          "latest_pointer_missing_attempt",
+          "missing_current_pointer",
+          "missing_manifest_hash_entry",
+          "manifest_content_hash_mismatch",
+          "attempt_broken",
+          "attempt_orphan"
+        ],
+        "domain_readiness_claim": false,
+        "oma_materializes_ref_template_only": true,
+        "oma_can_claim_conformance_pass": false
+      },
+      "workbench_consumption_contract": {
+        "surface_kind": "opl_stage_artifact_runtime_workbench_consumption",
+        "workbench_consumption_ref": "stage-artifact-workbench-consumption-ref:opl-meta-agent/baseline-run",
+        "workbench_consumption_file_name": "workbench_consumption.json",
+        "source_contract_ref": "contracts/opl-framework/stage-artifact-runtime-contract.json",
+        "workbench_owner": "one-person-lab-app via OPL/App contracts",
+        "projects": [
+          "current_pointer",
+          "stage_status",
+          "attempt_manifest_refs",
+          "owner_receipt_refs",
+          "typed_blocker_refs",
+          "decision_receipt_refs",
+          "content_hashes",
+          "canonical_artifacts",
+          "export_artifacts",
+          "lineage_refs",
+          "retention_policy",
+          "conformance_summary"
+        ],
+        "artifact_body_access": false,
+        "domain_verdict_authority": false,
+        "oma_materializes_ref_template_only": true,
+        "oma_can_write_workbench_state": false
+      },
+      "output_roles": [
+        {
+          "role_id": "stage_json",
+          "ref_kind": "stage_json_ref",
+          "body_owner": "one-person-lab",
+          "contains_target_artifact_body": false
+        },
+        {
+          "role_id": "attempt_json",
+          "ref_kind": "stage_attempt_json_ref",
+          "body_owner": "one-person-lab",
+          "contains_target_artifact_body": false
+        },
+        {
+          "role_id": "stage_manifest",
+          "ref_kind": "stage_manifest_ref",
+          "body_owner": "one-person-lab",
+          "contains_target_artifact_body": false
+        },
+        {
+          "role_id": "stage_attempt_receipt",
+          "ref_kind": "stage_attempt_receipt_ref",
+          "body_owner": "one-person-lab",
+          "contains_target_artifact_body": false
+        },
+        {
+          "role_id": "typed_blocker",
+          "ref_kind": "stage_typed_blocker_ref",
+          "body_owner": "opl-meta-agent",
+          "contains_target_artifact_body": false
+        },
+        {
+          "role_id": "canonical_artifact_ref",
+          "ref_kind": "canonical_artifact_ref",
+          "body_owner": "opl-meta-agent",
+          "contains_target_artifact_body": false
+        },
+        {
+          "role_id": "export_ref",
+          "ref_kind": "stage_export_ref",
+          "body_owner": "opl-meta-agent",
+          "contains_target_artifact_body": false
+        },
+        {
+          "role_id": "lineage_ref",
+          "ref_kind": "stage_lineage_ref",
+          "body_owner": "one-person-lab",
+          "contains_target_artifact_body": false
+        },
+        {
+          "role_id": "retention_ref",
+          "ref_kind": "stage_retention_ref",
+          "body_owner": "one-person-lab",
+          "contains_target_artifact_body": false
+        },
+        {
+          "role_id": "physical_kernel_locator_ref",
+          "ref_kind": "opl_physical_kernel_locator_ref",
+          "body_owner": "one-person-lab",
+          "contains_target_artifact_body": false
+        },
+        {
+          "role_id": "conformance_ref",
+          "ref_kind": "stage_artifact_conformance_ref",
+          "body_owner": "one-person-lab",
+          "contains_target_artifact_body": false
+        },
+        {
+          "role_id": "workbench_consumption_ref",
+          "ref_kind": "stage_artifact_workbench_consumption_ref",
+          "body_owner": "one-person-lab-app via OPL/App contracts",
+          "contains_target_artifact_body": false
+        }
+      ],
+      "authority_boundary": {
+        "opl_framework_owns_stage_folder_lifecycle": true,
+        "oma_role": "contract_compiler_and_refs_materializer",
+        "oma_can_own_agent_lab_runner": false,
+        "oma_can_own_queue": false,
+        "oma_can_own_attempt_ledger": false,
+        "oma_can_own_worktree_lifecycle": false,
+        "oma_can_own_promotion_gate": false,
+        "oma_can_own_app_shell": false,
+        "oma_can_write_target_owner_closeout": false,
+        "oma_can_create_stage_folder_runtime_state": false,
+        "oma_can_write_stage_folder_runtime_state": false,
+        "oma_can_generate_target_domain_owner_receipt": false,
+        "oma_can_write_target_owner_receipt_body": false,
+        "oma_can_write_target_domain_truth": false,
+        "oma_can_write_target_domain_memory_body": false,
+        "oma_can_mutate_target_domain_artifact_body": false,
+        "oma_can_authorize_target_quality_or_export": false,
+        "oma_can_owner_promote_target_agent": false,
+        "oma_can_promote_default_agent_without_gate": false,
+        "oma_can_manage_target_worktree_lifecycle": false
+      }
+    }
+  },
+  "tool_refs": [
+    {
+      "ref": "agent/tools/domain_affordances.md",
+      "ref_kind": "repo_path",
+      "role": "stage_tool_affordance_catalog",
+      "catalog_role": "available_affordance_catalog_not_workflow_script"
+    }
+  ],
+  "strategy_refs": [
+    {
+      "ref": "target_agent_candidate_generation",
+      "ref_kind": "strategy_ref",
+      "role": "cognitive_kernel_strategy"
+    },
+    {
+      "ref": "mechanism_proposal_grounded_reflection",
+      "ref_kind": "strategy_ref",
+      "role": "cognitive_kernel_strategy"
+    },
+    {
+      "ref": "agent_pack_comparative_selection",
+      "ref_kind": "strategy_ref",
+      "role": "cognitive_kernel_strategy"
+    },
+    {
+      "ref": "eval_suite_independent_gate",
+      "ref_kind": "strategy_ref",
+      "role": "cognitive_kernel_strategy"
+    },
+    {
+      "ref": "trajectory_learning_meta_review",
+      "ref_kind": "strategy_ref",
+      "role": "cognitive_kernel_strategy"
+    }
+  ],
+  "candidate_pool_policy": {
+    "candidate_pool_is_stage_internal_artifact": true,
+    "candidate_lineage_required": true,
+    "accepted_artifact_mutation_requires_owner_receipt": true,
+    "candidate_body_stays_in_domain_workspace": true
+  },
+  "independent_gate_policy": {
+    "gate_owner": "opl-meta-agent",
+    "gate_ref": "agent/quality_gates/baseline-delivery.md",
+    "execution_review_separation_required": true,
+    "same_attempt_self_review_can_close_quality_gate": false,
+    "mechanical_completion_can_close_stage": false,
+    "provider_completion_can_claim_domain_ready": false,
+    "generated_surface_readiness_can_claim_quality_or_export": false,
+    "allowed_closeout_refs": [
+      "owner_receipt_ref",
+      "typed_blocker_ref",
+      "human_gate_ref",
+      "route_back_ref",
+      "no_regression_evidence_ref"
+    ]
+  },
+  "handoff_policy": {
+    "owner_delta_first": true,
+    "required_return_shapes": [
+      "deliverable_delta_ref",
+      "owner_receipt_ref",
+      "typed_blocker_ref",
+      "human_gate_ref",
+      "quality_gate_receipt_ref",
+      "no_regression_evidence_ref"
+    ],
+    "framework_transport_cannot_claim_domain_ready": true
+  },
+  "tool_affordance_boundary_ref": {
+    "ref": "contracts/cognitive_kernel_adoption.json#/tool_affordance_boundary",
+    "ref_kind": "json_pointer",
+    "stage_id": "baseline-run",
+    "role": "stage_tool_affordance_boundary"
+  }
+}

@@ -97,6 +97,8 @@ CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framewo
 
 `agent/` 当前是可验证 domain pack，而不是占位目录。`contracts/pack_compiler_input.json` 通过 `canonical_semantic_pack_root="agent/"` 和 `canonical_semantic_pack_role="repo_source_declarative_meta_agent_pack"` 指向 canonical semantic pack；`required_domain_pack_paths` 只列真实 prompts、stage policies、skills、quality gates 和 knowledge policies，不把 README 当作机器 required path。`tests/contracts-domain-pack.test.ts` 校验这些文件非空、无占位；`tests/contracts-stage-control.test.ts` 校验 `stage_control_plane` 的 prompt、skill、knowledge、evaluation refs 解析到真实 `agent/` pack 文件。
 
+`contracts/stage_control_plane.json` 保持 existing consumer aggregate path；维护入口改为 `contracts/stage_control_plane.source.json`、`contracts/stage_control_plane.leaf-index.json` 和 `contracts/stage_control_plane.parts/**`。修改 stage control plane 时优先编辑 source parts，再运行 `npm run stage-control:write` 生成 aggregate，并用 `npm run stage-control:check` 或 `scripts/verify.sh structure` 检查 drift。`contracts/source_structure_policy.json` 和 `scripts/check-source-structure.ts` 提供 family-level source-structure / line-budget lane；默认 `structure` / `line-budget` 是 advisory，显式 `structure:strict` / `line-budget:strict` 才作为硬失败。
+
 ## Optimization
 
 `opl-meta-agent` 可以生成 prompt、skill、stage-policy、tool-policy、few-shot、rubric-gap candidate refs。候选进入 OPL Agent Lab gates 后才能成为 baseline 变更。

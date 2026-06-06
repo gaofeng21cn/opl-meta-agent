@@ -1,0 +1,118 @@
+{
+  "surface_kind": "family_stage_control_plane_leaf_index",
+  "version": "family-stage-control-plane-leaf-index.v1",
+  "owner": "opl-meta-agent",
+  "target_domain_id": "opl-meta-agent",
+  "source_contract_ref": "contracts/stage_control_plane.source.json",
+  "aggregate_ref": "contracts/stage_control_plane.json",
+  "stage_order": [
+    "intent-intake",
+    "web-experience-research",
+    "stage-decomposition",
+    "agent-skeleton-build",
+    "eval-suite-build",
+    "baseline-run",
+    "external-agent-takeover",
+    "optimizer-iteration",
+    "baseline-delivery",
+    "trajectory-learning-intake",
+    "online-learning"
+  ],
+  "stages": [
+    {
+      "stage_id": "intent-intake",
+      "ref": "contracts/stage_control_plane.parts/stages/intent-intake.json"
+    },
+    {
+      "stage_id": "web-experience-research",
+      "ref": "contracts/stage_control_plane.parts/stages/web-experience-research.json"
+    },
+    {
+      "stage_id": "stage-decomposition",
+      "ref": "contracts/stage_control_plane.parts/stages/stage-decomposition.json"
+    },
+    {
+      "stage_id": "agent-skeleton-build",
+      "ref": "contracts/stage_control_plane.parts/stages/agent-skeleton-build.json"
+    },
+    {
+      "stage_id": "eval-suite-build",
+      "ref": "contracts/stage_control_plane.parts/stages/eval-suite-build.json"
+    },
+    {
+      "stage_id": "baseline-run",
+      "ref": "contracts/stage_control_plane.parts/stages/baseline-run.json"
+    },
+    {
+      "stage_id": "external-agent-takeover",
+      "ref": "contracts/stage_control_plane.parts/stages/external-agent-takeover.json"
+    },
+    {
+      "stage_id": "optimizer-iteration",
+      "ref": "contracts/stage_control_plane.parts/stages/optimizer-iteration.json"
+    },
+    {
+      "stage_id": "baseline-delivery",
+      "ref": "contracts/stage_control_plane.parts/stages/baseline-delivery.json"
+    },
+    {
+      "stage_id": "trajectory-learning-intake",
+      "ref": "contracts/stage_control_plane.parts/stages/trajectory-learning-intake.json"
+    },
+    {
+      "stage_id": "online-learning",
+      "ref": "contracts/stage_control_plane.parts/stages/online-learning.json"
+    }
+  ],
+  "stage_native_artifact_contracts": [
+    {
+      "stage_id": "intent-intake",
+      "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/intent-intake.json"
+    },
+    {
+      "stage_id": "web-experience-research",
+      "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/web-experience-research.json"
+    },
+    {
+      "stage_id": "stage-decomposition",
+      "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/stage-decomposition.json"
+    },
+    {
+      "stage_id": "agent-skeleton-build",
+      "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/agent-skeleton-build.json"
+    },
+    {
+      "stage_id": "eval-suite-build",
+      "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/eval-suite-build.json"
+    },
+    {
+      "stage_id": "baseline-run",
+      "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/baseline-run.json"
+    },
+    {
+      "stage_id": "external-agent-takeover",
+      "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/external-agent-takeover.json"
+    },
+    {
+      "stage_id": "optimizer-iteration",
+      "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/optimizer-iteration.json"
+    },
+    {
+      "stage_id": "baseline-delivery",
+      "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/baseline-delivery.json"
+    },
+    {
+      "stage_id": "trajectory-learning-intake",
+      "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/trajectory-learning-intake.json"
+    },
+    {
+      "stage_id": "online-learning",
+      "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/online-learning.json"
+    }
+  ],
+  "maintenance_policy": {
+    "leaf_files_are_source": true,
+    "aggregate_reconstruction_command": "npm run stage-control:write",
+    "aggregate_drift_check_command": "npm run stage-control:check"
+  }
+}

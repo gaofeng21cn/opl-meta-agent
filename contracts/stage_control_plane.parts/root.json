@@ -1,0 +1,51 @@
+{
+  "surface_kind": "family_stage_control_plane",
+  "version": "family-stage-control-plane.v1",
+  "plane_id": "opl_meta_agent_stage_plane",
+  "target_domain_id": "opl-meta-agent",
+  "owner": "opl-meta-agent",
+  "authority_boundary": {
+    "domain_truth_owner": "opl-meta-agent",
+    "opl_role": "stage_runtime_projection_and_generated_interface_owner",
+    "opl_can_write_domain_truth": false,
+    "opl_can_write_memory_body": false,
+    "opl_can_authorize_quality_or_export": false,
+    "opl_can_switch_default_executor": false,
+    "oma_can_switch_default_executor": false,
+    "oma_can_own_state_index_kernel": false,
+    "oma_can_own_sqlite_sidecar_index": false,
+    "oma_can_manage_target_runtime": false,
+    "oma_can_manage_queue": false,
+    "oma_can_manage_attempt_ledger": false,
+    "oma_can_manage_promotion_gate": false,
+    "oma_can_manage_target_worktree_lifecycle": false,
+    "oma_can_write_target_owner_receipt_body": false
+  },
+  "opl_runtime_dependency": {
+    "agent_lab_complete_control_plane": true,
+    "standard_domain_agent_scaffold": true,
+    "stage_attempt_ledger": true,
+    "promotion_gate_refs": true,
+    "generated_interface_bundle": true,
+    "agent_lab_stage_executor_policy_read_model": true
+  },
+  "notes": [
+    "OPL Framework owns generated CLI/MCP/Skill/product-entry/tool descriptors for this stage plane.",
+    "This repo owns agent-building stage semantics and owner receipt refs only."
+  ],
+  "marker": "generated_by_opl_standard_domain_agent_scaffold_v1",
+  "cognitive_kernel_adoption_ref": "contracts/cognitive_kernel_adoption.json",
+  "golden_path_profile_ref": "contracts/golden_path_profile.json",
+  "stage_pack_required_sections": [
+    "prompt_refs",
+    "skill_refs",
+    "tool_refs",
+    "tool_affordance_boundary",
+    "knowledge_refs",
+    "quality_gate_refs",
+    "strategy_refs",
+    "candidate_pool_policy",
+    "independent_gate_policy",
+    "handoff_policy"
+  ]
+}
