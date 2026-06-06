@@ -245,12 +245,14 @@ test('script morphology stays limited to authority refs, materializers, and help
     'build_agent_baseline_no_closeout_implicit_fixture_graph',
     'meta_agent_loop_reexport_facade',
     'takeover_fixture_alias',
+    'target_improvement_policy_generic_external_agent_patch_ref_fallback',
   ]);
   assert.deepEqual(asStrings(materializerScan.retired_materializer_tail_verification_refs), [
     'docs/history/process/2026-06-06-oma-meta-agent-loop-facade-retirement-closeout.md',
     'tests/source-purity.test.ts',
     'tests/stage-decomposition-materializer.test.ts',
     'tests/takeover-loop.test.ts',
+    'tests/external-suite-developer-work-order.test.ts',
   ]);
 
   const retirementGates = asObjects(morphologyPolicy.script_to_pack_retirement_gates);
@@ -327,6 +329,20 @@ test('script morphology stays limited to authority refs, materializers, and help
       `build-agent-baseline retirement gate should forbid ${claim}`,
     );
   });
+  const externalSuiteGate = retirementGates.find((gate) => (
+    gate.gate_id === 'agent_evidence_and_external_suite_materializers'
+  ));
+  assert.ok(externalSuiteGate, 'agent evidence / external suite materializer gate should exist');
+  assert.ok(
+    asStrings(externalSuiteGate.closed_retention_refs).includes(
+      'retired-tail:opl-meta-agent/target-improvement-policy/generic-external-agent-patch-ref-fallback',
+    ),
+    'generic external-agent patch-ref fallback should be recorded as a retired tail',
+  );
+  assert.ok(
+    asStrings(externalSuiteGate.forbidden_long_term_claims).includes('generic_external_agent_patch_ref_fallback'),
+    'external suite materializer gate should forbid generic external-agent patch-ref fallback resurrection',
+  );
   const retainedHelperGate = retirementGates.find((gate) => (
     gate.gate_id === 'retained_thin_authority_helpers_and_takeover_smoke'
   ));
@@ -428,6 +444,15 @@ test('script morphology stays limited to authority refs, materializers, and help
       );
       assert.deepEqual(asStrings(entry.retired_tail_refs), [
         'retired-tail:opl-meta-agent/build-agent-baseline/no-closeout-implicit-fixture-graph',
+      ]);
+    }
+    if (entry.script_ref === 'scripts/lib/target-improvement-policy.ts') {
+      assert.ok(
+        asStrings(entry.writes_only).includes('missing_target_improvement_policy_typed_blocker_ref'),
+        'target-improvement-policy should fail closed with a typed blocker when target policy refs are missing',
+      );
+      assert.deepEqual(asStrings(entry.retired_tail_refs), [
+        'retired-tail:opl-meta-agent/target-improvement-policy/generic-external-agent-patch-ref-fallback',
       ]);
     }
     if (entry.script_ref === 'scripts/lib/stage-decomposition-pack-draft.ts') {

@@ -119,7 +119,7 @@ CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framewo
 
 `external-agent-takeover` 读取目标 agent repo/package 的 descriptor/contracts，生成 `agent_lab_external_suite`，调用 OPL `agent-lab run`，再写入 `testing_takeover_self_evolution_receipt`、gated online-learning candidate 和 mechanism patch proposal。
 
-`improve-from-external-agent-lab-suite` 读取目标 domain 的 Agent Lab suite/result，并消费与 baseline delivery 相同 schema 的 AI reviewer evaluation。reviewer critique、suggestions、source refs 和 provenance 会进入 target capability improvement candidate、developer patch work order 和 mechanism patch proposal refs；可识别 suggestion 会映射到 `patch_traceability_matrix` 的 required patch refs、editable surfaces 和 target repo file hints。
+`improve-from-external-agent-lab-suite` 读取目标 domain 的 Agent Lab suite/result，并消费与 baseline delivery 相同 schema 的 AI reviewer evaluation。reviewer critique、suggestions、source refs 和 provenance 会进入 target capability improvement candidate、developer patch work order 和 mechanism patch proposal refs；可识别 suggestion 只在目标 agent 显式声明 `default_change_refs` 或 `change_ref_mappings` 时映射到 `patch_traceability_matrix` 的 required patch refs、editable surfaces 和 target repo file hints。缺少 target improvement policy 时，OMA 返回 typed blocker 并要求 target owner 声明 change-ref policy 或返回 blocker；旧 `external_agent/*` generic patch-ref fallback 不再生成 executable source patch work order。
 
 `agent:evidence` 读取目标 agent 的 standard production evidence handoff，生成 `agent_production_evidence_suite`、Agent Lab run result、developer patch work order、target capability improvement candidate、mechanism patch proposal 或 typed blocker。MAS/MAG 等目标 agent 只通过 domain refs 出现在输入与 owner route 中；命令、suite kind、输出文件和 OMA surface kind 保持 target-agent generic。
 
