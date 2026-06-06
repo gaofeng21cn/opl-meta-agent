@@ -3,28 +3,31 @@ import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import {
-  DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF,
-  DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
-  DEFAULT_NO_PATCH_CLOSEOUT_EVIDENCE,
-  DEFAULT_RUNTIME_EXPECTED_OUTCOMES,
-  DEFAULT_RUNTIME_REQUIRED_SURFACE_REFS,
-  DEFAULT_SOURCE_PATCH_CLOSEOUT_EVIDENCE,
-  DEFAULT_TARGET_WORKSPACE_EXPECTED_OUTCOMES,
-  DEFAULT_TARGET_WORKSPACE_REQUIRED_SURFACE_REFS,
-} from '../scripts/lib/work-order-policy-constants.ts';
-import {
-  SERIES_DESIGN_PROFILE,
-  STAGE_PROGRESS_DELTA_POLICY,
-  STANDARD_FOUNDRY_POLICIES_CONTRACT_REF,
-  TYPED_BLOCKER_LINEAGE_POLICY,
-  USER_STAGE_LOG_CONTRACT,
-  USER_STAGE_LOG_REQUIRED_FIELDS,
-} from '../scripts/lib/standard-foundry-policies.ts';
 
 type JsonObject = Record<string, any>;
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF = 'contracts/developer_work_order_policy.json';
+const STANDARD_FOUNDRY_POLICIES_CONTRACT_REF = 'contracts/standard_foundry_policies.json';
+
+function assertPolicyStringList(contract: JsonObject, field: string): string[] {
+  const value = contract[field];
+  assert.ok(Array.isArray(value), `${field} should be a string array`);
+  assert.ok(value.length > 0, `${field} should not be empty`);
+  value.forEach((entry) => {
+    assert.equal(typeof entry, 'string', `${field} entries should be strings`);
+    assert.notEqual(entry.trim(), '', `${field} entries should not be blank`);
+  });
+  return value as string[];
+}
+
+function assertPolicyObject(contract: JsonObject, field: string): JsonObject {
+  const value = contract[field];
+  assert.equal(typeof value, 'object', `${field} should be a JSON object`);
+  assert.notEqual(value, null, `${field} should be a JSON object`);
+  assert.equal(Array.isArray(value), false, `${field} should be a JSON object`);
+  return value as JsonObject;
+}
 
 function asObjects(value: unknown): JsonObject[] {
   return value as JsonObject[];
@@ -125,6 +128,24 @@ test('test support does not reintroduce active forbidden owner morphology tokens
       false,
       `tests/support/contracts.ts should not contain active forbidden owner token ${token}`,
     );
+  });
+});
+
+test('policy contract tests do not import script projection helpers as truth', () => {
+  const forbiddenProjectionImports = [
+    '../scripts/lib/' + 'work-order-policy-constants.ts',
+    '../scripts/lib/' + 'standard-foundry-policies.ts',
+  ];
+
+  listFilesByExtension('tests', '.ts').forEach((testRef) => {
+    const testSource = readText(testRef);
+    forbiddenProjectionImports.forEach((importRef) => {
+      assert.equal(
+        testSource.includes(`from '${importRef}'`) || testSource.includes(`from "${importRef}"`),
+        false,
+        `${testRef} should read policy contracts directly instead of importing ${importRef}`,
+      );
+    });
   });
 });
 
@@ -587,6 +608,34 @@ test('developer work-order policy defaults are contract-backed projections', () 
     .find((gate) => gate.gate_id === 'agent_evidence_and_external_suite_materializers');
   const policyProjection = asObjects(morphologyPolicy.script_classifications)
     .find((entry) => entry.script_ref === 'scripts/lib/work-order-policy-constants.ts');
+  const defaultForbiddenTargetPathsOrSurfaces = assertPolicyStringList(
+    contract,
+    'default_forbidden_target_paths_or_surfaces',
+  );
+  const defaultRuntimeRequiredSurfaceRefs = assertPolicyStringList(
+    contract,
+    'default_runtime_required_surface_refs',
+  );
+  const defaultRuntimeExpectedOutcomes = assertPolicyStringList(
+    contract,
+    'default_runtime_expected_outcomes',
+  );
+  const defaultTargetWorkspaceRequiredSurfaceRefs = assertPolicyStringList(
+    contract,
+    'default_target_workspace_required_surface_refs',
+  );
+  const defaultTargetWorkspaceExpectedOutcomes = assertPolicyStringList(
+    contract,
+    'default_target_workspace_expected_outcomes',
+  );
+  const defaultNoPatchCloseoutEvidence = assertPolicyStringList(
+    contract,
+    'default_no_patch_closeout_evidence',
+  );
+  const defaultSourcePatchCloseoutEvidence = assertPolicyStringList(
+    contract,
+    'default_source_patch_closeout_evidence',
+  );
 
   assert.equal(contract.surface_kind, 'developer_work_order_policy');
   assert.equal(contract.state, 'active_contract');
@@ -611,34 +660,23 @@ test('developer work-order policy defaults are contract-backed projections', () 
     'stable developer work-order policy should be moved into a contract while script projection remains retained',
   );
 
-  assert.deepEqual(
-    DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
-    asStrings(contract.default_forbidden_target_paths_or_surfaces),
+  assert.ok(defaultForbiddenTargetPathsOrSurfaces.includes('target domain truth surfaces'));
+  assert.ok(defaultForbiddenTargetPathsOrSurfaces.includes('export verdict bodies'));
+  assert.ok(defaultRuntimeRequiredSurfaceRefs.includes('target_agent_owner_receipt_contract'));
+  assert.ok(defaultRuntimeRequiredSurfaceRefs.includes('default_executor_dispatch_execution'));
+  assert.ok(
+    defaultRuntimeExpectedOutcomes.some((entry) => entry.includes('no forbidden target domain truth')),
   );
-  assert.deepEqual(
-    DEFAULT_RUNTIME_REQUIRED_SURFACE_REFS,
-    asStrings(contract.default_runtime_required_surface_refs),
+  assert.ok(defaultTargetWorkspaceRequiredSurfaceRefs.includes('target_workspace_pyproject_or_lock'));
+  assert.ok(defaultTargetWorkspaceRequiredSurfaceRefs.includes('target_repo_hygiene_status'));
+  assert.ok(
+    defaultTargetWorkspaceExpectedOutcomes.some((entry) => entry.includes('target checkout .venv')),
   );
-  assert.deepEqual(
-    DEFAULT_RUNTIME_EXPECTED_OUTCOMES,
-    asStrings(contract.default_runtime_expected_outcomes),
+  assert.ok(
+    defaultNoPatchCloseoutEvidence.some((entry) => entry.includes('no target source patch')),
   );
-  assert.deepEqual(
-    DEFAULT_TARGET_WORKSPACE_REQUIRED_SURFACE_REFS,
-    asStrings(contract.default_target_workspace_required_surface_refs),
-  );
-  assert.deepEqual(
-    DEFAULT_TARGET_WORKSPACE_EXPECTED_OUTCOMES,
-    asStrings(contract.default_target_workspace_expected_outcomes),
-  );
-  assert.deepEqual(
-    DEFAULT_NO_PATCH_CLOSEOUT_EVIDENCE,
-    asStrings(contract.default_no_patch_closeout_evidence),
-  );
-  assert.deepEqual(
-    DEFAULT_SOURCE_PATCH_CLOSEOUT_EVIDENCE,
-    asStrings(contract.default_source_patch_closeout_evidence),
-  );
+  assert.ok(defaultSourcePatchCloseoutEvidence.includes('patch_traceability_matrix addressed'));
+  assert.ok(defaultSourcePatchCloseoutEvidence.includes('temporary worktree cleaned after absorb'));
 });
 
 test('standard Foundry policies are contract-backed projections', () => {
@@ -649,6 +687,11 @@ test('standard Foundry policies are contract-backed projections', () => {
     .find((gate) => gate.gate_id === 'build_agent_baseline_and_stage_decomposition_materializers');
   const policyProjection = asObjects(morphologyPolicy.script_classifications)
     .find((entry) => entry.script_ref === 'scripts/lib/standard-foundry-policies.ts');
+  const userStageLogRequiredFields = assertPolicyStringList(contract, 'user_stage_log_required_fields');
+  const userStageLogContract = assertPolicyObject(contract, 'user_stage_log_contract');
+  const stageProgressDeltaPolicy = assertPolicyObject(contract, 'stage_progress_delta_policy');
+  const typedBlockerLineagePolicy = assertPolicyObject(contract, 'typed_blocker_lineage_policy');
+  const seriesDesignProfile = assertPolicyObject(contract, 'series_design_profile');
 
   assert.equal(contract.surface_kind, 'standard_foundry_policies');
   assert.equal(contract.state, 'active_contract');
@@ -672,9 +715,18 @@ test('standard Foundry policies are contract-backed projections', () => {
     'stable Foundry policy should be moved into a contract while script projection remains retained',
   );
 
-  assert.deepEqual(USER_STAGE_LOG_REQUIRED_FIELDS, asStrings(contract.user_stage_log_required_fields));
-  assert.deepEqual(USER_STAGE_LOG_CONTRACT, contract.user_stage_log_contract);
-  assert.deepEqual(STAGE_PROGRESS_DELTA_POLICY, contract.stage_progress_delta_policy);
-  assert.deepEqual(TYPED_BLOCKER_LINEAGE_POLICY, contract.typed_blocker_lineage_policy);
-  assert.deepEqual(SERIES_DESIGN_PROFILE, contract.series_design_profile);
+  assert.ok(userStageLogRequiredFields.includes('stage_name'));
+  assert.ok(userStageLogRequiredFields.includes('evidence_refs'));
+  assert.deepEqual(asStrings(userStageLogContract.required_domain_semantic_fields), userStageLogRequiredFields);
+  assert.equal(stageProgressDeltaPolicy.surface_kind, 'opl_stage_progress_delta_policy');
+  assert.equal(stageProgressDeltaPolicy.platform_only_is_not_deliverable_progress, true);
+  assert.equal(
+    stageProgressDeltaPolicy.missing_delta_policy,
+    'emit_zero_deliverable_delta_and_next_forced_delta_without_inventing_target_agent_work',
+  );
+  assert.equal(typedBlockerLineagePolicy.surface_kind, 'family-stall-lineage.v1');
+  assert.equal(typedBlockerLineagePolicy.version, 'family-stall-lineage.v1');
+  assert.equal(seriesDesignProfile.profile_id, 'opl_foundry_agent_series_design_profile.v1');
+  assert.ok(asStrings(seriesDesignProfile.stage_pack_sections).includes('prompts'));
+  assert.ok(asStrings(seriesDesignProfile.stage_pack_sections).includes('quality_gates'));
 });

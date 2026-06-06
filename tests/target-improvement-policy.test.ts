@@ -3,14 +3,14 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 import type { AiReviewerEvaluation } from '../scripts/lib/meta-agent-loop-ai-reviewer.ts';
 import {
   inferProposedChangeRefs,
   targetImprovementPolicy,
 } from '../scripts/lib/target-improvement-policy.ts';
-import {
-  DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
-} from '../scripts/lib/work-order-policy-constants.ts';
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 function reviewerEvaluation(overrides: Partial<AiReviewerEvaluation> = {}): AiReviewerEvaluation {
   return {
@@ -40,6 +40,25 @@ function reviewerEvaluation(overrides: Partial<AiReviewerEvaluation> = {}): AiRe
   };
 }
 
+function developerWorkOrderPolicyDefaults(): string[] {
+  const contract = JSON.parse(
+    fs.readFileSync(
+      path.join(repoRoot, 'contracts/developer_work_order_policy.json'),
+      'utf8',
+    ),
+  ) as Record<string, unknown>;
+  assert.equal(contract.surface_kind, 'developer_work_order_policy');
+  assert.equal(contract.state, 'active_contract');
+
+  const value = contract.default_forbidden_target_paths_or_surfaces;
+  assert.ok(Array.isArray(value));
+  value.forEach((entry) => {
+    assert.equal(typeof entry, 'string');
+    assert.notEqual(entry.trim(), '');
+  });
+  return value as string[];
+}
+
 test('target improvement policy does not synthesize generic external-agent change refs', () => {
   const targetAgentDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-target-policy-'));
   try {
@@ -66,7 +85,7 @@ test('target improvement policy does not synthesize generic external-agent chang
     });
 
     assert.deepEqual(proposedChangeRefs, []);
-    assert.deepEqual(policy.forbiddenTargetPathsOrSurfaces, DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES);
+    assert.deepEqual(policy.forbiddenTargetPathsOrSurfaces, developerWorkOrderPolicyDefaults());
   } finally {
     fs.rmSync(targetAgentDir, { recursive: true, force: true });
   }
