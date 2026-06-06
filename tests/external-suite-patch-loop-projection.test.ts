@@ -4,11 +4,13 @@ import {
   path,
   repoRoot,
   targetPatchLoopMachineRefFields,
+  targetPatchLoopProjectionRequiredFields,
+  targetPatchLoopReviewerProjectionFields,
   readJson,
 } from './support/external-suite-fixtures.ts';
 import type { JsonObject } from './support/external-suite-fixtures.ts';
 
-test('workbench and scaleout contracts expose target patch-loop machine refs only', () => {
+test('workbench and scaleout contracts expose target patch-loop machine and reviewer refs only', () => {
   const appProjection = readJson(path.join(repoRoot, 'contracts/app_workbench_projection.json'));
   const scaleoutEvidence = readJson(path.join(repoRoot, 'contracts/real_target_agent_scaleout_evidence.json'));
   const developerWorkOrderSection = (appProjection.workbench_sections as JsonObject[]).find((section) =>
@@ -22,10 +24,16 @@ test('workbench and scaleout contracts expose target patch-loop machine refs onl
   assert.ok(blockedSuiteEvidenceClass);
   assert.deepEqual(
     appProjection.drilldown_readiness_receipt.developer_work_order_machine_ref_fields,
-    targetPatchLoopMachineRefFields,
+    targetPatchLoopProjectionRequiredFields,
   );
-  assert.deepEqual(blockedSuiteEvidenceClass.required_refs, targetPatchLoopMachineRefFields);
+  assert.deepEqual(blockedSuiteEvidenceClass.required_refs, targetPatchLoopProjectionRequiredFields);
+  targetPatchLoopProjectionRequiredFields.forEach((field) => {
+    assert.ok((developerWorkOrderSection.projection_fields as string[]).includes(field));
+  });
   targetPatchLoopMachineRefFields.forEach((field) => {
+    assert.ok((developerWorkOrderSection.projection_fields as string[]).includes(field));
+  });
+  targetPatchLoopReviewerProjectionFields.forEach((field) => {
     assert.ok((developerWorkOrderSection.projection_fields as string[]).includes(field));
   });
   assert.ok((developerWorkOrderSection.projection_fields as string[]).includes('substantive_deliverable_delta_refs'));

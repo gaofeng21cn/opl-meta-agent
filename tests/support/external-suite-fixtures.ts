@@ -33,6 +33,21 @@ export const targetPatchLoopMachineRefFields = [
   'worktree_cleanup_ref',
   'agent_lab_re_evaluation_ref',
 ];
+export const targetPatchLoopReviewerProjectionFields = [
+  'ai_reviewer_evaluation_ref',
+  'ai_reviewer_evidence.source_refs',
+  'ai_reviewer_evidence.direct_evidence_refs',
+  'ai_reviewer_scorecard.verdict',
+  'ai_reviewer_review.predicted_impact',
+  'ai_reviewer_independence',
+  'review_provenance',
+  'reviewer_pool_refs',
+  'work_order_completeness.reviewer_refs',
+];
+export const targetPatchLoopProjectionRequiredFields = [
+  ...targetPatchLoopMachineRefFields,
+  ...targetPatchLoopReviewerProjectionFields,
+];
 
 export function writeJson(filePath: string, payload: unknown): void {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
