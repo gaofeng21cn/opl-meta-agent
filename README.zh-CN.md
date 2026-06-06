@@ -115,28 +115,17 @@ Machine boundary: 本 README 是人读仓库入口。机器真相继续归 `cont
 - 它负责整理目标、边界、工作步骤、Agent 骨架、测试套件和下一版改进建议。
 - 它可以从零生成新 Agent 基线，也可以先接管已有 Agent 的测试和失败证据整理。
 - 它只提出候选、测试结果和改进建议，不替目标领域做最终判断，不直接改写目标 Agent 的领域内容、记忆正文或交付物。
-- 它的 StageRun controlled canary 带有 operator 可读摘要，但该摘要只描述 controlled fixture refs 和 closeout shape，不声明 live domain progress、target-agent readiness、production readiness、App live rendering、human approval 或 default promotion。
+- 它的 StageRun controlled canary 和 refs-only scaleout evidence 是当前证据面，不是 readiness 或 promotion 声明。
 - 它复用 One Person Lab Framework 的脚手架、Agent Lab、队列、状态投影和采用门槛，不在本仓重建通用运行框架。
 
 <details>
   <summary><strong>给技术操作者看的机制说明</strong></summary>
 
 - 标准 Skill 入口是自然语言请求：用户可以直接对 Codex 说“帮我做一个能交付 X 的 OPL-compatible 智能体，输出到 `<repo-dir>`，质量门槛是 Y，禁止 Z”。Codex 先把这句话归一成 `domain_id`、`domain_label`、`delivery_domain`、`target_brief`、`output_dir`、`opl_bin`、stage-decomposition runner 设置和 `ai_reviewer_evaluation`，再调用 `build-agent-baseline` action。
-- 默认 `build-agent-baseline` 主路径会启动 live Codex `stage-decomposition` attempt，或消费一个显式 typed closeout packet。该 closeout 是目标 stage graph、action refs、pack 文件、independent gate policy 和 quality gate declaration 的来源；脚本只负责校验、物化、scaffold/Agent Lab 运行和 receipt 记录。
-- stage-decomposition attempt 是开放式认知计算边界：executor 可以自主选择读取哪些参考、生成几个候选、如何比较取舍、是否请求 reviewer 或 typed blocker；action implementation 只负责校验和物化，不承担专家推理。
-- 本仓工具目录遵循 Tool Affordance Boundary：声明脚手架、测试、evidence takeover、机制候选和 patch work-order 工具的能力、权限、凭据、可写范围和 forbidden authority；不规定 executor 必须按固定顺序调研、拆 stage、跑测试或生成候选。
-- StageRun controlled canary evidence 位于 `contracts/stage_run_canary_evidence.json`。其中 `operator_summary` 只展示 stage refs、strategy refs、terminal owner receipt 或 typed blocker ref、blocked claims 和 next owner delta ref；overclaim boundary 禁止把这些 refs 升级为 live progress、readiness、quality/export verdict、production completion、App rendering、human approval、owner receipt body materialization 或 default-agent promotion。
-- legacy runtime residue guard 位于 `contracts/stage_run_kernel_profile.json`。它把 canary 绑定到 functional privatization、default-caller deletion、source-purity scan 和 source-purity test refs；它不能恢复 repo-owned runtime/status/workbench wrapper，不能写 runtime/read-model state，不能授权 closeout，也不能授权物理删除。
-- 参数化 action implementation 是 `npm run build-agent-baseline -- --output-dir <dir> --opl-bin <opl> --ai-reviewer-evaluation <reviewer-eval.json> [--stage-runner live|fixture --stage-decomposition-closeout <closeout.json>] --domain-id <domain-id> --domain-label <label> --delivery-domain <delivery-domain> --target-brief <brief>`：根据 typed stage-decomposition packet 生成用户指定的目标 agent repo，调用 OPL 脚手架校验，生成 Agent Lab 外部测试套件，运行 `opl agent-lab run --suite`，消费结构化 AI reviewer evaluation，再写入基线回执、真实目标交付回执、scaleout evidence ledger、后续学习候选和 `mechanism-patch-proposal.json`。
-- free text closeout、partial refs、缺 independent gate policy、缺 quality gate declaration 或 self-review 必须在签发 baseline receipt 前 fail closed。
-- `--domain-id` 是硬要求。已退役的隐式 fixture smoke 不再作为物化路径存在；`fixture` runner 只消费显式 typed closeout packet，真实目标证据只为显式目标 agent 生成。
-- 外部接管入口是 `npm run takeover:test -- --agent-dir <existing-agent-dir> --output-dir <dir> --opl-bin <opl>`：读取目标智能体的描述文件和合同，生成接管测试套件，运行 Agent Lab，再写入接管回执、受门控的自进化候选和 `takeover-mechanism-patch-proposal.json`。
-- 统一接口入口是 `opl agents interfaces --repo-dir <this-repo> --json`：OPL 读取本仓标准合同并生成 CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述。
-- Registry / App 消费入口在 `contracts/opl_domain_manifest_registration.json` 和 `contracts/app_workbench_projection.json`：它们提供 discovery receipt 与 drilldown readiness receipt，只证明 OPL/App 可消费 refs，不宣称 App live rendering、目标事实写入或默认推广已经发生。
-- Agent evidence takeover 入口是 `npm run agent:evidence -- --agent-repo <agent-repo> --output-dir <dir> --opl-bin <opl> [--ai-reviewer-evaluation <reviewer-eval.json>]`：读取 target production acceptance、Agent Lab handoff、generated-surface handoff 和 owner-receipt 合同，生成 `suite_kind=agent_production_evidence_suite` 的 `agent-lab-suite.json`，运行 `opl agent-lab run --suite`，再输出 refs-only developer work order、domain agent capability candidate、mechanism patch proposal，或在缺 reviewer evaluation 时输出 typed blocker。
-- Usable landing 的验证路径不是再等待合同成熟，而是用真实目标仓触发 blocked evidence、生成 developer patch work order、由 Codex 在允许 surface 内落 patch、重跑目标验证并取得 owner receipt；独立 reviewer attempt 必须带 direct evidence、无共享上下文和可回滚版本引用。
-- 机制补丁建议会记录 `mechanism_ref/version`、`editable_surfaces`、`observe/diagnose/edit`、`segment_run_ref`、`evidence_delta_ref`、`next_mechanism_candidate_ref` 和权限边界标记。
-- OPL Agent Lab 的机制面是只读引用控制面。它可以暴露 `opl agent-lab mechanism --json` 和 `opl agent-lab evolve --suite <suite.json> --json`，但不能把测试通过、机制候选或演化片段升级成领域裁决。
+- `build-agent-baseline`、`takeover:test`、`agent:evidence` 和 `execute:external-work-order` 是基线生成、测试接管、证据到 work order 物化、以及 OPL work-order 委托的 action surface。下面的命令是入口示例，不是当前 truth owner。
+- 当前技术真相在 [当前状态](./docs/status.md)、[架构](./docs/architecture.md)、[不可变约束](./docs/invariants.md)、[关键决策](./docs/decisions.md)，以及 [`contracts/`](./contracts/) 下的机器合同。
+- OPL Framework 持有 generated interfaces、Agent Lab、work-order execution、registry/discovery、App/workbench projection、absorb/cleanup 和 promotion gates。本仓提供 agent-building semantics 和 refs-only outputs。
+- StageRun canary、generated interface readiness、registry/App projection、suite pass、work-order shape、mechanism proposal 或 refs-only scaleout closeout 都不能升级成 live progress、target-domain readiness、quality/export verdict、owner receipt body、App live rendering、human approval 或 default promotion。
 
 </details>
 
