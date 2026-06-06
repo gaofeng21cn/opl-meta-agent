@@ -47,4 +47,4 @@ MAS、MAG、RCA 等目标 agent 只应作为 target-agent refs、owner routes、
 - 长期文档必须能说明 owner、purpose、state 和 machine boundary。
 - Active 文档只保留当前计划、差距和迁移门；过程 proof、dated closeout 和历史路线应进入 history/provenance 语境后再保留。
 - `docs/docs_portfolio_consolidation.md` 只维护 lifecycle role map、inventory 和 reopening conditions，不追加 dated coverage ledger。
-- Generated interface readiness、suite pass、schema completeness、App projection readiness 或 work-order shape 不能写成 target domain ready、quality verdict、artifact readiness、owner receipt 或 default promotion。
+- Generated interface readiness、suite pass、schema completeness、App projection readiness、work-order shape 或 refs-only scaleout closeout 不能写成 target domain ready、quality verdict、artifact readiness、owner receipt body 或 default promotion。
