@@ -1,27 +1,40 @@
-import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import path from 'node:path';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
-import type { JsonObject } from '../scripts/lib/domain-pack.ts';
-
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-
-function readJson(relativePath: string): JsonObject {
-  return JSON.parse(fs.readFileSync(path.join(repoRoot, relativePath), 'utf8'));
-}
-
-function asObjects(value: unknown): JsonObject[] {
-  return value as JsonObject[];
-}
-
-function asStrings(value: unknown): string[] {
-  return value as string[];
-}
+import {
+  assert,
+  asObjects,
+  asStrings,
+  readJson,
+  assertRepoRefExists,
+  assertNoForbiddenAuthority,
+} from './support/contracts.ts';
 
 test('new-agent consumption evidence records repeat current-scaffold cohorts without readiness upgrade', () => {
   const acceptance = readJson('contracts/production_acceptance/meta-agent-production-acceptance.json');
   const evidence = readJson('contracts/production_acceptance/new_agent_consumption_evidence.json');
+
+  assert.equal(evidence.surface_kind, 'opl_meta_agent_new_agent_consumption_evidence');
+  assert.equal(evidence.evidence_status, 'verified_new_agent_consumption_with_stage_pack_v2_conformance');
+  assert.equal(evidence.target_agent.domain_id, 'publication-brief-agent');
+  assert.equal(evidence.consumed_surfaces.build_agent_baseline_action, 'opl-meta-agent.build-agent-baseline');
+  assert.equal(evidence.consumed_surfaces.generated_interface_status, 'ready');
+  assert.equal(evidence.consumed_surfaces.structural_conformance_status, 'passed');
+  assert.equal(evidence.consumed_surfaces.readiness_status, 'passed_with_production_evidence_tail');
+  assert.equal(evidence.stage_pack_v2_consumption.status, 'passed');
+  assert.equal(evidence.stage_pack_v2_consumption.plane_version, 'standard-stage-pack.v2');
+  assert.equal(evidence.stage_pack_v2_consumption.executor_binding_ref, 'default_codex_cli');
+  assert.equal(
+    evidence.stage_pack_v2_consumption.independent_gate_ref,
+    'agent/quality_gates/agent-output-draft-quality-gate.md',
+  );
+  assert.deepEqual(evidence.stage_pack_v2_consumption.blockers, []);
+  assert.equal(evidence.ai_reviewer_evaluation.no_shared_context, true);
+  assert.equal(evidence.ai_reviewer_evaluation.independent_attempt, true);
+  assert.equal(evidence.ai_reviewer_evaluation.verdict, 'baseline_ready_with_owner_gate');
+  assert.equal(evidence.production_evidence_tail.status, 'open_tail_remains');
+  assert.equal(evidence.production_evidence_tail.production_ready_claimed, false);
+  assert.equal(evidence.production_evidence_tail.domain_ready_claimed, false);
+  assert.equal(evidence.production_evidence_tail.default_promotion_claimed, false);
+  assert.equal(evidence.production_evidence_tail.long_soak_claimed, false);
 
   assert.equal(acceptance.generated_agent_fixture_requirement.new_agent_consumption_repeat_cohort_count, 2);
   assert.equal(
@@ -82,7 +95,18 @@ test('new-agent consumption evidence records repeat current-scaffold cohorts wit
   assert.equal(evidence.repeat_consumption_scaleout.authority_boundary.can_close_long_soak_gate, false);
   assert.equal(evidence.repeat_consumption_scaleout.authority_boundary.can_promote_default_agent_without_gate, false);
   assert.equal(evidence.historical_fixture_proof_lane.status, 'historical_provenance_only');
+  assert.equal(evidence.historical_fixture_proof_lane.used_fixture_runner, true);
   assert.equal(evidence.historical_fixture_proof_lane.explicit_closeout_path_required_now, true);
   assert.equal(evidence.historical_fixture_proof_lane.implicit_fixture_graph_retired, true);
   assert.equal(evidence.historical_fixture_proof_lane.cannot_claim_current_public_entry, true);
+  assert.equal(evidence.historical_fixture_proof_lane.cannot_generate_default_stage_graph_without_closeout, true);
+  assertNoForbiddenAuthority(evidence, 'newAgentConsumptionEvidence');
+  assert.equal(evidence.authority_boundary.can_claim_domain_ready, false);
+  assert.equal(evidence.authority_boundary.can_claim_production_ready, false);
+  assert.equal(evidence.authority_boundary.can_close_long_soak_gate, false);
+  assert.ok(
+    asStrings(evidence.forbidden_claims)
+      .includes('new_agent_consumption_equals_long_soak_success'),
+  );
+  asStrings(evidence.source_refs).forEach(assertRepoRefExists);
 });

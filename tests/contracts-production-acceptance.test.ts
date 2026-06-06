@@ -11,7 +11,8 @@ import type { JsonObject } from './support/contracts.ts';
 
 test('production acceptance evidence closes conformance evidence tail through refs-only acceptance receipt', () => {
   const acceptance = readJson('contracts/production_acceptance/meta-agent-production-acceptance.json');
-  const newAgentConsumption = readJson('contracts/production_acceptance/new_agent_consumption_evidence.json');
+  const newAgentConsumptionEvidenceRef = 'contracts/production_acceptance/new_agent_consumption_evidence.json';
+  const newAgentConsumption = readJson(newAgentConsumptionEvidenceRef);
 
   assert.equal(acceptance.surface_kind, 'opl_meta_agent_production_acceptance_evidence');
   assert.equal(acceptance.domain_id, 'opl-meta-agent');
@@ -35,9 +36,7 @@ test('production acceptance evidence closes conformance evidence tail through re
   assert.equal(asStrings(acceptance.refs.long_soak_refs).length, 1);
   assert.ok(asStrings(acceptance.refs.long_soak_refs)[0].startsWith('long_soak_ref://opl-meta-agent/'));
   assert.equal(asStrings(acceptance.refs.production_consumption_receipt_refs).length, 2);
-  assert.deepEqual(acceptance.refs.new_agent_consumption_evidence_refs, [
-    'contracts/production_acceptance/new_agent_consumption_evidence.json',
-  ]);
+  assert.deepEqual(acceptance.refs.new_agent_consumption_evidence_refs, [newAgentConsumptionEvidenceRef]);
   const stageReplayBlocker = acceptance.stage_replay_human_gate_blocker_summary as JsonObject;
   const stageReplayTarget = stageReplayBlocker.target_identity as JsonObject;
   const stageReplayBoundary = stageReplayBlocker.authority_boundary as JsonObject;
@@ -160,9 +159,10 @@ test('production acceptance evidence closes conformance evidence tail through re
   assert.ok(acceptance.external_agent_acceptance_chain.test_handoff_refs.length > 0);
   assert.ok(acceptance.external_agent_acceptance_chain.proposal_materializer_refs.length > 0);
   assert.ok(acceptance.external_agent_acceptance_chain.review_audit_receipt_refs.length > 0);
-  assert.deepEqual(acceptance.external_agent_acceptance_chain.new_agent_consumption_evidence_refs, [
-    'contracts/production_acceptance/new_agent_consumption_evidence.json',
-  ]);
+  assert.deepEqual(
+    acceptance.external_agent_acceptance_chain.new_agent_consumption_evidence_refs,
+    [newAgentConsumptionEvidenceRef],
+  );
   assert.deepEqual(acceptance.external_agent_acceptance_chain.active_typed_blocker_refs, []);
   assert.ok(
     asStrings(acceptance.external_agent_acceptance_chain.historical_typed_blocker_refs)
@@ -201,55 +201,12 @@ test('production acceptance evidence closes conformance evidence tail through re
   );
   assert.equal(
     acceptance.generated_agent_fixture_requirement.latest_new_agent_consumption_evidence_ref,
-    'contracts/production_acceptance/new_agent_consumption_evidence.json',
+    newAgentConsumptionEvidenceRef,
   );
   assert.ok(
     acceptance.generated_agent_fixture_requirement.required_check_refs.includes(
       'check-ref:generated-agent/no-target-domain-truth-write',
     ),
-  );
-  assert.equal(newAgentConsumption.surface_kind, 'opl_meta_agent_new_agent_consumption_evidence');
-  assert.equal(newAgentConsumption.evidence_status, 'verified_new_agent_consumption_with_stage_pack_v2_conformance');
-  assert.equal(newAgentConsumption.target_agent.domain_id, 'publication-brief-agent');
-  assert.equal(newAgentConsumption.consumed_surfaces.build_agent_baseline_action, 'opl-meta-agent.build-agent-baseline');
-  assert.equal(newAgentConsumption.consumed_surfaces.generated_interface_status, 'ready');
-  assert.equal(newAgentConsumption.consumed_surfaces.structural_conformance_status, 'passed');
-  assert.equal(newAgentConsumption.consumed_surfaces.readiness_status, 'passed_with_production_evidence_tail');
-  assert.equal(newAgentConsumption.stage_pack_v2_consumption.status, 'passed');
-  assert.equal(newAgentConsumption.stage_pack_v2_consumption.plane_version, 'standard-stage-pack.v2');
-  assert.equal(newAgentConsumption.stage_pack_v2_consumption.executor_binding_ref, 'default_codex_cli');
-  assert.equal(
-    newAgentConsumption.stage_pack_v2_consumption.independent_gate_ref,
-    'agent/quality_gates/agent-output-draft-quality-gate.md',
-  );
-  assert.deepEqual(newAgentConsumption.stage_pack_v2_consumption.blockers, []);
-  assert.equal(newAgentConsumption.ai_reviewer_evaluation.no_shared_context, true);
-  assert.equal(newAgentConsumption.ai_reviewer_evaluation.independent_attempt, true);
-  assert.equal(
-    newAgentConsumption.ai_reviewer_evaluation.verdict,
-    'baseline_ready_with_owner_gate',
-  );
-  assert.equal(
-    newAgentConsumption.production_evidence_tail.status,
-    'open_tail_remains',
-  );
-  assert.equal(newAgentConsumption.production_evidence_tail.production_ready_claimed, false);
-  assert.equal(newAgentConsumption.production_evidence_tail.domain_ready_claimed, false);
-  assert.equal(newAgentConsumption.production_evidence_tail.default_promotion_claimed, false);
-  assert.equal(newAgentConsumption.production_evidence_tail.long_soak_claimed, false);
-  assert.equal(newAgentConsumption.historical_fixture_proof_lane.status, 'historical_provenance_only');
-  assert.equal(newAgentConsumption.historical_fixture_proof_lane.used_fixture_runner, true);
-  assert.equal(newAgentConsumption.historical_fixture_proof_lane.explicit_closeout_path_required_now, true);
-  assert.equal(newAgentConsumption.historical_fixture_proof_lane.implicit_fixture_graph_retired, true);
-  assert.equal(newAgentConsumption.historical_fixture_proof_lane.cannot_claim_current_public_entry, true);
-  assert.equal(newAgentConsumption.historical_fixture_proof_lane.cannot_generate_default_stage_graph_without_closeout, true);
-  assertNoForbiddenAuthority(newAgentConsumption, 'newAgentConsumption');
-  assert.equal(newAgentConsumption.authority_boundary.can_claim_domain_ready, false);
-  assert.equal(newAgentConsumption.authority_boundary.can_claim_production_ready, false);
-  assert.equal(newAgentConsumption.authority_boundary.can_close_long_soak_gate, false);
-  assert.ok(
-    asStrings(newAgentConsumption.forbidden_claims)
-      .includes('new_agent_consumption_equals_long_soak_success'),
   );
   assertNoForbiddenAuthority(acceptance, 'productionAcceptance');
   assert.equal(acceptance.authority_boundary.target_domain_authority_writes_forbidden, true);
