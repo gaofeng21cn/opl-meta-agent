@@ -5,7 +5,7 @@ import { runOpl, type TargetAgent, writeJson } from './meta-agent-loop-io.ts';
 import {
   type StageDecompositionCloseoutPacket,
   type StageRunnerKind,
-} from './stage-decomposition-pack-draft.ts';
+} from './stage-decomposition-pack-draft-parts/shared.ts';
 import {
   buildStageNativeArtifactAttemptRefs,
 } from './stage-native-artifact-contract.ts';

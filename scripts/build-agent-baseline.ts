@@ -12,9 +12,13 @@ import {
 } from './lib/domain-pack.ts';
 import {
   materializeStageDecompositionPackDraft,
+} from './lib/stage-decomposition-pack-draft-parts/materializer.ts';
+import type {
+  StageRunnerKind,
+} from './lib/stage-decomposition-pack-draft-parts/shared.ts';
+import {
   validateStageDecompositionCloseoutPacket,
-  type StageRunnerKind,
-} from './lib/stage-decomposition-pack-draft.ts';
+} from './lib/stage-decomposition-pack-draft-parts/validator.ts';
 import {
   type StageDecompositionAttemptReceipt,
   runStageDecompositionAttempt,

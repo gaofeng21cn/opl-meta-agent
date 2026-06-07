@@ -8,9 +8,13 @@ import { fileURLToPath } from 'node:url';
 import type { JsonObject } from '../scripts/lib/domain-pack.ts';
 import {
   buildFixtureStageDecompositionCloseout,
+} from '../scripts/lib/stage-decomposition-pack-draft-parts/builder.ts';
+import {
   materializeStageDecompositionPackDraft,
+} from '../scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts';
+import {
   validateStageDecompositionCloseoutPacket,
-} from '../scripts/lib/stage-decomposition-pack-draft.ts';
+} from '../scripts/lib/stage-decomposition-pack-draft-parts/validator.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 

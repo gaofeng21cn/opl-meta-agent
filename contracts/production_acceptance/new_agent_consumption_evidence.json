@@ -155,7 +155,6 @@
     "long_soak_claimed": false
   },
   "source_refs": [
-    "scripts/lib/stage-decomposition-pack-draft.ts",
     "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts",
     "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts",
     "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts",

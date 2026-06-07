@@ -265,10 +265,12 @@ test('script morphology stays limited to authority refs, materializers, and help
   assert.deepEqual(asStrings(materializerScan.retired_materializer_tails), [
     'build_agent_baseline_no_closeout_implicit_fixture_graph',
     'meta_agent_loop_reexport_facade',
+    'stage_decomposition_pack_draft_barrel_reexport_facade',
     'target_improvement_policy_generic_external_agent_patch_ref_fallback',
   ]);
   assert.deepEqual(asStrings(materializerScan.retired_materializer_tail_verification_refs), [
     'docs/history/process/2026-06-06-oma-meta-agent-loop-facade-retirement-closeout.md',
+    'docs/history/process/2026-06-07-oma-stage-decomposition-pack-draft-barrel-retirement-closeout.md',
     'tests/source-purity.test.ts',
     'tests/stage-decomposition-materializer.test.ts',
     'tests/takeover-loop.test.ts',
@@ -324,6 +326,17 @@ test('script morphology stays limited to authority refs, materializers, and help
   assert.ok(
     asStrings(buildBaselineGate.closed_retention_refs).includes(STANDARD_FOUNDRY_POLICIES_CONTRACT_REF),
     'stable Foundry policy body should be moved into a contract while script projection remains retained',
+  );
+  assert.ok(
+    asStrings(buildBaselineGate.closed_retention_refs).includes(
+      'retired-tail:opl-meta-agent/stage-decomposition-pack-draft/barrel-reexport-facade',
+    ),
+    'stage-decomposition barrel re-export should be recorded as a retired tail',
+  );
+  assert.equal(
+    fs.existsSync(path.join(repoRoot, 'scripts/lib/stage-decomposition-pack-draft.ts')),
+    false,
+    'retired scripts/lib/stage-decomposition-pack-draft.ts barrel facade must not be restored',
   );
   assert.ok(
     asStrings(buildBaselineGate.required_before_retire_or_absorb).includes(
@@ -474,17 +487,6 @@ test('script morphology stays limited to authority refs, materializers, and help
       assert.deepEqual(asStrings(entry.retired_tail_refs), [
         'retired-tail:opl-meta-agent/target-improvement-policy/generic-external-agent-patch-ref-fallback',
       ]);
-    }
-    if (entry.script_ref === 'scripts/lib/stage-decomposition-pack-draft.ts') {
-      [
-        'stage_native_artifact_contract_ref',
-        'stage_native_artifact_ref_template_ref',
-        'opl_physical_kernel_locator_ref',
-        'stage_artifact_conformance_ref',
-        'stage_artifact_workbench_consumption_ref',
-      ].forEach((writeRef) => {
-        assert.ok(asStrings(entry.writes_only).includes(writeRef), `${entry.script_ref} writes_only ${writeRef}`);
-      });
     }
     if (entry.script_ref === 'scripts/lib/stage-decomposition-pack-draft-parts/shared.ts') {
       assert.deepEqual(asStrings(entry.contract_refs), [

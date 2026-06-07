@@ -12,7 +12,7 @@ import {
 import type { JsonObject } from '../scripts/lib/domain-pack.ts';
 import {
   buildFixtureStageDecompositionCloseout,
-} from '../scripts/lib/stage-decomposition-pack-draft.ts';
+} from '../scripts/lib/stage-decomposition-pack-draft-parts/builder.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
