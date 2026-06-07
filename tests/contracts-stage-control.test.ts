@@ -592,14 +592,14 @@ test('stage launch contract is Codex-first, receipted, and OPL-10 bounded', () =
       `${label}.progress_delta_policy.next_forced_delta`,
     );
     assert.equal(
-      progressDeltaPolicy.deliverable_delta_aliases.target_agent_progress,
-      'deliverable_progress_delta',
-      `${label}.progress_delta_policy.target_agent_progress`,
+      Object.hasOwn(progressDeltaPolicy, 'deliverable_delta_aliases'),
+      false,
+      `${label}.progress_delta_policy.no_deliverable_aliases`,
     );
     assert.equal(
-      progressDeltaPolicy.platform_delta_aliases.platform_interface_repair,
-      'platform_repair_delta',
-      `${label}.progress_delta_policy.platform_interface_repair`,
+      Object.hasOwn(progressDeltaPolicy, 'platform_delta_aliases'),
+      false,
+      `${label}.progress_delta_policy.no_platform_aliases`,
     );
     assert.equal(
       progressDeltaPolicy.platform_only_is_not_deliverable_progress,

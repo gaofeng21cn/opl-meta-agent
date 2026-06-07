@@ -147,14 +147,6 @@ function buildWorkOrder(): JsonObject {
         ],
         domain_alias: 'platform_interface_repair_delta',
       },
-      substantive_deliverable_delta_refs: ['target-agent-change-ref:example'],
-      platform_interface_repair_refs: [
-        'no_target_domain_truth_write_proof',
-        'target-owner-receipt-or-typed-blocker:example-agent/oma_developer_patch_work_order_test',
-        'patch-absorption:example-agent/oma_developer_patch_work_order_test/source-patch',
-        'worktree-cleanup:example-agent/oma_developer_patch_work_order_test/source-patch',
-        'agent-lab-re-evaluation:example-agent/agent-lab-result-ref/oma_developer_patch_work_order_test',
-      ],
       excluded_from_substantive_deliverable_progress_refs: [],
       non_substantive_progress_ref_kinds: [
         'platform_interface_repair',
@@ -416,7 +408,41 @@ test('execute external work order rejects platform-only refs counted as delivera
       ],
       domain_alias: 'target_agent_substantive_delta',
     },
-    substantive_deliverable_delta_refs: [
+  };
+  writeJson(workOrderPath, workOrder);
+
+  const result = spawnSync(
+    process.execPath,
+    [
+      '--experimental-strip-types',
+      path.join(repoRoot, 'scripts/execute-external-work-order.ts'),
+      '--work-order',
+      workOrderPath,
+      '--opl-bin',
+      path.join(tempDir, 'opl-not-called'),
+    ],
+    {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        NODE_NO_WARNINGS: '1',
+      },
+    },
+  );
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /platform-only repair refs cannot be counted as target-agent substantive deliverable progress/);
+});
+
+test('execute external work order rejects retired target progress alias fields', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-execute-work-order-retired-progress-alias-test-'));
+  const workOrderPath = path.join(tempDir, 'developer-patch-work-order.json');
+  const workOrder = buildWorkOrder();
+  workOrder.target_progress_accounting = {
+    ...(workOrder.target_progress_accounting as JsonObject),
+    substantive_deliverable_delta_refs: ['target-agent-change-ref:example'],
+    platform_interface_repair_refs: [
       'agent-lab-re-evaluation:example-agent/agent-lab-result-ref/oma_developer_patch_work_order_test',
     ],
   };
@@ -443,7 +469,7 @@ test('execute external work order rejects platform-only refs counted as delivera
   );
 
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /platform-only repair refs cannot be counted as target-agent substantive deliverable progress/);
+  assert.match(result.stderr, /retired target_progress_accounting alias field substantive_deliverable_delta_refs is not accepted/);
 });
 
 test('execute external work order rejects deliverable progress when platform repairs are also counted', () => {
@@ -531,8 +557,6 @@ test('execute external work order rejects typed blockers without next forced del
       refs: [],
       domain_alias: 'platform_interface_repair_delta',
     },
-    substantive_deliverable_delta_refs: [],
-    platform_interface_repair_refs: [],
     typed_blocker_lineage: {
       blocker_family: 'owner_closeout_required',
       study_id_or_domain_identity: 'example-agent',

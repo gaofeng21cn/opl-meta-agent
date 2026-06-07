@@ -167,8 +167,6 @@ export function buildTargetProgressAccounting({
       refs: platformRefs,
       domain_alias: 'platform_interface_repair_delta',
     },
-    substantive_deliverable_delta_refs: deliverableRefs,
-    platform_interface_repair_refs: platformRefs,
     excluded_from_substantive_deliverable_progress_refs: excludedRefs,
     non_substantive_progress_ref_kinds: [
       'platform_interface_repair',

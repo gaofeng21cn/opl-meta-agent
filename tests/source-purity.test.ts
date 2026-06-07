@@ -765,6 +765,8 @@ test('standard Foundry policies are contract-owned and helper-projection free', 
   assert.ok(userStageLogRequiredFields.includes('evidence_refs'));
   assert.deepEqual(asStrings(userStageLogContract.required_domain_semantic_fields), userStageLogRequiredFields);
   assert.equal(stageProgressDeltaPolicy.surface_kind, 'opl_stage_progress_delta_policy');
+  assert.equal(Object.hasOwn(stageProgressDeltaPolicy, 'deliverable_delta_aliases'), false);
+  assert.equal(Object.hasOwn(stageProgressDeltaPolicy, 'platform_delta_aliases'), false);
   assert.equal(stageProgressDeltaPolicy.platform_only_is_not_deliverable_progress, true);
   assert.equal(
     stageProgressDeltaPolicy.missing_delta_policy,

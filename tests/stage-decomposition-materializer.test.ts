@@ -339,14 +339,8 @@ test('materializer writes the target stage pack from typed stage-decomposition c
         'next_forced_delta',
       ],
     );
-    assert.equal(
-      stage.stage_contract.progress_delta_policy.deliverable_delta_aliases.target_agent_progress,
-      'deliverable_progress_delta',
-    );
-    assert.equal(
-      stage.stage_contract.progress_delta_policy.platform_delta_aliases.platform_interface_repair,
-      'platform_repair_delta',
-    );
+    assert.equal(Object.hasOwn(stage.stage_contract.progress_delta_policy, 'deliverable_delta_aliases'), false);
+    assert.equal(Object.hasOwn(stage.stage_contract.progress_delta_policy, 'platform_delta_aliases'), false);
     assert.equal(stage.stage_contract.progress_delta_policy.platform_only_is_not_deliverable_progress, true);
     assert.equal(
       stage.stage_contract.typed_blocker_lineage_policy.surface_kind,

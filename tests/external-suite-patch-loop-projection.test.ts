@@ -36,18 +36,16 @@ test('workbench and scaleout contracts expose target patch-loop machine and revi
   targetPatchLoopReviewerProjectionFields.forEach((field) => {
     assert.ok((developerWorkOrderSection.projection_fields as string[]).includes(field));
   });
-  assert.ok((developerWorkOrderSection.projection_fields as string[]).includes('substantive_deliverable_delta_refs'));
-  assert.ok((developerWorkOrderSection.projection_fields as string[]).includes('platform_interface_repair_refs'));
   assert.ok((developerWorkOrderSection.projection_fields as string[]).includes('deliverable_progress_delta'));
   assert.ok((developerWorkOrderSection.projection_fields as string[]).includes('platform_repair_delta'));
   assert.ok((developerWorkOrderSection.projection_fields as string[]).includes('progress_delta_classification'));
   assert.ok((developerWorkOrderSection.projection_fields as string[]).includes('target_progress_accounting_ref'));
+  assert.equal((developerWorkOrderSection.projection_fields as string[]).includes('substantive_deliverable_delta_refs'), false);
+  assert.equal((developerWorkOrderSection.projection_fields as string[]).includes('platform_interface_repair_refs'), false);
   assert.deepEqual(appProjection.drilldown_readiness_receipt.target_progress_accounting_fields, [
     'deliverable_progress_delta',
     'platform_repair_delta',
     'progress_delta_classification',
-    'substantive_deliverable_delta_refs',
-    'platform_interface_repair_refs',
     'target_progress_accounting_ref',
   ]);
   assert.equal(appProjection.authority_boundary.refs_only, true);

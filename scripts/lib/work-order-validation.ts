@@ -150,12 +150,6 @@ function isPlatformOnlyProgressRef(ref: string): boolean {
   ].some((prefix) => ref === prefix || ref.startsWith(prefix));
 }
 
-function requireSameStringArray(left: string[], right: string[], fieldName: string): void {
-  if (left.length !== right.length || left.some((entry, index) => entry !== right[index])) {
-    throw new Error(`Invalid developer patch work order: ${fieldName} must match target_progress_accounting shared refs.`);
-  }
-}
-
 function requireTypedBlockerProgressLineage(accounting: JsonObject): void {
   if (typeof accounting.next_forced_delta !== 'string' || accounting.next_forced_delta.trim().length === 0) {
     throw new Error(
@@ -206,34 +200,26 @@ function requireTypedBlockerProgressLineage(accounting: JsonObject): void {
 
 function requireTargetProgressAccounting(workOrder: JsonObject): void {
   const accounting = requireObject(workOrder.target_progress_accounting, 'target_progress_accounting');
+  [
+    'substantive_deliverable_delta_refs',
+    'platform_interface_repair_refs',
+  ].forEach((field) => {
+    if (Object.hasOwn(accounting, field)) {
+      throw new Error(
+        `Invalid developer patch work order: retired target_progress_accounting alias field ${field} is not accepted.`,
+      );
+    }
+  });
   const classification = String(accounting.progress_delta_classification);
   const deliverableRefs = requireStringArray(
     accounting.deliverable_progress_delta?.refs,
     'target_progress_accounting.deliverable_progress_delta.refs',
   );
-  const substantiveRefs = requireStringArray(
-    accounting.substantive_deliverable_delta_refs,
-    'target_progress_accounting.substantive_deliverable_delta_refs',
-  );
-  requireSameStringArray(
-    deliverableRefs,
-    substantiveRefs,
-    'target_progress_accounting.substantive_deliverable_delta_refs',
-  );
   const platformRefs = requireStringArray(
-    accounting.platform_interface_repair_refs,
-    'target_progress_accounting.platform_interface_repair_refs',
-  );
-  const sharedPlatformRefs = requireStringArray(
     accounting.platform_repair_delta?.refs,
     'target_progress_accounting.platform_repair_delta.refs',
   );
-  requireSameStringArray(
-    sharedPlatformRefs,
-    platformRefs,
-    'target_progress_accounting.platform_interface_repair_refs',
-  );
-  const forbiddenDeliverableRefs = [...new Set([...deliverableRefs, ...substantiveRefs])]
+  const forbiddenDeliverableRefs = [...new Set(deliverableRefs)]
     .filter(isPlatformOnlyProgressRef);
   if (forbiddenDeliverableRefs.length > 0) {
     throw new Error(
@@ -241,15 +227,15 @@ function requireTargetProgressAccounting(workOrder: JsonObject): void {
     );
   }
   const deliverableCount = accounting?.deliverable_progress_delta?.count;
-  if (deliverableCount !== deliverableRefs.length || deliverableCount !== substantiveRefs.length) {
+  if (deliverableCount !== deliverableRefs.length) {
     throw new Error(
-      'Invalid developer patch work order: target_progress_accounting deliverable count must match target-agent substantive deliverable refs.',
+      'Invalid developer patch work order: target_progress_accounting deliverable count must match deliverable progress refs.',
     );
   }
   const platformCount = accounting?.platform_repair_delta?.count;
   if (platformCount !== platformRefs.length) {
     throw new Error(
-      'Invalid developer patch work order: target_progress_accounting platform repair count must match platform/interface repair refs.',
+      'Invalid developer patch work order: target_progress_accounting platform repair count must match platform repair refs.',
     );
   }
   const deliverableRefCount = deliverableRefs.length;

@@ -179,16 +179,6 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
         ],
         domain_alias: 'platform_interface_repair_delta',
       },
-      substantive_deliverable_delta_refs: workOrder.proposed_change_refs,
-      platform_interface_repair_refs: [
-        workOrder.machine_closeout_refs.target_runtime_read_model_consumption_ref,
-        workOrder.machine_closeout_refs.workspace_environment_proof_ref,
-        workOrder.machine_closeout_refs.no_forbidden_write_proof_ref,
-        workOrder.machine_closeout_refs.target_owner_receipt_or_typed_blocker_ref,
-        workOrder.machine_closeout_refs.patch_absorption_ref,
-        workOrder.machine_closeout_refs.worktree_cleanup_ref,
-        workOrder.machine_closeout_refs.agent_lab_re_evaluation_ref,
-      ],
       excluded_from_substantive_deliverable_progress_refs: [],
       non_substantive_progress_ref_kinds: [
         'platform_interface_repair',
@@ -201,6 +191,14 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
       ],
       accounting_policy: 'deliverable_delta_is_not_closed_by_platform_interface_repair',
     });
+    assert.equal(
+      Object.hasOwn(workOrder.target_progress_accounting, 'substantive_deliverable_delta_refs'),
+      false,
+    );
+    assert.equal(
+      Object.hasOwn(workOrder.target_progress_accounting, 'platform_interface_repair_refs'),
+      false,
+    );
     assert.equal(workOrder.ai_reviewer_evaluation_ref, reviewerEvaluationPath);
     assert.deepEqual(workOrder.ai_reviewer_review.suggestions, reviewerEvaluation.suggestions);
     assert.equal(workOrder.ai_reviewer_review.predicted_impact, reviewerEvaluation.predicted_impact);

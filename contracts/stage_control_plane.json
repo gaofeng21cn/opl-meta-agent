@@ -316,15 +316,6 @@
             "human_gate",
             "stop_loss"
           ],
-          "deliverable_delta_aliases": {
-            "target_agent_progress": "deliverable_progress_delta",
-            "foundry_agent_progress": "deliverable_progress_delta",
-            "agent_build_progress": "deliverable_progress_delta"
-          },
-          "platform_delta_aliases": {
-            "platform_interface_repair": "platform_repair_delta",
-            "agent_lab_or_opl_surface_repair": "platform_repair_delta"
-          },
           "platform_only_is_not_deliverable_progress": true,
           "missing_delta_policy": "emit_zero_deliverable_delta_and_next_forced_delta_without_inventing_target_agent_work",
           "authority_boundary": {
@@ -1104,15 +1095,6 @@
             "human_gate",
             "stop_loss"
           ],
-          "deliverable_delta_aliases": {
-            "target_agent_progress": "deliverable_progress_delta",
-            "foundry_agent_progress": "deliverable_progress_delta",
-            "agent_build_progress": "deliverable_progress_delta"
-          },
-          "platform_delta_aliases": {
-            "platform_interface_repair": "platform_repair_delta",
-            "agent_lab_or_opl_surface_repair": "platform_repair_delta"
-          },
           "platform_only_is_not_deliverable_progress": true,
           "missing_delta_policy": "emit_zero_deliverable_delta_and_next_forced_delta_without_inventing_target_agent_work",
           "authority_boundary": {
@@ -1891,15 +1873,6 @@
             "human_gate",
             "stop_loss"
           ],
-          "deliverable_delta_aliases": {
-            "target_agent_progress": "deliverable_progress_delta",
-            "foundry_agent_progress": "deliverable_progress_delta",
-            "agent_build_progress": "deliverable_progress_delta"
-          },
-          "platform_delta_aliases": {
-            "platform_interface_repair": "platform_repair_delta",
-            "agent_lab_or_opl_surface_repair": "platform_repair_delta"
-          },
           "platform_only_is_not_deliverable_progress": true,
           "missing_delta_policy": "emit_zero_deliverable_delta_and_next_forced_delta_without_inventing_target_agent_work",
           "authority_boundary": {
@@ -2688,15 +2661,6 @@
             "human_gate",
             "stop_loss"
           ],
-          "deliverable_delta_aliases": {
-            "target_agent_progress": "deliverable_progress_delta",
-            "foundry_agent_progress": "deliverable_progress_delta",
-            "agent_build_progress": "deliverable_progress_delta"
-          },
-          "platform_delta_aliases": {
-            "platform_interface_repair": "platform_repair_delta",
-            "agent_lab_or_opl_surface_repair": "platform_repair_delta"
-          },
           "platform_only_is_not_deliverable_progress": true,
           "missing_delta_policy": "emit_zero_deliverable_delta_and_next_forced_delta_without_inventing_target_agent_work",
           "authority_boundary": {
@@ -3483,15 +3447,6 @@
             "human_gate",
             "stop_loss"
           ],
-          "deliverable_delta_aliases": {
-            "target_agent_progress": "deliverable_progress_delta",
-            "foundry_agent_progress": "deliverable_progress_delta",
-            "agent_build_progress": "deliverable_progress_delta"
-          },
-          "platform_delta_aliases": {
-            "platform_interface_repair": "platform_repair_delta",
-            "agent_lab_or_opl_surface_repair": "platform_repair_delta"
-          },
           "platform_only_is_not_deliverable_progress": true,
           "missing_delta_policy": "emit_zero_deliverable_delta_and_next_forced_delta_without_inventing_target_agent_work",
           "authority_boundary": {
@@ -4273,15 +4228,6 @@
             "human_gate",
             "stop_loss"
           ],
-          "deliverable_delta_aliases": {
-            "target_agent_progress": "deliverable_progress_delta",
-            "foundry_agent_progress": "deliverable_progress_delta",
-            "agent_build_progress": "deliverable_progress_delta"
-          },
-          "platform_delta_aliases": {
-            "platform_interface_repair": "platform_repair_delta",
-            "agent_lab_or_opl_surface_repair": "platform_repair_delta"
-          },
           "platform_only_is_not_deliverable_progress": true,
           "missing_delta_policy": "emit_zero_deliverable_delta_and_next_forced_delta_without_inventing_target_agent_work",
           "authority_boundary": {
@@ -5084,15 +5030,6 @@
             "human_gate",
             "stop_loss"
           ],
-          "deliverable_delta_aliases": {
-            "target_agent_progress": "deliverable_progress_delta",
-            "foundry_agent_progress": "deliverable_progress_delta",
-            "agent_build_progress": "deliverable_progress_delta"
-          },
-          "platform_delta_aliases": {
-            "platform_interface_repair": "platform_repair_delta",
-            "agent_lab_or_opl_surface_repair": "platform_repair_delta"
-          },
           "platform_only_is_not_deliverable_progress": true,
           "missing_delta_policy": "emit_zero_deliverable_delta_and_next_forced_delta_without_inventing_target_agent_work",
           "authority_boundary": {
@@ -5887,15 +5824,6 @@
             "human_gate",
             "stop_loss"
           ],
-          "deliverable_delta_aliases": {
-            "target_agent_progress": "deliverable_progress_delta",
-            "foundry_agent_progress": "deliverable_progress_delta",
-            "agent_build_progress": "deliverable_progress_delta"
-          },
-          "platform_delta_aliases": {
-            "platform_interface_repair": "platform_repair_delta",
-            "agent_lab_or_opl_surface_repair": "platform_repair_delta"
-          },
           "platform_only_is_not_deliverable_progress": true,
           "missing_delta_policy": "emit_zero_deliverable_delta_and_next_forced_delta_without_inventing_target_agent_work",
           "authority_boundary": {
@@ -6682,15 +6610,6 @@
             "human_gate",
             "stop_loss"
           ],
-          "deliverable_delta_aliases": {
-            "target_agent_progress": "deliverable_progress_delta",
-            "foundry_agent_progress": "deliverable_progress_delta",
-            "agent_build_progress": "deliverable_progress_delta"
-          },
-          "platform_delta_aliases": {
-            "platform_interface_repair": "platform_repair_delta",
-            "agent_lab_or_opl_surface_repair": "platform_repair_delta"
-          },
           "platform_only_is_not_deliverable_progress": true,
           "missing_delta_policy": "emit_zero_deliverable_delta_and_next_forced_delta_without_inventing_target_agent_work",
           "authority_boundary": {
@@ -7501,15 +7420,6 @@
             "human_gate",
             "stop_loss"
           ],
-          "deliverable_delta_aliases": {
-            "target_agent_progress": "deliverable_progress_delta",
-            "foundry_agent_progress": "deliverable_progress_delta",
-            "agent_build_progress": "deliverable_progress_delta"
-          },
-          "platform_delta_aliases": {
-            "platform_interface_repair": "platform_repair_delta",
-            "agent_lab_or_opl_surface_repair": "platform_repair_delta"
-          },
           "platform_only_is_not_deliverable_progress": true,
           "missing_delta_policy": "emit_zero_deliverable_delta_and_next_forced_delta_without_inventing_target_agent_work",
           "authority_boundary": {
@@ -8298,15 +8208,6 @@
             "human_gate",
             "stop_loss"
           ],
-          "deliverable_delta_aliases": {
-            "target_agent_progress": "deliverable_progress_delta",
-            "foundry_agent_progress": "deliverable_progress_delta",
-            "agent_build_progress": "deliverable_progress_delta"
-          },
-          "platform_delta_aliases": {
-            "platform_interface_repair": "platform_repair_delta",
-            "agent_lab_or_opl_surface_repair": "platform_repair_delta"
-          },
           "platform_only_is_not_deliverable_progress": true,
           "missing_delta_policy": "emit_zero_deliverable_delta_and_next_forced_delta_without_inventing_target_agent_work",
           "authority_boundary": {

@@ -79,8 +79,6 @@
         "deliverable_progress_delta",
         "platform_repair_delta",
         "progress_delta_classification",
-        "substantive_deliverable_delta_refs",
-        "platform_interface_repair_refs",
         "target_progress_accounting_ref"
       ],
       "write_boundary": "display_refs_only"
@@ -182,8 +180,6 @@
       "deliverable_progress_delta",
       "platform_repair_delta",
       "progress_delta_classification",
-      "substantive_deliverable_delta_refs",
-      "platform_interface_repair_refs",
       "target_progress_accounting_ref"
     ],
     "live_rendering_status": "not_claimed_by_contract",

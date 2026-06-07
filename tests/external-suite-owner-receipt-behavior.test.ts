@@ -82,8 +82,9 @@ test('target-agent owner receipt Agent Lab suite becomes a no-patch result-consu
     assert.equal(workOrder.target_progress_accounting.deliverable_progress_delta.domain_alias, 'target_agent_substantive_delta');
     assert.equal(workOrder.target_progress_accounting.deliverable_progress_delta.count, 0);
     assert.equal(workOrder.target_progress_accounting.platform_repair_delta.domain_alias, 'platform_interface_repair_delta');
-    assert.deepEqual(workOrder.target_progress_accounting.substantive_deliverable_delta_refs, []);
-    assert.ok(workOrder.target_progress_accounting.platform_interface_repair_refs.includes(
+    assert.equal(Object.hasOwn(workOrder.target_progress_accounting, 'substantive_deliverable_delta_refs'), false);
+    assert.equal(Object.hasOwn(workOrder.target_progress_accounting, 'platform_interface_repair_refs'), false);
+    assert.ok((workOrder.target_progress_accounting.platform_repair_delta.refs as string[]).includes(
       workOrder.machine_closeout_refs.agent_lab_re_evaluation_ref,
     ));
     assert.deepEqual(workOrder.required_patch_surfaces, []);
