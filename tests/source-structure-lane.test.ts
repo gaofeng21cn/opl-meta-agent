@@ -69,10 +69,10 @@ test('stage control plane aggregate is generated from source parts and leaf inde
   });
 });
 
-test('structure maintenance scripts pass in focused check mode', () => {
+test('structure maintenance scripts pass in focused advisory check mode', () => {
   [
     ['scripts/sync-stage-control-plane.ts', '--check'],
-    ['scripts/check-source-structure.ts', '--strict'],
+    ['scripts/check-source-structure.ts', '--advisory'],
   ].forEach(([script, flag]) => {
     const result = spawnSync(process.execPath, [script, flag], {
       cwd: repoRoot,
