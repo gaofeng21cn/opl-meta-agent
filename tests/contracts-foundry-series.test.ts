@@ -171,6 +171,13 @@ test('foundry agent series contract binds OMA to shared Progress-First projectio
   assert.equal(series.app_projection_policy.app_consumes_shared_progress_projection_only, true);
   assert.equal(series.app_projection_policy.app_can_read_domain_body, false);
   assert.equal(series.authority_boundary.generated_surface_can_claim_domain_ready, false);
+  assert.equal(series.workspace_topology_profile.default_profiles.one_off.project_collection_path, 'projects');
+  assert.equal(series.workspace_topology_profile.default_profiles.rca_series.project_collection_path, 'projects');
+  assert.equal(series.workspace_topology_profile.default_profiles.mas_portfolio.project_collection_path, 'projects');
+  assert.deepEqual(
+    series.workspace_topology_profile.workspace_initialization_policy.legacy_project_collection_aliases,
+    ['deliverables', 'studies'],
+  );
   assert.equal((packageJson.dependencies as JsonObject)['opl-framework-shared'], oplSharedReleaseDependency);
   const rootPackageLock = (packageLock.packages as JsonObject)[''] as JsonObject;
   assert.equal((rootPackageLock.dependencies as JsonObject)['opl-framework-shared'], oplSharedReleaseDependency);
