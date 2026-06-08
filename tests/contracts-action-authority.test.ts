@@ -146,6 +146,8 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   assert.ok(ownerReceipt.testing_takeover_acceptance_gates.includes('mechanism_patch_proposal_recorded'));
   assert.ok(ownerReceipt.testing_takeover_acceptance_gates.includes('no_memory_body_written'));
   assert.ok(ownerReceipt.testing_takeover_acceptance_gates.includes('no_default_promotion'));
+  assert.ok(ownerReceipt.testing_takeover_acceptance_gates.includes('target_agent_allowed'));
+  assert.equal(ownerReceipt.testing_takeover_acceptance_gates.includes('external_agent_allowed'), false);
   assert.ok(ownerReceipt.baseline_acceptance_gates.includes('ai_reviewer_critique_present'));
   assert.ok(ownerReceipt.baseline_acceptance_gates.includes('ai_reviewer_suggestions_present'));
   assert.ok(ownerReceipt.baseline_acceptance_gates.includes('ai_reviewer_source_refs_valid'));

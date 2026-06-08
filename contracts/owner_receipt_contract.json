@@ -50,7 +50,7 @@
     "mechanism_patch_proposal_recorded",
     "no_memory_body_written",
     "no_default_promotion",
-    "external_agent_allowed",
+    "target_agent_allowed",
     "target_domain_truth_authority_preserved",
     "target_quality_authority_preserved",
     "target_artifact_authority_preserved",

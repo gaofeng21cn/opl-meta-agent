@@ -212,7 +212,7 @@ export function runTakeoverAgent({ targetAgentDir, outputDir, oplBin }: Takeover
       targetAgent,
       suiteResult,
       extraAcceptanceGates: {
-        external_agent_allowed: true,
+        target_agent_allowed: true,
         target_domain_truth_authority_preserved: true,
         target_quality_authority_preserved: true,
         target_artifact_authority_preserved: true,
@@ -253,7 +253,7 @@ export function runTakeoverAgent({ targetAgentDir, outputDir, oplBin }: Takeover
     status: suiteResult.status === 'passed' ? 'passed' : 'blocked',
     product_id: 'opl-meta-agent',
     takeover_policy: {
-      external_opl_compatible_agents_allowed: true,
+      target_opl_compatible_agents_allowed: true,
       can_write_target_domain_truth: false,
       can_write_target_quality_verdict: false,
       can_write_target_artifact_body: false,

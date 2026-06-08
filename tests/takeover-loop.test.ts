@@ -140,7 +140,8 @@ test('opl-meta-agent takes over testing for an existing external agent without a
 
     assert.equal(payload.surface_kind, 'opl_meta_agent_takeover_loop_result');
     assert.equal(payload.status, 'passed');
-    assert.equal(payload.takeover_policy.external_opl_compatible_agents_allowed, true);
+    assert.equal(payload.takeover_policy.target_opl_compatible_agents_allowed, true);
+    assert.equal(Object.hasOwn(payload.takeover_policy, 'external_opl_compatible_agents_allowed'), false);
     assert.equal(payload.takeover_policy.can_write_target_domain_truth, false);
     assert.equal(payload.takeover_policy.can_write_target_memory_body, false);
     assert.equal(payload.takeover_policy.can_promote_default_agent_without_gate, false);
