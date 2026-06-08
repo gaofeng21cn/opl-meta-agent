@@ -21,6 +21,7 @@ Machine boundary: 本目录只记录人读治理过程、覆盖 ledger、退役 
 | 硬边界和 forbidden claims | `docs/invariants.md` |
 | 仍有效决策 | `docs/decisions.md` |
 | 退役 surface no-resurrection provenance | [`retired-surface-provenance.md`](./retired-surface-provenance.md) |
+| target-agent machine-field field-only retirement closeout | [`target-agent-machine-field-retirement.md`](./target-agent-machine-field-retirement.md) |
 
 ## Compressed Provenance
 
@@ -28,6 +29,7 @@ Machine boundary: 本目录只记录人读治理过程、覆盖 ledger、退役 
 | --- | --- | --- |
 | Docs lifecycle and coverage | 本索引只记录当前 SSOT owner、coverage snapshot 和 reopen 入口。 | Dated coverage tranche、doctor transcript、branch/worktree closeout、per-file proof log 不再以单独 Markdown 文件维护。 |
 | Retired module/interface/test/workflow/entrypoint tails | `retired-surface-provenance.md` 保留 no-resurrection rules 和 current owner refs。 | 单次 facade / fallback / alias / test-thinning / docs-index closeout 文件已压缩。 |
+| Target-agent field-only closeout | `target-agent-machine-field-retirement.md` 仅保留 `external_agent_allowed` / `external_opl_compatible_agents_allowed` 字段迁移 provenance。 | 当前 takeover vocabulary、contract truth、action ids 和 generated interface truth 回到 contracts/source/tests、active plan、private inventory 和 later process summaries。 |
 | Evidence-tail currentness | 当前读法回到 active plan、status、contracts、OPL read model 和 tests。 | registry/App、production-consumption、patch-loop、reviewer projection 的 dated proof transcript 不再作为当前 truth 保存。 |
 
 ## Coverage Snapshot
