@@ -29,7 +29,7 @@ OMA 的理想态和 current active docs 已把目标对象定义为 generic `tar
 | Edited source | `scripts/takeover-agent.ts`. |
 | Edited tests | `tests/contracts-action-authority.test.ts`, `tests/takeover-loop.test.ts`. |
 | Edited history | `docs/history/process/README.md`, this closeout. |
-| Intentionally not edited in this field-only tranche | `external-suite`, `execute:external-work-order`, and then-active `external-agent-takeover` stage/action ids and associated Stage Native refs; they required a separate source/contract/generated-interface lane because they were active action/stage identifiers, not just two payload fields. |
+| Intentionally not edited in this field-only tranche | `external-suite`, `execute:external-work-order`, and then-active `external-agent-takeover` stage/action ids and associated Stage Native refs; they required separate source/contract/generated-interface review because they were active action/stage identifiers, not just two payload fields. Later process entries closed those follow-up reviews: takeover identifiers were retired to target-agent vocabulary, while external-suite / external-work-order vocabulary was retained as current machine truth. |
 
 ## Edit Decision
 
@@ -43,7 +43,7 @@ This tranche did not re-audit the whole OMA docs portfolio from scratch. It revi
 
 ## Remaining Stale Or Retire Candidates
 
-- `external-suite` and `external work-order` wording remains active where it describes Agent Lab external suite input or OPL work-order delegation. It is not retired by this field-only lane.
+- `external-suite` and `external work-order` wording remains active where it describes Agent Lab external suite input or OPL work-order delegation. A later active-surface audit retained this vocabulary as current machine truth, so it is not a stale/retire candidate from this field-only lane.
 - `external-agent-takeover` stage/action ids were later retired by a synchronized source/contract/generated-interface lane across `contracts/stage_control_plane.parts/**`, aggregate generation, action catalog, agent prompt/stage paths, generated interface tests and Stage Native refs.
 - `external_agent` with underscore is allowed only in no-resurrection tests/history after this lane.
 
@@ -57,4 +57,4 @@ Verification was performed in the isolated worktree `codex/oma-target-agent-voca
 
 ## Next Write Scope
 
-Next safe scope should either continue OMA target-agent vocabulary retirement for action/stage identifiers with a full generated-interface migration, or choose another clean repo semantic lane from the current six-repo inventory. Do not treat this closeout as completion of the six-repo docs lifecycle goal.
+Later process entries closed the immediate follow-up scopes from this field-only tranche: takeover action/stage identifiers moved to target-agent vocabulary, while external-suite / external-work-order vocabulary was reviewed and retained. Next safe scope should come from the current active gap plan or another clean repo semantic lane from fresh six-repo inventory. Do not treat this closeout as completion of the six-repo docs lifecycle goal.

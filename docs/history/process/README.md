@@ -32,6 +32,18 @@ Machine boundary: 本目录只记录人读治理过程、覆盖 ledger、退役 
 
 ## Coverage Snapshot
 
+2026-06-08 external-suite / external-work-order active-surface audit tranche:
+
+- Reviewed: root `README*`, current docs and history/process entries touching `external-suite` / external work-order vocabulary, `package.json`, `contracts/action_catalog.json`, `contracts/stage_control_plane.parts/stages/optimizer-iteration.json`, generated `contracts/stage_control_plane.json`, registration/App projection safe-action refs, production acceptance refs, `runtime/authority_functions/meta-agent-authority-functions.json`, `scripts/improve-from-agent-lab-suite.ts`, `scripts/execute-external-work-order.ts`, external-suite materializer / work-order helper refs, action-authority tests, stage-control tests, generated-surface tests, source-purity tests, external-suite focused tests, and execute-external-work-order tests.
+- Edited: this process index and the earlier target-agent machine-field closeout so the old future-lane note now points to this retained active-surface audit.
+- Retained active machine surfaces: `improve:external-suite`, `improve-from-external-agent-lab-suite`, `execute:external-work-order`, `execute-external-work-order`, `agent/skills/external-suite-improvement.md`, `agent/quality_gates/external-suite-self-evolution.md`, `agent/skills/external-work-order-execution.md`, and `agent/quality_gates/external-work-order-execution.md`.
+- SSOT: action/script truth is `package.json` plus `contracts/action_catalog.json`; stage/gate truth is `contracts/stage_control_plane.parts/stages/optimizer-iteration.json` and generated `contracts/stage_control_plane.json`; retention and authority truth is `runtime/authority_functions/meta-agent-authority-functions.json` plus `docs/active/opl-private-implementation-migration-inventory.md`; current completion/gap truth remains `docs/active/opl-meta-agent-ideal-state-gap-plan.md`.
+- Coverage result: this vocabulary is current Agent Lab external-suite input and OPL work-order delegation semantics, not stale takeover wording and not a compatibility alias for the retired `external-agent-takeover` surface.
+- Retired / guarded in this tranche: no active `external-suite` or external-work-order surface was retired. Focused tests already assert the active action ids, generated surfaces, stage-control refs, no target-domain authority write boundary, and thin OPL delegation boundary.
+- Remaining stale / retire candidates: none for this vocabulary after this audit. Any future rename must be a generated-interface-safe machine-contract migration with replacement action/script refs, no-active-caller evidence, no-forbidden-write proof, tombstone/provenance, and focused generated-surface tests; it is not a docs cleanup lane.
+- Unreviewed in this tranche: the full OPL series portfolio and unrelated OMA evidence-tail / script-to-pack hygiene items remain open under the parent OPL Doc goal.
+- Next write scope: choose another clean sibling-repo semantic lane or continue OMA evidence-tail / script-to-pack hygiene from the active gap plan; do not reopen `external-suite` / external-work-order vocabulary as a stale-retirement candidate without replacement machine truth.
+
 2026-06-08 target-agent takeover identifier retirement tranche:
 
 - Reviewed: root `README*`, current docs and history/process entries touching takeover vocabulary, agent prompt/stage indexes, `contracts/action_catalog.json`, `contracts/stage_control_plane.parts/**`, generated `contracts/stage_control_plane.json`, Stage Native refs, registration/App projection safe-action refs, production acceptance, `scripts/takeover-agent.ts`, generated-interface tests, stage-control tests, action-authority tests, production-acceptance tests, and takeover-loop tests.
@@ -40,8 +52,8 @@ Machine boundary: 本目录只记录人读治理过程、覆盖 ledger、退役 
 - Replacement surfaces: `target-agent-takeover`, `takeover-target-agent-test`, `opl_meta_agent_takeover_target_agent_test`, `opl-meta-agent.takeover-target-agent-test`, and `target_agent_acceptance_chain`.
 - No-resurrection guards: focused action catalog, generated-interface bundle, stage-control aggregate, production acceptance and takeover-loop assertions now fail if the old takeover action/stage/generated-interface/acceptance key returns.
 - Not edited by design: `external-suite`, `improve-from-external-agent-lab-suite`, `execute:external-work-order`, and `execute-external-work-order`. They remain separate Agent Lab external-suite / OPL work-order delegation surfaces, not aliases for the retired takeover identifier.
-- Remaining stale / retire candidates: old takeover identifiers must remain only in history/provenance or no-resurrection assertions. Broader `external-suite` and `external-work-order` vocabulary needs a separate semantic lane before any rename.
-- Next write scope: after fresh six-repo intake, either choose the broader generated-interface-safe external-suite/work-order vocabulary lane or another clean sibling repo semantic lane; do not reopen `external-agent-takeover` as compatibility.
+- Later foldback: the external-suite / external-work-order active-surface audit above reviewed that broader vocabulary and retained it as current machine truth. Old takeover identifiers must remain only in history/provenance or no-resurrection assertions.
+- Next write scope: after fresh six-repo intake, choose another clean sibling repo semantic lane or a current OMA evidence-tail / script-to-pack hygiene lane; do not reopen `external-agent-takeover` or active external-suite/work-order vocabulary as compatibility.
 
 2026-06-08 target-agent machine-field retirement tranche:
 
@@ -49,8 +61,9 @@ Machine boundary: 本目录只记录人读治理过程、覆盖 ledger、退役 
 - Edited: `contracts/owner_receipt_contract.json`, `scripts/takeover-agent.ts`, `tests/contracts-action-authority.test.ts`, `tests/takeover-loop.test.ts`, `docs/history/process/README.md`, `docs/history/process/target-agent-machine-field-retirement.md`.
 - Retired active machine fields: `external_agent_allowed` and `external_opl_compatible_agents_allowed`; replacement fields are `target_agent_allowed` and `target_opl_compatible_agents_allowed`.
 - Later foldback: `external-agent-takeover` action/stage identifier migration closed in the target-agent takeover identifier retirement tranche above. `external-suite` and `execute:external-work-order` remain separate active semantics.
-- Remaining stale / retire candidates: old underscore fields must remain only in no-resurrection assertions or history; broader external-suite/work-order vocabulary remains a future semantic lane, not a compatibility alias introduced here.
-- Next write scope: generated-interface-safe external-suite/work-order vocabulary migration or another clean sibling repo semantic lane after fresh six-repo intake.
+- Later foldback: the external-suite / external-work-order active-surface audit above reviewed the broader vocabulary and retained it as current machine truth.
+- Remaining stale / retire candidates: old underscore fields must remain only in no-resurrection assertions or history. No stale/retire candidate remains for external-suite/work-order vocabulary from this lineage.
+- Next write scope: another clean sibling repo semantic lane after fresh six-repo intake, or current OMA evidence-tail / script-to-pack hygiene from the active gap plan.
 
 2026-06-08 OMA process-history compression tranche:
 
