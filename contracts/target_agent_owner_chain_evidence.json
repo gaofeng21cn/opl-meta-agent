@@ -1,0 +1,272 @@
+{
+  "surface_kind": "opl_meta_agent_target_agent_owner_chain_evidence",
+  "version": "target-agent-owner-chain-evidence.v1",
+  "domain_id": "opl-meta-agent",
+  "owner": "opl-meta-agent",
+  "evidence_status": "owner_chain_live_progress_ref_shapes_accepted",
+  "evidence_scope": "opl_hosted_canary_not_target_repo_mutation",
+  "role": "target_agent_owner_chain_live_progress_refs_only_readout",
+  "purpose": "Machine-readable OMA owner-chain evidence lane for OPL-hosted build-agent, takeover-test, external-work-order materialization and work-order execution paths.",
+  "machine_boundary": "This ledger accepts target-agent owner receipt, typed blocker, work-order receipt and no-regression ref shapes. It does not create target agent bodies, mutate external target repos, sign target owner receipts, claim target domain readiness, claim production readiness or hold target artifact authority.",
+  "source_refs": {
+    "action_catalog_ref": "contracts/action_catalog.json",
+    "stage_run_kernel_profile_ref": "contracts/stage_run_kernel_profile.json",
+    "stage_run_canary_evidence_ref": "contracts/stage_run_canary_evidence.json",
+    "real_target_agent_scaleout_evidence_ref": "contracts/real_target_agent_scaleout_evidence.json"
+  },
+  "human_doc_refs": [
+    "docs/status.md",
+    "docs/decisions.md"
+  ],
+  "target_agent_ready_claimed": false,
+  "production_ready_claimed": false,
+  "target_artifact_authority_claimed": false,
+  "accepted_ref_shape_policy": {
+    "oma_owner_receipt_ref": {
+      "accepted_ref_prefixes": [
+        "oma_receipt_",
+        "owner-receipt-ref:opl-meta-agent/"
+      ],
+      "owner": "opl-meta-agent",
+      "can_replace_target_owner_receipt": false
+    },
+    "target_agent_owner_receipt_ref": {
+      "accepted_ref_prefixes": [
+        "target-owner-receipt:",
+        "target-owner-receipt-ref:"
+      ],
+      "owner": "target-agent via OPL owner route",
+      "oma_can_write_body": false
+    },
+    "target_agent_typed_blocker_ref": {
+      "accepted_ref_prefixes": [
+        "typed-blocker:",
+        "typed-blocker-ref:"
+      ],
+      "owner": "target-agent or OPL routed owner",
+      "oma_can_create_target_blocker_body": false
+    },
+    "developer_patch_work_order_ref": {
+      "accepted_ref_prefixes": [
+        "developer-patch-work-order:",
+        "oma_developer_patch_work_order_"
+      ],
+      "owner": "opl-meta-agent",
+      "requires_opl_work_order_execute_before_target_mutation": true
+    },
+    "work_order_execution_receipt_ref": {
+      "accepted_ref_prefixes": [
+        "work-order-execution-receipt:",
+        "opl-work-order-execute-result:"
+      ],
+      "owner": "one-person-lab/OPL",
+      "oma_can_manage_target_worktree_lifecycle": false
+    },
+    "no_regression_ref": {
+      "accepted_ref_prefixes": [
+        "no-regression-ref:",
+        "agent-lab-no-regression-ref:"
+      ],
+      "owner": "OPL Agent Lab or target owner gate",
+      "can_claim_quality_verdict": false
+    }
+  },
+  "opl_hosted_action_path_readout": [
+    {
+      "action_id": "build-agent-baseline",
+      "generated_action_contract_ref": "contracts/action_catalog.json#/actions/build-agent-baseline",
+      "hosted_path_owner": "one-person-lab/OPL generated surface",
+      "progress_role": "new_target_agent_baseline_owner_receipt_ref_shape",
+      "accepted_ref_shapes": [
+        "oma_owner_receipt_ref",
+        "target_agent_owner_receipt_ref",
+        "agent_lab_result_ref",
+        "no_regression_ref"
+      ],
+      "accepted_progress_refs": [
+        "oma_owner_receipt_ref:baseline-delivery",
+        "target-owner-receipt-ref:target-agent/baseline-owner-review",
+        "agent-lab-result-ref:target-agent/baseline",
+        "no-regression-ref:target-agent/baseline"
+      ],
+      "uses_oma_runner_or_queue": false,
+      "canary_modifies_external_target_repo": false,
+      "canary_materializes_candidate_agent_body": false,
+      "authority_boundary": {
+        "refs_only": true,
+        "can_write_target_domain_truth": false,
+        "can_write_target_domain_memory_body": false,
+        "can_mutate_target_domain_artifact_body": false,
+        "can_authorize_target_domain_quality_or_export": false,
+        "can_claim_target_domain_ready": false,
+        "can_claim_production_ready": false,
+        "can_hold_target_artifact_authority": false,
+        "can_write_target_owner_receipt_body": false,
+        "can_promote_default_agent_without_gate": false,
+        "can_manage_target_worktree_lifecycle": false,
+        "can_own_generic_runner": false,
+        "can_own_generic_queue_or_attempt_ledger": false
+      }
+    },
+    {
+      "action_id": "takeover-target-agent-test",
+      "generated_action_contract_ref": "contracts/action_catalog.json#/actions/takeover-target-agent-test",
+      "hosted_path_owner": "one-person-lab/OPL generated surface",
+      "progress_role": "existing_target_agent_takeover_receipt_or_blocker_ref_shape",
+      "accepted_ref_shapes": [
+        "takeover_receipt_ref",
+        "target_agent_typed_blocker_ref",
+        "agent_lab_result_ref",
+        "no_regression_ref"
+      ],
+      "accepted_progress_refs": [
+        "takeover-receipt-ref:target-agent/agent-lab-takeover",
+        "typed-blocker-ref:target-agent/takeover/owner-action-required",
+        "agent-lab-result-ref:target-agent/takeover",
+        "no-regression-ref:target-agent/takeover"
+      ],
+      "uses_oma_runner_or_queue": false,
+      "canary_modifies_external_target_repo": false,
+      "canary_materializes_candidate_agent_body": false,
+      "authority_boundary": {
+        "refs_only": true,
+        "can_write_target_domain_truth": false,
+        "can_write_target_domain_memory_body": false,
+        "can_mutate_target_domain_artifact_body": false,
+        "can_authorize_target_domain_quality_or_export": false,
+        "can_claim_target_domain_ready": false,
+        "can_claim_production_ready": false,
+        "can_hold_target_artifact_authority": false,
+        "can_write_target_owner_receipt_body": false,
+        "can_promote_default_agent_without_gate": false,
+        "can_manage_target_worktree_lifecycle": false,
+        "can_own_generic_runner": false,
+        "can_own_generic_queue_or_attempt_ledger": false
+      }
+    },
+    {
+      "action_id": "improve-from-external-agent-lab-suite",
+      "generated_action_contract_ref": "contracts/action_catalog.json#/actions/improve-from-external-agent-lab-suite",
+      "hosted_path_owner": "one-person-lab/OPL generated surface",
+      "progress_role": "blocked_suite_to_owner_routed_developer_work_order_ref_shape",
+      "accepted_ref_shapes": [
+        "developer_patch_work_order_ref",
+        "work_order_currentness_ref",
+        "target_owner_receipt_or_typed_blocker_ref",
+        "no_regression_ref"
+      ],
+      "accepted_progress_refs": [
+        "developer-patch-work-order:target-agent/blocked-suite",
+        "work-order-currentness:target-agent/blocked-suite",
+        "target-owner-receipt-or-typed-blocker:target-agent/blocked-suite",
+        "no-regression-ref:target-agent/external-suite"
+      ],
+      "uses_oma_runner_or_queue": false,
+      "canary_modifies_external_target_repo": false,
+      "canary_materializes_candidate_agent_body": false,
+      "authority_boundary": {
+        "refs_only": true,
+        "can_write_target_domain_truth": false,
+        "can_write_target_domain_memory_body": false,
+        "can_mutate_target_domain_artifact_body": false,
+        "can_authorize_target_domain_quality_or_export": false,
+        "can_claim_target_domain_ready": false,
+        "can_claim_production_ready": false,
+        "can_hold_target_artifact_authority": false,
+        "can_write_target_owner_receipt_body": false,
+        "can_promote_default_agent_without_gate": false,
+        "can_manage_target_worktree_lifecycle": false,
+        "can_own_generic_runner": false,
+        "can_own_generic_queue_or_attempt_ledger": false
+      }
+    },
+    {
+      "action_id": "execute-external-work-order",
+      "generated_action_contract_ref": "contracts/action_catalog.json#/actions/execute-external-work-order",
+      "hosted_path_owner": "one-person-lab/OPL generated surface",
+      "progress_role": "opl_work_order_execute_receipt_or_typed_blocker_ref_shape",
+      "accepted_ref_shapes": [
+        "external_work_order_delegation_ref",
+        "work_order_execution_receipt_ref",
+        "target_owner_receipt_or_typed_blocker_ref",
+        "no_regression_ref"
+      ],
+      "accepted_progress_refs": [
+        "external-work-order-delegation-ref:target-agent/work-order",
+        "work-order-execution-receipt:target-agent/work-order",
+        "target-owner-receipt-or-typed-blocker:target-agent/work-order",
+        "agent-lab-no-regression-ref:target-agent/post-work-order"
+      ],
+      "uses_oma_runner_or_queue": false,
+      "canary_modifies_external_target_repo": false,
+      "canary_materializes_candidate_agent_body": false,
+      "authority_boundary": {
+        "refs_only": true,
+        "can_write_target_domain_truth": false,
+        "can_write_target_domain_memory_body": false,
+        "can_mutate_target_domain_artifact_body": false,
+        "can_authorize_target_domain_quality_or_export": false,
+        "can_claim_target_domain_ready": false,
+        "can_claim_production_ready": false,
+        "can_hold_target_artifact_authority": false,
+        "can_write_target_owner_receipt_body": false,
+        "can_promote_default_agent_without_gate": false,
+        "can_manage_target_worktree_lifecycle": false,
+        "can_own_generic_runner": false,
+        "can_own_generic_queue_or_attempt_ledger": false
+      }
+    }
+  ],
+  "controlled_owner_chain_canary_readout": {
+    "canary_kind": "target_agent_owner_chain_live_progress_evidence",
+    "source_canary_ref": "contracts/stage_run_canary_evidence.json",
+    "opl_hosted_path_required": true,
+    "no_external_target_repo_modified": true,
+    "no_candidate_agent_body_generated": true,
+    "requires_generated_action_contract_refs": true,
+    "requires_owner_receipt_or_typed_blocker_ref": true,
+    "requires_work_order_execution_receipt_ref": true,
+    "requires_no_regression_ref": true,
+    "required_terminal_ref_classes": [
+      "target_agent_owner_receipt_ref",
+      "target_agent_typed_blocker_ref",
+      "work_order_execution_receipt_ref",
+      "no_regression_ref"
+    ],
+    "accepted_completion_states": [
+      "target_owner_receipt_ref_present",
+      "target_typed_blocker_ref_present",
+      "opl_work_order_execution_receipt_ref_present"
+    ],
+    "blocked_completion_states": [
+      "target_domain_ready_claim",
+      "production_ready_claim",
+      "target_artifact_authority_claim",
+      "oma_owner_receipt_body_for_target"
+    ]
+  },
+  "false_authority_flags": {
+    "target_domain_ready_claimed": false,
+    "production_ready_claimed": false,
+    "target_artifact_authority_claimed": false,
+    "target_owner_receipt_body_written_by_oma": false,
+    "external_target_repo_modified": false,
+    "candidate_agent_body_generated": false
+  },
+  "authority_boundary": {
+    "refs_only": true,
+    "not_generic_runtime_owner": true,
+    "can_write_target_domain_truth": false,
+    "can_write_target_domain_memory_body": false,
+    "can_mutate_target_domain_artifact_body": false,
+    "can_authorize_target_domain_quality_or_export": false,
+    "can_claim_target_domain_ready": false,
+    "can_claim_production_ready": false,
+    "can_hold_target_artifact_authority": false,
+    "can_write_target_owner_receipt_body": false,
+    "can_promote_default_agent_without_gate": false,
+    "can_manage_target_worktree_lifecycle": false,
+    "can_own_generic_runner": false,
+    "can_own_generic_queue_or_attempt_ledger": false
+  }
+}

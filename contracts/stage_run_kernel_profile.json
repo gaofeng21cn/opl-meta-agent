@@ -162,6 +162,7 @@
     "canary_id": "oma-agent-building-stage-run-canary.v1",
     "purpose": "Exercise the OMA agent-building StageRun path from user intent to owner receipt or typed blocker without turning tool refs into a hard-coded workflow.",
     "controlled_canary_evidence_ref": "contracts/stage_run_canary_evidence.json",
+    "target_agent_owner_chain_evidence_ref": "contracts/target_agent_owner_chain_evidence.json",
     "stage_sequence": [
       "intent-intake",
       "stage-decomposition-candidates",

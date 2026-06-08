@@ -205,6 +205,7 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
     opl_domain_manifest_registration_ref: 'contracts/opl_domain_manifest_registration.json',
     app_workbench_projection_ref: 'contracts/app_workbench_projection.json',
     real_target_agent_scaleout_evidence_ref: 'contracts/real_target_agent_scaleout_evidence.json',
+    target_agent_owner_chain_evidence_ref: 'contracts/target_agent_owner_chain_evidence.json',
     trajectory_learning_contract_ref: 'contracts/trajectory_learning_contract.json',
   });
   assert.deepEqual(audit.registration_projection_evidence_contract_refs, {
