@@ -81,8 +81,8 @@
       }
     },
     {
-      "action_id": "takeover-external-agent-test",
-      "title": "Take Over External Agent Test",
+      "action_id": "takeover-target-agent-test",
+      "title": "Take Over Target Agent Test",
       "summary": "Read an existing OPL-compatible agent repo, generate an Agent Lab takeover suite, run it, and emit takeover receipt plus gated self-evolution refs.",
       "owner": "opl-meta-agent",
       "effect": "mutating",
@@ -90,8 +90,8 @@
         "command": "npm run takeover:test -- --agent-dir <agent_dir> --output-dir <output_dir> --opl-bin <opl_bin>",
         "surface_kind": "domain_smoke_cli"
       },
-      "input_schema_ref": "contracts/schemas/takeover-external-agent-test.input.schema.json",
-      "output_schema_ref": "contracts/schemas/takeover-external-agent-test.output.schema.json",
+      "input_schema_ref": "contracts/schemas/takeover-target-agent-test.input.schema.json",
+      "output_schema_ref": "contracts/schemas/takeover-target-agent-test.output.schema.json",
       "workspace_locator_fields": [
         "agent_dir",
         "output_dir",
@@ -106,25 +106,25 @@
           "surface_kind": "domain_smoke_cli"
         },
         "mcp": {
-          "tool_name": "opl_meta_agent_takeover_external_agent_test",
+          "tool_name": "opl_meta_agent_takeover_target_agent_test",
           "surface_kind": "opl_generated_mcp_descriptor",
           "descriptor_only": true,
           "public_runtime": false
         },
         "skill": {
-          "command_contract_id": "opl-meta-agent.takeover-external-agent-test",
+          "command_contract_id": "opl-meta-agent.takeover-target-agent-test",
           "surface_kind": "opl_generated_skill_contract"
         },
         "product_entry": {
-          "action_key": "takeover-external-agent-test",
+          "action_key": "takeover-target-agent-test",
           "command": "npm run takeover:test -- --agent-dir <agent_dir> --output-dir <output_dir> --opl-bin <opl_bin>",
           "surface_kind": "domain_product_entry_action"
         },
         "openai": {
-          "tool_name": "opl_meta_agent_takeover_external_agent_test"
+          "tool_name": "opl_meta_agent_takeover_target_agent_test"
         },
         "ai_sdk": {
-          "tool_name": "opl_meta_agent_takeover_external_agent_test"
+          "tool_name": "opl_meta_agent_takeover_target_agent_test"
         }
       },
       "authority_boundary": {

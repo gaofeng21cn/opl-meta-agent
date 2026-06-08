@@ -15,7 +15,7 @@ Stage files:
 - `agent-skeleton-build.md`
 - `eval-suite-build.md`
 - `baseline-run.md`
-- `external-agent-takeover.md`
+- `target-agent-takeover.md`
 - `optimizer-iteration.md`
 - `baseline-delivery.md`
 - `online-learning.md`

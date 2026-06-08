@@ -85,7 +85,7 @@ A new agent often needs multiple work decompositions, prompt strategies, skill c
 
 - Turning a new agent idea into intent analysis, public-pattern research, working steps, an agent skeleton, test suites, baseline runs, and improvement candidates.
 - Creating practical agent baselines for papers, grants, presentations, reviews, operations, and other high-value workflows.
-- Organizing tests, recovery probes, scorecard refs, and adoption gates for new agents or existing external agents.
+- Organizing tests, recovery probes, scorecard refs, and adoption gates for new agents or existing target agents.
 - Producing baseline delivery records, gated learning candidates, and mechanism improvement proposals.
 - Turning real run evidence into reviewable, rollback-friendly next-version candidates that still require approval before adoption.
 

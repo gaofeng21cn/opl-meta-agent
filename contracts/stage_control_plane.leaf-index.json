@@ -12,7 +12,7 @@
     "agent-skeleton-build",
     "eval-suite-build",
     "baseline-run",
-    "external-agent-takeover",
+    "target-agent-takeover",
     "optimizer-iteration",
     "baseline-delivery",
     "trajectory-learning-intake",
@@ -44,8 +44,8 @@
       "ref": "contracts/stage_control_plane.parts/stages/baseline-run.json"
     },
     {
-      "stage_id": "external-agent-takeover",
-      "ref": "contracts/stage_control_plane.parts/stages/external-agent-takeover.json"
+      "stage_id": "target-agent-takeover",
+      "ref": "contracts/stage_control_plane.parts/stages/target-agent-takeover.json"
     },
     {
       "stage_id": "optimizer-iteration",
@@ -90,8 +90,8 @@
       "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/baseline-run.json"
     },
     {
-      "stage_id": "external-agent-takeover",
-      "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/external-agent-takeover.json"
+      "stage_id": "target-agent-takeover",
+      "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/target-agent-takeover.json"
     },
     {
       "stage_id": "optimizer-iteration",

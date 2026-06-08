@@ -137,7 +137,7 @@
       ],
       "active_callers": [
         "build-agent-baseline action",
-        "takeover-external-agent-test action"
+        "takeover-target-agent-test action"
       ],
       "active_caller_status": "refs_only_adapter_active",
       "consumes_opl_surface": "opl_agent_lab_complete_control_plane",

@@ -162,16 +162,16 @@ test('opl-meta-agent takes over testing for an existing external agent without a
     assert.equal(suite.suite_kind, 'agent_lab_external_suite');
     assert.equal(
       suite.stage_native_artifact_refs.artifact_native_contract_ref,
-      'artifact-native-contract-ref:takeover-fixture-agent/external-agent-takeover',
+      'artifact-native-contract-ref:takeover-fixture-agent/target-agent-takeover',
     );
     assert.equal(
       suite.stage_native_artifact_refs.attempt_json_ref,
-      'stage-attempt-json-ref:takeover-fixture-agent/external-agent-takeover/testing-takeover',
+      'stage-attempt-json-ref:takeover-fixture-agent/target-agent-takeover/testing-takeover',
     );
     assertStageFolderContractRefs(
       suite.stage_native_artifact_refs.stage_folder_contract,
       'takeover-fixture-agent',
-      'external-agent-takeover',
+      'target-agent-takeover',
       'testing-takeover',
     );
     assert.equal(suite.authority_boundary.can_generate_target_domain_owner_receipt, false);
@@ -181,17 +181,17 @@ test('opl-meta-agent takes over testing for an existing external agent without a
     assert.equal(suite.tasks[0].task_family, 'agent_testing_takeover');
     assert.equal(
       suite.tasks[0].stage_folder_contract.manifest_ref,
-      'stage-manifest-ref:takeover-fixture-agent/external-agent-takeover/testing-takeover',
+      'stage-manifest-ref:takeover-fixture-agent/target-agent-takeover/testing-takeover',
     );
     assertStageFolderContractRefs(
       suite.tasks[0].stage_folder_contract,
       'takeover-fixture-agent',
-      'external-agent-takeover',
+      'target-agent-takeover',
       'testing-takeover',
     );
     assert.equal(
       suite.tasks[0].stage_folder_contract.canonical_artifact_ref,
-      'canonical-artifact-ref:takeover-fixture-agent/external-agent-takeover',
+      'canonical-artifact-ref:takeover-fixture-agent/target-agent-takeover',
     );
     assert.equal(suite.tasks[0].trajectory.memory_body, undefined);
     assert.equal(suite.tasks[0].promotion_gate.gate_status, 'passed');
@@ -204,15 +204,15 @@ test('opl-meta-agent takes over testing for an existing external agent without a
     assert.equal(receipt.acceptance_gates.no_default_promotion, true);
     assert.equal(
       receipt.artifact_native_contract_ref,
-      'artifact-native-contract-ref:takeover-fixture-agent/external-agent-takeover',
+      'artifact-native-contract-ref:takeover-fixture-agent/target-agent-takeover',
     );
     assertStageFolderContractRefs(
       receipt.stage_folder_contract,
       'takeover-fixture-agent',
-      'external-agent-takeover',
+      'target-agent-takeover',
       'testing-takeover',
     );
-    assert.equal(receipt.stage_folder_contract.blocker_ref, 'stage-typed-blocker-ref:takeover-fixture-agent/external-agent-takeover/testing-takeover');
+    assert.equal(receipt.stage_folder_contract.blocker_ref, 'stage-typed-blocker-ref:takeover-fixture-agent/target-agent-takeover/testing-takeover');
     assert.equal(receipt.can_generate_target_domain_owner_receipt, false);
     assert.equal(receipt.authority_boundary.can_write_target_domain_memory_body, false);
     assert.equal(receipt.authority_boundary.can_promote_default_agent_without_gate, false);

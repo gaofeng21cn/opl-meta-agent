@@ -7,7 +7,7 @@ Machine boundary: 本文是人读 OPL Doc / source-contract-test tranche closeou
 
 ## Semantic Theme
 
-本轮治理主题是 `active external_agent machine-field retirement -> target_agent acceptance/policy field migration`。
+本轮治理主题是 `active external_agent machine-field retirement -> target_agent acceptance/policy field migration`。后续 `target-agent takeover identifier retirement` tranche 已把同一接管语义中的 hyphenated action/stage/generated-interface 标识迁到 target-agent 口径；本文只作为较早 field-only closeout provenance 读取。
 
 OMA 的理想态和 current active docs 已把目标对象定义为 generic `target_agent`。Fresh scan 显示 active takeover receipt / policy payload 仍暴露 `external_agent_allowed` 和 `external_opl_compatible_agents_allowed` 两个 machine fields。本轮只迁移这两个 active fields；`external-suite` / `external work-order` 仍表示 Agent Lab external suite / OPL work-order delegation action family，不在本 lane 中重命名。
 
@@ -17,7 +17,7 @@ OMA 的理想态和 current active docs 已把目标对象定义为 generic `tar
 | --- | --- | --- |
 | Takeover receipt acceptance gate vocabulary | `contracts/owner_receipt_contract.json` plus `tests/contracts-action-authority.test.ts` | Owner receipt contract and tests define accepted machine gates. |
 | Takeover result policy payload | `scripts/takeover-agent.ts` plus `tests/takeover-loop.test.ts` | Source emits the runtime payload; tests assert the new field and reject old keys. |
-| Broader target-agent vocabulary policy | `contracts/foundry_agent_series.json`, active gap plan, private implementation inventory | These surfaces already define OMA as a target-agent generic consumer rather than a domain-specific compatibility layer. |
+| Broader target-agent vocabulary policy | `contracts/foundry_agent_series.json`, active gap plan, private implementation inventory, later target-agent takeover identifier retirement tranche | These surfaces define OMA as a target-agent generic consumer rather than a domain-specific compatibility layer. |
 | Historical provenance / no-resurrection context | `docs/history/process/target-agent-machine-field-retirement.md` and focused negative assertions | Old machine fields remain only as no-resurrection assertions or history/provenance. |
 
 ## Coverage Snapshot
@@ -29,7 +29,7 @@ OMA 的理想态和 current active docs 已把目标对象定义为 generic `tar
 | Edited source | `scripts/takeover-agent.ts`. |
 | Edited tests | `tests/contracts-action-authority.test.ts`, `tests/takeover-loop.test.ts`. |
 | Edited history | `docs/history/process/README.md`, this closeout. |
-| Intentionally not edited | `external-suite`, `execute:external-work-order`, `external-agent-takeover` stage/action ids and associated Stage Native refs; they require a separate source/contract/generated-interface lane because they are active action/stage identifiers, not just two payload fields. |
+| Intentionally not edited in this field-only tranche | `external-suite`, `execute:external-work-order`, and then-active `external-agent-takeover` stage/action ids and associated Stage Native refs; they required a separate source/contract/generated-interface lane because they were active action/stage identifiers, not just two payload fields. |
 
 ## Edit Decision
 
@@ -44,7 +44,7 @@ This tranche did not re-audit the whole OMA docs portfolio from scratch. It revi
 ## Remaining Stale Or Retire Candidates
 
 - `external-suite` and `external work-order` wording remains active where it describes Agent Lab external suite input or OPL work-order delegation. It is not retired by this field-only lane.
-- `external-agent-takeover` stage/action ids remain active Stage Control Plane identifiers and generated interface descriptors. Renaming them requires synchronized changes across `contracts/stage_control_plane.parts/**`, aggregate generation, action catalog, agent prompt/stage paths, generated interface tests and Stage Native refs.
+- `external-agent-takeover` stage/action ids were later retired by a synchronized source/contract/generated-interface lane across `contracts/stage_control_plane.parts/**`, aggregate generation, action catalog, agent prompt/stage paths, generated interface tests and Stage Native refs.
 - `external_agent` with underscore is allowed only in no-resurrection tests/history after this lane.
 
 ## Verification

@@ -1,4 +1,4 @@
-# External Agent Takeover Prompt
+# Target Agent Takeover Prompt
 
 ## 目标
 

@@ -115,9 +115,9 @@ CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framewo
 
 自举闭环还会调用 `opl agents interfaces --repo-dir <candidate-agent>`，证明由 `OPL Meta Agent` 生成的目标智能体也能被 OPL 统一投影出 CLI / MCP / Skill / product-entry 接口包。
 
-## External Agent Testing Takeover
+## Target Agent Testing Takeover
 
-`external-agent-takeover` 读取目标 agent repo/package 的 descriptor/contracts，生成 `agent_lab_external_suite`，调用 OPL `agent-lab run`，再写入 `testing_takeover_self_evolution_receipt`、gated online-learning candidate 和 mechanism patch proposal。
+`target-agent-takeover` 读取目标 agent repo/package 的 descriptor/contracts，生成 `agent_lab_external_suite`，调用 OPL `agent-lab run`，再写入 `testing_takeover_self_evolution_receipt`、gated online-learning candidate 和 mechanism patch proposal。
 
 `improve-from-external-agent-lab-suite` 读取目标 domain 的 Agent Lab suite/result，并消费与 baseline delivery 相同 schema 的 AI reviewer evaluation。reviewer critique、suggestions、source refs 和 provenance 会进入 target capability improvement candidate、developer patch work order 和 mechanism patch proposal refs；可识别 suggestion 只在目标 agent 显式声明 `default_change_refs` 或 `change_ref_mappings` 时映射到 `patch_traceability_matrix` 的 required patch refs、editable surfaces 和 target repo file hints。缺少 target improvement policy 时，OMA 返回 typed blocker 并要求 target owner 声明 change-ref policy 或返回 blocker；旧 `external_agent/*` generic patch-ref fallback 不再生成 executable source patch work order。
 

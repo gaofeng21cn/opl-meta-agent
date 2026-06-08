@@ -23,19 +23,21 @@ test('opl-meta-agent stage plan covers research, build, eval, optimization, deli
     'agent-skeleton-build',
     'eval-suite-build',
     'baseline-run',
-    'external-agent-takeover',
+    'target-agent-takeover',
     'optimizer-iteration',
     'baseline-delivery',
     'trajectory-learning-intake',
     'online-learning',
   ]);
+  assert.equal(asObjects(stageControl.stages).some((stage) => stage.stage_id === 'external-agent-takeover'), false);
+  assert.doesNotMatch(JSON.stringify(stageControl), /external-agent-takeover|takeover-external-agent-test/);
   assert.deepEqual(
     asObjects(stageControl.stages).find((stage) => stage.stage_id === 'agent-skeleton-build')?.allowed_action_refs,
     ['build-agent-baseline'],
   );
   assert.deepEqual(
-    asObjects(stageControl.stages).find((stage) => stage.stage_id === 'external-agent-takeover')?.allowed_action_refs,
-    ['takeover-external-agent-test'],
+    asObjects(stageControl.stages).find((stage) => stage.stage_id === 'target-agent-takeover')?.allowed_action_refs,
+    ['takeover-target-agent-test'],
   );
   assert.deepEqual(
     asObjects(stageControl.stages).find((stage) => stage.stage_id === 'optimizer-iteration')?.allowed_action_refs,

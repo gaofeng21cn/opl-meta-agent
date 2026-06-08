@@ -1,4 +1,4 @@
-# Stage: external-agent-takeover
+# Stage: target-agent-takeover
 
 ## 操作策略
 

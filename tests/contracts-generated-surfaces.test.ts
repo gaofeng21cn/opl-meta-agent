@@ -343,9 +343,13 @@ test('OPL generated interfaces expose CLI, MCP, Skill, and product-entry descrip
   assert.equal(bundle.status, 'ready');
   assert.equal(asObjects(bundle.cli.descriptors).some((entry) => entry.action_id === 'build-agent-baseline'), true);
   assert.equal(
-    asObjects(bundle.mcp.descriptors).find((entry) => entry.name === 'opl_meta_agent_takeover_external_agent_test')
+    asObjects(bundle.mcp.descriptors).find((entry) => entry.name === 'opl_meta_agent_takeover_target_agent_test')
       ?.descriptor_only,
     true,
+  );
+  assert.equal(
+    asObjects(bundle.mcp.descriptors).some((entry) => entry.name === 'opl_meta_agent_takeover_external_agent_test'),
+    false,
   );
   assert.equal(
     asObjects(bundle.skill.descriptors).some((entry) =>
@@ -366,9 +370,14 @@ test('OPL generated interfaces expose CLI, MCP, Skill, and product-entry descrip
     true,
   );
   assert.equal(
-    asObjects(bundle.product_entry.descriptors).some((entry) => entry.action_key === 'takeover-external-agent-test'),
+    asObjects(bundle.product_entry.descriptors).some((entry) => entry.action_key === 'takeover-target-agent-test'),
     true,
   );
+  assert.equal(
+    asObjects(bundle.product_entry.descriptors).some((entry) => entry.action_key === 'takeover-external-agent-test'),
+    false,
+  );
+  assert.doesNotMatch(JSON.stringify(bundle), /takeover-external-agent-test|opl_meta_agent_takeover_external_agent_test/);
   assert.equal(
     asObjects(bundle.product_entry.descriptors).some((entry) => entry.action_key === 'improve-from-external-agent-lab-suite'),
     true,

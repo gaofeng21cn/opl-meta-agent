@@ -5,7 +5,7 @@
   "owner": "opl-meta-agent",
   "evidence_status": "closed_by_domain_owned_acceptance_receipt",
   "evidence_tail_status": "closed_by_domain_owned_acceptance_receipt",
-  "receipt_ref": "production-acceptance-receipt:opl-meta-agent/external-agent-takeover-improve-loop/2026-05-19",
+  "receipt_ref": "production-acceptance-receipt:opl-meta-agent/target-agent-takeover-improve-loop/2026-05-19",
   "doc_ref": "docs/status.md",
   "next_verification_command_refs": [
     "cmd:rtk npm test",
@@ -15,7 +15,7 @@
   ],
   "refs": {
     "acceptance_receipt_refs": [
-      "production-acceptance-receipt:opl-meta-agent/external-agent-takeover-improve-loop/2026-05-19"
+      "production-acceptance-receipt:opl-meta-agent/target-agent-takeover-improve-loop/2026-05-19"
     ],
     "doc_refs": [
       "docs/status.md",
@@ -74,11 +74,11 @@
       "can_close_replay_success_path": false
     }
   },
-  "role": "refs_only_external_agent_takeover_improve_loop_acceptance",
+  "role": "refs_only_target_agent_takeover_improve_loop_acceptance",
   "acceptance_scope": [
     "production_live_soak_not_claimed_by_conformance",
     "domain_ready_not_claimed_by_conformance",
-    "external_agent_takeover_improve_loop_acceptance",
+    "target_agent_takeover_improve_loop_acceptance",
     "real_target_agent_delivery_minimum_receipt_supported"
   ],
   "conformance_state": {
@@ -95,7 +95,7 @@
     "not_domain_ready_authority_source": true,
     "not_production_soak_authority_source": true
   },
-  "external_agent_acceptance_chain": {
+  "target_agent_acceptance_chain": {
     "chain_status": "receipt_chain_present",
     "intake_refs": [
       "agent/prompts/intent-intake.md",
@@ -106,8 +106,8 @@
     "test_handoff_refs": [
       "agent/prompts/eval-suite-build.md",
       "agent/stages/eval-suite-build.md",
-      "agent/prompts/external-agent-takeover.md",
-      "agent/stages/external-agent-takeover.md",
+      "agent/prompts/target-agent-takeover.md",
+      "agent/stages/target-agent-takeover.md",
       "scripts/takeover-agent.ts",
       "tests/takeover-loop.test.ts"
     ],
@@ -224,8 +224,8 @@
     ]
   },
   "acceptance_receipt": {
-    "receipt_class": "external_agent_takeover_improve_loop_acceptance_receipt",
-    "receipt_ref": "production-acceptance-receipt:opl-meta-agent/external-agent-takeover-improve-loop/2026-05-19",
+    "receipt_class": "target_agent_takeover_improve_loop_acceptance_receipt",
+    "receipt_ref": "production-acceptance-receipt:opl-meta-agent/target-agent-takeover-improve-loop/2026-05-19",
     "status": "accepted_with_gated_promotion",
     "source_refs": [
       "contracts/production_acceptance/meta-agent-production-acceptance.json",
@@ -237,7 +237,7 @@
       "tests/contracts-production-acceptance.test.ts"
     ],
     "accepted_evidence_tail": [
-      "external agent intake refs present",
+      "target agent intake refs present",
       "Agent Lab test handoff refs present",
       "proposal and materializer refs present",
       "review and audit receipt refs present",
@@ -249,7 +249,7 @@
   },
   "promotion_gate": {
     "promotion_status": "gated",
-    "promotion_gate_ref": "promotion-gate:opl-meta-agent/external-agent-takeover-improve-loop",
+    "promotion_gate_ref": "promotion-gate:opl-meta-agent/target-agent-takeover-improve-loop",
     "required_next_verification_command_refs": [
       "cmd:rtk npm test",
       "cmd:rtk node --test tests/contracts-generated-surfaces.test.ts tests/contracts-production-acceptance.test.ts tests/bootstrap-loop.test.ts tests/takeover-loop.test.ts tests/external-suite-developer-work-order.test.ts tests/external-suite-owner-receipt-behavior.test.ts tests/external-suite-reviewer-gates.test.ts",

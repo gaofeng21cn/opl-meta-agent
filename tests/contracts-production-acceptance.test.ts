@@ -20,7 +20,7 @@ test('production acceptance evidence closes conformance evidence tail through re
   assert.equal(acceptance.evidence_tail_status, 'closed_by_domain_owned_acceptance_receipt');
   assert.equal(
     acceptance.receipt_ref,
-    'production-acceptance-receipt:opl-meta-agent/external-agent-takeover-improve-loop/2026-05-19',
+    'production-acceptance-receipt:opl-meta-agent/target-agent-takeover-improve-loop/2026-05-19',
   );
   assert.equal(acceptance.doc_ref, 'docs/status.md');
   assert.ok(acceptance.next_verification_command_refs.includes('cmd:rtk npm test'));
@@ -147,30 +147,35 @@ test('production acceptance evidence closes conformance evidence tail through re
   ]);
   assertNoForbiddenAuthority(productionConsumptionBlocker, 'productionConsumptionBlocker');
   assert.equal(productionConsumptionBlocker.authority_boundary.can_claim_production_ready, false);
-  assert.equal(acceptance.role, 'refs_only_external_agent_takeover_improve_loop_acceptance');
+  assert.equal(acceptance.role, 'refs_only_target_agent_takeover_improve_loop_acceptance');
   assert.ok(acceptance.acceptance_scope.includes('production_live_soak_not_claimed_by_conformance'));
   assert.ok(acceptance.acceptance_scope.includes('domain_ready_not_claimed_by_conformance'));
   assert.equal(acceptance.conformance_state.structural_conformance, 'passed');
   assert.equal(acceptance.conformance_state.physical_source_morphology, 'passed');
   assert.equal(acceptance.conformance_state.not_domain_ready_authority_source, true);
   assert.equal(acceptance.conformance_state.not_production_soak_authority_source, true);
-  assert.equal(acceptance.external_agent_acceptance_chain.chain_status, 'receipt_chain_present');
-  assert.ok(acceptance.external_agent_acceptance_chain.intake_refs.length > 0);
-  assert.ok(acceptance.external_agent_acceptance_chain.test_handoff_refs.length > 0);
-  assert.ok(acceptance.external_agent_acceptance_chain.proposal_materializer_refs.length > 0);
-  assert.ok(acceptance.external_agent_acceptance_chain.review_audit_receipt_refs.length > 0);
+  assert.equal(Object.hasOwn(acceptance, 'external_agent_acceptance_chain'), false);
+  assert.doesNotMatch(
+    JSON.stringify(acceptance),
+    /external_agent_acceptance_chain|external_agent_takeover|external-agent-takeover|takeover-external-agent-test/,
+  );
+  assert.equal(acceptance.target_agent_acceptance_chain.chain_status, 'receipt_chain_present');
+  assert.ok(acceptance.target_agent_acceptance_chain.intake_refs.length > 0);
+  assert.ok(acceptance.target_agent_acceptance_chain.test_handoff_refs.length > 0);
+  assert.ok(acceptance.target_agent_acceptance_chain.proposal_materializer_refs.length > 0);
+  assert.ok(acceptance.target_agent_acceptance_chain.review_audit_receipt_refs.length > 0);
   assert.deepEqual(
-    acceptance.external_agent_acceptance_chain.new_agent_consumption_evidence_refs,
+    acceptance.target_agent_acceptance_chain.new_agent_consumption_evidence_refs,
     [newAgentConsumptionEvidenceRef],
   );
-  assert.deepEqual(acceptance.external_agent_acceptance_chain.active_typed_blocker_refs, []);
+  assert.deepEqual(acceptance.target_agent_acceptance_chain.active_typed_blocker_refs, []);
   assert.ok(
-    asStrings(acceptance.external_agent_acceptance_chain.historical_typed_blocker_refs)
+    asStrings(acceptance.target_agent_acceptance_chain.historical_typed_blocker_refs)
       .includes('typed_blocker_ref://opl-meta-agent/production-consumption/long-soak-pending'),
   );
   assert.equal(
     acceptance.acceptance_receipt.receipt_class,
-    'external_agent_takeover_improve_loop_acceptance_receipt',
+    'target_agent_takeover_improve_loop_acceptance_receipt',
   );
   assert.deepEqual(acceptance.purpose_first_owner_delta_gate.delegated_surface_owners, {
     agent_lab_runner_delegated_to: 'one-person-lab',
@@ -213,10 +218,10 @@ test('production acceptance evidence closes conformance evidence tail through re
 
   [
     ...asStrings(acceptance.conformance_state.conformance_refs),
-    ...asStrings(acceptance.external_agent_acceptance_chain.intake_refs),
-    ...asStrings(acceptance.external_agent_acceptance_chain.test_handoff_refs),
-    ...asStrings(acceptance.external_agent_acceptance_chain.proposal_materializer_refs),
-    ...asStrings(acceptance.external_agent_acceptance_chain.review_audit_receipt_refs),
+    ...asStrings(acceptance.target_agent_acceptance_chain.intake_refs),
+    ...asStrings(acceptance.target_agent_acceptance_chain.test_handoff_refs),
+    ...asStrings(acceptance.target_agent_acceptance_chain.proposal_materializer_refs),
+    ...asStrings(acceptance.target_agent_acceptance_chain.review_audit_receipt_refs),
     ...asStrings(acceptance.acceptance_receipt.source_refs),
     ...asStrings(acceptance.generated_agent_fixture_requirement.verified_by_refs),
     ...asStrings(newAgentConsumption.source_refs),

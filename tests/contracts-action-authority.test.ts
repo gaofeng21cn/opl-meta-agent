@@ -25,12 +25,17 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   assert.match(buildAgentBaselineAction.source_command.command, /^npm run build-agent-baseline --/);
   assert.match(buildAgentBaselineAction.supported_surfaces.cli.command, /^npm run build-agent-baseline --/);
   assert.match(buildAgentBaselineAction.supported_surfaces.product_entry.command, /^npm run build-agent-baseline --/);
-  const takeoverAction = actions.find((action) => action.action_id === 'takeover-external-agent-test');
+  const takeoverAction = actions.find((action) => action.action_id === 'takeover-target-agent-test');
   assert.ok(takeoverAction);
   assert.equal(takeoverAction.supported_surfaces.mcp.descriptor_only, true);
   assert.equal(takeoverAction.supported_surfaces.mcp.public_runtime, false);
   assert.equal(takeoverAction.authority_boundary.can_write_target_domain_truth, false);
   assert.equal(takeoverAction.authority_boundary.can_promote_default_agent_without_gate, false);
+  assert.equal(actions.some((action) => action.action_id === 'takeover-external-agent-test'), false);
+  assert.doesNotMatch(
+    JSON.stringify(actionCatalog),
+    /takeover-external-agent-test|opl_meta_agent_takeover_external_agent_test|opl-meta-agent\.takeover-external-agent-test/,
+  );
   const externalSuiteAction = actions.find(
     (action) => action.action_id === 'improve-from-external-agent-lab-suite',
   );

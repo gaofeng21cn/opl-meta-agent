@@ -96,7 +96,7 @@ export function parseTakeoverAgentArgs(argv: string[]): TakeoverArgs {
 function buildTakeoverSuite(targetAgent: TargetAgent, targetAgentDir: string): JsonObject {
   const stageNativeArtifactRefs = buildStageNativeArtifactAttemptRefs({
     domainId: targetAgent.domain_id,
-    stageId: 'external-agent-takeover',
+    stageId: 'target-agent-takeover',
     domainTruthOwner: 'opl-meta-agent',
     attemptId: 'testing-takeover',
   });

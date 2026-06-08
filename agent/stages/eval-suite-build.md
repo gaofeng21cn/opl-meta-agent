@@ -6,7 +6,7 @@
 
 ## Handoff
 
-向 `baseline-run`、`external-agent-takeover` 或 `optimizer-iteration` 交付：
+向 `baseline-run`、`target-agent-takeover` 或 `optimizer-iteration` 交付：
 
 - `agent_lab_task_manifest_refs`
 - `scorecard_refs`

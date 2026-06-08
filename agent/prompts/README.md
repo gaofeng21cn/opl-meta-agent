@@ -15,7 +15,7 @@ Machine boundary: 本文是人读支撑索引。机器 truth 继续归 `contract
 - `agent/prompts/agent-skeleton-build.md`
 - `agent/prompts/eval-suite-build.md`
 - `agent/prompts/baseline-run.md`
-- `agent/prompts/external-agent-takeover.md`
+- `agent/prompts/target-agent-takeover.md`
 - `agent/prompts/optimizer-iteration.md`
 - `agent/prompts/baseline-delivery.md`
 - `agent/prompts/online-learning.md`

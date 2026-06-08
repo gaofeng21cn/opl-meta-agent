@@ -129,7 +129,7 @@
     "detail_mode_required_for_full_refs": true,
     "safe_action_route_refs": [
       "safe-action:opl-meta-agent/build-agent-baseline",
-      "safe-action:opl-meta-agent/takeover-external-agent-test",
+      "safe-action:opl-meta-agent/takeover-target-agent-test",
       "safe-action:opl-meta-agent/improve-from-external-agent-lab-suite",
       "safe-action:opl-meta-agent/generate-mechanism-patch-proposal",
       "safe-action:opl-meta-agent/materialize-trajectory-learning-proposal"
