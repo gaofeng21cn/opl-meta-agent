@@ -269,8 +269,7 @@ test('script morphology stays limited to authority refs, materializers, and help
     'target_improvement_policy_generic_external_agent_patch_ref_fallback',
   ]);
   assert.deepEqual(asStrings(materializerScan.retired_materializer_tail_verification_refs), [
-    'docs/history/process/2026-06-06-oma-meta-agent-loop-facade-retirement-closeout.md',
-    'docs/history/process/2026-06-07-oma-stage-decomposition-pack-draft-barrel-retirement-closeout.md',
+    'docs/history/process/retired-surface-provenance.md',
     'tests/source-purity.test.ts',
     'tests/stage-decomposition-materializer.test.ts',
     'tests/takeover-loop.test.ts',
