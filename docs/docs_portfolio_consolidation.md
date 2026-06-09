@@ -68,7 +68,7 @@ Machine boundary: 本文是人读治理入口和 lifecycle role map。当前机�
 
 Dated coverage tranches and folded process history are compressed under [process history](./history/process/README.md), with no-resurrection details in [retired surface provenance](./history/process/retired-surface-provenance.md).
 
-The process history index is topic-level only: it records SSOT owners, compressed provenance groups, coverage snapshot, remaining evidence tails and next write scope. It must not grow back into dated closeout files, branch/worktree logs, proof transcripts, or coverage-ledger name lists.
+The process history index is topic-level only: it records SSOT owners, compressed provenance groups, coverage summary, remaining evidence tails and next write scope. It must not grow back into dated closeout files, branch/worktree logs, proof transcripts, or coverage-ledger name lists.
 
 Future foldback uses this routing:
 
