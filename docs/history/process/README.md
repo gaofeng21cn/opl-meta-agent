@@ -32,13 +32,41 @@ Machine boundary: 本目录只记录人读治理过程、覆盖 ledger、退役 
 | Script-to-pack hygiene | Detailed script/materializer classification SSOT is `docs/active/opl-private-implementation-migration-inventory.md` plus `runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy/script_to_pack_retirement_gates` and `tests/source-purity.test.ts`. |
 | Evidence-tail currentness | Registry/App consumption, production-consumption, patch-loop, independent reviewer and target-agent handoff evidence tails return to active plan, status, contracts, OPL read model and tests. Dated proof transcripts are not current truth. |
 
-## Coverage Snapshot
+## Coverage Summary
 
-2026-06-09 OPL Doc series tranche:
+This section keeps topic-level OPL Doc coverage only. It is not a dated closeout
+ledger, proof transcript, or completion claim for the parent six-repo goal.
 
-- Scope reviewed: root `README*`, `docs/*.md`, `docs/active/*.md`, `docs/references/*.md`, `docs/history/*.md`, `docs/history/process/*.md`, tracked `agent/{knowledge,prompts,quality_gates,skills,stages}/README.md`, package scripts and runtime authority surfaces that define docs truth.
-- SSOT decision: `docs/active/opl-meta-agent-ideal-state-gap-plan.md` remains the single Active Truth owner; `docs/active/opl-private-implementation-migration-inventory.md` owns script/source-purity detail; `docs/references/opl-meta-agent-ideal-state.md` owns north-star; this file only keeps compressed provenance.
-- Content-level consolidation: prior script-to-pack, README/docs coverage, external-suite/work-order audit, target-agent takeover identifier/field retirement and process-history compression entries were folded into the provenance groups above. Durable no-resurrection rules remain in `retired-surface-provenance.md`; current rules remain in owner docs and machine surfaces.
-- Retired / guarded: no source, contract, test, workflow, package or CLI surface changed in this tranche. Guarded retired surfaces remain target-agent old fields, external-agent takeover identifiers, `takeover:test --fixture`, implicit fixture graph, direct graph compatibility, generic `external_agent/*` patch-ref fallback, compatibility facades and repo-owned generic runtime/wrapper/App/registry/Agent Lab/promotion surfaces.
-- Remaining OMA scope under the parent OPL series goal: registry/App live consumption, additional target cohorts, real source patch-loop, independent reviewer direct evidence, standard target-agent handoff convergence and actual script-to-pack source reductions remain open under the active gap plan.
-- Next write scope: after fresh intake, prefer evidence-tail or script-to-pack work that changes active plan / private inventory / contracts / tests only when live machine truth changes. Do not reopen `external-suite` / external-work-order as stale vocabulary without replacement machine truth.
+- Previously covered portfolio scope: root `README*`, `docs/*.md`,
+  `docs/active/*.md`, `docs/references/*.md`, `docs/history/*.md`,
+  `docs/history/process/*.md`, tracked
+  `agent/{knowledge,prompts,quality_gates,skills,stages}/README.md`, package
+  scripts and runtime authority surfaces that define docs truth.
+- Current SSOT decision: `docs/active/opl-meta-agent-ideal-state-gap-plan.md`
+  remains the single Active Truth owner; `docs/active/opl-private-implementation-migration-inventory.md`
+  owns script/source-purity detail; `docs/references/opl-meta-agent-ideal-state.md`
+  owns north-star; this file only keeps compressed provenance.
+- Content-level consolidation: script-to-pack, README/docs coverage,
+  external-suite/work-order audit, target-agent takeover identifier/field
+  retirement and process-history compression entries are folded into the
+  provenance groups above. Durable no-resurrection rules remain in
+  `retired-surface-provenance.md`; current rules remain in owner docs and
+  machine surfaces.
+- Current recheck scope: process-history and script-to-pack SSOT wording was
+  rechecked against the active plan, private inventory, authority function
+  policy, source-purity tests, package scripts and tracked `agent/*/README.md`
+  support indexes. No source, contract, test, workflow, package or CLI surface
+  changed in this tranche.
+- Retired / guarded: target-agent old fields, external-agent takeover
+  identifiers, `takeover:test --fixture`, implicit fixture graph, direct graph
+  compatibility, generic `external_agent/*` patch-ref fallback, compatibility
+  facades and repo-owned generic runtime/wrapper/App/registry/Agent
+  Lab/promotion surfaces remain retired or guarded.
+- Remaining OMA scope under the parent OPL series goal: registry/App live
+  consumption, additional target cohorts, real source patch-loop, independent
+  reviewer direct evidence, standard target-agent handoff convergence and actual
+  script-to-pack source reductions remain open under the active gap plan.
+- Next write scope: after fresh intake, prefer evidence-tail or script-to-pack
+  work that changes active plan / private inventory / contracts / tests only
+  when live machine truth changes. Do not reopen `external-suite` /
+  external-work-order as stale vocabulary without replacement machine truth.
