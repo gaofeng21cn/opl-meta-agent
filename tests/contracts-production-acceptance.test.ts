@@ -57,6 +57,21 @@ test('production acceptance evidence closes conformance evidence tail through re
   assert.deepEqual(asStrings(stageReplayBlocker.typed_blocker_refs), [
     'oma-typed-blocker:stage-replay-human-gate:stage-decomposition:oma_baseline_owner_review/baseline-owner-review-receipt-pending',
   ]);
+  assert.equal(
+    stageReplayBlocker.owner_chain_closure_ref,
+    'contracts/target_agent_owner_chain_evidence.json#/stage_replay_human_gate_blocker_closure',
+  );
+  assertRepoRefExists((stageReplayBlocker.owner_chain_closure_ref as string).split('#')[0]);
+  assert.equal(
+    stageReplayBlocker.stage_replay_missing_receipt_ref,
+    'opl://stage-replay-missing-receipt/opl-meta-agent%2Fstage-decomposition%2Fhuman_gate%3Aoma_baseline_owner_review',
+  );
+  assert.equal(stageReplayBlocker.closure_status, 'closed_as_typed_blocker_not_success');
+  assert.equal(stageReplayBlocker.success_receipt_count, 0);
+  assert.deepEqual(asStrings(stageReplayBlocker.owner_receipt_refs), []);
+  assert.deepEqual(asStrings(stageReplayBlocker.no_regression_refs), [
+    'no-regression-ref:opl-meta-agent/stage-replay-human-gate/oma_baseline_owner_review/no-target-repo-mutation',
+  ]);
   assert.equal(stageReplayBlocker.success_claimed, false);
   assert.equal(stageReplayBlocker.human_gate_approval_claimed, false);
   assert.equal(stageReplayBlocker.domain_ready_claimed, false);

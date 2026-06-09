@@ -12,7 +12,8 @@
     "action_catalog_ref": "contracts/action_catalog.json",
     "stage_run_kernel_profile_ref": "contracts/stage_run_kernel_profile.json",
     "stage_run_canary_evidence_ref": "contracts/stage_run_canary_evidence.json",
-    "real_target_agent_scaleout_evidence_ref": "contracts/real_target_agent_scaleout_evidence.json"
+    "real_target_agent_scaleout_evidence_ref": "contracts/real_target_agent_scaleout_evidence.json",
+    "production_acceptance_ref": "contracts/production_acceptance/meta-agent-production-acceptance.json"
   },
   "human_doc_refs": [
     "docs/status.md",
@@ -244,6 +245,52 @@
       "target_artifact_authority_claim",
       "oma_owner_receipt_body_for_target"
     ]
+  },
+  "stage_replay_human_gate_blocker_closure": {
+    "surface_kind": "opl_meta_agent_stage_replay_human_gate_owner_chain_closure",
+    "owner": "opl-meta-agent",
+    "closure_kind": "human_gate_missing_receipt_typed_blocker_closure",
+    "closure_status": "blocked_by_domain_owned_typed_blocker_ref",
+    "target_identity": {
+      "domain_id": "opl-meta-agent",
+      "stage_id": "stage-decomposition",
+      "missing_ref": "human_gate:oma_baseline_owner_review"
+    },
+    "missing_ref_kind": "human_gate_ref",
+    "stage_replay_missing_receipt_ref": "opl://stage-replay-missing-receipt/opl-meta-agent%2Fstage-decomposition%2Fhuman_gate%3Aoma_baseline_owner_review",
+    "production_acceptance_summary_ref": "contracts/production_acceptance/meta-agent-production-acceptance.json#/stage_replay_human_gate_blocker_summary",
+    "accepted_ref_shapes": [
+      "target_agent_typed_blocker_ref",
+      "no_regression_ref"
+    ],
+    "typed_blocker_refs": [
+      "oma-typed-blocker:stage-replay-human-gate:stage-decomposition:oma_baseline_owner_review/baseline-owner-review-receipt-pending"
+    ],
+    "no_regression_refs": [
+      "no-regression-ref:opl-meta-agent/stage-replay-human-gate/oma_baseline_owner_review/no-target-repo-mutation"
+    ],
+    "success_receipt_count": 0,
+    "owner_receipt_refs": [],
+    "blocker_reason": "baseline owner review receipt is pending; OMA can only return a typed blocker until an owner or human gate receipt exists",
+    "blocker_closure_status": "closed_as_typed_blocker_not_success",
+    "success_claimed": false,
+    "human_gate_approval_claimed": false,
+    "target_agent_ready_claimed": false,
+    "domain_ready_claimed": false,
+    "production_ready_claimed": false,
+    "authority_boundary": {
+      "refs_only": true,
+      "can_requery_human": false,
+      "can_write_owner_receipt": false,
+      "can_write_target_domain_truth": false,
+      "can_write_target_domain_memory_body": false,
+      "can_mutate_target_domain_artifact_body": false,
+      "can_authorize_target_domain_quality_or_export": false,
+      "can_claim_target_domain_ready": false,
+      "can_claim_production_ready": false,
+      "can_promote_default_agent_without_gate": false,
+      "can_close_replay_success_path": false
+    }
   },
   "false_authority_flags": {
     "target_domain_ready_claimed": false,

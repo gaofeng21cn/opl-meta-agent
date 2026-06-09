@@ -163,6 +163,7 @@
     "purpose": "Exercise the OMA agent-building StageRun path from user intent to owner receipt or typed blocker without turning tool refs into a hard-coded workflow.",
     "controlled_canary_evidence_ref": "contracts/stage_run_canary_evidence.json",
     "target_agent_owner_chain_evidence_ref": "contracts/target_agent_owner_chain_evidence.json",
+    "stage_replay_human_gate_blocker_closure_ref": "contracts/target_agent_owner_chain_evidence.json#/stage_replay_human_gate_blocker_closure",
     "stage_sequence": [
       "intent-intake",
       "stage-decomposition-candidates",
@@ -238,6 +239,14 @@
         "default_agent_promotion",
         "owner_receipt_body_materialized_by_opl"
       ],
+      "human_gate_missing_receipt_closure_policy": {
+        "missing_ref": "human_gate:oma_baseline_owner_review",
+        "legal_closure_ref": "contracts/target_agent_owner_chain_evidence.json#/stage_replay_human_gate_blocker_closure",
+        "legal_closure_kind": "typed_blocker_ref_only",
+        "success_receipt_count_must_equal": 0,
+        "can_claim_human_approval": false,
+        "can_claim_replay_success": false
+      },
       "evidence_scope_must_equal": "controlled_fixture_not_live_domain_progress",
       "authority_boundary": {
         "allowed_claims_can_authorize_closeout": false,

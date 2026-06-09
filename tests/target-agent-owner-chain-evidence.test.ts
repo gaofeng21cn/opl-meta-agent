@@ -34,11 +34,16 @@ test('target-agent owner-chain evidence accepts live-progress refs without targe
   const profile = readJson('contracts/stage_run_kernel_profile.json');
   const actionCatalog = readJson('contracts/action_catalog.json');
   const evidence = readJson('contracts/target_agent_owner_chain_evidence.json');
+  const productionAcceptance = readJson('contracts/production_acceptance/meta-agent-production-acceptance.json');
   const canary = profile.agent_building_stage_run_canary as JsonObject;
   const actionIds = new Set(asObjects(actionCatalog.actions).map((action) => action.action_id));
   const readouts = asObjects(evidence.opl_hosted_action_path_readout);
   const readoutByAction = new Map(readouts.map((entry) => [entry.action_id, entry]));
   const refPolicy = evidence.accepted_ref_shape_policy as JsonObject;
+  const humanGateClosure = evidence.stage_replay_human_gate_blocker_closure as JsonObject;
+  const humanGateTarget = humanGateClosure.target_identity as JsonObject;
+  const humanGateBoundary = humanGateClosure.authority_boundary as JsonObject;
+  const productionHumanGateSummary = productionAcceptance.stage_replay_human_gate_blocker_summary as JsonObject;
 
   assert.equal(evidence.surface_kind, 'opl_meta_agent_target_agent_owner_chain_evidence');
   assert.equal(evidence.version, 'target-agent-owner-chain-evidence.v1');
@@ -61,6 +66,7 @@ test('target-agent owner-chain evidence accepts live-progress refs without targe
   assertRepoRefExists(evidence.source_refs.stage_run_kernel_profile_ref as string);
   assertRepoRefExists(evidence.source_refs.stage_run_canary_evidence_ref as string);
   assertRepoRefExists(evidence.source_refs.real_target_agent_scaleout_evidence_ref as string);
+  assertRepoRefExists(evidence.source_refs.production_acceptance_ref as string);
 
   [
     'build-agent-baseline',
@@ -132,5 +138,60 @@ test('target-agent owner-chain evidence accepts live-progress refs without targe
     'work_order_execution_receipt_ref',
     'no_regression_ref',
   ]);
+
+  assert.equal(
+    canary.stage_replay_human_gate_blocker_closure_ref,
+    'contracts/target_agent_owner_chain_evidence.json#/stage_replay_human_gate_blocker_closure',
+  );
+  assert.equal(
+    humanGateClosure.surface_kind,
+    'opl_meta_agent_stage_replay_human_gate_owner_chain_closure',
+  );
+  assert.equal(humanGateClosure.closure_kind, 'human_gate_missing_receipt_typed_blocker_closure');
+  assert.equal(humanGateClosure.closure_status, 'blocked_by_domain_owned_typed_blocker_ref');
+  assert.equal(humanGateTarget.domain_id, 'opl-meta-agent');
+  assert.equal(humanGateTarget.stage_id, 'stage-decomposition');
+  assert.equal(humanGateTarget.missing_ref, 'human_gate:oma_baseline_owner_review');
+  assert.equal(humanGateClosure.missing_ref_kind, 'human_gate_ref');
+  assert.equal(
+    humanGateClosure.stage_replay_missing_receipt_ref,
+    'opl://stage-replay-missing-receipt/opl-meta-agent%2Fstage-decomposition%2Fhuman_gate%3Aoma_baseline_owner_review',
+  );
+  assert.equal(
+    humanGateClosure.production_acceptance_summary_ref,
+    'contracts/production_acceptance/meta-agent-production-acceptance.json#/stage_replay_human_gate_blocker_summary',
+  );
+  assertRepoRefExists((humanGateClosure.production_acceptance_summary_ref as string).split('#')[0]);
+  assert.deepEqual(asStrings(humanGateClosure.accepted_ref_shapes), [
+    'target_agent_typed_blocker_ref',
+    'no_regression_ref',
+  ]);
+  assert.deepEqual(
+    asStrings(humanGateClosure.typed_blocker_refs),
+    asStrings(productionHumanGateSummary.typed_blocker_refs),
+  );
+  assert.deepEqual(asStrings(humanGateClosure.no_regression_refs), [
+    'no-regression-ref:opl-meta-agent/stage-replay-human-gate/oma_baseline_owner_review/no-target-repo-mutation',
+  ]);
+  assert.equal(humanGateClosure.success_receipt_count, 0);
+  assert.deepEqual(asStrings(humanGateClosure.owner_receipt_refs), []);
+  assert.equal(humanGateClosure.blocker_reason, productionHumanGateSummary.blocker_reason);
+  assert.equal(humanGateClosure.blocker_closure_status, 'closed_as_typed_blocker_not_success');
+  assert.equal(humanGateClosure.success_claimed, false);
+  assert.equal(humanGateClosure.human_gate_approval_claimed, false);
+  assert.equal(humanGateClosure.target_agent_ready_claimed, false);
+  assert.equal(humanGateClosure.domain_ready_claimed, false);
+  assert.equal(humanGateClosure.production_ready_claimed, false);
+  assert.equal(humanGateBoundary.refs_only, true);
+  assert.equal(humanGateBoundary.can_requery_human, false);
+  assert.equal(humanGateBoundary.can_write_owner_receipt, false);
+  assert.equal(humanGateBoundary.can_write_target_domain_truth, false);
+  assert.equal(humanGateBoundary.can_write_target_domain_memory_body, false);
+  assert.equal(humanGateBoundary.can_mutate_target_domain_artifact_body, false);
+  assert.equal(humanGateBoundary.can_authorize_target_domain_quality_or_export, false);
+  assert.equal(humanGateBoundary.can_claim_target_domain_ready, false);
+  assert.equal(humanGateBoundary.can_claim_production_ready, false);
+  assert.equal(humanGateBoundary.can_promote_default_agent_without_gate, false);
+  assert.equal(humanGateBoundary.can_close_replay_success_path, false);
   assertFalseAuthorityBoundary(evidence.authority_boundary as JsonObject, 'targetAgentOwnerChainEvidence');
 });
