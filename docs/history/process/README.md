@@ -31,6 +31,7 @@ Machine boundary: 本目录只记录人读治理过程、覆盖 ledger、退役 
 | External-suite / external-work-order vocabulary | `external-suite` and external work-order remain active Agent Lab external-suite and OPL work-order delegation semantics. They are not stale takeover aliases and should not be retired without replacement machine truth. |
 | Script-to-pack hygiene | Detailed script/materializer classification SSOT is `docs/active/opl-private-implementation-migration-inventory.md` plus `runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy/script_to_pack_retirement_gates` and `tests/source-purity.test.ts`. |
 | Evidence-tail currentness | Registry/App consumption, production-consumption, patch-loop, independent reviewer and target-agent handoff evidence tails return to active plan, status, contracts, OPL read model and tests. Dated proof transcripts are not current truth. |
+| Active decision compression | The old decisions page carried a long incremental decision ledger for generated surfaces, developer work orders, typed closeouts, stage-native artifacts, State Index, StageRun, executor policy, Progress-First and clean-room intake. It is now folded into theme-level durable decisions in `docs/decisions.md`; detailed current mechanics remain in architecture, invariants, active plan, private inventory and machine contracts. |
 
 ## Coverage Summary
 
@@ -48,8 +49,9 @@ ledger, proof transcript, or completion claim for the parent six-repo goal.
   owns north-star; this file only keeps compressed provenance.
 - Content-level consolidation: script-to-pack, README/docs coverage,
   external-suite/work-order audit, target-agent takeover identifier/field
-  retirement and process-history compression entries are folded into the
-  provenance groups above. Durable no-resurrection rules remain in
+  retirement, active decision compression and process-history compression
+  entries are folded into the provenance groups above. Durable no-resurrection
+  rules remain in
   `retired-surface-provenance.md`; current rules remain in owner docs and
   machine surfaces.
 - Current recheck scope: all OMA human docs were rechecked against the active
