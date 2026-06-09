@@ -66,4 +66,17 @@ Machine boundary: 本文是人读治理入口和 lifecycle role map。当前机�
 
 ## Archived Coverage
 
-Dated coverage tranches and folded process history are compressed under [process history](./history/process/README.md). This governance file keeps lifecycle roles, current inventory groups, rules and reopening conditions; it does not duplicate ledger names, dated closeouts or coverage history.
+Dated coverage tranches and folded process history are compressed under [process history](./history/process/README.md), with no-resurrection details in [retired surface provenance](./history/process/retired-surface-provenance.md).
+
+The process history index is topic-level only: it records SSOT owners, compressed provenance groups, coverage snapshot, remaining evidence tails and next write scope. It must not grow back into dated closeout files, branch/worktree logs, proof transcripts, or coverage-ledger name lists.
+
+Future foldback uses this routing:
+
+| Future evidence | Owner |
+| --- | --- |
+| Durable OMA completion, gap, evidence tail or next prompt change | Active gap plan, status, private inventory, contracts, source or tests |
+| Script-to-pack / source-purity details | Private inventory, `runtime/authority_functions/**`, source-purity tests |
+| Docs lifecycle tranche closeout | `docs/history/process/README.md` as a compressed theme row |
+| Retired field/action/alias/facade no-resurrection | `retired-surface-provenance.md` plus focused machine guards |
+
+This governance file keeps lifecycle roles, current inventory groups, rules and reopening conditions; it does not duplicate ledger names, dated closeouts or coverage history.
