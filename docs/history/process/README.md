@@ -26,7 +26,7 @@ Machine boundary: 本目录只记录人读治理过程、覆盖 ledger、退役 
 
 | Provenance group | Current read |
 | --- | --- |
-| Docs lifecycle and coverage | Root `README*`, all `docs/**/*.md`, and tracked `agent/*/README.md` have one clear role each. Future coverage records stay topic-level here; machine truth remains in contracts/source/tests. |
+| Docs lifecycle and coverage | Root `README*`, every tracked `docs/**/*.md`, and tracked `agent/*/README.md` were rechecked as the complete OMA human-doc portfolio. Each file keeps one role under `docs/docs_portfolio_consolidation.md`; future coverage records stay topic-level here, and machine truth remains in contracts/source/tests. |
 | Target-agent field / takeover retirement | Old `external_agent_allowed`, `external_opl_compatible_agents_allowed`, `external-agent-takeover`, `takeover:test --fixture`, implicit fixture graph and field-only closeout files are folded into `retired-surface-provenance.md` and machine no-resurrection tests. |
 | External-suite / external-work-order vocabulary | `external-suite` and external work-order remain active Agent Lab external-suite and OPL work-order delegation semantics. They are not stale takeover aliases and should not be retired without replacement machine truth. |
 | Script-to-pack hygiene | Detailed script/materializer classification SSOT is `docs/active/opl-private-implementation-migration-inventory.md` plus `runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy/script_to_pack_retirement_gates` and `tests/source-purity.test.ts`. |
@@ -37,11 +37,11 @@ Machine boundary: 本目录只记录人读治理过程、覆盖 ledger、退役 
 This section keeps topic-level OPL Doc coverage only. It is not a dated closeout
 ledger, proof transcript, or completion claim for the parent six-repo goal.
 
-- Previously covered portfolio scope: root `README*`, `docs/*.md`,
+- Current portfolio scope: root `README*`, `docs/*.md`,
   `docs/active/*.md`, `docs/references/*.md`, `docs/history/*.md`,
-  `docs/history/process/*.md`, tracked
-  `agent/{knowledge,prompts,quality_gates,skills,stages}/README.md`, package
-  scripts and runtime authority surfaces that define docs truth.
+  `docs/history/process/*.md`, and tracked
+  `agent/{knowledge,prompts,quality_gates,skills,stages}/README.md`.
+  This is the complete tracked OMA human-doc inventory for this tranche.
 - Current SSOT decision: `docs/active/opl-meta-agent-ideal-state-gap-plan.md`
   remains the single Active Truth owner; `docs/active/opl-private-implementation-migration-inventory.md`
   owns script/source-purity detail; `docs/references/opl-meta-agent-ideal-state.md`
@@ -52,11 +52,11 @@ ledger, proof transcript, or completion claim for the parent six-repo goal.
   provenance groups above. Durable no-resurrection rules remain in
   `retired-surface-provenance.md`; current rules remain in owner docs and
   machine surfaces.
-- Current recheck scope: process-history and script-to-pack SSOT wording was
-  rechecked against the active plan, private inventory, authority function
-  policy, source-purity tests, package scripts and tracked `agent/*/README.md`
-  support indexes. No source, contract, test, workflow, package or CLI surface
-  changed in this tranche.
+- Current recheck scope: all OMA human docs were rechecked against the active
+  plan, private inventory, docs lifecycle map, ideal-state reference, core docs,
+  package scripts, pack compiler input, authority function policy, source-purity
+  tests and tracked `agent/*/README.md` support indexes. No source, contract,
+  test, workflow, package or CLI surface changed in this tranche.
 - Retired / guarded: target-agent old fields, external-agent takeover
   identifiers, `takeover:test --fixture`, implicit fixture graph, direct graph
   compatibility, generic `external_agent/*` patch-ref fallback, compatibility
