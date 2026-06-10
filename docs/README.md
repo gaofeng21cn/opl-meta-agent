@@ -18,6 +18,7 @@ Machine boundary: 本文是人读文档入口。机器真相继续归 `contracts
 | 仍有效的设计决策 | [决策记录](./decisions.md) |
 | 目标态 | [opl-meta-agent 理想目标态](./references/opl-meta-agent-ideal-state.md) |
 | 当前差距与完善顺序 | [opl-meta-agent 理想目标态差距与完善计划](./active/opl-meta-agent-ideal-state-gap-plan.md) |
+| OPL Foundry Agent OS target delta | [OMA Foundry Agent OS 目标差异页](./active/foundry-agent-os-target-delta.md) |
 | 私有实现迁移台账 | [opl-meta-agent 私有实现与 OPL 迁移台账](./active/opl-private-implementation-migration-inventory.md) |
 | 文档生命周期与唯一职责 | [文档组合治理](./docs_portfolio_consolidation.md) |
 | 历史过程与 provenance | [历史索引](./history/README.md) |
@@ -27,6 +28,8 @@ Machine boundary: 本文是人读文档入口。机器真相继续归 `contracts
 `opl-meta-agent` 是 OPL-compatible Foundry Agent，用于开发新的 OPL-compatible 高价值知识交付智能体。它不是 OPL Framework 内置模块，也不是 MAS/MAG/RCA 这类当前 active domain truth owner。
 
 OPL Framework 持有通用 runtime、Agent Lab、queue、stage attempt ledger、provider receipt、observability、generated interface bundle、work-order execute primitive、absorb/cleanup 和 promotion gate。`opl-meta-agent` 只持有 agent-building semantics、目标 agent handoff 消费、developer work order / mechanism proposal / typed blocker materialization，以及最小 authority refs。
+
+[OMA Foundry Agent OS 目标差异页](./active/foundry-agent-os-target-delta.md) 只维护本仓对 OPL family `foundry_agent_os_standard` 的 target delta：哪些 generic execution / Agent Lab / generated-surface / work-order primitive 上收到 OPL，哪些 agent-building authority 留在 OMA kernel，以及默认读根如何回到 `current_owner_delta`。它不声明 target-agent ready、App live ready、human approval 或 default promotion。
 
 MAS、MAG、RCA 等目标 agent 只应作为 target-agent refs、owner routes、fixtures、receipt refs 或 provenance 出现在本仓文档中；不能成为 OMA 顶层设计中心，也不能让 OMA 写 target-domain truth、memory body、artifact body、quality/export verdict 或 owner receipt body。
 

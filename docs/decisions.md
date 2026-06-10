@@ -11,6 +11,12 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 
 ## 当前有效决策
 
+### OMA 接入 OPL Family Foundry Agent OS target pattern
+
+- 决策：OMA 采用 family-level `OPL Agent OS + Declarative Agent-Building Pack + Agent-Building Authority Kernel + Improvement Capability Registry` 目标形态，target delta 维护在 [`docs/active/foundry-agent-os-target-delta.md`](./active/foundry-agent-os-target-delta.md)。
+- 理由：MAS/MAG/RCA/OMA 应共享同一 Agent OS pattern，避免 OMA 复制 Agent Lab、work-order runner、generated interface、promotion shell、App/workbench 或 capability registry；agent-building semantics、candidate package、developer work order、mechanism proposal 和 route-back evidence 仍由 OMA kernel 持有。
+- 影响：默认读根必须是 `current_owner_delta`；Capability Registry 只能是 Atlas/Pack/Stagecraft 的 catalog / ABI / use-policy，不是 Agent Lab runner、promotion gate 或 target owner authority；OPL/Agent Lab/Vault/Console/Runway/Pack 不能写 target truth、artifact body、memory body、quality/export verdict、owner receipt body 或 default promotion authority。该决策不声明 target-agent ready、App live ready、human approval、default promotion 或 production-ready。
+
 ### OMA 是独立 Foundry Agent，不是 OPL Framework 内置模块
 
 - 决策：`opl-meta-agent` 采用 OPL standard domain-agent scaffold，长期形态是 `Declarative Agent-Building Pack + OPL generated/hosted surfaces + minimal agent-building authority functions`。

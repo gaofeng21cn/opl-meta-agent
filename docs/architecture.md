@@ -16,6 +16,8 @@ Machine boundary: 本文是人读架构说明。机器真相继续归 `contracts
 - `OPL Framework` owns：generic runtime、Agent Lab、standard scaffold、queue、attempt ledger、provider receipt、observability projection、optimizer/RL transition refs、stage executor policy read model、stage executor policy gate、work order execution / absorb / cleanup 和 promotion gates。
 - target domain agent owns：domain truth、quality verdict、artifact authority、memory body、owner receipt，并负责提供 Agent Lab / OMA 可消费的标准 descriptor、handoff、owner-route、owner closeout hook、receipt、verification 和 no-forbidden-write refs。
 
+OPL family `Foundry Agent OS` target delta 当前由 [OMA Foundry Agent OS 目标差异页](./active/foundry-agent-os-target-delta.md) 维护。架构读法是：`OPL Agent OS + Declarative Agent-Building Pack + Agent-Building Authority Kernel + Improvement Capability Registry`。Capability Registry 由 OPL `Atlas + Pack + Stagecraft` 承载 catalog / ABI / use policy；OMA 只声明 agent-building capability refs、mechanism candidate policy 和 script-to-pack retirement gates。默认 reader 必须回到 `current_owner_delta`，OPL generated surface、Agent Lab、Vault、Console、Runway、Pack 或 Capability Registry 均不能写 target truth、target artifact body、target memory body、target quality/export verdict、target owner receipt body 或 default promotion authority。
+
 ## Stage Executor Policy Boundary
 
 Codex CLI 仍是 OMA 每个 stage 的 first-class default executor。`selected_executor` 保持 `codex_cli`；stage-level executor policy candidate 不等于 executor 切换，也不等于质量等价声明。
