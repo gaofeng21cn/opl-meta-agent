@@ -9,6 +9,8 @@ Machine boundary: 本文是人读 target delta。机器真相继续归 `contract
 
 本文只回答 OMA 在 OPL family `Foundry Agent OS` 目标形态下“哪些上收到 OPL，哪些保留为 OMA authority kernel”。当前完成口径、证据门和执行顺序仍回到 [opl-meta-agent 理想目标态差距与完善计划](./opl-meta-agent-ideal-state-gap-plan.md)；script-to-pack、default-caller tail 和私有实现退役门回到 [opl-meta-agent 私有实现与 OPL 迁移台账](./opl-private-implementation-migration-inventory.md)。
 
+机器落点是 `contracts/foundry-agent-os-domain-kernel-manifest.json`。该 manifest 固定 retained Agent-Building Authority Kernel、OPL upcollect surfaces、`current_owner_delta` 默认读根、domain signer surfaces、target-agent forbidden authority 和 false-authority flags；本文只做人读解释，不作为第二机器真相。
+
 目标形态固定为：
 
 ```text

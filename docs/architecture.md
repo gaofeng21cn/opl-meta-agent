@@ -18,6 +18,8 @@ Machine boundary: 本文是人读架构说明。机器真相继续归 `contracts
 
 OPL family `Foundry Agent OS` target delta 当前由 [OMA Foundry Agent OS 目标差异页](./active/foundry-agent-os-target-delta.md) 维护。架构读法是：`OPL Agent OS + Declarative Agent-Building Pack + Agent-Building Authority Kernel + Improvement Capability Registry`。Capability Registry 由 OPL `Atlas + Pack + Stagecraft` 承载 catalog / ABI / use policy；OMA 只声明 agent-building capability refs、mechanism candidate policy 和 script-to-pack retirement gates。默认 reader 必须回到 `current_owner_delta`，OPL generated surface、Agent Lab、Vault、Console、Runway、Pack 或 Capability Registry 均不能写 target truth、target artifact body、target memory body、target quality/export verdict、target owner receipt body 或 default promotion authority。
 
+`contracts/foundry-agent-os-domain-kernel-manifest.json` 是这条 owner split 的机器合同入口。它把 agent-building semantics、candidate package materialization policy、developer work-order materialization、mechanism proposal、target-agent no-forbidden-write proof、route-back evidence、owner receipt 和 typed blocker 固定为 OMA kernel，把 Agent Lab runtime、suite execution、generated interface bundle、work-order execute/absorb/cleanup、target owner closeout hook invocation、projection、Vault lineage 和 capability ABI 固定为 OPL upcollect surface；架构与测试均不得从 Agent Lab suite pass 或 generated interface readiness 推导 target-agent readiness。
+
 ## Stage Executor Policy Boundary
 
 Codex CLI 仍是 OMA 每个 stage 的 first-class default executor。`selected_executor` 保持 `codex_cli`；stage-level executor policy candidate 不等于 executor 切换，也不等于质量等价声明。
