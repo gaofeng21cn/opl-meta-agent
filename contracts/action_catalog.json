@@ -17,7 +17,8 @@
     "app_workbench_projection_ref": "contracts/app_workbench_projection.json",
     "real_target_agent_scaleout_evidence_ref": "contracts/real_target_agent_scaleout_evidence.json",
     "target_agent_owner_chain_evidence_ref": "contracts/target_agent_owner_chain_evidence.json",
-    "trajectory_learning_contract_ref": "contracts/trajectory_learning_contract.json"
+    "trajectory_learning_contract_ref": "contracts/trajectory_learning_contract.json",
+    "live_stage_run_progress_evidence_ref": "contracts/live_stage_run_progress_evidence.json"
   },
   "actions": [
     {

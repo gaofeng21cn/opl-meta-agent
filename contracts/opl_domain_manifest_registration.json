@@ -21,7 +21,8 @@
     "owner_receipt_contract_ref": "contracts/owner_receipt_contract.json",
     "app_workbench_projection_ref": "contracts/app_workbench_projection.json",
     "scaleout_evidence_contract_ref": "contracts/real_target_agent_scaleout_evidence.json",
-    "trajectory_learning_contract_ref": "contracts/trajectory_learning_contract.json"
+    "trajectory_learning_contract_ref": "contracts/trajectory_learning_contract.json",
+    "live_stage_run_progress_evidence_ref": "contracts/live_stage_run_progress_evidence.json"
   },
   "human_doc_refs": [
     "docs/status.md",
@@ -43,7 +44,8 @@
     "generated_surface_handoff_ref",
     "app_workbench_projection_ref",
     "scaleout_evidence_contract_ref",
-    "trajectory_learning_contract_ref"
+    "trajectory_learning_contract_ref",
+    "live_stage_run_progress_evidence_ref"
   ],
   "discovery_receipt": {
     "surface_kind": "opl_domain_manifest_discovery_receipt",
@@ -59,7 +61,8 @@
       "contracts/generated_surface_handoff.json",
       "contracts/app_workbench_projection.json",
       "contracts/real_target_agent_scaleout_evidence.json",
-      "contracts/trajectory_learning_contract.json"
+      "contracts/trajectory_learning_contract.json",
+      "contracts/live_stage_run_progress_evidence.json"
     ],
     "safe_action_route_refs": [
       "safe-action:opl-meta-agent/build-agent-baseline",

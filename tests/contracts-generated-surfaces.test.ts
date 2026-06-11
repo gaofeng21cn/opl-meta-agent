@@ -35,6 +35,7 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
   const generatedSurfaceHandoff = readJson('contracts/generated_surface_handoff.json');
   const actionCatalog = readJson('contracts/action_catalog.json');
   const audit = readJson('contracts/functional_privatization_audit.json');
+  const liveProgressEvidence = readJson('contracts/live_stage_run_progress_evidence.json');
 
   assert.equal(registration.surface_kind, 'opl_domain_manifest_registration');
   assert.equal(registration.registry_owner, 'one-person-lab');
@@ -48,6 +49,12 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
     .filter(([key]) => key.endsWith('_ref'))
     .map(([, value]) => value as string)
     .forEach(assertRepoRefExists);
+  assert.equal(
+    registration.domain_manifest.live_stage_run_progress_evidence_ref,
+    'contracts/live_stage_run_progress_evidence.json',
+  );
+  assert.ok(registration.provided_outputs.includes('live_stage_run_progress_evidence_ref'));
+  assert.ok(registration.discovery_receipt.consumed_contract_refs.includes('contracts/live_stage_run_progress_evidence.json'));
   assert.equal(registration.discovery_receipt.surface_kind, 'opl_domain_manifest_discovery_receipt');
   assert.equal(registration.discovery_receipt.status, 'ready_for_opl_registry_consumption');
   assert.equal(registration.discovery_receipt.registry_owner, 'one-person-lab');
@@ -65,13 +72,17 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
   assertNoForbiddenAuthority(appProjection, 'appProjection');
   assert.equal(appProjection.authority_boundary.projection_owner_is_opl_framework, true);
   assert.equal(appProjection.authority_boundary.domain_repo_can_own_generic_operator_workbench, false);
-  assert.equal(appProjection.workbench_sections.length, 7);
+  assert.equal(appProjection.workbench_sections.length, 8);
   assert.equal(
     asObjects(appProjection.workbench_sections).some((section) => section.section_id === 'scaleout_evidence'),
     true,
   );
   assert.equal(
     asObjects(appProjection.workbench_sections).some((section) => section.section_id === 'trajectory_learning'),
+    true,
+  );
+  assert.equal(
+    asObjects(appProjection.workbench_sections).some((section) => section.section_id === 'live_stage_run_progress'),
     true,
   );
   assert.equal(appProjection.drilldown_readiness_receipt.surface_kind, 'opl_app_workbench_drilldown_readiness_receipt');
@@ -175,6 +186,10 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
     'contracts/trajectory_learning_contract.json',
   );
   assert.equal(
+    generatedSurfaceHandoff.live_stage_run_progress_evidence_ref,
+    'contracts/live_stage_run_progress_evidence.json',
+  );
+  assert.equal(
     generatedSurfaceHandoff.registry_discovery_receipt_ref,
     registration.discovery_receipt.receipt_ref,
   );
@@ -194,10 +209,17 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
     ),
     true,
   );
+  assert.equal(
+    asObjects(generatedSurfaceHandoff.generated_surfaces).some((surface) =>
+      surface.surface_id === 'live_stage_run_progress_projection'
+    ),
+    true,
+  );
   assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('opl_domain_manifest_registration_contract'));
   assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('app_workbench_projection_contract'));
   assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('real_target_agent_scaleout_evidence_contract'));
   assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('trajectory_learning_contract'));
+  assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('live_stage_run_progress_evidence_contract'));
   assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('ux_signal_not_quality_verdict_boundary'));
   assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('registry_discovery_receipt'));
   assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('app_drilldown_readiness_receipt'));
@@ -206,14 +228,19 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
     app_workbench_projection_ref: 'contracts/app_workbench_projection.json',
     real_target_agent_scaleout_evidence_ref: 'contracts/real_target_agent_scaleout_evidence.json',
     target_agent_owner_chain_evidence_ref: 'contracts/target_agent_owner_chain_evidence.json',
+    live_stage_run_progress_evidence_ref: 'contracts/live_stage_run_progress_evidence.json',
     trajectory_learning_contract_ref: 'contracts/trajectory_learning_contract.json',
   });
   assert.deepEqual(audit.registration_projection_evidence_contract_refs, {
     opl_domain_manifest_registration_ref: 'contracts/opl_domain_manifest_registration.json',
     app_workbench_projection_ref: 'contracts/app_workbench_projection.json',
     real_target_agent_scaleout_evidence_ref: 'contracts/real_target_agent_scaleout_evidence.json',
+    live_stage_run_progress_evidence_ref: 'contracts/live_stage_run_progress_evidence.json',
     trajectory_learning_contract_ref: 'contracts/trajectory_learning_contract.json',
   });
+  assert.equal(liveProgressEvidence.surface_kind, 'opl_meta_agent_live_stage_run_progress_evidence');
+  assert.equal(liveProgressEvidence.consumed_by, 'one-person-lab/OPL live StageRun progress consumer');
+  assert.equal(liveProgressEvidence.authority_boundary.can_claim_target_domain_ready, false);
 });
 
 test('top-level OMA commands and materializers stay target-agent generic', () => {
@@ -300,6 +327,12 @@ test('registration, projection, and evidence contracts are represented in functi
       classification: 'refs_only_domain_adapter',
       codePath: 'contracts/real_target_agent_scaleout_evidence.json',
       roleScope: 'refs_only_scaleout_evidence_gate_not_target_domain_truth_writer',
+    },
+    {
+      moduleId: 'live_stage_run_progress_evidence',
+      classification: 'refs_only_domain_adapter',
+      codePath: 'contracts/live_stage_run_progress_evidence.json',
+      roleScope: 'owner_receipt_typed_blocker_human_gate_no_regression_and_long_soak_refs_not_target_domain_truth_writer',
     },
     {
       moduleId: 'trajectory_learning_contract',

@@ -43,6 +43,9 @@ test('target-agent owner-chain evidence accepts live-progress refs without targe
   const humanGateClosure = evidence.stage_replay_human_gate_blocker_closure as JsonObject;
   const humanGateTarget = humanGateClosure.target_identity as JsonObject;
   const humanGateBoundary = humanGateClosure.authority_boundary as JsonObject;
+  const liveProgress = readJson('contracts/live_stage_run_progress_evidence.json');
+  const liveProgressRefs = liveProgress.refs as JsonObject;
+  const liveProgressSummary = evidence.live_stage_run_progress_evidence_summary as JsonObject;
   const productionHumanGateSummary = productionAcceptance.stage_replay_human_gate_blocker_summary as JsonObject;
 
   assert.equal(evidence.surface_kind, 'opl_meta_agent_target_agent_owner_chain_evidence');
@@ -193,5 +196,22 @@ test('target-agent owner-chain evidence accepts live-progress refs without targe
   assert.equal(humanGateBoundary.can_claim_production_ready, false);
   assert.equal(humanGateBoundary.can_promote_default_agent_without_gate, false);
   assert.equal(humanGateBoundary.can_close_replay_success_path, false);
+
+  assert.equal(liveProgressSummary.surface_kind, 'opl_meta_agent_live_stage_run_progress_evidence_summary');
+  assert.equal(liveProgressSummary.live_stage_run_progress_evidence_ref, 'contracts/live_stage_run_progress_evidence.json');
+  assertRepoRefExists(liveProgressSummary.live_stage_run_progress_evidence_ref as string);
+  assert.deepEqual(
+    asStrings(liveProgressSummary.typed_blocker_refs),
+    asStrings(liveProgressRefs.typed_blocker_refs),
+  );
+  assert.deepEqual(
+    asStrings(liveProgressSummary.human_gate_refs),
+    asStrings(liveProgressRefs.human_gate_refs),
+  );
+  assert.equal(liveProgressSummary.open_tail_count, 5);
+  assert.equal(liveProgressSummary.closed_success_count, 0);
+  assert.equal(liveProgressSummary.target_agent_ready_claimed, false);
+  assert.equal(liveProgressSummary.domain_ready_claimed, false);
+  assert.equal(liveProgressSummary.production_ready_claimed, false);
   assertFalseAuthorityBoundary(evidence.authority_boundary as JsonObject, 'targetAgentOwnerChainEvidence');
 });

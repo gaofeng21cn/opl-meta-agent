@@ -41,7 +41,8 @@
     "opl_domain_manifest_registration_ref": "contracts/opl_domain_manifest_registration.json",
     "app_workbench_projection_ref": "contracts/app_workbench_projection.json",
     "real_target_agent_scaleout_evidence_ref": "contracts/real_target_agent_scaleout_evidence.json",
-    "trajectory_learning_contract_ref": "contracts/trajectory_learning_contract.json"
+    "trajectory_learning_contract_ref": "contracts/trajectory_learning_contract.json",
+    "live_stage_run_progress_evidence_ref": "contracts/live_stage_run_progress_evidence.json"
   },
   "domain_allowed_roles": [
     "agent_building_semantics",
@@ -205,6 +206,21 @@
       ],
       "active_caller_status": "contract_ready_no_real_scaleout_claim_yet",
       "role_scope": "refs_only_scaleout_evidence_gate_not_target_domain_truth_writer"
+    },
+    {
+      "module_id": "live_stage_run_progress_evidence",
+      "classification": "refs_only_domain_adapter",
+      "owner": "opl-meta-agent",
+      "code_paths": [
+        "contracts/live_stage_run_progress_evidence.json"
+      ],
+      "active_callers": [
+        "OPL live StageRun progress consumer",
+        "OPL App workbench",
+        "OPL generated interface bundle"
+      ],
+      "active_caller_status": "typed_blocker_refs_projected_for_standard_consumption",
+      "role_scope": "owner_receipt_typed_blocker_human_gate_no_regression_and_long_soak_refs_not_target_domain_truth_writer"
     },
     {
       "module_id": "trajectory_learning_contract",

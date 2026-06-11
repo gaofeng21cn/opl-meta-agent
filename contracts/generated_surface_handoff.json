@@ -92,6 +92,14 @@
       "status": "descriptor_source_available",
       "source_contract": "contracts/trajectory_learning_contract.json",
       "domain_policy": "domain_repo_supplies_redacted_trajectory_atom_candidate_and_proposal_refs_only"
+    },
+    {
+      "surface_id": "live_stage_run_progress_projection",
+      "owner": "one-person-lab",
+      "target_role": "opl_generated_surface",
+      "status": "descriptor_source_available",
+      "source_contract": "contracts/live_stage_run_progress_evidence.json",
+      "domain_policy": "domain_repo_supplies_owner_receipt_typed_blocker_human_gate_no_regression_and_long_soak_refs_only"
     }
   ],
   "required_domain_handoff": [
@@ -113,7 +121,8 @@
     "trajectory_learning_contract",
     "trajectory_atomization_receipt_refs",
     "candidate_buffer_receipt_refs",
-    "ux_signal_not_quality_verdict_boundary"
+    "ux_signal_not_quality_verdict_boundary",
+    "live_stage_run_progress_evidence_contract"
   ],
   "marker": "generated_by_opl_standard_domain_agent_scaffold_v1",
   "canonical_semantic_pack_root": "agent/",
@@ -240,5 +249,6 @@
       "physical_delete_authorized": false
     }
   ],
-  "trajectory_learning_contract_ref": "contracts/trajectory_learning_contract.json"
+  "trajectory_learning_contract_ref": "contracts/trajectory_learning_contract.json",
+  "live_stage_run_progress_evidence_ref": "contracts/live_stage_run_progress_evidence.json"
 }

@@ -13,6 +13,8 @@ test('production acceptance evidence closes conformance evidence tail through re
   const acceptance = readJson('contracts/production_acceptance/meta-agent-production-acceptance.json');
   const newAgentConsumptionEvidenceRef = 'contracts/production_acceptance/new_agent_consumption_evidence.json';
   const newAgentConsumption = readJson(newAgentConsumptionEvidenceRef);
+  const liveProgressEvidence = readJson('contracts/live_stage_run_progress_evidence.json');
+  const liveProgressRefs = liveProgressEvidence.refs as JsonObject;
 
   assert.equal(acceptance.surface_kind, 'opl_meta_agent_production_acceptance_evidence');
   assert.equal(acceptance.domain_id, 'opl-meta-agent');
@@ -37,9 +39,13 @@ test('production acceptance evidence closes conformance evidence tail through re
   assert.ok(asStrings(acceptance.refs.long_soak_refs)[0].startsWith('long_soak_ref://opl-meta-agent/'));
   assert.equal(asStrings(acceptance.refs.production_consumption_receipt_refs).length, 2);
   assert.deepEqual(acceptance.refs.new_agent_consumption_evidence_refs, [newAgentConsumptionEvidenceRef]);
+  assert.deepEqual(acceptance.refs.target_agent_live_stage_progress_evidence_refs, [
+    'contracts/live_stage_run_progress_evidence.json',
+  ]);
   const stageReplayBlocker = acceptance.stage_replay_human_gate_blocker_summary as JsonObject;
   const stageReplayTarget = stageReplayBlocker.target_identity as JsonObject;
   const stageReplayBoundary = stageReplayBlocker.authority_boundary as JsonObject;
+  const liveProgressSummary = acceptance.target_agent_live_stage_progress_summary as JsonObject;
   assert.equal(
     stageReplayBlocker.surface_kind,
     'opl_meta_agent_stage_replay_human_gate_blocker_summary',
@@ -86,6 +92,30 @@ test('production acceptance evidence closes conformance evidence tail through re
   assert.equal(stageReplayBoundary.can_promote_default_agent_without_gate, false);
   assert.equal(stageReplayBoundary.can_close_replay_success_path, false);
   assertRepoRefExists((stageReplayBlocker.source_ref as string).split('#')[0]);
+  assert.equal(
+    liveProgressSummary.surface_kind,
+    'opl_meta_agent_target_agent_live_stage_progress_summary',
+  );
+  assert.equal(
+    liveProgressSummary.live_stage_run_progress_evidence_ref,
+    'contracts/live_stage_run_progress_evidence.json',
+  );
+  assertRepoRefExists(liveProgressSummary.live_stage_run_progress_evidence_ref as string);
+  assert.deepEqual(asStrings(liveProgressSummary.typed_blocker_refs), asStrings(liveProgressRefs.typed_blocker_refs));
+  assert.deepEqual(asStrings(liveProgressSummary.human_gate_refs), asStrings(liveProgressRefs.human_gate_refs));
+  assert.deepEqual(asStrings(liveProgressSummary.owner_receipt_refs), []);
+  assert.equal(liveProgressSummary.open_tail_count, 5);
+  assert.equal(liveProgressSummary.closed_success_count, 0);
+  assert.equal(liveProgressSummary.success_claimed, false);
+  assert.equal(liveProgressSummary.target_agent_ready_claimed, false);
+  assert.equal(liveProgressSummary.domain_ready_claimed, false);
+  assert.equal(liveProgressSummary.production_ready_claimed, false);
+  assert.equal(liveProgressSummary.authority_boundary.refs_only, true);
+  assert.equal(liveProgressSummary.authority_boundary.can_write_target_domain_truth, false);
+  assert.equal(liveProgressSummary.authority_boundary.can_write_target_owner_receipt_body, false);
+  assert.equal(liveProgressSummary.authority_boundary.can_claim_target_domain_ready, false);
+  assert.equal(liveProgressSummary.authority_boundary.can_claim_domain_ready, false);
+  assert.equal(liveProgressSummary.authority_boundary.can_claim_production_ready, false);
   assert.equal(
     acceptance.production_consumption_followthrough.status,
     'production_consumption_refs_projected',
@@ -240,6 +270,7 @@ test('production acceptance evidence closes conformance evidence tail through re
     ...asStrings(acceptance.acceptance_receipt.source_refs),
     ...asStrings(acceptance.generated_agent_fixture_requirement.verified_by_refs),
     ...asStrings(newAgentConsumption.source_refs),
+    liveProgressSummary.live_stage_run_progress_evidence_ref,
     acceptance.generated_agent_fixture_requirement.latest_new_agent_consumption_evidence_ref,
     acceptance.doc_ref,
     ...asStrings(acceptance.refs.doc_refs),

@@ -40,6 +40,9 @@
     ],
     "new_agent_consumption_evidence_refs": [
       "contracts/production_acceptance/new_agent_consumption_evidence.json"
+    ],
+    "target_agent_live_stage_progress_evidence_refs": [
+      "contracts/live_stage_run_progress_evidence.json"
     ]
   },
   "stage_replay_human_gate_blocker_summary": {
@@ -321,5 +324,48 @@
     "proposal_equals_adopted_runtime_change",
     "meta_agent_wrote_target_domain_truth",
     "meta_agent_authorized_target_domain_quality_or_export"
-  ]
+  ],
+  "target_agent_live_stage_progress_summary": {
+    "surface_kind": "opl_meta_agent_target_agent_live_stage_progress_summary",
+    "owner": "opl-meta-agent",
+    "role": "pointer_to_opl_standard_live_stage_run_progress_contract",
+    "live_stage_run_progress_evidence_ref": "contracts/live_stage_run_progress_evidence.json",
+    "typed_blocker_refs": [
+      "oma-typed-blocker:stage-replay-human-gate:stage-decomposition:oma_baseline_owner_review/baseline-owner-review-receipt-pending",
+      "oma-typed-blocker:target-owner-evidence-tail:registry_app_consumption/missing-opl-app-live-consumption",
+      "oma-typed-blocker:target-owner-evidence-tail:real_blocked_target_patch_loop_scaleout/missing-real-source-patch-rerun-owner-closeout",
+      "oma-typed-blocker:target-owner-evidence-tail:independent_codex_reviewer_attempt/missing-independent-invocation-trace-receipt",
+      "oma-typed-blocker:target-owner-evidence-tail:standard_target_agent_handoff_convergence/missing-target-vocabulary-owner-closeout",
+      "oma-typed-blocker:target-owner-evidence-tail:script_to_pack_hygiene/missing-machine-gate-for-new-or-retired-script-policy"
+    ],
+    "owner_receipt_refs": [],
+    "human_gate_refs": [
+      "human-gate-ref:opl-meta-agent/stage-decomposition/oma_baseline_owner_review"
+    ],
+    "no_regression_refs": [
+      "no-regression-ref:opl-meta-agent/stage-replay-human-gate/oma_baseline_owner_review/no-target-repo-mutation",
+      "no-regression-ref:opl-meta-agent/target-owner-evidence-tail/no-target-domain-truth-write",
+      "no-regression-ref:opl-meta-agent/target-owner-evidence-tail/no-target-owner-receipt-body"
+    ],
+    "open_tail_count": 5,
+    "closed_success_count": 0,
+    "source_ref": "contracts/production_acceptance/meta-agent-production-acceptance.json#/target_agent_live_stage_progress_summary",
+    "success_claimed": false,
+    "target_agent_ready_claimed": false,
+    "domain_ready_claimed": false,
+    "production_ready_claimed": false,
+    "authority_boundary": {
+      "refs_only": true,
+      "not_generic_runtime_owner": true,
+      "can_write_target_domain_truth": false,
+      "can_write_target_domain_memory_body": false,
+      "can_mutate_target_domain_artifact_body": false,
+      "can_authorize_target_domain_quality_or_export": false,
+      "can_write_target_owner_receipt_body": false,
+      "can_claim_target_domain_ready": false,
+      "can_claim_domain_ready": false,
+      "can_claim_production_ready": false,
+      "can_promote_default_agent_without_gate": false
+    }
+  }
 }

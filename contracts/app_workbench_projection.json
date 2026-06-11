@@ -13,7 +13,8 @@
     "action_catalog_ref": "contracts/action_catalog.json",
     "owner_receipt_contract_ref": "contracts/owner_receipt_contract.json",
     "scaleout_evidence_contract_ref": "contracts/real_target_agent_scaleout_evidence.json",
-    "trajectory_learning_contract_ref": "contracts/trajectory_learning_contract.json"
+    "trajectory_learning_contract_ref": "contracts/trajectory_learning_contract.json",
+    "live_stage_run_progress_evidence_ref": "contracts/live_stage_run_progress_evidence.json"
   },
   "human_doc_refs": [
     "docs/status.md",
@@ -118,6 +119,20 @@
         "owner_review_receipt_or_typed_blocker_ref"
       ],
       "write_boundary": "display_refs_and_proposal_status_only"
+    },
+    {
+      "section_id": "live_stage_run_progress",
+      "projection_fields": [
+        "owner_receipt_refs",
+        "typed_blocker_refs",
+        "human_gate_refs",
+        "quality_or_export_receipt_refs",
+        "no_regression_refs",
+        "long_soak_refs",
+        "doc_refs",
+        "next_verification_command_refs"
+      ],
+      "write_boundary": "display_refs_only"
     }
   ],
   "drilldown_readiness_receipt": {
@@ -139,7 +154,8 @@
       "remaining_blocker_refs",
       "promotion_gate_ref",
       "owner_review_receipt_ref",
-      "owner_review_receipt_or_typed_blocker_ref"
+      "owner_review_receipt_or_typed_blocker_ref",
+      "target_agent_live_stage_progress_typed_blocker_refs"
     ],
     "receipt_ref_fields": [
       "baseline_delivery_receipt_ref",
@@ -152,7 +168,8 @@
       "target_agent_delivery_receipt_refs",
       "trajectory_atomization_receipt_ref",
       "candidate_buffer_receipt_ref",
-      "agent_lab_promotion_gate_ref"
+      "agent_lab_promotion_gate_ref",
+      "target_agent_live_stage_progress_owner_receipt_refs"
     ],
     "developer_work_order_machine_ref_fields": [
       "blocked_suite_result_ref",
