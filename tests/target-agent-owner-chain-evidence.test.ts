@@ -45,8 +45,12 @@ test('target-agent owner-chain evidence accepts live-progress refs without targe
   const humanGateBoundary = humanGateClosure.authority_boundary as JsonObject;
   const liveProgress = readJson('contracts/live_stage_run_progress_evidence.json');
   const liveProgressRefs = liveProgress.refs as JsonObject;
+  const liveProgressBlockers = asObjects(liveProgress.typed_blockers);
   const liveProgressSummary = evidence.live_stage_run_progress_evidence_summary as JsonObject;
+  const ownerTailClosure = evidence.target_agent_owner_evidence_tail_closure as JsonObject;
+  const ownerTailBoundary = ownerTailClosure.authority_boundary as JsonObject;
   const productionHumanGateSummary = productionAcceptance.stage_replay_human_gate_blocker_summary as JsonObject;
+  const productionLiveProgressSummary = productionAcceptance.target_agent_live_stage_progress_summary as JsonObject;
 
   assert.equal(evidence.surface_kind, 'opl_meta_agent_target_agent_owner_chain_evidence');
   assert.equal(evidence.version, 'target-agent-owner-chain-evidence.v1');
@@ -200,6 +204,11 @@ test('target-agent owner-chain evidence accepts live-progress refs without targe
   assert.equal(liveProgressSummary.surface_kind, 'opl_meta_agent_live_stage_run_progress_evidence_summary');
   assert.equal(liveProgressSummary.live_stage_run_progress_evidence_ref, 'contracts/live_stage_run_progress_evidence.json');
   assertRepoRefExists(liveProgressSummary.live_stage_run_progress_evidence_ref as string);
+  assert.equal(
+    liveProgressSummary.target_agent_owner_evidence_tail_closure_ref,
+    'contracts/target_agent_owner_chain_evidence.json#/target_agent_owner_evidence_tail_closure',
+  );
+  assert.equal(liveProgressSummary.opl_consumption_status, 'not_ready_by_domain_owned_typed_blocker_refs');
   assert.deepEqual(
     asStrings(liveProgressSummary.typed_blocker_refs),
     asStrings(liveProgressRefs.typed_blocker_refs),
@@ -213,5 +222,57 @@ test('target-agent owner-chain evidence accepts live-progress refs without targe
   assert.equal(liveProgressSummary.target_agent_ready_claimed, false);
   assert.equal(liveProgressSummary.domain_ready_claimed, false);
   assert.equal(liveProgressSummary.production_ready_claimed, false);
+  assert.equal(ownerTailClosure.surface_kind, 'opl_meta_agent_target_agent_owner_evidence_tail_closure');
+  assert.equal(ownerTailClosure.owner, 'opl-meta-agent');
+  assert.equal(ownerTailClosure.closure_kind, 'target_agent_owner_evidence_tail_typed_blocker_closure');
+  assert.equal(ownerTailClosure.closure_status, 'blocked_by_domain_owned_typed_blocker_refs');
+  assert.equal(ownerTailClosure.opl_consumption_status, liveProgressSummary.opl_consumption_status);
+  assert.equal(ownerTailClosure.live_stage_run_progress_evidence_ref, liveProgressSummary.live_stage_run_progress_evidence_ref);
+  assert.equal(
+    ownerTailClosure.production_acceptance_summary_ref,
+    'contracts/production_acceptance/meta-agent-production-acceptance.json#/target_agent_live_stage_progress_summary',
+  );
+  assert.equal(
+    productionLiveProgressSummary.target_agent_owner_evidence_tail_closure_ref,
+    liveProgressSummary.target_agent_owner_evidence_tail_closure_ref,
+  );
+  assert.equal(
+    productionLiveProgressSummary.opl_consumption_status,
+    liveProgressSummary.opl_consumption_status,
+  );
+  assert.equal(ownerTailClosure.closed_as_success, false);
+  assert.equal(ownerTailClosure.success_claimed, false);
+  assert.equal(ownerTailClosure.target_agent_ready_claimed, false);
+  assert.equal(ownerTailClosure.domain_ready_claimed, false);
+  assert.equal(ownerTailClosure.production_ready_claimed, false);
+  assert.deepEqual(asStrings(ownerTailClosure.owner_receipt_refs), []);
+  assert.equal(ownerTailClosure.success_receipt_count, 0);
+  assert.equal(ownerTailClosure.open_tail_count, 5);
+  assert.equal(ownerTailClosure.closed_success_count, 0);
+  assert.deepEqual(
+    asStrings(ownerTailClosure.typed_blocker_refs),
+    liveProgressBlockers.map((blocker) => blocker.typed_blocker_ref as string),
+  );
+  assert.deepEqual(
+    asObjects(ownerTailClosure.tail_closure_items).map((item) => item.tail_id),
+    liveProgressBlockers.map((blocker) => blocker.tail_id),
+  );
+  asObjects(ownerTailClosure.tail_closure_items).forEach((item, index) => {
+    const blocker = liveProgressBlockers[index];
+    assert.equal(item.closure_status, 'blocked_by_domain_owned_typed_blocker_ref');
+    assert.equal(item.typed_blocker_ref, blocker.typed_blocker_ref);
+    assert.deepEqual(asStrings(item.next_owner_refs), asStrings(blocker.next_owner_refs));
+    assert.deepEqual(
+      asStrings(item.required_missing_evidence_refs),
+      asStrings(blocker.required_missing_evidence_refs),
+    );
+  });
+  assert.equal(ownerTailBoundary.refs_only, true);
+  assert.equal(ownerTailBoundary.can_write_target_domain_truth, false);
+  assert.equal(ownerTailBoundary.can_write_target_owner_receipt_body, false);
+  assert.equal(ownerTailBoundary.can_claim_target_domain_ready, false);
+  assert.equal(ownerTailBoundary.can_claim_domain_ready, false);
+  assert.equal(ownerTailBoundary.can_claim_production_ready, false);
+  assert.equal(ownerTailBoundary.can_promote_default_agent_without_gate, false);
   assertFalseAuthorityBoundary(evidence.authority_boundary as JsonObject, 'targetAgentOwnerChainEvidence');
 });

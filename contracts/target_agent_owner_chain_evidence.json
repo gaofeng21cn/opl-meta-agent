@@ -292,11 +292,137 @@
       "can_close_replay_success_path": false
     }
   },
+  "target_agent_owner_evidence_tail_closure": {
+    "surface_kind": "opl_meta_agent_target_agent_owner_evidence_tail_closure",
+    "owner": "opl-meta-agent",
+    "closure_kind": "target_agent_owner_evidence_tail_typed_blocker_closure",
+    "closure_status": "blocked_by_domain_owned_typed_blocker_refs",
+    "opl_consumption_status": "not_ready_by_domain_owned_typed_blocker_refs",
+    "live_stage_run_progress_evidence_ref": "contracts/live_stage_run_progress_evidence.json",
+    "production_acceptance_summary_ref": "contracts/production_acceptance/meta-agent-production-acceptance.json#/target_agent_live_stage_progress_summary",
+    "closed_as_success": false,
+    "success_claimed": false,
+    "target_agent_ready_claimed": false,
+    "domain_ready_claimed": false,
+    "production_ready_claimed": false,
+    "owner_receipt_refs": [],
+    "success_receipt_count": 0,
+    "open_tail_count": 5,
+    "closed_success_count": 0,
+    "accepted_ref_shapes": [
+      "target_agent_owner_receipt_ref",
+      "target_agent_typed_blocker_ref",
+      "app_runtime_drilldown_receipt_ref",
+      "registry_discovery_receipt_ref",
+      "script_to_pack_gate_receipt_ref"
+    ],
+    "typed_blocker_refs": [
+      "oma-typed-blocker:target-owner-evidence-tail:registry_app_consumption/missing-opl-app-live-consumption",
+      "oma-typed-blocker:target-owner-evidence-tail:real_blocked_target_patch_loop_scaleout/missing-real-source-patch-rerun-owner-closeout",
+      "oma-typed-blocker:target-owner-evidence-tail:independent_codex_reviewer_attempt/missing-independent-invocation-trace-receipt",
+      "oma-typed-blocker:target-owner-evidence-tail:standard_target_agent_handoff_convergence/missing-target-vocabulary-owner-closeout",
+      "oma-typed-blocker:target-owner-evidence-tail:script_to_pack_hygiene/missing-machine-gate-for-new-or-retired-script-policy"
+    ],
+    "no_regression_refs": [
+      "no-regression-ref:opl-meta-agent/target-owner-evidence-tail/no-target-domain-truth-write",
+      "no-regression-ref:opl-meta-agent/target-owner-evidence-tail/no-target-owner-receipt-body"
+    ],
+    "tail_closure_items": [
+      {
+        "tail_id": "registry_app_consumption",
+        "closure_status": "blocked_by_domain_owned_typed_blocker_ref",
+        "typed_blocker_ref": "oma-typed-blocker:target-owner-evidence-tail:registry_app_consumption/missing-opl-app-live-consumption",
+        "next_owner_refs": [
+          "one-person-lab/OPL registry",
+          "one-person-lab-app via OPL/App contracts"
+        ],
+        "required_missing_evidence_refs": [
+          "registry-discovery-receipt:opl/opl-meta-agent",
+          "app-runtime-drilldown-receipt:opl-meta-agent",
+          "app-render-or-screenshot-ref:opl-meta-agent"
+        ]
+      },
+      {
+        "tail_id": "real_blocked_target_patch_loop_scaleout",
+        "closure_status": "blocked_by_domain_owned_typed_blocker_ref",
+        "typed_blocker_ref": "oma-typed-blocker:target-owner-evidence-tail:real_blocked_target_patch_loop_scaleout/missing-real-source-patch-rerun-owner-closeout",
+        "next_owner_refs": [
+          "target-domain via OPL work-order execute primitive",
+          "OPL Agent Lab"
+        ],
+        "required_missing_evidence_refs": [
+          "real-source-patch-ref:target-agent/cohort",
+          "target-owner-receipt-or-typed-blocker:target-agent/real-patch-rerun",
+          "agent-lab-re-evaluation-ref:target-agent/real-patch-rerun",
+          "worktree-cleanup-ref:target-agent/real-patch-rerun"
+        ]
+      },
+      {
+        "tail_id": "independent_codex_reviewer_attempt",
+        "closure_status": "blocked_by_domain_owned_typed_blocker_ref",
+        "typed_blocker_ref": "oma-typed-blocker:target-owner-evidence-tail:independent_codex_reviewer_attempt/missing-independent-invocation-trace-receipt",
+        "next_owner_refs": [
+          "OPL Agent Lab reviewer gate",
+          "target-domain owner route"
+        ],
+        "required_missing_evidence_refs": [
+          "independent-reviewer-invocation-ref:target-agent/real-patch",
+          "independent-reviewer-context-ref:target-agent/real-patch",
+          "independent-reviewer-trace-ref:target-agent/real-patch",
+          "independent-reviewer-receipt-ref:target-agent/real-patch"
+        ]
+      },
+      {
+        "tail_id": "standard_target_agent_handoff_convergence",
+        "closure_status": "blocked_by_domain_owned_typed_blocker_ref",
+        "typed_blocker_ref": "oma-typed-blocker:target-owner-evidence-tail:standard_target_agent_handoff_convergence/missing-target-vocabulary-owner-closeout",
+        "next_owner_refs": [
+          "target-domain owners via OPL standard handoff",
+          "one-person-lab/OPL Agent Lab"
+        ],
+        "required_missing_evidence_refs": [
+          "target-agent-handoff-convergence-receipt:med-autoscience",
+          "target-agent-handoff-convergence-receipt:med-autogrant",
+          "target-agent-handoff-convergence-receipt:redcube-ai"
+        ]
+      },
+      {
+        "tail_id": "script_to_pack_hygiene",
+        "closure_status": "blocked_by_domain_owned_typed_blocker_ref",
+        "typed_blocker_ref": "oma-typed-blocker:target-owner-evidence-tail:script_to_pack_hygiene/missing-machine-gate-for-new-or-retired-script-policy",
+        "next_owner_refs": [
+          "opl-meta-agent script morphology policy",
+          "one-person-lab/OPL primitive owner when parity is claimed"
+        ],
+        "required_missing_evidence_refs": [
+          "script-to-pack-gate-receipt:opl-meta-agent/new-or-retired-script-policy",
+          "opl-primitive-parity-receipt:opl-meta-agent/script-policy",
+          "no-active-caller-ref:opl-meta-agent/script-policy",
+          "tombstone-or-provenance-ref:opl-meta-agent/script-policy"
+        ]
+      }
+    ],
+    "blocker_reason": "OMA has no target-agent owner receipt, App/live consumption receipt, independent reviewer receipt, handoff convergence receipt, or script-to-pack machine gate that can close these five tails as success; OPL must consume this lane as not-ready until one accepted resolution ref shape is present for every tail.",
+    "authority_boundary": {
+      "refs_only": true,
+      "can_write_target_domain_truth": false,
+      "can_write_target_domain_memory_body": false,
+      "can_mutate_target_domain_artifact_body": false,
+      "can_authorize_target_domain_quality_or_export": false,
+      "can_write_target_owner_receipt_body": false,
+      "can_claim_target_domain_ready": false,
+      "can_claim_domain_ready": false,
+      "can_claim_production_ready": false,
+      "can_promote_default_agent_without_gate": false
+    }
+  },
   "live_stage_run_progress_evidence_summary": {
     "surface_kind": "opl_meta_agent_live_stage_run_progress_evidence_summary",
     "owner": "opl-meta-agent",
     "live_stage_run_progress_evidence_ref": "contracts/live_stage_run_progress_evidence.json",
     "role": "input_pointer_to_opl_standard_live_stage_run_progress_contract",
+    "target_agent_owner_evidence_tail_closure_ref": "contracts/target_agent_owner_chain_evidence.json#/target_agent_owner_evidence_tail_closure",
+    "opl_consumption_status": "not_ready_by_domain_owned_typed_blocker_refs",
     "typed_blocker_refs": [
       "oma-typed-blocker:stage-replay-human-gate:stage-decomposition:oma_baseline_owner_review/baseline-owner-review-receipt-pending",
       "oma-typed-blocker:target-owner-evidence-tail:registry_app_consumption/missing-opl-app-live-consumption",

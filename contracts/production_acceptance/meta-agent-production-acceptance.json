@@ -330,6 +330,8 @@
     "owner": "opl-meta-agent",
     "role": "pointer_to_opl_standard_live_stage_run_progress_contract",
     "live_stage_run_progress_evidence_ref": "contracts/live_stage_run_progress_evidence.json",
+    "target_agent_owner_evidence_tail_closure_ref": "contracts/target_agent_owner_chain_evidence.json#/target_agent_owner_evidence_tail_closure",
+    "opl_consumption_status": "not_ready_by_domain_owned_typed_blocker_refs",
     "typed_blocker_refs": [
       "oma-typed-blocker:stage-replay-human-gate:stage-decomposition:oma_baseline_owner_review/baseline-owner-review-receipt-pending",
       "oma-typed-blocker:target-owner-evidence-tail:registry_app_consumption/missing-opl-app-live-consumption",

@@ -101,6 +101,12 @@ test('production acceptance evidence closes conformance evidence tail through re
     'contracts/live_stage_run_progress_evidence.json',
   );
   assertRepoRefExists(liveProgressSummary.live_stage_run_progress_evidence_ref as string);
+  assert.equal(
+    liveProgressSummary.target_agent_owner_evidence_tail_closure_ref,
+    'contracts/target_agent_owner_chain_evidence.json#/target_agent_owner_evidence_tail_closure',
+  );
+  assertRepoRefExists((liveProgressSummary.target_agent_owner_evidence_tail_closure_ref as string).split('#')[0]);
+  assert.equal(liveProgressSummary.opl_consumption_status, 'not_ready_by_domain_owned_typed_blocker_refs');
   assert.deepEqual(asStrings(liveProgressSummary.typed_blocker_refs), asStrings(liveProgressRefs.typed_blocker_refs));
   assert.deepEqual(asStrings(liveProgressSummary.human_gate_refs), asStrings(liveProgressRefs.human_gate_refs));
   assert.deepEqual(asStrings(liveProgressSummary.owner_receipt_refs), []);
