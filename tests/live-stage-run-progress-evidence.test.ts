@@ -18,11 +18,14 @@ test('live StageRun progress evidence exposes OMA target-agent owner evidence bl
   const ownerChainSummary = ownerChain.live_stage_run_progress_evidence_summary as JsonObject;
   const productionSummary = productionAcceptance.target_agent_live_stage_progress_summary as JsonObject;
 
-  assert.equal(evidence.surface_kind, 'opl_meta_agent_live_stage_run_progress_evidence');
+  assert.equal(evidence.surface_kind, 'domain_live_stage_run_progress_evidence');
+  assert.equal(evidence.oma_surface_kind, 'opl_meta_agent_live_stage_run_progress_evidence');
+  assert.equal(evidence.schema_ref, 'contracts/opl-framework/domain-live-stage-run-progress-evidence.schema.json');
   assert.equal(evidence.schema_version, 1);
   assert.equal(evidence.domain_id, 'opl-meta-agent');
   assert.equal(evidence.owner, 'opl-meta-agent');
   assert.equal(evidence.consumed_by, 'one-person-lab/OPL live StageRun progress consumer');
+  assert.equal(evidence.status, 'owner_typed_blocker_recorded_not_ready_claim');
   assert.equal(evidence.progress_status, 'blocked_by_domain_owned_typed_blockers');
   assert.equal(evidence.target_agent_ready_claimed, false);
   assert.equal(evidence.domain_ready_claimed, false);
@@ -73,6 +76,12 @@ test('live StageRun progress evidence exposes OMA target-agent owner evidence bl
   assert.equal(boundary.can_mutate_target_domain_artifact_body, false);
   assert.equal(boundary.can_authorize_target_domain_quality_or_export, false);
   assert.equal(boundary.can_write_target_owner_receipt_body, false);
+  assert.equal(boundary.opl_can_sign_owner_receipt, false);
+  assert.equal(boundary.opl_can_create_typed_blocker, false);
+  assert.equal(boundary.opl_can_claim_domain_ready, false);
+  assert.equal(boundary.opl_can_claim_production_ready, false);
+  assert.equal(boundary.provider_completion_counts_as_domain_ready, false);
+  assert.equal(boundary.structural_conformance_counts_as_live_progress, false);
   assert.equal(boundary.can_claim_target_domain_ready, false);
   assert.equal(boundary.can_claim_domain_ready, false);
   assert.equal(boundary.can_claim_production_ready, false);

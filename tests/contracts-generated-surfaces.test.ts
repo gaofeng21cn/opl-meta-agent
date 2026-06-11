@@ -238,8 +238,12 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
     live_stage_run_progress_evidence_ref: 'contracts/live_stage_run_progress_evidence.json',
     trajectory_learning_contract_ref: 'contracts/trajectory_learning_contract.json',
   });
-  assert.equal(liveProgressEvidence.surface_kind, 'opl_meta_agent_live_stage_run_progress_evidence');
+  assert.equal(liveProgressEvidence.surface_kind, 'domain_live_stage_run_progress_evidence');
+  assert.equal(liveProgressEvidence.oma_surface_kind, 'opl_meta_agent_live_stage_run_progress_evidence');
+  assert.equal(liveProgressEvidence.status, 'owner_typed_blocker_recorded_not_ready_claim');
   assert.equal(liveProgressEvidence.consumed_by, 'one-person-lab/OPL live StageRun progress consumer');
+  assert.equal(liveProgressEvidence.authority_boundary.opl_can_sign_owner_receipt, false);
+  assert.equal(liveProgressEvidence.authority_boundary.opl_can_create_typed_blocker, false);
   assert.equal(liveProgressEvidence.authority_boundary.can_claim_target_domain_ready, false);
 });
 
