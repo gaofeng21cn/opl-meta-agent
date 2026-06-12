@@ -459,6 +459,79 @@
       "can_promote_default_agent_without_gate": false
     }
   },
+  "domain_owner_chain_scaleout": {
+    "surface_kind": "oma_domain_owner_chain_scaleout_evidence_lane",
+    "gate_id": "domain_owner_chain_scaleout",
+    "owner": "opl-meta-agent",
+    "status": "domain_owned_typed_blocker_refs_recorded_not_ready_claim",
+    "opl_consumption_status": "not_ready_by_domain_owned_typed_blocker_refs",
+    "ready_claim_authorized": false,
+    "target_agent_ready_claimed": false,
+    "domain_ready_claimed": false,
+    "production_ready_claimed": false,
+    "target_artifact_authority_claimed": false,
+    "evidence_ref": "contracts/target_agent_owner_chain_evidence.json#/domain_owner_chain_scaleout",
+    "live_stage_run_progress_evidence_ref": "contracts/live_stage_run_progress_evidence.json",
+    "accepted_ref_shapes": [
+      "target_agent_owner_receipt_ref",
+      "target_agent_typed_blocker_ref",
+      "human_gate_ref",
+      "work_order_execution_receipt_ref",
+      "no_regression_ref",
+      "registry_discovery_receipt_ref",
+      "app_runtime_drilldown_receipt_ref",
+      "script_to_pack_gate_receipt_ref"
+    ],
+    "opl_backfill_refs": {
+      "owner_receipt_refs": [],
+      "typed_blocker_refs": [
+        "oma-typed-blocker:stage-replay-human-gate:stage-decomposition:oma_baseline_owner_review/baseline-owner-review-receipt-pending",
+        "oma-typed-blocker:target-owner-evidence-tail:registry_app_consumption/missing-opl-app-live-consumption",
+        "oma-typed-blocker:target-owner-evidence-tail:real_blocked_target_patch_loop_scaleout/missing-real-source-patch-rerun-owner-closeout",
+        "oma-typed-blocker:target-owner-evidence-tail:independent_codex_reviewer_attempt/missing-independent-invocation-trace-receipt",
+        "oma-typed-blocker:target-owner-evidence-tail:standard_target_agent_handoff_convergence/missing-target-vocabulary-owner-closeout",
+        "oma-typed-blocker:target-owner-evidence-tail:script_to_pack_hygiene/missing-machine-gate-for-new-or-retired-script-policy"
+      ],
+      "human_gate_refs": [
+        "human-gate-ref:opl-meta-agent/stage-decomposition/oma_baseline_owner_review"
+      ],
+      "work_order_execution_receipt_refs": [],
+      "no_regression_refs": [
+        "no-regression-ref:opl-meta-agent/stage-replay-human-gate/oma_baseline_owner_review/no-target-repo-mutation",
+        "no-regression-ref:opl-meta-agent/target-owner-evidence-tail/no-target-domain-truth-write",
+        "no-regression-ref:opl-meta-agent/target-owner-evidence-tail/no-target-owner-receipt-body"
+      ]
+    },
+    "observed_ref_counts": {
+      "owner_receipt_ref_count": 0,
+      "typed_blocker_ref_count": 6,
+      "human_gate_ref_count": 1,
+      "work_order_execution_receipt_ref_count": 0,
+      "no_regression_ref_count": 3
+    },
+    "blocked_tail_ids": [
+      "stage_replay_human_gate",
+      "registry_app_consumption",
+      "real_blocked_target_patch_loop_scaleout",
+      "independent_codex_reviewer_attempt",
+      "standard_target_agent_handoff_convergence",
+      "script_to_pack_hygiene"
+    ],
+    "authority_boundary": {
+      "refs_only": true,
+      "oma_owns_owner_chain_refs": true,
+      "opl_can_consume_refs": true,
+      "can_write_target_domain_truth": false,
+      "can_write_target_domain_memory_body": false,
+      "can_mutate_target_domain_artifact_body": false,
+      "can_authorize_target_domain_quality_or_export": false,
+      "can_write_target_owner_receipt_body": false,
+      "can_claim_target_domain_ready": false,
+      "can_claim_domain_ready": false,
+      "can_claim_production_ready": false,
+      "can_promote_default_agent_without_gate": false
+    }
+  },
   "false_authority_flags": {
     "target_domain_ready_claimed": false,
     "production_ready_claimed": false,

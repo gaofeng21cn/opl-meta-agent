@@ -276,3 +276,68 @@ test('target-agent owner-chain evidence accepts live-progress refs without targe
   assert.equal(ownerTailBoundary.can_promote_default_agent_without_gate, false);
   assertFalseAuthorityBoundary(evidence.authority_boundary as JsonObject, 'targetAgentOwnerChainEvidence');
 });
+
+test('OMA domain-owner-chain scaleout exposes typed blocker refs without target authority claims', () => {
+  const evidence = readJson('contracts/target_agent_owner_chain_evidence.json');
+  const liveProgress = readJson('contracts/live_stage_run_progress_evidence.json');
+  const scaleout = evidence.domain_owner_chain_scaleout as JsonObject;
+
+  assert.equal(scaleout.surface_kind, 'oma_domain_owner_chain_scaleout_evidence_lane');
+  assert.equal(scaleout.gate_id, 'domain_owner_chain_scaleout');
+  assert.equal(scaleout.owner, 'opl-meta-agent');
+  assert.equal(scaleout.status, 'domain_owned_typed_blocker_refs_recorded_not_ready_claim');
+  assert.equal(scaleout.opl_consumption_status, 'not_ready_by_domain_owned_typed_blocker_refs');
+  assert.equal(scaleout.ready_claim_authorized, false);
+  assert.equal(scaleout.target_agent_ready_claimed, false);
+  assert.equal(scaleout.domain_ready_claimed, false);
+  assert.equal(scaleout.production_ready_claimed, false);
+  assert.equal(scaleout.target_artifact_authority_claimed, false);
+  assert.equal(scaleout.live_stage_run_progress_evidence_ref, 'contracts/live_stage_run_progress_evidence.json');
+  assertRepoRefExists(scaleout.live_stage_run_progress_evidence_ref as string);
+  assert.deepEqual(asStrings(scaleout.accepted_ref_shapes), [
+    'target_agent_owner_receipt_ref',
+    'target_agent_typed_blocker_ref',
+    'human_gate_ref',
+    'work_order_execution_receipt_ref',
+    'no_regression_ref',
+    'registry_discovery_receipt_ref',
+    'app_runtime_drilldown_receipt_ref',
+    'script_to_pack_gate_receipt_ref',
+  ]);
+
+  const backfillRefs = scaleout.opl_backfill_refs as JsonObject;
+  const liveRefs = liveProgress.refs as JsonObject;
+  assert.deepEqual(asStrings(backfillRefs.owner_receipt_refs), asStrings(liveRefs.owner_receipt_refs));
+  assert.deepEqual(asStrings(backfillRefs.typed_blocker_refs), asStrings(liveRefs.typed_blocker_refs));
+  assert.deepEqual(asStrings(backfillRefs.human_gate_refs), asStrings(liveRefs.human_gate_refs));
+  assert.deepEqual(asStrings(backfillRefs.no_regression_refs), asStrings(liveRefs.no_regression_refs));
+  assert.deepEqual(scaleout.observed_ref_counts, {
+    owner_receipt_ref_count: 0,
+    typed_blocker_ref_count: 6,
+    human_gate_ref_count: 1,
+    work_order_execution_receipt_ref_count: 0,
+    no_regression_ref_count: 3,
+  });
+  assert.deepEqual(asStrings(scaleout.blocked_tail_ids), [
+    'stage_replay_human_gate',
+    'registry_app_consumption',
+    'real_blocked_target_patch_loop_scaleout',
+    'independent_codex_reviewer_attempt',
+    'standard_target_agent_handoff_convergence',
+    'script_to_pack_hygiene',
+  ]);
+
+  const boundary = scaleout.authority_boundary as JsonObject;
+  assert.equal(boundary.refs_only, true);
+  assert.equal(boundary.oma_owns_owner_chain_refs, true);
+  assert.equal(boundary.opl_can_consume_refs, true);
+  assert.equal(boundary.can_write_target_domain_truth, false);
+  assert.equal(boundary.can_write_target_domain_memory_body, false);
+  assert.equal(boundary.can_mutate_target_domain_artifact_body, false);
+  assert.equal(boundary.can_authorize_target_domain_quality_or_export, false);
+  assert.equal(boundary.can_write_target_owner_receipt_body, false);
+  assert.equal(boundary.can_claim_target_domain_ready, false);
+  assert.equal(boundary.can_claim_domain_ready, false);
+  assert.equal(boundary.can_claim_production_ready, false);
+  assert.equal(boundary.can_promote_default_agent_without_gate, false);
+});
