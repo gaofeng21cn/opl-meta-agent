@@ -32,6 +32,7 @@ Machine boundary: 本目录只记录人读治理过程、覆盖 ledger、退役 
 | Script-to-pack hygiene | Detailed script/materializer classification SSOT is `docs/active/opl-private-implementation-migration-inventory.md` plus `runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy/script_to_pack_retirement_gates` and `tests/source-purity.test.ts`. |
 | Evidence-tail currentness | Registry/App consumption, production-consumption, patch-loop, independent reviewer and target-agent handoff evidence tails return to active plan, status, contracts, OPL read model and tests. Dated proof transcripts are not current truth. |
 | Active decision compression | The old decisions page carried a long incremental decision ledger for generated surfaces, developer work orders, typed closeouts, stage-native artifacts, State Index, StageRun, executor policy, Progress-First and clean-room intake. It is now folded into theme-level durable decisions in `docs/decisions.md`; detailed current mechanics remain in architecture, invariants, active plan, private inventory and machine contracts. |
+| Private inventory retired-tail compression | The active private implementation inventory now keeps current script classifications and migration gates only. Retired surface itemization lives in `retired-surface-provenance.md` plus source-purity / script-morphology machine guards. |
 
 ## Coverage Summary
 
@@ -59,6 +60,9 @@ ledger, proof transcript, or completion claim for the parent six-repo goal.
   package scripts, pack compiler input, authority function policy, source-purity
   tests and tracked `agent/*/README.md` support indexes. No source, contract,
   test, workflow, package or CLI surface changed in this tranche.
+- Current private-inventory compression: active inventory retired-tail detail was
+  reduced to a pointer plus migration gate rule; the itemized no-resurrection
+  list remains in `retired-surface-provenance.md` and machine guards.
 - Retired / guarded: target-agent old fields, external-agent takeover
   identifiers, `takeover:test --fixture`, implicit fixture graph, direct graph
   compatibility, generic `external_agent/*` patch-ref fallback, compatibility
