@@ -35,13 +35,22 @@ OPL 标准消费的 live StageRun progress 合同是 `contracts/live_stage_run_p
 
 `contracts/target_agent_owner_chain_evidence.json#/domain_owner_chain_scaleout`
 是 OMA 给 OPL `domain_owner_chain_scaleout` gate 的 refs-only backfill；它把
-human gate blocker、五个 target-agent owner evidence tail blocker 和
-no-regression refs 汇总成可消费 owner-chain lane。该 ref 仍是 not-ready
-claim，不真实修改 target repo，不生成 candidate body，不授权 target-domain
-ready、production ready、quality/export verdict、target artifact authority、
-human approval 或 target owner receipt body。
+human gate blocker、target-agent owner evidence tail blocker 和 no-regression refs
+汇总成可消费 owner-chain lane。该 ref 仍是 not-ready claim，不真实修改 target
+repo，不生成 candidate body，不授权 target-domain ready、production ready、
+quality/export verdict、target artifact authority、human approval 或 target owner
+receipt body。具体 blocker ids、tail count、accepted ref shapes 和 current
+closure fields 由 `contracts/target_agent_owner_chain_evidence.json`、production
+acceptance contract 和 focused tests 持有。
 
-`oma_baseline_owner_review` 的 Stage replay human gate tail 当前以合法 typed blocker closure 关闭：`contracts/target_agent_owner_chain_evidence.json#stage_replay_human_gate_blocker_closure` 绑定 `contracts/production_acceptance/meta-agent-production-acceptance.json#/stage_replay_human_gate_blocker_summary`，OPL missing-receipt ref 为 `opl://stage-replay-missing-receipt/opl-meta-agent%2Fstage-decomposition%2Fhuman_gate%3Aoma_baseline_owner_review`，终态是 `blocked_by_domain_owned_typed_blocker_ref` / `closed_as_typed_blocker_not_success`。该 closure 的 `success_receipt_count=0`，只说明 baseline owner review receipt pending；它不授权 human approval、replay success、target-agent ready、domain ready、production ready 或 default promotion。
+`oma_baseline_owner_review` 的 Stage replay human gate tail 当前只按 domain-owned
+typed blocker closure 读取。Status 不冻结 missing-receipt URL、closure status
+string、receipt count 或 blocker ref；这些机器字段归
+`contracts/target_agent_owner_chain_evidence.json#stage_replay_human_gate_blocker_closure`、
+`contracts/production_acceptance/meta-agent-production-acceptance.json#/stage_replay_human_gate_blocker_summary`
+和 focused tests。当前读法仍是：baseline owner review receipt pending 不能授权
+human approval、replay success、target-agent ready、domain ready、production ready
+或 default promotion。
 
 StageRun overclaim boundary 已进入机器合同：`contracts/stage_run_kernel_profile.json#agent_building_stage_run_canary.overclaim_boundary` 只允许声明 repo-local canary shape 可消费、controlled fixture strategy refs 存在、owner receipt 或 typed blocker ref 存在、legacy residue guard 已声明；禁止升级为 live domain progress、target-agent readiness、quality/export verdict、Agent Lab promotion readiness、production readiness、App live rendering、human approval、default promotion 或 OPL 物化 owner receipt body。`legacy_runtime_residue_guard` 把旧 runtime/status/workbench residue 守卫绑定到 functional privatization audit、default-caller deletion evidence、source-purity scan receipt 和 source-purity tests；它只能证明 guard 存在，不能授权物理删除或恢复 repo-owned runtime wrapper。
 
