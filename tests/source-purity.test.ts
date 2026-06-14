@@ -655,7 +655,12 @@ test('developer work-order policy defaults are contract-owned and helper-project
 
   assert.equal(contract.surface_kind, 'developer_work_order_policy');
   assert.equal(contract.state, 'active_contract');
-  assert.equal(contract.retired_script_projection_ref, 'scripts/lib/work-order-policy-constants.ts');
+  assert.equal(
+    contract.retired_script_projection_tombstone_ref,
+    'scripts/lib/work-order-policy-constants.ts',
+  );
+  assert.equal(contract.retired_script_projection_no_resurrection, true);
+  assert.equal(Object.hasOwn(contract, 'retired_script_projection_ref'), false);
   assert.deepEqual(asStrings(contract.active_policy_consumer_refs), [
     'scripts/lib/work-order-refs.ts',
   ]);
@@ -728,7 +733,12 @@ test('standard Foundry policies are contract-owned and helper-projection free', 
 
   assert.equal(contract.surface_kind, 'standard_foundry_policies');
   assert.equal(contract.state, 'active_contract');
-  assert.equal(contract.retired_script_projection_ref, 'scripts/lib/standard-foundry-policies.ts');
+  assert.equal(
+    contract.retired_script_projection_tombstone_ref,
+    'scripts/lib/standard-foundry-policies.ts',
+  );
+  assert.equal(contract.retired_script_projection_no_resurrection, true);
+  assert.equal(Object.hasOwn(contract, 'retired_script_projection_ref'), false);
   assert.deepEqual(asStrings(contract.active_policy_consumer_refs), [
     'scripts/lib/stage-decomposition-pack-draft-parts/shared.ts',
   ]);

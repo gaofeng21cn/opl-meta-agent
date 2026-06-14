@@ -5,7 +5,8 @@
   "purpose": "stable default policy for target-agent developer work orders",
   "state": "active_contract",
   "machine_boundary": "This contract is the stable policy home for OMA developer work-order defaults. Active callers read this contract through their owner helper modules; no standalone policy projection helper owns this truth.",
-  "retired_script_projection_ref": "scripts/lib/work-order-policy-constants.ts",
+  "retired_script_projection_tombstone_ref": "scripts/lib/work-order-policy-constants.ts",
+  "retired_script_projection_no_resurrection": true,
   "active_policy_consumer_refs": [
     "scripts/lib/work-order-refs.ts"
   ],
