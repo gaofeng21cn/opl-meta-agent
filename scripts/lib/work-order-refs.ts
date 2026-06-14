@@ -1,8 +1,6 @@
 import fs from 'node:fs';
 import type { JsonObject } from './domain-pack.ts';
 
-export const DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF = 'contracts/developer_work_order_policy.json';
-
 type DeveloperWorkOrderPolicy = JsonObject;
 
 function contractStringList(policy: DeveloperWorkOrderPolicy, field: string): string[] {
@@ -27,7 +25,7 @@ function readDeveloperWorkOrderPolicy(): DeveloperWorkOrderPolicy {
   return policy;
 }
 
-export const DEVELOPER_WORK_ORDER_POLICY = readDeveloperWorkOrderPolicy();
+const DEVELOPER_WORK_ORDER_POLICY = readDeveloperWorkOrderPolicy();
 
 export const DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES = contractStringList(
   DEVELOPER_WORK_ORDER_POLICY,

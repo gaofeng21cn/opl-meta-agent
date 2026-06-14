@@ -3,8 +3,6 @@ import path from 'node:path';
 import type { JsonObject } from '../domain-pack.ts';
 import type { TargetAgent } from '../meta-agent-loop-io.ts';
 
-export const STANDARD_FOUNDRY_POLICIES_CONTRACT_REF = 'contracts/standard_foundry_policies.json';
-
 type StandardFoundryPolicies = JsonObject;
 
 export const FORBIDDEN_GENERIC_OWNER_ROLES = [
@@ -86,7 +84,7 @@ function readStandardFoundryPolicies(): StandardFoundryPolicies {
   return policy;
 }
 
-export const STANDARD_FOUNDRY_POLICIES = readStandardFoundryPolicies();
+const STANDARD_FOUNDRY_POLICIES = readStandardFoundryPolicies();
 
 export const USER_STAGE_LOG_REQUIRED_FIELDS = stringList(
   STANDARD_FOUNDRY_POLICIES,

@@ -124,7 +124,7 @@ function valuesAsStrings(record: JsonObject): string[] {
     .filter((value): value is string => typeof value === 'string' && value.trim().length > 0);
 }
 
-export function platformOnlyProgressRefs(machineCloseoutRefs: JsonObject): string[] {
+function platformOnlyProgressRefs(machineCloseoutRefs: JsonObject): string[] {
   return uniqueRefs([
     ...valuesAsStrings(machineCloseoutRefs),
     'owner_receipt_coordination_record',

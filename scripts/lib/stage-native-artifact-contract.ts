@@ -36,7 +36,7 @@ function stageNativeAuthorityBoundary(): JsonObject {
   };
 }
 
-export function stageNativeArtifactRefs({
+function stageNativeArtifactRefs({
   domainId,
   stageId,
   attemptId = '{stage_attempt_id}',
@@ -65,7 +65,7 @@ export function stageNativeArtifactRefs({
   };
 }
 
-export function buildStageFolderContract({
+function buildStageFolderContract({
   domainId,
   stageId,
   attemptId = '{stage_attempt_id}',
