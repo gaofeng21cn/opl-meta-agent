@@ -121,9 +121,9 @@ The loop turns each run into reviewable improvement material:
 <details>
   <summary><strong>Technical boundary for operators</strong></summary>
 
-- The standard Skill entry is natural language: a user can ask Codex to build an OPL-compatible agent for a named delivery workflow. Codex maps that request to `domain_id`, `domain_label`, `delivery_domain`, `target_brief`, `output_dir`, `opl_bin`, stage-decomposition runner settings, and `ai_reviewer_evaluation`, then invokes the `build-agent-baseline` action.
-- `build-agent-baseline`, `takeover:test`, `agent:evidence`, and `execute:external-work-order` are action surfaces for baseline generation, test takeover, evidence-to-work-order materialization, and OPL work-order delegation. The command examples below are entry examples, not the current truth owner.
-- Current technical truth lives in [Status](./docs/status.md), [Architecture](./docs/architecture.md), [Invariants](./docs/invariants.md), [Decisions](./docs/decisions.md), and the machine-readable contracts under [`contracts/`](./contracts/).
+- The standard Skill entry is natural language: a user can ask Codex to build an OPL-compatible agent for a named delivery workflow, and OPL Meta Agent turns that request into a gated baseline-building path.
+- Action surfaces such as `build-agent-baseline`, `takeover:test`, `agent:evidence`, and `execute:external-work-order` are described by package scripts, contracts, source, and tests; README command mentions are only entry pointers.
+- Current technical truth lives in [Status](./docs/status.md), [Architecture](./docs/architecture.md), [Invariants](./docs/invariants.md), [Decisions](./docs/decisions.md), package scripts, and the machine-readable contracts under [`contracts/`](./contracts/).
 - OPL Framework owns generated interfaces, Agent Lab, work-order execution, registry/discovery, App/workbench projection, absorb/cleanup, and promotion gates. This repo supplies agent-building semantics and refs-only outputs.
 - StageRun canary, generated interface readiness, registry/App projection, suite pass, work-order shape, mechanism proposals, or refs-only scaleout closeout cannot become live progress, target-domain readiness, quality/export verdict, owner receipt body, App live rendering, human approval, or default promotion.
 
@@ -140,13 +140,11 @@ The loop turns each run into reviewable improvement material:
 <details>
   <summary><strong>Start here if you are handing this repo to Codex or another agent</strong></summary>
 
-- No. Cloning this repo does not auto-install OPL Framework or the runtime substrate. To make OPL Meta Agent usable, first make the current `one-person-lab` checkout or release bundle available, then run the repo's own test and baseline commands below.
-- Read this README plus [Project](./docs/project.md), [Status](./docs/status.md), [Architecture](./docs/architecture.md), [Invariants](./docs/invariants.md), and [Decisions](./docs/decisions.md).
-- When changing contracts, README, docs, or smoke scripts, update `tests/*.test.ts` so boundary flags still prove proposal-only / refs-only behavior.
-- This repo owns agent-building semantics and testing/self-evolution orchestration. Use OPL Agent Lab for real runs, longline suites, mechanism read models, and evolution segments.
-- Do not treat `mechanism_patch_proposal` as an adopted mechanism. It is only a candidate that may enter a gate.
-- Do not treat a controlled canary, operator summary, overclaim-boundary pass, or legacy residue guard as live progress, production readiness, target-owner approval, or App rendering proof.
-- Do not treat takeover as ownership of the target agent's domain truth, memory body, artifact authority, or quality verdict.
+- Cloning this repo does not install the OPL Framework or runtime substrate. If you need live runs, prepare the current `one-person-lab` checkout or release bundle first.
+- Read this README, then [Project](./docs/project.md), [Status](./docs/status.md), [Architecture](./docs/architecture.md), [Invariants](./docs/invariants.md), [Decisions](./docs/decisions.md), and the contracts under [`contracts/`](./contracts/).
+- Use package scripts and `contracts/action_catalog.json` for current command surfaces; update focused tests when changing contracts, README, docs, smoke scripts, or action boundaries.
+- This repo owns agent-building semantics and testing/self-evolution orchestration. OPL Agent Lab owns real runs, longline suites, mechanism read models, work-order execution, and promotion gates.
+- Treat `mechanism_patch_proposal`, controlled canary output, operator summaries, overclaim-boundary passes, and refs-only scaleout as proposal or evidence surfaces only, not adopted mechanisms, live progress, target-owner approval, App rendering proof, or target-domain truth.
 
 </details>
 
@@ -157,23 +155,7 @@ npm run typecheck
 npm test
 ```
 
-`typecheck` runs TypeScript's compiler gate over `scripts/**/*.ts` and `tests/**/*.ts`. The test suite verifies contract fields, the OPL-generated interface bundle, real `agent/` domain pack files, stage prompt/skill/knowledge/evaluation ref path resolution, non-empty files, and placeholder absence.
-
-```bash
-npm run build-agent-baseline -- --output-dir /Users/gaofeng/workspace/research-workbench-agent --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl --ai-reviewer-evaluation /tmp/reviewer-eval.json --domain-id research-workbench-agent --domain-label "Research Workbench Agent" --delivery-domain research_workbench --target-brief "Create an OPL-compatible research workbench agent that turns a user research question into a scoped plan, evidence ledger, and owner-gated brief."
-```
-
-```bash
-npm run takeover:test -- --agent-dir /tmp/opl-meta-agent-demo/research-workbench-agent --output-dir /tmp/opl-meta-agent-takeover --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl
-```
-
-```bash
-npm run agent:evidence -- --agent-repo /Users/gaofeng/workspace/med-autoscience --output-dir /tmp/opl-meta-agent-agent-evidence --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl --ai-reviewer-evaluation /tmp/mas-reviewer-eval.json
-```
-
-```bash
-/Users/gaofeng/workspace/one-person-lab/bin/opl agents interfaces --repo-dir . --json
-```
+`typecheck` runs TypeScript's compiler gate over `scripts/**/*.ts` and `tests/**/*.ts`. `npm test` verifies contract fields, the OPL-generated interface bundle, real `agent/` domain pack files, stage ref resolution, non-empty files, and placeholder absence. Baseline, takeover, evidence, and interface commands are maintained in `package.json`, `contracts/action_catalog.json`, source, and focused tests.
 
 ## Further Reading
 

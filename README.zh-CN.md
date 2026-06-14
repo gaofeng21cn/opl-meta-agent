@@ -121,9 +121,9 @@ Machine boundary: 本 README 是人读仓库入口。机器真相继续归 `cont
 <details>
   <summary><strong>给技术操作者看的机制说明</strong></summary>
 
-- 标准 Skill 入口是自然语言请求：用户可以直接对 Codex 说“帮我做一个能交付 X 的 OPL-compatible 智能体，输出到 `<repo-dir>`，质量门槛是 Y，禁止 Z”。Codex 先把这句话归一成 `domain_id`、`domain_label`、`delivery_domain`、`target_brief`、`output_dir`、`opl_bin`、stage-decomposition runner 设置和 `ai_reviewer_evaluation`，再调用 `build-agent-baseline` action。
-- `build-agent-baseline`、`takeover:test`、`agent:evidence` 和 `execute:external-work-order` 是基线生成、测试接管、证据到 work order 物化、以及 OPL work-order 委托的 action surface。下面的命令是入口示例，不是当前 truth owner。
-- 当前技术真相在 [当前状态](./docs/status.md)、[架构](./docs/architecture.md)、[不可变约束](./docs/invariants.md)、[关键决策](./docs/decisions.md)，以及 [`contracts/`](./contracts/) 下的机器合同。
+- 标准 Skill 入口是自然语言请求：用户可以直接对 Codex 说要为某个交付工作流构建 OPL-compatible 智能体，OPL Meta Agent 会把它推进到受门控的基线生成路径。
+- `build-agent-baseline`、`takeover:test`、`agent:evidence` 和 `execute:external-work-order` 这类 action surface 由 package scripts、contracts、source 和 tests 描述；README 里的命令只做入口指针。
+- 当前技术真相在 [当前状态](./docs/status.md)、[架构](./docs/architecture.md)、[不可变约束](./docs/invariants.md)、[关键决策](./docs/decisions.md)、package scripts，以及 [`contracts/`](./contracts/) 下的机器合同。
 - OPL Framework 持有 generated interfaces、Agent Lab、work-order execution、registry/discovery、App/workbench projection、absorb/cleanup 和 promotion gates。本仓提供 agent-building semantics 和 refs-only outputs。
 - StageRun canary、generated interface readiness、registry/App projection、suite pass、work-order shape、mechanism proposal 或 refs-only scaleout closeout 都不能升级成 live progress、target-domain readiness、quality/export verdict、owner receipt body、App live rendering、human approval 或 default promotion。
 
@@ -140,13 +140,11 @@ Machine boundary: 本 README 是人读仓库入口。机器真相继续归 `cont
 <details>
   <summary><strong>如果你准备把这个仓直接交给 Codex 或其他智能体，先看这里</strong></summary>
 
-- 不会自动安装。单独 clone 这个仓不会把 OPL Framework 或运行时 substrate 一起装好。要把 OPL Meta Agent 用到能用，先准备好当前的 `one-person-lab` checkout 或 release bundle，然后再运行本仓自己的测试和 baseline 命令。
-- 先读本 README、[项目概览](./docs/project.md)、[当前状态](./docs/status.md)、[架构](./docs/architecture.md)、[不可变约束](./docs/invariants.md) 和 [关键决策](./docs/decisions.md)。
-- 修改 contracts、README、docs 或 smoke scripts 时，同步更新 `tests/*.test.ts`，确保边界标记仍然证明本仓只产出建议和引用，不直接采用或写入目标领域内容。
-- 本仓只负责智能体构建语义、测试编排和自进化候选组织。需要真实运行、长线测试、机制读模型或演化片段时，调用 OPL Agent Lab。
-- 不要把 `mechanism_patch_proposal` 当作已采用机制；它只是可进入门槛审查的候选。
-- 不要把 controlled canary、operator summary、overclaim-boundary pass 或 legacy residue guard 当成 live progress、production readiness、target-owner approval 或 App rendering proof。
-- 不要把测试接管理解成接管目标智能体的领域事实、记忆正文、产物权威或质量裁决。
+- 单独 clone 这个仓不会安装 OPL Framework 或运行时 substrate。需要 live run 时，先准备当前 `one-person-lab` checkout 或 release bundle。
+- 先读本 README，再读 [项目概览](./docs/project.md)、[当前状态](./docs/status.md)、[架构](./docs/architecture.md)、[不可变约束](./docs/invariants.md)、[关键决策](./docs/decisions.md) 和 [`contracts/`](./contracts/)。
+- 当前命令面以 package scripts 和 `contracts/action_catalog.json` 为准；修改 contracts、README、docs、smoke scripts 或 action 边界时，同步更新聚焦测试。
+- 本仓只负责智能体构建语义、测试编排和自进化候选组织。真实运行、长线测试、机制读模型、work-order execution 和 promotion gates 归 OPL Agent Lab / OPL Framework。
+- `mechanism_patch_proposal`、controlled canary、operator summary、overclaim-boundary pass 和 refs-only scaleout 都只是候选或证据面，不能写成已采用机制、live progress、target-owner approval、App rendering proof 或目标领域真相。
 
 </details>
 
@@ -157,23 +155,7 @@ npm run typecheck
 npm test
 ```
 
-`typecheck` 会用 TypeScript compiler 检查 `scripts/**/*.ts` 和 `tests/**/*.ts`。测试内容包括合同字段、OPL 生成接口 bundle、`agent/` domain pack 文件存在性、stage prompt/skill/knowledge/evaluation refs 真实路径、非空文件与占位符检查。
-
-```bash
-npm run build-agent-baseline -- --output-dir /Users/gaofeng/workspace/research-workbench-agent --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl --ai-reviewer-evaluation /tmp/reviewer-eval.json --domain-id research-workbench-agent --domain-label "Research Workbench Agent" --delivery-domain research_workbench --target-brief "Create an OPL-compatible research workbench agent that turns a user research question into a scoped plan, evidence ledger, and owner-gated brief."
-```
-
-```bash
-npm run takeover:test -- --agent-dir /tmp/opl-meta-agent-demo/research-workbench-agent --output-dir /tmp/opl-meta-agent-takeover --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl
-```
-
-```bash
-npm run agent:evidence -- --agent-repo /Users/gaofeng/workspace/med-autoscience --output-dir /tmp/opl-meta-agent-agent-evidence --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl --ai-reviewer-evaluation /tmp/mas-reviewer-eval.json
-```
-
-```bash
-/Users/gaofeng/workspace/one-person-lab/bin/opl agents interfaces --repo-dir . --json
-```
+`typecheck` 会用 TypeScript compiler 检查 `scripts/**/*.ts` 和 `tests/**/*.ts`。`npm test` 验证合同字段、OPL 生成接口 bundle、真实 `agent/` domain pack 文件、stage ref 解析、非空文件与占位符缺席。Baseline、takeover、evidence 和 interface 命令由 `package.json`、`contracts/action_catalog.json`、source 与聚焦测试维护。
 
 ## 延伸阅读
 
