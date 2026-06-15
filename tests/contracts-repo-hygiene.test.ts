@@ -20,9 +20,16 @@ test('verification entrypoints route caches outside the checkout and expose hygi
   assert.equal(packageJson.scripts['verify'], 'scripts/verify.sh');
   assert.equal(packageJson.scripts['repo:hygiene'], 'scripts/repo-hygiene.sh');
   assert.equal(packageJson.scripts['repo:hygiene:fix'], 'scripts/repo-hygiene.sh --fix');
-  assert.match(packageJson.scripts['test'], /run-with-repo-temp-env\.sh/);
+  assert.equal(packageJson.scripts['test'], 'npm run test:smoke');
+  assert.match(packageJson.scripts['test:smoke'], /run-with-repo-temp-env\.sh/);
+  assert.match(packageJson.scripts['test:behavior'], /run-with-repo-temp-env\.sh/);
+  assert.match(packageJson.scripts['test:full'], /tests\/\*\.test\.ts/);
   assert.match(packageJson.scripts['typecheck'], /run-with-repo-temp-env\.sh/);
   assert.match(verifyScript, /run-with-repo-temp-env\.sh/);
+  assert.match(verifyScript, /npm run typecheck/);
+  assert.match(verifyScript, /npm run test:behavior/);
+  assert.match(verifyScript, /npm run test:full/);
+  assert.match(verifyScript, /lane" == "cleanup"/);
   assert.match(verifyScript, /scripts\/repo-hygiene\.sh --fix/);
   [
     'OPL_REPO_TEMP_ROOT',

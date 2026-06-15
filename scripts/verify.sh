@@ -7,12 +7,21 @@ fi
 
 lane="${1:-smoke}"
 
-scripts/repo-hygiene.sh --fix
+if [[ "$lane" == "cleanup" || "$lane" == "fix" || "$lane" == "hygiene:fix" ]]; then
+  scripts/repo-hygiene.sh --fix
+  scripts/repo-hygiene.sh
+  exit 0
+fi
+
 scripts/repo-hygiene.sh
 
 case "$lane" in
   smoke)
+    npm run typecheck
     npm test
+    ;;
+  behavior)
+    npm run test:behavior
     ;;
   typecheck)
     npm run typecheck
@@ -27,13 +36,13 @@ case "$lane" in
     ;;
   full)
     npm run typecheck
-    npm test
+    npm run test:full
     node scripts/sync-stage-control-plane.ts --check
     node scripts/check-source-structure.ts --advisory
     ;;
   *)
     echo "Unknown lane: $lane" >&2
-    echo "Usage: scripts/verify.sh [smoke|typecheck|structure|line-budget|structure:strict|line-budget:strict|full]" >&2
+    echo "Usage: scripts/verify.sh [smoke|behavior|typecheck|structure|line-budget|structure:strict|line-budget:strict|full|cleanup]" >&2
     exit 1
     ;;
 esac

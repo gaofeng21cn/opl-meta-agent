@@ -34,9 +34,10 @@ OPL Framework 持有通用 runtime、Agent Lab、queue、stage attempt ledger、
 默认验证入口：
 
 ```bash
-npm run typecheck
-npm test
+scripts/verify.sh
 ```
+
+`npm test` / `npm run test:smoke` 是默认轻量合同与 source-purity 入口；`npm run test:behavior` 覆盖 bootstrap、external-suite、work-order、owner-chain 等 fixture-oracle/behavior tests；`npm run test:full` 是完整 Node test suite。`scripts/verify.sh cleanup` 才执行 repo hygiene fix，默认验证只检查不删除本地 ignored 产物。
 
 <!-- OPL_FLOW_MANAGED_START -->
 OPL Flow managed surface: repo_agent_instructions

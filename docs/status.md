@@ -88,8 +88,7 @@ lane；`scripts/verify.sh structure:strict`、`npm run source-structure:strict`
 commands、do-not-edit consumer surface 和 false-authority flags。维护时只编辑
 source / parts，用 `npm run stage-control:write` 重建 aggregate 与 bundle
 manifest，用 `npm run stage-control:check` 防止 drift。`scripts/verify.sh smoke`、
-`npm test`、`npm run typecheck` 和 repo hygiene 继续验证当前合同、源码、测试与生成物边界，
-不把普通开发默认升级为行数硬门。
+`npm test` / `npm run test:smoke`、`npm run typecheck` 和 repo hygiene 继续验证当前核心合同、源码、测试与生成物边界，不把普通开发默认升级为行数硬门。bootstrap、external-suite、work-order、owner-chain 与 live-progress fixture-oracle behavior tests 进入显式 `npm run test:behavior`；完整 Node suite 进入 `npm run test:full` / `scripts/verify.sh full`。默认验证只检查 repo hygiene；需要删除 ignored cache/build byproducts 时显式运行 `scripts/verify.sh cleanup`。
 
 ## 当前证据尾项
 

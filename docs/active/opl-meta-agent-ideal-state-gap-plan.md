@@ -153,7 +153,7 @@ Live truth inputs:
 
 - `AGENTS.md`、`TASTE.md`、核心五件套、本文、ideal-state reference、private implementation inventory。
 - `contracts/opl_domain_manifest_registration.json`、`contracts/app_workbench_projection.json`、`contracts/real_target_agent_scaleout_evidence.json`、production acceptance contracts、generated surface handoff、stage control plane。
-- OPL `agents interfaces --repo-dir <this-repo> --json`、OPL framework readiness / App drilldown / OMA production-consumption read model、`npm test` / `npm run verify`。
+- OPL `agents interfaces --repo-dir <this-repo> --json`、OPL framework readiness / App drilldown / OMA production-consumption read model、`npm test` / `npm run test:smoke` / `npm run test:behavior` / `npm run verify`。
 
 Required actions:
 
@@ -171,7 +171,7 @@ Non-goals:
 Verification commands:
 
 - Docs-only：`rtk git diff --check`、`rtk rg -n "<<<<<<<|>>>>>>>|=======" README* docs agent/*/README.md`、docs inventory sanity。
-- 触及 contracts/source/tests：`rtk npm test` 或 `rtk npm run verify`。
+- 触及 contracts/source/tests：默认 `rtk npm test` / `rtk npm run test:smoke` 或 `rtk npm run verify`；触及 bootstrap、external-suite、work-order、owner-chain 或 live-progress behavior 时补 `rtk npm run test:behavior`。
 
 Completion gate:
 
@@ -193,5 +193,5 @@ Completion gate:
 ## 验证口径
 
 - 文档维护最低验证：`git diff --check`。
-- 本仓结构与 contract 口径：`npm test` 或 `npm run verify`。
+- 本仓结构与 contract 口径：`npm test` / `npm run test:smoke` 或 `npm run verify`；behavior/full evidence 显式使用 `npm run test:behavior` / `npm run test:full`。
 - 行为声明只固定 machine-readable contracts、stage/action refs、authority function refs、generated interface readiness、Agent Lab receipts、developer work-order receipts 和 no-forbidden-write boundary；测试不得固定本文措辞。

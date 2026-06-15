@@ -133,7 +133,7 @@ The loop turns each run into reviewable improvement material:
 
 1. Start here, then continue to [Project](./docs/project.md) and [Status](./docs/status.md).
 2. Technical readers should read [Architecture](./docs/architecture.md), [Invariants](./docs/invariants.md), and [Decisions](./docs/decisions.md).
-3. Machine-readable surfaces live under [`contracts/`](./contracts/), smoke scripts live under [`scripts/`](./scripts/), and the test entry is `npm test`.
+3. Machine-readable surfaces live under [`contracts/`](./contracts/), smoke scripts live under [`scripts/`](./scripts/), and the default test entry is `npm test` / `npm run test:smoke`.
 
 ## Agent And Operator Quick Start
 
@@ -153,9 +153,11 @@ The loop turns each run into reviewable improvement material:
 ```bash
 npm run typecheck
 npm test
+npm run test:behavior
+npm run test:full
 ```
 
-`typecheck` runs TypeScript's compiler gate over `scripts/**/*.ts` and `tests/**/*.ts`. `npm test` verifies contract fields, the OPL-generated interface bundle, real `agent/` domain pack files, stage ref resolution, non-empty files, and placeholder absence. Baseline, takeover, evidence, and interface commands are maintained in `package.json`, `contracts/action_catalog.json`, source, and focused tests.
+`typecheck` runs TypeScript's compiler gate over `scripts/**/*.ts` and `tests/**/*.ts`. `npm test` aliases `npm run test:smoke`, the default lightweight contract/source-purity lane. `npm run test:behavior` covers bootstrap, external-suite, work-order, owner-chain, and live-progress fixture-oracle behavior tests. `npm run test:full` runs the full Node test suite. Baseline, takeover, evidence, and interface commands are maintained in `package.json`, `contracts/action_catalog.json`, source, and focused tests.
 
 ## Further Reading
 
