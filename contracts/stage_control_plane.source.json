@@ -7,6 +7,7 @@
   "aggregate_ref": "contracts/stage_control_plane.json",
   "source_root_ref": "contracts/stage_control_plane.parts/root.json",
   "leaf_index_ref": "contracts/stage_control_plane.leaf-index.json",
+  "bundle_manifest_ref": "contracts/stage_control_plane.bundle-manifest.json",
   "stage_leaf_dir_ref": "contracts/stage_control_plane.parts/stages/",
   "stage_native_artifact_contract_root_ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/root.json",
   "stage_native_artifact_contract_leaf_dir_ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/",
@@ -57,6 +58,7 @@
     "split_command": "npm run stage-control:split",
     "write_command": "npm run stage-control:write",
     "check_command": "npm run stage-control:check",
+    "bundle_manifest_ref": "contracts/stage_control_plane.bundle-manifest.json",
     "must_not_break_existing_aggregate_ref": true,
     "aggregate_consumers_continue_to_read": "contracts/stage_control_plane.json"
   },

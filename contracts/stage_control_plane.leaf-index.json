@@ -5,6 +5,7 @@
   "target_domain_id": "opl-meta-agent",
   "source_contract_ref": "contracts/stage_control_plane.source.json",
   "aggregate_ref": "contracts/stage_control_plane.json",
+  "bundle_manifest_ref": "contracts/stage_control_plane.bundle-manifest.json",
   "stage_order": [
     "intent-intake",
     "web-experience-research",
@@ -113,6 +114,7 @@
   "maintenance_policy": {
     "leaf_files_are_source": true,
     "aggregate_reconstruction_command": "npm run stage-control:write",
-    "aggregate_drift_check_command": "npm run stage-control:check"
+    "aggregate_drift_check_command": "npm run stage-control:check",
+    "generated_bundle_manifest_ref": "contracts/stage_control_plane.bundle-manifest.json"
   }
 }

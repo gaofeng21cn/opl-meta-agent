@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 type JsonObject = Record<string, any>;
@@ -10,6 +11,7 @@ const refs = {
   aggregate: 'contracts/stage_control_plane.json',
   source: 'contracts/stage_control_plane.source.json',
   leafIndex: 'contracts/stage_control_plane.leaf-index.json',
+  bundleManifest: 'contracts/stage_control_plane.bundle-manifest.json',
   root: 'contracts/stage_control_plane.parts/root.json',
   stageLeafDir: 'contracts/stage_control_plane.parts/stages',
   stageNativeRoot: 'contracts/stage_control_plane.parts/stage_native_artifact_contract/root.json',
@@ -58,6 +60,39 @@ function stageNativeFileRef(stageId: string): string {
   return `${refs.stageNativeLeafDir}/${stageId}.json`;
 }
 
+function asObjects(value: unknown, label: string): JsonObject[] {
+  if (!Array.isArray(value)) {
+    throw new Error(`${label} must be an array.`);
+  }
+  return value as JsonObject[];
+}
+
+function sourceDigestInputRefs(source: JsonObject, index: JsonObject): string[] {
+  return [
+    refs.source,
+    refs.leafIndex,
+    String(source.source_root_ref),
+    String(source.stage_native_artifact_contract_root_ref),
+    ...asObjects(index.stages, 'stage control leaf index stages').map((entry) => String(entry.ref)),
+    ...asObjects(index.stage_native_artifact_contracts, 'stage control leaf index native contracts')
+      .map((entry) => String(entry.ref)),
+  ];
+}
+
+function sha256ForFiles(relativePaths: string[]): string {
+  const hash = crypto.createHash('sha256');
+  relativePaths.forEach((relativePath) => {
+    const content = fs.readFileSync(absolute(relativePath), 'utf8');
+    hash.update(relativePath);
+    hash.update('\0');
+    hash.update(String(Buffer.byteLength(content)));
+    hash.update('\0');
+    hash.update(content);
+    hash.update('\0');
+  });
+  return `sha256:${hash.digest('hex')}`;
+}
+
 function resetGeneratedDir(relativePath: string): void {
   fs.rmSync(absolute(relativePath), { recursive: true, force: true });
   fs.mkdirSync(absolute(relativePath), { recursive: true });
@@ -74,6 +109,7 @@ function buildSourceContract(aggregate: JsonObject): JsonObject {
     aggregate_ref: refs.aggregate,
     source_root_ref: refs.root,
     leaf_index_ref: refs.leafIndex,
+    bundle_manifest_ref: refs.bundleManifest,
     stage_leaf_dir_ref: `${refs.stageLeafDir}/`,
     stage_native_artifact_contract_root_ref: refs.stageNativeRoot,
     stage_native_artifact_contract_leaf_dir_ref: `${refs.stageNativeLeafDir}/`,
@@ -85,6 +121,7 @@ function buildSourceContract(aggregate: JsonObject): JsonObject {
       split_command: 'npm run stage-control:split',
       write_command: 'npm run stage-control:write',
       check_command: 'npm run stage-control:check',
+      bundle_manifest_ref: refs.bundleManifest,
       must_not_break_existing_aggregate_ref: true,
       aggregate_consumers_continue_to_read: refs.aggregate,
     },
@@ -110,6 +147,7 @@ function buildLeafIndex(aggregate: JsonObject): JsonObject {
     target_domain_id: aggregate.target_domain_id,
     source_contract_ref: refs.source,
     aggregate_ref: refs.aggregate,
+    bundle_manifest_ref: refs.bundleManifest,
     stage_order: stages.map((stage) => stage.stage_id),
     stages: stages.map((stage) => ({
       stage_id: stage.stage_id,
@@ -123,6 +161,78 @@ function buildLeafIndex(aggregate: JsonObject): JsonObject {
       leaf_files_are_source: true,
       aggregate_reconstruction_command: 'npm run stage-control:write',
       aggregate_drift_check_command: 'npm run stage-control:check',
+      generated_bundle_manifest_ref: refs.bundleManifest,
+    },
+  };
+}
+
+function buildBundleManifest(source: JsonObject, index: JsonObject): JsonObject {
+  const digestInputs = sourceDigestInputRefs(source, index);
+  return {
+    surface_kind: 'opl_pack_source_generated_bundle_manifest',
+    version: 'opl-pack-source-generated-bundle-manifest.v1',
+    bundle_id: 'opl-meta-agent.stage_control_plane',
+    owner: 'opl-meta-agent',
+    target_domain_id: source.target_domain_id,
+    state: 'active_generated_bundle_metadata',
+    aggregate_ref: refs.aggregate,
+    source_contract_ref: refs.source,
+    leaf_index_ref: refs.leafIndex,
+    source_roots: {
+      source_contract_ref: refs.source,
+      source_root_ref: source.source_root_ref,
+      leaf_index_ref: refs.leafIndex,
+      stage_native_artifact_contract_root_ref: source.stage_native_artifact_contract_root_ref,
+    },
+    source_leaf_dirs: {
+      stage_leaf_dir_ref: source.stage_leaf_dir_ref,
+      stage_native_artifact_contract_leaf_dir_ref: source.stage_native_artifact_contract_leaf_dir_ref,
+    },
+    source_leaves: {
+      stages: index.stages,
+      stage_native_artifact_contracts: index.stage_native_artifact_contracts,
+    },
+    generator: {
+      script_ref: 'scripts/sync-stage-control-plane.ts',
+      split_command: 'npm run stage-control:split',
+      write_command: 'npm run stage-control:write',
+      check_command: 'npm run stage-control:check',
+      write_outputs: [
+        refs.aggregate,
+        refs.bundleManifest,
+      ],
+      check_rebuilds_from_source_parts: true,
+    },
+    source_digest: {
+      algorithm: 'sha256',
+      equivalent_scope: 'source_contract_leaf_index_roots_and_leaf_files',
+      inputs: digestInputs,
+      value: sha256ForFiles(digestInputs),
+    },
+    generated_consumer_surface: {
+      ref: refs.aggregate,
+      do_not_edit: true,
+      role: 'generated_consumer_surface',
+      generated_from: [
+        refs.source,
+        refs.leafIndex,
+        'contracts/stage_control_plane.parts/**',
+      ],
+      consumers_continue_to_read_ref: refs.aggregate,
+    },
+    false_authority_flags: {
+      aggregate_can_claim_domain_ready: false,
+      aggregate_can_write_target_truth: false,
+      aggregate_can_write_target_owner_receipt_body: false,
+      manifest_can_claim_quality_or_export: false,
+      bundle_manifest_can_override_source_parts: false,
+    },
+    maintenance_policy: {
+      edit_source_parts_first: true,
+      source_parts_are_authority: true,
+      aggregate_is_generated: true,
+      manifest_is_generated_metadata: true,
+      drift_check_command: 'npm run stage-control:check',
     },
   };
 }
@@ -142,6 +252,7 @@ function splitFromAggregate(): void {
   writeJson(refs.stageNativeRoot, withoutKeys(native, ['contracts']));
   stages.forEach((stage) => writeJson(stageFileRef(String(stage.stage_id)), stage));
   contracts.forEach((contract) => writeJson(stageNativeFileRef(String(contract.stage_id)), contract));
+  writeJson(refs.bundleManifest, buildBundleManifest(readJson(refs.source), readJson(refs.leafIndex)));
 }
 
 function validateSourceContract(source: JsonObject): void {
@@ -149,6 +260,7 @@ function validateSourceContract(source: JsonObject): void {
     aggregate_ref: refs.aggregate,
     source_root_ref: refs.root,
     leaf_index_ref: refs.leafIndex,
+    bundle_manifest_ref: refs.bundleManifest,
     stage_leaf_dir_ref: `${refs.stageLeafDir}/`,
     stage_native_artifact_contract_root_ref: refs.stageNativeRoot,
     stage_native_artifact_contract_leaf_dir_ref: `${refs.stageNativeLeafDir}/`,
@@ -160,15 +272,71 @@ function validateSourceContract(source: JsonObject): void {
   });
 }
 
+function validateLeafIndex(source: JsonObject, index: JsonObject): void {
+  const expectedRefs: Record<string, string> = {
+    source_contract_ref: refs.source,
+    aggregate_ref: refs.aggregate,
+    bundle_manifest_ref: refs.bundleManifest,
+  };
+  Object.entries(expectedRefs).forEach(([field, expected]) => {
+    if (index[field] !== expected) {
+      throw new Error(`stage control leaf index ${field} must be ${expected}.`);
+    }
+  });
+
+  const stageEntries = asObjects(index.stages, 'stage control leaf index stages');
+  const nativeEntries = asObjects(index.stage_native_artifact_contracts, 'stage control leaf index native contracts');
+  const stageOrder = index.stage_order as string[];
+  if (!Array.isArray(stageOrder)) {
+    throw new Error('stage control leaf index stage_order must be an array.');
+  }
+  if (stageOrder.length !== stageEntries.length || stageOrder.length !== nativeEntries.length) {
+    throw new Error('stage control leaf index stage_order must match stage and native contract leaves.');
+  }
+  stageEntries.forEach((entry, indexPosition) => {
+    const stageId = String(entry.stage_id);
+    if (stageOrder[indexPosition] !== stageId) {
+      throw new Error(`stage control leaf index stage_order mismatch at ${stageId}.`);
+    }
+    if (entry.ref !== stageFileRef(stageId)) {
+      throw new Error(`stage control leaf index stage ref for ${stageId} must be ${stageFileRef(stageId)}.`);
+    }
+  });
+  nativeEntries.forEach((entry, indexPosition) => {
+    const stageId = String(entry.stage_id);
+    if (stageOrder[indexPosition] !== stageId) {
+      throw new Error(`stage control leaf index native contract order mismatch at ${stageId}.`);
+    }
+    if (entry.ref !== stageNativeFileRef(stageId)) {
+      throw new Error(`stage control leaf index native ref for ${stageId} must be ${stageNativeFileRef(stageId)}.`);
+    }
+  });
+
+  if (source.leaf_index_ref !== refs.leafIndex) {
+    throw new Error(`stage control source contract leaf_index_ref must be ${refs.leafIndex}.`);
+  }
+}
+
+function validateBundleManifest(source: JsonObject, index: JsonObject): void {
+  const expected = `${JSON.stringify(buildBundleManifest(source, index), null, 2)}\n`;
+  const actual = fs.readFileSync(absolute(refs.bundleManifest), 'utf8');
+  if (actual !== expected) {
+    console.error(`${refs.bundleManifest} is out of sync with ${refs.source} and ${refs.leafIndex}.`);
+    console.error('Run npm run stage-control:write to regenerate the generated bundle metadata.');
+    process.exit(1);
+  }
+}
+
 function reconstructAggregate(): JsonObject {
   const source = readJson(refs.source);
   validateSourceContract(source);
 
   const index = readJson(refs.leafIndex);
+  validateLeafIndex(source, index);
   const root = readJson(refs.root);
   const nativeRoot = readJson(refs.stageNativeRoot);
-  const stages = (index.stages as JsonObject[]).map((entry) => readJson(String(entry.ref)));
-  const contracts = (index.stage_native_artifact_contracts as JsonObject[])
+  const stages = asObjects(index.stages, 'stage control leaf index stages').map((entry) => readJson(String(entry.ref)));
+  const contracts = asObjects(index.stage_native_artifact_contracts, 'stage control leaf index native contracts')
     .map((entry) => readJson(String(entry.ref)));
 
   const native = orderedObject(
@@ -190,6 +358,12 @@ function reconstructAggregate(): JsonObject {
 }
 
 function checkAggregate(): void {
+  const source = readJson(refs.source);
+  validateSourceContract(source);
+  const index = readJson(refs.leafIndex);
+  validateLeafIndex(source, index);
+  validateBundleManifest(source, index);
+
   const expected = `${JSON.stringify(reconstructAggregate(), null, 2)}\n`;
   const actual = fs.readFileSync(absolute(refs.aggregate), 'utf8');
   if (actual !== expected) {
@@ -202,7 +376,8 @@ function checkAggregate(): void {
 
 function writeAggregate(): void {
   writeJson(refs.aggregate, reconstructAggregate());
-  console.log(`wrote ${refs.aggregate} from ${refs.source}`);
+  writeJson(refs.bundleManifest, buildBundleManifest(readJson(refs.source), readJson(refs.leafIndex)));
+  console.log(`wrote ${refs.aggregate} and ${refs.bundleManifest} from ${refs.source}`);
 }
 
 const command = process.argv[2] ?? '--check';

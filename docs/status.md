@@ -83,10 +83,13 @@ lane；`scripts/verify.sh structure:strict`、`npm run source-structure:strict`
 和 `npm run line-budget:strict` 才作为硬失败。`contracts/stage_control_plane.json`
 仍是现有 consumer aggregate path；维护源是
 `contracts/stage_control_plane.source.json`、`contracts/stage_control_plane.leaf-index.json`
-和 `contracts/stage_control_plane.parts/**`，用 `npm run stage-control:write`
-重建 aggregate，用 `npm run stage-control:check` 防止 drift。`scripts/verify.sh
-smoke`、`npm test`、`npm run typecheck` 和 repo hygiene 继续验证当前合同、源码、
-测试与生成物边界，不把普通开发默认升级为行数硬门。
+和 `contracts/stage_control_plane.parts/**`。`contracts/stage_control_plane.bundle-manifest.json`
+记录 OPL Pack Source / Generated Bundle metadata，包括 source digest、generator
+commands、do-not-edit consumer surface 和 false-authority flags。维护时只编辑
+source / parts，用 `npm run stage-control:write` 重建 aggregate 与 bundle
+manifest，用 `npm run stage-control:check` 防止 drift。`scripts/verify.sh smoke`、
+`npm test`、`npm run typecheck` 和 repo hygiene 继续验证当前合同、源码、测试与生成物边界，
+不把普通开发默认升级为行数硬门。
 
 ## 当前证据尾项
 

@@ -1,0 +1,184 @@
+{
+  "surface_kind": "opl_pack_source_generated_bundle_manifest",
+  "version": "opl-pack-source-generated-bundle-manifest.v1",
+  "bundle_id": "opl-meta-agent.stage_control_plane",
+  "owner": "opl-meta-agent",
+  "target_domain_id": "opl-meta-agent",
+  "state": "active_generated_bundle_metadata",
+  "aggregate_ref": "contracts/stage_control_plane.json",
+  "source_contract_ref": "contracts/stage_control_plane.source.json",
+  "leaf_index_ref": "contracts/stage_control_plane.leaf-index.json",
+  "source_roots": {
+    "source_contract_ref": "contracts/stage_control_plane.source.json",
+    "source_root_ref": "contracts/stage_control_plane.parts/root.json",
+    "leaf_index_ref": "contracts/stage_control_plane.leaf-index.json",
+    "stage_native_artifact_contract_root_ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/root.json"
+  },
+  "source_leaf_dirs": {
+    "stage_leaf_dir_ref": "contracts/stage_control_plane.parts/stages/",
+    "stage_native_artifact_contract_leaf_dir_ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/"
+  },
+  "source_leaves": {
+    "stages": [
+      {
+        "stage_id": "intent-intake",
+        "ref": "contracts/stage_control_plane.parts/stages/intent-intake.json"
+      },
+      {
+        "stage_id": "web-experience-research",
+        "ref": "contracts/stage_control_plane.parts/stages/web-experience-research.json"
+      },
+      {
+        "stage_id": "stage-decomposition",
+        "ref": "contracts/stage_control_plane.parts/stages/stage-decomposition.json"
+      },
+      {
+        "stage_id": "agent-skeleton-build",
+        "ref": "contracts/stage_control_plane.parts/stages/agent-skeleton-build.json"
+      },
+      {
+        "stage_id": "eval-suite-build",
+        "ref": "contracts/stage_control_plane.parts/stages/eval-suite-build.json"
+      },
+      {
+        "stage_id": "baseline-run",
+        "ref": "contracts/stage_control_plane.parts/stages/baseline-run.json"
+      },
+      {
+        "stage_id": "target-agent-takeover",
+        "ref": "contracts/stage_control_plane.parts/stages/target-agent-takeover.json"
+      },
+      {
+        "stage_id": "optimizer-iteration",
+        "ref": "contracts/stage_control_plane.parts/stages/optimizer-iteration.json"
+      },
+      {
+        "stage_id": "baseline-delivery",
+        "ref": "contracts/stage_control_plane.parts/stages/baseline-delivery.json"
+      },
+      {
+        "stage_id": "trajectory-learning-intake",
+        "ref": "contracts/stage_control_plane.parts/stages/trajectory-learning-intake.json"
+      },
+      {
+        "stage_id": "online-learning",
+        "ref": "contracts/stage_control_plane.parts/stages/online-learning.json"
+      }
+    ],
+    "stage_native_artifact_contracts": [
+      {
+        "stage_id": "intent-intake",
+        "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/intent-intake.json"
+      },
+      {
+        "stage_id": "web-experience-research",
+        "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/web-experience-research.json"
+      },
+      {
+        "stage_id": "stage-decomposition",
+        "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/stage-decomposition.json"
+      },
+      {
+        "stage_id": "agent-skeleton-build",
+        "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/agent-skeleton-build.json"
+      },
+      {
+        "stage_id": "eval-suite-build",
+        "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/eval-suite-build.json"
+      },
+      {
+        "stage_id": "baseline-run",
+        "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/baseline-run.json"
+      },
+      {
+        "stage_id": "target-agent-takeover",
+        "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/target-agent-takeover.json"
+      },
+      {
+        "stage_id": "optimizer-iteration",
+        "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/optimizer-iteration.json"
+      },
+      {
+        "stage_id": "baseline-delivery",
+        "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/baseline-delivery.json"
+      },
+      {
+        "stage_id": "trajectory-learning-intake",
+        "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/trajectory-learning-intake.json"
+      },
+      {
+        "stage_id": "online-learning",
+        "ref": "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/online-learning.json"
+      }
+    ]
+  },
+  "generator": {
+    "script_ref": "scripts/sync-stage-control-plane.ts",
+    "split_command": "npm run stage-control:split",
+    "write_command": "npm run stage-control:write",
+    "check_command": "npm run stage-control:check",
+    "write_outputs": [
+      "contracts/stage_control_plane.json",
+      "contracts/stage_control_plane.bundle-manifest.json"
+    ],
+    "check_rebuilds_from_source_parts": true
+  },
+  "source_digest": {
+    "algorithm": "sha256",
+    "equivalent_scope": "source_contract_leaf_index_roots_and_leaf_files",
+    "inputs": [
+      "contracts/stage_control_plane.source.json",
+      "contracts/stage_control_plane.leaf-index.json",
+      "contracts/stage_control_plane.parts/root.json",
+      "contracts/stage_control_plane.parts/stage_native_artifact_contract/root.json",
+      "contracts/stage_control_plane.parts/stages/intent-intake.json",
+      "contracts/stage_control_plane.parts/stages/web-experience-research.json",
+      "contracts/stage_control_plane.parts/stages/stage-decomposition.json",
+      "contracts/stage_control_plane.parts/stages/agent-skeleton-build.json",
+      "contracts/stage_control_plane.parts/stages/eval-suite-build.json",
+      "contracts/stage_control_plane.parts/stages/baseline-run.json",
+      "contracts/stage_control_plane.parts/stages/target-agent-takeover.json",
+      "contracts/stage_control_plane.parts/stages/optimizer-iteration.json",
+      "contracts/stage_control_plane.parts/stages/baseline-delivery.json",
+      "contracts/stage_control_plane.parts/stages/trajectory-learning-intake.json",
+      "contracts/stage_control_plane.parts/stages/online-learning.json",
+      "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/intent-intake.json",
+      "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/web-experience-research.json",
+      "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/stage-decomposition.json",
+      "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/agent-skeleton-build.json",
+      "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/eval-suite-build.json",
+      "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/baseline-run.json",
+      "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/target-agent-takeover.json",
+      "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/optimizer-iteration.json",
+      "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/baseline-delivery.json",
+      "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/trajectory-learning-intake.json",
+      "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/online-learning.json"
+    ],
+    "value": "sha256:b7af4519085010a6e4a7002399f65c641e48395cbbb5d6ce807701764c9ddf88"
+  },
+  "generated_consumer_surface": {
+    "ref": "contracts/stage_control_plane.json",
+    "do_not_edit": true,
+    "role": "generated_consumer_surface",
+    "generated_from": [
+      "contracts/stage_control_plane.source.json",
+      "contracts/stage_control_plane.leaf-index.json",
+      "contracts/stage_control_plane.parts/**"
+    ],
+    "consumers_continue_to_read_ref": "contracts/stage_control_plane.json"
+  },
+  "false_authority_flags": {
+    "aggregate_can_claim_domain_ready": false,
+    "aggregate_can_write_target_truth": false,
+    "aggregate_can_write_target_owner_receipt_body": false,
+    "manifest_can_claim_quality_or_export": false,
+    "bundle_manifest_can_override_source_parts": false
+  },
+  "maintenance_policy": {
+    "edit_source_parts_first": true,
+    "source_parts_are_authority": true,
+    "aggregate_is_generated": true,
+    "manifest_is_generated_metadata": true,
+    "drift_check_command": "npm run stage-control:check"
+  }
+}
