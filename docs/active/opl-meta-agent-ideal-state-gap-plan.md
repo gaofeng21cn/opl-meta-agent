@@ -117,6 +117,9 @@ Owner split 固定为：
 
 ## 下一轮工作范围
 
+0. `rational_refactor_watch`
+   2026-06-15 的 OPL family 合理重构快照把本仓归为 `watch_only / generated aggregate governed` 为主。`contracts/stage_control_plane.json` 是现有 consumer aggregate path，维护源继续是 `contracts/stage_control_plane.source.json`、`contracts/stage_control_plane.leaf-index.json` 和 `contracts/stage_control_plane.parts/**`；用 `npm run stage-control:check` 防止 drift，用 `npm run source-structure` 保持 advisory。当前 source-structure lane 已接受该 aggregate，普通代码没有新的强拆候选。后续不要因为 aggregate 行数把 `stage_control_plane.json` 手工碎片化；只在 source parts、leaf index、generator 或 consumer contract 不清晰时治理生成链路。短脚本和 test support 继续按 script-to-pack hygiene 分类，只有 deletion test 证明单 caller pass-through 且不承担 Interface 时才合并。
+
 1. `registry_app_consumption`
    让 OPL 主仓或 App 侧消费 `contracts/opl_domain_manifest_registration.json` 与 `contracts/app_workbench_projection.json`，留下 registry discovery receipt、App render/screenshot/runtime drilldown receipt；后续 cohort 若缺 evidence 必须 record/verify domain-owned typed blocker。
 
