@@ -174,6 +174,7 @@ test('foundry agent series contract binds OMA to shared Progress-First projectio
   assert.equal(series.workspace_topology_profile.default_profiles.one_off.project_collection_path, 'projects');
   assert.equal(series.workspace_topology_profile.default_profiles.rca_series.project_collection_path, 'projects');
   assert.equal(series.workspace_topology_profile.default_profiles.mas_portfolio.project_collection_path, 'projects');
+  assert.equal(series.workspace_topology_profile.domain_profile_defaults.bookforge, 'one_off');
   assert.deepEqual(
     series.workspace_topology_profile.workspace_initialization_policy.legacy_project_collection_aliases,
     ['deliverables', 'studies'],
