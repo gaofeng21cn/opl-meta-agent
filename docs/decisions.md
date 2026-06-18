@@ -60,6 +60,12 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 - 理由：OMA 的核心价值在 AI-first stage decomposition 和 owner-gated pack generation，固定脚本图会把 domain reasoning 退化为 fallback materializer。
 - 影响：free-text closeout、partial refs、缺 independent gate policy、缺 quality gate declaration、缺 no-forbidden-write policy 或 self-review 都 fail closed；不得恢复 no-`--domain-id` implicit fixture smoke、direct graph compatibility 或 fallback materialization route。
 
+### 新建 target agent 交付必须包含 Agent Lab 评估和自进化闭环
+
+- 决策：新建 OPL-compatible target agent 的完成定义必须包含 OPL scaffold validation、generated interface projection、Agent Lab baseline / takeover 或 external suite、结构化 independent AI reviewer evaluation、`improve:external-suite` self-evolution consumption，以及 delivery receipt / no-patch coordination receipt / developer work order / typed blocker 中的一种收口形态。
+- 理由：scaffold 和 generated interfaces 只证明结构可消费，不能证明 target agent 达到高质量交付要求。OMA 的职责是构建并评估 target agent，并把 Agent Lab / reviewer evidence 转成可执行改进、no-patch closeout 或明确 blocker。
+- 影响：只生成 repo skeleton、只跑 `opl agents scaffold --validate`、只跑 `opl agents interfaces` 或只记录 baseline pass 都不能称为 OMA 新建智能体完成。若 Agent Lab 或 reviewer evidence 暴露缺口，必须进入 owner-gated improvement loop、developer work order 或 typed blocker；若无需 source patch，也必须记录 no-patch coordination work order / receipt 和 re-evaluation refs。
+
 ### Stage-native artifact、State Index 和 StageRun 只按 refs-only adoption 读取
 
 - 决策：OMA 可以在 stage contracts、generated target packs、Agent Lab suites、developer work orders 和 typed blockers 中 materialize stage-native artifact refs、state-index refs、StageRun canary refs、operator summary 和 conformance refs；真实 physical stage folder lifecycle、SQLite sidecar index、runtime state、queue、attempt ledger、workbench consumption 和 promotion gate 归 OPL/App。

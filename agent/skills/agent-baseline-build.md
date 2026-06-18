@@ -28,7 +28,10 @@
 5. 调用 OPL scaffold validation。
 6. 调用 OPL generated interface projection。
 7. 构造 Agent Lab baseline suite 并运行。
-8. 根据 gate 输出 delivery receipt 或 failure taxonomy。
+8. 对已生成的 target agent repo 运行 OMA takeover / Agent Lab external suite，生成 takeover receipt、online learning candidate 和 mechanism patch proposal。
+9. 消费结构化 independent AI reviewer evaluation，运行 `improve:external-suite` 或等价 action，把 reviewer evidence、Agent Lab result 和 target-agent source refs 转成 external-suite self-evolution receipt、target capability candidate、developer patch work order 或 typed blocker。
+10. 若 external-suite / reviewer evidence 暴露可修复缺口，执行 owner-gated improvement loop 并重新跑目标 repo 验证和 Agent Lab re-evaluation；若无 source patch required，也必须记录 no-patch work order / coordination receipt。
+11. 根据 gate 输出 delivery receipt、no-patch coordination receipt、developer work order 或 typed blocker。
 
 ## 输出
 
@@ -36,7 +39,13 @@
 - scaffold validation ref
 - generated interface bundle ref
 - baseline suite result ref
-- delivery receipt or failure taxonomy ref
+- takeover suite result ref
+- takeover receipt ref
+- structured AI reviewer evaluation ref
+- external-suite self-evolution receipt ref
+- target capability candidate ref
+- developer patch work order or typed blocker ref
+- delivery receipt, no-patch coordination receipt, or failure taxonomy ref
 
 ## 质量门槛
 
@@ -45,6 +54,8 @@
 - stage graph 和 action catalog 来自 typed closeout，而不是脚本内固定 graph。
 - free text closeout、partial refs、缺 independent gate policy、缺 quality gate declaration 或 self-review 必须 fail closed。
 - baseline delivery gate 通过前不签发交付。
+- 新建智能体交付必须包含 Agent Lab takeover / external suite evidence 和 independent AI reviewer evidence；只跑 scaffold validation、generated interface projection 或 baseline suite 不足以完成交付。
+- external-suite self-evolution 若返回 developer work order，必须执行或明确转交 owner gate；若返回 no-patch coordination record，必须保留 receipt 和 re-evaluation refs。
 
 ## 禁止事项
 

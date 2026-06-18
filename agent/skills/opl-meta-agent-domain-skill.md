@@ -18,13 +18,19 @@
 3. 执行 `stage-decomposition` Codex stage attempt，产出 typed closeout packet；stage/action/pack files/gate policy 必须从该 closeout 来。
 4. 执行 `agent-skeleton-build`，只校验并物化 closeout 中的 candidate package，再跑 scaffold/interface validation。
 5. 执行 `eval-suite-build` 和 `baseline-run`，获得 Agent Lab evidence。
-6. 通过 `baseline-delivery` gate 后签发 package/runbook/receipt。
+6. 对生成后的 target agent repo 执行 takeover / Agent Lab external suite，获得 takeover receipt、online-learning candidate 和 mechanism proposal。
+7. 消费结构化 independent AI reviewer evaluation，并执行 `improve:external-suite` 或等价 self-evolution action，把 Agent Lab / reviewer evidence 转成 target capability candidate、developer patch work order、no-patch coordination receipt 或 typed blocker。
+8. 若存在可修复缺口，进入 owner-gated improvement loop 并重跑目标 repo verification / Agent Lab re-evaluation；若无 source patch required，记录 no-patch coordination work order 和 re-evaluation refs。
+9. 通过 `baseline-delivery` gate 后签发 package/runbook/receipt。
 
 ## 输出
 
 - OPL-compatible agent package refs。
 - stage/action/memory/artifact/gate refs。
 - baseline delivery receipt refs。
+- takeover / external suite result refs。
+- structured AI reviewer evaluation refs。
+- self-evolution receipt、target capability candidate 和 developer patch work order / typed blocker refs。
 - 后续 optimizer 或 online-learning candidate refs。
 
 ## 质量门槛
@@ -34,9 +40,11 @@
 - free text closeout、partial refs、缺 independent gate policy、缺 quality gate declaration 或 self-review 必须 fail closed。
 - generated interfaces 从 contracts 派生，不新增私有 wrapper。
 - domain truth、memory body、artifact body、quality verdict owner 明确。
+- scaffold/interface validation 不能单独构成交付完成；完整 baseline handoff 必须包含 Agent Lab takeover/external-suite evidence、independent reviewer evidence 和 self-evolution closeout。
+- reviewer 或 Agent Lab 发现的缺口必须进入 developer patch work order、owner-gated improvement loop 或 typed blocker；不能只在聊天或 README 中记录。
 
 ## 禁止事项
 
 - 禁止把本 skill 用作 generic runtime。
 - 禁止替目标 domain owner 写最终事实或质量裁决。
-- 禁止跳过 Agent Lab baseline evidence 直接交付。
+- 禁止跳过 Agent Lab baseline/takeover/external-suite evidence、independent reviewer evidence 或 self-evolution closeout 直接交付。
