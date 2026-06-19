@@ -63,10 +63,17 @@ function writeAiReviewerEvaluation(filePath: string): void {
     source_refs: [
       'review-ref:opl-meta-agent/takeover-fixture/ai-reviewer',
       'evidence-ref:baseline-fixture-agent/scaffold-validation',
+      'artifact-morphology-ref:takeover-fixture-agent',
+      'artifact-native-source-format-ref:takeover-fixture-agent/agent-output-draft',
+      'artifact-shard-unit-ref:takeover-fixture-agent/agent-output-draft',
+      'target-extent-contract-ref:takeover-fixture-agent/agent-output-draft',
+      'asset-custody-ref:takeover-fixture-agent/agent-output-draft',
     ],
     direct_evidence_refs: [
       'artifact-ref:takeover-fixture/package',
       'receipt-ref:takeover-fixture/baseline-delivery',
+      'artifact-ref:takeover-fixture-agent/contracts/artifact_morphology_contract.json',
+      'morphology-evidence-ref:takeover-fixture-agent/agent-output-draft/realistic-target-task-review',
     ],
     verdict: 'baseline_ready_with_owner_gate',
     predicted_impact: 'The takeover fixture should preserve owner-gated baseline delivery while exercising source and runbook coverage.',
