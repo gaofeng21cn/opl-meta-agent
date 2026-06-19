@@ -51,6 +51,83 @@ function noForbiddenWritePolicy(domainTruthOwner: string) {
   };
 }
 
+function buildArtifactMorphologyContract({
+  targetAgent,
+  owner,
+  stageId,
+}: {
+  targetAgent: TargetAgent;
+  owner: string;
+  stageId: string;
+}): JsonObject {
+  return {
+    surface_kind: 'target_domain_artifact_morphology_contract',
+    version: 'artifact-morphology.v1',
+    contract_id: `${snakeId(targetAgent.domain_id)}_artifact_morphology`,
+    target_domain_id: targetAgent.domain_id,
+    owner,
+    purpose:
+      'Require OMA stage decomposition to preserve the target-domain deliverable shape before generating an agent pack.',
+    native_source_policy: {
+      required: true,
+      native_source_format_refs: [
+        `artifact-native-source-format-ref:${targetAgent.domain_id}/${stageId}`,
+      ],
+      creative_source_must_be_domain_native: true,
+      creative_source_must_not_be_generator_code: true,
+      generator_code_allowed_roles: [
+        'assembly',
+        'metrics',
+        'validation',
+        'export',
+        'reporting',
+      ],
+    },
+    artifact_body_policy: {
+      target_domain_owns_artifact_body: true,
+      oma_can_write_target_artifact_body: false,
+      opl_can_infer_artifact_body_shape: false,
+      scaffold_or_suite_pass_is_not_artifact_shape_evidence: true,
+    },
+    sharding_policy: {
+      required_for_book_length_or_large_artifacts: true,
+      shard_unit_refs: [
+        `artifact-shard-unit-ref:${targetAgent.domain_id}/${stageId}`,
+      ],
+      assembled_output_is_delivery_ref_not_primary_creative_source: true,
+      monolithic_creative_source_requires_owner_approval: true,
+    },
+    target_extent_policy: {
+      owner_or_source_declared_extent_is_binding: true,
+      silent_extent_downgrade_forbidden: true,
+      shortfall_requires_typed_blocker: true,
+    },
+    asset_custody_policy: {
+      project_local_asset_paths_required_for_final_assets: true,
+      generated_asset_without_exposed_path_is_typed_blocker: true,
+      placeholder_or_chat_only_asset_is_not_final_evidence: true,
+    },
+    realistic_task_review_policy: {
+      required_before_baseline_delivery: true,
+      reviewer_must_check_artifact_morphology: true,
+      scaffold_interface_or_scorecard_only_review_forbidden: true,
+    },
+    stage_refs: {
+      artifact_morphology_ref: `artifact-morphology-ref:${targetAgent.domain_id}`,
+      native_source_format_ref: `artifact-native-source-format-ref:${targetAgent.domain_id}/${stageId}`,
+      shard_unit_ref: `artifact-shard-unit-ref:${targetAgent.domain_id}/${stageId}`,
+      extent_contract_ref: `target-extent-contract-ref:${targetAgent.domain_id}/${stageId}`,
+      asset_custody_ref: `asset-custody-ref:${targetAgent.domain_id}/${stageId}`,
+    },
+    authority_boundary: {
+      oma_can_write_target_domain_truth: false,
+      oma_can_write_target_artifact_body: false,
+      oma_can_authorize_target_quality_or_export: false,
+      target_domain_owner_must_accept_morphology: true,
+    },
+  };
+}
+
 function buildActionCatalog({
   targetAgent,
   actionId,
@@ -140,7 +217,8 @@ function buildStageControlPlane({
   knowledgePath,
   qualityGatePath,
   owner,
-}: Required<FixtureStageSpec> & { owner: string }): JsonObject {
+  artifactMorphologyContract,
+}: Required<FixtureStageSpec> & { owner: string; artifactMorphologyContract: JsonObject }): JsonObject {
   const domainId = targetAgent.domain_id;
   const stageNativeArtifactContract = buildStageNativeArtifactContract({
     domainId,
@@ -148,6 +226,7 @@ function buildStageControlPlane({
     domainTruthOwner: owner,
   });
   const stageNativeRefs = stageNativeRefsFor(domainId, stageId);
+  const morphologyRefs = artifactMorphologyContract.stage_refs as JsonObject;
   return {
     surface_kind: 'family_stage_control_plane',
     version: 'family-stage-control-plane.v1',
@@ -228,6 +307,11 @@ function buildStageControlPlane({
             `knowledge-ref:${knowledgePath}`,
             `quality-gate-ref:${qualityGatePath}`,
             `action-ref:${actionId}`,
+            String(morphologyRefs.artifact_morphology_ref),
+            String(morphologyRefs.native_source_format_ref),
+            String(morphologyRefs.shard_unit_ref),
+            String(morphologyRefs.extent_contract_ref),
+            String(morphologyRefs.asset_custody_ref),
             `workspace-scope-ref:${stageId}`,
             `source-scope-ref:${stageId}`,
             'runtime-ref:stage-progress-log-user-stage-log',
@@ -277,6 +361,14 @@ function buildStageControlPlane({
           ],
           source_scope_refs: [ref('source_scope_ref', `source-scope:${stageId}`)],
           artifact_scope_refs: [ref('artifact_scope_ref', `artifact-scope:${stageId}`)],
+          artifact_morphology_contract: artifactMorphologyContract,
+          artifact_morphology_refs: [
+            ref('artifact_morphology_ref', String(morphologyRefs.artifact_morphology_ref)),
+            ref('artifact_native_source_format_ref', String(morphologyRefs.native_source_format_ref)),
+            ref('artifact_shard_unit_ref', String(morphologyRefs.shard_unit_ref)),
+            ref('target_extent_contract_ref', String(morphologyRefs.extent_contract_ref)),
+            ref('asset_custody_ref', String(morphologyRefs.asset_custody_ref)),
+          ],
           workspace_scope_refs: [ref('workspace_scope_ref', `workspace-scope:${stageId}`)],
           stage_native_artifact_contract: stageNativeArtifactContract,
           user_stage_log_contract: USER_STAGE_LOG_CONTRACT,
@@ -501,7 +593,8 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
     qualityGatePath,
     owner,
   };
-  const stageControlPlane = buildStageControlPlane(spec);
+  const artifactMorphologyContract = buildArtifactMorphologyContract({ targetAgent, owner, stageId });
+  const stageControlPlane = buildStageControlPlane({ ...spec, artifactMorphologyContract });
   const stageNativeArtifactContract = buildStageNativeArtifactContractBundle({
     domainId: targetAgent.domain_id,
     domainTruthOwner: owner,
@@ -518,6 +611,7 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
       target_owner_keeps_truth_quality_artifact_authority: true,
     },
     no_forbidden_write_policy: noForbiddenWritePolicy(owner),
+    artifact_morphology_contract: artifactMorphologyContract,
     action_catalog: buildActionCatalog({ targetAgent, actionId, owner }),
     stage_control_plane: stageControlPlane,
     stage_native_artifact_contract: stageNativeArtifactContract,
@@ -545,12 +639,14 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
       stage_goal: 'Produce action, stage, prompt, skill, knowledge, quality-gate, and authority-boundary refs for the target agent.',
       stage_work_done: [
         `Generated the ${stageId} stage pack draft with Codex CLI executor binding, independent gate policy, and owner handoff refs.`,
+        'Attached a target-domain artifact morphology contract covering native source format, shard units, target extent, asset custody, and realistic task review.',
         'Materialized action catalog, stage control plane, prompt, skill, knowledge, and quality gate draft refs without writing target-domain truth.',
         'Generated Stage-Native Artifact Contract refs for stage folder, manifest, receipt, blocker, current pointer, and canonical artifact refs.',
       ],
       changed_stage_surfaces: [
         'action_catalog',
         'stage_control_plane',
+        'artifact_morphology_contract',
         'stage_native_artifact_contract',
         'agent/prompts',
         'agent/stages',
@@ -562,6 +658,7 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
       remaining_blockers: ['target owner gate and baseline validation still required before promotion'],
       evidence_refs: [
         `receipt:opl-meta-agent/${targetAgent.domain_id}/stage-decomposition-pack-draft`,
+        `artifact-morphology-ref:${targetAgent.domain_id}`,
         `artifact-native-contract-ref:${targetAgent.domain_id}/${stageId}`,
         `stage-folder-contract-ref:${targetAgent.domain_id}/${stageId}`,
       ],

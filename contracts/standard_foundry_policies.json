@@ -151,8 +151,45 @@
       "stages",
       "skills",
       "knowledge",
-      "quality_gates"
+      "quality_gates",
+      "artifact_morphology"
     ],
+    "artifact_morphology_policy": {
+      "surface_kind": "target_domain_artifact_morphology_policy",
+      "version": "artifact-morphology-policy.v1",
+      "required_for_new_target_agent_baseline": true,
+      "required_contract_ref": "contracts/artifact_morphology_contract.json",
+      "required_closeout_field": "stage_decomposition_pack_draft.artifact_morphology_contract",
+      "required_stage_contract_field": "stage_contract.artifact_morphology_contract",
+      "required_stage_refs": [
+        "artifact_morphology_ref",
+        "artifact_native_source_format_ref",
+        "artifact_shard_unit_ref",
+        "target_extent_contract_ref",
+        "asset_custody_ref"
+      ],
+      "must_cover": [
+        "native_source_format",
+        "creative_source_vs_assembled_or_export_ref",
+        "sharding_strategy",
+        "owner_or_source_declared_extent",
+        "asset_file_path_custody",
+        "thin_assembler_or_helper_boundary",
+        "realistic_target_task_review"
+      ],
+      "fail_closed_conditions": [
+        "creative artifact body is stored primarily in generator code",
+        "book-length or large artifact lacks shard unit policy",
+        "owner/source declared extent is silently reduced",
+        "final generated asset has no project-local exposed path",
+        "baseline reviewer evidence only cites scaffold, generated interface, or scorecard refs"
+      ],
+      "authority_boundary": {
+        "oma_can_write_target_artifact_body": false,
+        "opl_can_infer_artifact_body_shape": false,
+        "target_domain_owner_must_accept_artifact_shape": true
+      }
+    },
     "shared_closeout_contract": {
       "success_shape": "domain_owner_receipt_ref",
       "blocked_shape": "domain_owned_typed_blocker_ref",

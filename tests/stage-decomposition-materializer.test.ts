@@ -80,6 +80,7 @@ test('materializer writes the target stage pack from typed stage-decomposition c
     assert.deepEqual(packet.user_stage_log.changed_stage_surfaces, [
       'action_catalog',
       'stage_control_plane',
+      'artifact_morphology_contract',
       'stage_native_artifact_contract',
       'agent/prompts',
       'agent/stages',
@@ -90,12 +91,19 @@ test('materializer writes the target stage pack from typed stage-decomposition c
     materializeStageDecompositionPackDraft(targetAgentDir, draft);
 
     const actionCatalog = readJson(path.join(targetAgentDir, 'contracts/action_catalog.json'));
+    const artifactMorphology = readJson(path.join(targetAgentDir, 'contracts/artifact_morphology_contract.json'));
     const stageControl = readJson(path.join(targetAgentDir, 'contracts/stage_control_plane.json'));
     const stageNativeArtifactContract = readJson(path.join(targetAgentDir, 'contracts/stage_native_artifact_contract.json'));
     const foundrySeries = readJson(path.join(targetAgentDir, 'contracts/foundry_agent_series.json'));
     const stage = stageById(stageControl, 'evidence-synthesis-plan');
 
     assert.equal(actionCatalog.actions[0].action_id, 'plan-evidence-synthesis');
+    assert.equal(artifactMorphology.surface_kind, 'target_domain_artifact_morphology_contract');
+    assert.equal(artifactMorphology.target_domain_id, 'research-workbench-agent');
+    assert.equal(artifactMorphology.native_source_policy.creative_source_must_not_be_generator_code, true);
+    assert.equal(artifactMorphology.sharding_policy.assembled_output_is_delivery_ref_not_primary_creative_source, true);
+    assert.equal(artifactMorphology.target_extent_policy.silent_extent_downgrade_forbidden, true);
+    assert.equal(artifactMorphology.asset_custody_policy.generated_asset_without_exposed_path_is_typed_blocker, true);
     assert.deepEqual(foundrySeries.shared_policy_release, {
       policy_release_contract_ref: 'contracts/opl-framework/foundry-agent-series-policy-release.json',
       policy_bundle_fingerprint: 'sha256:5d77102e99e6e49acd88714cd94dcafe0969b8f2a5529928d753002ac3d4619d',
@@ -119,6 +127,12 @@ test('materializer writes the target stage pack from typed stage-decomposition c
     assert.equal(stage.authority_boundary.can_authorize_target_domain_quality_or_export, false);
     assert.ok(stage.stage_contract.requires.includes('runtime-ref:stage-progress-log-user-stage-log'));
     assert.ok(stage.stage_contract.requires.includes('artifact-native-contract-ref:research-workbench-agent/evidence-synthesis-plan'));
+    assert.ok(stage.stage_contract.requires.includes('artifact-morphology-ref:research-workbench-agent'));
+    assert.ok(stage.stage_contract.requires.includes('artifact-native-source-format-ref:research-workbench-agent/evidence-synthesis-plan'));
+    assert.ok(stage.stage_contract.requires.includes('artifact-shard-unit-ref:research-workbench-agent/evidence-synthesis-plan'));
+    assert.ok(stage.stage_contract.requires.includes('target-extent-contract-ref:research-workbench-agent/evidence-synthesis-plan'));
+    assert.ok(stage.stage_contract.requires.includes('asset-custody-ref:research-workbench-agent/evidence-synthesis-plan'));
+    assert.deepEqual(stage.stage_contract.artifact_morphology_contract, artifactMorphology);
     assert.ok(stage.stage_contract.ensures.includes('stage-user-log-ref:evidence-synthesis-plan'));
     assert.ok(stage.stage_contract.ensures.includes('stage-folder-contract-ref:research-workbench-agent/evidence-synthesis-plan'));
     assert.ok(stage.stage_contract.ensures.includes('stage-json-ref:research-workbench-agent/evidence-synthesis-plan'));
@@ -360,6 +374,7 @@ test('materializer writes the target stage pack from typed stage-decomposition c
       'skills',
       'knowledge',
       'quality_gates',
+      'artifact_morphology',
     ]);
     assert.equal(foundrySeries.series_design_profile.shared_closeout_contract.provider_completion_is_closeout, false);
     assert.equal(foundrySeries.series_design_profile.authority_invariants.opl_can_write_domain_truth, false);

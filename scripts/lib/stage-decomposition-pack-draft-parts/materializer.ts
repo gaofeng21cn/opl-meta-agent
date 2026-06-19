@@ -83,6 +83,7 @@ export function materializeStageDecompositionPackDraft(
     fs.writeFileSync(filePath, body);
   }
   writeJson(path.join(targetAgentDir, 'contracts', 'action_catalog.json'), draft.action_catalog);
+  writeJson(path.join(targetAgentDir, 'contracts', 'artifact_morphology_contract.json'), draft.artifact_morphology_contract);
   writeJson(path.join(targetAgentDir, 'contracts', 'stage_control_plane.json'), draft.stage_control_plane);
   writeJson(
     path.join(targetAgentDir, 'contracts', 'stage_native_artifact_contract.json'),

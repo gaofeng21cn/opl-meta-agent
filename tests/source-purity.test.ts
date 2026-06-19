@@ -730,6 +730,7 @@ test('standard Foundry policies are contract-owned and helper-projection free', 
   const stageProgressDeltaPolicy = assertPolicyObject(contract, 'stage_progress_delta_policy');
   const typedBlockerLineagePolicy = assertPolicyObject(contract, 'typed_blocker_lineage_policy');
   const seriesDesignProfile = assertPolicyObject(contract, 'series_design_profile');
+  const artifactMorphologyPolicy = assertPolicyObject(seriesDesignProfile, 'artifact_morphology_policy');
 
   assert.equal(contract.surface_kind, 'standard_foundry_policies');
   assert.equal(contract.state, 'active_contract');
@@ -786,4 +787,16 @@ test('standard Foundry policies are contract-owned and helper-projection free', 
   assert.equal(seriesDesignProfile.profile_id, 'opl_foundry_agent_series_design_profile.v1');
   assert.ok(asStrings(seriesDesignProfile.stage_pack_sections).includes('prompts'));
   assert.ok(asStrings(seriesDesignProfile.stage_pack_sections).includes('quality_gates'));
+  assert.ok(asStrings(seriesDesignProfile.stage_pack_sections).includes('artifact_morphology'));
+  assert.equal(artifactMorphologyPolicy.surface_kind, 'target_domain_artifact_morphology_policy');
+  assert.equal(artifactMorphologyPolicy.required_for_new_target_agent_baseline, true);
+  assert.equal(artifactMorphologyPolicy.required_contract_ref, 'contracts/artifact_morphology_contract.json');
+  assert.ok(asStrings(artifactMorphologyPolicy.must_cover).includes('native_source_format'));
+  assert.ok(asStrings(artifactMorphologyPolicy.must_cover).includes('asset_file_path_custody'));
+  assert.ok(
+    asStrings(artifactMorphologyPolicy.fail_closed_conditions)
+      .includes('owner/source declared extent is silently reduced'),
+  );
+  assert.equal(artifactMorphologyPolicy.authority_boundary.oma_can_write_target_artifact_body, false);
+  assert.equal(artifactMorphologyPolicy.authority_boundary.target_domain_owner_must_accept_artifact_shape, true);
 });

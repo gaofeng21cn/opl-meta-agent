@@ -52,6 +52,112 @@ function validateActionCatalog(catalog: JsonObject, targetAgent: TargetAgent): v
   });
 }
 
+function validateArtifactMorphologyContract(contract: JsonObject, targetAgent: TargetAgent): void {
+  if (contract.surface_kind !== 'target_domain_artifact_morphology_contract') {
+    throw new Error('stage-decomposition pack draft artifact_morphology_contract.surface_kind must be target_domain_artifact_morphology_contract.');
+  }
+  if (contract.version !== 'artifact-morphology.v1') {
+    throw new Error('stage-decomposition pack draft artifact_morphology_contract.version must be artifact-morphology.v1.');
+  }
+  if (contract.target_domain_id !== targetAgent.domain_id) {
+    throw new Error('stage-decomposition pack draft artifact_morphology_contract target_domain_id does not match target agent.');
+  }
+  const nativeSourcePolicy = asRecord(contract.native_source_policy, 'artifact_morphology_contract.native_source_policy');
+  if (nativeSourcePolicy.required !== true) {
+    throw new Error('stage-decomposition pack draft artifact_morphology_contract.native_source_policy.required must be true.');
+  }
+  if (nativeSourcePolicy.creative_source_must_be_domain_native !== true) {
+    throw new Error('stage-decomposition pack draft artifact morphology must require domain-native creative source refs.');
+  }
+  if (nativeSourcePolicy.creative_source_must_not_be_generator_code !== true) {
+    throw new Error('stage-decomposition pack draft artifact morphology must reject generator-code prose/artifact body as source of truth.');
+  }
+  const generatorRoles = asStringArray(
+    nativeSourcePolicy.generator_code_allowed_roles,
+    'artifact_morphology_contract.native_source_policy.generator_code_allowed_roles',
+  );
+  ['assembly', 'metrics', 'validation', 'export', 'reporting'].forEach((role) => {
+    if (!generatorRoles.includes(role)) {
+      throw new Error(`stage-decomposition pack draft artifact morphology missing generator role ${role}.`);
+    }
+  });
+
+  const artifactBodyPolicy = asRecord(contract.artifact_body_policy, 'artifact_morphology_contract.artifact_body_policy');
+  if (artifactBodyPolicy.target_domain_owns_artifact_body !== true) {
+    throw new Error('stage-decomposition pack draft artifact morphology must keep artifact body authority with target domain.');
+  }
+  [
+    'oma_can_write_target_artifact_body',
+    'opl_can_infer_artifact_body_shape',
+  ].forEach((field) => assertBooleanFalse(artifactBodyPolicy, field, `artifact_morphology_contract.artifact_body_policy.${field}`));
+  if (artifactBodyPolicy.scaffold_or_suite_pass_is_not_artifact_shape_evidence !== true) {
+    throw new Error('stage-decomposition pack draft artifact morphology must reject scaffold/suite pass as artifact shape evidence.');
+  }
+
+  const shardingPolicy = asRecord(contract.sharding_policy, 'artifact_morphology_contract.sharding_policy');
+  if (shardingPolicy.required_for_book_length_or_large_artifacts !== true) {
+    throw new Error('stage-decomposition pack draft artifact morphology must require sharding for book-length or large artifacts.');
+  }
+  if (shardingPolicy.assembled_output_is_delivery_ref_not_primary_creative_source !== true) {
+    throw new Error('stage-decomposition pack draft artifact morphology must separate creative source from assembled delivery ref.');
+  }
+  if (shardingPolicy.monolithic_creative_source_requires_owner_approval !== true) {
+    throw new Error('stage-decomposition pack draft artifact morphology must owner-gate monolithic creative sources.');
+  }
+
+  const extentPolicy = asRecord(contract.target_extent_policy, 'artifact_morphology_contract.target_extent_policy');
+  if (extentPolicy.owner_or_source_declared_extent_is_binding !== true) {
+    throw new Error('stage-decomposition pack draft artifact morphology must bind owner/source-declared extent.');
+  }
+  if (extentPolicy.silent_extent_downgrade_forbidden !== true) {
+    throw new Error('stage-decomposition pack draft artifact morphology must forbid silent extent downgrade.');
+  }
+  if (extentPolicy.shortfall_requires_typed_blocker !== true) {
+    throw new Error('stage-decomposition pack draft artifact morphology must require typed blocker for extent shortfall.');
+  }
+
+  const assetCustodyPolicy = asRecord(contract.asset_custody_policy, 'artifact_morphology_contract.asset_custody_policy');
+  if (assetCustodyPolicy.project_local_asset_paths_required_for_final_assets !== true) {
+    throw new Error('stage-decomposition pack draft artifact morphology must require project-local final asset paths.');
+  }
+  if (assetCustodyPolicy.generated_asset_without_exposed_path_is_typed_blocker !== true) {
+    throw new Error('stage-decomposition pack draft artifact morphology must block generated assets without exposed paths.');
+  }
+  if (assetCustodyPolicy.placeholder_or_chat_only_asset_is_not_final_evidence !== true) {
+    throw new Error('stage-decomposition pack draft artifact morphology must reject placeholder/chat-only asset evidence.');
+  }
+
+  const reviewPolicy = asRecord(contract.realistic_task_review_policy, 'artifact_morphology_contract.realistic_task_review_policy');
+  if (reviewPolicy.required_before_baseline_delivery !== true) {
+    throw new Error('stage-decomposition pack draft artifact morphology must require realistic task review before baseline delivery.');
+  }
+  if (reviewPolicy.reviewer_must_check_artifact_morphology !== true) {
+    throw new Error('stage-decomposition pack draft artifact morphology must require reviewer artifact-shape checks.');
+  }
+  if (reviewPolicy.scaffold_interface_or_scorecard_only_review_forbidden !== true) {
+    throw new Error('stage-decomposition pack draft artifact morphology must reject scaffold/interface/scorecard-only review.');
+  }
+
+  const stageRefs = asRecord(contract.stage_refs, 'artifact_morphology_contract.stage_refs');
+  [
+    'artifact_morphology_ref',
+    'native_source_format_ref',
+    'shard_unit_ref',
+    'extent_contract_ref',
+    'asset_custody_ref',
+  ].forEach((field) => asString(stageRefs[field], `artifact_morphology_contract.stage_refs.${field}`));
+
+  const boundary = asRecord(contract.authority_boundary, 'artifact_morphology_contract.authority_boundary');
+  [
+    'oma_can_write_target_domain_truth',
+    'oma_can_write_target_artifact_body',
+    'oma_can_authorize_target_quality_or_export',
+  ].forEach((field) => assertBooleanFalse(boundary, field, `artifact_morphology_contract.authority_boundary.${field}`));
+  if (boundary.target_domain_owner_must_accept_morphology !== true) {
+    throw new Error('stage-decomposition pack draft artifact morphology must require target-domain owner acceptance.');
+  }
+}
+
 function validateStageRefs(
   stage: JsonObject,
   field: string,
@@ -88,6 +194,7 @@ function validateQualityGateBody(files: Map<string, string>, qualityGatePath: st
 function validateStageControlPlane(
   stageControl: JsonObject,
   actionCatalog: JsonObject,
+  artifactMorphologyContract: JsonObject,
   targetAgent: TargetAgent,
   files: Map<string, string>,
 ): void {
@@ -104,6 +211,14 @@ function validateStageControlPlane(
     asString(action.action_id, 'action.action_id')
   )));
   const stages = asRecordArray(stageControl.stages, 'stage_control_plane.stages');
+  const morphologyRefs = asRecord(artifactMorphologyContract.stage_refs, 'artifact_morphology_contract.stage_refs');
+  const requiredMorphologyRefs = [
+    asString(morphologyRefs.artifact_morphology_ref, 'artifact_morphology_contract.stage_refs.artifact_morphology_ref'),
+    asString(morphologyRefs.native_source_format_ref, 'artifact_morphology_contract.stage_refs.native_source_format_ref'),
+    asString(morphologyRefs.shard_unit_ref, 'artifact_morphology_contract.stage_refs.shard_unit_ref'),
+    asString(morphologyRefs.extent_contract_ref, 'artifact_morphology_contract.stage_refs.extent_contract_ref'),
+    asString(morphologyRefs.asset_custody_ref, 'artifact_morphology_contract.stage_refs.asset_custody_ref'),
+  ];
   const hasStageFile = [...files.keys()].some((relPath) => relPath.startsWith('agent/stages/') && !relPath.endsWith('/README.md'));
   if (!hasStageFile) {
     throw new Error('stage-decomposition pack draft must include a real agent/stages markdown file.');
@@ -168,6 +283,7 @@ function validateStageControlPlane(
       ...knowledgeRefs.map((entry) => `knowledge-ref:${entry}`),
       ...qualityGateRefs.map((entry) => `quality-gate-ref:${entry}`),
       ...allowedActions.map((entry) => `action-ref:${entry}`),
+      ...requiredMorphologyRefs,
     ].forEach((requiredRef) => {
       if (!requires.includes(requiredRef)) {
         throw new Error(`stage-decomposition pack draft stage ${stageId} missing required ref ${requiredRef}.`);
@@ -211,6 +327,22 @@ function validateStageControlPlane(
     if (!expectedReceiptRefs.some((entry) => entry.ref === `stage-user-log-ref:${stageId}`)) {
       throw new Error(`stage-decomposition pack draft stage ${stageId} missing expected user stage log receipt ref.`);
     }
+    const embeddedMorphology = asRecord(
+      contract.artifact_morphology_contract,
+      `stage ${stageId}.stage_contract.artifact_morphology_contract`,
+    );
+    if (JSON.stringify(embeddedMorphology) !== JSON.stringify(artifactMorphologyContract)) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} embedded artifact morphology contract must match top-level contract.`);
+    }
+    const artifactMorphologyRefs = asRecordArray(
+      contract.artifact_morphology_refs,
+      `stage ${stageId}.stage_contract.artifact_morphology_refs`,
+    );
+    requiredMorphologyRefs.forEach((expectedRef) => {
+      if (!artifactMorphologyRefs.some((entry) => entry.ref === expectedRef)) {
+        throw new Error(`stage-decomposition pack draft stage ${stageId} missing artifact morphology ref ${expectedRef}.`);
+      }
+    });
     [
       expectedArtifactNativeContractRef,
       expectedStageFolderContractRef,
@@ -632,10 +764,15 @@ export function validateStageDecompositionCloseoutPacket(
   }
   validateNoForbiddenWritePolicy(asRecord(draft.no_forbidden_write_policy, 'no_forbidden_write_policy'));
   const files = filesByPath(draft.files);
+  const artifactMorphologyContract = asRecord(
+    draft.artifact_morphology_contract,
+    'artifact_morphology_contract',
+  );
   const actionCatalog = asRecord(draft.action_catalog, 'action_catalog');
   const stageControl = asRecord(draft.stage_control_plane, 'stage_control_plane');
+  validateArtifactMorphologyContract(artifactMorphologyContract, targetAgent);
   validateActionCatalog(actionCatalog, targetAgent);
-  validateStageControlPlane(stageControl, actionCatalog, targetAgent, files);
+  validateStageControlPlane(stageControl, actionCatalog, artifactMorphologyContract, targetAgent, files);
   const stageNativeArtifactContract = asRecord(
     draft.stage_native_artifact_contract,
     'stage_native_artifact_contract',
@@ -672,6 +809,7 @@ export function validateStageDecompositionCloseoutPacket(
   );
   return {
     ...draft,
+    artifact_morphology_contract: artifactMorphologyContract,
     stage_native_artifact_contract: stageNativeArtifactContract,
     foundry_agent_series: foundrySeries,
     files: [...files.entries()].map(([filePath, body]) => ({ path: filePath, body })),

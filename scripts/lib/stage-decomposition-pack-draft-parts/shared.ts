@@ -124,6 +124,7 @@ export type StageDecompositionPackDraft = {
   target_agent: TargetAgent;
   owner_boundary: JsonObject;
   no_forbidden_write_policy: JsonObject;
+  artifact_morphology_contract: JsonObject;
   action_catalog: JsonObject;
   stage_control_plane: JsonObject;
   stage_native_artifact_contract: JsonObject;
