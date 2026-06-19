@@ -9,6 +9,7 @@
 - `intent_brief_ref`、`acceptance_criteria_ref`、`authority_boundary_ref`。
 - `research_brief_ref`、`source_refs`、`pattern_disposition_refs`。
 - OPL-compatible Foundry Agent 的合同边界：stage-led、refs-only handoff、domain-owned truth。
+- 用户或 source 声明的目标交付物形态、体量、开放式正文范围、外部资产来源和真实目标任务样例；缺失时必须在 closeout 中写成 route-back / blocker，不能静默缩小交付物。
 
 ## 步骤
 
@@ -18,9 +19,18 @@
 4. 对每个 stage 写清 AI executor autonomy：Codex 可在哪些范围内自主规划、调用工具、要求补充 source、route-back、重写策略。
 5. 设计 action catalog，只保留 domain authority function 或 smoke CLI；generic CLI/MCP/Skill/product-entry 交给 OPL generated interface。
 6. 设计 memory descriptor：只定义 locator、schema、owner 和访问规则，不写 memory body。
-7. 设计 artifact locator：只定义交付物 refs、package roots、receipts 和 provenance。
-8. 对每个 stage 标注 owner split：target domain agent、`opl-meta-agent`、OPL Framework。
-9. 检查所有 outputs 是否能被后续 stage 或 gate 消费，删掉不可消费的输出。
+7. 设计 artifact morphology brief，先用 realistic target task 反推目标交付物形态，再固定：
+   - native source format，例如 Markdown chapter tree、DOCX/PPTX editable source、notebook、dataset manifest、asset folder 或 domain-native schema。
+   - artifact body owner，以及 `opl-meta-agent` / OPL 只能持有 refs、locator、manifest、receipt 或 assembler policy 的边界。
+   - creative source refs 与 assembled/export refs 的区别；创作源必须是可审阅、可分片、可复制的 domain-native source，导出物只作为 build/export result。
+   - sharding strategy；长书、长 deck、课程、报告集、图谱、数据包等必须按章节、页面、单元、asset、dataset split 或等价 domain unit 分片，不能把大体量开放式正文压成单文件创作源。
+   - extent/scale contract；用户或 source 声明的章节数、页数、字数、图表数、资产数、任务范围或质量层级不能被 scaffold、suite 或脚本默认值静默降级。
+   - asset custody/file-path policy；imagegen、外部图片、音视频、数据、模板和第三方素材必须有项目内可复制路径、manifest/provenance/license refs 和缺失时的 blocker，不得只保留聊天附件、临时 URL 或本机绝对路径。
+   - thin assembler/helper boundary；Python/TS helper 只能读取 native source、manifest 和 asset paths 做装配、校验或导出，不能把书稿、长文、长 deck 正文或开放式创作内容塞进源码字符串。
+   - realistic target task review；不得只看 scaffold/interface/Agent Lab shape，必须用至少一个真实领域任务样例检查产物结构能否承载目标交付。
+8. 设计 artifact locator：只定义交付物 refs、package roots、receipts、provenance 和 morphology refs，不写 artifact body。
+9. 对每个 stage 标注 owner split：target domain agent、`opl-meta-agent`、OPL Framework。
+10. 检查所有 outputs 是否能被后续 stage 或 gate 消费，删掉不可消费的输出。
 
 ## 输出
 
@@ -29,6 +39,7 @@
 `stage_decomposition_pack_draft` 必须包含：
 
 - `target_agent`：`domain_id`、`domain_label`、`delivery_domain`、`target_brief`。
+- `artifact_morphology_brief`：native source format、artifact body owner、creative source refs、assembled/export refs、sharding strategy、extent/scale contract、asset custody/file-path policy、thin assembler/helper boundary 和 realistic target task review refs。
 - `action_catalog`：domain-owned action metadata、supported surfaces 和 no-forbidden-write authority boundary。
 - `stage_control_plane`：完整 stage list，每个 stage 都带 `selected_executor=codex_cli`、prompt/skill/knowledge/quality gate refs、requires/ensures、expected receipt refs、independent gate policy 和 owner boundary。
 - `files`：目标 repo 下真实 `agent/prompts`、`agent/stages`、`agent/skills`、`agent/knowledge`、`agent/quality_gates` Markdown 文件路径与正文。
@@ -42,6 +53,7 @@
 - action/stage metadata 可作为 CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK surface 的唯一派生源。
 - 没有 repo-owned generic scheduler、daemon、queue、attempt ledger、workbench 或 private wrapper。
 - domain truth、memory body、artifact body、quality/export verdict 的 owner 没有漂移。
+- artifact morphology brief 必须覆盖目标领域交付物的真实创作源、分片、体量、资产保管和装配边界；缺失 native source format、sharding strategy、extent/scale contract、asset custody/file-path policy 或 realistic target task review 时 fail closed。
 - stage graph 不把推理路线、写作策略、评审标准或修订策略写死；这些开放式判断由 Codex executor 和独立 reviewer 承担。
 - 每个 stage 都能声明 knowledge/tool/rubric gap blocker，避免为了通过 scaffold validation 生成空语义包。
 
@@ -51,3 +63,6 @@
 - 禁止把文档路径或 Markdown 标题当作机器稳定接口。
 - 禁止让测试固定叙述性文案。
 - 禁止输出无法被 scaffold validation 或 Agent Lab suite 消费的 pack。
+- 禁止把用户/source 声明的交付规模静默降级为 scaffold、sample、demo 或 placeholder。
+- 禁止把书稿、长文、长 deck、开放式正文或大体量创作内容作为 Python/TS 字符串创作源。
+- 禁止把缺少项目内可复制路径、manifest 或 provenance 的 imagegen/外部资产当成完成证据。

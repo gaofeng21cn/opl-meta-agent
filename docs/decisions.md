@@ -66,6 +66,12 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 - 理由：scaffold 和 generated interfaces 只证明结构可消费，不能证明 target agent 达到高质量交付要求。OMA 的职责是构建并评估 target agent，并把 Agent Lab / reviewer evidence 转成可执行改进、no-patch closeout 或明确 blocker。
 - 影响：只生成 repo skeleton、只跑 `opl agents scaffold --validate`、只跑 `opl agents interfaces` 或只记录 baseline pass 都不能称为 OMA 新建智能体完成。若 Agent Lab 或 reviewer evidence 暴露缺口，必须进入 owner-gated improvement loop、developer work order 或 typed blocker；若无需 source patch，也必须记录 no-patch coordination work order / receipt 和 re-evaluation refs。
 
+### Target-domain artifact morphology 是 Foundry 流程必需设计面
+
+- 决策：`stage-decomposition` typed closeout 必须产出 target-domain artifact morphology brief；baseline、takeover、external-suite 和 reviewer evidence 必须引用该 brief，并用 realistic target task 反推产物结构。
+- 理由：Foundry agent 的真实价值不只在 scaffold、interface 或 suite 可消费，还在于目标领域交付物能以正确形态被创作、审核、装配、复制和交接。近期暴露的问题说明，如果流程不显式设计交付物形态，系统会把目标体量静默降级、把开放式正文塞进源码字符串、用单文件承载长体量创作、丢失 imagegen/外部资产 custody，或只凭 scaffold/interface 通过而没有反推真实产物结构。
+- 影响：新建 target agent 的 closeout 和 delivery receipt 必须保留 native source format、artifact body owner、creative source/export refs、sharding strategy、extent/scale contract、asset custody/file-path policy、thin assembler/helper boundary 和 realistic target task review refs。缺少这些 refs，或 reviewer evidence 只有 scaffold/interface/suite refs，只能返回 typed blocker、developer work order 或 owner route-back；不能签发 baseline delivery，也不能把 suite pass 写成 artifact readiness。该决策是通用 OMA Foundry 流程规则，不新增任何 target-domain-specific command family。
+
 ### Stage-native artifact、State Index 和 StageRun 只按 refs-only adoption 读取
 
 - 决策：OMA 可以在 stage contracts、generated target packs、Agent Lab suites、developer work orders 和 typed blockers 中 materialize stage-native artifact refs、state-index refs、StageRun canary refs、operator summary 和 conformance refs；真实 physical stage folder lifecycle、SQLite sidecar index、runtime state、queue、attempt ledger、workbench consumption 和 promotion gate 归 OPL/App。
