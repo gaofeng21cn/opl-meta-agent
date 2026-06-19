@@ -59,6 +59,32 @@ function assertOmaRefTemplateBoundary(container: JsonObject): void {
   assert.equal(container.contains_target_artifact_body, false);
 }
 
+const ARTIFACT_MORPHOLOGY_REQUIRED_POLICIES = [
+  'native_source_policy',
+  'artifact_body_policy',
+  'sharding_policy',
+  'target_extent_policy',
+  'asset_custody_policy',
+  'realistic_task_review_policy',
+] as const;
+
+function reviewerMorphologySourceRefs(domainId: string, stageId = 'agent-output-draft'): string[] {
+  return [
+    `artifact-morphology-ref:${domainId}`,
+    `artifact-native-source-format-ref:${domainId}/${stageId}`,
+    `artifact-shard-unit-ref:${domainId}/${stageId}`,
+    `target-extent-contract-ref:${domainId}/${stageId}`,
+    `asset-custody-ref:${domainId}/${stageId}`,
+  ];
+}
+
+function reviewerMorphologyDirectEvidenceRefs(domainId: string, stageId = 'agent-output-draft'): string[] {
+  return [
+    `artifact-ref:${domainId}/contracts/artifact_morphology_contract.json`,
+    `morphology-evidence-ref:${domainId}/${stageId}/realistic-target-task-review`,
+  ];
+}
+
 test('materializer writes the target stage pack from typed stage-decomposition closeout', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-stage-materializer-'));
   try {
@@ -423,6 +449,32 @@ test('stage-decomposition closeout validator fails closed on free text and parti
   );
 });
 
+test('stage-decomposition closeout validator fails closed without artifact morphology contract', () => {
+  const packet = buildFixtureStageDecompositionCloseout({ targetAgent });
+  const draft = packet.stage_decomposition_pack_draft as JsonObject;
+  delete draft.artifact_morphology_contract;
+
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(packet, { targetAgent }),
+    /artifact_morphology_contract/i,
+  );
+});
+
+test('stage-decomposition closeout validator rejects incomplete artifact morphology contracts', () => {
+  ARTIFACT_MORPHOLOGY_REQUIRED_POLICIES.forEach((field) => {
+    const packet = buildFixtureStageDecompositionCloseout({ targetAgent });
+    const draft = packet.stage_decomposition_pack_draft as JsonObject;
+    const contract = draft.artifact_morphology_contract as JsonObject;
+    delete contract[field];
+
+    assert.throws(
+      () => validateStageDecompositionCloseoutPacket(packet, { targetAgent }),
+      new RegExp(`artifact morphology|artifact_morphology_contract|${field}`, 'i'),
+      `missing artifact morphology policy should fail closed: ${field}`,
+    );
+  });
+});
+
 test('stage-decomposition closeout validator rejects missing gate declarations and self-review', () => {
   const missingGatePacket = buildFixtureStageDecompositionCloseout({ targetAgent });
   const missingGateDraft = missingGatePacket.stage_decomposition_pack_draft as JsonObject;
@@ -477,8 +529,14 @@ test('build-agent-baseline consumes supplied fixture closeout instead of scripti
       independent_attempt: true,
       critique: 'The baseline has explicit evidence and owner handoff refs.',
       suggestions: ['Keep source coverage evidence explicit.'],
-      source_refs: ['review-ref:opl-meta-agent/research-workbench-agent/ai-reviewer'],
-      direct_evidence_refs: ['artifact-ref:research-workbench-agent/package'],
+      source_refs: [
+        'review-ref:opl-meta-agent/research-workbench-agent/ai-reviewer',
+        ...reviewerMorphologySourceRefs('research-workbench-agent', 'research-question-intake'),
+      ],
+      direct_evidence_refs: [
+        'artifact-ref:research-workbench-agent/package',
+        ...reviewerMorphologyDirectEvidenceRefs('research-workbench-agent', 'research-question-intake'),
+      ],
       verdict: 'baseline_ready_with_owner_gate',
       predicted_impact: 'Owner-gated baseline can be evaluated without granting OPL target authority.',
       provenance: {
@@ -556,8 +614,14 @@ test('build-agent-baseline rejects implicit fixture closeout materialization', (
       independent_attempt: true,
       critique: 'The implicit fixture path should fail before materialization.',
       suggestions: ['Require an explicit typed closeout fixture file for deterministic tests.'],
-      source_refs: ['review-ref:opl-meta-agent/research-workbench-agent/ai-reviewer'],
-      direct_evidence_refs: ['artifact-ref:research-workbench-agent/package'],
+      source_refs: [
+        'review-ref:opl-meta-agent/research-workbench-agent/ai-reviewer',
+        ...reviewerMorphologySourceRefs('research-workbench-agent'),
+      ],
+      direct_evidence_refs: [
+        'artifact-ref:research-workbench-agent/package',
+        ...reviewerMorphologyDirectEvidenceRefs('research-workbench-agent'),
+      ],
       verdict: 'blocked',
       predicted_impact: 'Implicit fixture smoke can no longer create an unstated stage graph.',
       provenance: {
@@ -617,8 +681,14 @@ test('build-agent-baseline writes a typed blocker when stage-decomposition close
       independent_attempt: true,
       critique: 'The invalid closeout should block before baseline receipt signing.',
       suggestions: ['Return a typed blocker and keep the target package unsigned.'],
-      source_refs: ['review-ref:opl-meta-agent/research-workbench-agent/ai-reviewer'],
-      direct_evidence_refs: ['artifact-ref:research-workbench-agent/package'],
+      source_refs: [
+        'review-ref:opl-meta-agent/research-workbench-agent/ai-reviewer',
+        ...reviewerMorphologySourceRefs('research-workbench-agent'),
+      ],
+      direct_evidence_refs: [
+        'artifact-ref:research-workbench-agent/package',
+        ...reviewerMorphologyDirectEvidenceRefs('research-workbench-agent'),
+      ],
       verdict: 'blocked',
       predicted_impact: 'Invalid stage decomposition cannot be materialized.',
       provenance: {

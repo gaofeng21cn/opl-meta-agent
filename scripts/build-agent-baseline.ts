@@ -302,6 +302,28 @@ function buildAgentLabSuite({
   });
 }
 
+function hasMorphologyEvidenceRef(ref: string): boolean {
+  const normalized = ref.toLowerCase();
+  return normalized.includes('artifact-morphology')
+    || normalized.includes('artifact_morphology')
+    || normalized.includes('morphology-evidence')
+    || normalized.includes('realistic-target-task-review')
+    || normalized.includes('artifact-native-source-format')
+    || normalized.includes('artifact-shard-unit')
+    || normalized.includes('target-extent-contract')
+    || normalized.includes('asset-custody');
+}
+
+function assertBaselineReviewerMorphologyEvidence(aiReviewerEvaluation: AiReviewerEvaluation): void {
+  const sourceHasMorphology = aiReviewerEvaluation.source_refs.some(hasMorphologyEvidenceRef);
+  const directHasMorphology = aiReviewerEvaluation.direct_evidence_refs.some(hasMorphologyEvidenceRef);
+  if (!sourceHasMorphology || !directHasMorphology) {
+    throw new Error(
+      'Baseline delivery requires AI reviewer artifact morphology evidence in source_refs and direct_evidence_refs before signing receipt.',
+    );
+  }
+}
+
 function buildBaselineReceipt(
   targetAgent: TargetAgent,
   suiteResult: SuiteResult,
@@ -312,6 +334,7 @@ function buildBaselineReceipt(
   aiReviewerEvaluationRef: string,
   stageDecompositionAttempt: StageDecompositionAttemptReceipt,
 ): OwnerReceipt {
+  assertBaselineReviewerMorphologyEvidence(aiReviewerEvaluation);
   const receipt = {
     ...buildOwnerReceipt({
       receiptClass: 'baseline_delivery_receipt',
@@ -323,6 +346,8 @@ function buildBaselineReceipt(
         operator_runbook_present: true,
         target_agent_brief_declared: Boolean(targetAgent.target_brief),
         ...aiReviewerAcceptanceGates(),
+        artifact_morphology_reviewer_source_refs_present: true,
+        artifact_morphology_reviewer_direct_evidence_refs_present: true,
       },
     }),
     target_agent: targetAgent,
@@ -445,6 +470,7 @@ export function runBuildAgentBaseline({
   fs.mkdirSync(outputDir, { recursive: true });
   const domainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
   const aiReviewerEvaluation = loadAiReviewerEvaluation(aiReviewerEvaluationPath);
+  assertBaselineReviewerMorphologyEvidence(aiReviewerEvaluation);
 
   const targetAgentLabel = targetAgent.domain_label ?? targetAgent.domain_id;
   const targetAgentDir = path.join(outputDir, targetAgent.domain_id);

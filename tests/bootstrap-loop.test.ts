@@ -24,6 +24,23 @@ function runBaselineArgs(args: string[]): JsonObject {
   return runBuildAgentBaseline(parseBuildAgentBaselineArgs(args));
 }
 
+function reviewerMorphologySourceRefs(domainId: string, stageId = 'agent-output-draft'): string[] {
+  return [
+    `artifact-morphology-ref:${domainId}`,
+    `artifact-native-source-format-ref:${domainId}/${stageId}`,
+    `artifact-shard-unit-ref:${domainId}/${stageId}`,
+    `target-extent-contract-ref:${domainId}/${stageId}`,
+    `asset-custody-ref:${domainId}/${stageId}`,
+  ];
+}
+
+function reviewerMorphologyDirectEvidenceRefs(domainId: string, stageId = 'agent-output-draft'): string[] {
+  return [
+    `artifact-ref:${domainId}/contracts/artifact_morphology_contract.json`,
+    `morphology-evidence-ref:${domainId}/${stageId}/realistic-target-task-review`,
+  ];
+}
+
 function assertGeneratedTargetStagePack(
   targetDir: string,
   stageControl: JsonObject,
@@ -110,6 +127,17 @@ function assertGeneratedTargetStagePack(
 }
 
 function writeAiReviewerEvaluation(filePath: string, overrides: JsonObject = {}): JsonObject {
+  const domainId = typeof overrides.domain_id === 'string'
+    ? overrides.domain_id
+    : 'baseline-fixture-agent';
+  const stageId = typeof overrides.stage_id === 'string'
+    ? overrides.stage_id
+    : 'agent-output-draft';
+  const {
+    domain_id: _domainId,
+    stage_id: _stageId,
+    ...evaluationOverrides
+  } = overrides;
   const evaluation = {
     reviewer_kind: 'ai_reviewer',
     model_or_provider: 'gpt-5.5',
@@ -127,10 +155,12 @@ function writeAiReviewerEvaluation(filePath: string, overrides: JsonObject = {})
       'review-ref:opl-meta-agent/baseline-fixture-agent/ai-reviewer',
       'evidence-ref:baseline-fixture-agent/scaffold-validation',
       'scorecard-ref:opl-meta-agent/baseline-acceptance',
+      ...reviewerMorphologySourceRefs(domainId, stageId),
     ],
     direct_evidence_refs: [
       'artifact-ref:baseline-fixture-agent/package',
       'receipt-ref:opl-meta-agent/baseline-delivery',
+      ...reviewerMorphologyDirectEvidenceRefs(domainId, stageId),
     ],
     verdict: 'baseline_ready_with_owner_gate',
     predicted_impact: 'The baseline should remain owner-gated while making source coverage and operator handoff evidence auditable.',
@@ -139,7 +169,7 @@ function writeAiReviewerEvaluation(filePath: string, overrides: JsonObject = {})
       reviewer_prompt_ref: 'agent/prompts/baseline-delivery.md',
       created_by: 'test-fixture',
     },
-    ...overrides,
+    ...evaluationOverrides,
   };
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(evaluation, null, 2)}\n`);
@@ -263,6 +293,7 @@ test('opl-meta-agent bootstraps an explicit target agent and validates it throug
     assert.equal(payload.learning_loop.baseline_receipt.acceptance_gates.ai_reviewer_direct_evidence_refs_present, true);
 
     const targetDir = path.join(outputRoot, 'baseline-fixture-agent');
+    const stagePacketPath = path.join(outputRoot, 'stage-decomposition-attempt-input.json');
     const suitePath = path.join(outputRoot, 'agent-lab-suite.json');
     const receiptPath = path.join(outputRoot, 'baseline-delivery-receipt.json');
     const learningPath = path.join(outputRoot, 'online-learning-candidate.json');
@@ -287,10 +318,33 @@ test('opl-meta-agent bootstraps an explicit target agent and validates it throug
     assert.equal(fs.existsSync(realTargetLedgerPath), true);
 
     const fixture = readJson(fixturePath);
+    const stagePacket = readJson(stagePacketPath);
     const stageControl = readJson(path.join(targetDir, 'contracts', 'stage_control_plane.json'));
     assertGeneratedTargetStagePack(targetDir, stageControl, {
       stageId: 'agent-output-draft',
       actionRef: 'draft-agent-output',
+    });
+    assert.ok(
+      (stagePacket.required_closeout.required_pack_sections as string[])
+        .includes('artifact_morphology_contract'),
+    );
+    assert.ok(
+      (stagePacket.required_closeout.required_stage_fields as string[])
+        .includes('stage_contract.artifact_morphology_contract'),
+    );
+    assert.ok(
+      (stagePacket.required_closeout.required_stage_fields as string[])
+        .includes('stage_contract.artifact_morphology_refs'),
+    );
+    assert.deepEqual(stagePacket.required_closeout.required_artifact_morphology_contract, {
+      native_source_policy_required: true,
+      artifact_body_policy_required: true,
+      sharding_policy_required: true,
+      target_extent_policy_required: true,
+      asset_custody_policy_required: true,
+      realistic_task_review_policy_required: true,
+      creative_source_must_not_be_generator_code: true,
+      silent_extent_downgrade_forbidden: true,
     });
 
     assert.equal(fixture.surface_kind, 'generated_agent_morphology_conformance_fixture');
@@ -419,6 +473,7 @@ test('build-agent-baseline bootstraps a requested target agent from structured s
     target_brief: targetBrief,
   };
   const reviewerEvaluation = writeAiReviewerEvaluation(reviewerEvaluationPath, {
+    domain_id: 'research-workbench-agent',
     run_ref: 'run:ai-reviewer/opl-meta-agent/research-workbench-agent/baseline',
     execution_attempt_ref: 'attempt:executor/opl-meta-agent/research-workbench-agent/baseline',
     review_attempt_ref: 'attempt:ai-reviewer/opl-meta-agent/research-workbench-agent/baseline',
@@ -426,10 +481,12 @@ test('build-agent-baseline bootstraps a requested target agent from structured s
       'review-ref:opl-meta-agent/research-workbench-agent/ai-reviewer',
       'evidence-ref:research-workbench-agent/scaffold-validation',
       'scorecard-ref:opl-meta-agent/baseline-acceptance',
+      ...reviewerMorphologySourceRefs('research-workbench-agent'),
     ],
     direct_evidence_refs: [
       'artifact-ref:research-workbench-agent/package',
       'receipt-ref:opl-meta-agent/baseline-delivery',
+      ...reviewerMorphologyDirectEvidenceRefs('research-workbench-agent'),
     ],
   });
   writeStageCloseout(stageCloseoutPath, targetAgent);
@@ -567,6 +624,70 @@ test('baseline delivery rejects AI reviewer evaluation without independent attem
     assert.match(result.stderr, /independent_attempt/i);
     assert.match(result.stderr, /direct_evidence_refs/i);
     assert.match(result.stderr, /execution_attempt_ref and review_attempt_ref/i);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'baseline-delivery-receipt.json')), false);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
+test('baseline delivery rejects reviewer evidence without artifact morphology coverage', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-loop-missing-morphology-reviewer-'));
+  const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+  const targetAgent = {
+    domain_id: 'missing-morphology-fixture-agent',
+    domain_label: 'Missing Morphology Fixture Agent',
+    delivery_domain: 'reviewer_gate_fixture',
+    target_brief: 'Create an OPL-compatible reviewer evidence fixture agent.',
+  };
+  const stageCloseoutPath = path.join(outputRoot, 'stage-decomposition-closeout.json');
+  writeAiReviewerEvaluation(reviewerEvaluationPath, {
+    source_refs: [
+      'review-ref:opl-meta-agent/missing-morphology-fixture-agent/ai-reviewer',
+      'evidence-ref:missing-morphology-fixture-agent/scaffold-validation',
+      'scorecard-ref:opl-meta-agent/baseline-acceptance',
+    ],
+    direct_evidence_refs: [
+      'artifact-ref:missing-morphology-fixture-agent/package',
+      'receipt-ref:opl-meta-agent/baseline-delivery',
+    ],
+  });
+  writeStageCloseout(stageCloseoutPath, targetAgent);
+  const oplBin = process.env.OPL_BIN
+    ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
+
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [
+        path.join(repoRoot, 'scripts/build-agent-baseline.ts'),
+        '--output-dir',
+        outputRoot,
+        '--opl-bin',
+        oplBin,
+        '--ai-reviewer-evaluation',
+        reviewerEvaluationPath,
+        '--stage-runner',
+        'fixture',
+        '--stage-decomposition-closeout',
+        stageCloseoutPath,
+        '--domain-id',
+        targetAgent.domain_id,
+        '--domain-label',
+        targetAgent.domain_label,
+        '--delivery-domain',
+        targetAgent.delivery_domain,
+        '--target-brief',
+        targetAgent.target_brief,
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        maxBuffer: 16 * 1024 * 1024,
+      },
+    );
+
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /artifact morphology|morphology evidence|morphology coverage/i);
     assert.equal(fs.existsSync(path.join(outputRoot, 'baseline-delivery-receipt.json')), false);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
