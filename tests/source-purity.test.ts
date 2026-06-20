@@ -58,6 +58,12 @@ function listFilesByExtension(relativeDir: string, extension: string): string[] 
     .sort();
 }
 
+function listScriptRefs(): string[] {
+  const tsScripts = listFilesByExtension('scripts', '.ts');
+  const shellScripts = listFilesByExtension('scripts', '.sh');
+  return [...tsScripts, ...shellScripts].sort();
+}
+
 function assertRepoRefExists(relativePath: string): void {
   assert.equal(fs.existsSync(path.join(repoRoot, relativePath)), true, `${relativePath} should exist`);
 }
@@ -212,10 +218,10 @@ test('minimal authority functions are explicit refs, not generic runtime owners'
   });
 });
 
-test('script morphology stays limited to authority refs, materializers, and helpers', () => {
+test('script morphology stays limited to authority refs, materializers, helpers, and verification wrappers', () => {
   const privatePolicy = readJson('contracts/private_functional_surface_policy.json');
   const authorityFunctions = readJson('runtime/authority_functions/meta-agent-authority-functions.json');
-  const scripts = listFilesByExtension('scripts', '.ts');
+  const scripts = listScriptRefs();
   const morphologyPolicy = authorityFunctions.script_morphology_policy as JsonObject;
   const receipt = authorityFunctions.source_purity_scan_receipt as JsonObject;
   const materializerScan = receipt.generic_script_materializer_scan as JsonObject;
@@ -282,6 +288,7 @@ test('script morphology stays limited to authority refs, materializers, and help
     'build_agent_baseline_and_stage_decomposition_materializers',
     'external_work_order_execution_delegation',
     'source_structure_and_stage_control_maintenance_helpers',
+    'repo_shell_verification_wrappers',
     'retained_thin_authority_helpers_and_takeover_smoke',
   ]);
   const gatedScriptRefs = [...new Set(
@@ -443,6 +450,41 @@ test('script morphology stays limited to authority refs, materializers, and help
       `source-structure maintenance gate should forbid ${claim}`,
     );
   });
+  const shellWrapperGate = retirementGates.find((gate) => (
+    gate.gate_id === 'repo_shell_verification_wrappers'
+  ));
+  assert.ok(shellWrapperGate, 'repo shell verification wrapper gate should exist');
+  assert.deepEqual(asStrings(shellWrapperGate.tracked_script_refs), [
+    'scripts/repo-hygiene.sh',
+    'scripts/run-with-repo-temp-env.sh',
+    'scripts/verify.sh',
+  ]);
+  [
+    'opl_framework_repo_verification_entrypoint_parity_ref',
+    'external_cache_and_temp_env_boundary_parity_ref',
+    'repo_hygiene_cleanup_route_parity_ref',
+    'no_active_npm_or_test_caller_ref',
+    'tombstone_or_provenance_ref',
+  ].forEach((required) => {
+    assert.ok(
+      asStrings(shellWrapperGate.required_before_retire_or_absorb).includes(required),
+      `repo shell wrapper gate should require ${required}`,
+    );
+  });
+  [
+    'generic_cli_wrapper_owner',
+    'generic_runtime_owner',
+    'scheduler_or_daemon_owner',
+    'queue_or_attempt_ledger_owner',
+    'generated_interface_owner',
+    'target_truth_or_quality_writer',
+    'line_budget_default_hard_gate',
+  ].forEach((claim) => {
+    assert.ok(
+      asStrings(shellWrapperGate.forbidden_long_term_claims).includes(claim),
+      `repo shell wrapper gate should forbid ${claim}`,
+    );
+  });
 
   const implementationRefs = new Map<string, string[]>();
   asObjects(authorityFunctions.functions).forEach((functionRef) => {
@@ -534,6 +576,18 @@ test('script morphology stays limited to authority refs, materializers, and help
         asStrings(entry.writes_only).includes('stage_control_plane_drift_check_ref'),
       );
     }
+    if (entry.script_ref === 'scripts/repo-hygiene.sh') {
+      assert.ok(asStrings(entry.writes_only).includes('repo_hygiene_check_ref'));
+      assert.ok(asStrings(entry.writes_only).includes('ignored_generated_cleanup_ref'));
+    }
+    if (entry.script_ref === 'scripts/run-with-repo-temp-env.sh') {
+      assert.ok(asStrings(entry.writes_only).includes('repo_temp_env_boundary_ref'));
+      assert.ok(asStrings(entry.writes_only).includes('external_cache_redirect_ref'));
+    }
+    if (entry.script_ref === 'scripts/verify.sh') {
+      assert.ok(asStrings(entry.writes_only).includes('repo_native_verification_entrypoint_ref'));
+      assert.ok(asStrings(entry.writes_only).includes('smoke_behavior_structure_verification_lane_ref'));
+    }
     if (entry.script_ref === 'scripts/lib/work-order-refs.ts') {
       assert.deepEqual(asStrings(entry.contract_refs), [
         DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF,
@@ -570,7 +624,7 @@ test('script morphology stays limited to authority refs, materializers, and help
     'agent/',
     'contracts/',
     'runtime/authority_functions/',
-    'scripts authority/materializer/helper refs',
+    'scripts authority/materializer/helper and verification-wrapper refs',
   ]);
   assert.ok(asStrings(receipt.forbidden_long_term_composition_claims).includes('repo_owned_generic_cli_mcp_skill_product_status_workbench_wrapper'));
 });

@@ -128,6 +128,32 @@
         "forbidden_roles": []
       },
       {
+        "script_ref": "scripts/repo-hygiene.sh",
+        "classes": [
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": [
+          "repo_hygiene_check_ref",
+          "ignored_generated_cleanup_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
+        "script_ref": "scripts/run-with-repo-temp-env.sh",
+        "classes": [
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": [
+          "repo_temp_env_boundary_ref",
+          "external_cache_redirect_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
         "script_ref": "scripts/lib/agent-evidence-materializer.ts",
         "classes": [
           "fixture_or_proof_helper",
@@ -502,6 +528,21 @@
         "forbidden_roles": []
       },
       {
+        "script_ref": "scripts/verify.sh",
+        "classes": [
+          "smoke_helper",
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": [
+          "repo_native_verification_entrypoint_ref",
+          "repo_hygiene_check_ref",
+          "smoke_behavior_structure_verification_lane_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
         "script_ref": "scripts/takeover-agent.ts",
         "classes": [
           "smoke_helper",
@@ -655,6 +696,32 @@
         ]
       },
       {
+        "gate_id": "repo_shell_verification_wrappers",
+        "tracked_script_refs": [
+          "scripts/repo-hygiene.sh",
+          "scripts/run-with-repo-temp-env.sh",
+          "scripts/verify.sh"
+        ],
+        "current_role": "repo_native_verification_and_external_cache_boundary_wrapper",
+        "allowed_until": "repo_native_verification_and_hygiene_still_need_shell_entrypoints",
+        "required_before_retire_or_absorb": [
+          "opl_framework_repo_verification_entrypoint_parity_ref",
+          "external_cache_and_temp_env_boundary_parity_ref",
+          "repo_hygiene_cleanup_route_parity_ref",
+          "no_active_npm_or_test_caller_ref",
+          "tombstone_or_provenance_ref"
+        ],
+        "forbidden_long_term_claims": [
+          "generic_cli_wrapper_owner",
+          "generic_runtime_owner",
+          "scheduler_or_daemon_owner",
+          "queue_or_attempt_ledger_owner",
+          "generated_interface_owner",
+          "target_truth_or_quality_writer",
+          "line_budget_default_hard_gate"
+        ]
+      },
+      {
         "gate_id": "retained_thin_authority_helpers_and_takeover_smoke",
         "tracked_script_refs": [
           "scripts/lib/meta-agent-loop-ai-reviewer.ts",
@@ -782,15 +849,17 @@
       "agent/",
       "package.json"
     ],
-    "scanned_script_refs": [
-      "scripts/agent-evidence-takeover.ts",
-      "scripts/build-agent-baseline.ts",
-      "scripts/check-source-structure.ts",
-      "scripts/execute-external-work-order.ts",
-      "scripts/improve-from-agent-lab-suite.ts",
-      "scripts/lib/agent-evidence-contracts.ts",
-      "scripts/lib/agent-evidence-materializer.ts",
-      "scripts/lib/domain-pack.ts",
+      "scanned_script_refs": [
+        "scripts/agent-evidence-takeover.ts",
+        "scripts/build-agent-baseline.ts",
+        "scripts/check-source-structure.ts",
+        "scripts/execute-external-work-order.ts",
+        "scripts/improve-from-agent-lab-suite.ts",
+        "scripts/repo-hygiene.sh",
+        "scripts/run-with-repo-temp-env.sh",
+        "scripts/lib/agent-evidence-contracts.ts",
+        "scripts/lib/agent-evidence-materializer.ts",
+        "scripts/lib/domain-pack.ts",
       "scripts/lib/external-suite-materializer.ts",
       "scripts/lib/meta-agent-loop-ai-reviewer.ts",
       "scripts/lib/meta-agent-loop-io.ts",
@@ -803,12 +872,13 @@
       "scripts/lib/stage-native-artifact-contract.ts",
       "scripts/lib/target-improvement-policy.ts",
       "scripts/lib/work-order-builders.ts",
-      "scripts/lib/work-order-efficiency.ts",
-      "scripts/lib/work-order-refs.ts",
-      "scripts/lib/work-order-validation.ts",
-      "scripts/sync-stage-control-plane.ts",
-      "scripts/takeover-agent.ts"
-    ],
+        "scripts/lib/work-order-efficiency.ts",
+        "scripts/lib/work-order-refs.ts",
+        "scripts/lib/work-order-validation.ts",
+        "scripts/sync-stage-control-plane.ts",
+        "scripts/verify.sh",
+        "scripts/takeover-agent.ts"
+      ],
     "absent_repo_owned_surface_paths": [
       ".agents",
       ".codex",
@@ -880,7 +950,7 @@
       "agent/",
       "contracts/",
       "runtime/authority_functions/",
-      "scripts authority/materializer/helper refs"
+      "scripts authority/materializer/helper and verification-wrapper refs"
     ],
     "forbidden_long_term_composition_claims": [
       "repo_owned_generic_cli_mcp_skill_product_status_workbench_wrapper",
