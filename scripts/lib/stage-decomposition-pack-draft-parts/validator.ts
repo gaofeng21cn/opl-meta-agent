@@ -1,6 +1,7 @@
 import type { JsonObject } from '../domain-pack.ts';
 import type { TargetAgent } from '../meta-agent-loop-io.ts';
 import type { StageDecompositionPackDraft } from './shared.ts';
+import { validateArtifactMorphologyContract } from './artifact-morphology-validator.ts';
 import {
   DEFAULT_STAGE_EXECUTOR_BINDING_REF,
   SERIES_DESIGN_PROFILE,
@@ -18,6 +19,10 @@ import {
   stageNativeRefsFor,
   validateRelativeMarkdownPath,
 } from './shared.ts';
+import {
+  validateEmbeddedStageNativeArtifactContract,
+  validateStageNativeArtifactContractBundle,
+} from './stage-native-contract-validator.ts';
 
 function validateNoForbiddenWritePolicy(policy: JsonObject): void {
   if (policy.refs_only !== true) {
@@ -50,112 +55,6 @@ function validateActionCatalog(catalog: JsonObject, targetAgent: TargetAgent): v
       'can_authorize_target_domain_quality_or_export',
     ].forEach((field) => assertBooleanFalse(boundary, field, `action_catalog.actions[].authority_boundary.${field}`));
   });
-}
-
-function validateArtifactMorphologyContract(contract: JsonObject, targetAgent: TargetAgent): void {
-  if (contract.surface_kind !== 'target_domain_artifact_morphology_contract') {
-    throw new Error('stage-decomposition pack draft artifact_morphology_contract.surface_kind must be target_domain_artifact_morphology_contract.');
-  }
-  if (contract.version !== 'artifact-morphology.v1') {
-    throw new Error('stage-decomposition pack draft artifact_morphology_contract.version must be artifact-morphology.v1.');
-  }
-  if (contract.target_domain_id !== targetAgent.domain_id) {
-    throw new Error('stage-decomposition pack draft artifact_morphology_contract target_domain_id does not match target agent.');
-  }
-  const nativeSourcePolicy = asRecord(contract.native_source_policy, 'artifact_morphology_contract.native_source_policy');
-  if (nativeSourcePolicy.required !== true) {
-    throw new Error('stage-decomposition pack draft artifact_morphology_contract.native_source_policy.required must be true.');
-  }
-  if (nativeSourcePolicy.creative_source_must_be_domain_native !== true) {
-    throw new Error('stage-decomposition pack draft artifact morphology must require domain-native creative source refs.');
-  }
-  if (nativeSourcePolicy.creative_source_must_not_be_generator_code !== true) {
-    throw new Error('stage-decomposition pack draft artifact morphology must reject generator-code prose/artifact body as source of truth.');
-  }
-  const generatorRoles = asStringArray(
-    nativeSourcePolicy.generator_code_allowed_roles,
-    'artifact_morphology_contract.native_source_policy.generator_code_allowed_roles',
-  );
-  ['assembly', 'metrics', 'validation', 'export', 'reporting'].forEach((role) => {
-    if (!generatorRoles.includes(role)) {
-      throw new Error(`stage-decomposition pack draft artifact morphology missing generator role ${role}.`);
-    }
-  });
-
-  const artifactBodyPolicy = asRecord(contract.artifact_body_policy, 'artifact_morphology_contract.artifact_body_policy');
-  if (artifactBodyPolicy.target_domain_owns_artifact_body !== true) {
-    throw new Error('stage-decomposition pack draft artifact morphology must keep artifact body authority with target domain.');
-  }
-  [
-    'oma_can_write_target_artifact_body',
-    'opl_can_infer_artifact_body_shape',
-  ].forEach((field) => assertBooleanFalse(artifactBodyPolicy, field, `artifact_morphology_contract.artifact_body_policy.${field}`));
-  if (artifactBodyPolicy.scaffold_or_suite_pass_is_not_artifact_shape_evidence !== true) {
-    throw new Error('stage-decomposition pack draft artifact morphology must reject scaffold/suite pass as artifact shape evidence.');
-  }
-
-  const shardingPolicy = asRecord(contract.sharding_policy, 'artifact_morphology_contract.sharding_policy');
-  if (shardingPolicy.required_for_book_length_or_large_artifacts !== true) {
-    throw new Error('stage-decomposition pack draft artifact morphology must require sharding for book-length or large artifacts.');
-  }
-  if (shardingPolicy.assembled_output_is_delivery_ref_not_primary_creative_source !== true) {
-    throw new Error('stage-decomposition pack draft artifact morphology must separate creative source from assembled delivery ref.');
-  }
-  if (shardingPolicy.monolithic_creative_source_requires_owner_approval !== true) {
-    throw new Error('stage-decomposition pack draft artifact morphology must owner-gate monolithic creative sources.');
-  }
-
-  const extentPolicy = asRecord(contract.target_extent_policy, 'artifact_morphology_contract.target_extent_policy');
-  if (extentPolicy.owner_or_source_declared_extent_is_binding !== true) {
-    throw new Error('stage-decomposition pack draft artifact morphology must bind owner/source-declared extent.');
-  }
-  if (extentPolicy.silent_extent_downgrade_forbidden !== true) {
-    throw new Error('stage-decomposition pack draft artifact morphology must forbid silent extent downgrade.');
-  }
-  if (extentPolicy.shortfall_requires_typed_blocker !== true) {
-    throw new Error('stage-decomposition pack draft artifact morphology must require typed blocker for extent shortfall.');
-  }
-
-  const assetCustodyPolicy = asRecord(contract.asset_custody_policy, 'artifact_morphology_contract.asset_custody_policy');
-  if (assetCustodyPolicy.project_local_asset_paths_required_for_final_assets !== true) {
-    throw new Error('stage-decomposition pack draft artifact morphology must require project-local final asset paths.');
-  }
-  if (assetCustodyPolicy.generated_asset_without_exposed_path_is_typed_blocker !== true) {
-    throw new Error('stage-decomposition pack draft artifact morphology must block generated assets without exposed paths.');
-  }
-  if (assetCustodyPolicy.placeholder_or_chat_only_asset_is_not_final_evidence !== true) {
-    throw new Error('stage-decomposition pack draft artifact morphology must reject placeholder/chat-only asset evidence.');
-  }
-
-  const reviewPolicy = asRecord(contract.realistic_task_review_policy, 'artifact_morphology_contract.realistic_task_review_policy');
-  if (reviewPolicy.required_before_baseline_delivery !== true) {
-    throw new Error('stage-decomposition pack draft artifact morphology must require realistic task review before baseline delivery.');
-  }
-  if (reviewPolicy.reviewer_must_check_artifact_morphology !== true) {
-    throw new Error('stage-decomposition pack draft artifact morphology must require reviewer artifact-shape checks.');
-  }
-  if (reviewPolicy.scaffold_interface_or_scorecard_only_review_forbidden !== true) {
-    throw new Error('stage-decomposition pack draft artifact morphology must reject scaffold/interface/scorecard-only review.');
-  }
-
-  const stageRefs = asRecord(contract.stage_refs, 'artifact_morphology_contract.stage_refs');
-  [
-    'artifact_morphology_ref',
-    'native_source_format_ref',
-    'shard_unit_ref',
-    'extent_contract_ref',
-    'asset_custody_ref',
-  ].forEach((field) => asString(stageRefs[field], `artifact_morphology_contract.stage_refs.${field}`));
-
-  const boundary = asRecord(contract.authority_boundary, 'artifact_morphology_contract.authority_boundary');
-  [
-    'oma_can_write_target_domain_truth',
-    'oma_can_write_target_artifact_body',
-    'oma_can_authorize_target_quality_or_export',
-  ].forEach((field) => assertBooleanFalse(boundary, field, `artifact_morphology_contract.authority_boundary.${field}`));
-  if (boundary.target_domain_owner_must_accept_morphology !== true) {
-    throw new Error('stage-decomposition pack draft artifact morphology must require target-domain owner acceptance.');
-  }
 }
 
 function validateStageRefs(
@@ -261,23 +160,8 @@ function validateStageControlPlane(
     const requires = asStringArray(contract.requires, `stage ${stageId}.stage_contract.requires`);
     const ensures = asStringArray(contract.ensures, `stage ${stageId}.stage_contract.ensures`);
     const stageNativeRefs = stageNativeRefsFor(targetAgent.domain_id, stageId);
-    const expectedArtifactNativeContractRef = stageNativeRefs.artifactNativeContractRef;
-    const expectedStageFolderContractRef = stageNativeRefs.stageFolderContractRef;
-    const expectedStageJsonRef = stageNativeRefs.stageJsonRef;
-    const expectedAttemptJsonRef = stageNativeRefs.attemptJsonRef;
-    const expectedManifestRef = stageNativeRefs.manifestRef;
-    const expectedReceiptRef = stageNativeRefs.receiptRef;
-    const expectedBlockerRef = stageNativeRefs.blockerRef;
-    const expectedCurrentPointerRef = stageNativeRefs.currentPointerRef;
-    const expectedCanonicalArtifactRef = stageNativeRefs.canonicalArtifactRef;
-    const expectedExportRef = stageNativeRefs.exportRef;
-    const expectedLineageRef = stageNativeRefs.lineageRef;
-    const expectedRetentionRef = stageNativeRefs.retentionRef;
-    const expectedPhysicalKernelLocatorRef = stageNativeRefs.physicalKernelLocatorRef;
-    const expectedConformanceRef = stageNativeRefs.conformanceRef;
-    const expectedWorkbenchConsumptionRef = stageNativeRefs.workbenchConsumptionRef;
     [
-      expectedArtifactNativeContractRef,
+      stageNativeRefs.artifactNativeContractRef,
       ...promptRefs.map((entry) => `prompt-ref:${entry}`),
       ...skillRefs.map((entry) => `skill-ref:${entry}`),
       ...knowledgeRefs.map((entry) => `knowledge-ref:${entry}`),
@@ -302,19 +186,19 @@ function validateStageControlPlane(
       throw new Error(`stage-decomposition pack draft stage ${stageId} missing user stage log ensure.`);
     }
     [
-      expectedStageFolderContractRef,
-      expectedStageJsonRef,
-      expectedAttemptJsonRef,
-      expectedManifestRef,
-      expectedReceiptRef,
-      expectedCurrentPointerRef,
-      expectedCanonicalArtifactRef,
-      expectedExportRef,
-      expectedLineageRef,
-      expectedRetentionRef,
-      expectedPhysicalKernelLocatorRef,
-      expectedConformanceRef,
-      expectedWorkbenchConsumptionRef,
+      stageNativeRefs.stageFolderContractRef,
+      stageNativeRefs.stageJsonRef,
+      stageNativeRefs.attemptJsonRef,
+      stageNativeRefs.manifestRef,
+      stageNativeRefs.receiptRef,
+      stageNativeRefs.currentPointerRef,
+      stageNativeRefs.canonicalArtifactRef,
+      stageNativeRefs.exportRef,
+      stageNativeRefs.lineageRef,
+      stageNativeRefs.retentionRef,
+      stageNativeRefs.physicalKernelLocatorRef,
+      stageNativeRefs.conformanceRef,
+      stageNativeRefs.workbenchConsumptionRef,
     ].forEach((ensuredRef) => {
       if (!ensures.includes(ensuredRef)) {
         throw new Error(`stage-decomposition pack draft stage ${stageId} missing stage-native ensure ${ensuredRef}.`);
@@ -344,21 +228,21 @@ function validateStageControlPlane(
       }
     });
     [
-      expectedArtifactNativeContractRef,
-      expectedStageFolderContractRef,
-      expectedStageJsonRef,
-      expectedAttemptJsonRef,
-      expectedManifestRef,
-      expectedReceiptRef,
-      expectedBlockerRef,
-      expectedCurrentPointerRef,
-      expectedCanonicalArtifactRef,
-      expectedExportRef,
-      expectedLineageRef,
-      expectedRetentionRef,
-      expectedPhysicalKernelLocatorRef,
-      expectedConformanceRef,
-      expectedWorkbenchConsumptionRef,
+      stageNativeRefs.artifactNativeContractRef,
+      stageNativeRefs.stageFolderContractRef,
+      stageNativeRefs.stageJsonRef,
+      stageNativeRefs.attemptJsonRef,
+      stageNativeRefs.manifestRef,
+      stageNativeRefs.receiptRef,
+      stageNativeRefs.blockerRef,
+      stageNativeRefs.currentPointerRef,
+      stageNativeRefs.canonicalArtifactRef,
+      stageNativeRefs.exportRef,
+      stageNativeRefs.lineageRef,
+      stageNativeRefs.retentionRef,
+      stageNativeRefs.physicalKernelLocatorRef,
+      stageNativeRefs.conformanceRef,
+      stageNativeRefs.workbenchConsumptionRef,
     ].forEach((expectedRef) => {
       if (!expectedReceiptRefs.some((entry) => entry.ref === expectedRef)) {
         throw new Error(`stage-decomposition pack draft stage ${stageId} missing expected stage-native ref ${expectedRef}.`);
@@ -368,169 +252,7 @@ function validateStageControlPlane(
       contract.stage_native_artifact_contract,
       `stage ${stageId}.stage_contract.stage_native_artifact_contract`,
     );
-    if (stageNativeArtifactContract.surface_kind !== 'opl_stage_native_artifact_contract') {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} stage_native_artifact_contract.surface_kind is invalid.`);
-    }
-    if (stageNativeArtifactContract.artifact_native_contract_ref !== expectedArtifactNativeContractRef) {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} artifact_native_contract_ref is invalid.`);
-    }
-    if (stageNativeArtifactContract.stage_folder_contract_ref !== expectedStageFolderContractRef) {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} stage_folder_contract_ref is invalid.`);
-    }
-    if (stageNativeArtifactContract.stage_json_ref !== expectedStageJsonRef) {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} stage_json_ref is invalid.`);
-    }
-    if (stageNativeArtifactContract.attempt_json_ref !== expectedAttemptJsonRef) {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} attempt_json_ref is invalid.`);
-    }
-    if (stageNativeArtifactContract.manifest_ref !== expectedManifestRef) {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} manifest_ref is invalid.`);
-    }
-    if (stageNativeArtifactContract.receipt_ref !== expectedReceiptRef) {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} receipt_ref is invalid.`);
-    }
-    if (stageNativeArtifactContract.blocker_ref !== expectedBlockerRef) {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} blocker_ref is invalid.`);
-    }
-    if (stageNativeArtifactContract.current_pointer_ref !== expectedCurrentPointerRef) {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} current_pointer_ref is invalid.`);
-    }
-    if (stageNativeArtifactContract.canonical_artifact_ref !== expectedCanonicalArtifactRef) {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} canonical_artifact_ref is invalid.`);
-    }
-    if (stageNativeArtifactContract.export_ref !== expectedExportRef) {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} export_ref is invalid.`);
-    }
-    if (stageNativeArtifactContract.lineage_ref !== expectedLineageRef) {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} lineage_ref is invalid.`);
-    }
-    if (stageNativeArtifactContract.retention_ref !== expectedRetentionRef) {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} retention_ref is invalid.`);
-    }
-    if (stageNativeArtifactContract.physical_kernel_locator_ref !== expectedPhysicalKernelLocatorRef) {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} physical_kernel_locator_ref is invalid.`);
-    }
-    if (stageNativeArtifactContract.conformance_ref !== expectedConformanceRef) {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} conformance_ref is invalid.`);
-    }
-    if (stageNativeArtifactContract.workbench_consumption_ref !== expectedWorkbenchConsumptionRef) {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} workbench_consumption_ref is invalid.`);
-    }
-    const folderContract = asRecord(
-      stageNativeArtifactContract.stage_folder_contract,
-      `stage ${stageId}.stage_contract.stage_native_artifact_contract.stage_folder_contract`,
-    );
-    [
-      ['stage_folder_contract_ref', expectedStageFolderContractRef],
-      ['stage_json_ref', expectedStageJsonRef],
-      ['attempt_json_ref', expectedAttemptJsonRef],
-      ['manifest_ref', expectedManifestRef],
-      ['receipt_ref', expectedReceiptRef],
-      ['blocker_ref', expectedBlockerRef],
-      ['current_pointer_ref', expectedCurrentPointerRef],
-      ['canonical_artifact_ref', expectedCanonicalArtifactRef],
-      ['export_ref', expectedExportRef],
-      ['lineage_ref', expectedLineageRef],
-      ['retention_ref', expectedRetentionRef],
-      ['physical_kernel_locator_ref', expectedPhysicalKernelLocatorRef],
-      ['conformance_ref', expectedConformanceRef],
-      ['workbench_consumption_ref', expectedWorkbenchConsumptionRef],
-    ].forEach(([field, expectedValue]) => {
-      if (folderContract[field] !== expectedValue) {
-        throw new Error(`stage-decomposition pack draft stage ${stageId} stage_folder_contract.${field} is invalid.`);
-      }
-    });
-    const physicalKernelLocatorContract = asRecord(
-      stageNativeArtifactContract.physical_kernel_locator_contract,
-      `stage ${stageId}.stage_contract.stage_native_artifact_contract.physical_kernel_locator_contract`,
-    );
-    if (physicalKernelLocatorContract.physical_kernel_locator_ref !== expectedPhysicalKernelLocatorRef) {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} physical_kernel_locator_contract ref is invalid.`);
-    }
-    if (physicalKernelLocatorContract.source_contract_ref !== 'contracts/opl-framework/stage-artifact-runtime-contract.json') {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} physical_kernel_locator_contract source contract is invalid.`);
-    }
-    if (physicalKernelLocatorContract.oma_materializes_ref_template_only !== true) {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} physical kernel locator must be refs-only.`);
-    }
-    assertBooleanFalse(
-      physicalKernelLocatorContract,
-      'oma_can_create_runtime_state',
-      `stage ${stageId}.physical_kernel_locator_contract.oma_can_create_runtime_state`,
-    );
-    const conformanceContract = asRecord(
-      stageNativeArtifactContract.conformance_contract,
-      `stage ${stageId}.stage_contract.stage_native_artifact_contract.conformance_contract`,
-    );
-    if (conformanceContract.surface_kind !== 'opl_stage_artifact_runtime_conformance') {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} conformance_contract.surface_kind is invalid.`);
-    }
-    if (conformanceContract.conformance_ref !== expectedConformanceRef) {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} conformance_contract ref is invalid.`);
-    }
-    assertBooleanFalse(
-      conformanceContract,
-      'domain_readiness_claim',
-      `stage ${stageId}.conformance_contract.domain_readiness_claim`,
-    );
-    assertBooleanFalse(
-      conformanceContract,
-      'oma_can_claim_conformance_pass',
-      `stage ${stageId}.conformance_contract.oma_can_claim_conformance_pass`,
-    );
-    const workbenchConsumptionContract = asRecord(
-      stageNativeArtifactContract.workbench_consumption_contract,
-      `stage ${stageId}.stage_contract.stage_native_artifact_contract.workbench_consumption_contract`,
-    );
-    if (workbenchConsumptionContract.surface_kind !== 'opl_stage_artifact_runtime_workbench_consumption') {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} workbench_consumption_contract.surface_kind is invalid.`);
-    }
-    if (workbenchConsumptionContract.workbench_consumption_ref !== expectedWorkbenchConsumptionRef) {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} workbench_consumption_contract ref is invalid.`);
-    }
-    assertBooleanFalse(
-      workbenchConsumptionContract,
-      'artifact_body_access',
-      `stage ${stageId}.workbench_consumption_contract.artifact_body_access`,
-    );
-    assertBooleanFalse(
-      workbenchConsumptionContract,
-      'domain_verdict_authority',
-      `stage ${stageId}.workbench_consumption_contract.domain_verdict_authority`,
-    );
-    assertBooleanFalse(
-      workbenchConsumptionContract,
-      'oma_can_write_workbench_state',
-      `stage ${stageId}.workbench_consumption_contract.oma_can_write_workbench_state`,
-    );
-    const stageNativeBoundary = asRecord(
-      stageNativeArtifactContract.authority_boundary,
-      `stage ${stageId}.stage_contract.stage_native_artifact_contract.authority_boundary`,
-    );
-    [
-      'oma_can_write_stage_folder_runtime_state',
-      'oma_can_generate_target_domain_owner_receipt',
-      'oma_can_write_target_domain_truth',
-      'oma_can_write_target_domain_memory_body',
-      'oma_can_mutate_target_domain_artifact_body',
-      'oma_can_authorize_target_quality_or_export',
-      'oma_can_promote_default_agent_without_gate',
-      'oma_can_own_agent_lab_runner',
-      'oma_can_own_queue',
-      'oma_can_own_attempt_ledger',
-      'oma_can_own_worktree_lifecycle',
-      'oma_can_own_promotion_gate',
-      'oma_can_own_app_shell',
-      'oma_can_write_target_owner_closeout',
-      'oma_can_create_stage_folder_runtime_state',
-      'oma_can_write_target_owner_receipt_body',
-      'oma_can_owner_promote_target_agent',
-      'oma_can_manage_target_worktree_lifecycle',
-    ].forEach((field) => assertBooleanFalse(
-      stageNativeBoundary,
-      field,
-      `stage ${stageId}.stage_native_artifact_contract.authority_boundary.${field}`,
-    ));
+    validateEmbeddedStageNativeArtifactContract(stageNativeArtifactContract, stageNativeRefs, stageId);
     const userStageLog = asRecord(contract.user_stage_log_contract, `stage ${stageId}.stage_contract.user_stage_log_contract`);
     const requiredFields = asStringArray(
       userStageLog.required_domain_semantic_fields,
@@ -588,141 +310,6 @@ function validateStageControlPlane(
       'can_authorize_target_domain_quality_or_export',
     ].forEach((field) => assertBooleanFalse(boundary, field, `stage ${stageId}.authority_boundary.${field}`));
   });
-}
-
-function validateStageNativeArtifactContractBundle(
-  bundle: JsonObject,
-  stageControl: JsonObject,
-  targetAgent: TargetAgent,
-): void {
-  if (bundle.surface_kind !== 'opl_stage_native_artifact_contract_bundle') {
-    throw new Error('stage-decomposition pack draft stage_native_artifact_contract.surface_kind is invalid.');
-  }
-  if (bundle.target_domain_id !== targetAgent.domain_id) {
-    throw new Error('stage-decomposition pack draft stage_native_artifact_contract target_domain_id does not match target agent.');
-  }
-  const stages = asRecordArray(stageControl.stages, 'stage_control_plane.stages');
-  const contracts = asRecordArray(bundle.contracts, 'stage_native_artifact_contract.contracts');
-  if (contracts.length !== stages.length) {
-    throw new Error('stage-decomposition pack draft stage_native_artifact_contract must include one contract per stage.');
-  }
-  const contractRefs = asStringArray(
-    bundle.artifact_native_contract_refs,
-    'stage_native_artifact_contract.artifact_native_contract_refs',
-  );
-  const folderRefs = asStringArray(
-    bundle.stage_folder_contract_refs,
-    'stage_native_artifact_contract.stage_folder_contract_refs',
-  );
-  const stageJsonRefs = asStringArray(
-    bundle.stage_json_refs,
-    'stage_native_artifact_contract.stage_json_refs',
-  );
-  const attemptJsonRefs = asStringArray(
-    bundle.attempt_json_ref_templates,
-    'stage_native_artifact_contract.attempt_json_ref_templates',
-  );
-  const manifestRefs = asStringArray(
-    bundle.manifest_ref_templates,
-    'stage_native_artifact_contract.manifest_ref_templates',
-  );
-  const receiptRefs = asStringArray(
-    bundle.receipt_ref_templates,
-    'stage_native_artifact_contract.receipt_ref_templates',
-  );
-  const currentPointerRefs = asStringArray(
-    bundle.current_pointer_refs,
-    'stage_native_artifact_contract.current_pointer_refs',
-  );
-  const canonicalRefs = asStringArray(
-    bundle.canonical_artifact_refs,
-    'stage_native_artifact_contract.canonical_artifact_refs',
-  );
-  const exportRefs = asStringArray(
-    bundle.export_ref_templates,
-    'stage_native_artifact_contract.export_ref_templates',
-  );
-  const lineageRefs = asStringArray(
-    bundle.lineage_ref_templates,
-    'stage_native_artifact_contract.lineage_ref_templates',
-  );
-  const retentionRefs = asStringArray(
-    bundle.retention_ref_templates,
-    'stage_native_artifact_contract.retention_ref_templates',
-  );
-  const physicalKernelLocatorRefs = asStringArray(
-    bundle.physical_kernel_locator_refs,
-    'stage_native_artifact_contract.physical_kernel_locator_refs',
-  );
-  const conformanceRefs = asStringArray(
-    bundle.conformance_refs,
-    'stage_native_artifact_contract.conformance_refs',
-  );
-  const workbenchConsumptionRefs = asStringArray(
-    bundle.workbench_consumption_refs,
-    'stage_native_artifact_contract.workbench_consumption_refs',
-  );
-  stages.forEach((stage) => {
-    const stageId = asString(stage.stage_id, 'stage.stage_id');
-    const stageNativeRefs = stageNativeRefsFor(targetAgent.domain_id, stageId);
-    const expectedRefs = [
-      [contractRefs, stageNativeRefs.artifactNativeContractRef],
-      [folderRefs, stageNativeRefs.stageFolderContractRef],
-      [stageJsonRefs, stageNativeRefs.stageJsonRef],
-      [attemptJsonRefs, stageNativeRefs.attemptJsonRef],
-      [manifestRefs, stageNativeRefs.manifestRef],
-      [receiptRefs, stageNativeRefs.receiptRef],
-      [currentPointerRefs, stageNativeRefs.currentPointerRef],
-      [canonicalRefs, stageNativeRefs.canonicalArtifactRef],
-      [exportRefs, stageNativeRefs.exportRef],
-      [lineageRefs, stageNativeRefs.lineageRef],
-      [retentionRefs, stageNativeRefs.retentionRef],
-      [physicalKernelLocatorRefs, stageNativeRefs.physicalKernelLocatorRef],
-      [conformanceRefs, stageNativeRefs.conformanceRef],
-      [workbenchConsumptionRefs, stageNativeRefs.workbenchConsumptionRef],
-    ] as const;
-    expectedRefs.forEach(([refs, expectedRef]) => {
-      if (!refs.includes(expectedRef)) {
-        throw new Error(`stage-decomposition pack draft stage_native_artifact_contract missing ${expectedRef}.`);
-      }
-    });
-    const embedded = asRecord(
-      asRecord(stage.stage_contract, `stage ${stageId}.stage_contract`).stage_native_artifact_contract,
-      `stage ${stageId}.stage_contract.stage_native_artifact_contract`,
-    );
-    const matching = contracts.find((contract) => (
-      contract.artifact_native_contract_ref === stageNativeRefs.artifactNativeContractRef
-    ));
-    if (!matching) {
-      throw new Error(
-        `stage-decomposition pack draft stage_native_artifact_contract missing stage contract ${stageNativeRefs.artifactNativeContractRef}.`,
-      );
-    }
-    if (JSON.stringify(matching) !== JSON.stringify(embedded)) {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} embedded and bundled stage-native contracts must match.`);
-    }
-  });
-  const boundary = asRecord(bundle.authority_boundary, 'stage_native_artifact_contract.authority_boundary');
-  [
-    'oma_can_write_stage_folder_runtime_state',
-    'oma_can_generate_target_domain_owner_receipt',
-    'oma_can_write_target_domain_truth',
-    'oma_can_write_target_domain_memory_body',
-    'oma_can_mutate_target_domain_artifact_body',
-    'oma_can_authorize_target_quality_or_export',
-    'oma_can_promote_default_agent_without_gate',
-    'oma_can_own_agent_lab_runner',
-    'oma_can_own_queue',
-    'oma_can_own_attempt_ledger',
-    'oma_can_own_worktree_lifecycle',
-    'oma_can_own_promotion_gate',
-    'oma_can_own_app_shell',
-    'oma_can_write_target_owner_closeout',
-    'oma_can_create_stage_folder_runtime_state',
-    'oma_can_write_target_owner_receipt_body',
-    'oma_can_owner_promote_target_agent',
-    'oma_can_manage_target_worktree_lifecycle',
-  ].forEach((field) => assertBooleanFalse(boundary, field, `stage_native_artifact_contract.authority_boundary.${field}`));
 }
 
 export function validateStageDecompositionCloseoutPacket(

@@ -335,6 +335,48 @@
     ]
   },
   {
+    "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/artifact-morphology-validator.ts",
+    "classes": [
+      "fixture_or_proof_helper",
+      "developer_work_order_materializer"
+    ],
+    "authority_function_refs": [],
+    "consumes_opl_surfaces": [
+      "opl_family_runtime_stage_attempt",
+      "opl_standard_domain_agent_scaffold"
+    ],
+    "writes_only": [
+      "artifact_morphology_contract_validation_ref",
+      "target_domain_artifact_body_authority_guard_ref",
+      "no_forbidden_write_proof_ref",
+      "typed_blocker_ref"
+    ],
+    "forbidden_roles": []
+  },
+  {
+    "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/stage-native-contract-validator.ts",
+    "classes": [
+      "fixture_or_proof_helper",
+      "developer_work_order_materializer"
+    ],
+    "authority_function_refs": [],
+    "consumes_opl_surfaces": [
+      "opl_family_runtime_stage_attempt",
+      "opl_stage_native_artifact_contract",
+      "opl_stage_folder_contract"
+    ],
+    "writes_only": [
+      "stage_native_artifact_contract_validation_ref",
+      "stage_native_artifact_ref_template_ref",
+      "opl_physical_kernel_locator_ref",
+      "stage_artifact_conformance_ref",
+      "stage_artifact_workbench_consumption_ref",
+      "no_forbidden_write_proof_ref",
+      "typed_blocker_ref"
+    ],
+    "forbidden_roles": []
+  },
+  {
     "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts",
     "classes": [
       "fixture_or_proof_helper",
