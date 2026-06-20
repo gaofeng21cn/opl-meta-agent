@@ -47,6 +47,151 @@
       "interface_shape": "script may convert blocked evidence or developer setup intent into explicit work-order/setup materialization, without becoming a generic runtime, registry owner, or generated CLI/MCP/Skill/product-entry/domain-handler/status/workbench materializer"
     }
   ],
+  "allowed_opl_surface_consumption_refs": [
+    {
+      "surface_ref": "codex_cli_stage_runner",
+      "surface_owner": "one-person-lab",
+      "surface_role": "executor_adapter_or_stage_runner",
+      "allowed_script_classes": [
+        "smoke_helper",
+        "fixture_or_proof_helper"
+      ],
+      "boundary": {
+        "can_create_runtime_truth": false,
+        "can_write_target_truth": false,
+        "can_write_owner_receipt_body": false,
+        "can_claim_default_executor_promotion": false
+      }
+    },
+    {
+      "surface_ref": "generated_interface_bundle",
+      "surface_owner": "one-person-lab",
+      "surface_role": "generated_or_hosted_interface_surface",
+      "allowed_script_classes": [
+        "authority_function_implementation_ref",
+        "smoke_helper",
+        "fixture_or_proof_helper"
+      ],
+      "boundary": {
+        "can_create_runtime_truth": false,
+        "can_write_target_truth": false,
+        "can_write_owner_receipt_body": false,
+        "can_claim_generated_surface_ownership": false
+      }
+    },
+    {
+      "surface_ref": "opl_agent_lab_complete_control_plane",
+      "surface_owner": "one-person-lab",
+      "surface_role": "agent_lab_control_plane",
+      "allowed_script_classes": [
+        "authority_function_implementation_ref",
+        "smoke_helper",
+        "fixture_or_proof_helper",
+        "developer_work_order_materializer"
+      ],
+      "boundary": {
+        "can_create_runtime_truth": false,
+        "can_write_target_truth": false,
+        "can_write_owner_receipt_body": false,
+        "can_claim_agent_lab_runner_ownership": false,
+        "can_claim_promotion_gate_ownership": false
+      }
+    },
+    {
+      "surface_ref": "opl_family_runtime_stage_attempt",
+      "surface_owner": "one-person-lab",
+      "surface_role": "stage_attempt_runtime_primitive",
+      "allowed_script_classes": [
+        "smoke_helper",
+        "fixture_or_proof_helper",
+        "developer_work_order_materializer"
+      ],
+      "boundary": {
+        "can_create_runtime_truth": false,
+        "can_write_target_truth": false,
+        "can_write_owner_receipt_body": false,
+        "can_claim_queue_or_attempt_ledger_ownership": false
+      }
+    },
+    {
+      "surface_ref": "opl_stage_folder_contract",
+      "surface_owner": "one-person-lab",
+      "surface_role": "stage_artifact_folder_contract",
+      "allowed_script_classes": [
+        "fixture_or_proof_helper",
+        "developer_work_order_materializer"
+      ],
+      "boundary": {
+        "can_create_runtime_truth": false,
+        "can_write_target_truth": false,
+        "can_write_owner_receipt_body": false,
+        "can_claim_artifact_authority": false
+      }
+    },
+    {
+      "surface_ref": "opl_stage_native_artifact_contract",
+      "surface_owner": "one-person-lab",
+      "surface_role": "stage_native_artifact_contract",
+      "allowed_script_classes": [
+        "fixture_or_proof_helper",
+        "developer_work_order_materializer"
+      ],
+      "boundary": {
+        "can_create_runtime_truth": false,
+        "can_write_target_truth": false,
+        "can_write_owner_receipt_body": false,
+        "can_claim_artifact_authority": false,
+        "can_claim_quality_or_export_verdict": false
+      }
+    },
+    {
+      "surface_ref": "opl_standard_domain_agent_scaffold",
+      "surface_owner": "one-person-lab",
+      "surface_role": "standard_domain_agent_scaffold",
+      "allowed_script_classes": [
+        "fixture_or_proof_helper",
+        "developer_work_order_materializer"
+      ],
+      "boundary": {
+        "can_create_runtime_truth": false,
+        "can_write_target_truth": false,
+        "can_write_owner_receipt_body": false,
+        "can_claim_scaffold_generator_ownership": false
+      }
+    },
+    {
+      "surface_ref": "opl_work_order_execute_primitive",
+      "surface_owner": "one-person-lab",
+      "surface_role": "work_order_execute_primitive",
+      "allowed_script_classes": [
+        "smoke_helper",
+        "fixture_or_proof_helper",
+        "developer_work_order_materializer"
+      ],
+      "boundary": {
+        "can_create_runtime_truth": false,
+        "can_write_target_truth": false,
+        "can_write_owner_receipt_body": false,
+        "can_claim_work_order_absorb_or_cleanup_ownership": false
+      }
+    },
+    {
+      "surface_ref": "standard_domain_agent_scaffold",
+      "surface_owner": "one-person-lab",
+      "surface_role": "legacy_named_standard_domain_agent_scaffold_ref",
+      "allowed_script_classes": [
+        "authority_function_implementation_ref",
+        "smoke_helper",
+        "fixture_or_proof_helper"
+      ],
+      "boundary": {
+        "can_create_runtime_truth": false,
+        "can_write_target_truth": false,
+        "can_write_owner_receipt_body": false,
+        "can_claim_scaffold_generator_ownership": false
+      }
+    }
+  ],
   "forbidden_private_surface_classes": [
     "generic_scheduler_or_daemon",
     "generic_queue_or_attempt_ledger",

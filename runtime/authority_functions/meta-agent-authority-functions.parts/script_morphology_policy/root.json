@@ -28,5 +28,6 @@
     "generic_cli_mcp_skill_product_sidecar_status_workbench_materializer_owner",
     "generic_scheduler_or_daemon_owner",
     "generic_queue_or_attempt_ledger_owner"
-  ]
+  ],
+  "allowed_opl_surface_consumption_policy_ref": "contracts/private_functional_surface_policy.json#allowed_opl_surface_consumption_refs"
 }

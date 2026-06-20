@@ -28,6 +28,7 @@
     "script_scan_scope",
     "allowed_classes",
     "forbidden_roles",
+    "allowed_opl_surface_consumption_policy_ref",
     "script_classifications",
     "script_to_pack_retirement_gates"
   ],

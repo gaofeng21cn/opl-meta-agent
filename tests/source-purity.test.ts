@@ -37,6 +37,13 @@ function asStrings(value: unknown): string[] {
   return value as string[];
 }
 
+function asBooleanRecord(value: unknown): Record<string, boolean> {
+  assert.equal(typeof value, 'object', 'boundary should be a JSON object');
+  assert.notEqual(value, null, 'boundary should be a JSON object');
+  assert.equal(Array.isArray(value), false, 'boundary should be a JSON object');
+  return value as Record<string, boolean>;
+}
+
 function readJson(relativePath: string): JsonObject {
   return JSON.parse(fs.readFileSync(path.join(repoRoot, relativePath), 'utf8'));
 }
@@ -275,6 +282,48 @@ test('script morphology stays limited to authority refs, materializers, helpers,
     'developer_work_order_materializer',
   ]);
   assert.deepEqual(morphologyPolicy.forbidden_roles, asStrings(privatePolicy.forbidden_script_roles));
+  assert.equal(
+    morphologyPolicy.allowed_opl_surface_consumption_policy_ref,
+    'contracts/private_functional_surface_policy.json#allowed_opl_surface_consumption_refs',
+  );
+  const allowedOplSurfaceRefs = asObjects(privatePolicy.allowed_opl_surface_consumption_refs);
+  assert.ok(
+    allowedOplSurfaceRefs.length > 0,
+    'private surface policy should declare allowed OPL surface consumption refs',
+  );
+  const allowedOplSurfaceRefIds = new Set<string>();
+  allowedOplSurfaceRefs.forEach((surface) => {
+    assert.equal(typeof surface.surface_ref, 'string', 'allowed OPL surface should have a surface_ref');
+    assert.notEqual(surface.surface_ref.trim(), '', 'allowed OPL surface_ref should not be blank');
+    assert.equal(surface.surface_owner, 'one-person-lab', `${surface.surface_ref} should be OPL-owned`);
+    assert.equal(typeof surface.surface_role, 'string', `${surface.surface_ref} should declare surface_role`);
+    assert.notEqual(surface.surface_role.trim(), '', `${surface.surface_ref} surface_role should not be blank`);
+    allowedOplSurfaceRefIds.add(surface.surface_ref);
+    assert.ok(
+      asStrings(surface.allowed_script_classes).length > 0,
+      `${surface.surface_ref} should declare allowed script classes`,
+    );
+    asStrings(surface.allowed_script_classes).forEach((classId) => {
+      assert.ok(
+        morphologyPolicy.allowed_classes.includes(classId),
+        `${surface.surface_ref} allows unsupported script class ${classId}`,
+      );
+    });
+    const boundary = asBooleanRecord(surface.boundary);
+    [
+      'can_create_runtime_truth',
+      'can_write_target_truth',
+      'can_write_owner_receipt_body',
+    ].forEach((flag) => {
+      assert.equal(boundary[flag], false, `${surface.surface_ref} boundary ${flag} must be false`);
+    });
+    Object.entries(boundary).forEach(([flag, value]) => {
+      assert.equal(typeof value, 'boolean', `${surface.surface_ref} boundary ${flag} must be boolean`);
+      if (flag.startsWith('can_claim_')) {
+        assert.equal(value, false, `${surface.surface_ref} boundary ${flag} must be false`);
+      }
+    });
+  });
   assert.ok(
     morphologyPolicy.forbidden_roles.includes(
       'generic_cli_mcp_skill_product_sidecar_status_workbench_materializer_owner',
@@ -546,6 +595,18 @@ test('script morphology stays limited to authority refs, materializers, helpers,
     });
     assert.deepEqual(entry.forbidden_roles, [], `${entry.script_ref} must not declare forbidden roles`);
     assert.ok(entry.writes_only.length > 0, `${entry.script_ref} should declare refs-only writes`);
+    asStrings(entry.consumes_opl_surfaces ?? []).forEach((surfaceRef) => {
+      assert.ok(
+        allowedOplSurfaceRefIds.has(surfaceRef),
+        `${entry.script_ref} consumes unsupported OPL surface ${surfaceRef}`,
+      );
+      const surfacePolicy = allowedOplSurfaceRefs.find((surface) => surface.surface_ref === surfaceRef);
+      assert.ok(surfacePolicy, `${surfaceRef} should have an OPL surface policy entry`);
+      assert.ok(
+        asStrings(entry.classes).some((classId) => asStrings(surfacePolicy.allowed_script_classes).includes(classId)),
+        `${entry.script_ref} consumes ${surfaceRef} without an allowed script class`,
+      );
+    });
     if (entry.script_ref === 'scripts/lib/stage-decomposition-runner.ts') {
       assert.ok(
         asStrings(entry.writes_only).includes('fixture_closeout_packet_required_typed_blocker_ref'),
