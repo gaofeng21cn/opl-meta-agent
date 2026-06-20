@@ -188,7 +188,12 @@
     "consumes_opl_surfaces": [],
     "writes_only": [
       "domain_pack_summary_ref",
-      "domain_pack_fixture_ref"
+      "domain_pack_fixture_ref",
+      "target_agent_minimal_domain_pack_fixture_ref",
+      "generated_agent_morphology_conformance_fixture_ref",
+      "generated_interface_owner_boundary_ref",
+      "no_target_domain_truth_write_guard_ref",
+      "no_default_promotion_without_gate_guard_ref"
     ],
     "forbidden_roles": []
   },

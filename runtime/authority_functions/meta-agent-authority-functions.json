@@ -31,6 +31,10 @@
       "app_shell_owner",
       "agent_lab_execution_owner",
       "promotion_gate_owner",
+      "pack_compiler_owner",
+      "generated_interface_owner",
+      "scaffold_generator_owner",
+      "target_pack_authority",
       "target_domain_truth_writer",
       "generic_cli_mcp_product_wrapper_owner",
       "generic_cli_mcp_skill_product_sidecar_status_workbench_materializer_owner",
@@ -228,7 +232,12 @@
         "consumes_opl_surfaces": [],
         "writes_only": [
           "domain_pack_summary_ref",
-          "domain_pack_fixture_ref"
+          "domain_pack_fixture_ref",
+          "target_agent_minimal_domain_pack_fixture_ref",
+          "generated_agent_morphology_conformance_fixture_ref",
+          "generated_interface_owner_boundary_ref",
+          "no_target_domain_truth_write_guard_ref",
+          "no_default_promotion_without_gate_guard_ref"
         ],
         "forbidden_roles": []
       },
@@ -696,18 +705,23 @@
           "opl_pack_compiler_typed_closeout_materializer_parity_ref",
           "stable_standard_foundry_policies_moved_to_contract_or_opl_primitive_ref",
           "opl_physical_kernel_locator_conformance_workbench_consumption_parity_ref",
+          "opl_pack_compiler_target_pack_fixture_parity_ref",
           "explicit_fixture_or_proof_path_if_retained_ref",
           "no_implicit_fixture_graph_ref",
+          "no_domain_pack_helper_pack_compiler_or_generated_interface_owner_ref",
           "no_oma_runtime_state_owner_promotion_worktree_or_receipt_body_ref",
           "no_active_npm_or_test_caller_ref",
           "tombstone_or_provenance_ref"
         ],
         "forbidden_long_term_claims": [
           "scaffold_generator_owner",
+          "pack_compiler_owner",
+          "generated_interface_owner",
           "agent_lab_runner",
           "fallback_graph_authority",
           "implicit_fixture_public_entry",
           "target_pack_authority",
+          "target_domain_truth_writer",
           "physical_kernel_runtime_state_owner",
           "conformance_gate_owner",
           "workbench_consumption_owner",

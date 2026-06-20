@@ -137,7 +137,7 @@ Owner split 固定为：
    推动 MAS/MAG/RCA 和新 Foundry Agent 用同一 target-agent vocabulary 暴露 production/live acceptance、Agent Lab handoff、owner route、editable surface policy、required return shapes、verification refs 和 no-forbidden-write proof。
 
 6. `script_to_pack_hygiene`
-   持续减少仍需保留的 materializer/helper 语义，而不是扩大脚本职责。每次新增或收薄脚本，都先回到私有实现迁移台账、`active_script_caller_scan` 和 `script_to_pack_retirement_gates` 分类，再用 `tests/source-purity.test.ts` 验证 no-resurrection / no-forbidden-surface boundary；新增保留脚本如果没有真实 active caller，或只被 source-purity 自身字符串引用，必须 fail closed。
+   持续减少仍需保留的 materializer/helper 语义，而不是扩大脚本职责。每次新增或收薄脚本，都先回到私有实现迁移台账、`active_script_caller_scan` 和 `script_to_pack_retirement_gates` 分类，再用 `tests/source-purity.test.ts` 验证 no-resurrection / no-forbidden-surface boundary；新增保留脚本如果没有真实 active caller，或只被 source-purity 自身字符串引用，必须 fail closed。`scripts/lib/domain-pack.ts` 这类共享 pack helper 只能保留为 pack summary / deterministic target-agent fixture helper，不能升级为 OPL pack compiler、generated interface owner、scaffold generator owner、target pack authority 或 target truth writer。
 
 ## 下一轮 Agent prompt
 

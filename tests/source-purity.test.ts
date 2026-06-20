@@ -419,6 +419,17 @@ test('script morphology stays limited to authority refs, materializers, helpers,
       'generic_cli_mcp_skill_product_sidecar_status_workbench_materializer_owner',
     ),
   );
+  [
+    'pack_compiler_owner',
+    'generated_interface_owner',
+    'scaffold_generator_owner',
+    'target_pack_authority',
+  ].forEach((role) => {
+    assert.ok(
+      morphologyPolicy.forbidden_roles.includes(role),
+      `script morphology should forbid ${role}`,
+    );
+  });
   assert.equal(materializerScan.status, 'passed');
   assert.equal(materializerScan.repo_owned_generic_wrapper_materializer_count, 0);
   assert.deepEqual(asStrings(materializerScan.excluded_standard_surface_paths), [
@@ -523,11 +534,25 @@ test('script morphology stays limited to authority refs, materializers, helpers,
   );
   assert.ok(
     asStrings(buildBaselineGate.required_before_retire_or_absorb).includes(
+      'opl_pack_compiler_target_pack_fixture_parity_ref',
+    ),
+    'stage materializer retirement should require OPL pack compiler target-pack fixture parity',
+  );
+  assert.ok(
+    asStrings(buildBaselineGate.required_before_retire_or_absorb).includes(
+      'no_domain_pack_helper_pack_compiler_or_generated_interface_owner_ref',
+    ),
+    'stage materializer retirement should prove domain-pack helper has not become pack compiler or generated interface owner',
+  );
+  assert.ok(
+    asStrings(buildBaselineGate.required_before_retire_or_absorb).includes(
       'no_oma_runtime_state_owner_promotion_worktree_or_receipt_body_ref',
     ),
     'stage materializer retirement should prove no OMA runtime state, promotion, worktree, or receipt body ownership',
   );
   [
+    'pack_compiler_owner',
+    'generated_interface_owner',
     'physical_kernel_runtime_state_owner',
     'conformance_gate_owner',
     'workbench_consumption_owner',
@@ -771,6 +796,34 @@ test('script morphology stays limited to authority refs, materializers, helpers,
         'stage_artifact_workbench_consumption_ref',
       ].forEach((writeRef) => {
         assert.ok(asStrings(entry.writes_only).includes(writeRef), `${entry.script_ref} writes_only ${writeRef}`);
+      });
+    }
+    if (entry.script_ref === 'scripts/lib/domain-pack.ts') {
+      assert.deepEqual(asStrings(entry.classes), [
+        'fixture_or_proof_helper',
+      ]);
+      assert.deepEqual(asStrings(entry.consumes_opl_surfaces ?? []), []);
+      [
+        'domain_pack_summary_ref',
+        'domain_pack_fixture_ref',
+        'target_agent_minimal_domain_pack_fixture_ref',
+        'generated_agent_morphology_conformance_fixture_ref',
+        'generated_interface_owner_boundary_ref',
+        'no_target_domain_truth_write_guard_ref',
+        'no_default_promotion_without_gate_guard_ref',
+      ].forEach((writeRef) => {
+        assert.ok(asStrings(entry.writes_only).includes(writeRef), `${entry.script_ref} writes_only ${writeRef}`);
+      });
+      [
+        'pack_compiler_owner',
+        'generated_interface_owner',
+        'scaffold_generator_owner',
+        'target_pack_authority',
+      ].forEach((forbiddenRole) => {
+        assert.ok(
+          morphologyPolicy.forbidden_roles.includes(forbiddenRole),
+          `${entry.script_ref} should inherit forbidden script role ${forbiddenRole}`,
+        );
       });
     }
     if (entry.script_ref === 'scripts/check-source-structure.ts') {
