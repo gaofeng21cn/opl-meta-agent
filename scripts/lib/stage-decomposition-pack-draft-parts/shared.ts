@@ -5,41 +5,7 @@ import type { TargetAgent } from '../meta-agent-loop-io.ts';
 
 type StandardFoundryPolicies = JsonObject;
 
-export const FORBIDDEN_GENERIC_OWNER_ROLES = [
-  'generic_scheduler_owner',
-  'generic_daemon_owner',
-  'generic_lifecycle_owner',
-  'generic_queue_owner',
-  'generic_attempt_ledger_owner',
-  'generic_state_machine_runner_owner',
-  'generic_cli_mcp_product_wrapper_owner',
-  'generic_sidecar_owner',
-  'generic_session_store_owner',
-  'generic_status_workbench_owner',
-  'generic_workspace_source_intake_owner',
-  'generic_memory_transport_owner',
-  'generic_artifact_gallery_owner',
-  'generic_operator_workbench_owner',
-  'generic_observability_slo_owner',
-  'generic_persistence_engine_owner',
-  'generic_sqlite_lifecycle_owner',
-  'generic_native_helper_envelope_owner',
-  'generic_review_repair_transport_owner',
-  'generated_surface_owner_in_domain_repo',
-] as const;
-
 const placeholderPattern = new RegExp(`\\b(?:TO${'DO'}|T${'BD'})\\b`, 'i');
-
-export const STANDARD_STAGE_PACK_CONFORMANCE_VERSION = 'standard-stage-pack.v2';
-export const DEFAULT_STAGE_EXECUTOR_BINDING_REF = 'default_codex_cli';
-export const SHARED_POLICY_RELEASE = {
-  policy_release_contract_ref: 'contracts/opl-framework/foundry-agent-series-policy-release.json',
-  policy_bundle_fingerprint: 'sha256:5d77102e99e6e49acd88714cd94dcafe0969b8f2a5529928d753002ac3d4619d',
-  fingerprint_algorithm: 'sha256:stable-json',
-  domain_contract_policy_release_pin_required: true,
-  domain_adapter_must_not_copy_policy_body_as_authority: true,
-  consumer_alignment_check: 'foundry:policy-release',
-} as const;
 
 function stringList(policy: StandardFoundryPolicies, field: string): string[] {
   const value = policy[field];
@@ -55,6 +21,20 @@ function objectField(policy: StandardFoundryPolicies, field: string): JsonObject
     throw new Error(`Standard Foundry policy ${field} must be a JSON object.`);
   }
   return value;
+}
+
+function objectStringField(policy: JsonObject, field: string): string {
+  const value = policy[field];
+  if (typeof value !== 'string' || !value.trim()) {
+    throw new Error(`Standard Foundry policy ${field} must be a non-empty string.`);
+  }
+  return value.trim();
+}
+
+function assertBoolean(policy: JsonObject, field: string): void {
+  if (typeof policy[field] !== 'boolean') {
+    throw new Error(`Standard Foundry policy ${field} must be a boolean.`);
+  }
 }
 
 function arraysMatch(left: unknown, right: string[]): boolean {
@@ -81,10 +61,49 @@ function readStandardFoundryPolicies(): StandardFoundryPolicies {
   if (!arraysMatch(userStageLogContract.required_domain_semantic_fields, requiredFields)) {
     throw new Error('Standard Foundry policies contract stage-log fields drifted from required fields.');
   }
+  const stagePackDefaults = objectField(policy, 'stage_pack_defaults');
+  objectStringField(stagePackDefaults, 'stage_pack_conformance_version');
+  objectStringField(stagePackDefaults, 'default_stage_executor_binding_ref');
+  const sharedPolicyRelease = objectField(policy, 'shared_policy_release');
+  [
+    'policy_release_contract_ref',
+    'policy_bundle_fingerprint',
+    'fingerprint_algorithm',
+    'consumer_alignment_check',
+  ].forEach((field) => objectStringField(sharedPolicyRelease, field));
+  [
+    'domain_contract_policy_release_pin_required',
+    'domain_adapter_must_not_copy_policy_body_as_authority',
+  ].forEach((field) => assertBoolean(sharedPolicyRelease, field));
   return policy;
 }
 
 const STANDARD_FOUNDRY_POLICIES = readStandardFoundryPolicies();
+
+export const FORBIDDEN_GENERIC_OWNER_ROLES = stringList(
+  STANDARD_FOUNDRY_POLICIES,
+  'forbidden_generic_owner_roles',
+);
+
+const STAGE_PACK_DEFAULTS = objectField(
+  STANDARD_FOUNDRY_POLICIES,
+  'stage_pack_defaults',
+);
+
+export const STANDARD_STAGE_PACK_CONFORMANCE_VERSION = objectStringField(
+  STAGE_PACK_DEFAULTS,
+  'stage_pack_conformance_version',
+);
+
+export const DEFAULT_STAGE_EXECUTOR_BINDING_REF = objectStringField(
+  STAGE_PACK_DEFAULTS,
+  'default_stage_executor_binding_ref',
+);
+
+export const SHARED_POLICY_RELEASE = objectField(
+  STANDARD_FOUNDRY_POLICIES,
+  'shared_policy_release',
+);
 
 export const USER_STAGE_LOG_REQUIRED_FIELDS = stringList(
   STANDARD_FOUNDRY_POLICIES,

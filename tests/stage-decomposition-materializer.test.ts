@@ -17,6 +17,8 @@ import {
 } from '../scripts/lib/stage-decomposition-pack-draft-parts/validator.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const standardFoundryPolicies = readJson(path.join(repoRoot, 'contracts/standard_foundry_policies.json'));
+const stagePackDefaults = standardFoundryPolicies.stage_pack_defaults as JsonObject;
 
 const targetAgent = {
   domain_id: 'research-workbench-agent',
@@ -130,21 +132,14 @@ test('materializer writes the target stage pack from typed stage-decomposition c
     assert.equal(artifactMorphology.sharding_policy.assembled_output_is_delivery_ref_not_primary_creative_source, true);
     assert.equal(artifactMorphology.target_extent_policy.silent_extent_downgrade_forbidden, true);
     assert.equal(artifactMorphology.asset_custody_policy.generated_asset_without_exposed_path_is_typed_blocker, true);
-    assert.deepEqual(foundrySeries.shared_policy_release, {
-      policy_release_contract_ref: 'contracts/opl-framework/foundry-agent-series-policy-release.json',
-      policy_bundle_fingerprint: 'sha256:5d77102e99e6e49acd88714cd94dcafe0969b8f2a5529928d753002ac3d4619d',
-      fingerprint_algorithm: 'sha256:stable-json',
-      domain_contract_policy_release_pin_required: true,
-      domain_adapter_must_not_copy_policy_body_as_authority: true,
-      consumer_alignment_check: 'foundry:policy-release',
-    });
-    assert.equal(stageControl.stage_pack_conformance_version, 'standard-stage-pack.v2');
+    assert.deepEqual(foundrySeries.shared_policy_release, standardFoundryPolicies.shared_policy_release);
+    assert.equal(stageControl.stage_pack_conformance_version, stagePackDefaults.stage_pack_conformance_version);
     assert.equal(stage.goal, targetAgent.target_brief);
     assert.deepEqual(stage.allowed_action_refs, ['plan-evidence-synthesis']);
     assert.deepEqual(stage.selected_executor, {
       executor_kind: 'codex_cli',
       default_executor: true,
-      executor_binding_ref: 'default_codex_cli',
+      executor_binding_ref: stagePackDefaults.default_stage_executor_binding_ref,
     });
     assert.equal(stage.independent_gate_policy.gate_ref, 'agent/quality_gates/evidence-synthesis-plan-gate.md');
     assert.equal(stage.independent_gate_policy.execution_review_separation_required, true);

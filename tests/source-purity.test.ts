@@ -764,6 +764,9 @@ test('standard Foundry policies are contract-owned and helper-projection free', 
   const stageProgressDeltaPolicy = assertPolicyObject(contract, 'stage_progress_delta_policy');
   const typedBlockerLineagePolicy = assertPolicyObject(contract, 'typed_blocker_lineage_policy');
   const seriesDesignProfile = assertPolicyObject(contract, 'series_design_profile');
+  const forbiddenGenericOwnerRoles = assertPolicyStringList(contract, 'forbidden_generic_owner_roles');
+  const stagePackDefaults = assertPolicyObject(contract, 'stage_pack_defaults');
+  const sharedPolicyRelease = assertPolicyObject(contract, 'shared_policy_release');
   const artifactMorphologyPolicy = assertPolicyObject(seriesDesignProfile, 'artifact_morphology_policy');
 
   assert.equal(contract.surface_kind, 'standard_foundry_policies');
@@ -793,7 +796,17 @@ test('standard Foundry policies are contract-owned and helper-projection free', 
   assert.deepEqual(asStrings(activeConsumer.contract_refs), [
     STANDARD_FOUNDRY_POLICIES_CONTRACT_REF,
   ]);
-  assert.ok(asStrings(activeConsumer.writes_only).includes('standard_foundry_policy_ref'));
+  [
+    'standard_foundry_policy_ref',
+    'forbidden_generic_owner_roles_ref',
+    'stage_pack_defaults_ref',
+    'shared_policy_release_ref',
+    'stage_progress_delta_policy_ref',
+    'typed_blocker_lineage_policy_ref',
+    'foundry_agent_series_design_profile_ref',
+  ].forEach((writeRef) => {
+    assert.ok(asStrings(activeConsumer.writes_only).includes(writeRef), `shared helper writes_only ${writeRef}`);
+  });
   assert.equal(
     asStrings(receipt.scanned_script_refs).includes('scripts/lib/standard-foundry-policies.ts'),
     false,
@@ -807,6 +820,17 @@ test('standard Foundry policies are contract-owned and helper-projection free', 
 
   assert.ok(userStageLogRequiredFields.includes('stage_name'));
   assert.ok(userStageLogRequiredFields.includes('evidence_refs'));
+  assert.ok(forbiddenGenericOwnerRoles.includes('generic_scheduler_owner'));
+  assert.ok(forbiddenGenericOwnerRoles.includes('generic_cli_mcp_product_wrapper_owner'));
+  assert.ok(forbiddenGenericOwnerRoles.includes('generated_surface_owner_in_domain_repo'));
+  assert.equal(stagePackDefaults.stage_pack_conformance_version, 'standard-stage-pack.v2');
+  assert.equal(stagePackDefaults.default_stage_executor_binding_ref, 'default_codex_cli');
+  assert.equal(
+    sharedPolicyRelease.policy_release_contract_ref,
+    'contracts/opl-framework/foundry-agent-series-policy-release.json',
+  );
+  assert.equal(sharedPolicyRelease.domain_contract_policy_release_pin_required, true);
+  assert.equal(sharedPolicyRelease.domain_adapter_must_not_copy_policy_body_as_authority, true);
   assert.deepEqual(asStrings(userStageLogContract.required_domain_semantic_fields), userStageLogRequiredFields);
   assert.equal(stageProgressDeltaPolicy.surface_kind, 'opl_stage_progress_delta_policy');
   assert.equal(Object.hasOwn(stageProgressDeltaPolicy, 'deliverable_delta_aliases'), false);
