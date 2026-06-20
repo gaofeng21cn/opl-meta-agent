@@ -9,7 +9,7 @@ Machine boundary: 本文只压缩记录已退役 surface 的 no-resurrection 规
 
 | Theme | Current owner |
 | --- | --- |
-| script morphology、source-purity scan、retirement gates | `runtime/authority_functions/meta-agent-authority-functions.json` and `tests/source-purity.test.ts` |
+| script morphology、source-purity scan、retirement gates | `runtime/authority_functions/meta-agent-authority-functions.json` and source-purity tests |
 | private implementation classification and script-to-pack gates | `docs/active/opl-private-implementation-migration-inventory.md` |
 | active completion / gap / next prompt | `docs/active/opl-meta-agent-ideal-state-gap-plan.md` |
 | target improvement policy | target-owned `default_change_refs` / `change_ref_mappings`, `scripts/lib/target-improvement-policy.ts`, external-suite tests |
