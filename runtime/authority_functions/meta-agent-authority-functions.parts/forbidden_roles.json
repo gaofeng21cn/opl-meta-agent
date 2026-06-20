@@ -1,0 +1,12 @@
+[
+  "generic_scheduler_owner",
+  "generic_daemon_owner",
+  "generic_queue_owner",
+  "generic_attempt_ledger_owner",
+  "generic_state_machine_runner_owner",
+  "generic_cli_mcp_product_wrapper_owner",
+  "generic_cli_mcp_skill_product_sidecar_status_workbench_materializer_owner",
+  "generic_sidecar_owner",
+  "generic_session_store_owner",
+  "generic_status_workbench_owner"
+]

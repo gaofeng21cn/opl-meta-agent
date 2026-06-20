@@ -54,7 +54,7 @@ human approval、replay success、target-agent ready、domain ready、production
 
 StageRun overclaim boundary 已进入机器合同：`contracts/stage_run_kernel_profile.json#agent_building_stage_run_canary.overclaim_boundary` 只允许声明 repo-local canary shape 可消费、controlled fixture strategy refs 存在、owner receipt 或 typed blocker ref 存在、legacy residue guard 已声明；禁止升级为 live domain progress、target-agent readiness、quality/export verdict、Agent Lab promotion readiness、production readiness、App live rendering、human approval、default promotion 或 OPL 物化 owner receipt body。`legacy_runtime_residue_guard` 把旧 runtime/status/workbench residue 守卫绑定到 functional privatization audit、default-caller deletion evidence、source-purity scan receipt 和 source-purity tests；它只能证明 guard 存在，不能授权物理删除或恢复 repo-owned runtime wrapper。
 
-`functional_structure_gap_count=0` 只说明这类私有通用壳 absent；它不能把 `scripts/` materializer、Agent Lab invocation helper、bootstrap pack writer 或 default-caller evidence contract 写成 strict purity 完成态。Script-to-pack 当前 truth 归 `docs/active/opl-private-implementation-migration-inventory.md`、`runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy/script_to_pack_retirement_gates` 和 `tests/source-purity.test.ts`：稳定 policy 已迁回 contracts，保留脚本只能是 authority implementation、smoke/proof helper、thin delegation 或 developer work-order materializer；没有 machine gate 证据时，不能写成已由 OPL 接管、已退役或可恢复 compatibility surface。
+`functional_structure_gap_count=0` 只说明这类私有通用壳 absent；它不能把 `scripts/` materializer、Agent Lab invocation helper、bootstrap pack writer 或 default-caller evidence contract 写成 strict purity 完成态。Script-to-pack 当前 truth 归 `docs/active/opl-private-implementation-migration-inventory.md`、`runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy/script_to_pack_retirement_gates` 和 `tests/source-purity.test.ts`：稳定 policy 已迁回 contracts，保留脚本只能是 authority implementation、smoke/proof helper、thin delegation 或 developer work-order materializer；没有 machine gate 证据时，不能写成已由 OPL 接管、已退役或可恢复 compatibility surface。`runtime/authority_functions/meta-agent-authority-functions.json` 现在是 generated consumer aggregate，维护源是同目录下的 `.source.json`、`.leaf-index.json`、`.bundle-manifest.json` 和 `meta-agent-authority-functions.parts/**`；消费者继续读原聚合路径，维护者只编辑 source parts 并通过 `npm run authority-functions:check` 防 drift。
 
 OMA 的默认输出只允许是 target-agent semantics、developer work order、target capability candidate、mechanism proposal 或 typed blocker。下一跳必须指向 target owner、OPL Framework / Agent Lab / App 或 human gate 需要产出的 owner delta、receipt、gate 或 blocker。
 
@@ -80,15 +80,25 @@ Source-structure / line-budget 检查属于 daily / strict maintenance 的
 source-size 治理信号，不进入普通开发的 hard gate。`scripts/verify.sh
 structure`、`npm run source-structure` 和 `npm run line-budget` 执行 advisory
 lane；`scripts/verify.sh structure:strict`、`npm run source-structure:strict`
-和 `npm run line-budget:strict` 才作为硬失败。`contracts/stage_control_plane.json`
-仍是现有 consumer aggregate path；维护源是
+和 `npm run line-budget:strict` 才作为硬失败。当前有两个保留 consumer
+aggregate path：`runtime/authority_functions/meta-agent-authority-functions.json`
+和 `contracts/stage_control_plane.json`。前者的维护源是
+`runtime/authority_functions/meta-agent-authority-functions.source.json`、
+`runtime/authority_functions/meta-agent-authority-functions.leaf-index.json`
+和 `runtime/authority_functions/meta-agent-authority-functions.parts/**`，用
+`npm run authority-functions:write` 重建聚合与 bundle manifest，用
+`npm run authority-functions:check` 防止 drift；后者的维护源是
 `contracts/stage_control_plane.source.json`、`contracts/stage_control_plane.leaf-index.json`
-和 `contracts/stage_control_plane.parts/**`。`contracts/stage_control_plane.bundle-manifest.json`
-记录 OPL Pack Source / Generated Bundle metadata，包括 source digest、generator
-commands、do-not-edit consumer surface 和 false-authority flags。维护时只编辑
-source / parts，用 `npm run stage-control:write` 重建 aggregate 与 bundle
-manifest，用 `npm run stage-control:check` 防止 drift。`scripts/verify.sh smoke`、
-`npm test` / `npm run test:smoke`、`npm run typecheck` 和 repo hygiene 继续验证当前核心合同、源码、测试与生成物边界，不把普通开发默认升级为行数硬门。bootstrap、external-suite、work-order、owner-chain 与 live-progress fixture-oracle behavior tests 进入显式 `npm run test:behavior`；完整 Node suite 进入 `npm run test:full` / `scripts/verify.sh full`。默认验证只检查 repo hygiene；需要删除 ignored cache/build byproducts 时显式运行 `scripts/verify.sh cleanup`。
+和 `contracts/stage_control_plane.parts/**`，用 `npm run stage-control:write`
+和 `npm run stage-control:check` 维护。两个 bundle manifest 都记录 source digest、
+generator commands、do-not-edit consumer surface 和 false-authority flags。
+`scripts/verify.sh smoke`、`npm test` / `npm run test:smoke`、`npm run
+typecheck` 和 repo hygiene 继续验证当前核心合同、源码、测试与生成物边界，
+不把普通开发默认升级为行数硬门。bootstrap、external-suite、work-order、
+owner-chain 与 live-progress fixture-oracle behavior tests 进入显式 `npm run
+test:behavior`；完整 Node suite 进入 `npm run test:full` / `scripts/verify.sh
+full`。默认验证只检查 repo hygiene；需要删除 ignored cache/build byproducts
+时显式运行 `scripts/verify.sh cleanup`。
 
 ## 当前证据尾项
 

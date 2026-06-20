@@ -1,0 +1,127 @@
+{
+  "receipt_id": "source-purity-scan:opl-meta-agent/2026-05-25/strict-standard-agent",
+  "status": "passed",
+  "scan_scope": [
+    "scripts/",
+    "runtime/",
+    "contracts/",
+    "agent/",
+    "package.json"
+  ],
+  "scanned_script_refs": [
+    "scripts/agent-evidence-takeover.ts",
+    "scripts/build-agent-baseline.ts",
+    "scripts/check-source-structure.ts",
+    "scripts/sync-authority-functions.ts",
+    "scripts/execute-external-work-order.ts",
+    "scripts/improve-from-agent-lab-suite.ts",
+    "scripts/repo-hygiene.sh",
+    "scripts/run-with-repo-temp-env.sh",
+    "scripts/lib/agent-evidence-contracts.ts",
+    "scripts/lib/agent-evidence-materializer.ts",
+    "scripts/lib/domain-pack.ts",
+    "scripts/lib/external-suite-materializer.ts",
+    "scripts/lib/meta-agent-loop-ai-reviewer.ts",
+    "scripts/lib/meta-agent-loop-io.ts",
+    "scripts/lib/meta-agent-loop-receipts.ts",
+    "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts",
+    "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts",
+    "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts",
+    "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts",
+    "scripts/lib/stage-decomposition-runner.ts",
+    "scripts/lib/stage-native-artifact-contract.ts",
+    "scripts/lib/target-improvement-policy.ts",
+    "scripts/lib/work-order-builders.ts",
+    "scripts/lib/work-order-efficiency.ts",
+    "scripts/lib/work-order-refs.ts",
+    "scripts/lib/work-order-validation.ts",
+    "scripts/sync-stage-control-plane.ts",
+    "scripts/verify.sh",
+    "scripts/takeover-agent.ts"
+  ],
+  "absent_repo_owned_surface_paths": [
+    ".agents",
+    ".codex",
+    "bin",
+    "cli",
+    "mcp",
+    "plugins",
+    "product-entry",
+    "product_entry",
+    "sidecar",
+    "status",
+    "workbench",
+    "runtime/cli",
+    "runtime/mcp",
+    "runtime/product-entry",
+    "runtime/product_entry",
+    "runtime/sidecar",
+    "runtime/projection_builders",
+    "runtime/lifecycle_adapters",
+    "runtime/status",
+    "runtime/workbench",
+    "runtime/wrappers",
+    "src/cli",
+    "src/mcp",
+    "src/product-entry",
+    "src/product_entry",
+    "src/sidecar",
+    "src/status",
+    "src/workbench"
+  ],
+  "generic_script_materializer_scan": {
+    "status": "passed",
+    "repo_owned_generic_wrapper_materializer_count": 0,
+    "forbidden_materializer_roles_absent": [
+      "repo_owned_cli_wrapper_materializer",
+      "repo_owned_mcp_wrapper_materializer",
+      "repo_owned_skill_wrapper_materializer",
+      "repo_owned_product_entry_wrapper_materializer",
+      "repo_owned_domain_action_adapter_wrapper_materializer",
+      "repo_owned_status_read_model_materializer",
+      "repo_owned_workbench_wrapper_materializer"
+    ],
+    "retained_materializer_role": "refs_only_target_agent_semantics_work_order_candidate_or_typed_blocker_materializer",
+    "retired_materializer_tails": [
+      "build_agent_baseline_no_closeout_implicit_fixture_graph",
+      "meta_agent_loop_reexport_facade",
+      "stage_decomposition_pack_draft_barrel_reexport_facade",
+      "target_improvement_policy_generic_external_agent_patch_ref_fallback"
+    ],
+    "retired_materializer_tail_verification_refs": [
+      "docs/history/process/retired-surface-provenance.md",
+      "tests/source-purity.test.ts",
+      "tests/stage-decomposition-materializer.test.ts",
+      "tests/takeover-loop.test.ts",
+      "tests/external-suite-developer-work-order.test.ts"
+    ],
+    "excluded_standard_surface_paths": [
+      "agent/",
+      "contracts/",
+      "runtime/authority_functions/"
+    ]
+  },
+  "package_surface_boundary": {
+    "has_bin": false,
+    "has_main": false,
+    "has_exports": false
+  },
+  "retained_non_polluting_domain_authority_surfaces": [
+    "agent/",
+    "contracts/",
+    "runtime/authority_functions/",
+    "scripts authority/materializer/helper and verification-wrapper refs"
+  ],
+  "forbidden_long_term_composition_claims": [
+    "repo_owned_generic_cli_mcp_skill_product_status_workbench_wrapper",
+    "agent_lab_runner_or_promotion_gate",
+    "generic_queue_attempt_ledger_or_worktree_lifecycle",
+    "registry_app_shell_or_target_owner_closeout_hook_owner",
+    "target_truth_memory_artifact_quality_or_owner_receipt_writer"
+  ],
+  "verification_refs": [
+    "tests/source-purity.test.ts",
+    "cmd:npm run typecheck",
+    "cmd:npm test"
+  ]
+}

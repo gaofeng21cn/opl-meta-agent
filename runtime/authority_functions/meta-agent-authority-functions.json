@@ -89,6 +89,26 @@
         "forbidden_roles": []
       },
       {
+        "script_ref": "scripts/sync-authority-functions.ts",
+        "classes": [
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": [
+          "authority_functions_source_contract_ref",
+          "authority_functions_leaf_index_ref",
+          "authority_functions_aggregate_ref",
+          "authority_functions_drift_check_ref"
+        ],
+        "contract_refs": [
+          "runtime/authority_functions/meta-agent-authority-functions.json",
+          "runtime/authority_functions/meta-agent-authority-functions.source.json",
+          "runtime/authority_functions/meta-agent-authority-functions.leaf-index.json"
+        ],
+        "forbidden_roles": []
+      },
+      {
         "script_ref": "scripts/execute-external-work-order.ts",
         "classes": [
           "smoke_helper",
@@ -671,12 +691,14 @@
         "gate_id": "source_structure_and_stage_control_maintenance_helpers",
         "tracked_script_refs": [
           "scripts/check-source-structure.ts",
+          "scripts/sync-authority-functions.ts",
           "scripts/sync-stage-control-plane.ts"
         ],
-        "current_role": "source_structure_line_budget_checker_and_stage_control_plane_split_aggregate_helper",
-        "allowed_until": "stage_control_plane_aggregate_consumer_path_requires_repo_local_split_checker",
+        "current_role": "source_structure_line_budget_checker_authority_manifest_split_helper_and_stage_control_plane_split_aggregate_helper",
+        "allowed_until": "authority_functions_and_stage_control_aggregate_consumer_paths_require_repo_local_split_checkers",
         "required_before_retire_or_absorb": [
           "opl_framework_source_structure_lane_parity_ref",
+          "authority_functions_source_aggregate_sync_parity_ref",
           "stage_control_plane_source_aggregate_sync_parity_ref",
           "no_generated_aggregate_drift_ref",
           "no_active_npm_or_test_caller_ref",
@@ -685,7 +707,9 @@
         "closed_retention_refs": [
           "contracts/source_structure_policy.json",
           "contracts/stage_control_plane.source.json",
-          "contracts/stage_control_plane.leaf-index.json"
+          "contracts/stage_control_plane.leaf-index.json",
+          "runtime/authority_functions/meta-agent-authority-functions.source.json",
+          "runtime/authority_functions/meta-agent-authority-functions.leaf-index.json"
         ],
         "forbidden_long_term_claims": [
           "generic_runtime_owner",
@@ -849,17 +873,18 @@
       "agent/",
       "package.json"
     ],
-      "scanned_script_refs": [
-        "scripts/agent-evidence-takeover.ts",
-        "scripts/build-agent-baseline.ts",
-        "scripts/check-source-structure.ts",
-        "scripts/execute-external-work-order.ts",
-        "scripts/improve-from-agent-lab-suite.ts",
-        "scripts/repo-hygiene.sh",
-        "scripts/run-with-repo-temp-env.sh",
-        "scripts/lib/agent-evidence-contracts.ts",
-        "scripts/lib/agent-evidence-materializer.ts",
-        "scripts/lib/domain-pack.ts",
+    "scanned_script_refs": [
+      "scripts/agent-evidence-takeover.ts",
+      "scripts/build-agent-baseline.ts",
+      "scripts/check-source-structure.ts",
+      "scripts/sync-authority-functions.ts",
+      "scripts/execute-external-work-order.ts",
+      "scripts/improve-from-agent-lab-suite.ts",
+      "scripts/repo-hygiene.sh",
+      "scripts/run-with-repo-temp-env.sh",
+      "scripts/lib/agent-evidence-contracts.ts",
+      "scripts/lib/agent-evidence-materializer.ts",
+      "scripts/lib/domain-pack.ts",
       "scripts/lib/external-suite-materializer.ts",
       "scripts/lib/meta-agent-loop-ai-reviewer.ts",
       "scripts/lib/meta-agent-loop-io.ts",
@@ -872,13 +897,13 @@
       "scripts/lib/stage-native-artifact-contract.ts",
       "scripts/lib/target-improvement-policy.ts",
       "scripts/lib/work-order-builders.ts",
-        "scripts/lib/work-order-efficiency.ts",
-        "scripts/lib/work-order-refs.ts",
-        "scripts/lib/work-order-validation.ts",
-        "scripts/sync-stage-control-plane.ts",
-        "scripts/verify.sh",
-        "scripts/takeover-agent.ts"
-      ],
+      "scripts/lib/work-order-efficiency.ts",
+      "scripts/lib/work-order-refs.ts",
+      "scripts/lib/work-order-validation.ts",
+      "scripts/sync-stage-control-plane.ts",
+      "scripts/verify.sh",
+      "scripts/takeover-agent.ts"
+    ],
     "absent_repo_owned_surface_paths": [
       ".agents",
       ".codex",

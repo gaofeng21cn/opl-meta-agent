@@ -1,0 +1,22 @@
+{
+  "policy_ref": "contracts/private_functional_surface_policy.json",
+  "scripts_root": "scripts/",
+  "allowed_classes": [
+    "authority_function_implementation_ref",
+    "smoke_helper",
+    "fixture_or_proof_helper",
+    "developer_work_order_materializer"
+  ],
+  "forbidden_roles": [
+    "generic_runtime_owner",
+    "generic_registry_owner",
+    "app_shell_owner",
+    "agent_lab_execution_owner",
+    "promotion_gate_owner",
+    "target_domain_truth_writer",
+    "generic_cli_mcp_product_wrapper_owner",
+    "generic_cli_mcp_skill_product_sidecar_status_workbench_materializer_owner",
+    "generic_scheduler_or_daemon_owner",
+    "generic_queue_or_attempt_ledger_owner"
+  ]
+}

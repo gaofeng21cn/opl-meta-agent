@@ -1,0 +1,84 @@
+{
+  "gate_id": "purpose-first-owner-delta-gate",
+  "status": "active",
+  "default_output_shape": "target_agent_semantics_or_work_order_or_candidate_or_typed_blocker",
+  "allowed_output_refs": [
+    "target_agent_semantic_delta_ref",
+    "developer_patch_work_order_ref",
+    "target_capability_improvement_candidate_ref",
+    "mechanism_patch_proposal_ref",
+    "typed_blocker_ref"
+  ],
+  "required_owner_delta_refs": [
+    "next_forced_delta_ref",
+    "target_owner_route_ref",
+    "target_verification_ref",
+    "no_forbidden_write_proof_ref",
+    "target_owner_receipt_or_typed_blocker_ref"
+  ],
+  "stable_policy_home_refs": [
+    "agent/",
+    "contracts/",
+    "runtime/authority_functions/",
+    "opl_framework_primitive_ref"
+  ],
+  "materializer_boundary": {
+    "scripts_may_materialize_refs_only_outputs": true,
+    "scripts_can_become_second_agent_lab": false,
+    "scripts_can_become_second_opl_framework": false,
+    "scripts_can_own_agent_lab_runner": false,
+    "scripts_can_own_promotion_gate": false,
+    "scripts_can_own_registry_or_app_shell": false,
+    "scripts_can_own_target_worktree_lifecycle": false,
+    "scripts_can_own_queue_or_attempt_ledger": false,
+    "scripts_can_own_work_order_absorb_or_cleanup": false,
+    "scripts_can_create_stage_folder_runtime_state": false,
+    "scripts_can_create_owner_promotion": false,
+    "scripts_can_write_target_owner_receipt_body": false,
+    "scripts_can_write_target_truth_or_verdict": false
+  },
+  "second_framework_guard": {
+    "oma_is_agent_lab_or_opl_framework_replacement": false,
+    "allowed_oma_products": [
+      "candidate_agent_package_ref",
+      "developer_patch_work_order_ref",
+      "target_capability_improvement_candidate_ref",
+      "mechanism_patch_proposal_ref",
+      "typed_blocker_ref"
+    ],
+    "delegated_framework_surfaces": {
+      "agent_lab_runner": "one-person-lab",
+      "promotion_gate": "one-person-lab",
+      "queue_attempt_ledger": "one-person-lab",
+      "physical_stage_kernel": "one-person-lab",
+      "stage_artifact_conformance": "one-person-lab",
+      "stage_artifact_workbench_consumption": "one-person-lab-app via OPL/App contracts",
+      "work_order_execute_absorb_cleanup": "one-person-lab",
+      "target_owner_closeout_hook_invocation": "target-domain via OPL",
+      "registry_and_generated_interfaces": "one-person-lab",
+      "app_shell_and_workbench": "one-person-lab-app via OPL/App contracts"
+    },
+    "forbidden_oma_owned_surfaces": [
+      "agent_lab_runner",
+      "promotion_gate",
+      "queue_attempt_ledger",
+      "physical_stage_kernel",
+      "stage_artifact_conformance",
+      "stage_artifact_workbench_consumption",
+      "target_worktree_lifecycle",
+      "work_order_absorb_cleanup",
+      "target_owner_closeout_hook_invocation",
+      "owner_promotion_or_receipt_body_authority",
+      "registry_owner",
+      "app_shell_owner",
+      "target_domain_truth_or_verdict_writer"
+    ]
+  },
+  "fail_closed_when_missing": [
+    "next_forced_delta_ref",
+    "target_owner_route_ref",
+    "target_verification_ref",
+    "no_forbidden_write_proof_ref",
+    "target_owner_receipt_or_typed_blocker_ref"
+  ]
+}

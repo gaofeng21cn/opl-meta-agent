@@ -1,0 +1,197 @@
+[
+  {
+    "gate_id": "agent_evidence_and_external_suite_materializers",
+    "tracked_script_refs": [
+      "scripts/agent-evidence-takeover.ts",
+      "scripts/improve-from-agent-lab-suite.ts",
+      "scripts/lib/agent-evidence-contracts.ts",
+      "scripts/lib/agent-evidence-materializer.ts",
+      "scripts/lib/external-suite-materializer.ts",
+      "scripts/lib/target-improvement-policy.ts",
+      "scripts/lib/work-order-builders.ts",
+      "scripts/lib/work-order-efficiency.ts",
+      "scripts/lib/work-order-refs.ts",
+      "scripts/lib/work-order-validation.ts"
+    ],
+    "current_role": "target_agent_generic_work_order_candidate_proposal_or_typed_blocker_materializer",
+    "allowed_until": "active_npm_or_test_caller_requires_refs_only_artifact_materialization",
+    "required_before_retire_or_absorb": [
+      "stable_policy_moved_to_agent_contracts_authority_or_opl_primitive_ref",
+      "opl_agent_lab_runner_parity_ref",
+      "opl_work_order_readiness_or_target_owner_return_primitive_ref",
+      "target_agent_generic_handoff_consumption_ref",
+      "no_forbidden_write_proof_ref",
+      "no_active_npm_or_test_caller_ref",
+      "tombstone_or_provenance_ref"
+    ],
+    "closed_retention_refs": [
+      "contracts/developer_work_order_policy.json",
+      "contracts/developer_work_order_policy.json#/target_improvement_default_change_ref_policy",
+      "retired-tail:opl-meta-agent/target-improvement-policy/generic-external-agent-patch-ref-fallback"
+    ],
+    "forbidden_long_term_claims": [
+      "agent_lab_runner",
+      "promotion_gate",
+      "target_worktree_lifecycle_owner",
+      "target_owner_closeout_hook_owner",
+      "target_truth_or_quality_writer",
+      "domain_specific_command_family",
+      "generic_external_agent_patch_ref_fallback"
+    ]
+  },
+  {
+    "gate_id": "build_agent_baseline_and_stage_decomposition_materializers",
+    "tracked_script_refs": [
+      "scripts/build-agent-baseline.ts",
+      "scripts/lib/stage-decomposition-runner.ts",
+      "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts",
+      "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts",
+      "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts",
+      "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts",
+      "scripts/lib/stage-native-artifact-contract.ts",
+      "scripts/lib/domain-pack.ts"
+    ],
+    "current_role": "typed_stage_closeout_validator_and_candidate_pack_materializer",
+    "allowed_until": "opl_stage_attempt_and_pack_materializer_parity_can_replace_local_smoke_path",
+    "required_before_retire_or_absorb": [
+      "opl_stage_attempt_launch_and_read_model_parity_ref",
+      "opl_pack_compiler_typed_closeout_materializer_parity_ref",
+      "stable_standard_foundry_policies_moved_to_contract_or_opl_primitive_ref",
+      "opl_physical_kernel_locator_conformance_workbench_consumption_parity_ref",
+      "explicit_fixture_or_proof_path_if_retained_ref",
+      "no_implicit_fixture_graph_ref",
+      "no_oma_runtime_state_owner_promotion_worktree_or_receipt_body_ref",
+      "no_active_npm_or_test_caller_ref",
+      "tombstone_or_provenance_ref"
+    ],
+    "forbidden_long_term_claims": [
+      "scaffold_generator_owner",
+      "agent_lab_runner",
+      "fallback_graph_authority",
+      "implicit_fixture_public_entry",
+      "target_pack_authority",
+      "physical_kernel_runtime_state_owner",
+      "conformance_gate_owner",
+      "workbench_consumption_owner",
+      "owner_promotion_or_receipt_body_authority",
+      "target_worktree_lifecycle_owner"
+    ],
+    "closed_retention_refs": [
+      "contracts/standard_foundry_policies.json",
+      "retired-tail:opl-meta-agent/stage-decomposition-pack-draft/barrel-reexport-facade"
+    ]
+  },
+  {
+    "gate_id": "external_work_order_execution_delegation",
+    "tracked_script_refs": [
+      "scripts/execute-external-work-order.ts"
+    ],
+    "current_role": "thin_validation_and_opl_work_order_execute_delegation",
+    "allowed_until": "opl_generated_action_can_validate_and_delegate_same_work_order_shape",
+    "required_before_retire_or_absorb": [
+      "opl_work_order_execute_primitive_parity_ref",
+      "target_owner_closeout_hook_delegation_ref",
+      "no_oma_target_worktree_lifecycle_proof_ref",
+      "no_oma_owner_receipt_write_proof_ref",
+      "no_active_npm_or_test_caller_ref",
+      "tombstone_or_provenance_ref"
+    ],
+    "forbidden_long_term_claims": [
+      "generic_runner",
+      "queue_or_attempt_ledger",
+      "target_worktree_lifecycle_owner",
+      "absorb_or_cleanup_owner",
+      "target_owner_receipt_body_writer"
+    ]
+  },
+  {
+    "gate_id": "source_structure_and_stage_control_maintenance_helpers",
+    "tracked_script_refs": [
+      "scripts/check-source-structure.ts",
+      "scripts/sync-authority-functions.ts",
+      "scripts/sync-stage-control-plane.ts"
+    ],
+    "current_role": "source_structure_line_budget_checker_authority_manifest_split_helper_and_stage_control_plane_split_aggregate_helper",
+    "allowed_until": "authority_functions_and_stage_control_aggregate_consumer_paths_require_repo_local_split_checkers",
+    "required_before_retire_or_absorb": [
+      "opl_framework_source_structure_lane_parity_ref",
+      "authority_functions_source_aggregate_sync_parity_ref",
+      "stage_control_plane_source_aggregate_sync_parity_ref",
+      "no_generated_aggregate_drift_ref",
+      "no_active_npm_or_test_caller_ref",
+      "tombstone_or_provenance_ref"
+    ],
+    "closed_retention_refs": [
+      "contracts/source_structure_policy.json",
+      "contracts/stage_control_plane.source.json",
+      "contracts/stage_control_plane.leaf-index.json",
+      "runtime/authority_functions/meta-agent-authority-functions.source.json",
+      "runtime/authority_functions/meta-agent-authority-functions.leaf-index.json"
+    ],
+    "forbidden_long_term_claims": [
+      "generic_runtime_owner",
+      "generated_interface_owner",
+      "domain_truth_writer",
+      "stage_runtime_owner",
+      "line_budget_default_hard_gate"
+    ]
+  },
+  {
+    "gate_id": "repo_shell_verification_wrappers",
+    "tracked_script_refs": [
+      "scripts/repo-hygiene.sh",
+      "scripts/run-with-repo-temp-env.sh",
+      "scripts/verify.sh"
+    ],
+    "current_role": "repo_native_verification_and_external_cache_boundary_wrapper",
+    "allowed_until": "repo_native_verification_and_hygiene_still_need_shell_entrypoints",
+    "required_before_retire_or_absorb": [
+      "opl_framework_repo_verification_entrypoint_parity_ref",
+      "external_cache_and_temp_env_boundary_parity_ref",
+      "repo_hygiene_cleanup_route_parity_ref",
+      "no_active_npm_or_test_caller_ref",
+      "tombstone_or_provenance_ref"
+    ],
+    "forbidden_long_term_claims": [
+      "generic_cli_wrapper_owner",
+      "generic_runtime_owner",
+      "scheduler_or_daemon_owner",
+      "queue_or_attempt_ledger_owner",
+      "generated_interface_owner",
+      "target_truth_or_quality_writer",
+      "line_budget_default_hard_gate"
+    ]
+  },
+  {
+    "gate_id": "retained_thin_authority_helpers_and_takeover_smoke",
+    "tracked_script_refs": [
+      "scripts/lib/meta-agent-loop-ai-reviewer.ts",
+      "scripts/lib/meta-agent-loop-io.ts",
+      "scripts/lib/meta-agent-loop-receipts.ts",
+      "scripts/takeover-agent.ts"
+    ],
+    "current_role": "direct_io_reviewer_receipt_helpers_and_external_takeover_smoke",
+    "allowed_until": "active_import_or_npm_test_caller_requires_refs_only_helper_or_takeover_receipt_materialization",
+    "required_before_retire_or_absorb": [
+      "stable_helper_policy_moved_to_agent_contracts_authority_or_opl_primitive_ref",
+      "opl_generated_interface_or_invocation_helper_parity_ref",
+      "opl_agent_lab_takeover_handoff_parity_ref",
+      "no_target_truth_verdict_artifact_memory_or_owner_receipt_body_ref",
+      "no_agent_lab_runner_promotion_gate_registry_or_app_shell_owner_ref",
+      "no_active_npm_or_test_caller_ref",
+      "tombstone_or_provenance_ref"
+    ],
+    "forbidden_long_term_claims": [
+      "agent_lab_runner",
+      "promotion_gate",
+      "registry_owner",
+      "app_shell_owner",
+      "generated_interface_owner",
+      "target_truth_or_quality_writer",
+      "target_owner_receipt_body_writer",
+      "generic_runtime_owner",
+      "target_worktree_lifecycle_owner",
+      "domain_specific_command_family"
+    ]
+  }
+]

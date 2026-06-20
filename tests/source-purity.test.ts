@@ -119,8 +119,27 @@ test('runtime source shape keeps generated and generic wrappers out of the repo'
   assert.deepEqual(fs.readdirSync(path.join(repoRoot, 'runtime')).sort(), ['authority_functions']);
   assert.deepEqual(
     fs.readdirSync(path.join(repoRoot, 'runtime', 'authority_functions')).sort(),
-    ['meta-agent-authority-functions.json'],
+    [
+      'meta-agent-authority-functions.bundle-manifest.json',
+      'meta-agent-authority-functions.json',
+      'meta-agent-authority-functions.leaf-index.json',
+      'meta-agent-authority-functions.parts',
+      'meta-agent-authority-functions.source.json',
+    ],
   );
+  [
+    'runtime/authority_functions/meta-agent-authority-functions.source.json',
+    'runtime/authority_functions/meta-agent-authority-functions.leaf-index.json',
+    'runtime/authority_functions/meta-agent-authority-functions.bundle-manifest.json',
+    'runtime/authority_functions/meta-agent-authority-functions.parts/root.json',
+    'runtime/authority_functions/meta-agent-authority-functions.parts/script_morphology_policy/root.json',
+    'runtime/authority_functions/meta-agent-authority-functions.parts/script_morphology_policy/script-classifications.json',
+    'runtime/authority_functions/meta-agent-authority-functions.parts/script_morphology_policy/script-to-pack-retirement-gates.json',
+    'runtime/authority_functions/meta-agent-authority-functions.parts/source_purity_scan_receipt.json',
+    'runtime/authority_functions/meta-agent-authority-functions.parts/purpose_first_owner_delta_gate.json',
+    'runtime/authority_functions/meta-agent-authority-functions.parts/functions.json',
+    'runtime/authority_functions/meta-agent-authority-functions.parts/forbidden_roles.json',
+  ].forEach(assertRepoRefExists);
 });
 
 test('test support does not reintroduce active forbidden owner morphology tokens', () => {
@@ -426,9 +445,11 @@ test('script morphology stays limited to authority refs, materializers, helpers,
   assert.ok(sourceStructureGate, 'source-structure maintenance gate should exist');
   assert.deepEqual(asStrings(sourceStructureGate.tracked_script_refs), [
     'scripts/check-source-structure.ts',
+    'scripts/sync-authority-functions.ts',
     'scripts/sync-stage-control-plane.ts',
   ]);
   [
+    'authority_functions_source_aggregate_sync_parity_ref',
     'opl_framework_source_structure_lane_parity_ref',
     'stage_control_plane_source_aggregate_sync_parity_ref',
     'no_generated_aggregate_drift_ref',
@@ -574,6 +595,16 @@ test('script morphology stays limited to authority refs, materializers, helpers,
       ]);
       assert.ok(
         asStrings(entry.writes_only).includes('stage_control_plane_drift_check_ref'),
+      );
+    }
+    if (entry.script_ref === 'scripts/sync-authority-functions.ts') {
+      assert.deepEqual(asStrings(entry.contract_refs), [
+        'runtime/authority_functions/meta-agent-authority-functions.json',
+        'runtime/authority_functions/meta-agent-authority-functions.source.json',
+        'runtime/authority_functions/meta-agent-authority-functions.leaf-index.json',
+      ]);
+      assert.ok(
+        asStrings(entry.writes_only).includes('authority_functions_drift_check_ref'),
       );
     }
     if (entry.script_ref === 'scripts/repo-hygiene.sh') {

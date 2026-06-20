@@ -1,0 +1,9 @@
+{
+  "surface_kind": "meta_agent_authority_function_refs",
+  "schema_version": 1,
+  "domain_id": "opl-meta-agent",
+  "owner": "opl-meta-agent",
+  "role": "refs_only_minimal_authority_functions",
+  "not_generic_runtime_owner": true,
+  "opl_runtime_owner": "one-person-lab"
+}

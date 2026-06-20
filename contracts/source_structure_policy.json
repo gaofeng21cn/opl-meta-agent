@@ -37,6 +37,16 @@
   },
   "generated_aggregate_exemptions": [
     {
+      "aggregate_ref": "runtime/authority_functions/meta-agent-authority-functions.json",
+      "source_contract_ref": "runtime/authority_functions/meta-agent-authority-functions.source.json",
+      "leaf_index_ref": "runtime/authority_functions/meta-agent-authority-functions.leaf-index.json",
+      "bundle_manifest_ref": "runtime/authority_functions/meta-agent-authority-functions.bundle-manifest.json",
+      "check_command": "npm run authority-functions:check",
+      "line_budget_exemption": "generated_authority_manifest_reconstructed_from_split_source",
+      "consumer_surface_must_remain": true,
+      "generated_consumer_surface_must_be_do_not_edit": true
+    },
+    {
       "aggregate_ref": "contracts/stage_control_plane.json",
       "source_contract_ref": "contracts/stage_control_plane.source.json",
       "leaf_index_ref": "contracts/stage_control_plane.leaf-index.json",
