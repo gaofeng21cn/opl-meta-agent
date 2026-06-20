@@ -14,6 +14,7 @@ import {
   DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF,
   STAGE_NATIVE_ARTIFACT_VOCABULARY_CONTRACT_REF,
   STANDARD_FOUNDRY_POLICIES_CONTRACT_REF,
+  ACTIVE_CALLER_SCAN_POLICY_ID,
   assertPolicyObject,
   assertPolicyStringList,
   asBooleanRecord,
@@ -390,18 +391,29 @@ test('script morphology stays limited to authority refs, materializers, helpers,
   assert.deepEqual(classifiedScripts, scripts);
   assert.deepEqual(asStrings(receipt.scanned_script_refs).sort(), scripts);
   const activeCallerScan = assertPolicyObject(receipt, 'active_script_caller_scan');
+  const activeCallerScanPolicy = assertPolicyObject(morphologyPolicy, 'active_caller_scan_policy');
   const expectedActiveCallerScan = collectActiveScriptCallerScan(scripts);
+  assert.equal(activeCallerScanPolicy.policy_id, ACTIVE_CALLER_SCAN_POLICY_ID);
+  assert.equal(
+    activeCallerScanPolicy.receipt_ref,
+    'runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt.active_script_caller_scan',
+  );
+  assert.equal(activeCallerScan.policy_id, activeCallerScanPolicy.policy_id);
   assert.deepEqual(activeCallerScan, expectedActiveCallerScan);
   assert.equal(activeCallerScan.status, 'passed');
-  assert.equal(activeCallerScan.active_caller_required, true);
-  assert.equal(activeCallerScan.orphan_script_count, 0);
-  assert.deepEqual(asStrings(activeCallerScan.scan_inputs), [
-    'package.json#scripts',
-    'scripts/**/*.ts import graph',
-    'tests/**/*.ts import graph excluding tests/source-purity.test.ts self-guard strings',
-    'scripts/**/*.sh shell invocations',
-    'tests/**/*.ts direct script refs excluding tests/source-purity.test.ts',
-  ]);
+  assert.equal(activeCallerScan.active_caller_required, activeCallerScanPolicy.active_caller_required);
+  assert.equal(activeCallerScan.orphan_script_count, activeCallerScanPolicy.orphan_script_count_must_be);
+  assert.deepEqual(
+    asStrings(activeCallerScan.scan_inputs),
+    assertPolicyStringList(activeCallerScanPolicy, 'scan_inputs'),
+  );
+  assert.equal(activeCallerScanPolicy.self_guard_test_ref, 'tests/source-purity.test.ts');
+  assert.equal(activeCallerScanPolicy.self_guard_may_prove_active_caller, false);
+  assert.ok(
+    assertPolicyStringList(activeCallerScanPolicy, 'fail_closed_conditions').includes(
+      'source_purity_self_guard_only_caller',
+    ),
+  );
   asObjects(activeCallerScan.caller_refs_by_script).forEach((entry) => {
     assert.ok(scripts.includes(entry.script_ref), `${entry.script_ref} should be part of the tracked script set`);
     assert.ok(

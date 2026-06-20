@@ -53,6 +53,7 @@
   ],
   "active_script_caller_scan": {
     "status": "passed",
+    "policy_id": "oma.script-active-caller-scan.v1",
     "active_caller_required": true,
     "orphan_script_count": 0,
     "scan_inputs": [

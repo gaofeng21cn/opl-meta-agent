@@ -11,6 +11,33 @@
     "shell_wrappers_included": true,
     "no_exempt_shell_wrappers": true
   },
+  "active_caller_scan_policy": {
+    "policy_id": "oma.script-active-caller-scan.v1",
+    "receipt_ref": "runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt.active_script_caller_scan",
+    "active_caller_required": true,
+    "orphan_script_count_must_be": 0,
+    "scan_inputs": [
+      "package.json#scripts",
+      "scripts/**/*.ts import graph",
+      "tests/**/*.ts import graph excluding tests/source-purity.test.ts self-guard strings",
+      "scripts/**/*.sh shell invocations",
+      "tests/**/*.ts direct script refs excluding tests/source-purity.test.ts"
+    ],
+    "self_guard_test_ref": "tests/source-purity.test.ts",
+    "self_guard_may_prove_active_caller": false,
+    "allowed_caller_ref_kinds": [
+      "package_json_script",
+      "typescript_import",
+      "shell_invocation",
+      "non_self_test_direct_ref"
+    ],
+    "fail_closed_conditions": [
+      "orphan_script_count_nonzero",
+      "source_purity_self_guard_only_caller",
+      "caller_ref_path_missing",
+      "script_not_in_retirement_gate"
+    ]
+  },
   "allowed_classes": [
     "authority_function_implementation_ref",
     "smoke_helper",

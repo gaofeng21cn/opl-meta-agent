@@ -11,6 +11,7 @@ import {
 export const DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF = 'contracts/developer_work_order_policy.json';
 export const STANDARD_FOUNDRY_POLICIES_CONTRACT_REF = 'contracts/standard_foundry_policies.json';
 export const STAGE_NATIVE_ARTIFACT_VOCABULARY_CONTRACT_REF = 'contracts/stage_native_artifact_vocabulary.json';
+export const ACTIVE_CALLER_SCAN_POLICY_ID = 'oma.script-active-caller-scan.v1';
 
 export function assertPolicyStringList(contract: JsonObject, field: string): string[] {
   const value = contract[field];
@@ -82,6 +83,49 @@ function scriptImportTargets(sourceRef: string, scriptRefs: string[]): string[] 
 }
 
 export function collectActiveScriptCallerScan(scriptRefs: string[]): JsonObject {
+  const authorityFunctions = readJson('runtime/authority_functions/meta-agent-authority-functions.json');
+  const morphologyPolicy = assertPolicyObject(
+    authorityFunctions.script_morphology_policy as JsonObject,
+    'active_caller_scan_policy',
+  );
+  assert.equal(
+    morphologyPolicy.policy_id,
+    ACTIVE_CALLER_SCAN_POLICY_ID,
+    'active caller scan policy id should stay stable',
+  );
+  assert.equal(
+    morphologyPolicy.active_caller_required,
+    true,
+    'active caller scan policy should require active callers',
+  );
+  assert.equal(
+    morphologyPolicy.orphan_script_count_must_be,
+    0,
+    'active caller scan policy should fail closed on orphan scripts',
+  );
+  assert.equal(
+    morphologyPolicy.self_guard_test_ref,
+    'tests/source-purity.test.ts',
+    'active caller scan policy should identify the self-guard test',
+  );
+  assert.equal(
+    morphologyPolicy.self_guard_may_prove_active_caller,
+    false,
+    'source-purity self-guard strings must not prove active callers',
+  );
+  assert.deepEqual(assertPolicyStringList(morphologyPolicy, 'allowed_caller_ref_kinds'), [
+    'package_json_script',
+    'typescript_import',
+    'shell_invocation',
+    'non_self_test_direct_ref',
+  ]);
+  assert.deepEqual(assertPolicyStringList(morphologyPolicy, 'fail_closed_conditions'), [
+    'orphan_script_count_nonzero',
+    'source_purity_self_guard_only_caller',
+    'caller_ref_path_missing',
+    'script_not_in_retirement_gate',
+  ]);
+
   const callersByScript = new Map<string, Set<string>>(
     scriptRefs.map((scriptRef) => [scriptRef, new Set<string>()]),
   );
@@ -132,17 +176,12 @@ export function collectActiveScriptCallerScan(scriptRefs: string[]): JsonObject 
 
   return {
     status: 'passed',
-    active_caller_required: true,
+    policy_id: morphologyPolicy.policy_id,
+    active_caller_required: morphologyPolicy.active_caller_required,
     orphan_script_count: callerRefsByScript
       .filter((entry) => entry.active_caller_refs.length === 0)
       .length,
-    scan_inputs: [
-      'package.json#scripts',
-      'scripts/**/*.ts import graph',
-      'tests/**/*.ts import graph excluding tests/source-purity.test.ts self-guard strings',
-      'scripts/**/*.sh shell invocations',
-      'tests/**/*.ts direct script refs excluding tests/source-purity.test.ts',
-    ],
+    scan_inputs: assertPolicyStringList(morphologyPolicy, 'scan_inputs'),
     caller_refs_by_script: callerRefsByScript,
   };
 }
