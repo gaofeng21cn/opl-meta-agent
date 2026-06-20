@@ -25,6 +25,12 @@
 7. 运行目标 agent 验证和 Agent Lab regression。
 8. 写入 developer patch work order、target version receipt、online-learning candidate 和 mechanism patch proposal。
 
+## Advisory Boundary
+
+- Suite results, external learning notes, scorecards, regression pass/fail, efficiency telemetry, and optimizer candidates are evidence inputs for Codex and reviewer reasoning. They do not by themselves authorize target quality, target readiness, default promotion, App-live readiness, export verdict, owner receipt, or typed blocker.
+- A pass can support `no_patch_needed` or `candidate_ready_for_owner_review` only with owner route, direct evidence, independent reviewer provenance, no-forbidden-write proof, and target verification refs.
+- Missing optional advisory learning should become a work-order gap or route-back. It hard-blocks only when the current output claims patch completeness, promotion readiness, target ready, or owner acceptance.
+
 ## 输出
 
 - `developer_patch_work_order_refs`
@@ -52,5 +58,6 @@
 - 禁止无 gate 改目标 agent。
 - 禁止只产出泛泛建议，不给可执行 work order。
 - 禁止把 regression pass 写成 target quality verdict。
+- 禁止把 suite pass、scorecard、external learning memory、optimizer signal 或 promotion hint 写成 target owner verdict、default promotion、App-live readiness 或 export/quality verdict。
 - 禁止在缺 quality floor refs 时把效率优化证据升级成 executable work order。
 - 禁止在缺 direct evidence、reviewer provenance 或 work order completeness 字段时产出 patch proposal；必须 fail closed 到 typed blocker。

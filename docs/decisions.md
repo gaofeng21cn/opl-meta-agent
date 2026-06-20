@@ -11,6 +11,12 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 
 ## 当前有效决策
 
+### External learning / suite signals 是 advisory inputs，不是 target owner verdict
+
+- 决策：external learning notes、suite findings、scorecards、optimizer candidates、promotion signals 和 regression pass/fail 只能作为 Codex / independent reviewer 的证据输入、developer work order trace、mechanism proposal、route-back 或 reviewer attention。
+- 理由：OMA 面向 agent-building，可以组织评估和改进证据，但不能把 checklist、suite pass、scorecard、external memory 或 promotion hint 升级成 target-domain truth、target quality verdict、default promotion、App-live readiness、export verdict、owner receipt 或 typed blocker authority。
+- 影响：patch/promotion/ready claim 必须有 owner route、direct evidence、independent reviewer provenance、no-forbidden-write proof、target verification refs、target owner receipt 或 typed blocker return shape；缺可选 advisory learning 默认成为 work-order gap / route-back / reviewer-attention note，不作为全局 stop。
+
 ### OMA 接入 OPL Family Foundry Agent OS target pattern
 
 - 决策：OMA 采用 family-level `OPL Agent OS + Declarative Agent-Building Pack + Agent-Building Authority Kernel + Improvement Capability Registry` 目标形态，target delta 维护在 [`docs/active/foundry-agent-os-target-delta.md`](./active/foundry-agent-os-target-delta.md)。
