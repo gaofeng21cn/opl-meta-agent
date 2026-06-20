@@ -7,6 +7,9 @@ import {
   DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
   DEFAULT_RUNTIME_EXPECTED_OUTCOMES,
   DEFAULT_RUNTIME_REQUIRED_SURFACE_REFS,
+  DEFAULT_TARGET_IMPROVEMENT_CHANGE_REF_MAPPINGS,
+  DEFAULT_TARGET_IMPROVEMENT_CHANGE_REF_TRIGGERS,
+  DEFAULT_TARGET_IMPROVEMENT_CHANGE_REFS,
   records,
   stringList,
   stringValue,
@@ -37,51 +40,15 @@ export type TargetImprovementPolicy = {
   defaultChangeRefs: string[];
   defaultChangeRefTriggers: string[];
   changeRefMappings: ChangeRefMapping[];
+  contractDefaultChangeRefs: string[];
+  contractDefaultChangeRefTriggers: string[];
+  contractChangeRefMappings: ChangeRefMapping[];
   patchSurfaceHints: Record<string, string[]>;
   externalLearningRefs: string[];
   forbiddenTargetPathsOrSurfaces: string[];
   runtimeRequiredSurfaceRefs: string[];
   runtimeExpectedOutcomes: string[];
 };
-
-const OWNER_RECEIPT_CHANGE_REFS = [
-  {
-    token: 'live-acceptance',
-    refs: [
-      'target_agent_production_acceptance_contract_ref:target_agent/production_acceptance',
-      'target_agent_owner_receipt_contract_ref:target_agent/live-acceptance',
-    ],
-  },
-  {
-    token: 'owner-receipt',
-    refs: [
-      'target_agent_owner_receipt_contract_ref:target_agent/live-acceptance',
-      'target_agent_owner_route_ref:target_agent/owner-receipt-projection',
-    ],
-  },
-  {
-    token: 'package',
-    refs: [
-      'target_agent_delivery_policy_ref:target_agent/package-owner-closeout',
-      'target_agent_quality_gate_ref:target_agent/export-owner',
-    ],
-  },
-  {
-    token: 'typed-blocker',
-    refs: [
-      'target_agent_production_acceptance_contract_ref:target_agent/production_acceptance',
-      'target_agent_regression_suite_ref:target_agent/owner-boundary',
-    ],
-  },
-];
-
-const OWNER_RECEIPT_DEFAULT_CHANGE_REFS = [
-  'target_agent_production_acceptance_contract_ref:target_agent/production_acceptance',
-  'target_agent_owner_receipt_contract_ref:target_agent/live-acceptance',
-  'target_agent_owner_route_ref:target_agent/owner-receipt-projection',
-  'target_agent_quality_gate_ref:target_agent/export-owner',
-  'target_agent_regression_suite_ref:target_agent/owner-boundary',
-];
 
 function optionalJson(targetAgentDir: string, relativePath: string): JsonObject | null {
   const filePath = path.join(targetAgentDir, relativePath);
@@ -176,6 +143,9 @@ export function targetImprovementPolicy(targetAgentDir: string): TargetImproveme
     defaultChangeRefs,
     defaultChangeRefTriggers,
     changeRefMappings: collectMappings(...sources),
+    contractDefaultChangeRefs: DEFAULT_TARGET_IMPROVEMENT_CHANGE_REFS,
+    contractDefaultChangeRefTriggers: DEFAULT_TARGET_IMPROVEMENT_CHANGE_REF_TRIGGERS,
+    contractChangeRefMappings: DEFAULT_TARGET_IMPROVEMENT_CHANGE_REF_MAPPINGS,
     patchSurfaceHints: collectPatchSurfaceHints(...sources),
     externalLearningRefs,
     forbiddenTargetPathsOrSurfaces: forbiddenTargetPathsOrSurfaces.length
@@ -227,20 +197,16 @@ export function inferProposedChangeRefs({
     policy.defaultChangeRefs.forEach((ref) => inferred.add(ref));
   }
   if (
-    combined.includes('owner-receipt')
-    || combined.includes('owner_receipt')
-    || combined.includes('live-acceptance')
-    || combined.includes('production-acceptance')
-    || combined.includes('production_acceptance')
+    policy.contractDefaultChangeRefTriggers.some((trigger) => combined.includes(trigger))
   ) {
-    OWNER_RECEIPT_DEFAULT_CHANGE_REFS.forEach((ref) => inferred.add(ref));
+    policy.contractDefaultChangeRefs.forEach((ref) => inferred.add(ref));
   }
   for (const mapping of policy.changeRefMappings) {
     if (combined.includes(mapping.token)) {
       mapping.refs.forEach((ref) => inferred.add(ref));
     }
   }
-  for (const mapping of OWNER_RECEIPT_CHANGE_REFS) {
+  for (const mapping of policy.contractChangeRefMappings) {
     if (combined.includes(mapping.token)) {
       mapping.refs.forEach((ref) => inferred.add(ref));
     }
@@ -271,7 +237,7 @@ export function buildPatchTraceabilityMatrix({
     || ref.includes('typed-blocker')
   );
   const matrix = [];
-  for (const mapping of [...policy.changeRefMappings, ...OWNER_RECEIPT_CHANGE_REFS]) {
+  for (const mapping of [...policy.changeRefMappings, ...policy.contractChangeRefMappings]) {
     if (!textMatchesToken(combined, mapping.token)) {
       continue;
     }

@@ -483,6 +483,13 @@ test('script morphology stays limited to authority refs, materializers, and help
         asStrings(entry.writes_only).includes('missing_target_improvement_policy_typed_blocker_ref'),
         'target-improvement-policy should fail closed with a typed blocker when target policy refs are missing',
       );
+      assert.deepEqual(asStrings(entry.contract_refs), [
+        DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF,
+      ]);
+      assert.ok(
+        asStrings(entry.writes_only).includes('target_improvement_default_change_ref_policy_consumer_ref'),
+        'target-improvement-policy should consume default change-ref mapping from the developer work-order policy contract',
+      );
       assert.deepEqual(asStrings(entry.retired_tail_refs), [
         'retired-tail:opl-meta-agent/target-improvement-policy/generic-external-agent-patch-ref-fallback',
       ]);
@@ -652,6 +659,10 @@ test('developer work-order policy defaults are contract-owned and helper-project
     contract,
     'default_source_patch_closeout_evidence',
   );
+  const targetImprovementDefaultChangeRefPolicy = assertPolicyObject(
+    contract,
+    'target_improvement_default_change_ref_policy',
+  );
 
   assert.equal(contract.surface_kind, 'developer_work_order_policy');
   assert.equal(contract.state, 'active_contract');
@@ -694,6 +705,11 @@ test('developer work-order policy defaults are contract-owned and helper-project
     asStrings(retirementGate.closed_retention_refs).includes(DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF),
     'stable developer work-order policy should be moved into a contract while script projection remains retained',
   );
+  assert.ok(
+    asStrings(retirementGate.closed_retention_refs)
+      .includes(`${DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF}#/target_improvement_default_change_ref_policy`),
+    'target improvement default change-ref mapping should be moved into the developer work-order policy contract',
+  );
 
   assert.ok(defaultForbiddenTargetPathsOrSurfaces.includes('target domain truth surfaces'));
   assert.ok(defaultForbiddenTargetPathsOrSurfaces.includes('export verdict bodies'));
@@ -712,6 +728,24 @@ test('developer work-order policy defaults are contract-owned and helper-project
   );
   assert.ok(defaultSourcePatchCloseoutEvidence.includes('patch_traceability_matrix addressed'));
   assert.ok(defaultSourcePatchCloseoutEvidence.includes('temporary worktree cleaned after absorb'));
+  assert.equal(targetImprovementDefaultChangeRefPolicy.surface_kind, 'target_improvement_default_change_ref_policy');
+  assert.equal(targetImprovementDefaultChangeRefPolicy.state, 'active_contract_policy');
+  assert.deepEqual(asStrings(targetImprovementDefaultChangeRefPolicy.active_policy_consumer_refs), [
+    'scripts/lib/target-improvement-policy.ts',
+  ]);
+  assert.ok(asStrings(targetImprovementDefaultChangeRefPolicy.triggers).includes('owner-receipt'));
+  assert.ok(asStrings(targetImprovementDefaultChangeRefPolicy.triggers).includes('production_acceptance'));
+  assert.ok(
+    asStrings(targetImprovementDefaultChangeRefPolicy.default_change_refs)
+      .includes('target_agent_owner_receipt_contract_ref:target_agent/live-acceptance'),
+  );
+  assert.ok(
+    asObjects(targetImprovementDefaultChangeRefPolicy.change_ref_mappings)
+      .some((entry) => entry.token === 'live-acceptance'),
+  );
+  assert.equal(targetImprovementDefaultChangeRefPolicy.authority_boundary.can_write_target_domain_truth, false);
+  assert.equal(targetImprovementDefaultChangeRefPolicy.authority_boundary.can_write_target_owner_receipt_body, false);
+  assert.equal(targetImprovementDefaultChangeRefPolicy.authority_boundary.can_authorize_target_quality_or_export, false);
 });
 
 test('standard Foundry policies are contract-owned and helper-projection free', () => {

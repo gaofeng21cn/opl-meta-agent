@@ -402,7 +402,11 @@
           "patch_traceability_matrix_ref",
           "target_editable_surface_refs",
           "target_repo_file_hints",
+          "target_improvement_default_change_ref_policy_consumer_ref",
           "missing_target_improvement_policy_typed_blocker_ref"
+        ],
+        "contract_refs": [
+          "contracts/developer_work_order_policy.json"
         ],
         "retired_tail_refs": [
           "retired-tail:opl-meta-agent/target-improvement-policy/generic-external-agent-patch-ref-fallback"
@@ -541,6 +545,7 @@
         ],
         "closed_retention_refs": [
           "contracts/developer_work_order_policy.json",
+          "contracts/developer_work_order_policy.json#/target_improvement_default_change_ref_policy",
           "retired-tail:opl-meta-agent/target-improvement-policy/generic-external-agent-patch-ref-fallback"
         ],
         "forbidden_long_term_claims": [
