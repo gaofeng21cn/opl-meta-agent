@@ -15,6 +15,7 @@ Machine boundary: 本目录只记录人读治理过程、覆盖 ledger、退役 
 | --- | --- |
 | 当前完成口径、功能/结构差距、测试/证据差距、下一轮 prompt | `docs/active/opl-meta-agent-ideal-state-gap-plan.md` |
 | north-star / target-state | `docs/references/opl-meta-agent-ideal-state.md` |
+| Foundry Agent OS target delta | `contracts/foundry-agent-os-domain-kernel-manifest.json` for machine truth; `docs/active/foundry-agent-os-target-delta.md` for human-readable owner split |
 | 文档生命周期、目录职责、inventory groups、reopening conditions | `docs/docs_portfolio_consolidation.md` |
 | 私有实现分类、script hygiene、上收候选、退役门 | `docs/active/opl-private-implementation-migration-inventory.md` |
 | 当前状态和 evidence tail 摘要 | `docs/status.md` |
@@ -27,6 +28,7 @@ Machine boundary: 本目录只记录人读治理过程、覆盖 ledger、退役 
 | Provenance group | Current read |
 | --- | --- |
 | Docs lifecycle and coverage | Root `README*`, every tracked `docs/**/*.md`, and tracked `agent/*/README.md` were rechecked as the complete OMA human-doc portfolio. Each file keeps one role under `docs/docs_portfolio_consolidation.md`; future coverage records stay topic-level here, and machine truth remains in contracts/source/tests. |
+| Foundry Agent OS target-delta foldback | The active support doc `docs/active/foundry-agent-os-target-delta.md` is now part of the lifecycle map and inventory. Its machine SSOT is `contracts/foundry-agent-os-domain-kernel-manifest.json`; peer docs keep only pointers, boundary summaries, or forbidden-claim rules. |
 | Target-agent field / takeover retirement | Old `external_agent_allowed`, `external_opl_compatible_agents_allowed`, `external-agent-takeover`, `takeover:test --fixture`, implicit fixture graph and field-only closeout files are folded into `retired-surface-provenance.md` and machine no-resurrection tests. |
 | External-suite / external-work-order vocabulary | `external-suite` and external work-order remain active Agent Lab external-suite and OPL work-order delegation semantics. They are not stale takeover aliases and should not be retired without replacement machine truth. |
 | Script-to-pack hygiene | Detailed script/materializer classification SSOT is `docs/active/opl-private-implementation-migration-inventory.md` plus `runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy/script_to_pack_retirement_gates` and `tests/source-purity.test.ts`. |
@@ -47,19 +49,23 @@ ledger, proof transcript, or completion claim for the parent six-repo goal.
 - Current SSOT decision: `docs/active/opl-meta-agent-ideal-state-gap-plan.md`
   remains the single Active Truth owner; `docs/active/opl-private-implementation-migration-inventory.md`
   owns script/source-purity detail; `docs/references/opl-meta-agent-ideal-state.md`
-  owns north-star; this file only keeps compressed provenance.
+  owns north-star; `contracts/foundry-agent-os-domain-kernel-manifest.json`
+  owns the Foundry Agent OS domain-kernel machine split, with
+  `docs/active/foundry-agent-os-target-delta.md` as its human support doc.
+  This file only keeps compressed provenance.
 - Content-level consolidation: script-to-pack, README/docs coverage,
-  external-suite/work-order audit, target-agent takeover identifier/field
-  retirement, active decision compression and process-history compression
-  entries are folded into the provenance groups above. Durable no-resurrection
-  rules remain in
+  Foundry Agent OS target-delta foldback, external-suite/work-order audit,
+  target-agent takeover identifier/field retirement, active decision
+  compression and process-history compression entries are folded into the
+  provenance groups above. Durable no-resurrection rules remain in
   `retired-surface-provenance.md`; current rules remain in owner docs and
   machine surfaces.
 - Current recheck scope: all OMA human docs were rechecked against the active
   plan, private inventory, docs lifecycle map, ideal-state reference, core docs,
-  package scripts, pack compiler input, authority function policy, source-purity
-  tests and tracked `agent/*/README.md` support indexes. No source, contract,
-  test, workflow, package or CLI surface changed in this tranche.
+  Foundry Agent OS domain-kernel manifest, package scripts, pack compiler input,
+  authority function policy, source-purity tests and tracked
+  `agent/*/README.md` support indexes. No source, contract, test, workflow,
+  package or CLI surface changed in this tranche.
 - Current private-inventory compression: active inventory retired-tail detail was
   reduced to a pointer plus migration gate rule; the itemized no-resurrection
   list remains in `retired-surface-provenance.md` and machine guards.
