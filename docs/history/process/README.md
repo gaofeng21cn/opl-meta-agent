@@ -39,7 +39,8 @@ Machine boundary: 本目录只记录人读治理过程、覆盖 ledger、退役 
 ## Coverage Summary
 
 This section keeps topic-level OPL Doc coverage only. It is not a dated closeout
-ledger, proof transcript, or completion claim for the parent six-repo goal.
+ledger, proof transcript, or completion claim for the parent seven-repo OPL
+series goal.
 
 - Current portfolio scope: root `README*`, `docs/*.md`,
   `docs/active/*.md`, `docs/references/*.md`, `docs/history/*.md`,
