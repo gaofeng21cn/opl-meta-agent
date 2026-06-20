@@ -25,6 +25,7 @@
   "script_morphology_policy_key_order": [
     "policy_ref",
     "scripts_root",
+    "script_scan_scope",
     "allowed_classes",
     "forbidden_roles",
     "script_classifications",

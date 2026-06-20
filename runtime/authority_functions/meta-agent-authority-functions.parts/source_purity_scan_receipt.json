@@ -8,6 +8,16 @@
     "agent/",
     "package.json"
   ],
+  "script_scan_scope": {
+    "mode": "repo_local_ts_and_shell_scripts",
+    "included_extensions": [
+      ".ts",
+      ".sh"
+    ],
+    "gate_requirement": "every_scanned_script_ref_must_have_script_to_pack_retirement_or_retention_gate",
+    "shell_wrappers_included": true,
+    "no_exempt_shell_wrappers": true
+  },
   "scanned_script_refs": [
     "scripts/agent-evidence-takeover.ts",
     "scripts/build-agent-baseline.ts",

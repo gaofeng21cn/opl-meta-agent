@@ -244,8 +244,21 @@ test('script morphology stays limited to authority refs, materializers, helpers,
   const morphologyPolicy = authorityFunctions.script_morphology_policy as JsonObject;
   const receipt = authorityFunctions.source_purity_scan_receipt as JsonObject;
   const materializerScan = receipt.generic_script_materializer_scan as JsonObject;
+  const morphologyScanScope = assertPolicyObject(morphologyPolicy, 'script_scan_scope');
+  const receiptScanScope = assertPolicyObject(receipt, 'script_scan_scope');
 
   assert.equal(morphologyPolicy.policy_ref, 'contracts/private_functional_surface_policy.json');
+  assert.deepEqual(asStrings(morphologyScanScope.included_extensions), ['.ts', '.sh']);
+  assert.deepEqual(morphologyScanScope, receiptScanScope);
+  assert.equal(morphologyScanScope.mode, 'repo_local_ts_and_shell_scripts');
+  assert.equal(morphologyScanScope.shell_wrappers_included, true);
+  assert.equal(morphologyScanScope.no_exempt_shell_wrappers, true);
+  assert.equal(
+    morphologyScanScope.gate_requirement,
+    'every_scanned_script_ref_must_have_script_to_pack_retirement_or_retention_gate',
+  );
+  assert.ok(scripts.some((scriptRef) => scriptRef.endsWith('.ts')), 'source-purity scan should include TS scripts');
+  assert.ok(scripts.some((scriptRef) => scriptRef.endsWith('.sh')), 'source-purity scan should include shell scripts');
   assert.deepEqual(
     asObjects(privatePolicy.allowed_script_morphology_classes).map((entry) => entry.class_id),
     [
@@ -316,7 +329,7 @@ test('script morphology stays limited to authority refs, materializers, helpers,
   assert.deepEqual(
     gatedScriptRefs,
     scripts,
-    'Every repo-local TypeScript script must have an explicit script-to-pack retirement or retention gate',
+    'Every repo-local TypeScript or shell script must have an explicit script-to-pack retirement or retention gate',
   );
   retirementGates.forEach((gate) => {
     const trackedScriptRefs = asStrings(gate.tracked_script_refs);
