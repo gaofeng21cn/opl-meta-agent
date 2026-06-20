@@ -12,6 +12,7 @@ import {
 } from './support/contracts.ts';
 import {
   DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF,
+  STAGE_NATIVE_ARTIFACT_VOCABULARY_CONTRACT_REF,
   STANDARD_FOUNDRY_POLICIES_CONTRACT_REF,
   assertPolicyObject,
   assertPolicyStringList,
@@ -200,6 +201,10 @@ test('script morphology stays limited to authority refs, materializers, helpers,
   assert.ok(
     asStrings(buildBaselineGate.closed_retention_refs).includes(STANDARD_FOUNDRY_POLICIES_CONTRACT_REF),
     'stable Foundry policy body should be moved into a contract while script projection remains retained',
+  );
+  assert.ok(
+    asStrings(buildBaselineGate.closed_retention_refs).includes(STAGE_NATIVE_ARTIFACT_VOCABULARY_CONTRACT_REF),
+    'stable Stage Native Artifact vocabulary should be moved into a contract while script projection remains retained',
   );
   assert.ok(
     asStrings(buildBaselineGate.closed_retention_refs).includes(
@@ -476,6 +481,9 @@ test('script morphology stays limited to authority refs, materializers, helpers,
       });
     }
     if (entry.script_ref === 'scripts/lib/stage-native-artifact-contract.ts') {
+      assert.deepEqual(asStrings(entry.contract_refs), [
+        STAGE_NATIVE_ARTIFACT_VOCABULARY_CONTRACT_REF,
+      ]);
       [
         'opl_physical_kernel_locator_ref',
         'stage_artifact_conformance_ref',

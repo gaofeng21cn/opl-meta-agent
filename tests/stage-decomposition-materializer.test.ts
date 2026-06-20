@@ -18,6 +18,7 @@ import {
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const standardFoundryPolicies = readJson(path.join(repoRoot, 'contracts/standard_foundry_policies.json'));
+const stageNativeArtifactVocabulary = readJson(path.join(repoRoot, 'contracts/stage_native_artifact_vocabulary.json'));
 const stagePackDefaults = standardFoundryPolicies.stage_pack_defaults as JsonObject;
 
 const targetAgent = {
@@ -59,6 +60,15 @@ function assertOmaRefTemplateBoundary(container: JsonObject): void {
   assert.equal(container.target_worktree_lifecycle_managed, false);
   assert.equal(container.owner_receipt_body_created, false);
   assert.equal(container.contains_target_artifact_body, false);
+}
+
+function materializedOutputRoles(domainTruthOwner: string): JsonObject[] {
+  return (stageNativeArtifactVocabulary.output_roles as JsonObject[]).map((role) => ({
+    ...role,
+    body_owner: role.body_owner === 'domain_truth_owner'
+      ? domainTruthOwner
+      : role.body_owner,
+  }));
 }
 
 const ARTIFACT_MORPHOLOGY_REQUIRED_POLICIES = [
@@ -178,6 +188,10 @@ test('materializer writes the target stage pack from typed stage-decomposition c
       stage.stage_contract.stage_native_artifact_contract.stage_folder_contract.stage_folder_contract_ref,
       'stage-folder-contract-ref:research-workbench-agent/evidence-synthesis-plan',
     );
+    assert.deepEqual(
+      stage.stage_contract.stage_native_artifact_contract.stage_folder_contract.required_files,
+      stageNativeArtifactVocabulary.stage_folder_required_files,
+    );
     assertCompleteStageNativeRefs(
       stage.stage_contract.stage_native_artifact_contract.stage_folder_contract,
       'research-workbench-agent',
@@ -187,9 +201,21 @@ test('materializer writes the target stage pack from typed stage-decomposition c
       stage.stage_contract.stage_native_artifact_contract.stage_json_contract.stage_json_file_name,
       'stage.json',
     );
+    assert.deepEqual(
+      stage.stage_contract.stage_native_artifact_contract.stage_json_contract.required_fields,
+      stageNativeArtifactVocabulary.stage_json_required_fields,
+    );
     assert.equal(
       stage.stage_contract.stage_native_artifact_contract.attempt_json_contract.attempt_json_file_name,
       'attempt.json',
+    );
+    assert.deepEqual(
+      stage.stage_contract.stage_native_artifact_contract.attempt_json_contract.required_fields,
+      stageNativeArtifactVocabulary.attempt_json_required_fields,
+    );
+    assert.deepEqual(
+      stage.stage_contract.stage_native_artifact_contract.manifest_contract.required_fields,
+      stageNativeArtifactVocabulary.manifest_required_fields,
     );
     assert.equal(
       stage.stage_contract.stage_native_artifact_contract.export_contract.export_file_name,
@@ -198,6 +224,10 @@ test('materializer writes the target stage pack from typed stage-decomposition c
     assert.equal(
       stage.stage_contract.stage_native_artifact_contract.lineage_contract.lineage_file_name,
       'lineage.json',
+    );
+    assert.deepEqual(
+      stage.stage_contract.stage_native_artifact_contract.lineage_contract.required_fields,
+      stageNativeArtifactVocabulary.lineage_required_fields,
     );
     assert.equal(
       stage.stage_contract.stage_native_artifact_contract.retention_contract.retention_file_name,
@@ -217,7 +247,7 @@ test('materializer writes the target stage pack from typed stage-decomposition c
     );
     assert.deepEqual(
       stage.stage_contract.stage_native_artifact_contract.physical_kernel_locator_contract.required_attempt_entries,
-      ['attempt.json', 'manifest.json', 'inputs/', 'outputs/', 'evidence/', 'receipts/'],
+      stageNativeArtifactVocabulary.physical_kernel_required_attempt_entries,
     );
     assert.equal(
       stage.stage_contract.stage_native_artifact_contract.conformance_contract.surface_kind,
@@ -226,6 +256,14 @@ test('materializer writes the target stage pack from typed stage-decomposition c
     assert.equal(
       stage.stage_contract.stage_native_artifact_contract.conformance_contract.domain_readiness_claim,
       false,
+    );
+    assert.deepEqual(
+      stage.stage_contract.stage_native_artifact_contract.conformance_contract.strict_units,
+      stageNativeArtifactVocabulary.conformance_strict_units,
+    );
+    assert.deepEqual(
+      stage.stage_contract.stage_native_artifact_contract.conformance_contract.fails_on,
+      stageNativeArtifactVocabulary.conformance_fails_on,
     );
     assert.equal(
       stage.stage_contract.stage_native_artifact_contract.workbench_consumption_contract.surface_kind,
@@ -238,6 +276,14 @@ test('materializer writes the target stage pack from typed stage-decomposition c
     assert.equal(
       stage.stage_contract.stage_native_artifact_contract.workbench_consumption_contract.domain_verdict_authority,
       false,
+    );
+    assert.deepEqual(
+      stage.stage_contract.stage_native_artifact_contract.workbench_consumption_contract.projects,
+      stageNativeArtifactVocabulary.workbench_consumption_projects,
+    );
+    assert.deepEqual(
+      stage.stage_contract.stage_native_artifact_contract.output_roles,
+      materializedOutputRoles(targetAgent.domain_label),
     );
     assert.equal(
       stage.stage_contract.stage_native_artifact_contract.manifest_contract.missing_owner_receipt_projection,

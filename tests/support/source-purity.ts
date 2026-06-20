@@ -10,6 +10,7 @@ import {
 
 export const DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF = 'contracts/developer_work_order_policy.json';
 export const STANDARD_FOUNDRY_POLICIES_CONTRACT_REF = 'contracts/standard_foundry_policies.json';
+export const STAGE_NATIVE_ARTIFACT_VOCABULARY_CONTRACT_REF = 'contracts/stage_native_artifact_vocabulary.json';
 
 export function assertPolicyStringList(contract: JsonObject, field: string): string[] {
   const value = contract[field];

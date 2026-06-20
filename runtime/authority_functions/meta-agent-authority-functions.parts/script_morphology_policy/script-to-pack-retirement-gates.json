@@ -84,6 +84,7 @@
       "target_worktree_lifecycle_owner"
     ],
     "closed_retention_refs": [
+      "contracts/stage_native_artifact_vocabulary.json",
       "contracts/standard_foundry_policies.json",
       "retired-tail:opl-meta-agent/stage-decomposition-pack-draft/barrel-reexport-facade"
     ]

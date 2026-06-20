@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import type { JsonObject } from './domain-pack.ts';
 
 export type StageNativeArtifactContractInput = {
@@ -11,29 +12,128 @@ export type StageNativeArtifactAttemptRefsInput = StageNativeArtifactContractInp
   attemptId?: string;
 };
 
-function stageNativeAuthorityBoundary(): JsonObject {
+type OutputRoleTemplate = {
+  role_id: string;
+  ref_kind: string;
+  body_owner: string;
+  contains_target_artifact_body: boolean;
+};
+
+type StageNativeArtifactVocabulary = JsonObject & {
+  authority_boundary: JsonObject;
+  stage_folder_required_files: string[];
+  stage_json_required_fields: string[];
+  attempt_json_required_fields: string[];
+  manifest_required_fields: string[];
+  lineage_required_fields: string[];
+  physical_kernel_required_attempt_entries: string[];
+  conformance_strict_units: string[];
+  conformance_fails_on: string[];
+  workbench_consumption_projects: string[];
+  output_roles: OutputRoleTemplate[];
+};
+
+const STAGE_NATIVE_ARTIFACT_VOCABULARY_CONSUMER_REF = 'scripts/lib/stage-native-artifact-contract.ts';
+const STAGE_NATIVE_ARTIFACT_VOCABULARY = readStageNativeArtifactVocabulary();
+
+function isRecord(value: unknown): value is JsonObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function stringList(contract: JsonObject, field: string): string[] {
+  const value = contract[field];
+  if (!Array.isArray(value) || value.length === 0 || value.some((entry) => typeof entry !== 'string' || !entry.trim())) {
+    throw new Error(`Stage Native Artifact vocabulary ${field} must be a non-empty string array.`);
+  }
+  return value.map((entry) => entry.trim());
+}
+
+function objectField(contract: JsonObject, field: string): JsonObject {
+  const value = contract[field];
+  if (!isRecord(value)) {
+    throw new Error(`Stage Native Artifact vocabulary ${field} must be a JSON object.`);
+  }
+  return value;
+}
+
+function booleanField(contract: JsonObject, field: string): boolean {
+  const value = contract[field];
+  if (typeof value !== 'boolean') {
+    throw new Error(`Stage Native Artifact vocabulary ${field} must be a boolean.`);
+  }
+  return value;
+}
+
+function outputRoleTemplates(contract: JsonObject): OutputRoleTemplate[] {
+  const value = contract.output_roles;
+  if (!Array.isArray(value) || value.length === 0 || !value.every(isRecord)) {
+    throw new Error('Stage Native Artifact vocabulary output_roles must be a non-empty object array.');
+  }
+  return value.map((entry) => ({
+    role_id: stringField(entry, 'role_id'),
+    ref_kind: stringField(entry, 'ref_kind'),
+    body_owner: stringField(entry, 'body_owner'),
+    contains_target_artifact_body: booleanField(entry, 'contains_target_artifact_body'),
+  }));
+}
+
+function stringField(contract: JsonObject, field: string): string {
+  const value = contract[field];
+  if (typeof value !== 'string' || !value.trim()) {
+    throw new Error(`Stage Native Artifact vocabulary ${field} must be a non-empty string.`);
+  }
+  return value.trim();
+}
+
+function readStageNativeArtifactVocabulary(): StageNativeArtifactVocabulary {
+  const vocabulary = JSON.parse(
+    fs.readFileSync(new URL('../../contracts/stage_native_artifact_vocabulary.json', import.meta.url), 'utf8'),
+  ) as JsonObject;
+  if (vocabulary.surface_kind !== 'stage_native_artifact_vocabulary') {
+    throw new Error('Stage Native Artifact vocabulary contract has an unexpected surface_kind.');
+  }
+  if (vocabulary.state !== 'active_contract') {
+    throw new Error('Stage Native Artifact vocabulary contract must be active_contract.');
+  }
+  const consumers = Array.isArray(vocabulary.active_policy_consumer_refs)
+    ? vocabulary.active_policy_consumer_refs
+    : [];
+  if (!consumers.includes(STAGE_NATIVE_ARTIFACT_VOCABULARY_CONSUMER_REF)) {
+    throw new Error('Stage Native Artifact vocabulary contract must name the stage-native artifact helper as an active consumer.');
+  }
+  const authorityBoundary = objectField(vocabulary, 'authority_boundary');
+  Object.entries(authorityBoundary).forEach(([field, value]) => {
+    if (field === 'oma_role') {
+      if (typeof value !== 'string' || !value.trim()) {
+        throw new Error('Stage Native Artifact vocabulary authority_boundary.oma_role must be a non-empty string.');
+      }
+      return;
+    }
+    if (typeof value !== 'boolean') {
+      throw new Error(`Stage Native Artifact vocabulary authority_boundary.${field} must be a boolean.`);
+    }
+    if (field.startsWith('oma_can_') && value !== false) {
+      throw new Error(`Stage Native Artifact vocabulary authority_boundary.${field} must be false.`);
+    }
+  });
   return {
-    opl_framework_owns_stage_folder_lifecycle: true,
-    oma_role: 'contract_compiler_and_refs_materializer',
-    oma_can_own_agent_lab_runner: false,
-    oma_can_own_queue: false,
-    oma_can_own_attempt_ledger: false,
-    oma_can_own_worktree_lifecycle: false,
-    oma_can_own_promotion_gate: false,
-    oma_can_own_app_shell: false,
-    oma_can_write_target_owner_closeout: false,
-    oma_can_create_stage_folder_runtime_state: false,
-    oma_can_write_stage_folder_runtime_state: false,
-    oma_can_generate_target_domain_owner_receipt: false,
-    oma_can_write_target_owner_receipt_body: false,
-    oma_can_write_target_domain_truth: false,
-    oma_can_write_target_domain_memory_body: false,
-    oma_can_mutate_target_domain_artifact_body: false,
-    oma_can_authorize_target_quality_or_export: false,
-    oma_can_owner_promote_target_agent: false,
-    oma_can_promote_default_agent_without_gate: false,
-    oma_can_manage_target_worktree_lifecycle: false,
+    ...vocabulary,
+    authority_boundary: authorityBoundary,
+    stage_folder_required_files: stringList(vocabulary, 'stage_folder_required_files'),
+    stage_json_required_fields: stringList(vocabulary, 'stage_json_required_fields'),
+    attempt_json_required_fields: stringList(vocabulary, 'attempt_json_required_fields'),
+    manifest_required_fields: stringList(vocabulary, 'manifest_required_fields'),
+    lineage_required_fields: stringList(vocabulary, 'lineage_required_fields'),
+    physical_kernel_required_attempt_entries: stringList(vocabulary, 'physical_kernel_required_attempt_entries'),
+    conformance_strict_units: stringList(vocabulary, 'conformance_strict_units'),
+    conformance_fails_on: stringList(vocabulary, 'conformance_fails_on'),
+    workbench_consumption_projects: stringList(vocabulary, 'workbench_consumption_projects'),
+    output_roles: outputRoleTemplates(vocabulary),
   };
+}
+
+function stageNativeAuthorityBoundary(): JsonObject {
+  return { ...STAGE_NATIVE_ARTIFACT_VOCABULARY.authority_boundary };
 }
 
 function stageNativeArtifactRefs({
@@ -98,21 +198,12 @@ function buildStageFolderContract({
     physical_kernel_locator_ref: refs.physical_kernel_locator_ref,
     conformance_ref: refs.conformance_ref,
     workbench_consumption_ref: refs.workbench_consumption_ref,
-    required_files: [
-      'stage.json',
-      'attempt.json',
-      'stage.manifest.json',
-      'receipt.json',
-      'current.json',
-      'canonical.json',
-      'export.json',
-      'lineage.json',
-      'retention.json',
-      'physical_kernel_locator.json',
-      'conformance.json',
-      'workbench_consumption.json',
-    ],
+    required_files: [...STAGE_NATIVE_ARTIFACT_VOCABULARY.stage_folder_required_files],
   };
+}
+
+function bodyOwnerFromTemplate(bodyOwner: string, domainTruthOwner: string): string {
+  return bodyOwner === 'domain_truth_owner' ? domainTruthOwner : bodyOwner;
 }
 
 export function buildStageNativeArtifactContract({
@@ -139,23 +230,7 @@ export function buildStageNativeArtifactContract({
       stage_json_file_name: 'stage.json',
       body_owner: 'one-person-lab',
       materialized_by: materializedBy,
-      required_fields: [
-        'stage_id',
-        'target_domain_id',
-        'stage_folder_contract_ref',
-        'artifact_native_contract_ref',
-        'attempt_json_ref_template',
-        'manifest_ref_template',
-        'receipt_ref_template',
-        'current_pointer_ref',
-        'canonical_artifact_ref',
-        'export_ref_template',
-        'lineage_ref_template',
-        'retention_ref_template',
-        'physical_kernel_locator_ref',
-        'conformance_ref',
-        'workbench_consumption_ref',
-      ],
+      required_fields: [...STAGE_NATIVE_ARTIFACT_VOCABULARY.stage_json_required_fields],
       body_policy: 'refs_only_stage_descriptor_no_target_artifact_body',
     },
     attempt_json_contract: {
@@ -165,43 +240,12 @@ export function buildStageNativeArtifactContract({
       materialized_by: materializedBy,
       runtime_state_owner: 'one-person-lab',
       oma_materializes_ref_template_only: true,
-      required_fields: [
-        'stage_id',
-        'stage_attempt_id',
-        'attempt_json_ref',
-        'manifest_ref',
-        'receipt_ref',
-        'blocker_ref',
-        'lineage_ref',
-        'retention_ref',
-      ],
+      required_fields: [...STAGE_NATIVE_ARTIFACT_VOCABULARY.attempt_json_required_fields],
     },
     manifest_contract: {
       manifest_ref_template: `stage-manifest-ref:${domainId}/${stageId}/{stage_attempt_id}`,
       manifest_file_name: 'stage.manifest.json',
-      required_fields: [
-        'stage_json_ref',
-        'attempt_json_ref',
-        'stage_id',
-        'stage_attempt_id',
-        'physical_output_path',
-        'role',
-        'content_hash',
-        'producer',
-        'input_refs',
-        'lineage_refs',
-        'receipt_refs',
-        'current_pointer_ref',
-        'canonical_artifact_ref',
-        'export_ref',
-        'lineage_ref',
-        'retention_ref',
-        'physical_kernel_locator_ref',
-        'conformance_ref',
-        'workbench_consumption_ref',
-        'export_eligibility',
-        'repair_classification',
-      ],
+      required_fields: [...STAGE_NATIVE_ARTIFACT_VOCABULARY.manifest_required_fields],
       missing_or_hash_mismatch_projection: 'broken_artifact',
       missing_owner_receipt_projection: 'orphan_artifact',
     },
@@ -246,15 +290,7 @@ export function buildStageNativeArtifactContract({
       lineage_ref_template: refs.lineage_ref,
       lineage_file_name: 'lineage.json',
       lineage_owner: 'one-person-lab',
-      required_fields: [
-        'stage_id',
-        'stage_attempt_id',
-        'input_refs',
-        'source_refs',
-        'producer_refs',
-        'parent_attempt_refs',
-        'repair_refs',
-      ],
+      required_fields: [...STAGE_NATIVE_ARTIFACT_VOCABULARY.lineage_required_fields],
     },
     retention_contract: {
       retention_ref_template: refs.retention_ref,
@@ -271,14 +307,7 @@ export function buildStageNativeArtifactContract({
       attempt_root_pattern:
         'runtime-state/domains/<domain>/deliverables/<program>/<topic>/<deliverable>/stages/<nn-stage>/attempts/<attempt_id>',
       folder_path_template: `stages/${stageId}/attempts/{stage_attempt_id}`,
-      required_attempt_entries: [
-        'attempt.json',
-        'manifest.json',
-        'inputs/',
-        'outputs/',
-        'evidence/',
-        'receipts/',
-      ],
+      required_attempt_entries: [...STAGE_NATIVE_ARTIFACT_VOCABULARY.physical_kernel_required_attempt_entries],
       current_pointer_role: 'refs_only_current_or_canonical_artifact_pointer',
       derived_index_role: 'rebuildable_projection_not_primary_truth',
       status_source_of_truth: 'physical_stage_folder',
@@ -291,27 +320,8 @@ export function buildStageNativeArtifactContract({
       conformance_file_name: 'conformance.json',
       source_contract_ref: 'contracts/opl-framework/stage-artifact-runtime-contract.json',
       conformance_owner: 'one-person-lab',
-      strict_units: [
-        'Stage Folder',
-        'Manifest',
-        'Receipt',
-        'content_hashes',
-        'latest_pointer',
-        'current_pointer',
-        'lineage_events',
-      ],
-      fails_on: [
-        'missing_deliverable_json',
-        'missing_stage_json',
-        'missing_required_attempt_entry',
-        'missing_latest_pointer',
-        'latest_pointer_missing_attempt',
-        'missing_current_pointer',
-        'missing_manifest_hash_entry',
-        'manifest_content_hash_mismatch',
-        'attempt_broken',
-        'attempt_orphan',
-      ],
+      strict_units: [...STAGE_NATIVE_ARTIFACT_VOCABULARY.conformance_strict_units],
+      fails_on: [...STAGE_NATIVE_ARTIFACT_VOCABULARY.conformance_fails_on],
       domain_readiness_claim: false,
       oma_materializes_ref_template_only: true,
       oma_can_claim_conformance_pass: false,
@@ -322,99 +332,16 @@ export function buildStageNativeArtifactContract({
       workbench_consumption_file_name: 'workbench_consumption.json',
       source_contract_ref: 'contracts/opl-framework/stage-artifact-runtime-contract.json',
       workbench_owner: 'one-person-lab-app via OPL/App contracts',
-      projects: [
-        'current_pointer',
-        'stage_status',
-        'attempt_manifest_refs',
-        'owner_receipt_refs',
-        'typed_blocker_refs',
-        'decision_receipt_refs',
-        'content_hashes',
-        'canonical_artifacts',
-        'export_artifacts',
-        'lineage_refs',
-        'retention_policy',
-        'conformance_summary',
-      ],
+      projects: [...STAGE_NATIVE_ARTIFACT_VOCABULARY.workbench_consumption_projects],
       artifact_body_access: false,
       domain_verdict_authority: false,
       oma_materializes_ref_template_only: true,
       oma_can_write_workbench_state: false,
     },
-    output_roles: [
-      {
-        role_id: 'stage_json',
-        ref_kind: 'stage_json_ref',
-        body_owner: 'one-person-lab',
-        contains_target_artifact_body: false,
-      },
-      {
-        role_id: 'attempt_json',
-        ref_kind: 'stage_attempt_json_ref',
-        body_owner: 'one-person-lab',
-        contains_target_artifact_body: false,
-      },
-      {
-        role_id: 'stage_manifest',
-        ref_kind: 'stage_manifest_ref',
-        body_owner: 'one-person-lab',
-        contains_target_artifact_body: false,
-      },
-      {
-        role_id: 'stage_attempt_receipt',
-        ref_kind: 'stage_attempt_receipt_ref',
-        body_owner: 'one-person-lab',
-        contains_target_artifact_body: false,
-      },
-      {
-        role_id: 'typed_blocker',
-        ref_kind: 'stage_typed_blocker_ref',
-        body_owner: domainTruthOwner,
-        contains_target_artifact_body: false,
-      },
-      {
-        role_id: 'canonical_artifact_ref',
-        ref_kind: 'canonical_artifact_ref',
-        body_owner: domainTruthOwner,
-        contains_target_artifact_body: false,
-      },
-      {
-        role_id: 'export_ref',
-        ref_kind: 'stage_export_ref',
-        body_owner: domainTruthOwner,
-        contains_target_artifact_body: false,
-      },
-      {
-        role_id: 'lineage_ref',
-        ref_kind: 'stage_lineage_ref',
-        body_owner: 'one-person-lab',
-        contains_target_artifact_body: false,
-      },
-      {
-        role_id: 'retention_ref',
-        ref_kind: 'stage_retention_ref',
-        body_owner: 'one-person-lab',
-        contains_target_artifact_body: false,
-      },
-      {
-        role_id: 'physical_kernel_locator_ref',
-        ref_kind: 'opl_physical_kernel_locator_ref',
-        body_owner: 'one-person-lab',
-        contains_target_artifact_body: false,
-      },
-      {
-        role_id: 'conformance_ref',
-        ref_kind: 'stage_artifact_conformance_ref',
-        body_owner: 'one-person-lab',
-        contains_target_artifact_body: false,
-      },
-      {
-        role_id: 'workbench_consumption_ref',
-        ref_kind: 'stage_artifact_workbench_consumption_ref',
-        body_owner: 'one-person-lab-app via OPL/App contracts',
-        contains_target_artifact_body: false,
-      },
-    ],
+    output_roles: STAGE_NATIVE_ARTIFACT_VOCABULARY.output_roles.map((role) => ({
+      ...role,
+      body_owner: bodyOwnerFromTemplate(role.body_owner, domainTruthOwner),
+    })),
     authority_boundary: stageNativeAuthorityBoundary(),
   };
 }

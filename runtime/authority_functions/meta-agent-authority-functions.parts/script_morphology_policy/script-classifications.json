@@ -414,6 +414,9 @@
       "opl_stage_native_artifact_contract",
       "opl_stage_folder_contract"
     ],
+    "contract_refs": [
+      "contracts/stage_native_artifact_vocabulary.json"
+    ],
     "writes_only": [
       "artifact_native_contract_ref",
       "stage_folder_contract_ref",
