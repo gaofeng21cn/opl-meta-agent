@@ -51,6 +51,357 @@
     "scripts/verify.sh",
     "scripts/takeover-agent.ts"
   ],
+  "active_script_caller_scan": {
+    "status": "passed",
+    "active_caller_required": true,
+    "orphan_script_count": 0,
+    "scan_inputs": [
+      "package.json#scripts",
+      "scripts/**/*.ts import graph",
+      "tests/**/*.ts import graph excluding tests/source-purity.test.ts self-guard strings",
+      "scripts/**/*.sh shell invocations",
+      "tests/**/*.ts direct script refs excluding tests/source-purity.test.ts"
+    ],
+    "caller_refs_by_script": [
+      {
+        "script_ref": "scripts/agent-evidence-takeover.ts",
+        "active_caller_refs": [
+          "package.json#scripts.agent:evidence",
+          "tests/agent-evidence-takeover.test.ts#test_ref",
+          "tests/contracts-generated-surfaces.test.ts#test_ref"
+        ]
+      },
+      {
+        "script_ref": "scripts/build-agent-baseline.ts",
+        "active_caller_refs": [
+          "package.json#scripts.build-agent-baseline",
+          "tests/bootstrap-loop.test.ts#import",
+          "tests/bootstrap-loop.test.ts#test_ref",
+          "tests/stage-decomposition-materializer.test.ts#test_ref",
+          "tests/takeover-loop.test.ts#import",
+          "tests/takeover-loop.test.ts#test_ref"
+        ]
+      },
+      {
+        "script_ref": "scripts/check-source-structure.ts",
+        "active_caller_refs": [
+          "package.json#scripts.line-budget",
+          "package.json#scripts.line-budget:strict",
+          "package.json#scripts.source-structure",
+          "package.json#scripts.source-structure:strict",
+          "scripts/verify.sh#shell",
+          "tests/source-structure-lane.test.ts#test_ref"
+        ]
+      },
+      {
+        "script_ref": "scripts/execute-external-work-order.ts",
+        "active_caller_refs": [
+          "package.json#scripts.execute:external-work-order",
+          "tests/contracts-action-authority.test.ts#test_ref",
+          "tests/execute-external-work-order.test.ts#test_ref"
+        ]
+      },
+      {
+        "script_ref": "scripts/improve-from-agent-lab-suite.ts",
+        "active_caller_refs": [
+          "package.json#scripts.improve:external-suite",
+          "tests/contracts-generated-surfaces.test.ts#test_ref",
+          "tests/external-suite-efficiency-handoff.test.ts#test_ref",
+          "tests/external-suite-reviewer-gates.test.ts#test_ref",
+          "tests/support/external-suite-fixtures.ts#import",
+          "tests/support/external-suite-fixtures.ts#test_ref"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/agent-evidence-contracts.ts",
+        "active_caller_refs": [
+          "scripts/agent-evidence-takeover.ts#import"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/agent-evidence-materializer.ts",
+        "active_caller_refs": [
+          "scripts/agent-evidence-takeover.ts#import",
+          "scripts/lib/agent-evidence-contracts.ts#import"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/domain-pack.ts",
+        "active_caller_refs": [
+          "scripts/agent-evidence-takeover.ts#import",
+          "scripts/build-agent-baseline.ts#import",
+          "scripts/execute-external-work-order.ts#import",
+          "scripts/improve-from-agent-lab-suite.ts#import",
+          "scripts/lib/agent-evidence-contracts.ts#import",
+          "scripts/lib/agent-evidence-materializer.ts#import",
+          "scripts/lib/external-suite-materializer.ts#import",
+          "scripts/lib/meta-agent-loop-ai-reviewer.ts#import",
+          "scripts/lib/meta-agent-loop-io.ts#import",
+          "scripts/lib/meta-agent-loop-receipts.ts#import",
+          "scripts/lib/stage-decomposition-pack-draft-parts/artifact-morphology-validator.ts#import",
+          "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts#import",
+          "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts#import",
+          "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts#import",
+          "scripts/lib/stage-decomposition-pack-draft-parts/stage-native-contract-validator.ts#import",
+          "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts#import",
+          "scripts/lib/stage-decomposition-runner.ts#import",
+          "scripts/lib/stage-native-artifact-contract.ts#import",
+          "scripts/lib/target-improvement-policy.ts#import",
+          "scripts/lib/work-order-builders.ts#import",
+          "scripts/lib/work-order-efficiency.ts#import",
+          "scripts/lib/work-order-refs.ts#import",
+          "scripts/lib/work-order-validation.ts#import",
+          "scripts/takeover-agent.ts#import",
+          "tests/agent-evidence-takeover.test.ts#import",
+          "tests/agent-evidence-takeover.test.ts#test_ref",
+          "tests/bootstrap-loop.test.ts#import",
+          "tests/bootstrap-loop.test.ts#test_ref",
+          "tests/execute-external-work-order.test.ts#import",
+          "tests/execute-external-work-order.test.ts#test_ref",
+          "tests/external-suite-efficiency-handoff.test.ts#import",
+          "tests/external-suite-efficiency-handoff.test.ts#test_ref",
+          "tests/stage-decomposition-materializer.test.ts#import",
+          "tests/stage-decomposition-materializer.test.ts#test_ref",
+          "tests/support/contracts.ts#import",
+          "tests/support/contracts.ts#test_ref",
+          "tests/support/external-suite-fixtures.ts#import",
+          "tests/support/external-suite-fixtures.ts#test_ref",
+          "tests/takeover-loop.test.ts#import",
+          "tests/takeover-loop.test.ts#test_ref"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/external-suite-materializer.ts",
+        "active_caller_refs": [
+          "scripts/improve-from-agent-lab-suite.ts#import"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/meta-agent-loop-ai-reviewer.ts",
+        "active_caller_refs": [
+          "scripts/agent-evidence-takeover.ts#import",
+          "scripts/build-agent-baseline.ts#import",
+          "scripts/improve-from-agent-lab-suite.ts#import",
+          "scripts/lib/agent-evidence-materializer.ts#import",
+          "scripts/lib/meta-agent-loop-receipts.ts#import",
+          "scripts/lib/target-improvement-policy.ts#import",
+          "tests/target-improvement-policy.test.ts#import",
+          "tests/target-improvement-policy.test.ts#test_ref"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/meta-agent-loop-io.ts",
+        "active_caller_refs": [
+          "scripts/agent-evidence-takeover.ts#import",
+          "scripts/build-agent-baseline.ts#import",
+          "scripts/execute-external-work-order.ts#import",
+          "scripts/improve-from-agent-lab-suite.ts#import",
+          "scripts/lib/agent-evidence-contracts.ts#import",
+          "scripts/lib/agent-evidence-materializer.ts#import",
+          "scripts/lib/external-suite-materializer.ts#import",
+          "scripts/lib/meta-agent-loop-ai-reviewer.ts#import",
+          "scripts/lib/meta-agent-loop-receipts.ts#import",
+          "scripts/lib/stage-decomposition-pack-draft-parts/artifact-morphology-validator.ts#import",
+          "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts#import",
+          "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts#import",
+          "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts#import",
+          "scripts/lib/stage-decomposition-pack-draft-parts/stage-native-contract-validator.ts#import",
+          "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts#import",
+          "scripts/lib/stage-decomposition-runner.ts#import",
+          "scripts/lib/target-improvement-policy.ts#import",
+          "scripts/takeover-agent.ts#import"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/meta-agent-loop-receipts.ts",
+        "active_caller_refs": [
+          "scripts/build-agent-baseline.ts#import",
+          "scripts/improve-from-agent-lab-suite.ts#import",
+          "scripts/lib/external-suite-materializer.ts#import",
+          "scripts/takeover-agent.ts#import"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/artifact-morphology-validator.ts",
+        "active_caller_refs": [
+          "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts#import"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts",
+        "active_caller_refs": [
+          "tests/bootstrap-loop.test.ts#import",
+          "tests/bootstrap-loop.test.ts#test_ref",
+          "tests/stage-decomposition-materializer.test.ts#import",
+          "tests/stage-decomposition-materializer.test.ts#test_ref",
+          "tests/takeover-loop.test.ts#import",
+          "tests/takeover-loop.test.ts#test_ref"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts",
+        "active_caller_refs": [
+          "scripts/build-agent-baseline.ts#import",
+          "tests/stage-decomposition-materializer.test.ts#import",
+          "tests/stage-decomposition-materializer.test.ts#test_ref"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts",
+        "active_caller_refs": [
+          "scripts/build-agent-baseline.ts#import",
+          "scripts/lib/stage-decomposition-pack-draft-parts/artifact-morphology-validator.ts#import",
+          "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts#import",
+          "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts#import",
+          "scripts/lib/stage-decomposition-pack-draft-parts/stage-native-contract-validator.ts#import",
+          "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts#import",
+          "scripts/lib/stage-decomposition-runner.ts#import"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/stage-native-contract-validator.ts",
+        "active_caller_refs": [
+          "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts#import"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts",
+        "active_caller_refs": [
+          "scripts/build-agent-baseline.ts#import",
+          "tests/stage-decomposition-materializer.test.ts#import",
+          "tests/stage-decomposition-materializer.test.ts#test_ref"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/stage-decomposition-runner.ts",
+        "active_caller_refs": [
+          "scripts/build-agent-baseline.ts#import"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/stage-native-artifact-contract.ts",
+        "active_caller_refs": [
+          "scripts/agent-evidence-takeover.ts#import",
+          "scripts/lib/agent-evidence-materializer.ts#import",
+          "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts#import",
+          "scripts/lib/stage-decomposition-runner.ts#import",
+          "scripts/takeover-agent.ts#import"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/target-improvement-policy.ts",
+        "active_caller_refs": [
+          "scripts/improve-from-agent-lab-suite.ts#import",
+          "scripts/lib/external-suite-materializer.ts#import",
+          "tests/target-improvement-policy.test.ts#import",
+          "tests/target-improvement-policy.test.ts#test_ref"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/work-order-builders.ts",
+        "active_caller_refs": [
+          "scripts/improve-from-agent-lab-suite.ts#import",
+          "scripts/lib/agent-evidence-materializer.ts#import",
+          "scripts/lib/external-suite-materializer.ts#import"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/work-order-efficiency.ts",
+        "active_caller_refs": [
+          "scripts/agent-evidence-takeover.ts#import",
+          "scripts/improve-from-agent-lab-suite.ts#import",
+          "scripts/lib/agent-evidence-materializer.ts#import",
+          "scripts/lib/external-suite-materializer.ts#import",
+          "scripts/lib/work-order-builders.ts#import"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/work-order-refs.ts",
+        "active_caller_refs": [
+          "scripts/agent-evidence-takeover.ts#import",
+          "scripts/lib/agent-evidence-materializer.ts#import",
+          "scripts/lib/external-suite-materializer.ts#import",
+          "scripts/lib/target-improvement-policy.ts#import",
+          "scripts/lib/work-order-builders.ts#import",
+          "scripts/lib/work-order-efficiency.ts#import"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/work-order-validation.ts",
+        "active_caller_refs": [
+          "scripts/agent-evidence-takeover.ts#import",
+          "scripts/execute-external-work-order.ts#import",
+          "scripts/improve-from-agent-lab-suite.ts#import"
+        ]
+      },
+      {
+        "script_ref": "scripts/repo-hygiene.sh",
+        "active_caller_refs": [
+          "package.json#scripts.repo:hygiene",
+          "package.json#scripts.repo:hygiene:fix",
+          "scripts/verify.sh#shell",
+          "tests/contracts-repo-hygiene.test.ts#test_ref"
+        ]
+      },
+      {
+        "script_ref": "scripts/run-with-repo-temp-env.sh",
+        "active_caller_refs": [
+          "package.json#scripts.authority-functions:check",
+          "package.json#scripts.authority-functions:split",
+          "package.json#scripts.authority-functions:write",
+          "package.json#scripts.line-budget",
+          "package.json#scripts.line-budget:strict",
+          "package.json#scripts.source-structure",
+          "package.json#scripts.source-structure:strict",
+          "package.json#scripts.stage-control:check",
+          "package.json#scripts.stage-control:split",
+          "package.json#scripts.stage-control:write",
+          "package.json#scripts.test:behavior",
+          "package.json#scripts.test:full",
+          "package.json#scripts.test:smoke",
+          "package.json#scripts.typecheck",
+          "tests/contracts-repo-hygiene.test.ts#test_ref",
+          "tests/source-structure-lane.test.ts#test_ref"
+        ]
+      },
+      {
+        "script_ref": "scripts/sync-authority-functions.ts",
+        "active_caller_refs": [
+          "package.json#scripts.authority-functions:check",
+          "package.json#scripts.authority-functions:split",
+          "package.json#scripts.authority-functions:write",
+          "scripts/verify.sh#shell"
+        ]
+      },
+      {
+        "script_ref": "scripts/sync-stage-control-plane.ts",
+        "active_caller_refs": [
+          "package.json#scripts.stage-control:check",
+          "package.json#scripts.stage-control:split",
+          "package.json#scripts.stage-control:write",
+          "scripts/verify.sh#shell",
+          "tests/source-structure-lane.test.ts#test_ref"
+        ]
+      },
+      {
+        "script_ref": "scripts/takeover-agent.ts",
+        "active_caller_refs": [
+          "package.json#scripts.takeover:test",
+          "tests/takeover-loop.test.ts#import",
+          "tests/takeover-loop.test.ts#test_ref"
+        ]
+      },
+      {
+        "script_ref": "scripts/verify.sh",
+        "active_caller_refs": [
+          "package.json#scripts.verify",
+          "tests/agent-evidence-takeover.test.ts#test_ref",
+          "tests/contracts-repo-hygiene.test.ts#test_ref",
+          "tests/source-structure-lane.test.ts#test_ref"
+        ]
+      }
+    ]
+  },
   "absent_repo_owned_surface_paths": [
     ".agents",
     ".codex",

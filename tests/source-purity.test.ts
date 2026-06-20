@@ -71,6 +71,96 @@ function listScriptRefs(): string[] {
   return [...tsScripts, ...shellScripts].sort();
 }
 
+function resolveScriptImport(fromFile: string, specifier: string, scriptRefs: string[]): string | null {
+  if (!specifier.startsWith('.')) return null;
+  const base = path.normalize(path.join(path.dirname(fromFile), specifier));
+  const candidates = [
+    base,
+    `${base}.ts`,
+    `${base}.js`,
+    path.join(base, 'index.ts'),
+  ];
+  return candidates.find((candidate) => scriptRefs.includes(candidate)) ?? null;
+}
+
+function scriptImportTargets(sourceRef: string, scriptRefs: string[]): string[] {
+  const source = readText(sourceRef);
+  const importPattern = /(?:from|import\s*\()\s*['"]([^'"]+)['"]/g;
+  const targets = new Set<string>();
+  let match: RegExpExecArray | null;
+  while ((match = importPattern.exec(source)) !== null) {
+    const target = resolveScriptImport(sourceRef, match[1], scriptRefs);
+    if (target) targets.add(target);
+  }
+  return [...targets].sort();
+}
+
+function collectActiveScriptCallerScan(scriptRefs: string[]): JsonObject {
+  const callersByScript = new Map<string, Set<string>>(
+    scriptRefs.map((scriptRef) => [scriptRef, new Set<string>()]),
+  );
+  const packageJson = readJson('package.json');
+
+  Object.entries(packageJson.scripts ?? {}).forEach(([scriptName, command]) => {
+    scriptRefs.forEach((scriptRef) => {
+      if (String(command).includes(scriptRef)) {
+        callersByScript.get(scriptRef)?.add(`package.json#scripts.${scriptName}`);
+      }
+    });
+  });
+
+  const tsCallerRefs = [
+    ...listFilesByExtension('scripts', '.ts'),
+    ...listFilesByExtension('tests', '.ts'),
+  ].sort();
+  tsCallerRefs.forEach((sourceRef) => {
+    scriptImportTargets(sourceRef, scriptRefs).forEach((scriptRef) => {
+      callersByScript.get(scriptRef)?.add(`${sourceRef}#import`);
+    });
+  });
+
+  listFilesByExtension('scripts', '.sh').forEach((sourceRef) => {
+    const source = readText(sourceRef);
+    scriptRefs.forEach((scriptRef) => {
+      if (scriptRef !== sourceRef && source.includes(scriptRef)) {
+        callersByScript.get(scriptRef)?.add(`${sourceRef}#shell`);
+      }
+    });
+  });
+
+  listFilesByExtension('tests', '.ts')
+    .filter((sourceRef) => sourceRef !== 'tests/source-purity.test.ts')
+    .forEach((sourceRef) => {
+      const source = readText(sourceRef);
+      scriptRefs.forEach((scriptRef) => {
+        if (source.includes(scriptRef)) {
+          callersByScript.get(scriptRef)?.add(`${sourceRef}#test_ref`);
+        }
+      });
+    });
+
+  const callerRefsByScript = scriptRefs.map((scriptRef) => ({
+    script_ref: scriptRef,
+    active_caller_refs: [...(callersByScript.get(scriptRef) ?? new Set<string>())].sort(),
+  }));
+
+  return {
+    status: 'passed',
+    active_caller_required: true,
+    orphan_script_count: callerRefsByScript
+      .filter((entry) => entry.active_caller_refs.length === 0)
+      .length,
+    scan_inputs: [
+      'package.json#scripts',
+      'scripts/**/*.ts import graph',
+      'tests/**/*.ts import graph excluding tests/source-purity.test.ts self-guard strings',
+      'scripts/**/*.sh shell invocations',
+      'tests/**/*.ts direct script refs excluding tests/source-purity.test.ts',
+    ],
+    caller_refs_by_script: callerRefsByScript,
+  };
+}
+
 function assertRepoRefExists(relativePath: string): void {
   assert.equal(fs.existsSync(path.join(repoRoot, relativePath)), true, `${relativePath} should exist`);
 }
@@ -583,6 +673,36 @@ test('script morphology stays limited to authority refs, materializers, helpers,
     .sort();
   assert.deepEqual(classifiedScripts, scripts);
   assert.deepEqual(asStrings(receipt.scanned_script_refs).sort(), scripts);
+  const activeCallerScan = assertPolicyObject(receipt, 'active_script_caller_scan');
+  const expectedActiveCallerScan = collectActiveScriptCallerScan(scripts);
+  assert.deepEqual(activeCallerScan, expectedActiveCallerScan);
+  assert.equal(activeCallerScan.status, 'passed');
+  assert.equal(activeCallerScan.active_caller_required, true);
+  assert.equal(activeCallerScan.orphan_script_count, 0);
+  assert.deepEqual(asStrings(activeCallerScan.scan_inputs), [
+    'package.json#scripts',
+    'scripts/**/*.ts import graph',
+    'tests/**/*.ts import graph excluding tests/source-purity.test.ts self-guard strings',
+    'scripts/**/*.sh shell invocations',
+    'tests/**/*.ts direct script refs excluding tests/source-purity.test.ts',
+  ]);
+  asObjects(activeCallerScan.caller_refs_by_script).forEach((entry) => {
+    assert.ok(scripts.includes(entry.script_ref), `${entry.script_ref} should be part of the tracked script set`);
+    assert.ok(
+      asStrings(entry.active_caller_refs).length > 0,
+      `${entry.script_ref} should have at least one active caller before it can stay retained`,
+    );
+    asStrings(entry.active_caller_refs).forEach((callerRef) => {
+      assert.equal(
+        callerRef.startsWith('tests/source-purity.test.ts#test_ref'),
+        false,
+        `${entry.script_ref} active caller should not be self-proven by source-purity string guards`,
+      );
+      if (callerRef.startsWith('package.json#scripts.')) return;
+      const [callerPath] = callerRef.split('#');
+      assertRepoRefExists(callerPath);
+    });
+  });
 
   asObjects(morphologyPolicy.script_classifications).forEach((entry) => {
     assertRepoRefExists(entry.script_ref);
