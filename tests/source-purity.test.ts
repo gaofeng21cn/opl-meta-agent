@@ -101,6 +101,29 @@ function collectFalseReadyClaimMatches(claimKeys: string[]): { path: string; cla
   ));
 }
 
+function sourceRefIntegrityViolations(scriptRef: string): string[] {
+  const normalized = scriptRef.replaceAll('\\', '/');
+  const parts = normalized.split('/');
+  const violations: string[] = [];
+  if (scriptRef.trim() === '') violations.push('empty_ref');
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(scriptRef) || scriptRef.includes('://')) {
+    violations.push('uri_or_url');
+  }
+  if (path.isAbsolute(scriptRef) || normalized.startsWith('/')) {
+    violations.push('absolute_path');
+  }
+  if (parts.includes('..')) violations.push('parent_directory_traversal');
+  if (scriptRef.startsWith('human_doc:')) violations.push('human_doc_ref_as_machine_source_ref');
+  if (!normalized.startsWith('scripts/')) violations.push('non_scripts_root');
+  return violations;
+}
+
+function assertRepoLocalScriptRef(scriptRef: string): void {
+  assert.deepEqual(sourceRefIntegrityViolations(scriptRef), [], `${scriptRef} should be a repo-local script ref`);
+  assert.ok(['.ts', '.sh'].includes(path.extname(scriptRef)), `${scriptRef} should be a tracked script extension`);
+  assertRepoRefExists(scriptRef);
+}
+
 test('script morphology stays limited to authority refs, materializers, helpers, and verification wrappers', () => {
   const privatePolicy = readJson('contracts/private_functional_surface_policy.json');
   const authorityFunctions = readJson('runtime/authority_functions/meta-agent-authority-functions.json');
@@ -309,6 +332,79 @@ test('script morphology stays limited to authority refs, materializers, helpers,
     scripts,
     'Every repo-local TypeScript or shell script must have an explicit script-to-pack retirement or retention gate',
   );
+  const sourceRefIntegrityGuard = assertPolicyObject(morphologyPolicy, 'source_ref_integrity_guard');
+  assert.equal(sourceRefIntegrityGuard.guard_id, 'oma.script_morphology.source_ref_integrity_guard.v1');
+  assert.equal(sourceRefIntegrityGuard.state, 'repo_local_script_refs_declared_no_second_truth');
+  assert.equal(
+    sourceRefIntegrityGuard.readback_surface_ref,
+    'contracts/script_to_pack_gate_receipt.json#current_scan_summary',
+  );
+  assert.deepEqual(asStrings(sourceRefIntegrityGuard.allowed_ref_roots), ['scripts/']);
+  assert.deepEqual(asStrings(sourceRefIntegrityGuard.allowed_extensions), ['.ts', '.sh']);
+  assert.deepEqual(asStrings(sourceRefIntegrityGuard.forbidden_ref_shapes), [
+    'absolute_path',
+    'parent_directory_traversal',
+    'uri_or_url',
+    'empty_ref',
+    'human_doc_ref_as_machine_source_ref',
+    'non_scripts_root',
+    'stale_or_missing_script_ref',
+    'self_guard_only_caller_proof',
+  ]);
+  assert.deepEqual(sourceRefIntegrityGuard.validation_policy, {
+    all_refs_must_be_repo_local: true,
+    all_refs_must_exist_in_repo_checkout: true,
+    all_refs_must_be_under_scripts_root: true,
+    script_classifications_must_match_scanned_script_refs: true,
+    retirement_gate_refs_must_match_scanned_script_refs: true,
+    current_scan_summary_must_match_source_purity_receipt: true,
+    human_doc_refs_do_not_count_as_machine_source_refs: true,
+    self_guard_strings_do_not_count_as_script_ref_integrity: true,
+  });
+  assert.deepEqual(asStrings(sourceRefIntegrityGuard.fail_closed_conditions), [
+    'script_ref_missing_in_checkout',
+    'script_ref_outside_scripts_root',
+    'script_ref_uses_uri_or_absolute_path',
+    'script_ref_uses_parent_directory_traversal',
+    'script_ref_uses_human_doc_shape',
+    'script_classification_ref_not_in_scan_scope',
+    'retirement_gate_ref_not_in_scan_scope',
+    'current_scan_summary_ref_drift',
+    'source_purity_self_guard_only_caller',
+  ]);
+  assert.deepEqual(sourceRefIntegrityViolations('../scripts/outside.ts'), [
+    'parent_directory_traversal',
+    'non_scripts_root',
+  ]);
+  assert.deepEqual(sourceRefIntegrityViolations('/tmp/oma-script.ts'), [
+    'absolute_path',
+    'non_scripts_root',
+  ]);
+  assert.deepEqual(sourceRefIntegrityViolations('https://example.test/script.ts'), [
+    'uri_or_url',
+    'non_scripts_root',
+  ]);
+  assert.deepEqual(sourceRefIntegrityViolations('human_doc:docs/status.md'), [
+    'human_doc_ref_as_machine_source_ref',
+    'non_scripts_root',
+  ]);
+  scripts.forEach(assertRepoLocalScriptRef);
+  gatedScriptRefs.forEach(assertRepoLocalScriptRef);
+  const sourceRefBoundary = asBooleanRecord(sourceRefIntegrityGuard.authority_boundary);
+  [
+    'guard_can_create_missing_refs',
+    'guard_can_create_alias_files',
+    'guard_can_authorize_physical_delete',
+    'guard_can_claim_opl_primitive_parity',
+    'guard_can_claim_default_promotion_or_cutover',
+    'guard_can_claim_app_or_registry_readiness',
+    'guard_can_claim_generated_hosted_readiness',
+    'guard_can_claim_target_agent_ready',
+    'guard_can_claim_domain_ready',
+    'guard_can_claim_production_ready',
+  ].forEach((flag) => {
+    assert.equal(sourceRefBoundary[flag], false, `source-ref integrity boundary ${flag} must be false`);
+  });
   retirementGates.forEach((gate) => {
     const trackedScriptRefs = asStrings(gate.tracked_script_refs);
     assert.ok(trackedScriptRefs.length > 0, `${gate.gate_id} should track at least one script`);
@@ -1014,6 +1110,8 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
   const gateSummary = gateReceipt.current_scan_summary as JsonObject;
   const boundary = asBooleanRecord(gateReceipt.authority_boundary);
   const reciprocalConsumptionPolicy = gateReceipt.reciprocal_consumption_policy as JsonObject;
+  const sourceRefIntegrityGuard = assertPolicyObject(morphologyPolicy, 'source_ref_integrity_guard');
+  const sourceRefBoundary = asBooleanRecord(sourceRefIntegrityGuard.authority_boundary);
   const readbackGuard = assertPolicyObject(morphologyPolicy, 'retirement_readback_cleanup_guard');
   const readbackGuardBoundary = asBooleanRecord(readbackGuard.authority_boundary);
   const readbackGuardClaims = asBooleanRecord(readbackGuard.claims);
@@ -1050,6 +1148,10 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
     morphologyPolicy.active_caller_scan_policy,
   );
   assert.deepEqual(
+    gateReceipt.machine_gate_inputs.source_ref_integrity_guard,
+    sourceRefIntegrityGuard,
+  );
+  assert.deepEqual(
     gateReceipt.machine_gate_inputs.false_ready_claim_guard,
     morphologyPolicy.false_ready_claim_guard,
   );
@@ -1059,6 +1161,35 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
   );
   assert.deepEqual(gateReceipt.machine_gate_inputs.allowed_classes, morphologyPolicy.allowed_classes);
   assert.deepEqual(gateReceipt.machine_gate_inputs.forbidden_roles, morphologyPolicy.forbidden_roles);
+  assert.equal(sourceRefIntegrityGuard.guard_id, 'oma.script_morphology.source_ref_integrity_guard.v1');
+  assert.equal(sourceRefIntegrityGuard.state, 'repo_local_script_refs_declared_no_second_truth');
+  assert.equal(
+    sourceRefIntegrityGuard.readback_surface_ref,
+    'contracts/script_to_pack_gate_receipt.json#current_scan_summary',
+  );
+  assert.deepEqual(asStrings(sourceRefIntegrityGuard.guarded_ref_collections), [
+    'script_morphology_policy.script_classifications[*].script_ref',
+    'script_morphology_policy.script_to_pack_retirement_gates[*].tracked_script_refs',
+    'source_purity_scan_receipt.scanned_script_refs',
+    'source_purity_scan_receipt.active_script_caller_scan.caller_refs_by_script[*].script_ref',
+    'contracts/script_to_pack_gate_receipt.json#current_scan_summary.scanned_script_refs',
+    'contracts/script_to_pack_gate_receipt.json#current_scan_summary.gated_script_refs',
+  ]);
+  assert.equal(sourceRefIntegrityGuard.required_ref_shape, 'repo_local_relative_path_under_scripts');
+  [
+    'guard_can_create_missing_refs',
+    'guard_can_create_alias_files',
+    'guard_can_authorize_physical_delete',
+    'guard_can_claim_opl_primitive_parity',
+    'guard_can_claim_default_promotion_or_cutover',
+    'guard_can_claim_app_or_registry_readiness',
+    'guard_can_claim_generated_hosted_readiness',
+    'guard_can_claim_target_agent_ready',
+    'guard_can_claim_domain_ready',
+    'guard_can_claim_production_ready',
+  ].forEach((flag) => {
+    assert.equal(sourceRefBoundary[flag], false, `${flag} must be false`);
+  });
   assert.equal(readbackGuard.guard_id, 'oma.script_morphology.retirement_readback_cleanup_guard.v1');
   assert.equal(readbackGuard.state, 'readback_guard_available_physical_delete_not_authorized');
   assert.equal(
@@ -1126,6 +1257,10 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
   assert.equal(gateSummary.source_purity_scan_status, sourceReceipt.status);
   assert.equal(gateSummary.active_script_caller_scan_status, activeCallerScan.status);
   assert.equal(gateSummary.active_caller_scan_policy_id, ACTIVE_CALLER_SCAN_POLICY_ID);
+  assert.equal(gateSummary.source_ref_integrity_guard_id, sourceRefIntegrityGuard.guard_id);
+  assert.equal(gateSummary.source_ref_integrity_status, 'passed');
+  assert.equal(gateSummary.source_ref_integrity_checked_ref_count, scriptRefs.length);
+  assert.equal(gateSummary.source_ref_integrity_invalid_ref_count, 0);
   assert.equal(gateSummary.scanned_script_count, scriptRefs.length);
   assert.equal(gateSummary.gated_script_count, gatedScriptRefs.length);
   assert.equal(gateSummary.orphan_script_count, 0);
@@ -1135,6 +1270,7 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
   assert.deepEqual(asStrings(gateReceipt.closed_current_machine_gate_refs), [
     'runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt.active_script_caller_scan',
     'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.active_caller_scan_policy',
+    'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.source_ref_integrity_guard',
     'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.false_ready_claim_guard',
     'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.retirement_readback_cleanup_guard',
     'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.script_to_pack_retirement_gates',
@@ -1146,6 +1282,8 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
     'OPL primitive parity for script policy',
     'physical script retirement',
     'cleanup readback physical delete authorization',
+    'source-ref integrity physical delete authorization',
+    'source-ref integrity readiness or parity claim',
     'cleanup readback owner receipt signing',
     'cleanup readback typed blocker instance creation',
     'no-active-caller for retained scripts',

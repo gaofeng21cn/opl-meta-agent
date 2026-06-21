@@ -14,6 +14,7 @@
     "script_morphology_policy_ref": "runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy",
     "script_to_pack_retirement_gates_ref": "runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy/script_to_pack_retirement_gates",
     "active_caller_scan_policy_ref": "runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy/active_caller_scan_policy",
+    "source_ref_integrity_guard_ref": "runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy/source_ref_integrity_guard",
     "false_ready_claim_guard_ref": "runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy/false_ready_claim_guard",
     "private_functional_surface_policy_ref": "contracts/private_functional_surface_policy.json",
     "source_purity_test_ref": "tests/source-purity.test.ts",
@@ -25,11 +26,13 @@
     "every_scanned_script_ref_has_retirement_or_retention_gate",
     "active_caller_scan_policy_is_machine_declared",
     "active_caller_proof_source_policy_is_machine_declared",
+    "source_ref_integrity_guard_is_machine_declared",
     "generated_hosted_false_ready_claim_guard_is_machine_declared",
     "retirement_readback_cleanup_guard_is_machine_declared",
     "active_script_caller_scan_passed_with_zero_orphans",
     "source_purity_self_guard_does_not_prove_active_callers",
     "retained_scripts_have_allowed_morphology_classes",
+    "script_refs_are_repo_local_under_scripts_root",
     "OPL_surface_consumption_is_allowlisted_and_false_authority_guarded",
     "retired_policy_projection_helpers_absent_from_scanned_refs",
     "no_repo_owned_generic_wrapper_materializer_detected"
@@ -81,6 +84,70 @@
         "caller_proof_source_not_machine_scanned",
         "script_not_in_retirement_gate"
       ]
+    },
+    "source_ref_integrity_guard": {
+      "guard_id": "oma.script_morphology.source_ref_integrity_guard.v1",
+      "state": "repo_local_script_refs_declared_no_second_truth",
+      "readback_surface_ref": "contracts/script_to_pack_gate_receipt.json#current_scan_summary",
+      "guarded_ref_collections": [
+        "script_morphology_policy.script_classifications[*].script_ref",
+        "script_morphology_policy.script_to_pack_retirement_gates[*].tracked_script_refs",
+        "source_purity_scan_receipt.scanned_script_refs",
+        "source_purity_scan_receipt.active_script_caller_scan.caller_refs_by_script[*].script_ref",
+        "contracts/script_to_pack_gate_receipt.json#current_scan_summary.scanned_script_refs",
+        "contracts/script_to_pack_gate_receipt.json#current_scan_summary.gated_script_refs"
+      ],
+      "required_ref_shape": "repo_local_relative_path_under_scripts",
+      "allowed_ref_roots": [
+        "scripts/"
+      ],
+      "allowed_extensions": [
+        ".ts",
+        ".sh"
+      ],
+      "forbidden_ref_shapes": [
+        "absolute_path",
+        "parent_directory_traversal",
+        "uri_or_url",
+        "empty_ref",
+        "human_doc_ref_as_machine_source_ref",
+        "non_scripts_root",
+        "stale_or_missing_script_ref",
+        "self_guard_only_caller_proof"
+      ],
+      "validation_policy": {
+        "all_refs_must_be_repo_local": true,
+        "all_refs_must_exist_in_repo_checkout": true,
+        "all_refs_must_be_under_scripts_root": true,
+        "script_classifications_must_match_scanned_script_refs": true,
+        "retirement_gate_refs_must_match_scanned_script_refs": true,
+        "current_scan_summary_must_match_source_purity_receipt": true,
+        "human_doc_refs_do_not_count_as_machine_source_refs": true,
+        "self_guard_strings_do_not_count_as_script_ref_integrity": true
+      },
+      "fail_closed_conditions": [
+        "script_ref_missing_in_checkout",
+        "script_ref_outside_scripts_root",
+        "script_ref_uses_uri_or_absolute_path",
+        "script_ref_uses_parent_directory_traversal",
+        "script_ref_uses_human_doc_shape",
+        "script_classification_ref_not_in_scan_scope",
+        "retirement_gate_ref_not_in_scan_scope",
+        "current_scan_summary_ref_drift",
+        "source_purity_self_guard_only_caller"
+      ],
+      "authority_boundary": {
+        "guard_can_create_missing_refs": false,
+        "guard_can_create_alias_files": false,
+        "guard_can_authorize_physical_delete": false,
+        "guard_can_claim_opl_primitive_parity": false,
+        "guard_can_claim_default_promotion_or_cutover": false,
+        "guard_can_claim_app_or_registry_readiness": false,
+        "guard_can_claim_generated_hosted_readiness": false,
+        "guard_can_claim_target_agent_ready": false,
+        "guard_can_claim_domain_ready": false,
+        "guard_can_claim_production_ready": false
+      }
     },
     "false_ready_claim_guard": {
       "guard_id": "oma.generated-hosted-false-ready-claim-guard.v1",
@@ -216,6 +283,10 @@
     "source_purity_scan_status": "passed",
     "active_script_caller_scan_status": "passed",
     "active_caller_scan_policy_id": "oma.script-active-caller-scan.v1",
+    "source_ref_integrity_guard_id": "oma.script_morphology.source_ref_integrity_guard.v1",
+    "source_ref_integrity_status": "passed",
+    "source_ref_integrity_checked_ref_count": 31,
+    "source_ref_integrity_invalid_ref_count": 0,
     "scanned_script_count": 31,
     "gated_script_count": 31,
     "orphan_script_count": 0,
@@ -290,6 +361,7 @@
   "closed_current_machine_gate_refs": [
     "runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt.active_script_caller_scan",
     "runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.active_caller_scan_policy",
+    "runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.source_ref_integrity_guard",
     "runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.false_ready_claim_guard",
     "runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.retirement_readback_cleanup_guard",
     "runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.script_to_pack_retirement_gates",
@@ -301,6 +373,8 @@
     "OPL primitive parity for script policy",
     "physical script retirement",
     "cleanup readback physical delete authorization",
+    "source-ref integrity physical delete authorization",
+    "source-ref integrity readiness or parity claim",
     "cleanup readback owner receipt signing",
     "cleanup readback typed blocker instance creation",
     "no-active-caller for retained scripts",
