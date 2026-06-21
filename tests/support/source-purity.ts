@@ -119,10 +119,19 @@ export function collectActiveScriptCallerScan(scriptRefs: string[]): JsonObject 
     'shell_invocation',
     'non_self_test_direct_ref',
   ]);
+  const proofSourcePolicy = assertPolicyObject(morphologyPolicy, 'proof_source_policy');
+  assert.equal(proofSourcePolicy.policy_id, 'oma.script-active-caller-proof-source.v1');
+  assert.equal(proofSourcePolicy.caller_proof_must_be_machine_scanned, true);
+  assert.equal(proofSourcePolicy.package_script_import_shell_or_non_self_test_ref_required, true);
+  assert.equal(proofSourcePolicy.self_guard_test_strings_count_as_caller, false);
+  assert.equal(proofSourcePolicy.test_ref_callers_must_be_outside_self_guard, true);
+  assert.equal(proofSourcePolicy.caller_ref_paths_must_exist, true);
+  assert.equal(proofSourcePolicy.receipt_must_not_synthesize_callers, true);
   assert.deepEqual(assertPolicyStringList(morphologyPolicy, 'fail_closed_conditions'), [
     'orphan_script_count_nonzero',
     'source_purity_self_guard_only_caller',
     'caller_ref_path_missing',
+    'caller_proof_source_not_machine_scanned',
     'script_not_in_retirement_gate',
   ]);
 

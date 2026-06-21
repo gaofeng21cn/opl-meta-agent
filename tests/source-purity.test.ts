@@ -440,9 +440,22 @@ test('script morphology stays limited to authority refs, materializers, helpers,
   );
   assert.equal(activeCallerScanPolicy.self_guard_test_ref, 'tests/source-purity.test.ts');
   assert.equal(activeCallerScanPolicy.self_guard_may_prove_active_caller, false);
+  const proofSourcePolicy = assertPolicyObject(activeCallerScanPolicy, 'proof_source_policy');
+  assert.equal(proofSourcePolicy.policy_id, 'oma.script-active-caller-proof-source.v1');
+  assert.equal(proofSourcePolicy.caller_proof_must_be_machine_scanned, true);
+  assert.equal(proofSourcePolicy.package_script_import_shell_or_non_self_test_ref_required, true);
+  assert.equal(proofSourcePolicy.self_guard_test_strings_count_as_caller, false);
+  assert.equal(proofSourcePolicy.test_ref_callers_must_be_outside_self_guard, true);
+  assert.equal(proofSourcePolicy.caller_ref_paths_must_exist, true);
+  assert.equal(proofSourcePolicy.receipt_must_not_synthesize_callers, true);
   assert.ok(
     assertPolicyStringList(activeCallerScanPolicy, 'fail_closed_conditions').includes(
       'source_purity_self_guard_only_caller',
+    ),
+  );
+  assert.ok(
+    assertPolicyStringList(activeCallerScanPolicy, 'fail_closed_conditions').includes(
+      'caller_proof_source_not_machine_scanned',
     ),
   );
   asObjects(activeCallerScan.caller_refs_by_script).forEach((entry) => {
@@ -1025,6 +1038,7 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
     'consumer_missing_receipt_ref',
     'consumer_missing_contract_ref',
     'consumer_missing_accepted_ref_shape',
+    'consumer_missing_false_authority_guard',
     'consumer_claims_retirement_or_readiness_authority',
   ]);
   assert.equal(boundary.refs_only, true);
