@@ -184,13 +184,48 @@ test('script morphology stays limited to authority refs, materializers, helpers,
     );
   });
   assert.equal(materializerScan.status, 'passed');
+  assert.equal(
+    materializerScan.guard_id,
+    'oma.script_morphology.generic_materializer_no_resurrection_guard.v1',
+  );
+  assert.equal(
+    materializerScan.policy_ref,
+    'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.generic_materializer_no_resurrection_guard',
+  );
+  const genericMaterializerGuard = assertPolicyObject(
+    morphologyPolicy,
+    'generic_materializer_no_resurrection_guard',
+  );
+  assert.equal(materializerScan.guard_id, genericMaterializerGuard.guard_id);
+  assert.equal(
+    genericMaterializerGuard.readback_surface_ref,
+    'runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt.generic_script_materializer_scan',
+  );
+  assert.equal(
+    genericMaterializerGuard.state,
+    'repo_machine_source_scan_declared_no_second_runtime_or_wrapper_materializer',
+  );
+  assert.deepEqual(asStrings(genericMaterializerGuard.scan_roots), [
+    'scripts/',
+    'runtime/authority_functions/',
+    'contracts/',
+    'agent/',
+    'package.json',
+  ]);
+  assert.deepEqual(
+    asStrings(materializerScan.scan_roots),
+    asStrings(genericMaterializerGuard.scan_roots),
+  );
   assert.equal(materializerScan.repo_owned_generic_wrapper_materializer_count, 0);
+  assert.equal(materializerScan.repo_owned_generic_runtime_materializer_count, 0);
+  assert.equal(materializerScan.repo_owned_queue_or_attempt_ledger_materializer_count, 0);
+  assert.equal(materializerScan.repo_owned_target_worktree_lifecycle_materializer_count, 0);
   assert.deepEqual(asStrings(materializerScan.excluded_standard_surface_paths), [
     'agent/',
     'contracts/',
     'runtime/authority_functions/',
   ]);
-  assert.deepEqual(asStrings(materializerScan.forbidden_materializer_roles_absent), [
+  const expectedForbiddenMaterializerRoles = [
     'repo_owned_cli_wrapper_materializer',
     'repo_owned_mcp_wrapper_materializer',
     'repo_owned_skill_wrapper_materializer',
@@ -198,11 +233,55 @@ test('script morphology stays limited to authority refs, materializers, helpers,
     'repo_owned_domain_action_adapter_wrapper_materializer',
     'repo_owned_status_read_model_materializer',
     'repo_owned_workbench_wrapper_materializer',
-  ]);
+    'repo_owned_generic_runtime_materializer',
+    'repo_owned_queue_or_attempt_ledger_materializer',
+    'repo_owned_target_worktree_lifecycle_materializer',
+  ];
+  assert.deepEqual(
+    asStrings(materializerScan.forbidden_materializer_roles_absent),
+    expectedForbiddenMaterializerRoles,
+  );
+  assert.deepEqual(
+    asStrings(genericMaterializerGuard.forbidden_materializer_roles),
+    expectedForbiddenMaterializerRoles,
+  );
   assert.equal(
     materializerScan.retained_materializer_role,
     'refs_only_target_agent_semantics_work_order_candidate_or_typed_blocker_materializer',
   );
+  assert.equal(
+    genericMaterializerGuard.retained_materializer_role,
+    materializerScan.retained_materializer_role,
+  );
+  assert.deepEqual(asStrings(genericMaterializerGuard.allowed_outputs), [
+    'candidate_agent_package_ref',
+    'developer_patch_work_order_ref',
+    'target_capability_improvement_candidate_ref',
+    'mechanism_patch_proposal_ref',
+    'typed_blocker_ref',
+    'refs_only_contract_template_ref',
+  ]);
+  assert.deepEqual(
+    asStrings(materializerScan.allowed_outputs),
+    asStrings(genericMaterializerGuard.allowed_outputs),
+  );
+  assert.deepEqual(asStrings(genericMaterializerGuard.fail_closed_conditions), [
+    'repo_machine_source_declares_repo_owned_generic_runtime_materializer',
+    'repo_machine_source_declares_repo_owned_cli_mcp_skill_product_status_workbench_wrapper_materializer',
+    'script_writes_runtime_state_or_queue_attempt_ledger',
+    'script_manages_target_worktree_lifecycle_or_absorb_cleanup',
+    'script_claims_generated_interface_or_pack_compiler_ownership',
+  ]);
+  const materializerGuardBoundary = asBooleanRecord(genericMaterializerGuard.authority_boundary);
+  const materializerScanBoundary = asBooleanRecord(materializerScan.authority_boundary);
+  Object.entries(materializerGuardBoundary).forEach(([flag, value]) => {
+    assert.equal(value, false, `generic materializer guard boundary ${flag} must be false`);
+    assert.equal(
+      materializerScanBoundary[flag.replace('guard_', 'scan_')],
+      false,
+      `generic materializer scan ${flag} must be false`,
+    );
+  });
   assert.deepEqual(asStrings(materializerScan.retired_materializer_tails), [
     'build_agent_baseline_no_closeout_implicit_fixture_graph',
     'meta_agent_loop_reexport_facade',

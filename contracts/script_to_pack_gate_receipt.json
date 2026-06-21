@@ -35,6 +35,7 @@
     "active_caller_proof_source_policy_is_machine_declared",
     "source_ref_integrity_guard_is_machine_declared",
     "generated_hosted_false_ready_claim_guard_is_machine_declared",
+    "generic_materializer_no_resurrection_guard_is_machine_declared",
     "retirement_readback_cleanup_guard_is_machine_declared",
     "active_script_caller_scan_passed_with_zero_orphans",
     "source_purity_self_guard_does_not_prove_active_callers",
@@ -320,6 +321,56 @@
         "test_structure_can_claim_domain_ready": false,
         "test_structure_can_claim_production_ready": false
       }
+    },
+    "generic_materializer_no_resurrection_guard": {
+      "guard_id": "oma.script_morphology.generic_materializer_no_resurrection_guard.v1",
+      "state": "repo_machine_source_scan_declared_no_second_runtime_or_wrapper_materializer",
+      "readback_surface_ref": "runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt.generic_script_materializer_scan",
+      "scan_roots": [
+        "scripts/",
+        "runtime/authority_functions/",
+        "contracts/",
+        "agent/",
+        "package.json"
+      ],
+      "forbidden_materializer_roles": [
+        "repo_owned_cli_wrapper_materializer",
+        "repo_owned_mcp_wrapper_materializer",
+        "repo_owned_skill_wrapper_materializer",
+        "repo_owned_product_entry_wrapper_materializer",
+        "repo_owned_domain_action_adapter_wrapper_materializer",
+        "repo_owned_status_read_model_materializer",
+        "repo_owned_workbench_wrapper_materializer",
+        "repo_owned_generic_runtime_materializer",
+        "repo_owned_queue_or_attempt_ledger_materializer",
+        "repo_owned_target_worktree_lifecycle_materializer"
+      ],
+      "retained_materializer_role": "refs_only_target_agent_semantics_work_order_candidate_or_typed_blocker_materializer",
+      "allowed_outputs": [
+        "candidate_agent_package_ref",
+        "developer_patch_work_order_ref",
+        "target_capability_improvement_candidate_ref",
+        "mechanism_patch_proposal_ref",
+        "typed_blocker_ref",
+        "refs_only_contract_template_ref"
+      ],
+      "fail_closed_conditions": [
+        "repo_machine_source_declares_repo_owned_generic_runtime_materializer",
+        "repo_machine_source_declares_repo_owned_cli_mcp_skill_product_status_workbench_wrapper_materializer",
+        "script_writes_runtime_state_or_queue_attempt_ledger",
+        "script_manages_target_worktree_lifecycle_or_absorb_cleanup",
+        "script_claims_generated_interface_or_pack_compiler_ownership"
+      ],
+      "authority_boundary": {
+        "guard_can_claim_runtime_owner": false,
+        "guard_can_claim_generated_interface_owner": false,
+        "guard_can_claim_pack_compiler_owner": false,
+        "guard_can_claim_agent_lab_runner_owner": false,
+        "guard_can_manage_target_worktree_lifecycle": false,
+        "guard_can_claim_target_agent_ready": false,
+        "guard_can_claim_domain_ready": false,
+        "guard_can_claim_production_ready": false
+      }
     }
   },
   "current_scan_summary": {
@@ -369,41 +420,47 @@
     ],
     "gated_script_refs": [
       "scripts/agent-evidence-takeover.ts",
-      "scripts/build-agent-baseline.ts",
-      "scripts/check-source-structure.ts",
-      "scripts/execute-external-work-order.ts",
       "scripts/improve-from-agent-lab-suite.ts",
       "scripts/lib/agent-evidence-contracts.ts",
       "scripts/lib/agent-evidence-materializer.ts",
-      "scripts/lib/domain-pack.ts",
       "scripts/lib/external-suite-materializer.ts",
-      "scripts/lib/meta-agent-loop-ai-reviewer.ts",
-      "scripts/lib/meta-agent-loop-io.ts",
-      "scripts/lib/meta-agent-loop-receipts.ts",
-      "scripts/lib/stage-decomposition-pack-draft-parts/artifact-morphology-validator.ts",
-      "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts",
-      "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts",
-      "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts",
-      "scripts/lib/stage-decomposition-pack-draft-parts/stage-native-contract-validator.ts",
-      "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts",
-      "scripts/lib/stage-decomposition-runner.ts",
-      "scripts/lib/stage-native-artifact-contract.ts",
       "scripts/lib/target-improvement-policy.ts",
       "scripts/lib/work-order-builders.ts",
       "scripts/lib/work-order-efficiency.ts",
       "scripts/lib/work-order-refs.ts",
       "scripts/lib/work-order-validation.ts",
-      "scripts/repo-hygiene.sh",
-      "scripts/run-with-repo-temp-env.sh",
+      "scripts/build-agent-baseline.ts",
+      "scripts/lib/stage-decomposition-runner.ts",
+      "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts",
+      "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts",
+      "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts",
+      "scripts/lib/stage-decomposition-pack-draft-parts/artifact-morphology-validator.ts",
+      "scripts/lib/stage-decomposition-pack-draft-parts/stage-native-contract-validator.ts",
+      "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts",
+      "scripts/lib/stage-native-artifact-contract.ts",
+      "scripts/lib/domain-pack.ts",
+      "scripts/execute-external-work-order.ts",
+      "scripts/check-source-structure.ts",
       "scripts/sync-authority-functions.ts",
       "scripts/sync-stage-control-plane.ts",
-      "scripts/takeover-agent.ts",
-      "scripts/verify.sh"
+      "scripts/repo-hygiene.sh",
+      "scripts/run-with-repo-temp-env.sh",
+      "scripts/verify.sh",
+      "scripts/lib/meta-agent-loop-ai-reviewer.ts",
+      "scripts/lib/meta-agent-loop-io.ts",
+      "scripts/lib/meta-agent-loop-receipts.ts",
+      "scripts/takeover-agent.ts"
     ],
     "active_caller_scan_self_guard_refs": [
       "tests/source-purity.test.ts",
       "tests/source-purity/"
-    ]
+    ],
+    "generic_materializer_no_resurrection_guard_id": "oma.script_morphology.generic_materializer_no_resurrection_guard.v1",
+    "generic_materializer_scan_status": "passed",
+    "repo_owned_generic_wrapper_materializer_count": 0,
+    "repo_owned_generic_runtime_materializer_count": 0,
+    "repo_owned_queue_or_attempt_ledger_materializer_count": 0,
+    "repo_owned_target_worktree_lifecycle_materializer_count": 0
   },
   "closed_current_machine_gate_refs": [
     "runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt.active_script_caller_scan",
@@ -411,6 +468,8 @@
     "runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.source_ref_integrity_guard",
     "runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.false_ready_claim_guard",
     "runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.retirement_readback_cleanup_guard",
+    "runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt.generic_script_materializer_scan",
+    "runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.generic_materializer_no_resurrection_guard",
     "runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.script_to_pack_retirement_gates",
     "contracts/private_functional_surface_policy.json#allowed_opl_surface_consumption_refs",
     "tests/source-purity.test.ts#script-morphology-gate",
@@ -435,6 +494,7 @@
     "registry discovery live completion",
     "generated-hosted surface live readiness",
     "default promotion",
+    "generic runtime or wrapper materializer ownership",
     "owner receipt body"
   ],
   "future_retirement_or_absorb_still_requires": [

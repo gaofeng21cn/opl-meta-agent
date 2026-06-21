@@ -224,6 +224,56 @@
       "guard_can_claim_default_promotion_or_cutover": false
     }
   },
+  "generic_materializer_no_resurrection_guard": {
+    "guard_id": "oma.script_morphology.generic_materializer_no_resurrection_guard.v1",
+    "state": "repo_machine_source_scan_declared_no_second_runtime_or_wrapper_materializer",
+    "readback_surface_ref": "runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt.generic_script_materializer_scan",
+    "scan_roots": [
+      "scripts/",
+      "runtime/authority_functions/",
+      "contracts/",
+      "agent/",
+      "package.json"
+    ],
+    "forbidden_materializer_roles": [
+      "repo_owned_cli_wrapper_materializer",
+      "repo_owned_mcp_wrapper_materializer",
+      "repo_owned_skill_wrapper_materializer",
+      "repo_owned_product_entry_wrapper_materializer",
+      "repo_owned_domain_action_adapter_wrapper_materializer",
+      "repo_owned_status_read_model_materializer",
+      "repo_owned_workbench_wrapper_materializer",
+      "repo_owned_generic_runtime_materializer",
+      "repo_owned_queue_or_attempt_ledger_materializer",
+      "repo_owned_target_worktree_lifecycle_materializer"
+    ],
+    "retained_materializer_role": "refs_only_target_agent_semantics_work_order_candidate_or_typed_blocker_materializer",
+    "allowed_outputs": [
+      "candidate_agent_package_ref",
+      "developer_patch_work_order_ref",
+      "target_capability_improvement_candidate_ref",
+      "mechanism_patch_proposal_ref",
+      "typed_blocker_ref",
+      "refs_only_contract_template_ref"
+    ],
+    "fail_closed_conditions": [
+      "repo_machine_source_declares_repo_owned_generic_runtime_materializer",
+      "repo_machine_source_declares_repo_owned_cli_mcp_skill_product_status_workbench_wrapper_materializer",
+      "script_writes_runtime_state_or_queue_attempt_ledger",
+      "script_manages_target_worktree_lifecycle_or_absorb_cleanup",
+      "script_claims_generated_interface_or_pack_compiler_ownership"
+    ],
+    "authority_boundary": {
+      "guard_can_claim_runtime_owner": false,
+      "guard_can_claim_generated_interface_owner": false,
+      "guard_can_claim_pack_compiler_owner": false,
+      "guard_can_claim_agent_lab_runner_owner": false,
+      "guard_can_manage_target_worktree_lifecycle": false,
+      "guard_can_claim_target_agent_ready": false,
+      "guard_can_claim_domain_ready": false,
+      "guard_can_claim_production_ready": false
+    }
+  },
   "allowed_classes": [
     "authority_function_implementation_ref",
     "smoke_helper",

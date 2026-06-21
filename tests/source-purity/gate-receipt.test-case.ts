@@ -41,6 +41,11 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
   const readbackGuard = assertPolicyObject(morphologyPolicy, 'retirement_readback_cleanup_guard');
   const readbackGuardBoundary = asBooleanRecord(readbackGuard.authority_boundary);
   const readbackGuardClaims = asBooleanRecord(readbackGuard.claims);
+  const genericMaterializerGuard = assertPolicyObject(
+    morphologyPolicy,
+    'generic_materializer_no_resurrection_guard',
+  );
+  const materializerScan = sourceReceipt.generic_script_materializer_scan as JsonObject;
   const scriptRefs = listScriptRefs();
   const gatedScriptRefs = [...new Set(
     asObjects(morphologyPolicy.script_to_pack_retirement_gates)
@@ -84,6 +89,10 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
   assert.deepEqual(
     gateReceipt.machine_gate_inputs.retirement_readback_cleanup_guard,
     readbackGuard,
+  );
+  assert.deepEqual(
+    gateReceipt.machine_gate_inputs.generic_materializer_no_resurrection_guard,
+    genericMaterializerGuard,
   );
   assert.deepEqual(testStructure, sourceReceipt.source_purity_test_structure);
   assert.equal(testStructure.structure_id, 'oma.source_purity_test_structure.v1');
@@ -207,6 +216,28 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
   assert.equal(gateSummary.source_ref_integrity_status, 'passed');
   assert.equal(gateSummary.source_ref_integrity_checked_ref_count, scriptRefs.length);
   assert.equal(gateSummary.source_ref_integrity_invalid_ref_count, 0);
+  assert.equal(gateSummary.generic_materializer_no_resurrection_guard_id, genericMaterializerGuard.guard_id);
+  assert.equal(gateSummary.generic_materializer_scan_status, materializerScan.status);
+  assert.equal(gateSummary.repo_owned_generic_wrapper_materializer_count, 0);
+  assert.equal(gateSummary.repo_owned_generic_runtime_materializer_count, 0);
+  assert.equal(gateSummary.repo_owned_queue_or_attempt_ledger_materializer_count, 0);
+  assert.equal(gateSummary.repo_owned_target_worktree_lifecycle_materializer_count, 0);
+  assert.equal(
+    gateSummary.repo_owned_generic_wrapper_materializer_count,
+    materializerScan.repo_owned_generic_wrapper_materializer_count,
+  );
+  assert.equal(
+    gateSummary.repo_owned_generic_runtime_materializer_count,
+    materializerScan.repo_owned_generic_runtime_materializer_count,
+  );
+  assert.equal(
+    gateSummary.repo_owned_queue_or_attempt_ledger_materializer_count,
+    materializerScan.repo_owned_queue_or_attempt_ledger_materializer_count,
+  );
+  assert.equal(
+    gateSummary.repo_owned_target_worktree_lifecycle_materializer_count,
+    materializerScan.repo_owned_target_worktree_lifecycle_materializer_count,
+  );
   assert.equal(gateSummary.scanned_script_count, scriptRefs.length);
   assert.equal(gateSummary.gated_script_count, gatedScriptRefs.length);
   assert.equal(gateSummary.orphan_script_count, 0);
@@ -223,6 +254,8 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
     'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.source_ref_integrity_guard',
     'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.false_ready_claim_guard',
     'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.retirement_readback_cleanup_guard',
+    'runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt.generic_script_materializer_scan',
+    'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.generic_materializer_no_resurrection_guard',
     'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.script_to_pack_retirement_gates',
     'contracts/private_functional_surface_policy.json#allowed_opl_surface_consumption_refs',
     'tests/source-purity.test.ts#script-morphology-gate',
@@ -247,6 +280,7 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
     'registry discovery live completion',
     'generated-hosted surface live readiness',
     'default promotion',
+    'generic runtime or wrapper materializer ownership',
   ].forEach((claim) => {
     assert.ok(asStrings(gateReceipt.not_claimed_by_this_receipt).includes(claim));
   });
