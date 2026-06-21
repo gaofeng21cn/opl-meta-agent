@@ -102,7 +102,7 @@ function validateScriptToPackReceiptGuard(
   policy: JsonObject,
   tracked: string[],
   guardViolations: string[],
-): string | undefined {
+): JsonObject | undefined {
   const guard = policy.script_to_pack_receipt_guard as JsonObject | undefined;
   if (!guard) return undefined;
 
@@ -179,7 +179,45 @@ function validateScriptToPackReceiptGuard(
     }
   });
 
-  return `script-to-pack receipt guard checked ${scannedScriptRefs.length} scripts, ${gatedScriptRefs.length} gated refs, ${activeCallerScan.orphan_script_count ?? 0} orphan scripts`;
+  return {
+    guard_id: guard.guard_id,
+    state: guard.state,
+    command_ref: guard.command_ref,
+    json_readback_command_ref: guard.json_readback_command_ref ?? null,
+    receipt_ref: guard.receipt_ref,
+    authority_functions_ref: guard.authority_functions_ref,
+    scanned_script_count: scannedScriptRefs.length,
+    gated_script_count: gatedScriptRefs.length,
+    orphan_script_count: activeCallerScan.orphan_script_count ?? 0,
+    source_purity_scan_status: sourceReceipt.status,
+    active_script_caller_scan_status: activeCallerScan.status,
+    active_caller_scan_policy_id: currentSummary.active_caller_scan_policy_id,
+    source_ref_integrity_guard_id: currentSummary.source_ref_integrity_guard_id,
+    source_ref_integrity_status: currentSummary.source_ref_integrity_status,
+    receipt_status: receipt.receipt_status,
+    closure_status: receipt.closure_status,
+    hard_fail: guardViolations.length > 0,
+    claims: {
+      claims_script_retirement_authorized: false,
+      claims_opl_primitive_parity: false,
+      claims_no_active_caller: false,
+      claims_app_or_registry_readiness: false,
+      claims_generated_hosted_readiness: false,
+      claims_target_agent_ready: false,
+      claims_domain_ready: false,
+      claims_production_ready: false,
+    },
+    authority_boundary: {
+      guard_can_authorize_script_retirement: false,
+      guard_can_claim_opl_primitive_parity: false,
+      guard_can_claim_no_active_caller: false,
+      guard_can_claim_app_or_registry_readiness: false,
+      guard_can_claim_generated_hosted_readiness: false,
+      guard_can_claim_target_agent_ready: false,
+      guard_can_claim_domain_ready: false,
+      guard_can_claim_production_ready: false,
+    },
+  };
 }
 
 function validateAggregateExemption(entry: JsonObject): string | undefined {
@@ -243,6 +281,7 @@ function validateAggregateExemption(entry: JsonObject): string | undefined {
   return undefined;
 }
 
+const jsonOutput = process.argv.includes('--json');
 const strict = process.argv.includes('--strict') || process.argv.includes('strict');
 const policy = readJson(policyPath);
 const lane = (policy.lanes as JsonObject)[strict ? 'strict' : 'advisory'] as JsonObject;
@@ -273,26 +312,68 @@ scanned.forEach((relativePath) => {
   violations.push(`${relativePath}: ${lines} lines > ${budget}`);
 });
 
-console.log(`source structure ${strict ? 'strict' : 'advisory'} lane scanned ${scanned.length} tracked files`);
-if (acceptedAggregates.length > 0) {
-  console.log('accepted generated aggregates:');
-  acceptedAggregates.forEach((entry) => console.log(`  ${entry}`));
-}
-if (scriptToPackReceiptGuardSummary) {
-  console.log(scriptToPackReceiptGuardSummary);
-}
-if (guardViolations.length > 0) {
-  console.log('script-to-pack receipt guard findings:');
-  guardViolations.forEach((entry) => console.log(`  ${entry}`));
-}
-if (violations.length > 0) {
-  console.log('line budget findings:');
-  violations.forEach((entry) => console.log(`  ${entry}`));
+const exitCode = guardViolations.length > 0 || (violations.length > 0 && failOnOverBudget) ? 1 : 0;
+
+if (jsonOutput) {
+  console.log(JSON.stringify({
+    surface_kind: 'oma_source_structure_readback',
+    version: 'source-structure-readback.v1',
+    owner: 'opl-meta-agent',
+    target_domain_id: 'opl-meta-agent',
+    state: exitCode === 0 ? 'passed' : 'failed',
+    ok: exitCode === 0,
+    mode: strict ? 'strict' : 'advisory',
+    policy_ref: policyPath,
+    readback_role: 'source_structure_line_budget_and_script_to_pack_receipt_guard_readback',
+    readback_is_authority: false,
+    line_budget: {
+      budget_lines: budget,
+      fail_on_over_budget: failOnOverBudget,
+      scanned_file_count: scanned.length,
+      accepted_generated_aggregate_count: acceptedAggregates.length,
+      accepted_generated_aggregates: acceptedAggregates,
+      violation_count: violations.length,
+      violations,
+    },
+    script_to_pack_receipt_guard: {
+      ...(scriptToPackReceiptGuardSummary ?? {}),
+      violation_count: guardViolations.length,
+      violations: guardViolations,
+    },
+    authority_boundary: {
+      can_write_target_domain_truth: false,
+      can_write_target_owner_receipt_body: false,
+      can_authorize_script_retirement: false,
+      can_claim_opl_primitive_parity: false,
+      can_claim_no_active_caller: false,
+      can_claim_app_or_registry_readiness: false,
+      can_claim_generated_hosted_readiness: false,
+      can_claim_target_agent_ready: false,
+      can_claim_domain_ready: false,
+      can_claim_production_ready: false,
+    },
+  }, null, 2));
+} else {
+  console.log(`source structure ${strict ? 'strict' : 'advisory'} lane scanned ${scanned.length} tracked files`);
+  if (acceptedAggregates.length > 0) {
+    console.log('accepted generated aggregates:');
+    acceptedAggregates.forEach((entry) => console.log(`  ${entry}`));
+  }
+  if (scriptToPackReceiptGuardSummary) {
+    console.log(
+      `script-to-pack receipt guard checked ${scriptToPackReceiptGuardSummary.scanned_script_count} scripts, `
+      + `${scriptToPackReceiptGuardSummary.gated_script_count} gated refs, `
+      + `${scriptToPackReceiptGuardSummary.orphan_script_count} orphan scripts`,
+    );
+  }
+  if (guardViolations.length > 0) {
+    console.log('script-to-pack receipt guard findings:');
+    guardViolations.forEach((entry) => console.log(`  ${entry}`));
+  }
+  if (violations.length > 0) {
+    console.log('line budget findings:');
+    violations.forEach((entry) => console.log(`  ${entry}`));
+  }
 }
 
-if (guardViolations.length > 0) {
-  process.exit(1);
-}
-if (violations.length > 0 && failOnOverBudget) {
-  process.exit(1);
-}
+process.exit(exitCode);

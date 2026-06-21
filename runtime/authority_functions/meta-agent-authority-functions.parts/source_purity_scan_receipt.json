@@ -89,7 +89,9 @@
           "package.json#scripts.line-budget",
           "package.json#scripts.line-budget:strict",
           "package.json#scripts.source-structure",
+          "package.json#scripts.source-structure:json",
           "package.json#scripts.source-structure:strict",
+          "package.json#scripts.source-structure:strict:json",
           "scripts/verify.sh#shell",
           "tests/source-structure-lane.test.ts#test_ref"
         ]
@@ -353,7 +355,9 @@
           "package.json#scripts.line-budget",
           "package.json#scripts.line-budget:strict",
           "package.json#scripts.source-structure",
+          "package.json#scripts.source-structure:json",
           "package.json#scripts.source-structure:strict",
+          "package.json#scripts.source-structure:strict:json",
           "package.json#scripts.stage-control:check",
           "package.json#scripts.stage-control:split",
           "package.json#scripts.stage-control:write",

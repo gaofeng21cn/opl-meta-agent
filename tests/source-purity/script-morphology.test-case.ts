@@ -775,6 +775,12 @@ test('script morphology stays limited to authority refs, materializers, helpers,
       assert.ok(
         asStrings(entry.writes_only).includes('source_structure_line_budget_receipt_ref'),
       );
+      assert.ok(
+        asStrings(entry.writes_only).includes('source_structure_json_readback_ref'),
+      );
+      assert.ok(
+        asStrings(entry.writes_only).includes('script_to_pack_receipt_guard_readback_ref'),
+      );
     }
     if (entry.script_ref === 'scripts/sync-stage-control-plane.ts') {
       assert.deepEqual(asStrings(entry.contract_refs), [

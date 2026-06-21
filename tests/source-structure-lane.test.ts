@@ -20,7 +20,9 @@ test('source-structure and line-budget lanes are repo-native package and verify 
   assert.equal(packageJson.scripts['stage-control:write'], 'scripts/run-with-repo-temp-env.sh node scripts/sync-stage-control-plane.ts --write');
   assert.equal(packageJson.scripts['stage-control:split'], 'scripts/run-with-repo-temp-env.sh node scripts/sync-stage-control-plane.ts --split');
   assert.equal(packageJson.scripts['source-structure'], 'scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --advisory');
+  assert.equal(packageJson.scripts['source-structure:json'], 'scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --advisory --json');
   assert.equal(packageJson.scripts['source-structure:strict'], 'scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --strict');
+  assert.equal(packageJson.scripts['source-structure:strict:json'], 'scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --strict --json');
   assert.equal(packageJson.scripts['line-budget'], packageJson.scripts['source-structure']);
   assert.equal(packageJson.scripts['line-budget:strict'], packageJson.scripts['source-structure:strict']);
 
@@ -38,6 +40,7 @@ test('source-structure and line-budget lanes are repo-native package and verify 
   );
   assert.equal(policy.script_to_pack_receipt_guard.state, 'active_executable_guard');
   assert.equal(policy.script_to_pack_receipt_guard.command_ref, 'npm run source-structure');
+  assert.equal(policy.script_to_pack_receipt_guard.json_readback_command_ref, 'npm run source-structure:json');
   assert.equal(policy.script_to_pack_receipt_guard.receipt_ref, 'contracts/script_to_pack_gate_receipt.json');
   assert.equal(
     policy.script_to_pack_receipt_guard.authority_functions_ref,
@@ -56,6 +59,8 @@ test('source-structure and line-budget lanes are repo-native package and verify 
   ]);
   assert.equal(policy.script_to_pack_receipt_guard.false_authority_boundary.guard_can_authorize_script_retirement, false);
   assert.equal(policy.script_to_pack_receipt_guard.false_authority_boundary.guard_can_claim_opl_primitive_parity, false);
+  assert.equal(policy.script_to_pack_receipt_guard.false_authority_boundary.guard_can_write_target_domain_truth, false);
+  assert.equal(policy.script_to_pack_receipt_guard.false_authority_boundary.guard_can_write_target_owner_receipt_body, false);
   assert.equal(policy.script_to_pack_receipt_guard.false_authority_boundary.guard_can_claim_app_or_registry_readiness, false);
   assert.equal(policy.script_to_pack_receipt_guard.false_authority_boundary.guard_can_claim_generated_hosted_readiness, false);
   assert.equal(policy.script_to_pack_receipt_guard.false_authority_boundary.guard_can_claim_target_agent_ready, false);
@@ -102,6 +107,35 @@ test('stage control plane aggregate is generated from source parts and leaf inde
     const contract = readJson(String(entry.ref));
     assert.deepEqual(contract, asObjects(aggregate.stage_native_artifact_contract.contracts)[index]);
   });
+});
+
+test('source-structure publishes a JSON machine readback for script-to-pack guard drift', () => {
+  const result = spawnSync('npm', ['run', 'source-structure:json', '--silent'], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+  });
+  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+  const payload = JSON.parse(result.stdout);
+
+  assert.equal(payload.surface_kind, 'oma_source_structure_readback');
+  assert.equal(payload.version, 'source-structure-readback.v1');
+  assert.equal(payload.ok, true);
+  assert.equal(payload.mode, 'advisory');
+  assert.equal(payload.policy_ref, 'contracts/source_structure_policy.json');
+  assert.equal(payload.readback_is_authority, false);
+  assert.equal(payload.script_to_pack_receipt_guard.guard_id, 'oma.source_structure.script_to_pack_receipt_drift_guard.v1');
+  assert.equal(payload.script_to_pack_receipt_guard.json_readback_command_ref, 'npm run source-structure:json');
+  assert.equal(payload.script_to_pack_receipt_guard.scanned_script_count, 31);
+  assert.equal(payload.script_to_pack_receipt_guard.gated_script_count, 31);
+  assert.equal(payload.script_to_pack_receipt_guard.orphan_script_count, 0);
+  assert.equal(payload.script_to_pack_receipt_guard.violation_count, 0);
+  assert.equal(payload.authority_boundary.can_write_target_domain_truth, false);
+  assert.equal(payload.authority_boundary.can_write_target_owner_receipt_body, false);
+  assert.equal(payload.authority_boundary.can_authorize_script_retirement, false);
+  assert.equal(payload.authority_boundary.can_claim_opl_primitive_parity, false);
+  assert.equal(payload.authority_boundary.can_claim_target_agent_ready, false);
+  assert.equal(payload.authority_boundary.can_claim_domain_ready, false);
+  assert.equal(payload.authority_boundary.can_claim_production_ready, false);
 });
 
 test('stage control plane publishes an OPL Pack source generated bundle manifest', () => {

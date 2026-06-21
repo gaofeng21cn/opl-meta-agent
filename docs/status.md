@@ -96,6 +96,12 @@ aggregate path：`runtime/authority_functions/meta-agent-authority-functions.jso
 和 `npm run stage-control:check` 维护。两个 bundle manifest 都记录 source digest、
 generator commands、do-not-edit consumer surface 和 false-authority flags。
 同一 source-structure 命令现在也执行 `script_to_pack_receipt_guard`；receipt / active caller / tracked script / morphology summary 漂移在 advisory 与 strict 模式下都会 hard fail，不能被 line-budget advisory 语义降级。
+`npm run source-structure:json` 与 `npm run source-structure:strict:json`
+提供同一检查的机器 readback，输出 line-budget findings、script-to-pack
+receipt guard 状态、violation list 和 false-authority boundary。该 JSON
+readback 只证明 receipt drift guard 当前可执行；它不能授权脚本物理退役、
+OPL primitive parity、no-active-caller、App/registry/generated-hosted readiness、
+target/domain/production readiness 或 owner receipt body。
 `scripts/verify.sh smoke`、`npm test` / `npm run test:smoke`、`npm run
 typecheck` 和 repo hygiene 继续验证当前核心合同、源码、测试与生成物边界，
 不把普通开发默认升级为行数硬门。bootstrap、external-suite、work-order、

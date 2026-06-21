@@ -245,6 +245,8 @@
         "consumes_opl_surfaces": [],
         "writes_only": [
           "source_structure_line_budget_receipt_ref",
+          "source_structure_json_readback_ref",
+          "script_to_pack_receipt_guard_readback_ref",
           "generated_aggregate_exemption_validation_ref"
         ],
         "contract_refs": [
@@ -1290,7 +1292,9 @@
             "package.json#scripts.line-budget",
             "package.json#scripts.line-budget:strict",
             "package.json#scripts.source-structure",
+            "package.json#scripts.source-structure:json",
             "package.json#scripts.source-structure:strict",
+            "package.json#scripts.source-structure:strict:json",
             "scripts/verify.sh#shell",
             "tests/source-structure-lane.test.ts#test_ref"
           ]
@@ -1554,7 +1558,9 @@
             "package.json#scripts.line-budget",
             "package.json#scripts.line-budget:strict",
             "package.json#scripts.source-structure",
+            "package.json#scripts.source-structure:json",
             "package.json#scripts.source-structure:strict",
+            "package.json#scripts.source-structure:strict:json",
             "package.json#scripts.stage-control:check",
             "package.json#scripts.stage-control:split",
             "package.json#scripts.stage-control:write",
