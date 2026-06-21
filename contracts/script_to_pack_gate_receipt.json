@@ -200,6 +200,83 @@
     "contracts/production_acceptance/meta-agent-production-acceptance.json",
     "contracts/functional_privatization_audit.json"
   ],
+  "reciprocal_consumption_policy": {
+    "policy_id": "oma.script-to-pack-gate-receipt-consumption.v1",
+    "accepted_ref_shape": "script_to_pack_gate_receipt_ref",
+    "receipt_ref_field": "script_to_pack_gate_receipt_refs",
+    "contract_ref_field": "script_to_pack_gate_receipt_ref",
+    "required_consumers": [
+      {
+        "contract_ref": "contracts/live_stage_run_progress_evidence.json",
+        "must_reference_receipt_ref_at": [
+          "refs.script_to_pack_gate_receipt_refs"
+        ],
+        "must_reference_contract_ref_at": [
+          "existing_evidence_refs"
+        ],
+        "must_accept_ref_shape_at": [
+          "accepted_resolution_ref_shapes"
+        ],
+        "must_keep_authority_false": [
+          "authority_boundary.can_claim_domain_ready",
+          "authority_boundary.can_claim_production_ready"
+        ],
+        "must_forbid_roles_at": []
+      },
+      {
+        "contract_ref": "contracts/target_agent_owner_chain_evidence.json",
+        "must_reference_receipt_ref_at": [
+          "live_stage_run_progress_evidence_summary.script_to_pack_gate_receipt_refs",
+          "target_agent_owner_evidence_tail_closure.script_to_pack_gate_receipt_refs",
+          "domain_owner_chain_scaleout.opl_backfill_refs.script_to_pack_gate_receipt_refs"
+        ],
+        "must_reference_contract_ref_at": [
+          "target_agent_owner_evidence_tail_closure.closed_structure_gate_items.receipt_contract_ref"
+        ],
+        "must_accept_ref_shape_at": [
+          "target_agent_owner_evidence_tail_closure.accepted_ref_shapes",
+          "domain_owner_chain_scaleout.accepted_ref_shapes"
+        ],
+        "must_keep_authority_false": [
+          "target_agent_owner_evidence_tail_closure.authority_boundary.can_claim_domain_ready",
+          "target_agent_owner_evidence_tail_closure.authority_boundary.can_claim_production_ready",
+          "domain_owner_chain_scaleout.authority_boundary.can_claim_domain_ready",
+          "domain_owner_chain_scaleout.authority_boundary.can_claim_production_ready"
+        ],
+        "must_forbid_roles_at": []
+      },
+      {
+        "contract_ref": "contracts/production_acceptance/meta-agent-production-acceptance.json",
+        "must_reference_receipt_ref_at": [
+          "target_agent_live_stage_progress_summary.script_to_pack_gate_receipt_refs"
+        ],
+        "must_accept_ref_shape_at": [],
+        "must_keep_authority_false": [
+          "target_agent_live_stage_progress_summary.authority_boundary.can_claim_domain_ready",
+          "target_agent_live_stage_progress_summary.authority_boundary.can_claim_production_ready"
+        ],
+        "must_forbid_roles_at": []
+      },
+      {
+        "contract_ref": "contracts/functional_privatization_audit.json",
+        "must_reference_contract_ref_at": [
+          "registration_projection_evidence_contract_refs.script_to_pack_gate_receipt_ref",
+          "modules.script_to_pack_gate_receipt.code_paths"
+        ],
+        "must_keep_authority_false": [],
+        "must_forbid_roles_at": [
+          "modules.script_to_pack_gate_receipt.forbidden_roles"
+        ]
+      }
+    ],
+    "fail_closed_conditions": [
+      "consumed_by_ref_missing",
+      "consumer_missing_receipt_ref",
+      "consumer_missing_contract_ref",
+      "consumer_missing_accepted_ref_shape",
+      "consumer_claims_retirement_or_readiness_authority"
+    ]
+  },
   "no_regression_refs": [
     "no-regression-ref:opl-meta-agent/script-to-pack/no-source-purity-self-proof",
     "no-regression-ref:opl-meta-agent/script-to-pack/no-generic-wrapper-owner",

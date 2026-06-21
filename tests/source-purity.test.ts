@@ -22,6 +22,37 @@ import {
   listScriptRefs,
 } from './support/source-purity.ts';
 
+function valuesAtDottedPath(contract: unknown, dottedPath: string): unknown[] {
+  const values = dottedPath.split('.').reduce<unknown[]>((currentValues, segment) => (
+    currentValues.flatMap((currentValue) => valuesAtSegment(currentValue, segment))
+  ), [contract]);
+  return values.flatMap((value) => Array.isArray(value) ? value : [value]);
+}
+
+function valuesAtSegment(value: unknown, segment: string): unknown[] {
+  if (Array.isArray(value)) {
+    const selected = value.filter((entry) => (
+      entry
+      && typeof entry === 'object'
+      && [
+        'module_id',
+        'tail_id',
+        'gate_id',
+        'action_id',
+        'section_id',
+      ].some((key) => (entry as JsonObject)[key] === segment)
+    ));
+    if (selected.length > 0) {
+      return selected;
+    }
+    return value.flatMap((entry) => valuesAtSegment(entry, segment));
+  }
+  if (!value || typeof value !== 'object') {
+    return [];
+  }
+  return Object.hasOwn(value as JsonObject, segment) ? [(value as JsonObject)[segment]] : [];
+}
+
 test('script morphology stays limited to authority refs, materializers, helpers, and verification wrappers', () => {
   const privatePolicy = readJson('contracts/private_functional_surface_policy.json');
   const authorityFunctions = readJson('runtime/authority_functions/meta-agent-authority-functions.json');
@@ -860,6 +891,7 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
   const activeCallerScan = sourceReceipt.active_script_caller_scan as JsonObject;
   const gateSummary = gateReceipt.current_scan_summary as JsonObject;
   const boundary = asBooleanRecord(gateReceipt.authority_boundary);
+  const reciprocalConsumptionPolicy = gateReceipt.reciprocal_consumption_policy as JsonObject;
   const scriptRefs = listScriptRefs();
   const gatedScriptRefs = [...new Set(
     asObjects(morphologyPolicy.script_to_pack_retirement_gates)
@@ -928,6 +960,72 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
     'no_forbidden_write_proof_ref_where_applicable',
     'tombstone_or_provenance_ref',
     'target_owner_or_OPL_owner_decision_ref_when_parity_is_claimed',
+  ]);
+  assert.equal(
+    reciprocalConsumptionPolicy.policy_id,
+    'oma.script-to-pack-gate-receipt-consumption.v1',
+  );
+  assert.equal(reciprocalConsumptionPolicy.accepted_ref_shape, gateReceipt.accepted_ref_shape);
+  assert.equal(reciprocalConsumptionPolicy.receipt_ref_field, 'script_to_pack_gate_receipt_refs');
+  assert.equal(reciprocalConsumptionPolicy.contract_ref_field, 'script_to_pack_gate_receipt_ref');
+  const requiredConsumers = asObjects(reciprocalConsumptionPolicy.required_consumers);
+  assert.deepEqual(
+    requiredConsumers.map((consumer) => consumer.contract_ref),
+    asStrings(gateReceipt.consumed_by_refs),
+    'script-to-pack receipt consumed_by_refs should be the reciprocal policy source',
+  );
+  requiredConsumers.forEach((consumer) => {
+    const consumerContract = readJson(consumer.contract_ref as string);
+    assertRepoRefExists(consumer.contract_ref as string);
+    asStrings(consumer.must_reference_receipt_ref_at ?? []).forEach((refPath) => {
+      const values = valuesAtDottedPath(consumerContract, refPath);
+      assert.ok(
+        values.includes(gateReceipt.receipt_ref as string),
+        `${consumer.contract_ref} ${refPath} should include ${gateReceipt.receipt_ref}`,
+      );
+    });
+    asStrings(consumer.must_reference_contract_ref_at ?? []).forEach((refPath) => {
+      const values = valuesAtDottedPath(consumerContract, refPath);
+      assert.ok(
+        values.includes('contracts/script_to_pack_gate_receipt.json'),
+        `${consumer.contract_ref} ${refPath} should include contracts/script_to_pack_gate_receipt.json`,
+      );
+    });
+    asStrings(consumer.must_accept_ref_shape_at ?? []).forEach((refPath) => {
+      const values = valuesAtDottedPath(consumerContract, refPath);
+      assert.ok(
+        values.includes(gateReceipt.accepted_ref_shape as string),
+        `${consumer.contract_ref} ${refPath} should include ${gateReceipt.accepted_ref_shape}`,
+      );
+    });
+    asStrings(consumer.must_keep_authority_false ?? []).forEach((refPath) => {
+      const values = valuesAtDottedPath(consumerContract, refPath);
+      assert.ok(values.length > 0, `${consumer.contract_ref} ${refPath} should resolve`);
+      values.forEach((value) => {
+        assert.equal(value, false, `${consumer.contract_ref} ${refPath} must be false`);
+      });
+    });
+    asStrings(consumer.must_forbid_roles_at ?? []).forEach((refPath) => {
+      const values = valuesAtDottedPath(consumerContract, refPath);
+      [
+        'OPL_primitive_parity_authority',
+        'script_retirement_authority',
+        'target_truth_writer',
+        'owner_receipt_body_writer',
+      ].forEach((forbiddenRole) => {
+        assert.ok(
+          values.includes(forbiddenRole),
+          `${consumer.contract_ref} ${refPath} should forbid ${forbiddenRole}`,
+        );
+      });
+    });
+  });
+  assert.deepEqual(asStrings(reciprocalConsumptionPolicy.fail_closed_conditions), [
+    'consumed_by_ref_missing',
+    'consumer_missing_receipt_ref',
+    'consumer_missing_contract_ref',
+    'consumer_missing_accepted_ref_shape',
+    'consumer_claims_retirement_or_readiness_authority',
   ]);
   assert.equal(boundary.refs_only, true);
   assert.equal(boundary.can_create_runtime_truth, false);
