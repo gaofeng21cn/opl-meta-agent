@@ -337,8 +337,7 @@
       "oma-typed-blocker:target-owner-evidence-tail:registry_app_consumption/missing-opl-app-live-consumption",
       "oma-typed-blocker:target-owner-evidence-tail:real_blocked_target_patch_loop_scaleout/missing-real-source-patch-rerun-owner-closeout",
       "oma-typed-blocker:target-owner-evidence-tail:independent_codex_reviewer_attempt/missing-independent-invocation-trace-receipt",
-      "oma-typed-blocker:target-owner-evidence-tail:standard_target_agent_handoff_convergence/missing-target-vocabulary-owner-closeout",
-      "oma-typed-blocker:target-owner-evidence-tail:script_to_pack_hygiene/missing-machine-gate-for-new-or-retired-script-policy"
+      "oma-typed-blocker:target-owner-evidence-tail:standard_target_agent_handoff_convergence/missing-target-vocabulary-owner-closeout"
     ],
     "owner_receipt_refs": [],
     "human_gate_refs": [
@@ -349,7 +348,7 @@
       "no-regression-ref:opl-meta-agent/target-owner-evidence-tail/no-target-domain-truth-write",
       "no-regression-ref:opl-meta-agent/target-owner-evidence-tail/no-target-owner-receipt-body"
     ],
-    "open_tail_count": 5,
+    "open_tail_count": 4,
     "closed_success_count": 0,
     "source_ref": "contracts/production_acceptance/meta-agent-production-acceptance.json#/target_agent_live_stage_progress_summary",
     "success_claimed": false,
@@ -368,6 +367,10 @@
       "can_claim_domain_ready": false,
       "can_claim_production_ready": false,
       "can_promote_default_agent_without_gate": false
-    }
+    },
+    "script_to_pack_gate_receipt_refs": [
+      "script-to-pack-gate-receipt:opl-meta-agent/current-script-morphology-policy"
+    ],
+    "closed_structure_gate_count": 1
   }
 }

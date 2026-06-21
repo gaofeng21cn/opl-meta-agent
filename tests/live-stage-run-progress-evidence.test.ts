@@ -12,6 +12,8 @@ test('live StageRun progress evidence exposes OMA target-agent owner evidence bl
   const evidence = readJson('contracts/live_stage_run_progress_evidence.json');
   const ownerChain = readJson('contracts/target_agent_owner_chain_evidence.json');
   const productionAcceptance = readJson('contracts/production_acceptance/meta-agent-production-acceptance.json');
+  const scriptToPackGate = readJson('contracts/script_to_pack_gate_receipt.json');
+  const scriptToPackGateRef = 'script-to-pack-gate-receipt:opl-meta-agent/current-script-morphology-policy';
   const refs = evidence.refs as JsonObject;
   const blockers = asObjects(evidence.typed_blockers);
   const boundary = evidence.authority_boundary as JsonObject;
@@ -47,10 +49,12 @@ test('live StageRun progress evidence exposes OMA target-agent owner evidence bl
     'oma-typed-blocker:stage-replay-human-gate:stage-decomposition:oma_baseline_owner_review/baseline-owner-review-receipt-pending',
     ...blockers.map((blocker) => blocker.typed_blocker_ref as string),
   ]);
+  assert.deepEqual(asStrings(refs.script_to_pack_gate_receipt_refs), [scriptToPackGateRef]);
   assert.ok(asStrings(refs.no_regression_refs).length > 0);
   assert.ok(asStrings(evidence.doc_refs).includes('docs/status.md'));
   assert.ok(asStrings(evidence.next_verification_command_refs).includes('cmd:rtk npm test'));
   assert.ok(asStrings(evidence.next_verification_command_refs).includes('cmd:rtk npm run typecheck'));
+  assert.ok(asStrings(evidence.existing_evidence_refs).includes('contracts/script_to_pack_gate_receipt.json'));
   asStrings(evidence.doc_refs).forEach(assertRepoRefExists);
 
   assert.deepEqual(blockers.map((blocker) => blocker.tail_id), [
@@ -58,8 +62,26 @@ test('live StageRun progress evidence exposes OMA target-agent owner evidence bl
     'real_blocked_target_patch_loop_scaleout',
     'independent_codex_reviewer_attempt',
     'standard_target_agent_handoff_convergence',
-    'script_to_pack_hygiene',
   ]);
+  assert.equal(scriptToPackGate.receipt_ref, scriptToPackGateRef);
+  assert.equal(
+    scriptToPackGate.closes_typed_blocker_ref,
+    'oma-typed-blocker:target-owner-evidence-tail:script_to_pack_hygiene/missing-machine-gate-for-new-or-retired-script-policy',
+  );
+  assert.equal(scriptToPackGate.closes_tail_id, 'script_to_pack_hygiene');
+  assert.equal(
+    scriptToPackGate.closure_status,
+    'machine_gate_landed_not_success_readiness_or_retirement',
+  );
+  assert.equal(scriptToPackGate.authority_boundary.refs_only, true);
+  assert.equal(scriptToPackGate.authority_boundary.can_claim_OPL_primitive_parity, false);
+  assert.equal(scriptToPackGate.authority_boundary.can_authorize_script_retirement, false);
+  assert.equal(scriptToPackGate.authority_boundary.can_claim_domain_ready, false);
+  assert.equal(scriptToPackGate.authority_boundary.can_claim_production_ready, false);
+  assert.ok(
+    asStrings(scriptToPackGate.future_retirement_or_absorb_still_requires)
+      .includes('no_active_caller_ref'),
+  );
   blockers.forEach((blocker) => {
     const blockerBoundary = blocker.authority_boundary as JsonObject;
     assert.equal(blocker.status, 'blocked_by_missing_external_or_target_owned_evidence');
@@ -97,6 +119,21 @@ test('live StageRun progress evidence exposes OMA target-agent owner evidence bl
   assert.equal(ownerTailClosure.success_receipt_count, 0);
   assert.equal(ownerTailClosure.open_tail_count, blockers.length);
   assert.equal(ownerTailClosure.closed_success_count, 0);
+  assert.deepEqual(asStrings(ownerTailClosure.script_to_pack_gate_receipt_refs), [scriptToPackGateRef]);
+  assert.equal(ownerTailClosure.closed_structure_gate_count, 1);
+  const closedStructureGate = asObjects(ownerTailClosure.closed_structure_gate_items)
+    .find((item) => item.tail_id === 'script_to_pack_hygiene') as JsonObject;
+  assert.ok(closedStructureGate, 'script_to_pack_hygiene should be closed as a structure gate');
+  assert.equal(
+    closedStructureGate.closure_status,
+    'closed_by_script_to_pack_gate_receipt_not_success_or_retirement_claim',
+  );
+  assert.equal(closedStructureGate.receipt_ref, scriptToPackGateRef);
+  assert.equal(closedStructureGate.receipt_contract_ref, 'contracts/script_to_pack_gate_receipt.json');
+  assert.ok(
+    asStrings(closedStructureGate.remaining_future_evidence_refs)
+      .includes('opl-primitive-parity-receipt:opl-meta-agent/script-policy'),
+  );
   assert.deepEqual(
     asStrings(ownerTailClosure.typed_blocker_refs),
     blockers.map((blocker) => blocker.typed_blocker_ref as string),
@@ -158,6 +195,9 @@ test('live StageRun progress evidence exposes OMA target-agent owner evidence bl
     asStrings(ownerChainSummary.typed_blocker_refs),
     asStrings(refs.typed_blocker_refs),
   );
+  assert.deepEqual(asStrings(ownerChainSummary.script_to_pack_gate_receipt_refs), [scriptToPackGateRef]);
+  assert.equal(ownerChainSummary.open_tail_count, 4);
+  assert.equal(ownerChainSummary.closed_structure_gate_count, 1);
   assert.equal(
     productionSummary.live_stage_run_progress_evidence_ref,
     'contracts/live_stage_run_progress_evidence.json',
@@ -171,4 +211,7 @@ test('live StageRun progress evidence exposes OMA target-agent owner evidence bl
     asStrings(productionSummary.typed_blocker_refs),
     asStrings(refs.typed_blocker_refs),
   );
+  assert.deepEqual(asStrings(productionSummary.script_to_pack_gate_receipt_refs), [scriptToPackGateRef]);
+  assert.equal(productionSummary.open_tail_count, 4);
+  assert.equal(productionSummary.closed_structure_gate_count, 1);
 });

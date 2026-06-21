@@ -15,6 +15,7 @@ test('production acceptance evidence closes conformance evidence tail through re
   const newAgentConsumption = readJson(newAgentConsumptionEvidenceRef);
   const liveProgressEvidence = readJson('contracts/live_stage_run_progress_evidence.json');
   const liveProgressRefs = liveProgressEvidence.refs as JsonObject;
+  const scriptToPackGateRef = 'script-to-pack-gate-receipt:opl-meta-agent/current-script-morphology-policy';
 
   assert.equal(acceptance.surface_kind, 'opl_meta_agent_production_acceptance_evidence');
   assert.equal(acceptance.domain_id, 'opl-meta-agent');
@@ -109,8 +110,10 @@ test('production acceptance evidence closes conformance evidence tail through re
   assert.equal(liveProgressSummary.opl_consumption_status, 'not_ready_by_domain_owned_typed_blocker_refs');
   assert.deepEqual(asStrings(liveProgressSummary.typed_blocker_refs), asStrings(liveProgressRefs.typed_blocker_refs));
   assert.deepEqual(asStrings(liveProgressSummary.human_gate_refs), asStrings(liveProgressRefs.human_gate_refs));
+  assert.deepEqual(asStrings(liveProgressSummary.script_to_pack_gate_receipt_refs), [scriptToPackGateRef]);
   assert.deepEqual(asStrings(liveProgressSummary.owner_receipt_refs), []);
-  assert.equal(liveProgressSummary.open_tail_count, 5);
+  assert.equal(liveProgressSummary.open_tail_count, 4);
+  assert.equal(liveProgressSummary.closed_structure_gate_count, 1);
   assert.equal(liveProgressSummary.closed_success_count, 0);
   assert.equal(liveProgressSummary.success_claimed, false);
   assert.equal(liveProgressSummary.target_agent_ready_claimed, false);

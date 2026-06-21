@@ -487,5 +487,8 @@
     "tests/source-purity.test.ts",
     "cmd:npm run typecheck",
     "cmd:npm test"
-  ]
+  ],
+  "script_to_pack_gate_receipt_ref": "contracts/script_to_pack_gate_receipt.json",
+  "script_to_pack_gate_receipt_status": "current_machine_gate_passed_not_retirement_or_parity_claim",
+  "script_to_pack_gate_receipt_shape": "script-to-pack-gate-receipt:opl-meta-agent/current-script-morphology-policy"
 }

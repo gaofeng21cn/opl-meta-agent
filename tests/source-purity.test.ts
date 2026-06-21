@@ -851,3 +851,95 @@ test('standard Foundry policies are contract-owned and helper-projection free', 
   assert.equal(artifactMorphologyPolicy.authority_boundary.oma_can_write_target_artifact_body, false);
   assert.equal(artifactMorphologyPolicy.authority_boundary.target_domain_owner_must_accept_artifact_shape, true);
 });
+
+test('script-to-pack gate receipt materializes machine gate without retirement or readiness authority', () => {
+  const gateReceipt = readJson('contracts/script_to_pack_gate_receipt.json');
+  const authorityFunctions = readJson('runtime/authority_functions/meta-agent-authority-functions.json');
+  const morphologyPolicy = authorityFunctions.script_morphology_policy as JsonObject;
+  const sourceReceipt = authorityFunctions.source_purity_scan_receipt as JsonObject;
+  const activeCallerScan = sourceReceipt.active_script_caller_scan as JsonObject;
+  const gateSummary = gateReceipt.current_scan_summary as JsonObject;
+  const boundary = asBooleanRecord(gateReceipt.authority_boundary);
+  const scriptRefs = listScriptRefs();
+  const gatedScriptRefs = [...new Set(
+    asObjects(morphologyPolicy.script_to_pack_retirement_gates)
+      .flatMap((gate) => asStrings(gate.tracked_script_refs)),
+  )].sort();
+
+  assert.equal(gateReceipt.surface_kind, 'oma_script_to_pack_gate_receipt');
+  assert.equal(gateReceipt.receipt_ref, 'script-to-pack-gate-receipt:opl-meta-agent/current-script-morphology-policy');
+  assert.equal(gateReceipt.receipt_status, 'current_script_morphology_machine_gate_passed');
+  assert.equal(
+    gateReceipt.closes_typed_blocker_ref,
+    'oma-typed-blocker:target-owner-evidence-tail:script_to_pack_hygiene/missing-machine-gate-for-new-or-retired-script-policy',
+  );
+  assert.equal(gateReceipt.closes_tail_id, 'script_to_pack_hygiene');
+  assert.equal(
+    gateReceipt.closure_status,
+    'machine_gate_landed_not_success_readiness_or_retirement',
+  );
+  assert.equal(
+    sourceReceipt.script_to_pack_gate_receipt_ref,
+    'contracts/script_to_pack_gate_receipt.json',
+  );
+  assert.equal(
+    sourceReceipt.script_to_pack_gate_receipt_shape,
+    gateReceipt.receipt_ref,
+  );
+  assert.equal(sourceReceipt.script_to_pack_gate_receipt_status, 'current_machine_gate_passed_not_retirement_or_parity_claim');
+  assert.deepEqual(gateReceipt.machine_gate_inputs.script_scan_scope, morphologyPolicy.script_scan_scope);
+  assert.deepEqual(
+    gateReceipt.machine_gate_inputs.active_caller_scan_policy,
+    morphologyPolicy.active_caller_scan_policy,
+  );
+  assert.deepEqual(gateReceipt.machine_gate_inputs.allowed_classes, morphologyPolicy.allowed_classes);
+  assert.deepEqual(gateReceipt.machine_gate_inputs.forbidden_roles, morphologyPolicy.forbidden_roles);
+  assert.equal(gateSummary.source_purity_scan_status, sourceReceipt.status);
+  assert.equal(gateSummary.active_script_caller_scan_status, activeCallerScan.status);
+  assert.equal(gateSummary.active_caller_scan_policy_id, ACTIVE_CALLER_SCAN_POLICY_ID);
+  assert.equal(gateSummary.scanned_script_count, scriptRefs.length);
+  assert.equal(gateSummary.gated_script_count, gatedScriptRefs.length);
+  assert.equal(gateSummary.orphan_script_count, 0);
+  assert.equal(gateSummary.script_gate_count, asObjects(morphologyPolicy.script_to_pack_retirement_gates).length);
+  assert.deepEqual(asStrings(gateSummary.scanned_script_refs).sort(), scriptRefs);
+  assert.deepEqual(asStrings(gateSummary.gated_script_refs).sort(), gatedScriptRefs);
+  assert.deepEqual(asStrings(gateReceipt.closed_current_machine_gate_refs), [
+    'runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt.active_script_caller_scan',
+    'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.active_caller_scan_policy',
+    'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.script_to_pack_retirement_gates',
+    'contracts/private_functional_surface_policy.json#allowed_opl_surface_consumption_refs',
+    'tests/source-purity.test.ts#script-morphology-gate',
+    'tests/source-purity-boundary.test.ts#source-shape-boundary',
+  ]);
+  [
+    'OPL primitive parity for script policy',
+    'physical script retirement',
+    'no-active-caller for retained scripts',
+    'tombstone or provenance for future script retirement',
+    'target-agent readiness',
+    'domain readiness',
+    'production readiness',
+  ].forEach((claim) => {
+    assert.ok(asStrings(gateReceipt.not_claimed_by_this_receipt).includes(claim));
+  });
+  assert.deepEqual(asStrings(gateReceipt.future_retirement_or_absorb_still_requires), [
+    'opl_primitive_parity_receipt_ref',
+    'no_active_caller_ref',
+    'no_forbidden_write_proof_ref_where_applicable',
+    'tombstone_or_provenance_ref',
+    'target_owner_or_OPL_owner_decision_ref_when_parity_is_claimed',
+  ]);
+  assert.equal(boundary.refs_only, true);
+  assert.equal(boundary.can_create_runtime_truth, false);
+  assert.equal(boundary.can_write_target_domain_truth, false);
+  assert.equal(boundary.can_write_target_owner_receipt_body, false);
+  assert.equal(boundary.can_claim_target_domain_ready, false);
+  assert.equal(boundary.can_claim_domain_ready, false);
+  assert.equal(boundary.can_claim_production_ready, false);
+  assert.equal(boundary.can_claim_OPL_primitive_parity, false);
+  assert.equal(boundary.can_authorize_script_retirement, false);
+  assert.equal(boundary.can_own_agent_lab_runner, false);
+  assert.equal(boundary.can_own_generated_interface, false);
+  assert.equal(boundary.can_own_pack_compiler, false);
+  assert.equal(boundary.can_own_work_order_lifecycle, false);
+});

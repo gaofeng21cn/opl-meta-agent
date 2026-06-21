@@ -23,6 +23,8 @@ const requiredAuthorityFalseFlags = [
   'can_own_generic_queue_or_attempt_ledger',
 ];
 
+const scriptToPackGateRef = 'script-to-pack-gate-receipt:opl-meta-agent/current-script-morphology-policy';
+
 function assertFalseAuthorityBoundary(surface: JsonObject, label: string): void {
   assert.equal(surface.refs_only, true, `${label}.refs_only`);
   requiredAuthorityFalseFlags.forEach((field) => {
@@ -46,6 +48,7 @@ test('target-agent owner-chain evidence accepts live-progress refs without targe
   const liveProgress = readJson('contracts/live_stage_run_progress_evidence.json');
   const liveProgressRefs = liveProgress.refs as JsonObject;
   const liveProgressBlockers = asObjects(liveProgress.typed_blockers);
+  const scriptToPackGate = readJson('contracts/script_to_pack_gate_receipt.json');
   const liveProgressSummary = evidence.live_stage_run_progress_evidence_summary as JsonObject;
   const ownerTailClosure = evidence.target_agent_owner_evidence_tail_closure as JsonObject;
   const ownerTailBoundary = ownerTailClosure.authority_boundary as JsonObject;
@@ -217,7 +220,9 @@ test('target-agent owner-chain evidence accepts live-progress refs without targe
     asStrings(liveProgressSummary.human_gate_refs),
     asStrings(liveProgressRefs.human_gate_refs),
   );
-  assert.equal(liveProgressSummary.open_tail_count, 5);
+  assert.deepEqual(asStrings(liveProgressSummary.script_to_pack_gate_receipt_refs), [scriptToPackGateRef]);
+  assert.equal(liveProgressSummary.open_tail_count, 4);
+  assert.equal(liveProgressSummary.closed_structure_gate_count, 1);
   assert.equal(liveProgressSummary.closed_success_count, 0);
   assert.equal(liveProgressSummary.target_agent_ready_claimed, false);
   assert.equal(liveProgressSummary.domain_ready_claimed, false);
@@ -247,8 +252,24 @@ test('target-agent owner-chain evidence accepts live-progress refs without targe
   assert.equal(ownerTailClosure.production_ready_claimed, false);
   assert.deepEqual(asStrings(ownerTailClosure.owner_receipt_refs), []);
   assert.equal(ownerTailClosure.success_receipt_count, 0);
-  assert.equal(ownerTailClosure.open_tail_count, 5);
+  assert.equal(ownerTailClosure.open_tail_count, 4);
   assert.equal(ownerTailClosure.closed_success_count, 0);
+  assert.deepEqual(asStrings(ownerTailClosure.script_to_pack_gate_receipt_refs), [scriptToPackGateRef]);
+  assert.equal(ownerTailClosure.closed_structure_gate_count, 1);
+  const closedStructureGate = asObjects(ownerTailClosure.closed_structure_gate_items)
+    .find((item) => item.tail_id === 'script_to_pack_hygiene') as JsonObject;
+  assert.ok(closedStructureGate, 'script_to_pack_hygiene should be closed as a structure gate');
+  assert.equal(
+    closedStructureGate.closure_status,
+    'closed_by_script_to_pack_gate_receipt_not_success_or_retirement_claim',
+  );
+  assert.equal(closedStructureGate.receipt_ref, scriptToPackGateRef);
+  assert.equal(closedStructureGate.receipt_contract_ref, 'contracts/script_to_pack_gate_receipt.json');
+  assert.equal(scriptToPackGate.receipt_ref, scriptToPackGateRef);
+  assert.equal(scriptToPackGate.authority_boundary.can_authorize_script_retirement, false);
+  assert.equal(scriptToPackGate.authority_boundary.can_claim_OPL_primitive_parity, false);
+  assert.equal(scriptToPackGate.authority_boundary.can_claim_domain_ready, false);
+  assert.equal(scriptToPackGate.authority_boundary.can_claim_production_ready, false);
   assert.deepEqual(
     asStrings(ownerTailClosure.typed_blocker_refs),
     liveProgressBlockers.map((blocker) => blocker.typed_blocker_ref as string),
@@ -309,11 +330,13 @@ test('OMA domain-owner-chain scaleout exposes typed blocker refs without target 
   const liveRefs = liveProgress.refs as JsonObject;
   assert.deepEqual(asStrings(backfillRefs.owner_receipt_refs), asStrings(liveRefs.owner_receipt_refs));
   assert.deepEqual(asStrings(backfillRefs.typed_blocker_refs), asStrings(liveRefs.typed_blocker_refs));
+  assert.deepEqual(asStrings(backfillRefs.script_to_pack_gate_receipt_refs), [scriptToPackGateRef]);
   assert.deepEqual(asStrings(backfillRefs.human_gate_refs), asStrings(liveRefs.human_gate_refs));
   assert.deepEqual(asStrings(backfillRefs.no_regression_refs), asStrings(liveRefs.no_regression_refs));
   assert.deepEqual(scaleout.observed_ref_counts, {
     owner_receipt_ref_count: 0,
-    typed_blocker_ref_count: 6,
+    typed_blocker_ref_count: 5,
+    script_to_pack_gate_receipt_ref_count: 1,
     human_gate_ref_count: 1,
     work_order_execution_receipt_ref_count: 0,
     no_regression_ref_count: 3,
@@ -324,6 +347,8 @@ test('OMA domain-owner-chain scaleout exposes typed blocker refs without target 
     'real_blocked_target_patch_loop_scaleout',
     'independent_codex_reviewer_attempt',
     'standard_target_agent_handoff_convergence',
+  ]);
+  assert.deepEqual(asStrings(scaleout.closed_structure_tail_ids), [
     'script_to_pack_hygiene',
   ]);
 

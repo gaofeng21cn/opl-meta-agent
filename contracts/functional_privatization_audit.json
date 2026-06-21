@@ -42,7 +42,8 @@
     "app_workbench_projection_ref": "contracts/app_workbench_projection.json",
     "real_target_agent_scaleout_evidence_ref": "contracts/real_target_agent_scaleout_evidence.json",
     "trajectory_learning_contract_ref": "contracts/trajectory_learning_contract.json",
-    "live_stage_run_progress_evidence_ref": "contracts/live_stage_run_progress_evidence.json"
+    "live_stage_run_progress_evidence_ref": "contracts/live_stage_run_progress_evidence.json",
+    "script_to_pack_gate_receipt_ref": "contracts/script_to_pack_gate_receipt.json"
   },
   "domain_allowed_roles": [
     "agent_building_semantics",
@@ -221,6 +222,36 @@
       ],
       "active_caller_status": "typed_blocker_refs_projected_for_standard_consumption",
       "role_scope": "owner_receipt_typed_blocker_human_gate_no_regression_and_long_soak_refs_not_target_domain_truth_writer"
+    },
+    {
+      "module_id": "script_to_pack_gate_receipt",
+      "classification": "refs_only_domain_adapter",
+      "owner": "opl-meta-agent",
+      "code_paths": [
+        "contracts/script_to_pack_gate_receipt.json"
+      ],
+      "active_callers": [
+        "OPL live StageRun progress consumer",
+        "OPL App workbench",
+        "OPL generated interface bundle"
+      ],
+      "active_caller_status": "machine_gate_receipt_ready_not_retirement_or_parity_claim",
+      "role_scope": "refs_only_script_morphology_gate_receipt_not_OPL_primitive_parity_or_script_retirement_authority",
+      "consumes_opl_surface": "generated_interface_bundle",
+      "retained_domain_authority": [
+        "script_morphology_policy_refs",
+        "active_caller_scan_refs",
+        "no_resurrection_boundary_refs",
+        "typed_blocker_closure_ref"
+      ],
+      "forbidden_roles": [
+        "OPL_primitive_parity_authority",
+        "script_retirement_authority",
+        "generic_runtime_owner",
+        "target_truth_writer",
+        "owner_receipt_body_writer"
+      ],
+      "retention_reason": "The receipt closes the current missing-machine-gate blocker for script-to-pack hygiene while leaving OPL primitive parity, no-active-caller and tombstone/provenance gates as future retirement evidence."
     },
     {
       "module_id": "trajectory_learning_contract",

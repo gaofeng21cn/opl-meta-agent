@@ -236,6 +236,7 @@ test('registration, App workbench projection, and scaleout evidence contracts ar
     app_workbench_projection_ref: 'contracts/app_workbench_projection.json',
     real_target_agent_scaleout_evidence_ref: 'contracts/real_target_agent_scaleout_evidence.json',
     live_stage_run_progress_evidence_ref: 'contracts/live_stage_run_progress_evidence.json',
+    script_to_pack_gate_receipt_ref: 'contracts/script_to_pack_gate_receipt.json',
     trajectory_learning_contract_ref: 'contracts/trajectory_learning_contract.json',
   });
   assert.equal(liveProgressEvidence.surface_kind, 'domain_live_stage_run_progress_evidence');
@@ -337,6 +338,12 @@ test('registration, projection, and evidence contracts are represented in functi
       classification: 'refs_only_domain_adapter',
       codePath: 'contracts/live_stage_run_progress_evidence.json',
       roleScope: 'owner_receipt_typed_blocker_human_gate_no_regression_and_long_soak_refs_not_target_domain_truth_writer',
+    },
+    {
+      moduleId: 'script_to_pack_gate_receipt',
+      classification: 'refs_only_domain_adapter',
+      codePath: 'contracts/script_to_pack_gate_receipt.json',
+      roleScope: 'refs_only_script_morphology_gate_receipt_not_OPL_primitive_parity_or_script_retirement_authority',
     },
     {
       moduleId: 'trajectory_learning_contract',
