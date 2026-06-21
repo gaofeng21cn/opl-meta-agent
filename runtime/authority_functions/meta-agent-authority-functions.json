@@ -887,6 +887,43 @@
         "caller_proof_source_not_machine_scanned",
         "script_not_in_retirement_gate"
       ]
+    },
+    "false_ready_claim_guard": {
+      "guard_id": "oma.generated-hosted-false-ready-claim-guard.v1",
+      "scope": "repo_machine_source",
+      "forbidden_true_claim_keys": [
+        "app_live_rendering_complete",
+        "app_workbench_live_rendering_complete",
+        "app_operator_sustained_consumption_complete",
+        "registry_discovery_live_complete",
+        "generated_interface_live_ready",
+        "generated_hosted_surface_live_ready",
+        "generated_surface_consumption_complete",
+        "default_caller_cutover_complete",
+        "default_promotion_complete",
+        "target_agent_ready",
+        "domain_ready",
+        "production_ready"
+      ],
+      "allowed_evidence_sources": [
+        "OPL/App external evidence tail",
+        "target owner receipt or typed blocker refs",
+        "human gate receipt"
+      ],
+      "fail_closed_conditions": [
+        "repo_machine_source_contains_forbidden_true_claim",
+        "receipt_or_contract_claims_app_live_rendering_without_external_evidence",
+        "receipt_or_contract_claims_registry_live_discovery_without_external_evidence",
+        "receipt_or_contract_claims_generated_hosted_live_ready_without_external_evidence",
+        "receipt_or_contract_claims_default_promotion_without_owner_gate"
+      ],
+      "authority_boundary": {
+        "oma_can_claim_app_live_rendering": false,
+        "oma_can_claim_registry_live_discovery": false,
+        "oma_can_claim_generated_hosted_live_ready": false,
+        "oma_can_claim_default_promotion": false,
+        "oma_can_claim_target_agent_ready": false
+      }
     }
   },
   "purpose_first_owner_delta_gate": {

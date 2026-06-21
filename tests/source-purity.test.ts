@@ -53,6 +53,46 @@ function valuesAtSegment(value: unknown, segment: string): unknown[] {
   return Object.hasOwn(value as JsonObject, segment) ? [(value as JsonObject)[segment]] : [];
 }
 
+function listFalseReadyScanSourceRefs(relativeRef: string): string[] {
+  const absoluteRef = path.join(repoRoot, relativeRef);
+  if (!fs.existsSync(absoluteRef)) return [];
+  const stat = fs.statSync(absoluteRef);
+  if (stat.isFile()) {
+    if (relativeRef === 'tests/source-purity.test.ts') return [];
+    return ['.json', '.ts', '.sh', '.yml', '.yaml'].includes(path.extname(relativeRef))
+      ? [relativeRef]
+      : [];
+  }
+  return fs.readdirSync(absoluteRef, { withFileTypes: true })
+    .flatMap((entry) => listFalseReadyScanSourceRefs(path.join(relativeRef, entry.name)))
+    .sort();
+}
+
+function falseReadyLiteralParts(claimKey: string): string[] {
+  return [
+    `"${claimKey}": true`,
+    `"${claimKey}": True`,
+    `'${claimKey}': true`,
+    `'${claimKey}': True`,
+    `${claimKey}: true`,
+    `${claimKey} = true`,
+  ];
+}
+
+function collectFalseReadyClaimMatches(claimKeys: string[]): { path: string; claimKey: string }[] {
+  const scanRoots = ['agent', 'contracts', 'runtime', 'scripts', 'tests', 'package.json'];
+  return scanRoots.flatMap((rootRef) => (
+    listFalseReadyScanSourceRefs(rootRef).flatMap((sourceRef) => {
+      const source = fs.readFileSync(path.join(repoRoot, sourceRef), 'utf8');
+      return claimKeys.flatMap((claimKey) => (
+        falseReadyLiteralParts(claimKey).some((literal) => source.includes(literal))
+          ? [{ path: sourceRef, claimKey }]
+          : []
+      ));
+    })
+  ));
+}
+
 test('script morphology stays limited to authority refs, materializers, helpers, and verification wrappers', () => {
   const privatePolicy = readJson('contracts/private_functional_surface_policy.json');
   const authorityFunctions = readJson('runtime/authority_functions/meta-agent-authority-functions.json');
@@ -95,6 +135,50 @@ test('script morphology stays limited to authority refs, materializers, helpers,
     morphologyPolicy.allowed_opl_surface_consumption_policy_ref,
     'contracts/private_functional_surface_policy.json#allowed_opl_surface_consumption_refs',
   );
+  const falseReadyClaimGuard = assertPolicyObject(morphologyPolicy, 'false_ready_claim_guard');
+  assert.equal(falseReadyClaimGuard.guard_id, 'oma.generated-hosted-false-ready-claim-guard.v1');
+  const falseReadyClaimKeys = asStrings(falseReadyClaimGuard.forbidden_true_claim_keys);
+  assert.deepEqual(falseReadyClaimKeys, [
+    'app_live_rendering_complete',
+    'app_workbench_live_rendering_complete',
+    'app_operator_sustained_consumption_complete',
+    'registry_discovery_live_complete',
+    'generated_interface_live_ready',
+    'generated_hosted_surface_live_ready',
+    'generated_surface_consumption_complete',
+    'default_caller_cutover_complete',
+    'default_promotion_complete',
+    'target_agent_ready',
+    'domain_ready',
+    'production_ready',
+  ]);
+  assert.deepEqual(asStrings(falseReadyClaimGuard.allowed_evidence_sources), [
+    'OPL/App external evidence tail',
+    'target owner receipt or typed blocker refs',
+    'human gate receipt',
+  ]);
+  const falseReadyBoundary = asBooleanRecord(falseReadyClaimGuard.authority_boundary);
+  assert.equal(falseReadyBoundary.oma_can_claim_app_live_rendering, false);
+  assert.equal(falseReadyBoundary.oma_can_claim_registry_live_discovery, false);
+  assert.equal(falseReadyBoundary.oma_can_claim_generated_hosted_live_ready, false);
+  assert.equal(falseReadyBoundary.oma_can_claim_default_promotion, false);
+  assert.equal(falseReadyBoundary.oma_can_claim_target_agent_ready, false);
+  assert.deepEqual(
+    collectFalseReadyClaimMatches(falseReadyClaimKeys),
+    [],
+    'OMA machine source must not carry generated/App/registry/default-promotion true flags',
+  );
+  const falseReadyProbePath = path.join(repoRoot, 'contracts/__source_purity_false_ready_probe.json');
+  fs.writeFileSync(falseReadyProbePath, ['{"generated_hosted_surface_', 'live_ready": true}\n'].join(''));
+  try {
+    assert.deepEqual(
+      collectFalseReadyClaimMatches(falseReadyClaimKeys),
+      [{ path: 'contracts/__source_purity_false_ready_probe.json', claimKey: 'generated_hosted_surface_live_ready' }],
+      'false-ready probe should be caught by the machine-source scan',
+    );
+  } finally {
+    fs.rmSync(falseReadyProbePath, { force: true });
+  }
   const allowedOplSurfaceRefs = asObjects(privatePolicy.allowed_opl_surface_consumption_refs);
   assert.ok(
     allowedOplSurfaceRefs.length > 0,
@@ -937,6 +1021,10 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
     gateReceipt.machine_gate_inputs.active_caller_scan_policy,
     morphologyPolicy.active_caller_scan_policy,
   );
+  assert.deepEqual(
+    gateReceipt.machine_gate_inputs.false_ready_claim_guard,
+    morphologyPolicy.false_ready_claim_guard,
+  );
   assert.deepEqual(gateReceipt.machine_gate_inputs.allowed_classes, morphologyPolicy.allowed_classes);
   assert.deepEqual(gateReceipt.machine_gate_inputs.forbidden_roles, morphologyPolicy.forbidden_roles);
   assert.equal(gateSummary.source_purity_scan_status, sourceReceipt.status);
@@ -951,6 +1039,7 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
   assert.deepEqual(asStrings(gateReceipt.closed_current_machine_gate_refs), [
     'runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt.active_script_caller_scan',
     'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.active_caller_scan_policy',
+    'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.false_ready_claim_guard',
     'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.script_to_pack_retirement_gates',
     'contracts/private_functional_surface_policy.json#allowed_opl_surface_consumption_refs',
     'tests/source-purity.test.ts#script-morphology-gate',
@@ -964,6 +1053,10 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
     'target-agent readiness',
     'domain readiness',
     'production readiness',
+    'App live rendering',
+    'registry discovery live completion',
+    'generated-hosted surface live readiness',
+    'default promotion',
   ].forEach((claim) => {
     assert.ok(asStrings(gateReceipt.not_claimed_by_this_receipt).includes(claim));
   });
