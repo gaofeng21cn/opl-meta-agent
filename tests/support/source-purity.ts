@@ -13,6 +13,21 @@ export const STANDARD_FOUNDRY_POLICIES_CONTRACT_REF = 'contracts/standard_foundr
 export const STAGE_NATIVE_ARTIFACT_VOCABULARY_CONTRACT_REF = 'contracts/stage_native_artifact_vocabulary.json';
 export const ACTIVE_CALLER_SCAN_POLICY_ID = 'oma.script-active-caller-scan.v1';
 
+export function sourcePuritySelfGuardRefs(policy: JsonObject): string[] {
+  return [
+    ...new Set([
+      ...(Array.isArray(policy.self_guard_test_refs) ? policy.self_guard_test_refs as string[] : []),
+      ...(typeof policy.self_guard_test_ref === 'string' ? [policy.self_guard_test_ref] : []),
+    ]),
+  ].sort();
+}
+
+export function sourceRefIsSelfGuard(sourceRef: string, selfGuardRefs: string[]): boolean {
+  return selfGuardRefs.some((selfGuardRef) => (
+    sourceRef === selfGuardRef || sourceRef.startsWith(`${selfGuardRef.replace(/\/?$/, '/')}`)
+  ));
+}
+
 export function assertPolicyStringList(contract: JsonObject, field: string): string[] {
   const value = contract[field];
   assert.ok(Array.isArray(value), `${field} should be a string array`);
@@ -108,6 +123,10 @@ export function collectActiveScriptCallerScan(scriptRefs: string[]): JsonObject 
     'tests/source-purity.test.ts',
     'active caller scan policy should identify the self-guard test',
   );
+  assert.deepEqual(sourcePuritySelfGuardRefs(morphologyPolicy), [
+    'tests/source-purity.test.ts',
+    'tests/source-purity/',
+  ]);
   assert.equal(
     morphologyPolicy.self_guard_may_prove_active_caller,
     false,
@@ -152,7 +171,9 @@ export function collectActiveScriptCallerScan(scriptRefs: string[]): JsonObject 
     ...listFilesByExtension('scripts', '.ts'),
     ...listFilesByExtension('tests', '.ts'),
   ].sort();
+  const selfGuardRefs = sourcePuritySelfGuardRefs(morphologyPolicy);
   tsCallerRefs.forEach((sourceRef) => {
+    if (sourceRefIsSelfGuard(sourceRef, selfGuardRefs)) return;
     scriptImportTargets(sourceRef, scriptRefs).forEach((scriptRef) => {
       callersByScript.get(scriptRef)?.add(`${sourceRef}#import`);
     });
@@ -168,7 +189,7 @@ export function collectActiveScriptCallerScan(scriptRefs: string[]): JsonObject 
   });
 
   listFilesByExtension('tests', '.ts')
-    .filter((sourceRef) => sourceRef !== 'tests/source-purity.test.ts')
+    .filter((sourceRef) => !sourceRefIsSelfGuard(sourceRef, selfGuardRefs))
     .forEach((sourceRef) => {
       const source = readText(sourceRef);
       scriptRefs.forEach((scriptRef) => {

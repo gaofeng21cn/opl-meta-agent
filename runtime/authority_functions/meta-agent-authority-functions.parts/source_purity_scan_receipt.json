@@ -59,9 +59,9 @@
     "scan_inputs": [
       "package.json#scripts",
       "scripts/**/*.ts import graph",
-      "tests/**/*.ts import graph excluding tests/source-purity.test.ts self-guard strings",
+      "tests/**/*.ts import graph excluding source-purity self-guard refs",
       "scripts/**/*.sh shell invocations",
-      "tests/**/*.ts direct script refs excluding tests/source-purity.test.ts"
+      "tests/**/*.ts direct script refs excluding source-purity self-guard refs"
     ],
     "caller_refs_by_script": [
       {
@@ -490,5 +490,35 @@
   ],
   "script_to_pack_gate_receipt_ref": "contracts/script_to_pack_gate_receipt.json",
   "script_to_pack_gate_receipt_status": "current_machine_gate_passed_not_retirement_or_parity_claim",
-  "script_to_pack_gate_receipt_shape": "script-to-pack-gate-receipt:opl-meta-agent/current-script-morphology-policy"
+  "script_to_pack_gate_receipt_shape": "script-to-pack-gate-receipt:opl-meta-agent/current-script-morphology-policy",
+  "source_purity_test_structure": {
+    "structure_id": "oma.source_purity_test_structure.v1",
+    "state": "thin_anchor_with_case_modules",
+    "anchor_test_ref": "tests/source-purity.test.ts#script-morphology-gate",
+    "case_module_refs": [
+      "tests/source-purity/script-morphology.test-case.ts",
+      "tests/source-purity/policy-projection.test-case.ts",
+      "tests/source-purity/gate-receipt.test-case.ts"
+    ],
+    "support_module_ref": "tests/source-purity/support.ts",
+    "self_guard_test_refs": [
+      "tests/source-purity.test.ts",
+      "tests/source-purity/"
+    ],
+    "no_second_truth_policy": {
+      "anchor_test_remains_receipt_ref": true,
+      "case_modules_cannot_prove_active_script_callers": true,
+      "case_modules_cannot_claim_retirement_or_readiness": true,
+      "contract_receipt_remains_machine_gate_source": true
+    },
+    "authority_boundary": {
+      "test_structure_can_claim_opl_primitive_parity": false,
+      "test_structure_can_authorize_script_retirement": false,
+      "test_structure_can_claim_app_or_registry_readiness": false,
+      "test_structure_can_claim_generated_hosted_readiness": false,
+      "test_structure_can_claim_target_agent_ready": false,
+      "test_structure_can_claim_domain_ready": false,
+      "test_structure_can_claim_production_ready": false
+    }
+  }
 }

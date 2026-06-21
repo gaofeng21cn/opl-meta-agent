@@ -27,9 +27,9 @@
       "scan_inputs": [
         "package.json#scripts",
         "scripts/**/*.ts import graph",
-        "tests/**/*.ts import graph excluding tests/source-purity.test.ts self-guard strings",
+        "tests/**/*.ts import graph excluding source-purity self-guard refs",
         "scripts/**/*.sh shell invocations",
-        "tests/**/*.ts direct script refs excluding tests/source-purity.test.ts"
+        "tests/**/*.ts direct script refs excluding source-purity self-guard refs"
       ],
       "self_guard_test_ref": "tests/source-purity.test.ts",
       "self_guard_may_prove_active_caller": false,
@@ -46,7 +46,8 @@
         "self_guard_test_strings_count_as_caller": false,
         "test_ref_callers_must_be_outside_self_guard": true,
         "caller_ref_paths_must_exist": true,
-        "receipt_must_not_synthesize_callers": true
+        "receipt_must_not_synthesize_callers": true,
+        "self_guard_module_strings_count_as_caller": false
       },
       "fail_closed_conditions": [
         "orphan_script_count_nonzero",
@@ -54,7 +55,12 @@
         "caller_ref_path_missing",
         "caller_proof_source_not_machine_scanned",
         "script_not_in_retirement_gate"
-      ]
+      ],
+      "self_guard_test_refs": [
+        "tests/source-purity.test.ts",
+        "tests/source-purity/"
+      ],
+      "self_guard_module_scope": "tests/source-purity/"
     },
     "false_ready_claim_guard": {
       "guard_id": "oma.generated-hosted-false-ready-claim-guard.v1",
@@ -1204,9 +1210,9 @@
       "scan_inputs": [
         "package.json#scripts",
         "scripts/**/*.ts import graph",
-        "tests/**/*.ts import graph excluding tests/source-purity.test.ts self-guard strings",
+        "tests/**/*.ts import graph excluding source-purity self-guard refs",
         "scripts/**/*.sh shell invocations",
-        "tests/**/*.ts direct script refs excluding tests/source-purity.test.ts"
+        "tests/**/*.ts direct script refs excluding source-purity self-guard refs"
       ],
       "caller_refs_by_script": [
         {
@@ -1635,7 +1641,37 @@
     ],
     "script_to_pack_gate_receipt_ref": "contracts/script_to_pack_gate_receipt.json",
     "script_to_pack_gate_receipt_status": "current_machine_gate_passed_not_retirement_or_parity_claim",
-    "script_to_pack_gate_receipt_shape": "script-to-pack-gate-receipt:opl-meta-agent/current-script-morphology-policy"
+    "script_to_pack_gate_receipt_shape": "script-to-pack-gate-receipt:opl-meta-agent/current-script-morphology-policy",
+    "source_purity_test_structure": {
+      "structure_id": "oma.source_purity_test_structure.v1",
+      "state": "thin_anchor_with_case_modules",
+      "anchor_test_ref": "tests/source-purity.test.ts#script-morphology-gate",
+      "case_module_refs": [
+        "tests/source-purity/script-morphology.test-case.ts",
+        "tests/source-purity/policy-projection.test-case.ts",
+        "tests/source-purity/gate-receipt.test-case.ts"
+      ],
+      "support_module_ref": "tests/source-purity/support.ts",
+      "self_guard_test_refs": [
+        "tests/source-purity.test.ts",
+        "tests/source-purity/"
+      ],
+      "no_second_truth_policy": {
+        "anchor_test_remains_receipt_ref": true,
+        "case_modules_cannot_prove_active_script_callers": true,
+        "case_modules_cannot_claim_retirement_or_readiness": true,
+        "contract_receipt_remains_machine_gate_source": true
+      },
+      "authority_boundary": {
+        "test_structure_can_claim_opl_primitive_parity": false,
+        "test_structure_can_authorize_script_retirement": false,
+        "test_structure_can_claim_app_or_registry_readiness": false,
+        "test_structure_can_claim_generated_hosted_readiness": false,
+        "test_structure_can_claim_target_agent_ready": false,
+        "test_structure_can_claim_domain_ready": false,
+        "test_structure_can_claim_production_ready": false
+      }
+    }
   },
   "functions": [
     {
