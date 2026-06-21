@@ -32,6 +32,35 @@ test('source-structure and line-budget lanes are repo-native package and verify 
   assert.equal(policy.surface_kind, 'opl_family_source_structure_policy');
   assert.equal(policy.lanes.advisory.fail_on_over_budget, false);
   assert.equal(policy.lanes.strict.fail_on_over_budget, true);
+  assert.equal(
+    policy.script_to_pack_receipt_guard.guard_id,
+    'oma.source_structure.script_to_pack_receipt_drift_guard.v1',
+  );
+  assert.equal(policy.script_to_pack_receipt_guard.state, 'active_executable_guard');
+  assert.equal(policy.script_to_pack_receipt_guard.command_ref, 'npm run source-structure');
+  assert.equal(policy.script_to_pack_receipt_guard.receipt_ref, 'contracts/script_to_pack_gate_receipt.json');
+  assert.equal(
+    policy.script_to_pack_receipt_guard.authority_functions_ref,
+    'runtime/authority_functions/meta-agent-authority-functions.json',
+  );
+  assert.deepEqual(asStrings(policy.script_to_pack_receipt_guard.fail_closed_conditions), [
+    'receipt_contract_missing',
+    'authority_functions_aggregate_missing',
+    'source_purity_scan_receipt_drift',
+    'script_morphology_policy_drift',
+    'tracked_script_not_in_receipt',
+    'receipt_scanned_script_not_tracked',
+    'gated_script_refs_drift',
+    'orphan_script_count_nonzero',
+    'receipt_claims_retirement_or_readiness',
+  ]);
+  assert.equal(policy.script_to_pack_receipt_guard.false_authority_boundary.guard_can_authorize_script_retirement, false);
+  assert.equal(policy.script_to_pack_receipt_guard.false_authority_boundary.guard_can_claim_opl_primitive_parity, false);
+  assert.equal(policy.script_to_pack_receipt_guard.false_authority_boundary.guard_can_claim_app_or_registry_readiness, false);
+  assert.equal(policy.script_to_pack_receipt_guard.false_authority_boundary.guard_can_claim_generated_hosted_readiness, false);
+  assert.equal(policy.script_to_pack_receipt_guard.false_authority_boundary.guard_can_claim_target_agent_ready, false);
+  assert.equal(policy.script_to_pack_receipt_guard.false_authority_boundary.guard_can_claim_domain_ready, false);
+  assert.equal(policy.script_to_pack_receipt_guard.false_authority_boundary.guard_can_claim_production_ready, false);
   assert.equal(stageControlExemption?.bundle_manifest_ref, 'contracts/stage_control_plane.bundle-manifest.json');
   assert.equal(stageControlExemption?.check_command, 'npm run stage-control:check');
   assert.equal(stageControlExemption?.generated_consumer_surface_must_be_do_not_edit, true);
@@ -109,5 +138,8 @@ test('structure maintenance scripts pass in focused advisory check mode', () => 
       },
     });
     assert.equal(result.status, 0, `${script} ${flag}\n${result.stdout}\n${result.stderr}`);
+    if (script === 'scripts/check-source-structure.ts') {
+      assert.match(result.stdout, /script-to-pack receipt guard checked 31 scripts, 31 gated refs, 0 orphan scripts/);
+    }
   });
 });

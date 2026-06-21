@@ -57,6 +57,50 @@
       "generated_consumer_surface_must_be_do_not_edit": true
     }
   ],
+  "script_to_pack_receipt_guard": {
+    "guard_id": "oma.source_structure.script_to_pack_receipt_drift_guard.v1",
+    "state": "active_executable_guard",
+    "command_ref": "npm run source-structure",
+    "receipt_ref": "contracts/script_to_pack_gate_receipt.json",
+    "authority_functions_ref": "runtime/authority_functions/meta-agent-authority-functions.json",
+    "source_receipt_path": "source_purity_scan_receipt",
+    "script_morphology_path": "script_morphology_policy",
+    "validated_summary_fields": [
+      "source_purity_scan_status",
+      "active_script_caller_scan_status",
+      "active_caller_scan_policy_id",
+      "source_ref_integrity_guard_id",
+      "source_ref_integrity_status",
+      "scanned_script_count",
+      "gated_script_count",
+      "orphan_script_count",
+      "script_gate_count",
+      "scanned_script_refs",
+      "gated_script_refs",
+      "active_caller_scan_self_guard_refs"
+    ],
+    "fail_closed_conditions": [
+      "receipt_contract_missing",
+      "authority_functions_aggregate_missing",
+      "source_purity_scan_receipt_drift",
+      "script_morphology_policy_drift",
+      "tracked_script_not_in_receipt",
+      "receipt_scanned_script_not_tracked",
+      "gated_script_refs_drift",
+      "orphan_script_count_nonzero",
+      "receipt_claims_retirement_or_readiness"
+    ],
+    "false_authority_boundary": {
+      "guard_can_authorize_script_retirement": false,
+      "guard_can_claim_opl_primitive_parity": false,
+      "guard_can_claim_no_active_caller": false,
+      "guard_can_claim_app_or_registry_readiness": false,
+      "guard_can_claim_generated_hosted_readiness": false,
+      "guard_can_claim_target_agent_ready": false,
+      "guard_can_claim_domain_ready": false,
+      "guard_can_claim_production_ready": false
+    }
+  },
   "authority_boundary": {
     "domain_truth_owner": "opl-meta-agent",
     "source_structure_lane_owner": "opl-meta-agent",
