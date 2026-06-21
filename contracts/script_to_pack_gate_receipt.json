@@ -195,7 +195,9 @@
         "receipt_or_contract_claims_app_live_rendering_without_external_evidence",
         "receipt_or_contract_claims_registry_live_discovery_without_external_evidence",
         "receipt_or_contract_claims_generated_hosted_live_ready_without_external_evidence",
-        "receipt_or_contract_claims_default_promotion_without_owner_gate"
+        "receipt_or_contract_claims_default_promotion_without_owner_gate",
+        "compact_cleanup_summary_drift",
+        "compact_cleanup_summary_claims_cleanup_or_readiness"
       ],
       "authority_boundary": {
         "oma_can_claim_app_live_rendering": false,
@@ -270,9 +272,14 @@
       },
       "executable_readback_command_ref": "npm run script-to-pack:readback",
       "executable_readback_surface_kind": "oma_script_to_pack_retirement_cleanup_readback",
+      "compact_cleanup_summary_id": "oma.script_to_pack_retirement_cleanup.compact_summary.v1",
+      "direct_readback_compact_summary_output_ref": "script-to-pack-readback.compact_cleanup_summary",
+      "compact_summary_role": "direct_readback_short_form_not_second_script_inventory",
       "readback_materialization_policy": {
         "source_of_truth": "contracts/script_to_pack_gate_receipt.json + runtime/authority_functions/meta-agent-authority-functions.json",
         "script_rows_are_derived_from_existing_retirement_gates": true,
+        "compact_summary_is_derived_from_same_script_rows": true,
+        "compact_summary_must_not_replace_full_candidate_rows": true,
         "can_materialize_missing_evidence_worklist": true,
         "can_materialize_owner_delta_route": true,
         "can_materialize_typed_blocker_ref_shape": true,
@@ -475,12 +482,20 @@
     "cleanup_readback_command_ref": "npm run script-to-pack:readback",
     "cleanup_readback_surface_kind": "oma_script_to_pack_retirement_cleanup_readback",
     "cleanup_readback_state": "readback_available_cleanup_not_authorized",
+    "compact_cleanup_summary_id": "oma.script_to_pack_retirement_cleanup.compact_summary.v1",
+    "compact_cleanup_summary_output_ref": "script-to-pack-readback.compact_cleanup_summary",
+    "compact_cleanup_candidate_count": 31,
+    "compact_cleanup_apply_candidate_count": 0,
+    "compact_cleanup_missing_evidence_item_count": 247,
+    "compact_cleanup_sample_candidate_count": 3,
     "cleanup_candidate_count": 31,
     "cleanup_apply_candidate_count": 0,
     "cleanup_readback_authority_ref": "runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.retirement_readback_cleanup_guard",
     "cleanup_readback_is_authority": false,
     "cleanup_readback_can_authorize_delete": false,
-    "cleanup_readback_can_claim_retirement_complete": false
+    "cleanup_readback_can_claim_retirement_complete": false,
+    "compact_cleanup_readback_can_authorize_delete": false,
+    "compact_cleanup_readback_can_claim_retirement_complete": false
   },
   "closed_current_machine_gate_refs": [
     "runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt.active_script_caller_scan",

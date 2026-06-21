@@ -48,8 +48,20 @@ test('source-structure and line-budget lanes are repo-native package and verify 
     'source-structure-readback.script_to_pack_receipt_guard.cleanup_readback',
   );
   assert.equal(
+    policy.script_to_pack_receipt_guard.direct_readback_compact_summary_output_ref,
+    'script-to-pack-readback.compact_cleanup_summary',
+  );
+  assert.equal(
+    policy.script_to_pack_receipt_guard.compact_cleanup_summary_id,
+    'oma.script_to_pack_retirement_cleanup.compact_summary.v1',
+  );
+  assert.equal(
     policy.script_to_pack_receipt_guard.cleanup_readback_surface_kind,
     'oma_script_to_pack_retirement_cleanup_readback',
+  );
+  assert.equal(
+    policy.script_to_pack_receipt_guard.cleanup_readback_compact_summary_role,
+    'direct_readback_short_form_not_second_script_inventory',
   );
   assert.deepEqual(policy.script_to_pack_receipt_guard.cleanup_readback_required_fields, [
     'script_ref',
@@ -79,6 +91,8 @@ test('source-structure and line-budget lanes are repo-native package and verify 
     'receipt_claims_retirement_or_readiness',
     'cleanup_readback_missing_candidate',
     'cleanup_readback_claims_cleanup_apply',
+    'compact_cleanup_summary_drift',
+    'compact_cleanup_summary_claims_cleanup_or_readiness',
   ]);
   assert.equal(policy.script_to_pack_receipt_guard.false_authority_boundary.guard_can_authorize_script_retirement, false);
   assert.equal(policy.script_to_pack_receipt_guard.false_authority_boundary.guard_can_claim_opl_primitive_parity, false);
@@ -153,8 +167,17 @@ test('source-structure publishes a JSON machine readback for script-to-pack guar
   assert.equal(payload.script_to_pack_receipt_guard.orphan_script_count, 0);
   assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback_command_ref, 'npm run script-to-pack:readback');
   assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.surface_kind, 'oma_script_to_pack_retirement_cleanup_readback');
+  assert.equal(
+    payload.script_to_pack_receipt_guard.cleanup_readback.summary_id,
+    'oma.script_to_pack_retirement_cleanup.compact_summary.v1',
+  );
+  assert.equal(
+    payload.script_to_pack_receipt_guard.cleanup_readback.summary_role,
+    'compact_cleanup_summary_not_second_script_inventory',
+  );
   assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.cleanup_candidate_count, 31);
   assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.cleanup_apply_candidate_count, 0);
+  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.sample_cleanup_candidate_count, 3);
   assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.sample_cleanup_candidates.length, 3);
   assert.equal(
     payload.script_to_pack_receipt_guard.cleanup_readback.sample_cleanup_candidates
@@ -172,12 +195,13 @@ test('source-structure publishes a JSON machine readback for script-to-pack guar
 });
 
 test('script-to-pack readback materializes cleanup candidates without authorizing cleanup', () => {
-  const result = spawnSync('npm', ['run', 'script-to-pack:readback', '--silent'], {
+  const outputPath = path.join('/tmp', `oma-script-to-pack-readback-${process.pid}.json`);
+  const result = spawnSync('sh', ['-c', `npm run script-to-pack:readback --silent > "${outputPath}"`], {
     cwd: repoRoot,
     encoding: 'utf8',
   });
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-  const payload = JSON.parse(result.stdout);
+  const payload = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
 
   assert.equal(payload.surface_kind, 'oma_script_to_pack_retirement_cleanup_readback');
   assert.equal(payload.version, 'script-to-pack-retirement-cleanup-readback.v1');
@@ -188,6 +212,16 @@ test('script-to-pack readback materializes cleanup candidates without authorizin
   assert.equal(payload.cleanup_candidate_count, 31);
   assert.equal(payload.cleanup_apply_candidate_count, 0);
   assert.equal(payload.cleanup_candidates.length, 31);
+  assert.equal(payload.compact_cleanup_summary.summary_id, 'oma.script_to_pack_retirement_cleanup.compact_summary.v1');
+  assert.equal(payload.compact_cleanup_summary.summary_role, 'compact_cleanup_summary_not_second_script_inventory');
+  assert.equal(payload.compact_cleanup_summary.cleanup_candidate_count, payload.cleanup_candidate_count);
+  assert.equal(payload.compact_cleanup_summary.cleanup_apply_candidate_count, 0);
+  assert.equal(payload.compact_cleanup_summary.missing_evidence_item_count, payload.missing_evidence_item_count);
+  assert.equal(payload.compact_cleanup_summary.sample_cleanup_candidate_count, 3);
+  assert.equal(payload.compact_cleanup_summary.sample_cleanup_candidates.length, 3);
+  assert.equal(payload.compact_cleanup_summary.authority_boundary.can_authorize_physical_delete, false);
+  assert.equal(payload.compact_cleanup_summary.authority_boundary.can_claim_domain_ready, false);
+  assert.equal(payload.compact_cleanup_summary.authority_boundary.can_claim_production_ready, false);
   const sourceStructureRow = payload.cleanup_candidates.find(
     (candidate: { script_ref: string }) => candidate.script_ref === 'scripts/check-source-structure.ts',
   );

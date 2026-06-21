@@ -100,7 +100,7 @@ generator commands、do-not-edit consumer surface 和 false-authority flags。
 提供同一检查的 compact 机器 readback，输出 line-budget findings、script-to-pack
 receipt guard 状态、violation list、cleanup-readback 摘要 / sample 和 false-authority
 boundary；完整 per-script cleanup candidate 表由 `npm run script-to-pack:readback`
-输出。上述 readback 只证明 receipt drift guard 和 cleanup candidate readback 当前可执行；
+输出；同一 direct readback 还输出 `compact_cleanup_summary` 作为顶层短读面，summary id、candidate count、sample count、missing-evidence count 和 false-authority flags 由 `contracts/script_to_pack_gate_receipt.json#current_scan_summary` 与 source-structure guard 校验，不能替代 full table 或成为第二脚本 inventory。上述 readback 只证明 receipt drift guard 和 cleanup candidate readback 当前可执行；
 它不能授权脚本物理退役、OPL primitive parity、no-active-caller、App/registry/generated-hosted
 readiness、target/domain/production readiness 或 owner receipt body。
 `scripts/verify.sh smoke`、`npm test` / `npm run test:smoke`、`npm run

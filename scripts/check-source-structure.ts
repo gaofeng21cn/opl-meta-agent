@@ -236,16 +236,20 @@ function compactCleanupReadback(readback: JsonObject): JsonObject {
   const candidates = Array.isArray(readback.cleanup_candidates)
     ? readback.cleanup_candidates as JsonObject[]
     : [];
+  const sampleCleanupCandidates = candidates.slice(0, 3);
   return {
+    summary_id: 'oma.script_to_pack_retirement_cleanup.compact_summary.v1',
     surface_kind: readback.surface_kind,
     version: readback.version,
+    summary_role: 'compact_cleanup_summary_not_second_script_inventory',
     state: readback.state,
     command_ref: readback.command_ref,
     readback_is_authority: readback.readback_is_authority,
     cleanup_candidate_count: readback.cleanup_candidate_count,
     cleanup_apply_candidate_count: readback.cleanup_apply_candidate_count,
     missing_evidence_item_count: readback.missing_evidence_item_count,
-    sample_cleanup_candidates: candidates.slice(0, 3),
+    sample_cleanup_candidate_count: sampleCleanupCandidates.length,
+    sample_cleanup_candidates: sampleCleanupCandidates,
     false_ready_claims: readback.false_ready_claims,
     authority_boundary: readback.authority_boundary,
   };
@@ -267,6 +271,7 @@ function validateScriptToPackReceiptGuard(
   const sourceRefIntegrityGuard = scriptMorphology.source_ref_integrity_guard as JsonObject;
   const currentSummary = receipt.current_scan_summary as JsonObject;
   const cleanupReadback = cleanupReadbackForScripts(receipt, sourceReceipt, scriptMorphology);
+  const compactCleanupSummary = compactCleanupReadback(cleanupReadback);
   const trackedScriptRefs = scriptRefsFromTrackedFiles(tracked);
   const scannedScriptRefs = asStrings(sourceReceipt.scanned_script_refs, 'source_purity_scan_receipt.scanned_script_refs');
   const summaryScannedScriptRefs = asStrings(currentSummary.scanned_script_refs, 'current_scan_summary.scanned_script_refs');
@@ -319,6 +324,30 @@ function validateScriptToPackReceiptGuard(
   }
   if (cleanupReadback.cleanup_apply_candidate_count !== 0) {
     guardViolations.push('script-to-pack cleanup readback must not authorize cleanup apply');
+  }
+  if (currentSummary.compact_cleanup_summary_id !== compactCleanupSummary.summary_id) {
+    guardViolations.push('script-to-pack compact cleanup summary id drift');
+  }
+  if (currentSummary.compact_cleanup_summary_output_ref !== 'script-to-pack-readback.compact_cleanup_summary') {
+    guardViolations.push('script-to-pack compact cleanup summary output ref drift');
+  }
+  if (Number(currentSummary.compact_cleanup_candidate_count) !== cleanupReadback.cleanup_candidate_count) {
+    guardViolations.push('script-to-pack compact cleanup candidate count drift');
+  }
+  if (Number(currentSummary.compact_cleanup_apply_candidate_count) !== cleanupReadback.cleanup_apply_candidate_count) {
+    guardViolations.push('script-to-pack compact cleanup apply candidate count drift');
+  }
+  if (Number(currentSummary.compact_cleanup_missing_evidence_item_count) !== cleanupReadback.missing_evidence_item_count) {
+    guardViolations.push('script-to-pack compact cleanup missing evidence item count drift');
+  }
+  if (Number(currentSummary.compact_cleanup_sample_candidate_count) !== Number(compactCleanupSummary.sample_cleanup_candidate_count)) {
+    guardViolations.push('script-to-pack compact cleanup sample candidate count drift');
+  }
+  if (currentSummary.compact_cleanup_readback_can_authorize_delete !== false) {
+    guardViolations.push('script-to-pack compact cleanup summary must not authorize physical delete');
+  }
+  if (currentSummary.compact_cleanup_readback_can_claim_retirement_complete !== false) {
+    guardViolations.push('script-to-pack compact cleanup summary must not claim retirement complete');
   }
   (cleanupReadback.cleanup_candidates as JsonObject[]).forEach((candidate) => {
     if (candidate.can_apply_cleanup !== false) {
@@ -373,7 +402,7 @@ function validateScriptToPackReceiptGuard(
     receipt_status: receipt.receipt_status,
     closure_status: receipt.closure_status,
     hard_fail: guardViolations.length > 0,
-    cleanup_readback: compactCleanupReadback(cleanupReadback),
+    cleanup_readback: compactCleanupSummary,
     cleanup_readback_full: cleanupReadback,
     claims: {
       claims_script_retirement_authorized: false,
@@ -513,6 +542,7 @@ if (scriptToPackReadbackOutput) {
       ? cleanupReadback.state
       : 'failed',
     policy_ref: policyPath,
+    compact_cleanup_summary: scriptToPackReceiptGuardSummary?.cleanup_readback ?? compactCleanupReadback(cleanupReadback),
     violation_count: guardViolations.length,
     violations: guardViolations,
   }, null, 2));

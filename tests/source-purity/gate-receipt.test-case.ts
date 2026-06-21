@@ -154,10 +154,21 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
   assert.equal(readbackGuard.executable_readback_command_ref, 'npm run script-to-pack:readback');
   assert.equal(readbackGuard.executable_readback_surface_kind, 'oma_script_to_pack_retirement_cleanup_readback');
   assert.equal(
+    readbackGuard.compact_cleanup_summary_id,
+    'oma.script_to_pack_retirement_cleanup.compact_summary.v1',
+  );
+  assert.equal(
+    readbackGuard.direct_readback_compact_summary_output_ref,
+    'script-to-pack-readback.compact_cleanup_summary',
+  );
+  assert.equal(readbackGuard.compact_summary_role, 'direct_readback_short_form_not_second_script_inventory');
+  assert.equal(
     readbackGuard.readback_materialization_policy.source_of_truth,
     'contracts/script_to_pack_gate_receipt.json + runtime/authority_functions/meta-agent-authority-functions.json',
   );
   assert.equal(readbackGuard.readback_materialization_policy.script_rows_are_derived_from_existing_retirement_gates, true);
+  assert.equal(readbackGuard.readback_materialization_policy.compact_summary_is_derived_from_same_script_rows, true);
+  assert.equal(readbackGuard.readback_materialization_policy.compact_summary_must_not_replace_full_candidate_rows, true);
   assert.equal(readbackGuard.readback_materialization_policy.can_materialize_missing_evidence_worklist, true);
   assert.equal(readbackGuard.readback_materialization_policy.can_materialize_owner_delta_route, true);
   assert.equal(readbackGuard.readback_materialization_policy.can_materialize_typed_blocker_ref_shape, true);
@@ -237,6 +248,18 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
   assert.equal(gateSummary.cleanup_readback_command_ref, 'npm run script-to-pack:readback');
   assert.equal(gateSummary.cleanup_readback_surface_kind, 'oma_script_to_pack_retirement_cleanup_readback');
   assert.equal(gateSummary.cleanup_readback_state, 'readback_available_cleanup_not_authorized');
+  assert.equal(
+    gateSummary.compact_cleanup_summary_id,
+    'oma.script_to_pack_retirement_cleanup.compact_summary.v1',
+  );
+  assert.equal(
+    gateSummary.compact_cleanup_summary_output_ref,
+    'script-to-pack-readback.compact_cleanup_summary',
+  );
+  assert.equal(gateSummary.compact_cleanup_candidate_count, scriptRefs.length);
+  assert.equal(gateSummary.compact_cleanup_apply_candidate_count, 0);
+  assert.equal(gateSummary.compact_cleanup_missing_evidence_item_count, 247);
+  assert.equal(gateSummary.compact_cleanup_sample_candidate_count, 3);
   assert.equal(gateSummary.cleanup_candidate_count, scriptRefs.length);
   assert.equal(gateSummary.cleanup_apply_candidate_count, 0);
   assert.equal(
@@ -246,6 +269,8 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
   assert.equal(gateSummary.cleanup_readback_is_authority, false);
   assert.equal(gateSummary.cleanup_readback_can_authorize_delete, false);
   assert.equal(gateSummary.cleanup_readback_can_claim_retirement_complete, false);
+  assert.equal(gateSummary.compact_cleanup_readback_can_authorize_delete, false);
+  assert.equal(gateSummary.compact_cleanup_readback_can_claim_retirement_complete, false);
   assert.equal(
     gateSummary.repo_owned_generic_wrapper_materializer_count,
     materializerScan.repo_owned_generic_wrapper_materializer_count,

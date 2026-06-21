@@ -94,7 +94,9 @@
         "receipt_or_contract_claims_app_live_rendering_without_external_evidence",
         "receipt_or_contract_claims_registry_live_discovery_without_external_evidence",
         "receipt_or_contract_claims_generated_hosted_live_ready_without_external_evidence",
-        "receipt_or_contract_claims_default_promotion_without_owner_gate"
+        "receipt_or_contract_claims_default_promotion_without_owner_gate",
+        "compact_cleanup_summary_drift",
+        "compact_cleanup_summary_claims_cleanup_or_readiness"
       ],
       "authority_boundary": {
         "oma_can_claim_app_live_rendering": false,
@@ -110,9 +112,14 @@
       "readback_surface_ref": "contracts/script_to_pack_gate_receipt.json#current_scan_summary",
       "executable_readback_command_ref": "npm run script-to-pack:readback",
       "executable_readback_surface_kind": "oma_script_to_pack_retirement_cleanup_readback",
+      "compact_cleanup_summary_id": "oma.script_to_pack_retirement_cleanup.compact_summary.v1",
+      "direct_readback_compact_summary_output_ref": "script-to-pack-readback.compact_cleanup_summary",
+      "compact_summary_role": "direct_readback_short_form_not_second_script_inventory",
       "readback_materialization_policy": {
         "source_of_truth": "contracts/script_to_pack_gate_receipt.json + runtime/authority_functions/meta-agent-authority-functions.json",
         "script_rows_are_derived_from_existing_retirement_gates": true,
+        "compact_summary_is_derived_from_same_script_rows": true,
+        "compact_summary_must_not_replace_full_candidate_rows": true,
         "can_materialize_missing_evidence_worklist": true,
         "can_materialize_owner_delta_route": true,
         "can_materialize_typed_blocker_ref_shape": true,
