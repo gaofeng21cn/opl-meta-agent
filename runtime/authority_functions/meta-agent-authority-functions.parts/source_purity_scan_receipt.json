@@ -88,6 +88,7 @@
         "active_caller_refs": [
           "package.json#scripts.line-budget",
           "package.json#scripts.line-budget:strict",
+          "package.json#scripts.script-to-pack:readback",
           "package.json#scripts.source-structure",
           "package.json#scripts.source-structure:json",
           "package.json#scripts.source-structure:strict",
@@ -354,6 +355,7 @@
           "package.json#scripts.authority-functions:write",
           "package.json#scripts.line-budget",
           "package.json#scripts.line-budget:strict",
+          "package.json#scripts.script-to-pack:readback",
           "package.json#scripts.source-structure",
           "package.json#scripts.source-structure:json",
           "package.json#scripts.source-structure:strict",

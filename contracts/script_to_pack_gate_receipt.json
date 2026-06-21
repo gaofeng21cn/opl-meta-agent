@@ -267,6 +267,17 @@
         "guard_can_claim_app_or_registry_readiness": false,
         "guard_can_claim_generated_hosted_readiness": false,
         "guard_can_claim_default_promotion_or_cutover": false
+      },
+      "executable_readback_command_ref": "npm run script-to-pack:readback",
+      "executable_readback_surface_kind": "oma_script_to_pack_retirement_cleanup_readback",
+      "readback_materialization_policy": {
+        "source_of_truth": "contracts/script_to_pack_gate_receipt.json + runtime/authority_functions/meta-agent-authority-functions.json",
+        "script_rows_are_derived_from_existing_retirement_gates": true,
+        "can_materialize_missing_evidence_worklist": true,
+        "can_materialize_owner_delta_route": true,
+        "can_materialize_typed_blocker_ref_shape": true,
+        "must_not_create_second_script_inventory": true,
+        "must_not_create_owner_receipt_or_typed_blocker_instance": true
       }
     },
     "allowed_classes": [
@@ -460,7 +471,16 @@
     "repo_owned_generic_wrapper_materializer_count": 0,
     "repo_owned_generic_runtime_materializer_count": 0,
     "repo_owned_queue_or_attempt_ledger_materializer_count": 0,
-    "repo_owned_target_worktree_lifecycle_materializer_count": 0
+    "repo_owned_target_worktree_lifecycle_materializer_count": 0,
+    "cleanup_readback_command_ref": "npm run script-to-pack:readback",
+    "cleanup_readback_surface_kind": "oma_script_to_pack_retirement_cleanup_readback",
+    "cleanup_readback_state": "readback_available_cleanup_not_authorized",
+    "cleanup_candidate_count": 31,
+    "cleanup_apply_candidate_count": 0,
+    "cleanup_readback_authority_ref": "runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.retirement_readback_cleanup_guard",
+    "cleanup_readback_is_authority": false,
+    "cleanup_readback_can_authorize_delete": false,
+    "cleanup_readback_can_claim_retirement_complete": false
   },
   "closed_current_machine_gate_refs": [
     "runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt.active_script_caller_scan",
@@ -474,7 +494,9 @@
     "contracts/private_functional_surface_policy.json#allowed_opl_surface_consumption_refs",
     "tests/source-purity.test.ts#script-morphology-gate",
     "tests/source-purity/support.ts#source-purity-test-structure",
-    "tests/source-purity-boundary.test.ts#source-shape-boundary"
+    "tests/source-purity-boundary.test.ts#source-shape-boundary",
+    "npm-script:script-to-pack:readback",
+    "runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.retirement_readback_cleanup_guard.executable_readback_command_ref"
   ],
   "not_claimed_by_this_receipt": [
     "OPL primitive parity for script policy",

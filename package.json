@@ -21,6 +21,7 @@
     "source-structure:json": "scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --advisory --json",
     "source-structure:strict": "scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --strict",
     "source-structure:strict:json": "scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --strict --json",
+    "script-to-pack:readback": "scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --strict --script-to-pack-readback",
     "line-budget": "scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --advisory",
     "line-budget:strict": "scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --strict",
     "verify": "scripts/verify.sh",

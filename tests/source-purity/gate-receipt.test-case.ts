@@ -151,6 +151,18 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
     readbackGuard.readback_surface_ref,
     'contracts/script_to_pack_gate_receipt.json#current_scan_summary',
   );
+  assert.equal(readbackGuard.executable_readback_command_ref, 'npm run script-to-pack:readback');
+  assert.equal(readbackGuard.executable_readback_surface_kind, 'oma_script_to_pack_retirement_cleanup_readback');
+  assert.equal(
+    readbackGuard.readback_materialization_policy.source_of_truth,
+    'contracts/script_to_pack_gate_receipt.json + runtime/authority_functions/meta-agent-authority-functions.json',
+  );
+  assert.equal(readbackGuard.readback_materialization_policy.script_rows_are_derived_from_existing_retirement_gates, true);
+  assert.equal(readbackGuard.readback_materialization_policy.can_materialize_missing_evidence_worklist, true);
+  assert.equal(readbackGuard.readback_materialization_policy.can_materialize_owner_delta_route, true);
+  assert.equal(readbackGuard.readback_materialization_policy.can_materialize_typed_blocker_ref_shape, true);
+  assert.equal(readbackGuard.readback_materialization_policy.must_not_create_second_script_inventory, true);
+  assert.equal(readbackGuard.readback_materialization_policy.must_not_create_owner_receipt_or_typed_blocker_instance, true);
   assert.deepEqual(asStrings(readbackGuard.allowed_readback_outputs), [
     'script_classification_readback',
     'missing_evidence_worklist',
@@ -222,6 +234,18 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
   assert.equal(gateSummary.repo_owned_generic_runtime_materializer_count, 0);
   assert.equal(gateSummary.repo_owned_queue_or_attempt_ledger_materializer_count, 0);
   assert.equal(gateSummary.repo_owned_target_worktree_lifecycle_materializer_count, 0);
+  assert.equal(gateSummary.cleanup_readback_command_ref, 'npm run script-to-pack:readback');
+  assert.equal(gateSummary.cleanup_readback_surface_kind, 'oma_script_to_pack_retirement_cleanup_readback');
+  assert.equal(gateSummary.cleanup_readback_state, 'readback_available_cleanup_not_authorized');
+  assert.equal(gateSummary.cleanup_candidate_count, scriptRefs.length);
+  assert.equal(gateSummary.cleanup_apply_candidate_count, 0);
+  assert.equal(
+    gateSummary.cleanup_readback_authority_ref,
+    'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.retirement_readback_cleanup_guard',
+  );
+  assert.equal(gateSummary.cleanup_readback_is_authority, false);
+  assert.equal(gateSummary.cleanup_readback_can_authorize_delete, false);
+  assert.equal(gateSummary.cleanup_readback_can_claim_retirement_complete, false);
   assert.equal(
     gateSummary.repo_owned_generic_wrapper_materializer_count,
     materializerScan.repo_owned_generic_wrapper_materializer_count,
@@ -261,6 +285,8 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
     'tests/source-purity.test.ts#script-morphology-gate',
     'tests/source-purity/support.ts#source-purity-test-structure',
     'tests/source-purity-boundary.test.ts#source-shape-boundary',
+    'npm-script:script-to-pack:readback',
+    'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.retirement_readback_cleanup_guard.executable_readback_command_ref',
   ]);
   [
     'OPL primitive parity for script policy',

@@ -23,6 +23,7 @@ test('source-structure and line-budget lanes are repo-native package and verify 
   assert.equal(packageJson.scripts['source-structure:json'], 'scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --advisory --json');
   assert.equal(packageJson.scripts['source-structure:strict'], 'scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --strict');
   assert.equal(packageJson.scripts['source-structure:strict:json'], 'scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --strict --json');
+  assert.equal(packageJson.scripts['script-to-pack:readback'], 'scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --strict --script-to-pack-readback');
   assert.equal(packageJson.scripts['line-budget'], packageJson.scripts['source-structure']);
   assert.equal(packageJson.scripts['line-budget:strict'], packageJson.scripts['source-structure:strict']);
 
@@ -41,6 +42,26 @@ test('source-structure and line-budget lanes are repo-native package and verify 
   assert.equal(policy.script_to_pack_receipt_guard.state, 'active_executable_guard');
   assert.equal(policy.script_to_pack_receipt_guard.command_ref, 'npm run source-structure');
   assert.equal(policy.script_to_pack_receipt_guard.json_readback_command_ref, 'npm run source-structure:json');
+  assert.equal(policy.script_to_pack_receipt_guard.cleanup_readback_command_ref, 'npm run script-to-pack:readback');
+  assert.equal(
+    policy.script_to_pack_receipt_guard.cleanup_readback_output_ref,
+    'source-structure-readback.script_to_pack_receipt_guard.cleanup_readback',
+  );
+  assert.equal(
+    policy.script_to_pack_receipt_guard.cleanup_readback_surface_kind,
+    'oma_script_to_pack_retirement_cleanup_readback',
+  );
+  assert.deepEqual(policy.script_to_pack_receipt_guard.cleanup_readback_required_fields, [
+    'script_ref',
+    'gate_id',
+    'current_role',
+    'classes',
+    'active_caller_refs',
+    'missing_evidence',
+    'owner_delta_route',
+    'typed_blocker_ref_shape',
+    'can_apply_cleanup',
+  ]);
   assert.equal(policy.script_to_pack_receipt_guard.receipt_ref, 'contracts/script_to_pack_gate_receipt.json');
   assert.equal(
     policy.script_to_pack_receipt_guard.authority_functions_ref,
@@ -56,6 +77,8 @@ test('source-structure and line-budget lanes are repo-native package and verify 
     'gated_script_refs_drift',
     'orphan_script_count_nonzero',
     'receipt_claims_retirement_or_readiness',
+    'cleanup_readback_missing_candidate',
+    'cleanup_readback_claims_cleanup_apply',
   ]);
   assert.equal(policy.script_to_pack_receipt_guard.false_authority_boundary.guard_can_authorize_script_retirement, false);
   assert.equal(policy.script_to_pack_receipt_guard.false_authority_boundary.guard_can_claim_opl_primitive_parity, false);
@@ -128,12 +151,59 @@ test('source-structure publishes a JSON machine readback for script-to-pack guar
   assert.equal(payload.script_to_pack_receipt_guard.scanned_script_count, 31);
   assert.equal(payload.script_to_pack_receipt_guard.gated_script_count, 31);
   assert.equal(payload.script_to_pack_receipt_guard.orphan_script_count, 0);
+  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback_command_ref, 'npm run script-to-pack:readback');
+  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.surface_kind, 'oma_script_to_pack_retirement_cleanup_readback');
+  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.cleanup_candidate_count, 31);
+  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.cleanup_apply_candidate_count, 0);
+  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.sample_cleanup_candidates.length, 3);
+  assert.equal(
+    payload.script_to_pack_receipt_guard.cleanup_readback.sample_cleanup_candidates
+      .every((candidate: { can_apply_cleanup: boolean }) => candidate.can_apply_cleanup === false),
+    true,
+  );
   assert.equal(payload.script_to_pack_receipt_guard.violation_count, 0);
   assert.equal(payload.authority_boundary.can_write_target_domain_truth, false);
   assert.equal(payload.authority_boundary.can_write_target_owner_receipt_body, false);
   assert.equal(payload.authority_boundary.can_authorize_script_retirement, false);
   assert.equal(payload.authority_boundary.can_claim_opl_primitive_parity, false);
   assert.equal(payload.authority_boundary.can_claim_target_agent_ready, false);
+  assert.equal(payload.authority_boundary.can_claim_domain_ready, false);
+  assert.equal(payload.authority_boundary.can_claim_production_ready, false);
+});
+
+test('script-to-pack readback materializes cleanup candidates without authorizing cleanup', () => {
+  const result = spawnSync('npm', ['run', 'script-to-pack:readback', '--silent'], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+  });
+  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+  const payload = JSON.parse(result.stdout);
+
+  assert.equal(payload.surface_kind, 'oma_script_to_pack_retirement_cleanup_readback');
+  assert.equal(payload.version, 'script-to-pack-retirement-cleanup-readback.v1');
+  assert.equal(payload.ok, true);
+  assert.equal(payload.policy_ref, 'contracts/source_structure_policy.json');
+  assert.equal(payload.command_ref, 'npm run script-to-pack:readback');
+  assert.equal(payload.readback_is_authority, false);
+  assert.equal(payload.cleanup_candidate_count, 31);
+  assert.equal(payload.cleanup_apply_candidate_count, 0);
+  assert.equal(payload.cleanup_candidates.length, 31);
+  const sourceStructureRow = payload.cleanup_candidates.find(
+    (candidate: { script_ref: string }) => candidate.script_ref === 'scripts/check-source-structure.ts',
+  );
+  assert.ok(sourceStructureRow);
+  assert.equal(sourceStructureRow.gate_id, 'source_structure_and_stage_control_maintenance_helpers');
+  assert.ok(sourceStructureRow.active_caller_refs.includes('package.json#scripts.script-to-pack:readback'));
+  assert.ok(sourceStructureRow.missing_evidence.includes('opl_framework_source_structure_lane_parity_ref'));
+  assert.match(sourceStructureRow.owner_delta_route, /^route-to-owner:opl-framework-or-target-owner\/script-to-pack\//);
+  assert.match(sourceStructureRow.typed_blocker_ref_shape, /^oma-typed-blocker:script-to-pack\//);
+  assert.equal(sourceStructureRow.can_apply_cleanup, false);
+  assert.equal(payload.authority_boundary.can_identify_cleanup_candidates, true);
+  assert.equal(payload.authority_boundary.can_route_owner_delta, true);
+  assert.equal(payload.authority_boundary.can_authorize_physical_delete, false);
+  assert.equal(payload.authority_boundary.can_create_typed_blocker_instance, false);
+  assert.equal(payload.authority_boundary.can_claim_opl_primitive_parity, false);
+  assert.equal(payload.authority_boundary.can_claim_no_active_caller, false);
   assert.equal(payload.authority_boundary.can_claim_domain_ready, false);
   assert.equal(payload.authority_boundary.can_claim_production_ready, false);
 });

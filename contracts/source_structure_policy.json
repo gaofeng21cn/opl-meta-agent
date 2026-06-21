@@ -62,10 +62,24 @@
     "state": "active_executable_guard",
     "command_ref": "npm run source-structure",
     "json_readback_command_ref": "npm run source-structure:json",
+    "cleanup_readback_command_ref": "npm run script-to-pack:readback",
     "receipt_ref": "contracts/script_to_pack_gate_receipt.json",
     "authority_functions_ref": "runtime/authority_functions/meta-agent-authority-functions.json",
     "source_receipt_path": "source_purity_scan_receipt",
     "script_morphology_path": "script_morphology_policy",
+    "cleanup_readback_output_ref": "source-structure-readback.script_to_pack_receipt_guard.cleanup_readback",
+    "cleanup_readback_surface_kind": "oma_script_to_pack_retirement_cleanup_readback",
+    "cleanup_readback_required_fields": [
+      "script_ref",
+      "gate_id",
+      "current_role",
+      "classes",
+      "active_caller_refs",
+      "missing_evidence",
+      "owner_delta_route",
+      "typed_blocker_ref_shape",
+      "can_apply_cleanup"
+    ],
     "validated_summary_fields": [
       "source_purity_scan_status",
       "active_script_caller_scan_status",
@@ -89,7 +103,9 @@
       "receipt_scanned_script_not_tracked",
       "gated_script_refs_drift",
       "orphan_script_count_nonzero",
-      "receipt_claims_retirement_or_readiness"
+      "receipt_claims_retirement_or_readiness",
+      "cleanup_readback_missing_candidate",
+      "cleanup_readback_claims_cleanup_apply"
     ],
     "false_authority_boundary": {
       "guard_can_authorize_script_retirement": false,

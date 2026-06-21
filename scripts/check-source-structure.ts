@@ -98,6 +98,159 @@ function valueAtPath(source: JsonObject, dottedPath: string): JsonObject {
   }, source);
 }
 
+function asStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((entry): entry is string => typeof entry === 'string');
+}
+
+function firstString(value: unknown): string | null {
+  return typeof value === 'string' && value.trim() !== '' ? value : null;
+}
+
+function byScriptRef(entries: unknown): Map<string, JsonObject> {
+  const map = new Map<string, JsonObject>();
+  if (!Array.isArray(entries)) return map;
+  entries.forEach((entry) => {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return;
+    const scriptRef = firstString((entry as JsonObject).script_ref);
+    if (scriptRef) {
+      map.set(scriptRef, entry as JsonObject);
+    }
+  });
+  return map;
+}
+
+function gateByScriptRef(gates: unknown): Map<string, JsonObject> {
+  const map = new Map<string, JsonObject>();
+  if (!Array.isArray(gates)) return map;
+  gates.forEach((gate) => {
+    if (!gate || typeof gate !== 'object' || Array.isArray(gate)) return;
+    asStringArray((gate as JsonObject).tracked_script_refs).forEach((scriptRef) => {
+      map.set(scriptRef, gate as JsonObject);
+    });
+  });
+  return map;
+}
+
+function cleanupReadbackForScripts(
+  receipt: JsonObject,
+  sourceReceipt: JsonObject,
+  scriptMorphology: JsonObject,
+): JsonObject {
+  const cleanupGuard = scriptMorphology.retirement_readback_cleanup_guard as JsonObject;
+  const classificationsByScript = byScriptRef(scriptMorphology.script_classifications);
+  const activeCallersByScript = byScriptRef((sourceReceipt.active_script_caller_scan as JsonObject).caller_refs_by_script);
+  const gatesByScript = gateByScriptRef(scriptMorphology.script_to_pack_retirement_gates);
+  const scannedScriptRefs = asStrings(sourceReceipt.scanned_script_refs, 'source_purity_scan_receipt.scanned_script_refs');
+  const requiredByReceipt = asStringArray(receipt.future_retirement_or_absorb_still_requires);
+  const requiredByGuard = asStringArray(cleanupGuard.required_before_cleanup_apply);
+  const requiredBeforeCleanup = requiredByGuard.length > 0 ? requiredByGuard : requiredByReceipt;
+  const defaultMissingEvidence = requiredByReceipt.length > 0
+    ? requiredByReceipt
+    : requiredBeforeCleanup.filter((entry) => !entry.startsWith('owner_receipt://'));
+
+  const cleanupCandidates = scannedScriptRefs.map((scriptRef) => {
+    const gate = gatesByScript.get(scriptRef) ?? {};
+    const classification = classificationsByScript.get(scriptRef) ?? {};
+    const activeCaller = activeCallersByScript.get(scriptRef) ?? {};
+    const missingEvidence = asStringArray(gate.required_before_retire_or_absorb);
+    const gateId = firstString(gate.gate_id);
+
+    return {
+      script_ref: scriptRef,
+      gate_id: gateId ?? 'missing_script_to_pack_gate',
+      current_role: firstString(gate.current_role) ?? 'unknown_retained_script_role',
+      classes: asStringArray(classification.classes),
+      authority_function_refs: asStringArray(classification.authority_function_refs),
+      consumes_opl_surfaces: asStringArray(classification.consumes_opl_surfaces),
+      active_caller_refs: asStringArray(activeCaller.active_caller_refs),
+      missing_evidence: missingEvidence.length > 0 ? missingEvidence : defaultMissingEvidence,
+      closed_retention_refs: asStringArray(gate.closed_retention_refs),
+      owner_delta_route: gateId
+        ? `route-to-owner:opl-framework-or-target-owner/script-to-pack/${gateId}`
+        : 'route-to-owner:opl-meta-agent/script-to-pack/missing-script-gate',
+      typed_blocker_ref_shape: gateId
+        ? `oma-typed-blocker:script-to-pack/${gateId}/${scriptRef}`
+        : `oma-typed-blocker:script-to-pack/missing-script-gate/${scriptRef}`,
+      can_apply_cleanup: false,
+    };
+  });
+
+  return {
+    surface_kind: 'oma_script_to_pack_retirement_cleanup_readback',
+    version: 'script-to-pack-retirement-cleanup-readback.v1',
+    owner: 'opl-meta-agent',
+    target_domain_id: 'opl-meta-agent',
+    state: 'readback_available_cleanup_not_authorized',
+    ok: true,
+    source_refs: {
+      receipt_ref: 'contracts/script_to_pack_gate_receipt.json',
+      authority_functions_ref: 'runtime/authority_functions/meta-agent-authority-functions.json',
+      script_morphology_policy_ref:
+        'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy',
+      active_caller_scan_ref:
+        'runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt.active_script_caller_scan',
+    },
+    readback_guard_ref:
+      'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.retirement_readback_cleanup_guard',
+    command_ref: 'npm run script-to-pack:readback',
+    readback_is_authority: false,
+    cleanup_candidate_count: cleanupCandidates.length,
+    cleanup_apply_candidate_count: 0,
+    missing_evidence_item_count: cleanupCandidates.reduce(
+      (count, candidate) => count + asStringArray(candidate.missing_evidence).length,
+      0,
+    ),
+    required_before_cleanup_apply: requiredBeforeCleanup,
+    cleanup_candidates: cleanupCandidates,
+    false_ready_claims: {
+      claims_cleanup_readback_authorizes_delete: false,
+      claims_retirement_cleanup_applied: false,
+      claims_retirement_cleanup_complete: false,
+      claims_opl_primitive_parity: false,
+      claims_no_active_caller: false,
+      claims_app_or_registry_readiness: false,
+      claims_generated_hosted_readiness: false,
+      claims_target_agent_ready: false,
+      claims_domain_ready: false,
+      claims_production_ready: false,
+    },
+    authority_boundary: {
+      can_identify_cleanup_candidates: true,
+      can_route_owner_delta: true,
+      can_authorize_physical_delete: false,
+      can_sign_owner_receipt: false,
+      can_create_typed_blocker_instance: false,
+      can_claim_opl_primitive_parity: false,
+      can_claim_no_active_caller: false,
+      can_claim_app_or_registry_readiness: false,
+      can_claim_generated_hosted_readiness: false,
+      can_claim_target_agent_ready: false,
+      can_claim_domain_ready: false,
+      can_claim_production_ready: false,
+    },
+  };
+}
+
+function compactCleanupReadback(readback: JsonObject): JsonObject {
+  const candidates = Array.isArray(readback.cleanup_candidates)
+    ? readback.cleanup_candidates as JsonObject[]
+    : [];
+  return {
+    surface_kind: readback.surface_kind,
+    version: readback.version,
+    state: readback.state,
+    command_ref: readback.command_ref,
+    readback_is_authority: readback.readback_is_authority,
+    cleanup_candidate_count: readback.cleanup_candidate_count,
+    cleanup_apply_candidate_count: readback.cleanup_apply_candidate_count,
+    missing_evidence_item_count: readback.missing_evidence_item_count,
+    sample_cleanup_candidates: candidates.slice(0, 3),
+    false_ready_claims: readback.false_ready_claims,
+    authority_boundary: readback.authority_boundary,
+  };
+}
+
 function validateScriptToPackReceiptGuard(
   policy: JsonObject,
   tracked: string[],
@@ -113,6 +266,7 @@ function validateScriptToPackReceiptGuard(
   const activeCallerScan = sourceReceipt.active_script_caller_scan as JsonObject;
   const sourceRefIntegrityGuard = scriptMorphology.source_ref_integrity_guard as JsonObject;
   const currentSummary = receipt.current_scan_summary as JsonObject;
+  const cleanupReadback = cleanupReadbackForScripts(receipt, sourceReceipt, scriptMorphology);
   const trackedScriptRefs = scriptRefsFromTrackedFiles(tracked);
   const scannedScriptRefs = asStrings(sourceReceipt.scanned_script_refs, 'source_purity_scan_receipt.scanned_script_refs');
   const summaryScannedScriptRefs = asStrings(currentSummary.scanned_script_refs, 'current_scan_summary.scanned_script_refs');
@@ -160,6 +314,26 @@ function validateScriptToPackReceiptGuard(
   if (Number(currentSummary.script_gate_count) !== (scriptMorphology.script_to_pack_retirement_gates as unknown[]).length) {
     guardViolations.push('script-to-pack current_scan_summary.script_gate_count drift');
   }
+  if (cleanupReadback.cleanup_candidate_count !== scannedScriptRefs.length) {
+    guardViolations.push('script-to-pack cleanup readback candidate count drift');
+  }
+  if (cleanupReadback.cleanup_apply_candidate_count !== 0) {
+    guardViolations.push('script-to-pack cleanup readback must not authorize cleanup apply');
+  }
+  (cleanupReadback.cleanup_candidates as JsonObject[]).forEach((candidate) => {
+    if (candidate.can_apply_cleanup !== false) {
+      guardViolations.push(`script-to-pack cleanup readback ${candidate.script_ref} can_apply_cleanup must be false`);
+    }
+    if (!Array.isArray(candidate.missing_evidence) || candidate.missing_evidence.length === 0) {
+      guardViolations.push(`script-to-pack cleanup readback ${candidate.script_ref} missing_evidence must be non-empty`);
+    }
+    if (!String(candidate.owner_delta_route ?? '').startsWith('route-to-owner:')) {
+      guardViolations.push(`script-to-pack cleanup readback ${candidate.script_ref} owner_delta_route missing`);
+    }
+    if (!String(candidate.typed_blocker_ref_shape ?? '').startsWith('oma-typed-blocker:')) {
+      guardViolations.push(`script-to-pack cleanup readback ${candidate.script_ref} typed_blocker_ref_shape missing`);
+    }
+  });
   assertSameStringSet(scannedScriptRefs, trackedScriptRefs, 'script-to-pack scanned_script_refs vs tracked scripts', guardViolations);
   assertSameStringSet(summaryScannedScriptRefs, scannedScriptRefs, 'script-to-pack summary scanned_script_refs', guardViolations);
   assertSameStringSet(summaryGatedScriptRefs, gatedScriptRefs, 'script-to-pack summary gated_script_refs', guardViolations);
@@ -184,6 +358,8 @@ function validateScriptToPackReceiptGuard(
     state: guard.state,
     command_ref: guard.command_ref,
     json_readback_command_ref: guard.json_readback_command_ref ?? null,
+    cleanup_readback_command_ref: guard.cleanup_readback_command_ref ?? null,
+    cleanup_readback_output_ref: guard.cleanup_readback_output_ref ?? null,
     receipt_ref: guard.receipt_ref,
     authority_functions_ref: guard.authority_functions_ref,
     scanned_script_count: scannedScriptRefs.length,
@@ -197,6 +373,8 @@ function validateScriptToPackReceiptGuard(
     receipt_status: receipt.receipt_status,
     closure_status: receipt.closure_status,
     hard_fail: guardViolations.length > 0,
+    cleanup_readback: compactCleanupReadback(cleanupReadback),
+    cleanup_readback_full: cleanupReadback,
     claims: {
       claims_script_retirement_authorized: false,
       claims_opl_primitive_parity: false,
@@ -282,6 +460,7 @@ function validateAggregateExemption(entry: JsonObject): string | undefined {
 }
 
 const jsonOutput = process.argv.includes('--json');
+const scriptToPackReadbackOutput = process.argv.includes('--script-to-pack-readback');
 const strict = process.argv.includes('--strict') || process.argv.includes('strict');
 const policy = readJson(policyPath);
 const lane = (policy.lanes as JsonObject)[strict ? 'strict' : 'advisory'] as JsonObject;
@@ -314,7 +493,39 @@ scanned.forEach((relativePath) => {
 
 const exitCode = guardViolations.length > 0 || (violations.length > 0 && failOnOverBudget) ? 1 : 0;
 
+if (scriptToPackReadbackOutput) {
+  const cleanupReadback = scriptToPackReceiptGuardSummary?.cleanup_readback_full ?? {
+    surface_kind: 'oma_script_to_pack_retirement_cleanup_readback',
+    version: 'script-to-pack-retirement-cleanup-readback.v1',
+    owner: 'opl-meta-agent',
+    target_domain_id: 'opl-meta-agent',
+    state: 'failed',
+    ok: false,
+    cleanup_candidate_count: 0,
+    cleanup_apply_candidate_count: 0,
+    cleanup_candidates: [],
+    violations: guardViolations,
+  };
+  console.log(JSON.stringify({
+    ...cleanupReadback,
+    ok: exitCode === 0 && cleanupReadback.ok !== false,
+    state: exitCode === 0
+      ? cleanupReadback.state
+      : 'failed',
+    policy_ref: policyPath,
+    violation_count: guardViolations.length,
+    violations: guardViolations,
+  }, null, 2));
+  process.exit(exitCode);
+}
+
 if (jsonOutput) {
+  const scriptToPackReceiptGuardJson = scriptToPackReceiptGuardSummary
+    ? Object.fromEntries(
+      Object.entries(scriptToPackReceiptGuardSummary)
+        .filter(([key]) => key !== 'cleanup_readback_full'),
+    )
+    : {};
   console.log(JSON.stringify({
     surface_kind: 'oma_source_structure_readback',
     version: 'source-structure-readback.v1',
@@ -336,7 +547,7 @@ if (jsonOutput) {
       violations,
     },
     script_to_pack_receipt_guard: {
-      ...(scriptToPackReceiptGuardSummary ?? {}),
+      ...scriptToPackReceiptGuardJson,
       violation_count: guardViolations.length,
       violations: guardViolations,
     },

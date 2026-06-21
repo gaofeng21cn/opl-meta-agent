@@ -108,6 +108,17 @@
       "guard_id": "oma.script_morphology.retirement_readback_cleanup_guard.v1",
       "state": "readback_guard_available_physical_delete_not_authorized",
       "readback_surface_ref": "contracts/script_to_pack_gate_receipt.json#current_scan_summary",
+      "executable_readback_command_ref": "npm run script-to-pack:readback",
+      "executable_readback_surface_kind": "oma_script_to_pack_retirement_cleanup_readback",
+      "readback_materialization_policy": {
+        "source_of_truth": "contracts/script_to_pack_gate_receipt.json + runtime/authority_functions/meta-agent-authority-functions.json",
+        "script_rows_are_derived_from_existing_retirement_gates": true,
+        "can_materialize_missing_evidence_worklist": true,
+        "can_materialize_owner_delta_route": true,
+        "can_materialize_typed_blocker_ref_shape": true,
+        "must_not_create_second_script_inventory": true,
+        "must_not_create_owner_receipt_or_typed_blocker_instance": true
+      },
       "allowed_readback_outputs": [
         "script_classification_readback",
         "missing_evidence_worklist",
@@ -1291,6 +1302,7 @@
           "active_caller_refs": [
             "package.json#scripts.line-budget",
             "package.json#scripts.line-budget:strict",
+            "package.json#scripts.script-to-pack:readback",
             "package.json#scripts.source-structure",
             "package.json#scripts.source-structure:json",
             "package.json#scripts.source-structure:strict",
@@ -1557,6 +1569,7 @@
             "package.json#scripts.authority-functions:write",
             "package.json#scripts.line-budget",
             "package.json#scripts.line-budget:strict",
+            "package.json#scripts.script-to-pack:readback",
             "package.json#scripts.source-structure",
             "package.json#scripts.source-structure:json",
             "package.json#scripts.source-structure:strict",
