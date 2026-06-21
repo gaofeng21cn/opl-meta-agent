@@ -79,16 +79,24 @@ function falseReadyLiteralParts(claimKey: string): string[] {
   ];
 }
 
+function collectFalseReadyClaimMatchesFromSource(
+  sourceRef: string,
+  source: string,
+  claimKeys: string[],
+): { path: string; claimKey: string }[] {
+  return claimKeys.flatMap((claimKey) => (
+    falseReadyLiteralParts(claimKey).some((literal) => source.includes(literal))
+      ? [{ path: sourceRef, claimKey }]
+      : []
+  ));
+}
+
 function collectFalseReadyClaimMatches(claimKeys: string[]): { path: string; claimKey: string }[] {
   const scanRoots = ['agent', 'contracts', 'runtime', 'scripts', 'tests', 'package.json'];
   return scanRoots.flatMap((rootRef) => (
     listFalseReadyScanSourceRefs(rootRef).flatMap((sourceRef) => {
       const source = fs.readFileSync(path.join(repoRoot, sourceRef), 'utf8');
-      return claimKeys.flatMap((claimKey) => (
-        falseReadyLiteralParts(claimKey).some((literal) => source.includes(literal))
-          ? [{ path: sourceRef, claimKey }]
-          : []
-      ));
+      return collectFalseReadyClaimMatchesFromSource(sourceRef, source, claimKeys);
     })
   ));
 }
@@ -148,6 +156,11 @@ test('script morphology stays limited to authority refs, materializers, helpers,
     'generated_surface_consumption_complete',
     'default_caller_cutover_complete',
     'default_promotion_complete',
+    'retirement_readback_cleanup_complete',
+    'retirement_readback_guard_satisfied',
+    'cleanup_readback_physical_delete_authorized',
+    'claims_cleanup_readback_authorizes_delete',
+    'claims_retirement_cleanup_applied',
     'target_agent_ready',
     'domain_ready',
     'production_ready',
@@ -168,17 +181,29 @@ test('script morphology stays limited to authority refs, materializers, helpers,
     [],
     'OMA machine source must not carry generated/App/registry/default-promotion true flags',
   );
-  const falseReadyProbePath = path.join(repoRoot, 'contracts/__source_purity_false_ready_probe.json');
-  fs.writeFileSync(falseReadyProbePath, ['{"generated_hosted_surface_', 'live_ready": true}\n'].join(''));
-  try {
-    assert.deepEqual(
-      collectFalseReadyClaimMatches(falseReadyClaimKeys),
-      [{ path: 'contracts/__source_purity_false_ready_probe.json', claimKey: 'generated_hosted_surface_live_ready' }],
-      'false-ready probe should be caught by the machine-source scan',
-    );
-  } finally {
-    fs.rmSync(falseReadyProbePath, { force: true });
-  }
+  assert.deepEqual(
+    collectFalseReadyClaimMatchesFromSource(
+      'contracts/__source_purity_false_ready_probe.json',
+      ['{"generated_hosted_surface_', 'live_ready": true}\n'].join(''),
+      falseReadyClaimKeys,
+    ),
+    [{ path: 'contracts/__source_purity_false_ready_probe.json', claimKey: 'generated_hosted_surface_live_ready' }],
+    'false-ready probe should be caught by the same literal matcher used by the machine-source scan',
+  );
+  assert.deepEqual(
+    collectFalseReadyClaimMatchesFromSource(
+      'contracts/__source_purity_cleanup_readback_probe.json',
+      ['{"cleanup_readback_physical_', 'delete_authorized": true}\n'].join(''),
+      falseReadyClaimKeys,
+    ),
+    [
+      {
+        path: 'contracts/__source_purity_cleanup_readback_probe.json',
+        claimKey: 'cleanup_readback_physical_delete_authorized',
+      },
+    ],
+    'cleanup readback delete-authorization probe should be caught by the same literal matcher used by the machine-source scan',
+  );
   const allowedOplSurfaceRefs = asObjects(privatePolicy.allowed_opl_surface_consumption_refs);
   assert.ok(
     allowedOplSurfaceRefs.length > 0,
@@ -989,6 +1014,9 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
   const gateSummary = gateReceipt.current_scan_summary as JsonObject;
   const boundary = asBooleanRecord(gateReceipt.authority_boundary);
   const reciprocalConsumptionPolicy = gateReceipt.reciprocal_consumption_policy as JsonObject;
+  const readbackGuard = assertPolicyObject(morphologyPolicy, 'retirement_readback_cleanup_guard');
+  const readbackGuardBoundary = asBooleanRecord(readbackGuard.authority_boundary);
+  const readbackGuardClaims = asBooleanRecord(readbackGuard.claims);
   const scriptRefs = listScriptRefs();
   const gatedScriptRefs = [...new Set(
     asObjects(morphologyPolicy.script_to_pack_retirement_gates)
@@ -1025,8 +1053,76 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
     gateReceipt.machine_gate_inputs.false_ready_claim_guard,
     morphologyPolicy.false_ready_claim_guard,
   );
+  assert.deepEqual(
+    gateReceipt.machine_gate_inputs.retirement_readback_cleanup_guard,
+    readbackGuard,
+  );
   assert.deepEqual(gateReceipt.machine_gate_inputs.allowed_classes, morphologyPolicy.allowed_classes);
   assert.deepEqual(gateReceipt.machine_gate_inputs.forbidden_roles, morphologyPolicy.forbidden_roles);
+  assert.equal(readbackGuard.guard_id, 'oma.script_morphology.retirement_readback_cleanup_guard.v1');
+  assert.equal(readbackGuard.state, 'readback_guard_available_physical_delete_not_authorized');
+  assert.equal(
+    readbackGuard.readback_surface_ref,
+    'contracts/script_to_pack_gate_receipt.json#current_scan_summary',
+  );
+  assert.deepEqual(asStrings(readbackGuard.allowed_readback_outputs), [
+    'script_classification_readback',
+    'missing_evidence_worklist',
+    'owner_delta_route',
+    'typed_blocker_ref_shape',
+    'no_resurrection_policy',
+  ]);
+  assert.deepEqual(asStrings(readbackGuard.forbidden_readback_outputs), [
+    'physical_script_delete_operation',
+    'owner_receipt_signature',
+    'typed_blocker_instance_creation',
+    'opl_primitive_parity_claim',
+    'target_agent_ready_claim',
+    'domain_ready_claim',
+    'production_ready_claim',
+    'app_registry_or_generated_hosted_readiness_claim',
+    'default_promotion_or_default_caller_cutover_claim',
+  ]);
+  assert.deepEqual(asStrings(readbackGuard.required_before_cleanup_apply), [
+    'opl_primitive_parity_receipt_ref',
+    'no_active_caller_ref',
+    'no_forbidden_write_proof_ref_where_applicable',
+    'tombstone_or_provenance_ref',
+    'target_owner_or_OPL_owner_decision_ref_when_parity_is_claimed',
+    'owner_receipt://opl-meta-agent/script_physical_delete_or_tombstone_authorization',
+  ]);
+  assert.deepEqual(asStrings(readbackGuard.false_ready_claim_guard_keys), [
+    'retirement_readback_cleanup_complete',
+    'retirement_readback_guard_satisfied',
+    'cleanup_readback_physical_delete_authorized',
+    'claims_cleanup_readback_authorizes_delete',
+    'claims_retirement_cleanup_applied',
+  ]);
+  asStrings(readbackGuard.false_ready_claim_guard_keys).forEach((claimKey) => {
+    assert.ok(
+      asStrings(morphologyPolicy.false_ready_claim_guard.forbidden_true_claim_keys).includes(claimKey),
+      `cleanup readback guard key ${claimKey} should be scanned by the false-ready guard`,
+    );
+  });
+  Object.entries(readbackGuardClaims).forEach(([claim, value]) => {
+    assert.equal(value, false, `cleanup readback guard claim ${claim} must be false`);
+  });
+  assert.equal(readbackGuardBoundary.guard_can_identify_cleanup_candidates, true);
+  assert.equal(readbackGuardBoundary.guard_can_route_owner_delta, true);
+  [
+    'guard_can_authorize_physical_delete',
+    'guard_can_sign_owner_receipt',
+    'guard_can_create_typed_blocker',
+    'guard_can_claim_opl_primitive_parity',
+    'guard_can_claim_target_agent_ready',
+    'guard_can_claim_domain_ready',
+    'guard_can_claim_production_ready',
+    'guard_can_claim_app_or_registry_readiness',
+    'guard_can_claim_generated_hosted_readiness',
+    'guard_can_claim_default_promotion_or_cutover',
+  ].forEach((flag) => {
+    assert.equal(readbackGuardBoundary[flag], false, `${flag} must be false`);
+  });
   assert.equal(gateSummary.source_purity_scan_status, sourceReceipt.status);
   assert.equal(gateSummary.active_script_caller_scan_status, activeCallerScan.status);
   assert.equal(gateSummary.active_caller_scan_policy_id, ACTIVE_CALLER_SCAN_POLICY_ID);
@@ -1040,6 +1136,7 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
     'runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt.active_script_caller_scan',
     'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.active_caller_scan_policy',
     'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.false_ready_claim_guard',
+    'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.retirement_readback_cleanup_guard',
     'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.script_to_pack_retirement_gates',
     'contracts/private_functional_surface_policy.json#allowed_opl_surface_consumption_refs',
     'tests/source-purity.test.ts#script-morphology-gate',
@@ -1048,8 +1145,12 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
   [
     'OPL primitive parity for script policy',
     'physical script retirement',
+    'cleanup readback physical delete authorization',
+    'cleanup readback owner receipt signing',
+    'cleanup readback typed blocker instance creation',
     'no-active-caller for retained scripts',
     'tombstone or provenance for future script retirement',
+    'retirement readback cleanup completion',
     'target-agent readiness',
     'domain readiness',
     'production readiness',

@@ -19,6 +19,149 @@
       "shell_wrappers_included": true,
       "no_exempt_shell_wrappers": true
     },
+    "active_caller_scan_policy": {
+      "policy_id": "oma.script-active-caller-scan.v1",
+      "receipt_ref": "runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt.active_script_caller_scan",
+      "active_caller_required": true,
+      "orphan_script_count_must_be": 0,
+      "scan_inputs": [
+        "package.json#scripts",
+        "scripts/**/*.ts import graph",
+        "tests/**/*.ts import graph excluding tests/source-purity.test.ts self-guard strings",
+        "scripts/**/*.sh shell invocations",
+        "tests/**/*.ts direct script refs excluding tests/source-purity.test.ts"
+      ],
+      "self_guard_test_ref": "tests/source-purity.test.ts",
+      "self_guard_may_prove_active_caller": false,
+      "allowed_caller_ref_kinds": [
+        "package_json_script",
+        "typescript_import",
+        "shell_invocation",
+        "non_self_test_direct_ref"
+      ],
+      "proof_source_policy": {
+        "policy_id": "oma.script-active-caller-proof-source.v1",
+        "caller_proof_must_be_machine_scanned": true,
+        "package_script_import_shell_or_non_self_test_ref_required": true,
+        "self_guard_test_strings_count_as_caller": false,
+        "test_ref_callers_must_be_outside_self_guard": true,
+        "caller_ref_paths_must_exist": true,
+        "receipt_must_not_synthesize_callers": true
+      },
+      "fail_closed_conditions": [
+        "orphan_script_count_nonzero",
+        "source_purity_self_guard_only_caller",
+        "caller_ref_path_missing",
+        "caller_proof_source_not_machine_scanned",
+        "script_not_in_retirement_gate"
+      ]
+    },
+    "false_ready_claim_guard": {
+      "guard_id": "oma.generated-hosted-false-ready-claim-guard.v1",
+      "scope": "repo_machine_source",
+      "forbidden_true_claim_keys": [
+        "app_live_rendering_complete",
+        "app_workbench_live_rendering_complete",
+        "app_operator_sustained_consumption_complete",
+        "registry_discovery_live_complete",
+        "generated_interface_live_ready",
+        "generated_hosted_surface_live_ready",
+        "generated_surface_consumption_complete",
+        "default_caller_cutover_complete",
+        "default_promotion_complete",
+        "retirement_readback_cleanup_complete",
+        "retirement_readback_guard_satisfied",
+        "cleanup_readback_physical_delete_authorized",
+        "claims_cleanup_readback_authorizes_delete",
+        "claims_retirement_cleanup_applied",
+        "target_agent_ready",
+        "domain_ready",
+        "production_ready"
+      ],
+      "allowed_evidence_sources": [
+        "OPL/App external evidence tail",
+        "target owner receipt or typed blocker refs",
+        "human gate receipt"
+      ],
+      "fail_closed_conditions": [
+        "repo_machine_source_contains_forbidden_true_claim",
+        "receipt_or_contract_claims_app_live_rendering_without_external_evidence",
+        "receipt_or_contract_claims_registry_live_discovery_without_external_evidence",
+        "receipt_or_contract_claims_generated_hosted_live_ready_without_external_evidence",
+        "receipt_or_contract_claims_default_promotion_without_owner_gate"
+      ],
+      "authority_boundary": {
+        "oma_can_claim_app_live_rendering": false,
+        "oma_can_claim_registry_live_discovery": false,
+        "oma_can_claim_generated_hosted_live_ready": false,
+        "oma_can_claim_default_promotion": false,
+        "oma_can_claim_target_agent_ready": false
+      }
+    },
+    "retirement_readback_cleanup_guard": {
+      "guard_id": "oma.script_morphology.retirement_readback_cleanup_guard.v1",
+      "state": "readback_guard_available_physical_delete_not_authorized",
+      "readback_surface_ref": "contracts/script_to_pack_gate_receipt.json#current_scan_summary",
+      "allowed_readback_outputs": [
+        "script_classification_readback",
+        "missing_evidence_worklist",
+        "owner_delta_route",
+        "typed_blocker_ref_shape",
+        "no_resurrection_policy"
+      ],
+      "forbidden_readback_outputs": [
+        "physical_script_delete_operation",
+        "owner_receipt_signature",
+        "typed_blocker_instance_creation",
+        "opl_primitive_parity_claim",
+        "target_agent_ready_claim",
+        "domain_ready_claim",
+        "production_ready_claim",
+        "app_registry_or_generated_hosted_readiness_claim",
+        "default_promotion_or_default_caller_cutover_claim"
+      ],
+      "required_before_cleanup_apply": [
+        "opl_primitive_parity_receipt_ref",
+        "no_active_caller_ref",
+        "no_forbidden_write_proof_ref_where_applicable",
+        "tombstone_or_provenance_ref",
+        "target_owner_or_OPL_owner_decision_ref_when_parity_is_claimed",
+        "owner_receipt://opl-meta-agent/script_physical_delete_or_tombstone_authorization"
+      ],
+      "false_ready_claim_guard_keys": [
+        "retirement_readback_cleanup_complete",
+        "retirement_readback_guard_satisfied",
+        "cleanup_readback_physical_delete_authorized",
+        "claims_cleanup_readback_authorizes_delete",
+        "claims_retirement_cleanup_applied"
+      ],
+      "claims": {
+        "claims_retirement_cleanup_complete": false,
+        "claims_physical_delete_authorized": false,
+        "claims_owner_receipt_signed": false,
+        "claims_typed_blocker_created": false,
+        "claims_opl_primitive_parity": false,
+        "claims_target_agent_ready": false,
+        "claims_domain_ready": false,
+        "claims_production_ready": false,
+        "claims_app_registry_or_generated_hosted_ready": false,
+        "claims_default_promotion_or_cutover": false
+      },
+      "authority_boundary": {
+        "guard_can_identify_cleanup_candidates": true,
+        "guard_can_route_owner_delta": true,
+        "guard_can_authorize_physical_delete": false,
+        "guard_can_sign_owner_receipt": false,
+        "guard_can_create_typed_blocker": false,
+        "guard_can_claim_opl_primitive_parity": false,
+        "guard_can_claim_target_agent_ready": false,
+        "guard_can_claim_domain_ready": false,
+        "guard_can_claim_production_ready": false,
+        "guard_can_claim_app_or_registry_readiness": false,
+        "guard_can_claim_generated_hosted_readiness": false,
+        "guard_can_claim_default_promotion_or_cutover": false
+      }
+    },
     "allowed_classes": [
       "authority_function_implementation_ref",
       "smoke_helper",
@@ -850,81 +993,7 @@
           "domain_specific_command_family"
         ]
       }
-    ],
-    "active_caller_scan_policy": {
-      "policy_id": "oma.script-active-caller-scan.v1",
-      "receipt_ref": "runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt.active_script_caller_scan",
-      "active_caller_required": true,
-      "orphan_script_count_must_be": 0,
-      "scan_inputs": [
-        "package.json#scripts",
-        "scripts/**/*.ts import graph",
-        "tests/**/*.ts import graph excluding tests/source-purity.test.ts self-guard strings",
-        "scripts/**/*.sh shell invocations",
-        "tests/**/*.ts direct script refs excluding tests/source-purity.test.ts"
-      ],
-      "self_guard_test_ref": "tests/source-purity.test.ts",
-      "self_guard_may_prove_active_caller": false,
-      "allowed_caller_ref_kinds": [
-        "package_json_script",
-        "typescript_import",
-        "shell_invocation",
-        "non_self_test_direct_ref"
-      ],
-      "proof_source_policy": {
-        "policy_id": "oma.script-active-caller-proof-source.v1",
-        "caller_proof_must_be_machine_scanned": true,
-        "package_script_import_shell_or_non_self_test_ref_required": true,
-        "self_guard_test_strings_count_as_caller": false,
-        "test_ref_callers_must_be_outside_self_guard": true,
-        "caller_ref_paths_must_exist": true,
-        "receipt_must_not_synthesize_callers": true
-      },
-      "fail_closed_conditions": [
-        "orphan_script_count_nonzero",
-        "source_purity_self_guard_only_caller",
-        "caller_ref_path_missing",
-        "caller_proof_source_not_machine_scanned",
-        "script_not_in_retirement_gate"
-      ]
-    },
-    "false_ready_claim_guard": {
-      "guard_id": "oma.generated-hosted-false-ready-claim-guard.v1",
-      "scope": "repo_machine_source",
-      "forbidden_true_claim_keys": [
-        "app_live_rendering_complete",
-        "app_workbench_live_rendering_complete",
-        "app_operator_sustained_consumption_complete",
-        "registry_discovery_live_complete",
-        "generated_interface_live_ready",
-        "generated_hosted_surface_live_ready",
-        "generated_surface_consumption_complete",
-        "default_caller_cutover_complete",
-        "default_promotion_complete",
-        "target_agent_ready",
-        "domain_ready",
-        "production_ready"
-      ],
-      "allowed_evidence_sources": [
-        "OPL/App external evidence tail",
-        "target owner receipt or typed blocker refs",
-        "human gate receipt"
-      ],
-      "fail_closed_conditions": [
-        "repo_machine_source_contains_forbidden_true_claim",
-        "receipt_or_contract_claims_app_live_rendering_without_external_evidence",
-        "receipt_or_contract_claims_registry_live_discovery_without_external_evidence",
-        "receipt_or_contract_claims_generated_hosted_live_ready_without_external_evidence",
-        "receipt_or_contract_claims_default_promotion_without_owner_gate"
-      ],
-      "authority_boundary": {
-        "oma_can_claim_app_live_rendering": false,
-        "oma_can_claim_registry_live_discovery": false,
-        "oma_can_claim_generated_hosted_live_ready": false,
-        "oma_can_claim_default_promotion": false,
-        "oma_can_claim_target_agent_ready": false
-      }
-    }
+    ]
   },
   "purpose_first_owner_delta_gate": {
     "gate_id": "purpose-first-owner-delta-gate",
