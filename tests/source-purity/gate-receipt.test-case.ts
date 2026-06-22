@@ -152,7 +152,9 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
     'contracts/script_to_pack_gate_receipt.json#current_scan_summary',
   );
   assert.equal(readbackGuard.executable_readback_command_ref, 'npm run script-to-pack:readback');
-  assert.equal(readbackGuard.executable_readback_surface_kind, 'oma_script_to_pack_retirement_cleanup_readback');
+  assert.equal(readbackGuard.full_readback_command_ref, 'npm run script-to-pack:readback:full');
+  assert.equal(readbackGuard.executable_readback_surface_kind, 'oma_script_to_pack_retirement_cleanup_compact_readback');
+  assert.equal(readbackGuard.full_readback_surface_kind, 'oma_script_to_pack_retirement_cleanup_readback');
   assert.equal(
     readbackGuard.compact_cleanup_summary_id,
     'oma.script_to_pack_retirement_cleanup.compact_summary.v1',
@@ -160,6 +162,10 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
   assert.equal(
     readbackGuard.direct_readback_compact_summary_output_ref,
     'script-to-pack-readback.compact_cleanup_summary',
+  );
+  assert.equal(
+    readbackGuard.direct_readback_full_detail_output_ref,
+    'script-to-pack-readback-full.cleanup_candidates',
   );
   assert.equal(readbackGuard.compact_summary_role, 'direct_readback_short_form_not_second_script_inventory');
   assert.equal(
@@ -246,7 +252,9 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
   assert.equal(gateSummary.repo_owned_queue_or_attempt_ledger_materializer_count, 0);
   assert.equal(gateSummary.repo_owned_target_worktree_lifecycle_materializer_count, 0);
   assert.equal(gateSummary.cleanup_readback_command_ref, 'npm run script-to-pack:readback');
-  assert.equal(gateSummary.cleanup_readback_surface_kind, 'oma_script_to_pack_retirement_cleanup_readback');
+  assert.equal(gateSummary.full_cleanup_readback_command_ref, 'npm run script-to-pack:readback:full');
+  assert.equal(gateSummary.cleanup_readback_surface_kind, 'oma_script_to_pack_retirement_cleanup_compact_readback');
+  assert.equal(gateSummary.full_cleanup_readback_surface_kind, 'oma_script_to_pack_retirement_cleanup_readback');
   assert.equal(gateSummary.cleanup_readback_state, 'readback_available_cleanup_not_authorized');
   assert.equal(
     gateSummary.compact_cleanup_summary_id,
@@ -311,6 +319,7 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
     'tests/source-purity/support.ts#source-purity-test-structure',
     'tests/source-purity-boundary.test.ts#source-shape-boundary',
     'npm-script:script-to-pack:readback',
+    'npm-script:script-to-pack:readback:full',
     'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.retirement_readback_cleanup_guard.executable_readback_command_ref',
   ]);
   [

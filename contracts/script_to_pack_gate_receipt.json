@@ -271,9 +271,12 @@
         "guard_can_claim_default_promotion_or_cutover": false
       },
       "executable_readback_command_ref": "npm run script-to-pack:readback",
-      "executable_readback_surface_kind": "oma_script_to_pack_retirement_cleanup_readback",
+      "full_readback_command_ref": "npm run script-to-pack:readback:full",
+      "executable_readback_surface_kind": "oma_script_to_pack_retirement_cleanup_compact_readback",
+      "full_readback_surface_kind": "oma_script_to_pack_retirement_cleanup_readback",
       "compact_cleanup_summary_id": "oma.script_to_pack_retirement_cleanup.compact_summary.v1",
       "direct_readback_compact_summary_output_ref": "script-to-pack-readback.compact_cleanup_summary",
+      "direct_readback_full_detail_output_ref": "script-to-pack-readback-full.cleanup_candidates",
       "compact_summary_role": "direct_readback_short_form_not_second_script_inventory",
       "readback_materialization_policy": {
         "source_of_truth": "contracts/script_to_pack_gate_receipt.json + runtime/authority_functions/meta-agent-authority-functions.json",
@@ -480,7 +483,9 @@
     "repo_owned_queue_or_attempt_ledger_materializer_count": 0,
     "repo_owned_target_worktree_lifecycle_materializer_count": 0,
     "cleanup_readback_command_ref": "npm run script-to-pack:readback",
-    "cleanup_readback_surface_kind": "oma_script_to_pack_retirement_cleanup_readback",
+    "full_cleanup_readback_command_ref": "npm run script-to-pack:readback:full",
+    "cleanup_readback_surface_kind": "oma_script_to_pack_retirement_cleanup_compact_readback",
+    "full_cleanup_readback_surface_kind": "oma_script_to_pack_retirement_cleanup_readback",
     "cleanup_readback_state": "readback_available_cleanup_not_authorized",
     "compact_cleanup_summary_id": "oma.script_to_pack_retirement_cleanup.compact_summary.v1",
     "compact_cleanup_summary_output_ref": "script-to-pack-readback.compact_cleanup_summary",
@@ -511,6 +516,7 @@
     "tests/source-purity/support.ts#source-purity-test-structure",
     "tests/source-purity-boundary.test.ts#source-shape-boundary",
     "npm-script:script-to-pack:readback",
+    "npm-script:script-to-pack:readback:full",
     "runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.retirement_readback_cleanup_guard.executable_readback_command_ref"
   ],
   "not_claimed_by_this_receipt": [

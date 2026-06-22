@@ -136,6 +136,7 @@ function cleanupReadbackForScripts(
   receipt: JsonObject,
   sourceReceipt: JsonObject,
   scriptMorphology: JsonObject,
+  commandRef = 'npm run script-to-pack:readback:full',
 ): JsonObject {
   const cleanupGuard = scriptMorphology.retirement_readback_cleanup_guard as JsonObject;
   const classificationsByScript = byScriptRef(scriptMorphology.script_classifications);
@@ -193,7 +194,7 @@ function cleanupReadbackForScripts(
     },
     readback_guard_ref:
       'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.retirement_readback_cleanup_guard',
-    command_ref: 'npm run script-to-pack:readback',
+    command_ref: commandRef,
     readback_is_authority: false,
     cleanup_candidate_count: cleanupCandidates.length,
     cleanup_apply_candidate_count: 0,
@@ -252,6 +253,42 @@ function compactCleanupReadback(readback: JsonObject): JsonObject {
     sample_cleanup_candidates: sampleCleanupCandidates,
     false_ready_claims: readback.false_ready_claims,
     authority_boundary: readback.authority_boundary,
+  };
+}
+
+function directCompactCleanupReadback(
+  readback: JsonObject,
+  exitCode: number,
+  guardViolations: string[],
+): JsonObject {
+  const compact = compactCleanupReadback({
+    ...readback,
+    command_ref: 'npm run script-to-pack:readback',
+  });
+  return {
+    surface_kind: 'oma_script_to_pack_retirement_cleanup_compact_readback',
+    version: 'script-to-pack-retirement-cleanup-compact-readback.v1',
+    owner: readback.owner ?? 'opl-meta-agent',
+    target_domain_id: readback.target_domain_id ?? 'opl-meta-agent',
+    state: exitCode === 0 ? compact.state : 'failed',
+    ok: exitCode === 0 && readback.ok !== false,
+    policy_ref: policyPath,
+    command_ref: 'npm run script-to-pack:readback',
+    full_detail_command_ref: 'npm run script-to-pack:readback:full',
+    readback_role: 'default_operator_compact_readback_not_second_script_inventory',
+    readback_is_authority: compact.readback_is_authority,
+    cleanup_candidate_count: compact.cleanup_candidate_count,
+    cleanup_apply_candidate_count: compact.cleanup_apply_candidate_count,
+    missing_evidence_item_count: compact.missing_evidence_item_count,
+    sample_cleanup_candidate_count: compact.sample_cleanup_candidate_count,
+    sample_cleanup_candidates: compact.sample_cleanup_candidates,
+    full_candidate_rows_omitted_from_default: true,
+    full_candidate_rows_available_via: 'npm run script-to-pack:readback:full',
+    false_ready_claims: compact.false_ready_claims,
+    authority_boundary: compact.authority_boundary,
+    compact_cleanup_summary: compact,
+    violation_count: guardViolations.length,
+    violations: guardViolations,
   };
 }
 
@@ -490,6 +527,7 @@ function validateAggregateExemption(entry: JsonObject): string | undefined {
 
 const jsonOutput = process.argv.includes('--json');
 const scriptToPackReadbackOutput = process.argv.includes('--script-to-pack-readback');
+const scriptToPackFullReadbackOutput = process.argv.includes('--script-to-pack-readback-full');
 const strict = process.argv.includes('--strict') || process.argv.includes('strict');
 const policy = readJson(policyPath);
 const lane = (policy.lanes as JsonObject)[strict ? 'strict' : 'advisory'] as JsonObject;
@@ -522,7 +560,7 @@ scanned.forEach((relativePath) => {
 
 const exitCode = guardViolations.length > 0 || (violations.length > 0 && failOnOverBudget) ? 1 : 0;
 
-if (scriptToPackReadbackOutput) {
+if (scriptToPackReadbackOutput || scriptToPackFullReadbackOutput) {
   const cleanupReadback = scriptToPackReceiptGuardSummary?.cleanup_readback_full ?? {
     surface_kind: 'oma_script_to_pack_retirement_cleanup_readback',
     version: 'script-to-pack-retirement-cleanup-readback.v1',
@@ -535,14 +573,24 @@ if (scriptToPackReadbackOutput) {
     cleanup_candidates: [],
     violations: guardViolations,
   };
+  if (scriptToPackReadbackOutput) {
+    console.log(JSON.stringify(
+      directCompactCleanupReadback(cleanupReadback, exitCode, guardViolations),
+      null,
+      2,
+    ));
+    process.exit(exitCode);
+  }
   console.log(JSON.stringify({
     ...cleanupReadback,
+    command_ref: 'npm run script-to-pack:readback:full',
     ok: exitCode === 0 && cleanupReadback.ok !== false,
     state: exitCode === 0
       ? cleanupReadback.state
       : 'failed',
     policy_ref: policyPath,
-    compact_cleanup_summary: scriptToPackReceiptGuardSummary?.cleanup_readback ?? compactCleanupReadback(cleanupReadback),
+    compact_cleanup_summary_ref: 'npm run script-to-pack:readback',
+    compact_cleanup_summary_omitted_from_full: true,
     violation_count: guardViolations.length,
     violations: guardViolations,
   }, null, 2));
