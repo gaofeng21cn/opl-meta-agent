@@ -49,6 +49,7 @@ test('stage launch contract is Codex-first, receipted, and OPL-10 bounded', () =
     const stageContract = stage.stage_contract;
     const userStageLog = stageContract.user_stage_log_contract;
     const stageNativeArtifactContract = stageContract.stage_native_artifact_contract;
+    const stageCompletionPolicy = stageContract.stage_completion_policy;
     const progressDeltaPolicy = stageContract.progress_delta_policy;
     const typedBlockerLineagePolicy = stageContract.typed_blocker_lineage_policy;
 
@@ -56,6 +57,10 @@ test('stage launch contract is Codex-first, receipted, and OPL-10 bounded', () =
     assert.ok(
       requires.includes(`artifact-native-contract-ref:opl-meta-agent/${label}`),
       `${label}.requires artifact-native contract ref`,
+    );
+    assert.ok(
+      requires.includes(`stage-completion-policy-ref:opl-meta-agent/${label}`),
+      `${label}.requires stage completion policy ref`,
     );
     assert.ok(requires.includes('runtime-ref:stage-attempt-ledger'), `${label}.requires should include stage ledger`);
     assert.ok(
@@ -71,6 +76,10 @@ test('stage launch contract is Codex-first, receipted, and OPL-10 bounded', () =
     assert.ok(ensures.includes(`no-forbidden-write-proof-ref:${label}`), `${label}.ensures boundary proof`);
     assert.ok(ensures.includes(`independent-ai-review-ref:${label}`), `${label}.ensures AI review`);
     assert.ok(ensures.includes(`stage-user-log-ref:${label}`), `${label}.ensures user stage log`);
+    assert.ok(
+      ensures.includes(`stage-closeout-packet-ref:opl-meta-agent/${label}/{stage_attempt_id}`),
+      `${label}.ensures stage closeout packet`,
+    );
     assert.ok(
       ensures.includes(`stage-folder-contract-ref:opl-meta-agent/${label}`),
       `${label}.ensures stage folder contract`,
@@ -134,6 +143,14 @@ test('stage launch contract is Codex-first, receipted, and OPL-10 bounded', () =
     assert.ok(
       expectedReceiptRefs.includes(`stage-user-log-ref:${label}`),
       `${label}.expected_receipt_refs user stage log`,
+    );
+    assert.ok(
+      expectedReceiptRefs.includes(`stage-completion-policy-ref:opl-meta-agent/${label}`),
+      `${label}.expected_receipt_refs stage completion policy`,
+    );
+    assert.ok(
+      expectedReceiptRefs.includes(`stage-closeout-packet-ref:opl-meta-agent/${label}/{stage_attempt_id}`),
+      `${label}.expected_receipt_refs stage closeout packet`,
     );
     assert.ok(
       expectedReceiptRefs.includes(`artifact-native-contract-ref:opl-meta-agent/${label}`),
@@ -373,6 +390,57 @@ test('stage launch contract is Codex-first, receipted, and OPL-10 bounded', () =
       `${label}.no_target_worktree_lifecycle_manage`,
     );
     assert.equal(userStageLog.surface_kind, 'opl_standard_agent_user_stage_log_contract', `${label}.user_stage_log`);
+    assert.equal(
+      stageCompletionPolicy.surface_kind,
+      'domain_stage_completion_policy',
+      `${label}.stage_completion_policy.surface_kind`,
+    );
+    assert.equal(stageCompletionPolicy.policy_ref, `stage-completion-policy-ref:opl-meta-agent/${label}`);
+    assert.equal(stageCompletionPolicy.stage_id, label);
+    assert.equal(stageCompletionPolicy.target_domain_id, 'opl-meta-agent');
+    assert.equal(stageCompletionPolicy.completion_judgment_owner, 'domain_stage');
+    assert.equal(stageCompletionPolicy.closeout_packet_required, true);
+    assert.equal(stageCompletionPolicy.provider_completion_is_domain_completion, false);
+    assert.equal(stageCompletionPolicy.opl_content_judgment_allowed, false);
+    assert.equal(stageCompletionPolicy.next_stage_transition_owner, 'opl_runtime');
+    [
+      'completed_and_continue',
+      'completed_and_wait_owner',
+      'route_back',
+      'blocked',
+      'rejected',
+    ].forEach((outcome) => {
+      assert.ok(
+        asStrings(stageCompletionPolicy.required_closeout_outcomes).includes(outcome),
+        `${label}.stage_completion_policy.outcome.${outcome}`,
+      );
+    });
+    [
+      'owner_receipt_ref',
+      'typed_blocker_ref',
+      'human_gate_ref',
+      'route_back_ref',
+    ].forEach((field) => {
+      assert.ok(
+        asStrings(stageCompletionPolicy.accepted_closeout_ref_fields).includes(field),
+        `${label}.stage_completion_policy.ref_field.${field}`,
+      );
+    });
+    assert.equal(
+      stageCompletionPolicy.authority_boundary.opl_can_decide_domain_completion,
+      false,
+      `${label}.stage_completion_policy.no_opl_completion_decision`,
+    );
+    assert.equal(
+      stageCompletionPolicy.authority_boundary.provider_completion_counts_as_stage_complete,
+      false,
+      `${label}.stage_completion_policy.no_provider_completion_closeout`,
+    );
+    assert.equal(
+      stageCompletionPolicy.authority_boundary.suite_pass_counts_as_stage_complete,
+      false,
+      `${label}.stage_completion_policy.no_suite_pass_closeout`,
+    );
     assert.equal(userStageLog.version, 'standard-user-stage-log.v1', `${label}.user_stage_log.version`);
     assert.equal(
       userStageLog.standard_agent_requirement,

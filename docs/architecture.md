@@ -28,6 +28,14 @@ OMA 只声明和生成 `stage_executor_policy_candidate`：例如为 `eval-suite
 
 OPL / Agent Lab 负责执行试验、记录 stage executor policy read model、运行 policy gate、签发 executor / stage attempt receipts，并决定是否进入后续 promotion gate。OMA 不复制 Agent Lab runner、queue、attempt ledger、executor adapter 或 provider binding；OMA 也不能直接切换默认 executor、不能绕过 gate promote 默认 executor、不能把 suite pass / candidate completeness 写成质量等价。
 
+## Domain-Owned Stage Completion Policy
+
+OMA 生成的每个 target stage 必须带 `stage_completion_policy`。该 policy 固定阶段完成判断属于 `domain_stage`：stage 内 executor / reviewer / owner surface 负责判断本 stage 是否已形成可接力结果，并输出标准 `stage_closeout_packet_ref`。OPL 只消费这个 closeout packet 来执行 runtime transition、attempt ledger、queue handoff 和 next-stage scheduling；OPL 不判断内容质量、不把 provider completion 升级成 domain completion，也不根据文件存在、suite pass 或 conformance pass 自动关闭 stage。
+
+标准 closeout packet 至少要把结果归入 `completed_and_continue`、`completed_and_wait_owner`、`route_back`、`blocked` 或 `rejected`。packet 可携带 `owner_receipt_ref`、`typed_blocker_ref`、`human_gate_ref` 或 `route_back_ref`，由 domain / stage owner 表达内容判断、阻塞、人工门或返工路径。OPL 的责任是验证 packet shape、记录 attempt、执行接力和暴露 read model；内容是否足够进入下一阶段由 domain stage 自己在 closeout 前完成。
+
+这条 policy 解决的是 stage loop 的默认语义：`stage 执行 -> stage-owned closeout judgment -> OPL runtime transition`。如果 target agent 的 stage 只声明 provider attempt completion、只依赖文件落盘、只依赖 suite pass，或要求 OPL 通过其他 channel 判定内容是否完成，Agent Lab / OMA 都应把它识别为 conformance blocker，而不是把 runtime 成功误认为 stage 完成。
+
 ## Standard Consumer Boundary
 
 Agent Lab 与 `opl-meta-agent` 是标准消费者。目标 agent 兼容它们，而不是它们分别兼容每个目标 agent。

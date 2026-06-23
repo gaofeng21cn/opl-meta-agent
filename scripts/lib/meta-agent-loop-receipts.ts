@@ -2,6 +2,7 @@ import type { JsonObject } from './domain-pack.ts';
 import type { AiReviewerEvaluation } from './meta-agent-loop-ai-reviewer.ts';
 import type { TargetAgent } from './meta-agent-loop-io.ts';
 import { stableId } from './meta-agent-loop-io.ts';
+import { STAGE_COMPLETION_POLICY } from './stage-decomposition-pack-draft-parts/shared.ts';
 
 export type SuiteResult = {
   result_id: string;
@@ -102,6 +103,15 @@ type ScaleoutEvidenceLedgerOptions = {
   multiTargetScaleoutDeliveryCountMin?: number;
 };
 
+function buildAgentLabStageCompletionPolicy(targetAgent: TargetAgent, taskFamily: string): JsonObject {
+  return {
+    ...STAGE_COMPLETION_POLICY,
+    policy_ref: `stage-completion-policy:opl-meta-agent/${targetAgent.domain_id}/${taskFamily}`,
+    stage_id: taskFamily,
+    target_domain_id: targetAgent.domain_id,
+  };
+}
+
 export function buildAgentLabSuite({
   suiteId,
   taskId,
@@ -158,6 +168,7 @@ export function buildAgentLabSuite({
         instructions_ref: instructionsRef,
         agent_entry_ref: agentEntryRef,
         stage_refs: stageRefs,
+        stage_completion_policy: buildAgentLabStageCompletionPolicy(targetAgent, taskFamily),
         oracle_refs: oracleRefs,
         scorer_refs: scorerRefs,
         recovery_probes: [

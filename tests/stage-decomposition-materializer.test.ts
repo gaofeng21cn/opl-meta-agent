@@ -118,6 +118,7 @@ test('materializer writes the target stage pack from typed stage-decomposition c
     assert.deepEqual(packet.user_stage_log.changed_stage_surfaces, [
       'action_catalog',
       'stage_control_plane',
+      'stage_completion_policy',
       'artifact_morphology_contract',
       'stage_native_artifact_contract',
       'agent/prompts',
@@ -154,9 +155,16 @@ test('materializer writes the target stage pack from typed stage-decomposition c
     assert.equal(stage.independent_gate_policy.gate_ref, 'agent/quality_gates/evidence-synthesis-plan-gate.md');
     assert.equal(stage.independent_gate_policy.execution_review_separation_required, true);
     assert.equal(stage.independent_gate_policy.mechanical_completion_can_close_stage, false);
+    assert.equal(stage.stage_contract.stage_completion_policy.policy_ref, 'stage-completion-policy-ref:research-workbench-agent/evidence-synthesis-plan');
+    assert.equal(stage.stage_contract.stage_completion_policy.completion_judgment_owner, 'domain_stage');
+    assert.equal(stage.stage_contract.stage_completion_policy.closeout_packet_required, true);
+    assert.equal(stage.stage_contract.stage_completion_policy.provider_completion_is_domain_completion, false);
+    assert.equal(stage.stage_contract.stage_completion_policy.opl_content_judgment_allowed, false);
+    assert.equal(stage.stage_contract.stage_completion_policy.next_stage_transition_owner, 'opl_runtime');
     assert.equal(stage.authority_boundary.can_write_target_domain_truth, false);
     assert.equal(stage.authority_boundary.can_authorize_target_domain_quality_or_export, false);
     assert.ok(stage.stage_contract.requires.includes('runtime-ref:stage-progress-log-user-stage-log'));
+    assert.ok(stage.stage_contract.requires.includes('stage-completion-policy-ref:research-workbench-agent/evidence-synthesis-plan'));
     assert.ok(stage.stage_contract.requires.includes('artifact-native-contract-ref:research-workbench-agent/evidence-synthesis-plan'));
     assert.ok(stage.stage_contract.requires.includes('artifact-morphology-ref:research-workbench-agent'));
     assert.ok(stage.stage_contract.requires.includes('artifact-native-source-format-ref:research-workbench-agent/evidence-synthesis-plan'));
@@ -165,6 +173,7 @@ test('materializer writes the target stage pack from typed stage-decomposition c
     assert.ok(stage.stage_contract.requires.includes('asset-custody-ref:research-workbench-agent/evidence-synthesis-plan'));
     assert.deepEqual(stage.stage_contract.artifact_morphology_contract, artifactMorphology);
     assert.ok(stage.stage_contract.ensures.includes('stage-user-log-ref:evidence-synthesis-plan'));
+    assert.ok(stage.stage_contract.ensures.includes('stage-closeout-packet-ref:research-workbench-agent/evidence-synthesis-plan/{stage_attempt_id}'));
     assert.ok(stage.stage_contract.ensures.includes('stage-folder-contract-ref:research-workbench-agent/evidence-synthesis-plan'));
     assert.ok(stage.stage_contract.ensures.includes('stage-json-ref:research-workbench-agent/evidence-synthesis-plan'));
     assert.ok(stage.stage_contract.ensures.includes('stage-attempt-json-ref:research-workbench-agent/evidence-synthesis-plan/{stage_attempt_id}'));
@@ -441,9 +450,12 @@ test('materializer writes the target stage pack from typed stage-decomposition c
       'skills',
       'knowledge',
       'quality_gates',
+      'stage_completion_policy',
       'artifact_morphology',
     ]);
     assert.equal(foundrySeries.series_design_profile.shared_closeout_contract.provider_completion_is_closeout, false);
+    assert.equal(foundrySeries.series_design_profile.shared_closeout_contract.completion_judgment_owner, 'domain_stage');
+    assert.equal(foundrySeries.series_design_profile.shared_closeout_contract.opl_content_judgment_allowed, false);
     assert.equal(foundrySeries.series_design_profile.authority_invariants.opl_can_write_domain_truth, false);
 
     [

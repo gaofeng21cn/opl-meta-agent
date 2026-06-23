@@ -48,12 +48,15 @@ test('foundry agent series contract binds OMA to shared Progress-First projectio
       'skills',
       'knowledge',
       'quality_gates',
+      'stage_completion_policy',
     ],
     shared_closeout_contract: {
       success_shape: 'domain_owner_receipt_ref',
       blocked_shape: 'domain_owned_typed_blocker_ref',
       route_back_shape: 'route_back_or_human_gate_ref',
       provider_completion_is_closeout: false,
+      completion_judgment_owner: 'domain_stage',
+      opl_content_judgment_allowed: false,
     },
     authority_invariants: {
       opl_can_infer_domain_output: false,
@@ -156,12 +159,13 @@ test('foundry agent series contract binds OMA to shared Progress-First projectio
   });
   assert.deepEqual(series.shared_policy_release, {
     policy_release_contract_ref: 'contracts/opl-framework/foundry-agent-series-policy-release.json',
-    policy_bundle_fingerprint: 'sha256:5d77102e99e6e49acd88714cd94dcafe0969b8f2a5529928d753002ac3d4619d',
+    policy_bundle_fingerprint: 'sha256:503f515e8fa08b3f81ce28cac461368c609d4565de239c9f95c3f910cb758ed5',
     fingerprint_algorithm: 'sha256:stable-json',
     domain_contract_policy_release_pin_required: true,
     domain_adapter_must_not_copy_policy_body_as_authority: true,
     consumer_alignment_check: 'foundry:policy-release',
   });
+  assert.ok(asStrings(series.required_stage_packets).includes('stage_completion_policy'));
   assert.ok(asStrings(series.required_stage_packets).includes('progress_delta_policy'));
   assert.ok(asStrings(series.required_stage_packets).includes('typed_blocker_lineage_policy'));
   assert.ok(asStrings(series.shared_progress_projection_fields).includes('deliverable_progress_delta'));

@@ -102,6 +102,7 @@
       },
       "requires": [
         "stage:intent-intake",
+        "stage-completion-policy-ref:opl-meta-agent/intent-intake",
         "prompt-ref:agent/prompts/intent-intake.md",
         "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
         "knowledge-ref:agent/knowledge/opl-boundary-policy.md",
@@ -122,6 +123,7 @@
         "output-ref:acceptance_criteria_ref",
         "output-ref:authority_boundary_ref",
         "stage-user-log-ref:intent-intake",
+        "stage-closeout-packet-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
         "stage-folder-contract-ref:opl-meta-agent/intent-intake",
         "stage-manifest-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
         "stage-current-pointer-ref:opl-meta-agent/intent-intake",
@@ -138,11 +140,13 @@
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:intent-intake",
+        "stage-completion-policy-ref:opl-meta-agent/intent-intake",
         "executor-receipt-ref:intent-intake/codex-cli",
         "boundary-receipt-ref:intent-intake/refs-only",
         "no-forbidden-write-proof-ref:intent-intake",
         "independent-ai-review-ref:intent-intake",
         "stage-user-log-ref:intent-intake",
+        "stage-closeout-packet-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
         "artifact-native-contract-ref:opl-meta-agent/intent-intake",
         "stage-folder-contract-ref:opl-meta-agent/intent-intake",
         "stage-manifest-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
@@ -722,6 +726,40 @@
             "oma_can_promote_default_agent_without_gate": false,
             "oma_can_manage_target_worktree_lifecycle": false
           }
+        },
+        "stage_completion_policy": {
+          "surface_kind": "domain_stage_completion_policy",
+          "version": "domain-stage-completion-policy.v1",
+          "owner": "one-person-lab",
+          "standard_agent_requirement": "domain_stage_owns_completion_judgment_and_emits_standard_closeout_packet",
+          "completion_judgment_owner": "domain_stage",
+          "closeout_packet_required": true,
+          "provider_completion_is_domain_completion": false,
+          "opl_content_judgment_allowed": false,
+          "next_stage_transition_owner": "opl_runtime",
+          "required_closeout_outcomes": [
+            "completed_and_continue",
+            "completed_and_wait_owner",
+            "route_back",
+            "blocked",
+            "rejected"
+          ],
+          "accepted_closeout_ref_fields": [
+            "owner_receipt_ref",
+            "typed_blocker_ref",
+            "human_gate_ref",
+            "route_back_ref"
+          ],
+          "authority_boundary": {
+            "opl_can_decide_domain_completion": false,
+            "provider_completion_counts_as_stage_complete": false,
+            "file_presence_counts_as_stage_complete": false,
+            "suite_pass_counts_as_stage_complete": false,
+            "conformance_pass_counts_as_stage_complete": false
+          },
+          "policy_ref": "stage-completion-policy-ref:opl-meta-agent/intent-intake",
+          "stage_id": "intent-intake",
+          "target_domain_id": "opl-meta-agent"
         }
       },
       "tool_refs": [
@@ -778,7 +816,8 @@
           "typed_blocker_ref",
           "human_gate_ref",
           "route_back_ref",
-          "no_regression_evidence_ref"
+          "no_regression_evidence_ref",
+          "stage_closeout_packet_ref"
         ]
       },
       "handoff_policy": {
@@ -789,7 +828,8 @@
           "typed_blocker_ref",
           "human_gate_ref",
           "quality_gate_receipt_ref",
-          "no_regression_evidence_ref"
+          "no_regression_evidence_ref",
+          "stage_closeout_packet_ref"
         ],
         "framework_transport_cannot_claim_domain_ready": true
       },
@@ -880,6 +920,7 @@
       },
       "requires": [
         "stage:web-experience-research",
+        "stage-completion-policy-ref:opl-meta-agent/web-experience-research",
         "prompt-ref:agent/prompts/web-experience-research.md",
         "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
         "knowledge-ref:agent/knowledge/transferable-agent-practices.md",
@@ -900,6 +941,7 @@
         "output-ref:source_refs",
         "output-ref:pattern_disposition_refs",
         "stage-user-log-ref:web-experience-research",
+        "stage-closeout-packet-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
         "stage-folder-contract-ref:opl-meta-agent/web-experience-research",
         "stage-manifest-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
         "stage-current-pointer-ref:opl-meta-agent/web-experience-research",
@@ -916,11 +958,13 @@
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:web-experience-research",
+        "stage-completion-policy-ref:opl-meta-agent/web-experience-research",
         "executor-receipt-ref:web-experience-research/codex-cli",
         "boundary-receipt-ref:web-experience-research/refs-only",
         "no-forbidden-write-proof-ref:web-experience-research",
         "independent-ai-review-ref:web-experience-research",
         "stage-user-log-ref:web-experience-research",
+        "stage-closeout-packet-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
         "artifact-native-contract-ref:opl-meta-agent/web-experience-research",
         "stage-folder-contract-ref:opl-meta-agent/web-experience-research",
         "stage-manifest-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
@@ -1501,6 +1545,40 @@
             "oma_can_promote_default_agent_without_gate": false,
             "oma_can_manage_target_worktree_lifecycle": false
           }
+        },
+        "stage_completion_policy": {
+          "surface_kind": "domain_stage_completion_policy",
+          "version": "domain-stage-completion-policy.v1",
+          "owner": "one-person-lab",
+          "standard_agent_requirement": "domain_stage_owns_completion_judgment_and_emits_standard_closeout_packet",
+          "completion_judgment_owner": "domain_stage",
+          "closeout_packet_required": true,
+          "provider_completion_is_domain_completion": false,
+          "opl_content_judgment_allowed": false,
+          "next_stage_transition_owner": "opl_runtime",
+          "required_closeout_outcomes": [
+            "completed_and_continue",
+            "completed_and_wait_owner",
+            "route_back",
+            "blocked",
+            "rejected"
+          ],
+          "accepted_closeout_ref_fields": [
+            "owner_receipt_ref",
+            "typed_blocker_ref",
+            "human_gate_ref",
+            "route_back_ref"
+          ],
+          "authority_boundary": {
+            "opl_can_decide_domain_completion": false,
+            "provider_completion_counts_as_stage_complete": false,
+            "file_presence_counts_as_stage_complete": false,
+            "suite_pass_counts_as_stage_complete": false,
+            "conformance_pass_counts_as_stage_complete": false
+          },
+          "policy_ref": "stage-completion-policy-ref:opl-meta-agent/web-experience-research",
+          "stage_id": "web-experience-research",
+          "target_domain_id": "opl-meta-agent"
         }
       },
       "tool_refs": [
@@ -1557,7 +1635,8 @@
           "typed_blocker_ref",
           "human_gate_ref",
           "route_back_ref",
-          "no_regression_evidence_ref"
+          "no_regression_evidence_ref",
+          "stage_closeout_packet_ref"
         ]
       },
       "handoff_policy": {
@@ -1568,7 +1647,8 @@
           "typed_blocker_ref",
           "human_gate_ref",
           "quality_gate_receipt_ref",
-          "no_regression_evidence_ref"
+          "no_regression_evidence_ref",
+          "stage_closeout_packet_ref"
         ],
         "framework_transport_cannot_claim_domain_ready": true
       },
@@ -1659,6 +1739,7 @@
       },
       "requires": [
         "stage:stage-decomposition",
+        "stage-completion-policy-ref:opl-meta-agent/stage-decomposition",
         "prompt-ref:agent/prompts/stage-decomposition.md",
         "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
         "knowledge-ref:agent/knowledge/opl-boundary-policy.md",
@@ -1679,6 +1760,7 @@
         "output-ref:action_catalog_ref",
         "output-ref:memory_descriptor_ref",
         "stage-user-log-ref:stage-decomposition",
+        "stage-closeout-packet-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
         "stage-folder-contract-ref:opl-meta-agent/stage-decomposition",
         "stage-manifest-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
         "stage-current-pointer-ref:opl-meta-agent/stage-decomposition",
@@ -1695,11 +1777,13 @@
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:stage-decomposition",
+        "stage-completion-policy-ref:opl-meta-agent/stage-decomposition",
         "executor-receipt-ref:stage-decomposition/codex-cli",
         "boundary-receipt-ref:stage-decomposition/refs-only",
         "no-forbidden-write-proof-ref:stage-decomposition",
         "independent-ai-review-ref:stage-decomposition",
         "stage-user-log-ref:stage-decomposition",
+        "stage-closeout-packet-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
         "artifact-native-contract-ref:opl-meta-agent/stage-decomposition",
         "stage-folder-contract-ref:opl-meta-agent/stage-decomposition",
         "stage-manifest-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
@@ -2279,6 +2363,40 @@
             "oma_can_promote_default_agent_without_gate": false,
             "oma_can_manage_target_worktree_lifecycle": false
           }
+        },
+        "stage_completion_policy": {
+          "surface_kind": "domain_stage_completion_policy",
+          "version": "domain-stage-completion-policy.v1",
+          "owner": "one-person-lab",
+          "standard_agent_requirement": "domain_stage_owns_completion_judgment_and_emits_standard_closeout_packet",
+          "completion_judgment_owner": "domain_stage",
+          "closeout_packet_required": true,
+          "provider_completion_is_domain_completion": false,
+          "opl_content_judgment_allowed": false,
+          "next_stage_transition_owner": "opl_runtime",
+          "required_closeout_outcomes": [
+            "completed_and_continue",
+            "completed_and_wait_owner",
+            "route_back",
+            "blocked",
+            "rejected"
+          ],
+          "accepted_closeout_ref_fields": [
+            "owner_receipt_ref",
+            "typed_blocker_ref",
+            "human_gate_ref",
+            "route_back_ref"
+          ],
+          "authority_boundary": {
+            "opl_can_decide_domain_completion": false,
+            "provider_completion_counts_as_stage_complete": false,
+            "file_presence_counts_as_stage_complete": false,
+            "suite_pass_counts_as_stage_complete": false,
+            "conformance_pass_counts_as_stage_complete": false
+          },
+          "policy_ref": "stage-completion-policy-ref:opl-meta-agent/stage-decomposition",
+          "stage_id": "stage-decomposition",
+          "target_domain_id": "opl-meta-agent"
         }
       },
       "tool_refs": [
@@ -2335,7 +2453,8 @@
           "typed_blocker_ref",
           "human_gate_ref",
           "route_back_ref",
-          "no_regression_evidence_ref"
+          "no_regression_evidence_ref",
+          "stage_closeout_packet_ref"
         ]
       },
       "handoff_policy": {
@@ -2346,7 +2465,8 @@
           "typed_blocker_ref",
           "human_gate_ref",
           "quality_gate_receipt_ref",
-          "no_regression_evidence_ref"
+          "no_regression_evidence_ref",
+          "stage_closeout_packet_ref"
         ],
         "framework_transport_cannot_claim_domain_ready": true
       },
@@ -2444,6 +2564,7 @@
       },
       "requires": [
         "stage:agent-skeleton-build",
+        "stage-completion-policy-ref:opl-meta-agent/agent-skeleton-build",
         "prompt-ref:agent/prompts/agent-skeleton-build.md",
         "skill-ref:agent/skills/agent-baseline-build.md",
         "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
@@ -2467,6 +2588,7 @@
         "output-ref:prompt_refs",
         "output-ref:candidate_agent_package_ref",
         "stage-user-log-ref:agent-skeleton-build",
+        "stage-closeout-packet-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
         "stage-folder-contract-ref:opl-meta-agent/agent-skeleton-build",
         "stage-manifest-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
         "stage-current-pointer-ref:opl-meta-agent/agent-skeleton-build",
@@ -2483,11 +2605,13 @@
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:agent-skeleton-build",
+        "stage-completion-policy-ref:opl-meta-agent/agent-skeleton-build",
         "executor-receipt-ref:agent-skeleton-build/codex-cli",
         "boundary-receipt-ref:agent-skeleton-build/refs-only",
         "no-forbidden-write-proof-ref:agent-skeleton-build",
         "independent-ai-review-ref:agent-skeleton-build",
         "stage-user-log-ref:agent-skeleton-build",
+        "stage-closeout-packet-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
         "artifact-native-contract-ref:opl-meta-agent/agent-skeleton-build",
         "stage-folder-contract-ref:opl-meta-agent/agent-skeleton-build",
         "stage-manifest-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
@@ -3067,6 +3191,40 @@
             "oma_can_promote_default_agent_without_gate": false,
             "oma_can_manage_target_worktree_lifecycle": false
           }
+        },
+        "stage_completion_policy": {
+          "surface_kind": "domain_stage_completion_policy",
+          "version": "domain-stage-completion-policy.v1",
+          "owner": "one-person-lab",
+          "standard_agent_requirement": "domain_stage_owns_completion_judgment_and_emits_standard_closeout_packet",
+          "completion_judgment_owner": "domain_stage",
+          "closeout_packet_required": true,
+          "provider_completion_is_domain_completion": false,
+          "opl_content_judgment_allowed": false,
+          "next_stage_transition_owner": "opl_runtime",
+          "required_closeout_outcomes": [
+            "completed_and_continue",
+            "completed_and_wait_owner",
+            "route_back",
+            "blocked",
+            "rejected"
+          ],
+          "accepted_closeout_ref_fields": [
+            "owner_receipt_ref",
+            "typed_blocker_ref",
+            "human_gate_ref",
+            "route_back_ref"
+          ],
+          "authority_boundary": {
+            "opl_can_decide_domain_completion": false,
+            "provider_completion_counts_as_stage_complete": false,
+            "file_presence_counts_as_stage_complete": false,
+            "suite_pass_counts_as_stage_complete": false,
+            "conformance_pass_counts_as_stage_complete": false
+          },
+          "policy_ref": "stage-completion-policy-ref:opl-meta-agent/agent-skeleton-build",
+          "stage_id": "agent-skeleton-build",
+          "target_domain_id": "opl-meta-agent"
         }
       },
       "tool_refs": [
@@ -3123,7 +3281,8 @@
           "typed_blocker_ref",
           "human_gate_ref",
           "route_back_ref",
-          "no_regression_evidence_ref"
+          "no_regression_evidence_ref",
+          "stage_closeout_packet_ref"
         ]
       },
       "handoff_policy": {
@@ -3134,7 +3293,8 @@
           "typed_blocker_ref",
           "human_gate_ref",
           "quality_gate_receipt_ref",
-          "no_regression_evidence_ref"
+          "no_regression_evidence_ref",
+          "stage_closeout_packet_ref"
         ],
         "framework_transport_cannot_claim_domain_ready": true
       },
@@ -3229,6 +3389,7 @@
       },
       "requires": [
         "stage:eval-suite-build",
+        "stage-completion-policy-ref:opl-meta-agent/eval-suite-build",
         "prompt-ref:agent/prompts/eval-suite-build.md",
         "skill-ref:agent/skills/agent-baseline-build.md",
         "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
@@ -3250,6 +3411,7 @@
         "output-ref:scorecard_refs",
         "output-ref:promotion_gate_refs",
         "stage-user-log-ref:eval-suite-build",
+        "stage-closeout-packet-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
         "stage-folder-contract-ref:opl-meta-agent/eval-suite-build",
         "stage-manifest-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
         "stage-current-pointer-ref:opl-meta-agent/eval-suite-build",
@@ -3266,11 +3428,13 @@
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:eval-suite-build",
+        "stage-completion-policy-ref:opl-meta-agent/eval-suite-build",
         "executor-receipt-ref:eval-suite-build/codex-cli",
         "boundary-receipt-ref:eval-suite-build/refs-only",
         "no-forbidden-write-proof-ref:eval-suite-build",
         "independent-ai-review-ref:eval-suite-build",
         "stage-user-log-ref:eval-suite-build",
+        "stage-closeout-packet-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
         "artifact-native-contract-ref:opl-meta-agent/eval-suite-build",
         "stage-folder-contract-ref:opl-meta-agent/eval-suite-build",
         "stage-manifest-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
@@ -3853,6 +4017,40 @@
             "oma_can_promote_default_agent_without_gate": false,
             "oma_can_manage_target_worktree_lifecycle": false
           }
+        },
+        "stage_completion_policy": {
+          "surface_kind": "domain_stage_completion_policy",
+          "version": "domain-stage-completion-policy.v1",
+          "owner": "one-person-lab",
+          "standard_agent_requirement": "domain_stage_owns_completion_judgment_and_emits_standard_closeout_packet",
+          "completion_judgment_owner": "domain_stage",
+          "closeout_packet_required": true,
+          "provider_completion_is_domain_completion": false,
+          "opl_content_judgment_allowed": false,
+          "next_stage_transition_owner": "opl_runtime",
+          "required_closeout_outcomes": [
+            "completed_and_continue",
+            "completed_and_wait_owner",
+            "route_back",
+            "blocked",
+            "rejected"
+          ],
+          "accepted_closeout_ref_fields": [
+            "owner_receipt_ref",
+            "typed_blocker_ref",
+            "human_gate_ref",
+            "route_back_ref"
+          ],
+          "authority_boundary": {
+            "opl_can_decide_domain_completion": false,
+            "provider_completion_counts_as_stage_complete": false,
+            "file_presence_counts_as_stage_complete": false,
+            "suite_pass_counts_as_stage_complete": false,
+            "conformance_pass_counts_as_stage_complete": false
+          },
+          "policy_ref": "stage-completion-policy-ref:opl-meta-agent/eval-suite-build",
+          "stage_id": "eval-suite-build",
+          "target_domain_id": "opl-meta-agent"
         }
       },
       "tool_refs": [
@@ -3909,7 +4107,8 @@
           "typed_blocker_ref",
           "human_gate_ref",
           "route_back_ref",
-          "no_regression_evidence_ref"
+          "no_regression_evidence_ref",
+          "stage_closeout_packet_ref"
         ]
       },
       "handoff_policy": {
@@ -3920,7 +4119,8 @@
           "typed_blocker_ref",
           "human_gate_ref",
           "quality_gate_receipt_ref",
-          "no_regression_evidence_ref"
+          "no_regression_evidence_ref",
+          "stage_closeout_packet_ref"
         ],
         "framework_transport_cannot_claim_domain_ready": true
       },
@@ -4013,6 +4213,7 @@
       },
       "requires": [
         "stage:baseline-run",
+        "stage-completion-policy-ref:opl-meta-agent/baseline-run",
         "prompt-ref:agent/prompts/baseline-run.md",
         "skill-ref:agent/skills/agent-baseline-build.md",
         "knowledge-ref:agent/knowledge/opl-boundary-policy.md",
@@ -4034,6 +4235,7 @@
         "output-ref:receipt_refs",
         "output-ref:failure_taxonomy_refs",
         "stage-user-log-ref:baseline-run",
+        "stage-closeout-packet-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
         "stage-folder-contract-ref:opl-meta-agent/baseline-run",
         "stage-manifest-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
         "stage-current-pointer-ref:opl-meta-agent/baseline-run",
@@ -4050,11 +4252,13 @@
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:baseline-run",
+        "stage-completion-policy-ref:opl-meta-agent/baseline-run",
         "executor-receipt-ref:baseline-run/codex-cli",
         "boundary-receipt-ref:baseline-run/refs-only",
         "no-forbidden-write-proof-ref:baseline-run",
         "independent-ai-review-ref:baseline-run",
         "stage-user-log-ref:baseline-run",
+        "stage-closeout-packet-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
         "artifact-native-contract-ref:opl-meta-agent/baseline-run",
         "stage-folder-contract-ref:opl-meta-agent/baseline-run",
         "stage-manifest-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
@@ -4634,6 +4838,40 @@
             "oma_can_promote_default_agent_without_gate": false,
             "oma_can_manage_target_worktree_lifecycle": false
           }
+        },
+        "stage_completion_policy": {
+          "surface_kind": "domain_stage_completion_policy",
+          "version": "domain-stage-completion-policy.v1",
+          "owner": "one-person-lab",
+          "standard_agent_requirement": "domain_stage_owns_completion_judgment_and_emits_standard_closeout_packet",
+          "completion_judgment_owner": "domain_stage",
+          "closeout_packet_required": true,
+          "provider_completion_is_domain_completion": false,
+          "opl_content_judgment_allowed": false,
+          "next_stage_transition_owner": "opl_runtime",
+          "required_closeout_outcomes": [
+            "completed_and_continue",
+            "completed_and_wait_owner",
+            "route_back",
+            "blocked",
+            "rejected"
+          ],
+          "accepted_closeout_ref_fields": [
+            "owner_receipt_ref",
+            "typed_blocker_ref",
+            "human_gate_ref",
+            "route_back_ref"
+          ],
+          "authority_boundary": {
+            "opl_can_decide_domain_completion": false,
+            "provider_completion_counts_as_stage_complete": false,
+            "file_presence_counts_as_stage_complete": false,
+            "suite_pass_counts_as_stage_complete": false,
+            "conformance_pass_counts_as_stage_complete": false
+          },
+          "policy_ref": "stage-completion-policy-ref:opl-meta-agent/baseline-run",
+          "stage_id": "baseline-run",
+          "target_domain_id": "opl-meta-agent"
         }
       },
       "tool_refs": [
@@ -4690,7 +4928,8 @@
           "typed_blocker_ref",
           "human_gate_ref",
           "route_back_ref",
-          "no_regression_evidence_ref"
+          "no_regression_evidence_ref",
+          "stage_closeout_packet_ref"
         ]
       },
       "handoff_policy": {
@@ -4701,7 +4940,8 @@
           "typed_blocker_ref",
           "human_gate_ref",
           "quality_gate_receipt_ref",
-          "no_regression_evidence_ref"
+          "no_regression_evidence_ref",
+          "stage_closeout_packet_ref"
         ],
         "framework_transport_cannot_claim_domain_ready": true
       },
@@ -4812,6 +5052,7 @@
       },
       "requires": [
         "stage:target-agent-takeover",
+        "stage-completion-policy-ref:opl-meta-agent/target-agent-takeover",
         "prompt-ref:agent/prompts/target-agent-takeover.md",
         "skill-ref:agent/skills/external-suite-improvement.md",
         "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
@@ -4836,6 +5077,7 @@
         "output-ref:gated_self_evolution_candidate_ref",
         "output-ref:mechanism_patch_proposal_ref",
         "stage-user-log-ref:target-agent-takeover",
+        "stage-closeout-packet-ref:opl-meta-agent/target-agent-takeover/{stage_attempt_id}",
         "stage-folder-contract-ref:opl-meta-agent/target-agent-takeover",
         "stage-manifest-ref:opl-meta-agent/target-agent-takeover/{stage_attempt_id}",
         "stage-current-pointer-ref:opl-meta-agent/target-agent-takeover",
@@ -4852,11 +5094,13 @@
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:target-agent-takeover",
+        "stage-completion-policy-ref:opl-meta-agent/target-agent-takeover",
         "executor-receipt-ref:target-agent-takeover/codex-cli",
         "boundary-receipt-ref:target-agent-takeover/refs-only",
         "no-forbidden-write-proof-ref:target-agent-takeover",
         "independent-ai-review-ref:target-agent-takeover",
         "stage-user-log-ref:target-agent-takeover",
+        "stage-closeout-packet-ref:opl-meta-agent/target-agent-takeover/{stage_attempt_id}",
         "artifact-native-contract-ref:opl-meta-agent/target-agent-takeover",
         "stage-folder-contract-ref:opl-meta-agent/target-agent-takeover",
         "stage-manifest-ref:opl-meta-agent/target-agent-takeover/{stage_attempt_id}",
@@ -5436,6 +5680,40 @@
             "oma_can_promote_default_agent_without_gate": false,
             "oma_can_manage_target_worktree_lifecycle": false
           }
+        },
+        "stage_completion_policy": {
+          "surface_kind": "domain_stage_completion_policy",
+          "version": "domain-stage-completion-policy.v1",
+          "owner": "one-person-lab",
+          "standard_agent_requirement": "domain_stage_owns_completion_judgment_and_emits_standard_closeout_packet",
+          "completion_judgment_owner": "domain_stage",
+          "closeout_packet_required": true,
+          "provider_completion_is_domain_completion": false,
+          "opl_content_judgment_allowed": false,
+          "next_stage_transition_owner": "opl_runtime",
+          "required_closeout_outcomes": [
+            "completed_and_continue",
+            "completed_and_wait_owner",
+            "route_back",
+            "blocked",
+            "rejected"
+          ],
+          "accepted_closeout_ref_fields": [
+            "owner_receipt_ref",
+            "typed_blocker_ref",
+            "human_gate_ref",
+            "route_back_ref"
+          ],
+          "authority_boundary": {
+            "opl_can_decide_domain_completion": false,
+            "provider_completion_counts_as_stage_complete": false,
+            "file_presence_counts_as_stage_complete": false,
+            "suite_pass_counts_as_stage_complete": false,
+            "conformance_pass_counts_as_stage_complete": false
+          },
+          "policy_ref": "stage-completion-policy-ref:opl-meta-agent/target-agent-takeover",
+          "stage_id": "target-agent-takeover",
+          "target_domain_id": "opl-meta-agent"
         }
       },
       "tool_refs": [
@@ -5492,7 +5770,8 @@
           "typed_blocker_ref",
           "human_gate_ref",
           "route_back_ref",
-          "no_regression_evidence_ref"
+          "no_regression_evidence_ref",
+          "stage_closeout_packet_ref"
         ]
       },
       "handoff_policy": {
@@ -5503,7 +5782,8 @@
           "typed_blocker_ref",
           "human_gate_ref",
           "quality_gate_receipt_ref",
-          "no_regression_evidence_ref"
+          "no_regression_evidence_ref",
+          "stage_closeout_packet_ref"
         ],
         "framework_transport_cannot_claim_domain_ready": true
       },
@@ -5604,6 +5884,7 @@
       },
       "requires": [
         "stage:optimizer-iteration",
+        "stage-completion-policy-ref:opl-meta-agent/optimizer-iteration",
         "prompt-ref:agent/prompts/optimizer-iteration.md",
         "skill-ref:agent/skills/external-suite-improvement.md",
         "knowledge-ref:agent/knowledge/transferable-agent-practices.md",
@@ -5630,6 +5911,7 @@
         "output-ref:candidate_branch_refs",
         "output-ref:regression_result_refs",
         "stage-user-log-ref:optimizer-iteration",
+        "stage-closeout-packet-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
         "stage-folder-contract-ref:opl-meta-agent/optimizer-iteration",
         "stage-manifest-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
         "stage-current-pointer-ref:opl-meta-agent/optimizer-iteration",
@@ -5646,11 +5928,13 @@
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:optimizer-iteration",
+        "stage-completion-policy-ref:opl-meta-agent/optimizer-iteration",
         "executor-receipt-ref:optimizer-iteration/codex-cli",
         "boundary-receipt-ref:optimizer-iteration/refs-only",
         "no-forbidden-write-proof-ref:optimizer-iteration",
         "independent-ai-review-ref:optimizer-iteration",
         "stage-user-log-ref:optimizer-iteration",
+        "stage-closeout-packet-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
         "artifact-native-contract-ref:opl-meta-agent/optimizer-iteration",
         "stage-folder-contract-ref:opl-meta-agent/optimizer-iteration",
         "stage-manifest-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
@@ -6230,6 +6514,40 @@
             "oma_can_promote_default_agent_without_gate": false,
             "oma_can_manage_target_worktree_lifecycle": false
           }
+        },
+        "stage_completion_policy": {
+          "surface_kind": "domain_stage_completion_policy",
+          "version": "domain-stage-completion-policy.v1",
+          "owner": "one-person-lab",
+          "standard_agent_requirement": "domain_stage_owns_completion_judgment_and_emits_standard_closeout_packet",
+          "completion_judgment_owner": "domain_stage",
+          "closeout_packet_required": true,
+          "provider_completion_is_domain_completion": false,
+          "opl_content_judgment_allowed": false,
+          "next_stage_transition_owner": "opl_runtime",
+          "required_closeout_outcomes": [
+            "completed_and_continue",
+            "completed_and_wait_owner",
+            "route_back",
+            "blocked",
+            "rejected"
+          ],
+          "accepted_closeout_ref_fields": [
+            "owner_receipt_ref",
+            "typed_blocker_ref",
+            "human_gate_ref",
+            "route_back_ref"
+          ],
+          "authority_boundary": {
+            "opl_can_decide_domain_completion": false,
+            "provider_completion_counts_as_stage_complete": false,
+            "file_presence_counts_as_stage_complete": false,
+            "suite_pass_counts_as_stage_complete": false,
+            "conformance_pass_counts_as_stage_complete": false
+          },
+          "policy_ref": "stage-completion-policy-ref:opl-meta-agent/optimizer-iteration",
+          "stage_id": "optimizer-iteration",
+          "target_domain_id": "opl-meta-agent"
         }
       },
       "tool_refs": [
@@ -6286,7 +6604,8 @@
           "typed_blocker_ref",
           "human_gate_ref",
           "route_back_ref",
-          "no_regression_evidence_ref"
+          "no_regression_evidence_ref",
+          "stage_closeout_packet_ref"
         ]
       },
       "handoff_policy": {
@@ -6297,7 +6616,8 @@
           "typed_blocker_ref",
           "human_gate_ref",
           "quality_gate_receipt_ref",
-          "no_regression_evidence_ref"
+          "no_regression_evidence_ref",
+          "stage_closeout_packet_ref"
         ],
         "framework_transport_cannot_claim_domain_ready": true
       },
@@ -6394,6 +6714,7 @@
       },
       "requires": [
         "stage:baseline-delivery",
+        "stage-completion-policy-ref:opl-meta-agent/baseline-delivery",
         "prompt-ref:agent/prompts/baseline-delivery.md",
         "skill-ref:agent/skills/agent-baseline-build.md",
         "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
@@ -6416,6 +6737,7 @@
         "output-ref:delivery_receipt_ref",
         "output-ref:operator_runbook_ref",
         "stage-user-log-ref:baseline-delivery",
+        "stage-closeout-packet-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
         "stage-folder-contract-ref:opl-meta-agent/baseline-delivery",
         "stage-manifest-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
         "stage-current-pointer-ref:opl-meta-agent/baseline-delivery",
@@ -6432,11 +6754,13 @@
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:baseline-delivery",
+        "stage-completion-policy-ref:opl-meta-agent/baseline-delivery",
         "executor-receipt-ref:baseline-delivery/codex-cli",
         "boundary-receipt-ref:baseline-delivery/refs-only",
         "no-forbidden-write-proof-ref:baseline-delivery",
         "independent-ai-review-ref:baseline-delivery",
         "stage-user-log-ref:baseline-delivery",
+        "stage-closeout-packet-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
         "artifact-native-contract-ref:opl-meta-agent/baseline-delivery",
         "stage-folder-contract-ref:opl-meta-agent/baseline-delivery",
         "stage-manifest-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
@@ -7016,6 +7340,40 @@
             "oma_can_promote_default_agent_without_gate": false,
             "oma_can_manage_target_worktree_lifecycle": false
           }
+        },
+        "stage_completion_policy": {
+          "surface_kind": "domain_stage_completion_policy",
+          "version": "domain-stage-completion-policy.v1",
+          "owner": "one-person-lab",
+          "standard_agent_requirement": "domain_stage_owns_completion_judgment_and_emits_standard_closeout_packet",
+          "completion_judgment_owner": "domain_stage",
+          "closeout_packet_required": true,
+          "provider_completion_is_domain_completion": false,
+          "opl_content_judgment_allowed": false,
+          "next_stage_transition_owner": "opl_runtime",
+          "required_closeout_outcomes": [
+            "completed_and_continue",
+            "completed_and_wait_owner",
+            "route_back",
+            "blocked",
+            "rejected"
+          ],
+          "accepted_closeout_ref_fields": [
+            "owner_receipt_ref",
+            "typed_blocker_ref",
+            "human_gate_ref",
+            "route_back_ref"
+          ],
+          "authority_boundary": {
+            "opl_can_decide_domain_completion": false,
+            "provider_completion_counts_as_stage_complete": false,
+            "file_presence_counts_as_stage_complete": false,
+            "suite_pass_counts_as_stage_complete": false,
+            "conformance_pass_counts_as_stage_complete": false
+          },
+          "policy_ref": "stage-completion-policy-ref:opl-meta-agent/baseline-delivery",
+          "stage_id": "baseline-delivery",
+          "target_domain_id": "opl-meta-agent"
         }
       },
       "tool_refs": [
@@ -7072,7 +7430,8 @@
           "typed_blocker_ref",
           "human_gate_ref",
           "route_back_ref",
-          "no_regression_evidence_ref"
+          "no_regression_evidence_ref",
+          "stage_closeout_packet_ref"
         ]
       },
       "handoff_policy": {
@@ -7083,7 +7442,8 @@
           "typed_blocker_ref",
           "human_gate_ref",
           "quality_gate_receipt_ref",
-          "no_regression_evidence_ref"
+          "no_regression_evidence_ref",
+          "stage_closeout_packet_ref"
         ],
         "framework_transport_cannot_claim_domain_ready": true
       },
@@ -7185,6 +7545,7 @@
       },
       "requires": [
         "stage:trajectory-learning-intake",
+        "stage-completion-policy-ref:opl-meta-agent/trajectory-learning-intake",
         "prompt-ref:agent/prompts/trajectory-learning-intake.md",
         "skill-ref:agent/skills/trajectory-learning-intake.md",
         "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
@@ -7214,6 +7575,7 @@
         "output-ref:mechanism_patch_proposal_ref",
         "output-ref:typed_blocker_refs",
         "stage-user-log-ref:trajectory-learning-intake",
+        "stage-closeout-packet-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
         "stage-folder-contract-ref:opl-meta-agent/trajectory-learning-intake",
         "stage-manifest-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
         "stage-current-pointer-ref:opl-meta-agent/trajectory-learning-intake",
@@ -7230,6 +7592,7 @@
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:trajectory-learning-intake",
+        "stage-completion-policy-ref:opl-meta-agent/trajectory-learning-intake",
         "executor-receipt-ref:trajectory-learning-intake/codex-cli",
         "boundary-receipt-ref:trajectory-learning-intake/refs-only",
         "no-forbidden-write-proof-ref:trajectory-learning-intake",
@@ -7239,6 +7602,7 @@
         "candidate-buffer-receipt-ref:trajectory-learning-intake",
         "agent-lab-promotion-gate-ref:trajectory-learning-intake",
         "stage-user-log-ref:trajectory-learning-intake",
+        "stage-closeout-packet-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
         "artifact-native-contract-ref:opl-meta-agent/trajectory-learning-intake",
         "stage-folder-contract-ref:opl-meta-agent/trajectory-learning-intake",
         "stage-manifest-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
@@ -7826,6 +8190,40 @@
             "oma_can_promote_default_agent_without_gate": false,
             "oma_can_manage_target_worktree_lifecycle": false
           }
+        },
+        "stage_completion_policy": {
+          "surface_kind": "domain_stage_completion_policy",
+          "version": "domain-stage-completion-policy.v1",
+          "owner": "one-person-lab",
+          "standard_agent_requirement": "domain_stage_owns_completion_judgment_and_emits_standard_closeout_packet",
+          "completion_judgment_owner": "domain_stage",
+          "closeout_packet_required": true,
+          "provider_completion_is_domain_completion": false,
+          "opl_content_judgment_allowed": false,
+          "next_stage_transition_owner": "opl_runtime",
+          "required_closeout_outcomes": [
+            "completed_and_continue",
+            "completed_and_wait_owner",
+            "route_back",
+            "blocked",
+            "rejected"
+          ],
+          "accepted_closeout_ref_fields": [
+            "owner_receipt_ref",
+            "typed_blocker_ref",
+            "human_gate_ref",
+            "route_back_ref"
+          ],
+          "authority_boundary": {
+            "opl_can_decide_domain_completion": false,
+            "provider_completion_counts_as_stage_complete": false,
+            "file_presence_counts_as_stage_complete": false,
+            "suite_pass_counts_as_stage_complete": false,
+            "conformance_pass_counts_as_stage_complete": false
+          },
+          "policy_ref": "stage-completion-policy-ref:opl-meta-agent/trajectory-learning-intake",
+          "stage_id": "trajectory-learning-intake",
+          "target_domain_id": "opl-meta-agent"
         }
       },
       "tool_refs": [
@@ -7882,7 +8280,8 @@
           "typed_blocker_ref",
           "human_gate_ref",
           "route_back_ref",
-          "no_regression_evidence_ref"
+          "no_regression_evidence_ref",
+          "stage_closeout_packet_ref"
         ]
       },
       "handoff_policy": {
@@ -7893,7 +8292,8 @@
           "typed_blocker_ref",
           "human_gate_ref",
           "quality_gate_receipt_ref",
-          "no_regression_evidence_ref"
+          "no_regression_evidence_ref",
+          "stage_closeout_packet_ref"
         ],
         "framework_transport_cannot_claim_domain_ready": true
       },
@@ -7991,6 +8391,7 @@
       },
       "requires": [
         "stage:online-learning",
+        "stage-completion-policy-ref:opl-meta-agent/online-learning",
         "prompt-ref:agent/prompts/online-learning.md",
         "skill-ref:agent/skills/external-suite-improvement.md",
         "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
@@ -8014,6 +8415,7 @@
         "output-ref:mechanism_patch_proposal_refs",
         "output-ref:future_candidate_refs",
         "stage-user-log-ref:online-learning",
+        "stage-closeout-packet-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
         "stage-folder-contract-ref:opl-meta-agent/online-learning",
         "stage-manifest-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
         "stage-current-pointer-ref:opl-meta-agent/online-learning",
@@ -8030,11 +8432,13 @@
       ],
       "expected_receipt_refs": [
         "stage-attempt-receipt-ref:online-learning",
+        "stage-completion-policy-ref:opl-meta-agent/online-learning",
         "executor-receipt-ref:online-learning/codex-cli",
         "boundary-receipt-ref:online-learning/refs-only",
         "no-forbidden-write-proof-ref:online-learning",
         "independent-ai-review-ref:online-learning",
         "stage-user-log-ref:online-learning",
+        "stage-closeout-packet-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
         "artifact-native-contract-ref:opl-meta-agent/online-learning",
         "stage-folder-contract-ref:opl-meta-agent/online-learning",
         "stage-manifest-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
@@ -8614,6 +9018,40 @@
             "oma_can_promote_default_agent_without_gate": false,
             "oma_can_manage_target_worktree_lifecycle": false
           }
+        },
+        "stage_completion_policy": {
+          "surface_kind": "domain_stage_completion_policy",
+          "version": "domain-stage-completion-policy.v1",
+          "owner": "one-person-lab",
+          "standard_agent_requirement": "domain_stage_owns_completion_judgment_and_emits_standard_closeout_packet",
+          "completion_judgment_owner": "domain_stage",
+          "closeout_packet_required": true,
+          "provider_completion_is_domain_completion": false,
+          "opl_content_judgment_allowed": false,
+          "next_stage_transition_owner": "opl_runtime",
+          "required_closeout_outcomes": [
+            "completed_and_continue",
+            "completed_and_wait_owner",
+            "route_back",
+            "blocked",
+            "rejected"
+          ],
+          "accepted_closeout_ref_fields": [
+            "owner_receipt_ref",
+            "typed_blocker_ref",
+            "human_gate_ref",
+            "route_back_ref"
+          ],
+          "authority_boundary": {
+            "opl_can_decide_domain_completion": false,
+            "provider_completion_counts_as_stage_complete": false,
+            "file_presence_counts_as_stage_complete": false,
+            "suite_pass_counts_as_stage_complete": false,
+            "conformance_pass_counts_as_stage_complete": false
+          },
+          "policy_ref": "stage-completion-policy-ref:opl-meta-agent/online-learning",
+          "stage_id": "online-learning",
+          "target_domain_id": "opl-meta-agent"
         }
       },
       "tool_refs": [
@@ -8670,7 +9108,8 @@
           "typed_blocker_ref",
           "human_gate_ref",
           "route_back_ref",
-          "no_regression_evidence_ref"
+          "no_regression_evidence_ref",
+          "stage_closeout_packet_ref"
         ]
       },
       "handoff_policy": {
@@ -8681,7 +9120,8 @@
           "typed_blocker_ref",
           "human_gate_ref",
           "quality_gate_receipt_ref",
-          "no_regression_evidence_ref"
+          "no_regression_evidence_ref",
+          "stage_closeout_packet_ref"
         ],
         "framework_transport_cannot_claim_domain_ready": true
       },
@@ -12958,6 +13398,7 @@
     "quality_gate_refs",
     "strategy_refs",
     "candidate_pool_policy",
+    "stage_completion_policy",
     "independent_gate_policy",
     "handoff_policy"
   ]

@@ -238,6 +238,9 @@ test('opl-meta-agent bootstraps an explicit target agent and validates it throug
     assert.equal(payload.opl_generated_interfaces.product_entry.descriptors[0].action_key, 'draft-agent-output');
     assert.equal(payload.opl_agent_lab.suite_result.status, 'passed');
     assert.equal(payload.opl_agent_lab.suite_result.suite_kind, 'agent_lab_external_suite');
+    assert.deepEqual(payload.opl_agent_lab.suite_result.refs.stage_completion_policy_refs, [
+      'stage-completion-policy:opl-meta-agent/baseline-fixture-agent/agent_building_baseline',
+    ]);
     assert.equal(payload.learning_loop.online_learning_policy.can_promote_without_gate, false);
     assert.equal(payload.learning_loop.online_learning_policy.can_train_or_deploy_model_weights, false);
     assert.equal(payload.learning_loop.mechanism_patch_proposal.status, 'proposal_recorded_requires_explicit_gate');

@@ -6,6 +6,7 @@ import {
   DEFAULT_STAGE_EXECUTOR_BINDING_REF,
   SERIES_DESIGN_PROFILE,
   STANDARD_STAGE_PACK_CONFORMANCE_VERSION,
+  STAGE_COMPLETION_POLICY,
   STAGE_PROGRESS_DELTA_POLICY,
   TYPED_BLOCKER_LINEAGE_POLICY,
   USER_STAGE_LOG_REQUIRED_FIELDS,
@@ -90,6 +91,72 @@ function validateQualityGateBody(files: Map<string, string>, qualityGatePath: st
   }
 }
 
+function validateStageCompletionPolicy(
+  policy: JsonObject,
+  targetAgent: TargetAgent,
+  stageId: string,
+): void {
+  if (policy.surface_kind !== STAGE_COMPLETION_POLICY.surface_kind) {
+    throw new Error(`stage-decomposition pack draft stage ${stageId} stage_completion_policy.surface_kind is invalid.`);
+  }
+  if (policy.policy_ref !== `stage-completion-policy-ref:${targetAgent.domain_id}/${stageId}`) {
+    throw new Error(`stage-decomposition pack draft stage ${stageId} stage_completion_policy.policy_ref is invalid.`);
+  }
+  if (policy.stage_id !== stageId || policy.target_domain_id !== targetAgent.domain_id) {
+    throw new Error(`stage-decomposition pack draft stage ${stageId} stage_completion_policy identity is invalid.`);
+  }
+  if (policy.completion_judgment_owner !== 'domain_stage') {
+    throw new Error(`stage-decomposition pack draft stage ${stageId} completion judgment must be domain-stage owned.`);
+  }
+  if (policy.closeout_packet_required !== true) {
+    throw new Error(`stage-decomposition pack draft stage ${stageId} stage_completion_policy.closeout_packet_required must be true.`);
+  }
+  [
+    'provider_completion_is_domain_completion',
+    'opl_content_judgment_allowed',
+  ].forEach((field) => assertBooleanFalse(policy, field, `stage ${stageId}.stage_completion_policy.${field}`));
+  if (policy.next_stage_transition_owner !== 'opl_runtime') {
+    throw new Error(`stage-decomposition pack draft stage ${stageId} next_stage_transition_owner must be opl_runtime.`);
+  }
+  const outcomes = asStringArray(
+    policy.required_closeout_outcomes,
+    `stage ${stageId}.stage_completion_policy.required_closeout_outcomes`,
+  );
+  [
+    'completed_and_continue',
+    'completed_and_wait_owner',
+    'route_back',
+    'blocked',
+    'rejected',
+  ].forEach((outcome) => {
+    if (!outcomes.includes(outcome)) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} stage_completion_policy missing outcome ${outcome}.`);
+    }
+  });
+  const refFields = asStringArray(
+    policy.accepted_closeout_ref_fields,
+    `stage ${stageId}.stage_completion_policy.accepted_closeout_ref_fields`,
+  );
+  [
+    'owner_receipt_ref',
+    'typed_blocker_ref',
+    'human_gate_ref',
+    'route_back_ref',
+  ].forEach((field) => {
+    if (!refFields.includes(field)) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} stage_completion_policy missing ref field ${field}.`);
+    }
+  });
+  const boundary = asRecord(policy.authority_boundary, `stage ${stageId}.stage_completion_policy.authority_boundary`);
+  [
+    'opl_can_decide_domain_completion',
+    'provider_completion_counts_as_stage_complete',
+    'file_presence_counts_as_stage_complete',
+    'suite_pass_counts_as_stage_complete',
+    'conformance_pass_counts_as_stage_complete',
+  ].forEach((field) => assertBooleanFalse(boundary, field, `stage ${stageId}.stage_completion_policy.authority_boundary.${field}`));
+}
+
 function validateStageControlPlane(
   stageControl: JsonObject,
   actionCatalog: JsonObject,
@@ -160,7 +227,14 @@ function validateStageControlPlane(
     const requires = asStringArray(contract.requires, `stage ${stageId}.stage_contract.requires`);
     const ensures = asStringArray(contract.ensures, `stage ${stageId}.stage_contract.ensures`);
     const stageNativeRefs = stageNativeRefsFor(targetAgent.domain_id, stageId);
+    const stageCompletionPolicy = asRecord(
+      contract.stage_completion_policy,
+      `stage ${stageId}.stage_contract.stage_completion_policy`,
+    );
+    validateStageCompletionPolicy(stageCompletionPolicy, targetAgent, stageId);
+    const stageCloseoutPacketRef = `stage-closeout-packet-ref:${targetAgent.domain_id}/${stageId}/{stage_attempt_id}`;
     [
+      `stage-completion-policy-ref:${targetAgent.domain_id}/${stageId}`,
       stageNativeRefs.artifactNativeContractRef,
       ...promptRefs.map((entry) => `prompt-ref:${entry}`),
       ...skillRefs.map((entry) => `skill-ref:${entry}`),
@@ -184,6 +258,9 @@ function validateStageControlPlane(
     }
     if (!ensures.includes(`stage-user-log-ref:${stageId}`)) {
       throw new Error(`stage-decomposition pack draft stage ${stageId} missing user stage log ensure.`);
+    }
+    if (!ensures.includes(stageCloseoutPacketRef)) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} missing stage closeout packet ensure.`);
     }
     [
       stageNativeRefs.stageFolderContractRef,
@@ -210,6 +287,12 @@ function validateStageControlPlane(
     }
     if (!expectedReceiptRefs.some((entry) => entry.ref === `stage-user-log-ref:${stageId}`)) {
       throw new Error(`stage-decomposition pack draft stage ${stageId} missing expected user stage log receipt ref.`);
+    }
+    if (!expectedReceiptRefs.some((entry) => entry.ref === `stage-completion-policy-ref:${targetAgent.domain_id}/${stageId}`)) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} missing expected stage completion policy ref.`);
+    }
+    if (!expectedReceiptRefs.some((entry) => entry.ref === stageCloseoutPacketRef)) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} missing expected stage closeout packet ref.`);
     }
     const embeddedMorphology = asRecord(
       contract.artifact_morphology_contract,

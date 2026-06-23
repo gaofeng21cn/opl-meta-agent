@@ -18,8 +18,8 @@ export const oplOwnerRepoRoot = process.env.OPL_OWNER_REPO_ROOT
   ?? '/Users/gaofeng/workspace/one-person-lab';
 export const placeholderPattern = new RegExp(`\\b(?:TO${'DO'}|T${'BD'})\\b`, 'i');
 export const oplSharedReleaseDependency =
-  'git+https://github.com/gaofeng21cn/one-person-lab.git#3a3aaddd0a3e980f86e762ca1ed942bbda6f30d7';
-export const oplSharedReleaseCommit = '3a3aaddd0a3e980f86e762ca1ed942bbda6f30d7';
+  'git+https://github.com/gaofeng21cn/one-person-lab.git#05fc5aa4425acca0a5c6f3f02eafbc82ec902af4';
+export const oplSharedReleaseCommit = '05fc5aa4425acca0a5c6f3f02eafbc82ec902af4';
 
 export function asObjects(value: unknown): JsonObject[] {
   return value as JsonObject[];

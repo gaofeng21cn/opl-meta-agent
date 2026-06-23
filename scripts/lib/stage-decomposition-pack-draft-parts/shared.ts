@@ -125,6 +125,11 @@ export const TYPED_BLOCKER_LINEAGE_POLICY = objectField(
   'typed_blocker_lineage_policy',
 );
 
+export const STAGE_COMPLETION_POLICY = objectField(
+  STANDARD_FOUNDRY_POLICIES,
+  'stage_completion_policy',
+);
+
 export const SERIES_DESIGN_PROFILE = objectField(
   STANDARD_FOUNDRY_POLICIES,
   'series_design_profile',

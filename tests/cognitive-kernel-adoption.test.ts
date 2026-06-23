@@ -15,6 +15,7 @@ const requiredStagePackSections = [
   'quality_gate_refs',
   'strategy_refs',
   'candidate_pool_policy',
+  'stage_completion_policy',
   'independent_gate_policy',
   'handoff_policy',
 ];
@@ -88,6 +89,14 @@ test('OMA stage control plane declares tool boundaries and independent gates', (
 
     assert.equal(stage.candidate_pool_policy.candidate_pool_is_stage_internal_artifact, true);
     assert.equal(stage.candidate_pool_policy.accepted_artifact_mutation_requires_owner_receipt, true);
+    assert.equal(stage.stage_contract.stage_completion_policy.completion_judgment_owner, 'domain_stage');
+    assert.equal(stage.stage_contract.stage_completion_policy.closeout_packet_required, true);
+    assert.equal(stage.stage_contract.stage_completion_policy.provider_completion_is_domain_completion, false);
+    assert.equal(stage.stage_contract.stage_completion_policy.opl_content_judgment_allowed, false);
+    assert.equal(
+      stage.stage_contract.stage_completion_policy.authority_boundary.opl_can_decide_domain_completion,
+      false,
+    );
     assert.ok(stage.strategy_refs.length > 0);
     assert.equal(stage.handoff_policy.owner_delta_first, true);
     assert.equal(stage.handoff_policy.framework_transport_cannot_claim_domain_ready, true);

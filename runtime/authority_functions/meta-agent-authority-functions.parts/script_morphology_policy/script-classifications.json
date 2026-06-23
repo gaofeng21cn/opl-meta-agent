@@ -334,6 +334,7 @@
       "shared_policy_release_ref",
       "stage_progress_delta_policy_ref",
       "typed_blocker_lineage_policy_ref",
+      "stage_completion_policy_ref",
       "foundry_agent_series_design_profile_ref"
     ],
     "forbidden_roles": [],

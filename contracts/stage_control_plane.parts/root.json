@@ -45,6 +45,7 @@
     "quality_gate_refs",
     "strategy_refs",
     "candidate_pool_policy",
+    "stage_completion_policy",
     "independent_gate_policy",
     "handoff_policy"
   ]

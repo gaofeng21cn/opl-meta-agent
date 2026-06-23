@@ -723,6 +723,7 @@ test('script morphology stays limited to authority refs, materializers, helpers,
         'standard_foundry_policy_ref',
         'stage_progress_delta_policy_ref',
         'typed_blocker_lineage_policy_ref',
+        'stage_completion_policy_ref',
         'foundry_agent_series_design_profile_ref',
       ].forEach((writeRef) => {
         assert.ok(asStrings(entry.writes_only).includes(writeRef), `${entry.script_ref} writes_only ${writeRef}`);

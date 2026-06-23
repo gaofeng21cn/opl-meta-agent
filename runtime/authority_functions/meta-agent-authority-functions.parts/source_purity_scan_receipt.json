@@ -255,6 +255,7 @@
         "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts",
         "active_caller_refs": [
           "scripts/build-agent-baseline.ts#import",
+          "scripts/lib/meta-agent-loop-receipts.ts#import",
           "scripts/lib/stage-decomposition-pack-draft-parts/artifact-morphology-validator.ts#import",
           "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts#import",
           "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts#import",

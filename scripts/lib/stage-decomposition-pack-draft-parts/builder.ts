@@ -16,6 +16,7 @@ import {
   SERIES_DESIGN_PROFILE,
   SHARED_POLICY_RELEASE,
   STANDARD_STAGE_PACK_CONFORMANCE_VERSION,
+  STAGE_COMPLETION_POLICY,
   STAGE_PROGRESS_DELTA_POLICY,
   TYPED_BLOCKER_LINEAGE_POLICY,
   USER_STAGE_LOG_CONTRACT,
@@ -206,6 +207,21 @@ function buildActionCatalog({
   };
 }
 
+function buildStageCompletionPolicy({
+  domainId,
+  stageId,
+}: {
+  domainId: string;
+  stageId: string;
+}): JsonObject {
+  return {
+    ...STAGE_COMPLETION_POLICY,
+    policy_ref: `stage-completion-policy-ref:${domainId}/${stageId}`,
+    stage_id: stageId,
+    target_domain_id: domainId,
+  };
+}
+
 function buildStageControlPlane({
   targetAgent,
   stageId,
@@ -226,6 +242,8 @@ function buildStageControlPlane({
     domainTruthOwner: owner,
   });
   const stageNativeRefs = stageNativeRefsFor(domainId, stageId);
+  const stageCompletionPolicy = buildStageCompletionPolicy({ domainId, stageId });
+  const stageCloseoutPacketRef = `stage-closeout-packet-ref:${domainId}/${stageId}/{stage_attempt_id}`;
   const morphologyRefs = artifactMorphologyContract.stage_refs as JsonObject;
   return {
     surface_kind: 'family_stage_control_plane',
@@ -301,6 +319,7 @@ function buildStageControlPlane({
         stage_contract: {
           requires: [
             `stage:${stageId}`,
+            String(stageCompletionPolicy.policy_ref),
             stageNativeRefs.artifactNativeContractRef,
             `prompt-ref:${promptPath}`,
             `skill-ref:${skillPath}`,
@@ -333,12 +352,15 @@ function buildStageControlPlane({
             stageNativeRefs.exportRef,
             stageNativeRefs.lineageRef,
             stageNativeRefs.retentionRef,
+            stageCloseoutPacketRef,
             stageNativeRefs.physicalKernelLocatorRef,
             stageNativeRefs.conformanceRef,
             stageNativeRefs.workbenchConsumptionRef,
           ],
           expected_receipt_refs: [
             ref('stage_attempt_receipt_ref', `stage-attempt-receipt-ref:${stageId}`),
+            ref('stage_completion_policy_ref', String(stageCompletionPolicy.policy_ref)),
+            ref('stage_closeout_packet_ref', stageCloseoutPacketRef),
             ref('executor_receipt_ref', `executor-receipt-ref:${stageId}/codex-cli`),
             ref('boundary_receipt_ref', `boundary-receipt-ref:${stageId}/refs-only`),
             ref('independent_gate_receipt_ref', `independent-gate-receipt-ref:${stageId}`),
@@ -370,6 +392,7 @@ function buildStageControlPlane({
             ref('asset_custody_ref', String(morphologyRefs.asset_custody_ref)),
           ],
           workspace_scope_refs: [ref('workspace_scope_ref', `workspace-scope:${stageId}`)],
+          stage_completion_policy: stageCompletionPolicy,
           stage_native_artifact_contract: stageNativeArtifactContract,
           user_stage_log_contract: USER_STAGE_LOG_CONTRACT,
           progress_delta_policy: STAGE_PROGRESS_DELTA_POLICY,
@@ -437,6 +460,7 @@ function buildFoundryAgentSeriesContract(targetAgent: TargetAgent, stageControlP
       'stage_control_plane_ref',
     ],
     required_stage_packets: [
+      'stage_completion_policy',
       'user_stage_log_contract',
       'stage_native_artifact_contract',
       'progress_delta_policy',
@@ -646,6 +670,7 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
       changed_stage_surfaces: [
         'action_catalog',
         'stage_control_plane',
+        'stage_completion_policy',
         'artifact_morphology_contract',
         'stage_native_artifact_contract',
         'agent/prompts',

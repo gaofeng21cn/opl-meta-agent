@@ -90,6 +90,12 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 - 理由：executor binding、trial、policy read model、gate、receipt 和 default promotion 是 OPL / Agent Lab 职责。
 - 影响：不得把 non-default executor candidate、suite pass 或 candidate completeness 写成 executor switch、runner implementation、quality equivalence 或 default-executor promotion。
 
+### Stage completion judgment 属于 domain stage，OPL 只负责 runtime 接力
+
+- 决策：OMA 生成的 target stage 默认必须包含 `stage_completion_policy`，并固定 `completion_judgment_owner=domain_stage`、`closeout_packet_required=true`、`provider_completion_is_domain_completion=false`、`opl_content_judgment_allowed=false`、`next_stage_transition_owner=opl_runtime`。
+- 理由：stage loop 要保持 RCA/OBF 式的低摩擦推进体验，但不能把 runtime completion、provider receipt、文件存在或测试通过误当成 domain completion。正确闭环是 stage 内完成内容判断并输出标准 closeout packet，OPL 只验证 packet shape、记录 attempt、执行 next-stage transition。
+- 影响：每个 stage contract / generated pack 必须携带 `stage_completion_policy_ref`，并要求 `stage_closeout_packet_ref`。Agent Lab / OMA 应检测缺失 policy、错误 owner、OPL 内容判断、provider completion 即 domain completion、缺 closeout packet、缺 accepted outcome refs 或缺 owner receipt / typed blocker / human gate / route-back refs 的 stage，并把它们标为 conformance blocker。
+
 ### Progress-First accounting 使用 OPL family canonical fields
 
 - 决策：developer work orders 必须使用 `progress_delta_classification`、`deliverable_progress_delta`、`platform_repair_delta` 和 `target_progress_accounting_ref`；退役 OMA-specific aliases 不再被 emitted 或 accepted。

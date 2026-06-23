@@ -169,6 +169,7 @@ test('standard Foundry policies are contract-owned and helper-projection free', 
   const userStageLogContract = assertPolicyObject(contract, 'user_stage_log_contract');
   const stageProgressDeltaPolicy = assertPolicyObject(contract, 'stage_progress_delta_policy');
   const typedBlockerLineagePolicy = assertPolicyObject(contract, 'typed_blocker_lineage_policy');
+  const stageCompletionPolicy = assertPolicyObject(contract, 'stage_completion_policy');
   const seriesDesignProfile = assertPolicyObject(contract, 'series_design_profile');
   const forbiddenGenericOwnerRoles = assertPolicyStringList(contract, 'forbidden_generic_owner_roles');
   const stagePackDefaults = assertPolicyObject(contract, 'stage_pack_defaults');
@@ -209,6 +210,7 @@ test('standard Foundry policies are contract-owned and helper-projection free', 
     'shared_policy_release_ref',
     'stage_progress_delta_policy_ref',
     'typed_blocker_lineage_policy_ref',
+    'stage_completion_policy_ref',
     'foundry_agent_series_design_profile_ref',
   ].forEach((writeRef) => {
     assert.ok(asStrings(activeConsumer.writes_only).includes(writeRef), `shared helper writes_only ${writeRef}`);
@@ -248,9 +250,20 @@ test('standard Foundry policies are contract-owned and helper-projection free', 
   );
   assert.equal(typedBlockerLineagePolicy.surface_kind, 'family-stall-lineage.v1');
   assert.equal(typedBlockerLineagePolicy.version, 'family-stall-lineage.v1');
+  assert.equal(stageCompletionPolicy.surface_kind, 'domain_stage_completion_policy');
+  assert.equal(stageCompletionPolicy.completion_judgment_owner, 'domain_stage');
+  assert.equal(stageCompletionPolicy.closeout_packet_required, true);
+  assert.equal(stageCompletionPolicy.provider_completion_is_domain_completion, false);
+  assert.equal(stageCompletionPolicy.opl_content_judgment_allowed, false);
+  assert.equal(stageCompletionPolicy.next_stage_transition_owner, 'opl_runtime');
+  assert.ok(asStrings(stageCompletionPolicy.required_closeout_outcomes).includes('completed_and_continue'));
+  assert.ok(asStrings(stageCompletionPolicy.accepted_closeout_ref_fields).includes('owner_receipt_ref'));
+  assert.equal(stageCompletionPolicy.authority_boundary.opl_can_decide_domain_completion, false);
+  assert.equal(stageCompletionPolicy.authority_boundary.provider_completion_counts_as_stage_complete, false);
   assert.equal(seriesDesignProfile.profile_id, 'opl_foundry_agent_series_design_profile.v1');
   assert.ok(asStrings(seriesDesignProfile.stage_pack_sections).includes('prompts'));
   assert.ok(asStrings(seriesDesignProfile.stage_pack_sections).includes('quality_gates'));
+  assert.ok(asStrings(seriesDesignProfile.stage_pack_sections).includes('stage_completion_policy'));
   assert.ok(asStrings(seriesDesignProfile.stage_pack_sections).includes('artifact_morphology'));
   assert.equal(artifactMorphologyPolicy.surface_kind, 'target_domain_artifact_morphology_policy');
   assert.equal(artifactMorphologyPolicy.required_for_new_target_agent_baseline, true);
