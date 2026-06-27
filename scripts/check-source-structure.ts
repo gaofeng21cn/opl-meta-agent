@@ -137,12 +137,28 @@ function retainedCurrentKind(gate: JsonObject): string | null {
   return [
     'retained_current_authority_function',
     'fixture_or_proof_only_retained',
+    'retained_current_repo_native_surface',
   ].includes(state ?? '')
     ? state
     : null;
 }
 
+function repoNativeRetentionOverrides(policy: JsonObject): Map<string, JsonObject> {
+  const guard = policy.script_to_pack_receipt_guard as JsonObject | undefined;
+  const overrides = new Map<string, JsonObject>();
+  if (!guard || !Array.isArray(guard.repo_native_retention_overrides)) return overrides;
+  (guard.repo_native_retention_overrides as JsonObject[]).forEach((override) => {
+    const gateId = firstString(override.gate_id);
+    const state = firstString(override.retention_state);
+    if (gateId && state === 'retained_current_repo_native_surface') {
+      overrides.set(gateId, override);
+    }
+  });
+  return overrides;
+}
+
 function cleanupReadbackForScripts(
+  policy: JsonObject,
   receipt: JsonObject,
   sourceReceipt: JsonObject,
   scriptMorphology: JsonObject,
@@ -152,6 +168,7 @@ function cleanupReadbackForScripts(
   const classificationsByScript = byScriptRef(scriptMorphology.script_classifications);
   const activeCallersByScript = byScriptRef((sourceReceipt.active_script_caller_scan as JsonObject).caller_refs_by_script);
   const gatesByScript = gateByScriptRef(scriptMorphology.script_to_pack_retirement_gates);
+  const retentionOverridesByGate = repoNativeRetentionOverrides(policy);
   const scannedScriptRefs = asStrings(sourceReceipt.scanned_script_refs, 'source_purity_scan_receipt.scanned_script_refs');
   const requiredByReceipt = asStringArray(receipt.future_retirement_or_absorb_still_requires);
   const requiredByGuard = asStringArray(cleanupGuard.required_before_cleanup_apply);
@@ -166,6 +183,10 @@ function cleanupReadbackForScripts(
     const activeCaller = activeCallersByScript.get(scriptRef) ?? {};
     const missingEvidence = asStringArray(gate.required_before_retire_or_absorb);
     const gateId = firstString(gate.gate_id);
+    const retentionOverride = gateId ? retentionOverridesByGate.get(gateId) : undefined;
+    const retentionState = retentionOverride
+      ? firstString(retentionOverride.retention_state)
+      : retainedCurrentKind(gate);
 
     return {
       script_ref: scriptRef,
@@ -184,9 +205,14 @@ function cleanupReadbackForScripts(
         ? `oma-typed-blocker:script-to-pack/${gateId}/${scriptRef}`
         : `oma-typed-blocker:script-to-pack/missing-script-gate/${scriptRef}`,
       can_apply_cleanup: false,
-      retention_state: retainedCurrentKind(gate),
-      retention_reason: firstString(gate.retention_reason),
-      retention_evidence_refs: asStringArray(gate.retention_evidence_refs),
+      retention_state: retentionState,
+      retention_reason: retentionOverride
+        ? firstString(retentionOverride.retention_reason)
+        : firstString(gate.retention_reason),
+      retention_evidence_refs: retentionOverride
+        ? asStringArray(retentionOverride.retention_evidence_refs)
+        : asStringArray(gate.retention_evidence_refs),
+      no_resurrection_policy: retentionOverride?.no_resurrection_policy,
       future_retirement_requires: asStringArray(gate.required_before_retire_or_absorb),
     };
   });
@@ -199,6 +225,7 @@ function cleanupReadbackForScripts(
       retention_state: row.retention_state,
       retention_reason: row.retention_reason,
       retention_evidence_refs: row.retention_evidence_refs,
+      no_resurrection_policy: row.no_resurrection_policy,
       classes: row.classes,
       authority_function_refs: row.authority_function_refs,
       consumes_opl_surfaces: row.consumes_opl_surfaces,
@@ -214,6 +241,7 @@ function cleanupReadbackForScripts(
         retention_state: _retentionState,
         retention_reason: _retentionReason,
         retention_evidence_refs: _retentionEvidenceRefs,
+        no_resurrection_policy: _noResurrectionPolicy,
         future_retirement_requires: _futureRetirementRequires,
         ...candidate
       } = row;
@@ -244,6 +272,9 @@ function cleanupReadbackForScripts(
     retained_current_authority_function_count: retainedCurrentRows
       .filter((row) => row.retention_state === 'retained_current_authority_function')
       .length,
+    retained_current_repo_native_surface_count: retainedCurrentRows
+      .filter((row) => row.retention_state === 'retained_current_repo_native_surface')
+      .length,
     fixture_or_proof_only_retained_count: retainedCurrentRows
       .filter((row) => row.retention_state === 'fixture_or_proof_only_retained')
       .length,
@@ -254,6 +285,7 @@ function cleanupReadbackForScripts(
     ),
     required_before_cleanup_apply: requiredBeforeCleanup,
     cleanup_candidates: cleanupCandidates,
+    retained_current_rows: retainedCurrentRows,
     retained_current_authority_functions: retainedCurrentRows,
     false_ready_claims: {
       claims_cleanup_readback_authorizes_delete: false,
@@ -300,6 +332,7 @@ function compactCleanupReadback(readback: JsonObject): JsonObject {
     cleanup_candidate_count: readback.cleanup_candidate_count,
     retained_current_count: readback.retained_current_count,
     retained_current_authority_function_count: readback.retained_current_authority_function_count,
+    retained_current_repo_native_surface_count: readback.retained_current_repo_native_surface_count,
     fixture_or_proof_only_retained_count: readback.fixture_or_proof_only_retained_count,
     cleanup_apply_candidate_count: readback.cleanup_apply_candidate_count,
     missing_evidence_item_count: readback.missing_evidence_item_count,
@@ -364,7 +397,7 @@ function validateScriptToPackReceiptGuard(
   const activeCallerScan = sourceReceipt.active_script_caller_scan as JsonObject;
   const sourceRefIntegrityGuard = scriptMorphology.source_ref_integrity_guard as JsonObject;
   const currentSummary = receipt.current_scan_summary as JsonObject;
-  const cleanupReadback = cleanupReadbackForScripts(receipt, sourceReceipt, scriptMorphology);
+  const cleanupReadback = cleanupReadbackForScripts(policy, receipt, sourceReceipt, scriptMorphology);
   const compactCleanupSummary = compactCleanupReadback(cleanupReadback);
   const trackedScriptRefs = scriptRefsFromTrackedFiles(tracked);
   const scannedScriptRefs = asStrings(sourceReceipt.scanned_script_refs, 'source_purity_scan_receipt.scanned_script_refs');

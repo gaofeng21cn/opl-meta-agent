@@ -80,7 +80,9 @@ test('source-structure and line-budget lanes are repo-native package and verify 
     'classes',
     'active_caller_refs',
     'missing_evidence',
+    'retained_current_rows',
     'retained_current_authority_functions',
+    'retained_current_repo_native_surface_count',
     'owner_delta_route',
     'typed_blocker_ref_shape',
     'can_apply_cleanup',
@@ -187,11 +189,15 @@ test('source-structure publishes a JSON machine readback for script-to-pack guar
     payload.script_to_pack_receipt_guard.cleanup_readback.summary_role,
     'compact_cleanup_summary_not_second_script_inventory',
   );
-  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.cleanup_candidate_count, 10);
-  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.retained_current_count, 20);
+  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.cleanup_candidate_count, 4);
+  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.retained_current_count, 26);
   assert.equal(
     payload.script_to_pack_receipt_guard.cleanup_readback.retained_current_authority_function_count,
     20,
+  );
+  assert.equal(
+    payload.script_to_pack_receipt_guard.cleanup_readback.retained_current_repo_native_surface_count,
+    6,
   );
   assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.cleanup_apply_candidate_count, 0);
   assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.sample_cleanup_candidate_count, 3);
@@ -227,9 +233,10 @@ test('script-to-pack default readback is compact and does not become a second sc
   assert.equal(payload.command_ref, 'npm run script-to-pack:readback');
   assert.equal(payload.full_detail_command_ref, 'npm run script-to-pack:readback:full');
   assert.equal(payload.readback_is_authority, false);
-  assert.equal(payload.cleanup_candidate_count, 10);
-  assert.equal(payload.retained_current_count, 20);
+  assert.equal(payload.cleanup_candidate_count, 4);
+  assert.equal(payload.retained_current_count, 26);
   assert.equal(payload.retained_current_authority_function_count, 20);
+  assert.equal(payload.retained_current_repo_native_surface_count, 6);
   assert.equal(payload.fixture_or_proof_only_retained_count, 0);
   assert.equal(payload.cleanup_apply_candidate_count, 0);
   assert.equal(payload.full_candidate_rows_omitted_from_default, true);
@@ -274,12 +281,14 @@ test('script-to-pack full readback materializes cleanup candidates without autho
   assert.equal(payload.readback_is_authority, false);
   assert.equal(payload.compact_cleanup_summary_ref, 'npm run script-to-pack:readback');
   assert.equal(payload.compact_cleanup_summary_omitted_from_full, true);
-  assert.equal(payload.cleanup_candidate_count, 10);
-  assert.equal(payload.retained_current_count, 20);
+  assert.equal(payload.cleanup_candidate_count, 4);
+  assert.equal(payload.retained_current_count, 26);
   assert.equal(payload.retained_current_authority_function_count, 20);
+  assert.equal(payload.retained_current_repo_native_surface_count, 6);
   assert.equal(payload.fixture_or_proof_only_retained_count, 0);
   assert.equal(payload.cleanup_apply_candidate_count, 0);
-  assert.equal(payload.cleanup_candidates.length, 10);
+  assert.equal(payload.cleanup_candidates.length, 4);
+  assert.equal(payload.retained_current_rows.length, 26);
   const retainedExecuteWorkOrder = payload.retained_current_authority_functions.find(
     (candidate: { script_ref: string }) => candidate.script_ref === 'scripts/execute-external-work-order.ts',
   );
@@ -327,13 +336,41 @@ test('script-to-pack full readback materializes cleanup candidates without autho
     ),
     false,
   );
-  const sourceStructureRow = payload.cleanup_candidates.find(
+  const sourceStructureRow = payload.retained_current_rows.find(
     (candidate: { script_ref: string }) => candidate.script_ref === 'scripts/check-source-structure.ts',
   );
   assert.ok(sourceStructureRow);
   assert.equal(sourceStructureRow.gate_id, 'source_structure_and_stage_control_maintenance_helpers');
   assert.ok(sourceStructureRow.active_caller_refs.includes('package.json#scripts.script-to-pack:readback'));
-  assert.ok(sourceStructureRow.missing_evidence.includes('opl_framework_source_structure_lane_parity_ref'));
+  assert.equal(sourceStructureRow.retention_state, 'retained_current_repo_native_surface');
+  assert.ok(sourceStructureRow.retention_evidence_refs.includes('contracts/source_structure_policy.json'));
+  assert.equal(
+    sourceStructureRow.no_resurrection_policy.policy_id,
+    'oma.repo_native_source_structure_helpers.no_resurrection.v1',
+  );
+  const shellWrapperRow = payload.retained_current_rows.find(
+    (candidate: { script_ref: string }) => candidate.script_ref === 'scripts/verify.sh',
+  );
+  assert.ok(shellWrapperRow);
+  assert.equal(shellWrapperRow.gate_id, 'repo_shell_verification_wrappers');
+  assert.equal(shellWrapperRow.retention_state, 'retained_current_repo_native_surface');
+  assert.ok(shellWrapperRow.active_caller_refs.includes('package.json#scripts.verify'));
+  assert.equal(
+    shellWrapperRow.no_resurrection_policy.policy_id,
+    'oma.repo_shell_verification_wrappers.no_resurrection.v1',
+  );
+  assert.equal(
+    payload.cleanup_candidates.some(
+      (candidate: { gate_id: string }) => candidate.gate_id === 'source_structure_and_stage_control_maintenance_helpers',
+    ),
+    false,
+  );
+  assert.equal(
+    payload.cleanup_candidates.some(
+      (candidate: { gate_id: string }) => candidate.gate_id === 'repo_shell_verification_wrappers',
+    ),
+    false,
+  );
   assert.match(sourceStructureRow.owner_delta_route, /^route-to-owner:opl-framework-or-target-owner\/script-to-pack\//);
   assert.match(sourceStructureRow.typed_blocker_ref_shape, /^oma-typed-blocker:script-to-pack\//);
   assert.equal(sourceStructureRow.can_apply_cleanup, false);

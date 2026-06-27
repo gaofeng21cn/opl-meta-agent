@@ -75,6 +75,62 @@
     "cleanup_readback_surface_kind": "oma_script_to_pack_retirement_cleanup_compact_readback",
     "full_cleanup_readback_surface_kind": "oma_script_to_pack_retirement_cleanup_readback",
     "cleanup_readback_compact_summary_role": "direct_readback_short_form_not_second_script_inventory",
+    "repo_native_retention_overrides": [
+      {
+        "gate_id": "source_structure_and_stage_control_maintenance_helpers",
+        "retention_state": "retained_current_repo_native_surface",
+        "retention_reason": "current repo-native source-structure, authority-functions aggregate sync, and stage-control aggregate sync maintenance surface with active package, verify, and contract/readback callers; it remains a verification and cache-boundary surface, not a runtime owner or production readiness claim",
+        "retention_evidence_refs": [
+          "contracts/source_structure_policy.json",
+          "package.json#scripts.source-structure",
+          "package.json#scripts.script-to-pack:readback",
+          "package.json#scripts.authority-functions:check",
+          "package.json#scripts.stage-control:check",
+          "scripts/verify.sh#structure",
+          "tests/source-structure-lane.test.ts#source-structure-and-stage-control-retention",
+          "tests/source-purity/script-morphology.test-case.ts#source-structure-maintenance-gate"
+        ],
+        "no_resurrection_policy": {
+          "policy_id": "oma.repo_native_source_structure_helpers.no_resurrection.v1",
+          "state": "active_machine_policy",
+          "retained_only_while_active_repo_native_callers_exist": true,
+          "must_not_restore_as_generic_runtime_owner": true,
+          "must_not_restore_as_generated_interface_owner": true,
+          "must_not_restore_as_domain_truth_writer": true,
+          "must_not_claim_line_budget_default_hard_gate": true,
+          "future_retirement_requires_existing_gate_required_before_retire_or_absorb": true
+        }
+      },
+      {
+        "gate_id": "repo_shell_verification_wrappers",
+        "retention_state": "retained_current_repo_native_surface",
+        "retention_reason": "current repo-native verification, hygiene, and external temp/cache-boundary shell surface with active package and verify callers; it remains a local verification wrapper set, not a runtime owner, scheduler, queue, target truth, quality verdict, or production readiness surface",
+        "retention_evidence_refs": [
+          "contracts/source_structure_policy.json",
+          "package.json#scripts.verify",
+          "package.json#scripts.test:smoke",
+          "package.json#scripts.repo:hygiene",
+          "package.json#scripts.typecheck",
+          "scripts/verify.sh",
+          "scripts/run-with-repo-temp-env.sh",
+          "scripts/repo-hygiene.sh",
+          "tests/source-structure-lane.test.ts#repo-shell-verification-retention",
+          "tests/contracts-repo-hygiene.test.ts"
+        ],
+        "no_resurrection_policy": {
+          "policy_id": "oma.repo_shell_verification_wrappers.no_resurrection.v1",
+          "state": "active_machine_policy",
+          "retained_only_while_active_repo_native_callers_exist": true,
+          "must_not_restore_as_generic_cli_product_wrapper": true,
+          "must_not_restore_as_generic_runtime_owner": true,
+          "must_not_restore_as_scheduler_or_daemon": true,
+          "must_not_restore_as_queue_or_attempt_ledger": true,
+          "must_not_restore_as_target_truth_or_quality_writer": true,
+          "must_not_claim_line_budget_default_hard_gate": true,
+          "future_retirement_requires_existing_gate_required_before_retire_or_absorb": true
+        }
+      }
+    ],
     "cleanup_readback_required_fields": [
       "script_ref",
       "gate_id",
@@ -82,7 +138,9 @@
       "classes",
       "active_caller_refs",
       "missing_evidence",
+      "retained_current_rows",
       "retained_current_authority_functions",
+      "retained_current_repo_native_surface_count",
       "owner_delta_route",
       "typed_blocker_ref_shape",
       "can_apply_cleanup"
