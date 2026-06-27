@@ -13,6 +13,18 @@
       "scripts/lib/work-order-validation.ts"
     ],
     "current_role": "target_agent_generic_work_order_candidate_proposal_or_typed_blocker_materializer",
+    "retention_state": "retained_current_authority_function",
+    "retention_reason": "current OMA refs-only materializer group for agent-evidence and external-suite developer work-order candidate, target improvement proposal, typed blocker shape, runtime read-model consumption, workspace proof, and no-forbidden-write proof refs without owning target truth, target worktree lifecycle, quality verdicts, owner receipt bodies, OPL runner parity, or promotion gates",
+    "retention_evidence_refs": [
+      "contracts/developer_work_order_policy.json",
+      "contracts/developer_work_order_policy.json#/target_improvement_default_change_ref_policy",
+      "package.json#scripts.improve:external-suite",
+      "package.json#scripts.agent:evidence",
+      "tests/agent-evidence-materializer.test.ts",
+      "tests/external-suite-efficiency-handoff.test.ts",
+      "tests/external-suite-reviewer-gates.test.ts",
+      "tests/target-improvement-policy.test.ts"
+    ],
     "allowed_until": "active_npm_or_test_caller_requires_refs_only_artifact_materialization",
     "required_before_retire_or_absorb": [
       "stable_policy_moved_to_agent_contracts_authority_or_opl_primitive_ref",

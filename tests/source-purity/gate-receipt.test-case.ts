@@ -267,13 +267,13 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
     gateSummary.compact_cleanup_summary_output_ref,
     'script-to-pack-readback.compact_cleanup_summary',
   );
-  assert.equal(gateSummary.compact_cleanup_candidate_count, scriptRefs.length - 1);
-  assert.equal(gateSummary.compact_retained_current_count, 1);
+  assert.equal(gateSummary.compact_cleanup_candidate_count, scriptRefs.length - 10);
+  assert.equal(gateSummary.compact_retained_current_count, 10);
   assert.equal(gateSummary.compact_cleanup_apply_candidate_count, 0);
-  assert.equal(gateSummary.compact_cleanup_missing_evidence_item_count, 234);
+  assert.equal(gateSummary.compact_cleanup_missing_evidence_item_count, 171);
   assert.equal(gateSummary.compact_cleanup_sample_candidate_count, 3);
-  assert.equal(gateSummary.cleanup_candidate_count, scriptRefs.length - 1);
-  assert.equal(gateSummary.retained_current_count, 1);
+  assert.equal(gateSummary.cleanup_candidate_count, scriptRefs.length - 10);
+  assert.equal(gateSummary.retained_current_count, 10);
   assert.equal(gateSummary.cleanup_apply_candidate_count, 0);
   assert.equal(
     gateSummary.cleanup_readback_authority_ref,
