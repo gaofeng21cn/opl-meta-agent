@@ -175,7 +175,9 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
   assert.equal(readbackGuard.readback_materialization_policy.script_rows_are_derived_from_existing_retirement_gates, true);
   assert.equal(readbackGuard.readback_materialization_policy.compact_summary_is_derived_from_same_script_rows, true);
   assert.equal(readbackGuard.readback_materialization_policy.compact_summary_must_not_replace_full_candidate_rows, true);
+  assert.equal(readbackGuard.readback_materialization_policy.retained_current_rows_are_separate_from_cleanup_candidates, true);
   assert.equal(readbackGuard.readback_materialization_policy.can_materialize_missing_evidence_worklist, true);
+  assert.equal(readbackGuard.readback_materialization_policy.can_materialize_retained_current_worklist, true);
   assert.equal(readbackGuard.readback_materialization_policy.can_materialize_owner_delta_route, true);
   assert.equal(readbackGuard.readback_materialization_policy.can_materialize_typed_blocker_ref_shape, true);
   assert.equal(readbackGuard.readback_materialization_policy.must_not_create_second_script_inventory, true);
@@ -183,6 +185,7 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
   assert.deepEqual(asStrings(readbackGuard.allowed_readback_outputs), [
     'script_classification_readback',
     'missing_evidence_worklist',
+    'retained_current_worklist',
     'owner_delta_route',
     'typed_blocker_ref_shape',
     'no_resurrection_policy',
@@ -264,11 +267,13 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
     gateSummary.compact_cleanup_summary_output_ref,
     'script-to-pack-readback.compact_cleanup_summary',
   );
-  assert.equal(gateSummary.compact_cleanup_candidate_count, scriptRefs.length);
+  assert.equal(gateSummary.compact_cleanup_candidate_count, scriptRefs.length - 1);
+  assert.equal(gateSummary.compact_retained_current_count, 1);
   assert.equal(gateSummary.compact_cleanup_apply_candidate_count, 0);
-  assert.equal(gateSummary.compact_cleanup_missing_evidence_item_count, 240);
+  assert.equal(gateSummary.compact_cleanup_missing_evidence_item_count, 234);
   assert.equal(gateSummary.compact_cleanup_sample_candidate_count, 3);
-  assert.equal(gateSummary.cleanup_candidate_count, scriptRefs.length);
+  assert.equal(gateSummary.cleanup_candidate_count, scriptRefs.length - 1);
+  assert.equal(gateSummary.retained_current_count, 1);
   assert.equal(gateSummary.cleanup_apply_candidate_count, 0);
   assert.equal(
     gateSummary.cleanup_readback_authority_ref,

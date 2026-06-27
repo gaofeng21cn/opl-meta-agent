@@ -179,7 +179,9 @@
       "script_rows_are_derived_from_existing_retirement_gates": true,
       "compact_summary_is_derived_from_same_script_rows": true,
       "compact_summary_must_not_replace_full_candidate_rows": true,
+      "retained_current_rows_are_separate_from_cleanup_candidates": true,
       "can_materialize_missing_evidence_worklist": true,
+      "can_materialize_retained_current_worklist": true,
       "can_materialize_owner_delta_route": true,
       "can_materialize_typed_blocker_ref_shape": true,
       "must_not_create_second_script_inventory": true,
@@ -188,6 +190,7 @@
     "allowed_readback_outputs": [
       "script_classification_readback",
       "missing_evidence_worklist",
+      "retained_current_worklist",
       "owner_delta_route",
       "typed_blocker_ref_shape",
       "no_resurrection_policy"

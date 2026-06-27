@@ -82,6 +82,7 @@
       "classes",
       "active_caller_refs",
       "missing_evidence",
+      "retained_current_authority_functions",
       "owner_delta_route",
       "typed_blocker_ref_shape",
       "can_apply_cleanup"
@@ -111,6 +112,7 @@
       "orphan_script_count_nonzero",
       "receipt_claims_retirement_or_readiness",
       "cleanup_readback_missing_candidate",
+      "cleanup_readback_retained_current_drift",
       "cleanup_readback_claims_cleanup_apply",
       "compact_cleanup_summary_drift",
       "compact_cleanup_summary_claims_cleanup_or_readiness"

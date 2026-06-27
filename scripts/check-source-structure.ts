@@ -132,6 +132,16 @@ function gateByScriptRef(gates: unknown): Map<string, JsonObject> {
   return map;
 }
 
+function retainedCurrentKind(gate: JsonObject): string | null {
+  const state = firstString(gate.retention_state);
+  return [
+    'retained_current_authority_function',
+    'fixture_or_proof_only_retained',
+  ].includes(state ?? '')
+    ? state
+    : null;
+}
+
 function cleanupReadbackForScripts(
   receipt: JsonObject,
   sourceReceipt: JsonObject,
@@ -150,7 +160,7 @@ function cleanupReadbackForScripts(
     ? requiredByReceipt
     : requiredBeforeCleanup.filter((entry) => !entry.startsWith('owner_receipt://'));
 
-  const cleanupCandidates = scannedScriptRefs.map((scriptRef) => {
+  const rows = scannedScriptRefs.map((scriptRef) => {
     const gate = gatesByScript.get(scriptRef) ?? {};
     const classification = classificationsByScript.get(scriptRef) ?? {};
     const activeCaller = activeCallersByScript.get(scriptRef) ?? {};
@@ -174,8 +184,41 @@ function cleanupReadbackForScripts(
         ? `oma-typed-blocker:script-to-pack/${gateId}/${scriptRef}`
         : `oma-typed-blocker:script-to-pack/missing-script-gate/${scriptRef}`,
       can_apply_cleanup: false,
+      retention_state: retainedCurrentKind(gate),
+      retention_reason: firstString(gate.retention_reason),
+      retention_evidence_refs: asStringArray(gate.retention_evidence_refs),
+      future_retirement_requires: asStringArray(gate.required_before_retire_or_absorb),
     };
   });
+  const retainedCurrentRows = rows
+    .filter((row) => row.retention_state)
+    .map((row) => ({
+      script_ref: row.script_ref,
+      gate_id: row.gate_id,
+      current_role: row.current_role,
+      retention_state: row.retention_state,
+      retention_reason: row.retention_reason,
+      retention_evidence_refs: row.retention_evidence_refs,
+      classes: row.classes,
+      authority_function_refs: row.authority_function_refs,
+      consumes_opl_surfaces: row.consumes_opl_surfaces,
+      active_caller_refs: row.active_caller_refs,
+      future_retirement_requires: row.future_retirement_requires,
+      owner_delta_route: row.owner_delta_route,
+      can_apply_cleanup: false,
+    }));
+  const cleanupCandidates = rows
+    .filter((row) => !row.retention_state)
+    .map((row) => {
+      const {
+        retention_state: _retentionState,
+        retention_reason: _retentionReason,
+        retention_evidence_refs: _retentionEvidenceRefs,
+        future_retirement_requires: _futureRetirementRequires,
+        ...candidate
+      } = row;
+      return candidate;
+    });
 
   return {
     surface_kind: 'oma_script_to_pack_retirement_cleanup_readback',
@@ -197,6 +240,13 @@ function cleanupReadbackForScripts(
     command_ref: commandRef,
     readback_is_authority: false,
     cleanup_candidate_count: cleanupCandidates.length,
+    retained_current_count: retainedCurrentRows.length,
+    retained_current_authority_function_count: retainedCurrentRows
+      .filter((row) => row.retention_state === 'retained_current_authority_function')
+      .length,
+    fixture_or_proof_only_retained_count: retainedCurrentRows
+      .filter((row) => row.retention_state === 'fixture_or_proof_only_retained')
+      .length,
     cleanup_apply_candidate_count: 0,
     missing_evidence_item_count: cleanupCandidates.reduce(
       (count, candidate) => count + asStringArray(candidate.missing_evidence).length,
@@ -204,6 +254,7 @@ function cleanupReadbackForScripts(
     ),
     required_before_cleanup_apply: requiredBeforeCleanup,
     cleanup_candidates: cleanupCandidates,
+    retained_current_authority_functions: retainedCurrentRows,
     false_ready_claims: {
       claims_cleanup_readback_authorizes_delete: false,
       claims_retirement_cleanup_applied: false,
@@ -247,6 +298,9 @@ function compactCleanupReadback(readback: JsonObject): JsonObject {
     command_ref: readback.command_ref,
     readback_is_authority: readback.readback_is_authority,
     cleanup_candidate_count: readback.cleanup_candidate_count,
+    retained_current_count: readback.retained_current_count,
+    retained_current_authority_function_count: readback.retained_current_authority_function_count,
+    fixture_or_proof_only_retained_count: readback.fixture_or_proof_only_retained_count,
     cleanup_apply_candidate_count: readback.cleanup_apply_candidate_count,
     missing_evidence_item_count: readback.missing_evidence_item_count,
     sample_cleanup_candidate_count: sampleCleanupCandidates.length,
@@ -278,6 +332,9 @@ function directCompactCleanupReadback(
     readback_role: 'default_operator_compact_readback_not_second_script_inventory',
     readback_is_authority: compact.readback_is_authority,
     cleanup_candidate_count: compact.cleanup_candidate_count,
+    retained_current_count: compact.retained_current_count,
+    retained_current_authority_function_count: compact.retained_current_authority_function_count,
+    fixture_or_proof_only_retained_count: compact.fixture_or_proof_only_retained_count,
     cleanup_apply_candidate_count: compact.cleanup_apply_candidate_count,
     missing_evidence_item_count: compact.missing_evidence_item_count,
     sample_cleanup_candidate_count: compact.sample_cleanup_candidate_count,
@@ -356,8 +413,8 @@ function validateScriptToPackReceiptGuard(
   if (Number(currentSummary.script_gate_count) !== (scriptMorphology.script_to_pack_retirement_gates as unknown[]).length) {
     guardViolations.push('script-to-pack current_scan_summary.script_gate_count drift');
   }
-  if (cleanupReadback.cleanup_candidate_count !== scannedScriptRefs.length) {
-    guardViolations.push('script-to-pack cleanup readback candidate count drift');
+  if (cleanupReadback.cleanup_candidate_count + cleanupReadback.retained_current_count !== scannedScriptRefs.length) {
+    guardViolations.push('script-to-pack cleanup readback classified script count drift');
   }
   if (cleanupReadback.cleanup_apply_candidate_count !== 0) {
     guardViolations.push('script-to-pack cleanup readback must not authorize cleanup apply');
@@ -370,6 +427,12 @@ function validateScriptToPackReceiptGuard(
   }
   if (Number(currentSummary.compact_cleanup_candidate_count) !== cleanupReadback.cleanup_candidate_count) {
     guardViolations.push('script-to-pack compact cleanup candidate count drift');
+  }
+  if (Number(currentSummary.compact_retained_current_count) !== cleanupReadback.retained_current_count) {
+    guardViolations.push('script-to-pack compact retained current count drift');
+  }
+  if (Number(currentSummary.retained_current_count) !== cleanupReadback.retained_current_count) {
+    guardViolations.push('script-to-pack retained current count drift');
   }
   if (Number(currentSummary.compact_cleanup_apply_candidate_count) !== cleanupReadback.cleanup_apply_candidate_count) {
     guardViolations.push('script-to-pack compact cleanup apply candidate count drift');

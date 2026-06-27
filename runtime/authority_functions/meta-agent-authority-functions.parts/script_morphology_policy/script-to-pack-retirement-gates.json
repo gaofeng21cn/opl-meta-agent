@@ -94,6 +94,14 @@
       "scripts/execute-external-work-order.ts"
     ],
     "current_role": "thin_validation_and_opl_work_order_execute_delegation",
+    "retention_state": "retained_current_authority_function",
+    "retention_reason": "current OMA action implementation validates developer patch work-order shape and delegates execution to OPL work-order execute without owning target lifecycle or owner receipt bodies",
+    "retention_evidence_refs": [
+      "docs/decisions.md#execute-external-work-order",
+      "contracts/action_catalog.json#actions.execute-external-work-order",
+      "tests/execute-external-work-order.test.ts",
+      "tests/contracts-action-authority.test.ts"
+    ],
     "allowed_until": "opl_generated_action_can_validate_and_delegate_same_work_order_shape",
     "required_before_retire_or_absorb": [
       "opl_work_order_execute_primitive_parity_ref",

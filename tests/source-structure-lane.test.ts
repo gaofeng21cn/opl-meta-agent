@@ -80,6 +80,7 @@ test('source-structure and line-budget lanes are repo-native package and verify 
     'classes',
     'active_caller_refs',
     'missing_evidence',
+    'retained_current_authority_functions',
     'owner_delta_route',
     'typed_blocker_ref_shape',
     'can_apply_cleanup',
@@ -100,6 +101,7 @@ test('source-structure and line-budget lanes are repo-native package and verify 
     'orphan_script_count_nonzero',
     'receipt_claims_retirement_or_readiness',
     'cleanup_readback_missing_candidate',
+    'cleanup_readback_retained_current_drift',
     'cleanup_readback_claims_cleanup_apply',
     'compact_cleanup_summary_drift',
     'compact_cleanup_summary_claims_cleanup_or_readiness',
@@ -172,8 +174,8 @@ test('source-structure publishes a JSON machine readback for script-to-pack guar
   assert.equal(payload.readback_is_authority, false);
   assert.equal(payload.script_to_pack_receipt_guard.guard_id, 'oma.source_structure.script_to_pack_receipt_drift_guard.v1');
   assert.equal(payload.script_to_pack_receipt_guard.json_readback_command_ref, 'npm run source-structure:json');
-  assert.equal(payload.script_to_pack_receipt_guard.scanned_script_count, 31);
-  assert.equal(payload.script_to_pack_receipt_guard.gated_script_count, 31);
+  assert.equal(payload.script_to_pack_receipt_guard.scanned_script_count, 30);
+  assert.equal(payload.script_to_pack_receipt_guard.gated_script_count, 30);
   assert.equal(payload.script_to_pack_receipt_guard.orphan_script_count, 0);
   assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback_command_ref, 'npm run script-to-pack:readback');
   assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.surface_kind, 'oma_script_to_pack_retirement_cleanup_readback');
@@ -185,7 +187,12 @@ test('source-structure publishes a JSON machine readback for script-to-pack guar
     payload.script_to_pack_receipt_guard.cleanup_readback.summary_role,
     'compact_cleanup_summary_not_second_script_inventory',
   );
-  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.cleanup_candidate_count, 31);
+  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.cleanup_candidate_count, 29);
+  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.retained_current_count, 1);
+  assert.equal(
+    payload.script_to_pack_receipt_guard.cleanup_readback.retained_current_authority_function_count,
+    1,
+  );
   assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.cleanup_apply_candidate_count, 0);
   assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.sample_cleanup_candidate_count, 3);
   assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.sample_cleanup_candidates.length, 3);
@@ -220,13 +227,16 @@ test('script-to-pack default readback is compact and does not become a second sc
   assert.equal(payload.command_ref, 'npm run script-to-pack:readback');
   assert.equal(payload.full_detail_command_ref, 'npm run script-to-pack:readback:full');
   assert.equal(payload.readback_is_authority, false);
-  assert.equal(payload.cleanup_candidate_count, 31);
+  assert.equal(payload.cleanup_candidate_count, 29);
+  assert.equal(payload.retained_current_count, 1);
+  assert.equal(payload.retained_current_authority_function_count, 1);
   assert.equal(payload.cleanup_apply_candidate_count, 0);
   assert.equal(payload.full_candidate_rows_omitted_from_default, true);
   assert.equal(payload.cleanup_candidates, undefined);
   assert.equal(payload.compact_cleanup_summary.summary_id, 'oma.script_to_pack_retirement_cleanup.compact_summary.v1');
   assert.equal(payload.compact_cleanup_summary.summary_role, 'compact_cleanup_summary_not_second_script_inventory');
   assert.equal(payload.compact_cleanup_summary.cleanup_candidate_count, payload.cleanup_candidate_count);
+  assert.equal(payload.compact_cleanup_summary.retained_current_count, payload.retained_current_count);
   assert.equal(payload.compact_cleanup_summary.cleanup_apply_candidate_count, 0);
   assert.equal(payload.compact_cleanup_summary.missing_evidence_item_count, payload.missing_evidence_item_count);
   assert.equal(payload.compact_cleanup_summary.sample_cleanup_candidate_count, 3);
@@ -263,9 +273,24 @@ test('script-to-pack full readback materializes cleanup candidates without autho
   assert.equal(payload.readback_is_authority, false);
   assert.equal(payload.compact_cleanup_summary_ref, 'npm run script-to-pack:readback');
   assert.equal(payload.compact_cleanup_summary_omitted_from_full, true);
-  assert.equal(payload.cleanup_candidate_count, 31);
+  assert.equal(payload.cleanup_candidate_count, 29);
+  assert.equal(payload.retained_current_count, 1);
+  assert.equal(payload.retained_current_authority_function_count, 1);
   assert.equal(payload.cleanup_apply_candidate_count, 0);
-  assert.equal(payload.cleanup_candidates.length, 31);
+  assert.equal(payload.cleanup_candidates.length, 29);
+  const retainedExecuteWorkOrder = payload.retained_current_authority_functions.find(
+    (candidate: { script_ref: string }) => candidate.script_ref === 'scripts/execute-external-work-order.ts',
+  );
+  assert.ok(retainedExecuteWorkOrder);
+  assert.equal(retainedExecuteWorkOrder.gate_id, 'external_work_order_execution_delegation');
+  assert.equal(retainedExecuteWorkOrder.retention_state, 'retained_current_authority_function');
+  assert.ok(retainedExecuteWorkOrder.active_caller_refs.includes('package.json#scripts.execute:external-work-order'));
+  assert.equal(
+    payload.cleanup_candidates.some(
+      (candidate: { script_ref: string }) => candidate.script_ref === 'scripts/execute-external-work-order.ts',
+    ),
+    false,
+  );
   const sourceStructureRow = payload.cleanup_candidates.find(
     (candidate: { script_ref: string }) => candidate.script_ref === 'scripts/check-source-structure.ts',
   );
@@ -321,7 +346,7 @@ test('structure maintenance scripts pass in focused advisory check mode', () => 
     });
     assert.equal(result.status, 0, `${script} ${flag}\n${result.stdout}\n${result.stderr}`);
     if (script === 'scripts/check-source-structure.ts') {
-      assert.match(result.stdout, /script-to-pack receipt guard checked 31 scripts, 31 gated refs, 0 orphan scripts/);
+      assert.match(result.stdout, /script-to-pack receipt guard checked 30 scripts, 30 gated refs, 0 orphan scripts/);
     }
   });
 });

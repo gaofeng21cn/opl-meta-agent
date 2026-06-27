@@ -94,7 +94,8 @@
         "active_caller_refs": [
           "package.json#scripts.execute:external-work-order",
           "tests/contracts-action-authority.test.ts#test_ref",
-          "tests/execute-external-work-order.test.ts#test_ref"
+          "tests/execute-external-work-order.test.ts#test_ref",
+          "tests/source-structure-lane.test.ts#test_ref"
         ]
       },
       {
