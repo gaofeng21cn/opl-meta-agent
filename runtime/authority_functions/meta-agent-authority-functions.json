@@ -872,6 +872,16 @@
           "scripts/lib/domain-pack.ts"
         ],
         "current_role": "typed_stage_closeout_validator_and_candidate_pack_materializer",
+        "retention_state": "retained_current_authority_function",
+        "retention_reason": "current OMA thin refs-only authority surface for build-agent baseline and stage-decomposition typed closeout validation, explicit fixture or live stage-attempt consumption, candidate domain-pack materialization, stage-native artifact refs, and typed blocker refs without owning pack compiler, generated interface, target truth, runtime state, promotion, target worktree lifecycle, or owner receipt bodies",
+        "retention_evidence_refs": [
+          "package.json#scripts.build-agent-baseline",
+          "contracts/stage_native_artifact_vocabulary.json",
+          "contracts/standard_foundry_policies.json",
+          "tests/bootstrap-loop.test.ts",
+          "tests/stage-decomposition-materializer.test.ts",
+          "tests/takeover-loop.test.ts"
+        ],
         "allowed_until": "opl_stage_attempt_and_pack_materializer_parity_can_replace_local_smoke_path",
         "required_before_retire_or_absorb": [
           "opl_stage_attempt_launch_and_read_model_parity_ref",

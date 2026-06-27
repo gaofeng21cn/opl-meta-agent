@@ -187,11 +187,11 @@ test('source-structure publishes a JSON machine readback for script-to-pack guar
     payload.script_to_pack_receipt_guard.cleanup_readback.summary_role,
     'compact_cleanup_summary_not_second_script_inventory',
   );
-  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.cleanup_candidate_count, 20);
-  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.retained_current_count, 10);
+  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.cleanup_candidate_count, 10);
+  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.retained_current_count, 20);
   assert.equal(
     payload.script_to_pack_receipt_guard.cleanup_readback.retained_current_authority_function_count,
-    10,
+    20,
   );
   assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.cleanup_apply_candidate_count, 0);
   assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.sample_cleanup_candidate_count, 3);
@@ -227,9 +227,9 @@ test('script-to-pack default readback is compact and does not become a second sc
   assert.equal(payload.command_ref, 'npm run script-to-pack:readback');
   assert.equal(payload.full_detail_command_ref, 'npm run script-to-pack:readback:full');
   assert.equal(payload.readback_is_authority, false);
-  assert.equal(payload.cleanup_candidate_count, 20);
-  assert.equal(payload.retained_current_count, 10);
-  assert.equal(payload.retained_current_authority_function_count, 10);
+  assert.equal(payload.cleanup_candidate_count, 10);
+  assert.equal(payload.retained_current_count, 20);
+  assert.equal(payload.retained_current_authority_function_count, 20);
   assert.equal(payload.fixture_or_proof_only_retained_count, 0);
   assert.equal(payload.cleanup_apply_candidate_count, 0);
   assert.equal(payload.full_candidate_rows_omitted_from_default, true);
@@ -274,12 +274,12 @@ test('script-to-pack full readback materializes cleanup candidates without autho
   assert.equal(payload.readback_is_authority, false);
   assert.equal(payload.compact_cleanup_summary_ref, 'npm run script-to-pack:readback');
   assert.equal(payload.compact_cleanup_summary_omitted_from_full, true);
-  assert.equal(payload.cleanup_candidate_count, 20);
-  assert.equal(payload.retained_current_count, 10);
-  assert.equal(payload.retained_current_authority_function_count, 10);
+  assert.equal(payload.cleanup_candidate_count, 10);
+  assert.equal(payload.retained_current_count, 20);
+  assert.equal(payload.retained_current_authority_function_count, 20);
   assert.equal(payload.fixture_or_proof_only_retained_count, 0);
   assert.equal(payload.cleanup_apply_candidate_count, 0);
-  assert.equal(payload.cleanup_candidates.length, 20);
+  assert.equal(payload.cleanup_candidates.length, 10);
   const retainedExecuteWorkOrder = payload.retained_current_authority_functions.find(
     (candidate: { script_ref: string }) => candidate.script_ref === 'scripts/execute-external-work-order.ts',
   );
@@ -305,6 +305,25 @@ test('script-to-pack full readback materializes cleanup candidates without autho
   assert.equal(
     payload.cleanup_candidates.some(
       (candidate: { gate_id: string }) => candidate.gate_id === 'agent_evidence_and_external_suite_materializers',
+    ),
+    false,
+  );
+  const retainedStageMaterializerGroup = payload.retained_current_authority_functions.filter(
+    (candidate: { gate_id: string }) => (
+      candidate.gate_id === 'build_agent_baseline_and_stage_decomposition_materializers'
+    ),
+  );
+  assert.equal(retainedStageMaterializerGroup.length, 10);
+  assert.ok(
+    retainedStageMaterializerGroup.every(
+      (candidate: { retention_state: string }) => candidate.retention_state === 'retained_current_authority_function',
+    ),
+  );
+  assert.equal(
+    payload.cleanup_candidates.some(
+      (candidate: { gate_id: string }) => (
+        candidate.gate_id === 'build_agent_baseline_and_stage_decomposition_materializers'
+      ),
     ),
     false,
   );

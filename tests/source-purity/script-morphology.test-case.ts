@@ -410,6 +410,25 @@ test('script morphology stays limited to authority refs, materializers, helpers,
     gate.gate_id === 'build_agent_baseline_and_stage_decomposition_materializers'
   ));
   assert.ok(buildBaselineGate, 'build-agent-baseline retirement gate should exist');
+  assert.equal(buildBaselineGate.retention_state, 'retained_current_authority_function');
+  assert.match(
+    String(buildBaselineGate.retention_reason),
+    /current OMA thin refs-only authority surface/,
+    'stage materializer gate should be retained only as a thin refs-only authority surface',
+  );
+  [
+    'package.json#scripts.build-agent-baseline',
+    STANDARD_FOUNDRY_POLICIES_CONTRACT_REF,
+    STAGE_NATIVE_ARTIFACT_VOCABULARY_CONTRACT_REF,
+    'tests/bootstrap-loop.test.ts',
+    'tests/stage-decomposition-materializer.test.ts',
+    'tests/takeover-loop.test.ts',
+  ].forEach((ref) => {
+    assert.ok(
+      asStrings(buildBaselineGate.retention_evidence_refs).includes(ref),
+      `build-agent-baseline retained current gate should cite ${ref}`,
+    );
+  });
   assert.ok(
     asStrings(buildBaselineGate.required_before_retire_or_absorb).includes(
       'stable_standard_foundry_policies_moved_to_contract_or_opl_primitive_ref',
