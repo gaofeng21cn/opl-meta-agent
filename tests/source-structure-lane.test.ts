@@ -189,19 +189,19 @@ test('source-structure publishes a JSON machine readback for script-to-pack guar
     payload.script_to_pack_receipt_guard.cleanup_readback.summary_role,
     'compact_cleanup_summary_not_second_script_inventory',
   );
-  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.cleanup_candidate_count, 4);
-  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.retained_current_count, 26);
+  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.cleanup_candidate_count, 0);
+  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.retained_current_count, 30);
   assert.equal(
     payload.script_to_pack_receipt_guard.cleanup_readback.retained_current_authority_function_count,
-    20,
+    24,
   );
   assert.equal(
     payload.script_to_pack_receipt_guard.cleanup_readback.retained_current_repo_native_surface_count,
     6,
   );
   assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.cleanup_apply_candidate_count, 0);
-  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.sample_cleanup_candidate_count, 3);
-  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.sample_cleanup_candidates.length, 3);
+  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.sample_cleanup_candidate_count, 0);
+  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.sample_cleanup_candidates.length, 0);
   assert.equal(
     payload.script_to_pack_receipt_guard.cleanup_readback.sample_cleanup_candidates
       .every((candidate: { can_apply_cleanup: boolean }) => candidate.can_apply_cleanup === false),
@@ -233,9 +233,9 @@ test('script-to-pack default readback is compact and does not become a second sc
   assert.equal(payload.command_ref, 'npm run script-to-pack:readback');
   assert.equal(payload.full_detail_command_ref, 'npm run script-to-pack:readback:full');
   assert.equal(payload.readback_is_authority, false);
-  assert.equal(payload.cleanup_candidate_count, 4);
-  assert.equal(payload.retained_current_count, 26);
-  assert.equal(payload.retained_current_authority_function_count, 20);
+  assert.equal(payload.cleanup_candidate_count, 0);
+  assert.equal(payload.retained_current_count, 30);
+  assert.equal(payload.retained_current_authority_function_count, 24);
   assert.equal(payload.retained_current_repo_native_surface_count, 6);
   assert.equal(payload.fixture_or_proof_only_retained_count, 0);
   assert.equal(payload.cleanup_apply_candidate_count, 0);
@@ -247,13 +247,12 @@ test('script-to-pack default readback is compact and does not become a second sc
   assert.equal(payload.compact_cleanup_summary.retained_current_count, payload.retained_current_count);
   assert.equal(payload.compact_cleanup_summary.cleanup_apply_candidate_count, 0);
   assert.equal(payload.compact_cleanup_summary.missing_evidence_item_count, payload.missing_evidence_item_count);
-  assert.equal(payload.compact_cleanup_summary.sample_cleanup_candidate_count, 3);
-  assert.equal(payload.compact_cleanup_summary.sample_cleanup_candidates.length, 3);
+  assert.equal(payload.compact_cleanup_summary.sample_cleanup_candidate_count, 0);
+  assert.equal(payload.compact_cleanup_summary.sample_cleanup_candidates.length, 0);
   assert.equal(payload.compact_cleanup_summary.authority_boundary.can_authorize_physical_delete, false);
   assert.equal(payload.compact_cleanup_summary.authority_boundary.can_claim_domain_ready, false);
   assert.equal(payload.compact_cleanup_summary.authority_boundary.can_claim_production_ready, false);
-  assert.equal(payload.sample_cleanup_candidates.length, 3);
-  assert.equal(payload.sample_cleanup_candidates[0].can_apply_cleanup, false);
+  assert.equal(payload.sample_cleanup_candidates.length, 0);
   assert.equal(payload.authority_boundary.can_identify_cleanup_candidates, true);
   assert.equal(payload.authority_boundary.can_route_owner_delta, true);
   assert.equal(payload.authority_boundary.can_authorize_physical_delete, false);
@@ -281,14 +280,14 @@ test('script-to-pack full readback materializes cleanup candidates without autho
   assert.equal(payload.readback_is_authority, false);
   assert.equal(payload.compact_cleanup_summary_ref, 'npm run script-to-pack:readback');
   assert.equal(payload.compact_cleanup_summary_omitted_from_full, true);
-  assert.equal(payload.cleanup_candidate_count, 4);
-  assert.equal(payload.retained_current_count, 26);
-  assert.equal(payload.retained_current_authority_function_count, 20);
+  assert.equal(payload.cleanup_candidate_count, 0);
+  assert.equal(payload.retained_current_count, 30);
+  assert.equal(payload.retained_current_authority_function_count, 24);
   assert.equal(payload.retained_current_repo_native_surface_count, 6);
   assert.equal(payload.fixture_or_proof_only_retained_count, 0);
   assert.equal(payload.cleanup_apply_candidate_count, 0);
-  assert.equal(payload.cleanup_candidates.length, 4);
-  assert.equal(payload.retained_current_rows.length, 26);
+  assert.equal(payload.cleanup_candidates.length, 0);
+  assert.equal(payload.retained_current_rows.length, 30);
   const retainedExecuteWorkOrder = payload.retained_current_authority_functions.find(
     (candidate: { script_ref: string }) => candidate.script_ref === 'scripts/execute-external-work-order.ts',
   );
@@ -328,11 +327,41 @@ test('script-to-pack full readback materializes cleanup candidates without autho
       (candidate: { retention_state: string }) => candidate.retention_state === 'retained_current_authority_function',
     ),
   );
+  const metaAgentLoopScript = (name: string) => ['scripts', 'lib', name].join('/');
+  const retainedTakeoverHelperGroup = payload.retained_current_authority_functions.filter(
+    (candidate: { gate_id: string }) => candidate.gate_id === 'retained_thin_authority_helpers_and_takeover_smoke',
+  );
+  assert.equal(retainedTakeoverHelperGroup.length, 4);
+  assert.deepEqual(
+    retainedTakeoverHelperGroup.map(
+      (candidate: { script_ref: string }) => candidate.script_ref,
+    ).sort(),
+    [
+      metaAgentLoopScript('meta-agent-loop-ai-reviewer.ts'),
+      metaAgentLoopScript('meta-agent-loop-io.ts'),
+      metaAgentLoopScript('meta-agent-loop-receipts.ts'),
+      ['scripts', 'takeover-agent.ts'].join('/'),
+    ],
+  );
+  assert.ok(
+    retainedTakeoverHelperGroup.every(
+      (candidate: { retention_state: string; retention_evidence_refs: string[] }) => (
+        candidate.retention_state === 'retained_current_authority_function'
+        && candidate.retention_evidence_refs.includes('tests/takeover-loop.test.ts')
+      ),
+    ),
+  );
   assert.equal(
     payload.cleanup_candidates.some(
       (candidate: { gate_id: string }) => (
         candidate.gate_id === 'build_agent_baseline_and_stage_decomposition_materializers'
       ),
+    ),
+    false,
+  );
+  assert.equal(
+    payload.cleanup_candidates.some(
+      (candidate: { gate_id: string }) => candidate.gate_id === 'retained_thin_authority_helpers_and_takeover_smoke',
     ),
     false,
   );

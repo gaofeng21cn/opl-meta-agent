@@ -516,6 +516,30 @@ test('script morphology stays limited to authority refs, materializers, helpers,
     'scripts/lib/meta-agent-loop-receipts.ts',
     'scripts/takeover-agent.ts',
   ]);
+  assert.equal(retainedHelperGate.retention_state, 'retained_current_authority_function');
+  assert.match(
+    String(retainedHelperGate.retention_reason),
+    /without owning target truth/,
+  );
+  [
+    'package.json#scripts.takeover:test',
+    'tests/takeover-loop.test.ts',
+    'tests/target-improvement-policy.test.ts',
+    'tests/agent-evidence-materializer.test.ts',
+    'tests/external-suite-efficiency-handoff.test.ts',
+    'tests/source-purity/script-morphology.test-case.ts',
+  ].forEach((ref) => {
+    assert.ok(
+      asStrings(retainedHelperGate.retention_evidence_refs).includes(ref),
+      `thin helper/takeover retention gate should cite ${ref}`,
+    );
+  });
+  assert.ok(
+    asStrings(retainedHelperGate.closed_retention_refs).includes(
+      'retired-tail:opl-meta-agent/meta-agent-loop/reexport-facade',
+    ),
+    'retired meta-agent-loop re-export facade should remain closed',
+  );
   assert.equal(
     fs.existsSync(path.join(repoRoot, 'scripts/lib/meta-agent-loop.ts')),
     false,
