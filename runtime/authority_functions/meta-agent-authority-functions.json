@@ -214,27 +214,6 @@
     "allowed_opl_surface_consumption_policy_ref": "contracts/private_functional_surface_policy.json#allowed_opl_surface_consumption_refs",
     "script_classifications": [
       {
-        "script_ref": "scripts/agent-evidence-takeover.ts",
-        "classes": [
-          "smoke_helper",
-          "developer_work_order_materializer",
-          "fixture_or_proof_helper"
-        ],
-        "authority_function_refs": [],
-        "consumes_opl_surfaces": [
-          "opl_agent_lab_complete_control_plane"
-        ],
-        "writes_only": [
-          "agent_lab_suite_ref",
-          "developer_patch_work_order_ref",
-          "target_capability_improvement_candidate_ref",
-          "owner_receipt_refs",
-          "mechanism_patch_proposal_ref",
-          "typed_blocker_ref"
-        ],
-        "forbidden_roles": []
-      },
-      {
         "script_ref": "scripts/build-agent-baseline.ts",
         "classes": [
           "authority_function_implementation_ref",
@@ -363,12 +342,16 @@
       {
         "script_ref": "scripts/lib/agent-evidence-materializer.ts",
         "classes": [
+          "smoke_helper",
           "fixture_or_proof_helper",
           "developer_work_order_materializer"
         ],
         "authority_function_refs": [],
-        "consumes_opl_surfaces": [],
+        "consumes_opl_surfaces": [
+          "opl_agent_lab_complete_control_plane"
+        ],
         "writes_only": [
+          "agent_lab_suite_ref",
           "owner_receipt_refs",
           "target_capability_improvement_candidate_ref",
           "developer_patch_work_order_ref",
@@ -823,7 +806,6 @@
       {
         "gate_id": "agent_evidence_and_external_suite_materializers",
         "tracked_script_refs": [
-          "scripts/agent-evidence-takeover.ts",
           "scripts/improve-from-agent-lab-suite.ts",
           "scripts/lib/agent-evidence-contracts.ts",
           "scripts/lib/agent-evidence-materializer.ts",
@@ -1244,7 +1226,6 @@
       "no_exempt_shell_wrappers": true
     },
     "scanned_script_refs": [
-      "scripts/agent-evidence-takeover.ts",
       "scripts/build-agent-baseline.ts",
       "scripts/check-source-structure.ts",
       "scripts/sync-authority-functions.ts",
@@ -1289,14 +1270,6 @@
         "tests/**/*.ts direct script refs excluding source-purity self-guard refs"
       ],
       "caller_refs_by_script": [
-        {
-          "script_ref": "scripts/agent-evidence-takeover.ts",
-          "active_caller_refs": [
-            "package.json#scripts.agent:evidence",
-            "tests/agent-evidence-takeover.test.ts#test_ref",
-            "tests/contracts-generated-surfaces.test.ts#test_ref"
-          ]
-        },
         {
           "script_ref": "scripts/build-agent-baseline.ts",
           "active_caller_refs": [
@@ -1345,20 +1318,21 @@
         {
           "script_ref": "scripts/lib/agent-evidence-contracts.ts",
           "active_caller_refs": [
-            "scripts/agent-evidence-takeover.ts#import"
+            "scripts/lib/agent-evidence-materializer.ts#import"
           ]
         },
         {
           "script_ref": "scripts/lib/agent-evidence-materializer.ts",
           "active_caller_refs": [
-            "scripts/agent-evidence-takeover.ts#import",
-            "scripts/lib/agent-evidence-contracts.ts#import"
+            "package.json#scripts.agent:evidence",
+            "scripts/lib/agent-evidence-contracts.ts#import",
+            "tests/agent-evidence-materializer.test.ts#test_ref",
+            "tests/contracts-generated-surfaces.test.ts#test_ref"
           ]
         },
         {
           "script_ref": "scripts/lib/domain-pack.ts",
           "active_caller_refs": [
-            "scripts/agent-evidence-takeover.ts#import",
             "scripts/build-agent-baseline.ts#import",
             "scripts/execute-external-work-order.ts#import",
             "scripts/improve-from-agent-lab-suite.ts#import",
@@ -1382,8 +1356,8 @@
             "scripts/lib/work-order-refs.ts#import",
             "scripts/lib/work-order-validation.ts#import",
             "scripts/takeover-agent.ts#import",
-            "tests/agent-evidence-takeover.test.ts#import",
-            "tests/agent-evidence-takeover.test.ts#test_ref",
+            "tests/agent-evidence-materializer.test.ts#import",
+            "tests/agent-evidence-materializer.test.ts#test_ref",
             "tests/bootstrap-loop.test.ts#import",
             "tests/bootstrap-loop.test.ts#test_ref",
             "tests/execute-external-work-order.test.ts#import",
@@ -1409,7 +1383,6 @@
         {
           "script_ref": "scripts/lib/meta-agent-loop-ai-reviewer.ts",
           "active_caller_refs": [
-            "scripts/agent-evidence-takeover.ts#import",
             "scripts/build-agent-baseline.ts#import",
             "scripts/improve-from-agent-lab-suite.ts#import",
             "scripts/lib/agent-evidence-materializer.ts#import",
@@ -1422,7 +1395,6 @@
         {
           "script_ref": "scripts/lib/meta-agent-loop-io.ts",
           "active_caller_refs": [
-            "scripts/agent-evidence-takeover.ts#import",
             "scripts/build-agent-baseline.ts#import",
             "scripts/execute-external-work-order.ts#import",
             "scripts/improve-from-agent-lab-suite.ts#import",
@@ -1512,7 +1484,6 @@
         {
           "script_ref": "scripts/lib/stage-native-artifact-contract.ts",
           "active_caller_refs": [
-            "scripts/agent-evidence-takeover.ts#import",
             "scripts/lib/agent-evidence-materializer.ts#import",
             "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts#import",
             "scripts/lib/stage-decomposition-runner.ts#import",
@@ -1539,7 +1510,6 @@
         {
           "script_ref": "scripts/lib/work-order-efficiency.ts",
           "active_caller_refs": [
-            "scripts/agent-evidence-takeover.ts#import",
             "scripts/improve-from-agent-lab-suite.ts#import",
             "scripts/lib/agent-evidence-materializer.ts#import",
             "scripts/lib/external-suite-materializer.ts#import",
@@ -1549,7 +1519,6 @@
         {
           "script_ref": "scripts/lib/work-order-refs.ts",
           "active_caller_refs": [
-            "scripts/agent-evidence-takeover.ts#import",
             "scripts/lib/agent-evidence-materializer.ts#import",
             "scripts/lib/external-suite-materializer.ts#import",
             "scripts/lib/target-improvement-policy.ts#import",
@@ -1560,9 +1529,9 @@
         {
           "script_ref": "scripts/lib/work-order-validation.ts",
           "active_caller_refs": [
-            "scripts/agent-evidence-takeover.ts#import",
             "scripts/execute-external-work-order.ts#import",
-            "scripts/improve-from-agent-lab-suite.ts#import"
+            "scripts/improve-from-agent-lab-suite.ts#import",
+            "scripts/lib/agent-evidence-materializer.ts#import"
           ]
         },
         {
@@ -1630,7 +1599,7 @@
           "script_ref": "scripts/verify.sh",
           "active_caller_refs": [
             "package.json#scripts.verify",
-            "tests/agent-evidence-takeover.test.ts#test_ref",
+            "tests/agent-evidence-materializer.test.ts#test_ref",
             "tests/contracts-repo-hygiene.test.ts#test_ref",
             "tests/source-structure-lane.test.ts#test_ref"
           ]

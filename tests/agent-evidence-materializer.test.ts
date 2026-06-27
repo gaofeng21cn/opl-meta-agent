@@ -359,7 +359,7 @@ test('agent:evidence projects production efficiency evidence into work order ref
     const result = spawnSync(
       process.execPath,
       [
-        path.join(repoRoot, 'scripts/agent-evidence-takeover.ts'),
+        path.join(repoRoot, 'scripts/lib/agent-evidence-materializer.ts'),
         '--agent-repo',
         agentRepo,
         '--output-dir',
@@ -426,7 +426,7 @@ test('agent:evidence efficiency production evidence without quality floor emits 
     const result = spawnSync(
       process.execPath,
       [
-        path.join(repoRoot, 'scripts/agent-evidence-takeover.ts'),
+        path.join(repoRoot, 'scripts/lib/agent-evidence-materializer.ts'),
         '--agent-repo',
         agentRepo,
         '--output-dir',
@@ -471,7 +471,7 @@ test('agent:evidence generates domain Agent Lab suite and proposal artifacts fro
     const result = spawnSync(
       process.execPath,
       [
-        path.join(repoRoot, 'scripts/agent-evidence-takeover.ts'),
+        path.join(repoRoot, 'scripts/lib/agent-evidence-materializer.ts'),
         '--agent-repo',
         agentRepo,
         '--output-dir',
@@ -490,7 +490,7 @@ test('agent:evidence generates domain Agent Lab suite and proposal artifacts fro
 
     assert.equal(result.status, 0, result.stderr);
     const payload = JSON.parse(result.stdout) as JsonObject;
-    assert.equal(payload.surface_kind, 'opl_meta_agent_agent_evidence_takeover_result');
+    assert.equal(payload.surface_kind, 'opl_meta_agent_agent_evidence_materializer_result');
     assert.equal(payload.status, 'proposal_recorded_requires_target_owner_gate');
     assert.equal(payload.authority_boundary.can_write_target_domain_truth, false);
     assert.equal(payload.authority_boundary.can_authorize_target_quality_or_export, false);
@@ -745,7 +745,7 @@ test('agent:evidence emits typed blocker and no delivery receipt when reviewer e
     const result = spawnSync(
       process.execPath,
       [
-        path.join(repoRoot, 'scripts/agent-evidence-takeover.ts'),
+        path.join(repoRoot, 'scripts/lib/agent-evidence-materializer.ts'),
         '--agent-repo',
         agentRepo,
         '--output-dir',

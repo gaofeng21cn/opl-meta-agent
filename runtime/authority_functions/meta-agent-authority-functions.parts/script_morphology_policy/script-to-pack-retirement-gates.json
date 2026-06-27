@@ -2,7 +2,6 @@
   {
     "gate_id": "agent_evidence_and_external_suite_materializers",
     "tracked_script_refs": [
-      "scripts/agent-evidence-takeover.ts",
       "scripts/improve-from-agent-lab-suite.ts",
       "scripts/lib/agent-evidence-contracts.ts",
       "scripts/lib/agent-evidence-materializer.ts",

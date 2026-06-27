@@ -257,7 +257,7 @@ test('top-level OMA commands and materializers stay target-agent generic', () =>
     'contracts/app_workbench_projection.json',
     'contracts/opl_domain_manifest_registration.json',
     'contracts/trajectory_learning_contract.json',
-    'scripts/agent-evidence-takeover.ts',
+    'scripts/lib/agent-evidence-materializer.ts',
     'scripts/improve-from-agent-lab-suite.ts',
   ].forEach(assertNoForbiddenDesignCenterVocabulary);
 

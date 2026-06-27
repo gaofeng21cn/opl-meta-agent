@@ -266,7 +266,7 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
   );
   assert.equal(gateSummary.compact_cleanup_candidate_count, scriptRefs.length);
   assert.equal(gateSummary.compact_cleanup_apply_candidate_count, 0);
-  assert.equal(gateSummary.compact_cleanup_missing_evidence_item_count, 247);
+  assert.equal(gateSummary.compact_cleanup_missing_evidence_item_count, 240);
   assert.equal(gateSummary.compact_cleanup_sample_candidate_count, 3);
   assert.equal(gateSummary.cleanup_candidate_count, scriptRefs.length);
   assert.equal(gateSummary.cleanup_apply_candidate_count, 0);
