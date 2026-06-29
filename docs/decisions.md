@@ -70,7 +70,7 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 
 - 决策：新建 OPL-compatible target agent 的完成定义必须包含 OPL scaffold validation、generated interface projection、Agent Lab baseline / takeover 或 external suite、结构化 independent AI reviewer evaluation、`improve:external-suite` self-evolution consumption，以及 delivery receipt / no-patch coordination receipt / developer work order / typed blocker 中的一种收口形态。
 - 理由：scaffold 和 generated interfaces 只证明结构可消费，不能证明 target agent 达到高质量交付要求。OMA 的职责是构建并评估 target agent，并把 Agent Lab / reviewer evidence 转成可执行改进、no-patch closeout 或明确 blocker。
-- 影响：只生成 repo skeleton、只跑 `opl agents scaffold --validate`、只跑 `opl agents interfaces` 或只记录 baseline pass 都不能称为 OMA 新建智能体完成。若 Agent Lab 或 reviewer evidence 暴露缺口，必须进入 owner-gated improvement loop、developer work order 或 typed blocker；若无需 source patch，也必须记录 no-patch coordination work order / receipt 和 re-evaluation refs。
+- 影响：只生成 repo skeleton、只跑 `opl agents scaffold --validate`、只跑 `opl agents interfaces` 或只记录 baseline pass 都不能称为 OMA 新建智能体完成。`contracts/action_catalog.json#actions/build-agent-baseline/new_agent_delivery_gate` 与 `scripts/build-agent-baseline.ts#assertNewAgentDeliveryGate` 是当前机器守门入口；实际 baseline payload 必须带 `new_agent_delivery_gate` readback。若 Agent Lab 或 reviewer evidence 暴露缺口，必须进入 owner-gated improvement loop、developer work order 或 typed blocker；若无需 source patch，也必须记录 no-patch coordination work order / receipt 和 re-evaluation refs。
 
 ### Target-domain artifact morphology 是 Foundry 流程必需设计面
 

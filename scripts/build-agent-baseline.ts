@@ -58,6 +58,130 @@ export type BuildAgentBaselineArgs = {
   stageCloseoutPacketPath: string | null;
 };
 
+type NewAgentDeliveryGateInput = {
+  targetAgent: TargetAgent;
+  scaffoldValidationStatus: string;
+  generatedInterfaceStatus: string;
+  baselineSuiteResult: JsonObject;
+  realTargetSuiteResult?: JsonObject | null;
+  aiReviewerEvaluation: AiReviewerEvaluation | JsonObject;
+  selfEvolutionConsumptionRef?: string | null;
+  deliveryReceipt?: JsonObject | null;
+  noPatchCoordinationReceipt?: JsonObject | null;
+  developerPatchWorkOrder?: JsonObject | null;
+  typedBlocker?: JsonObject | null;
+};
+
+function nonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function objectHasNonEmptyString(value: unknown, field: string): boolean {
+  return (
+    typeof value === 'object'
+    && value !== null
+    && !Array.isArray(value)
+    && nonEmptyString((value as Record<string, unknown>)[field])
+  );
+}
+
+function suiteResultRef(value: JsonObject | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+  for (const field of ['result_id', 'suite_result_ref', 'run_ref']) {
+    const candidate = value[field];
+    if (nonEmptyString(candidate)) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
+export function assertNewAgentDeliveryGate(input: NewAgentDeliveryGateInput): JsonObject {
+  const baselineSuiteRef = suiteResultRef(input.baselineSuiteResult);
+  const realTargetSuiteRef = suiteResultRef(input.realTargetSuiteResult ?? null);
+  const closeoutOutcomes = [
+    input.deliveryReceipt ? 'delivery_receipt' : null,
+    input.noPatchCoordinationReceipt ? 'no_patch_coordination_receipt' : null,
+    input.developerPatchWorkOrder ? 'developer_patch_work_order' : null,
+    input.typedBlocker ? 'typed_blocker' : null,
+  ].filter((entry): entry is string => Boolean(entry));
+  const blockers = [
+    ['passed', 'valid', 'validated'].includes(input.scaffoldValidationStatus)
+      ? null
+      : 'scaffold_validation_not_passed',
+    input.generatedInterfaceStatus === 'ready'
+      ? null
+      : 'generated_interface_projection_not_ready',
+    baselineSuiteRef
+      ? null
+      : 'agent_lab_baseline_or_takeover_suite_ref_missing',
+    input.baselineSuiteResult.status === 'passed'
+      ? null
+      : 'agent_lab_baseline_or_takeover_suite_not_passed',
+    realTargetSuiteRef
+      ? null
+      : 'real_target_or_external_suite_ref_missing',
+    objectHasNonEmptyString(input.aiReviewerEvaluation, 'critique')
+      ? null
+      : 'ai_reviewer_critique_missing',
+    Array.isArray(input.aiReviewerEvaluation.suggestions) && input.aiReviewerEvaluation.suggestions.length > 0
+      ? null
+      : 'ai_reviewer_suggestions_missing',
+    Array.isArray(input.aiReviewerEvaluation.direct_evidence_refs)
+      && input.aiReviewerEvaluation.direct_evidence_refs.length > 0
+      ? null
+      : 'ai_reviewer_direct_evidence_refs_missing',
+    objectHasNonEmptyString(input.aiReviewerEvaluation, 'run_ref')
+      && objectHasNonEmptyString(input.aiReviewerEvaluation, 'review_attempt_ref')
+      ? null
+      : 'ai_reviewer_provenance_missing',
+    nonEmptyString(input.selfEvolutionConsumptionRef)
+      ? null
+      : 'self_evolution_consumption_ref_missing',
+    closeoutOutcomes.length === 1
+      ? null
+      : 'exactly_one_closeout_outcome_required',
+  ].filter((entry): entry is string => Boolean(entry));
+  if (blockers.length > 0) {
+    throw new Error(`new_agent_delivery_gate_blocked:${blockers.join(',')}`);
+  }
+  return {
+    surface_kind: 'opl_meta_agent_new_agent_delivery_gate',
+    policy_id: 'opl-meta-agent.new-agent-delivery-gate.v1',
+    gate_status: 'passed',
+    target_agent: input.targetAgent,
+    required_evidence: {
+      scaffold_validation_status: input.scaffoldValidationStatus,
+      generated_interface_status: input.generatedInterfaceStatus,
+      baseline_or_takeover_suite_result_ref: baselineSuiteRef,
+      real_target_or_external_suite_result_ref: realTargetSuiteRef,
+      ai_reviewer_run_ref: input.aiReviewerEvaluation.run_ref,
+      ai_reviewer_review_attempt_ref: input.aiReviewerEvaluation.review_attempt_ref,
+      self_evolution_consumption_ref: input.selfEvolutionConsumptionRef,
+      closeout_outcome: closeoutOutcomes[0],
+      closeout_outcome_count: closeoutOutcomes.length,
+    },
+    false_completion_guard: {
+      scaffold_or_generated_interface_can_claim_complete: false,
+      contract_validation_can_claim_complete: false,
+      suite_pass_can_claim_complete: false,
+      exactly_one_closeout_outcome_required: true,
+    },
+    authority_boundary: {
+      delegates_work_order_execution_to_opl: true,
+      oma_can_write_target_domain_truth: false,
+      oma_can_write_target_domain_memory_body: false,
+      oma_can_mutate_target_domain_artifact_body: false,
+      oma_can_authorize_target_domain_quality_or_export: false,
+      oma_can_manage_target_worktree_lifecycle: false,
+      oma_can_write_target_owner_receipt_body: false,
+      oma_can_promote_default_agent_without_gate: false,
+    },
+  };
+}
+
 function nonEmptyValue(flag: string, value: string | undefined): string {
   if (!value) {
     throw new Error(`Missing value for ${flag}.`);
@@ -595,6 +719,16 @@ export function runBuildAgentBaseline({
   const scaleoutEvidenceLedger = buildScaleoutEvidenceLedger({
     deliveryReceipts: [realTargetDeliveryReceipt],
   });
+  const newAgentDeliveryGate = assertNewAgentDeliveryGate({
+    targetAgent: realTargetAgent,
+    scaffoldValidationStatus: scaffoldValidation.standard_domain_agent_scaffold.validation.status,
+    generatedInterfaceStatus: generatedInterfaces.generated_agent_interfaces.status,
+    baselineSuiteResult: suiteResult as unknown as JsonObject,
+    realTargetSuiteResult: realTargetSuiteResult as unknown as JsonObject,
+    aiReviewerEvaluation,
+    selfEvolutionConsumptionRef: learningCandidate.candidate_id,
+    deliveryReceipt: realTargetDeliveryReceipt as unknown as JsonObject,
+  });
   writeJson(realTargetReceiptPath, realTargetDeliveryReceipt);
   writeJson(scaleoutLedgerPath, scaleoutEvidenceLedger);
   const realTargetDelivery = {
@@ -605,6 +739,7 @@ export function runBuildAgentBaseline({
     },
     agent_lab_run: realTargetAgentLabRun.agent_lab_run,
     delivery_receipt: realTargetDeliveryReceipt,
+    new_agent_delivery_gate: newAgentDeliveryGate,
     scaleout_evidence_ledger: scaleoutEvidenceLedger,
     stage_decomposition_attempt: stageDecompositionAttempt,
   };
@@ -647,6 +782,7 @@ export function runBuildAgentBaseline({
       online_learning_policy: learningCandidate.online_learning_policy,
       mechanism_patch_proposal: mechanismPatchProposal,
     },
+    new_agent_delivery_gate: newAgentDeliveryGate,
     real_target_delivery: realTargetDelivery,
   };
 }

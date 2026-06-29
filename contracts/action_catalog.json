@@ -80,6 +80,41 @@
         "can_authorize_target_domain_quality_or_export": false,
         "can_promote_default_agent_without_gate": false,
         "can_train_or_deploy_model_weights": false
+      },
+      "new_agent_delivery_gate": {
+        "surface_kind": "opl_meta_agent_new_agent_delivery_gate_policy",
+        "policy_id": "opl-meta-agent.new-agent-delivery-gate.v1",
+        "required_gates": [
+          "scaffold_validation",
+          "generated_interface_projection",
+          "agent_lab_baseline_or_takeover_suite",
+          "independent_reviewer_assessment",
+          "oma_self_evolution_consumption",
+          "exactly_one_terminal_closeout"
+        ],
+        "insufficient_completion_inputs": [
+          "repo_scaffold_only",
+          "contract_validation_only",
+          "generated_interface_projection_only",
+          "baseline_suite_pass_only",
+          "conformance_pass_only"
+        ],
+        "accepted_terminal_outcomes": [
+          "delivery_receipt",
+          "no_patch_coordination_receipt",
+          "developer_patch_work_order",
+          "typed_blocker"
+        ],
+        "exactly_one_terminal_outcome_required": true,
+        "output_readback_field": "new_agent_delivery_gate",
+        "authority_boundary": {
+          "delegates_work_order_execution_to_opl": true,
+          "oma_can_manage_target_worktree_lifecycle": false,
+          "oma_can_write_target_owner_receipt_body": false,
+          "oma_can_write_target_domain_truth": false,
+          "oma_can_authorize_target_domain_quality_or_export": false,
+          "oma_can_promote_default_agent_without_gate": false
+        }
       }
     },
     {

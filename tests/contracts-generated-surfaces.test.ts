@@ -557,13 +557,13 @@ test('OPL default-caller deletion evidence is closed by domain-owned refs withou
   assert.equal(repoReport.deletion_gate.missing_domain_owner_receipt_or_typed_blocker_count, 0);
   assert.equal(repoReport.deletion_gate.missing_no_forbidden_write_proof_count, 0);
   assert.equal(repoReport.deletion_gate.missing_tombstone_or_provenance_ref_count, 0);
-  assert.equal(asObjects(repoReport.surface_gates).length, 8);
-  asObjects(repoReport.surface_gates).forEach((gate) => {
-    const worklist = gate.deletion_evidence_worklist as JsonObject;
-    assert.equal(gate.status, 'ready_for_default_caller_cutover');
-    assert.equal(worklist.physical_delete_authorized, false);
-    assert.equal(worklist.domain_owner_receipt_or_typed_blocker.status, 'observed');
-    assert.equal(worklist.no_forbidden_write_proof.status, 'observed');
-    assert.equal(worklist.tombstone_or_provenance_ref.status, 'observed');
-  });
+  assert.equal(repoReport.deletion_gate.evidence_worklist_count, 0);
+  assert.equal(repoReport.deletion_gate.default_caller_delete_ready, false);
+  assert.equal(repoReport.deletion_gate.generated_default_caller_readiness_can_authorize_physical_delete, false);
+  assert.equal(repoReport.deletion_gate.owner_decision_required_after_prerequisites_observed, true);
+  assert.equal(
+    repoReport.closed_surface_detail_policy,
+    'closed_retirement_gate_details_omitted_from_default_payload',
+  );
+  assert.deepEqual(asObjects(repoReport.deletion_evidence_worklists), []);
 });

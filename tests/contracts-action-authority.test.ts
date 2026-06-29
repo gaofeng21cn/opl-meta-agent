@@ -94,6 +94,34 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
       ?.supported_surfaces.skill.intent_mapping,
     'Codex extracts domain_id, domain_label, delivery_domain, target_brief, output_dir, opl_bin, and ai_reviewer_evaluation from the user natural-language request before invoking this action.',
   );
+  assert.deepEqual(baselineAction.new_agent_delivery_gate.required_gates, [
+    'scaffold_validation',
+    'generated_interface_projection',
+    'agent_lab_baseline_or_takeover_suite',
+    'independent_reviewer_assessment',
+    'oma_self_evolution_consumption',
+    'exactly_one_terminal_closeout',
+  ]);
+  assert.deepEqual(baselineAction.new_agent_delivery_gate.insufficient_completion_inputs, [
+    'repo_scaffold_only',
+    'contract_validation_only',
+    'generated_interface_projection_only',
+    'baseline_suite_pass_only',
+    'conformance_pass_only',
+  ]);
+  assert.deepEqual(baselineAction.new_agent_delivery_gate.accepted_terminal_outcomes, [
+    'delivery_receipt',
+    'no_patch_coordination_receipt',
+    'developer_patch_work_order',
+    'typed_blocker',
+  ]);
+  assert.equal(baselineAction.new_agent_delivery_gate.exactly_one_terminal_outcome_required, true);
+  assert.equal(baselineAction.new_agent_delivery_gate.output_readback_field, 'new_agent_delivery_gate');
+  assert.equal(baselineAction.new_agent_delivery_gate.authority_boundary.delegates_work_order_execution_to_opl, true);
+  assert.equal(baselineAction.new_agent_delivery_gate.authority_boundary.oma_can_manage_target_worktree_lifecycle, false);
+  assert.equal(baselineAction.new_agent_delivery_gate.authority_boundary.oma_can_write_target_owner_receipt_body, false);
+  assert.equal(baselineAction.new_agent_delivery_gate.authority_boundary.oma_can_write_target_domain_truth, false);
+  assert.equal(baselineAction.new_agent_delivery_gate.authority_boundary.oma_can_promote_default_agent_without_gate, false);
   const mechanismAction = actions.find((action) => action.action_id === 'generate-mechanism-patch-proposal');
   assert.ok(mechanismAction);
   assert.equal(

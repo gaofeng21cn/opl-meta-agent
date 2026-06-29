@@ -1322,6 +1322,8 @@
             "package.json#scripts.build-agent-baseline",
             "tests/bootstrap-loop.test.ts#import",
             "tests/bootstrap-loop.test.ts#test_ref",
+            "tests/new-agent-delivery-gate.test.ts#import",
+            "tests/new-agent-delivery-gate.test.ts#test_ref",
             "tests/stage-decomposition-materializer.test.ts#test_ref",
             "tests/takeover-loop.test.ts#import",
             "tests/takeover-loop.test.ts#test_ref"
@@ -1411,6 +1413,8 @@
             "tests/execute-external-work-order.test.ts#test_ref",
             "tests/external-suite-efficiency-handoff.test.ts#import",
             "tests/external-suite-efficiency-handoff.test.ts#test_ref",
+            "tests/new-agent-delivery-gate.test.ts#import",
+            "tests/new-agent-delivery-gate.test.ts#test_ref",
             "tests/stage-decomposition-materializer.test.ts#import",
             "tests/stage-decomposition-materializer.test.ts#test_ref",
             "tests/support/contracts.ts#import",
