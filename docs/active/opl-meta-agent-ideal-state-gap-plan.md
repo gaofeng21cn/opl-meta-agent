@@ -153,7 +153,7 @@ Write scope:
 
 Live truth inputs:
 
-- `AGENTS.md`、`TASTE.md`、核心五件套、本文、ideal-state reference、private implementation inventory。
+- `AGENTS.md`、用户级 `~/.codex/TASTE.md`、核心五件套、本文、ideal-state reference、private implementation inventory。
 - `contracts/opl_domain_manifest_registration.json`、`contracts/app_workbench_projection.json`、`contracts/real_target_agent_scaleout_evidence.json`、production acceptance contracts、generated surface handoff、stage control plane。
 - OPL `agents interfaces --repo-dir <this-repo> --json`、OPL framework readiness / App drilldown / OMA production-consumption read model、`npm test` / `npm run test:smoke` / `npm run test:behavior` / `npm run verify`。
 

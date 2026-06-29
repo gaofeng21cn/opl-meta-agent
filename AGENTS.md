@@ -6,7 +6,7 @@
 
 `opl-meta-agent` 是基于 OPL Framework 的独立 Foundry Agent，面向“开发新的 OPL-compatible 高价值知识交付智能体”。
 
-根层 `TASTE.md` 记录 OPL family 共享维护开发偏好；进行架构、代码、文档、测试、review、cleanup 和 closeout 判断时，先按 `TASTE.md` 校准 taste，再读取本仓事实、contracts、docs 与源码。
+用户级 `~/.codex/TASTE.md` 记录 OPL family 共享维护开发偏好；进行架构、代码、文档、测试、review、cleanup 和 closeout 判断时，先按用户级 taste 校准，再读取本仓事实、contracts、docs 与源码。
 
 本仓持有 agent-building domain semantics：用户意图理解、公开经验调研、阶段拆解、agent skeleton / contracts / prompt / skill / quality gate 生成策略、baseline 验收、optimizer candidate 组织和在线学习审阅策略。
 
@@ -42,7 +42,7 @@ scripts/verify.sh
 <!-- OPL_FLOW_MANAGED_START -->
 OPL Flow managed surface: repo_agent_instructions
 Plugin: opl-flow
-Plugin version: 0.1.0
+Plugin version: 0.1.7
 Profile pointer: contracts/opl-native-profile.json
 本块只声明 OPL Flow 工作流 profile 指针；repo-specific 规则、项目事实、contracts、source、tests 和 runtime 输出继续归本仓既有 owner。
 请只通过 OPL Flow repo_profile sync 更新本块；本块外内容由目标 repo 自己维护。
