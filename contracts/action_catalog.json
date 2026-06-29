@@ -90,6 +90,11 @@
           "agent_lab_baseline_or_takeover_suite",
           "independent_reviewer_assessment",
           "oma_self_evolution_consumption",
+          "temporal_or_stage_run_refs_only_consumption",
+          "stage_completion_policy_ref",
+          "stage_closeout_packet_ref",
+          "target_owner_receipt_or_typed_blocker_or_human_gate_ref",
+          "no_forbidden_target_truth_write_proof",
           "exactly_one_terminal_closeout"
         ],
         "insufficient_completion_inputs": [
@@ -97,7 +102,12 @@
           "contract_validation_only",
           "generated_interface_projection_only",
           "baseline_suite_pass_only",
-          "conformance_pass_only"
+          "conformance_pass_only",
+          "temporal_provider_completion_only",
+          "stage_run_state_only",
+          "stage_run_canary_or_operator_summary_only",
+          "target_artifact_morphology_missing",
+          "owner_receipt_human_gate_or_typed_blocker_missing"
         ],
         "accepted_terminal_outcomes": [
           "delivery_receipt",
@@ -112,8 +122,24 @@
           "oma_can_manage_target_worktree_lifecycle": false,
           "oma_can_write_target_owner_receipt_body": false,
           "oma_can_write_target_domain_truth": false,
+          "oma_can_mutate_target_domain_artifact_body": false,
           "oma_can_authorize_target_domain_quality_or_export": false,
           "oma_can_promote_default_agent_without_gate": false
+        },
+        "stage_run_boundary": {
+          "temporal_and_stage_run_consumption": "refs_only",
+          "opl_owns_runtime_stage_run_temporal_and_generated_surfaces": true,
+          "oma_can_create_runtime_state_or_attempt_ledger": false,
+          "provider_completion_is_domain_completion": false,
+          "stage_run_state_can_replace_domain_closeout_packet": false
+        },
+        "target_domain_boundary": {
+          "target_domain_owns_authority_owner_receipt_typed_blocker_and_human_gate": true,
+          "target_domain_artifact_morphology_required": true,
+          "oma_can_write_target_truth": false,
+          "oma_can_write_target_owner_receipt_body": false,
+          "oma_can_mutate_target_artifact_body": false,
+          "suite_pass_can_claim_target_artifact_readiness": false
         }
       }
     },

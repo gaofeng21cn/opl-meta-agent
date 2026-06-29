@@ -100,6 +100,11 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
     'agent_lab_baseline_or_takeover_suite',
     'independent_reviewer_assessment',
     'oma_self_evolution_consumption',
+    'temporal_or_stage_run_refs_only_consumption',
+    'stage_completion_policy_ref',
+    'stage_closeout_packet_ref',
+    'target_owner_receipt_or_typed_blocker_or_human_gate_ref',
+    'no_forbidden_target_truth_write_proof',
     'exactly_one_terminal_closeout',
   ]);
   assert.deepEqual(baselineAction.new_agent_delivery_gate.insufficient_completion_inputs, [
@@ -108,6 +113,11 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
     'generated_interface_projection_only',
     'baseline_suite_pass_only',
     'conformance_pass_only',
+    'temporal_provider_completion_only',
+    'stage_run_state_only',
+    'stage_run_canary_or_operator_summary_only',
+    'target_artifact_morphology_missing',
+    'owner_receipt_human_gate_or_typed_blocker_missing',
   ]);
   assert.deepEqual(baselineAction.new_agent_delivery_gate.accepted_terminal_outcomes, [
     'delivery_receipt',
@@ -121,7 +131,47 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   assert.equal(baselineAction.new_agent_delivery_gate.authority_boundary.oma_can_manage_target_worktree_lifecycle, false);
   assert.equal(baselineAction.new_agent_delivery_gate.authority_boundary.oma_can_write_target_owner_receipt_body, false);
   assert.equal(baselineAction.new_agent_delivery_gate.authority_boundary.oma_can_write_target_domain_truth, false);
+  assert.equal(baselineAction.new_agent_delivery_gate.authority_boundary.oma_can_mutate_target_domain_artifact_body, false);
   assert.equal(baselineAction.new_agent_delivery_gate.authority_boundary.oma_can_promote_default_agent_without_gate, false);
+  assert.equal(
+    baselineAction.new_agent_delivery_gate.stage_run_boundary.temporal_and_stage_run_consumption,
+    'refs_only',
+  );
+  assert.equal(
+    baselineAction.new_agent_delivery_gate.stage_run_boundary
+      .opl_owns_runtime_stage_run_temporal_and_generated_surfaces,
+    true,
+  );
+  assert.equal(
+    baselineAction.new_agent_delivery_gate.stage_run_boundary.provider_completion_is_domain_completion,
+    false,
+  );
+  assert.equal(
+    baselineAction.new_agent_delivery_gate.stage_run_boundary.stage_run_state_can_replace_domain_closeout_packet,
+    false,
+  );
+  assert.equal(
+    baselineAction.new_agent_delivery_gate.target_domain_boundary
+      .target_domain_owns_authority_owner_receipt_typed_blocker_and_human_gate,
+    true,
+  );
+  assert.equal(
+    baselineAction.new_agent_delivery_gate.target_domain_boundary.target_domain_artifact_morphology_required,
+    true,
+  );
+  assert.equal(baselineAction.new_agent_delivery_gate.target_domain_boundary.oma_can_write_target_truth, false);
+  assert.equal(
+    baselineAction.new_agent_delivery_gate.target_domain_boundary.oma_can_write_target_owner_receipt_body,
+    false,
+  );
+  assert.equal(
+    baselineAction.new_agent_delivery_gate.target_domain_boundary.oma_can_mutate_target_artifact_body,
+    false,
+  );
+  assert.equal(
+    baselineAction.new_agent_delivery_gate.target_domain_boundary.suite_pass_can_claim_target_artifact_readiness,
+    false,
+  );
   const mechanismAction = actions.find((action) => action.action_id === 'generate-mechanism-patch-proposal');
   assert.ok(mechanismAction);
   assert.equal(

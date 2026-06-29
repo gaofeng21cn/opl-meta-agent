@@ -70,6 +70,13 @@ type NewAgentDeliveryGateInput = {
   noPatchCoordinationReceipt?: JsonObject | null;
   developerPatchWorkOrder?: JsonObject | null;
   typedBlocker?: JsonObject | null;
+  stageRunRefsOnlyConsumptionRef?: string | null;
+  stageCompletionPolicyRef?: string | null;
+  stageCloseoutPacketRef?: string | null;
+  targetOwnerReceiptOrTypedBlockerOrHumanGateRef?: string | null;
+  noForbiddenWriteProofRef?: string | null;
+  providerCompletionIsDomainCompletion?: boolean;
+  omaTargetAuthorityBoundary?: JsonObject | null;
 };
 
 function nonEmptyString(value: unknown): value is string {
@@ -96,6 +103,10 @@ function suiteResultRef(value: JsonObject | null | undefined): string | null {
     }
   }
   return null;
+}
+
+function booleanTrueField(value: JsonObject | null | undefined, field: string): boolean {
+  return value?.[field] === true;
 }
 
 export function assertNewAgentDeliveryGate(input: NewAgentDeliveryGateInput): JsonObject {
@@ -140,6 +151,36 @@ export function assertNewAgentDeliveryGate(input: NewAgentDeliveryGateInput): Js
     nonEmptyString(input.selfEvolutionConsumptionRef)
       ? null
       : 'self_evolution_consumption_ref_missing',
+    nonEmptyString(input.stageRunRefsOnlyConsumptionRef)
+      ? null
+      : 'stage_run_refs_only_consumption_ref_missing',
+    nonEmptyString(input.stageCompletionPolicyRef)
+      ? null
+      : 'stage_completion_policy_ref_missing',
+    nonEmptyString(input.stageCloseoutPacketRef)
+      ? null
+      : 'stage_closeout_packet_ref_missing',
+    nonEmptyString(input.targetOwnerReceiptOrTypedBlockerOrHumanGateRef)
+      ? null
+      : 'target_owner_receipt_or_typed_blocker_or_human_gate_ref_missing',
+    nonEmptyString(input.noForbiddenWriteProofRef)
+      ? null
+      : 'no_forbidden_write_proof_ref_missing',
+    input.providerCompletionIsDomainCompletion === true
+      ? 'provider_completion_is_domain_completion_forbidden'
+      : null,
+    booleanTrueField(input.omaTargetAuthorityBoundary ?? null, 'can_write_target_domain_truth')
+      ? 'oma_target_authority_boundary_can_write_target_domain_truth_forbidden'
+      : null,
+    booleanTrueField(input.omaTargetAuthorityBoundary ?? null, 'can_write_target_owner_receipt_body')
+      ? 'oma_target_authority_boundary_can_write_target_owner_receipt_body_forbidden'
+      : null,
+    booleanTrueField(input.omaTargetAuthorityBoundary ?? null, 'can_mutate_target_domain_artifact_body')
+      ? 'oma_target_authority_boundary_can_mutate_target_domain_artifact_body_forbidden'
+      : null,
+    booleanTrueField(input.omaTargetAuthorityBoundary ?? null, 'can_authorize_target_domain_quality_or_export')
+      ? 'oma_target_authority_boundary_can_authorize_target_domain_quality_or_export_forbidden'
+      : null,
     closeoutOutcomes.length === 1
       ? null
       : 'exactly_one_closeout_outcome_required',
@@ -160,6 +201,12 @@ export function assertNewAgentDeliveryGate(input: NewAgentDeliveryGateInput): Js
       ai_reviewer_run_ref: input.aiReviewerEvaluation.run_ref,
       ai_reviewer_review_attempt_ref: input.aiReviewerEvaluation.review_attempt_ref,
       self_evolution_consumption_ref: input.selfEvolutionConsumptionRef,
+      stage_run_refs_only_consumption_ref: input.stageRunRefsOnlyConsumptionRef,
+      stage_completion_policy_ref: input.stageCompletionPolicyRef,
+      stage_closeout_packet_ref: input.stageCloseoutPacketRef,
+      target_owner_receipt_or_typed_blocker_or_human_gate_ref:
+        input.targetOwnerReceiptOrTypedBlockerOrHumanGateRef,
+      no_forbidden_write_proof_ref: input.noForbiddenWriteProofRef,
       closeout_outcome: closeoutOutcomes[0],
       closeout_outcome_count: closeoutOutcomes.length,
     },
@@ -167,6 +214,7 @@ export function assertNewAgentDeliveryGate(input: NewAgentDeliveryGateInput): Js
       scaffold_or_generated_interface_can_claim_complete: false,
       contract_validation_can_claim_complete: false,
       suite_pass_can_claim_complete: false,
+      provider_completion_can_claim_complete: false,
       exactly_one_closeout_outcome_required: true,
     },
     authority_boundary: {
@@ -728,6 +776,18 @@ export function runBuildAgentBaseline({
     aiReviewerEvaluation,
     selfEvolutionConsumptionRef: learningCandidate.candidate_id,
     deliveryReceipt: realTargetDeliveryReceipt as unknown as JsonObject,
+    stageRunRefsOnlyConsumptionRef: stageDecompositionAttempt.attempt_ref,
+    stageCompletionPolicyRef: stageDecompositionAttempt.stage_packet_ref,
+    stageCloseoutPacketRef: stageDecompositionAttempt.closeout_packet_ref,
+    targetOwnerReceiptOrTypedBlockerOrHumanGateRef: realTargetDeliveryReceipt.owner_receipt_refs[0],
+    noForbiddenWriteProofRef: realTargetDeliveryReceipt.no_forbidden_write_proof_refs[0],
+    providerCompletionIsDomainCompletion: false,
+    omaTargetAuthorityBoundary: {
+      can_write_target_domain_truth: false,
+      can_write_target_owner_receipt_body: false,
+      can_mutate_target_domain_artifact_body: false,
+      can_authorize_target_domain_quality_or_export: false,
+    },
   });
   writeJson(realTargetReceiptPath, realTargetDeliveryReceipt);
   writeJson(scaleoutLedgerPath, scaleoutEvidenceLedger);
