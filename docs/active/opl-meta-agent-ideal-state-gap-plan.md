@@ -17,6 +17,8 @@ Machine boundary: 本文是人读 gap / completion plan。机器真相继续归 
 
 Currentness policy：本文不冻结 run date、branch、worktree、commit SHA、receipt id、动态 counts、read-model 输出或 closeout 流程。带日期的 refs 只作为证据 provenance；当前状态仍以 live contracts、source、tests、OPL read models 和本仓最新核心 docs 为准。
 
+2026-06-30 SSOT refresh：本文的默认 active gap 只维护功能面落地、结构收薄、strict source-purity、script-to-pack hygiene、developer work-order policy、target-agent handoff vocabulary、no-forbidden-write guard、no-active-caller 与 tombstone/provenance。OPL registry / App live rendering、repeat target cohorts、real source patch -> rerun -> owner receipt、independent reviewer direct evidence、human approval、default promotion 和 production readiness 是后置 evidence lane，不再混进功能/结构 gap。除了 live evidence 之外，OMA 当前仍需关注的缺口是 script-to-pack / source-purity 持续治理：新增或保留 scripts/materializers 必须有真实 active caller、repo-local refs、no-forbidden-write、OPL primitive parity / no-active-caller / tombstone gate，且不能靠 source-purity self-guard 字符串自证。
+
 Live Evidence 后置是本文执行原则。功能/结构 lane 优先关闭 script-to-pack machine gate、retained script active-caller classification、OPL primitive replacement mapping、generated / registry / App projection refs、developer work-order and target-improvement policy contracts、no-forbidden-write guard、no-active-caller 与 tombstone/provenance 清理。OPL registry / App live rendering、repeat target cohorts、real source patch -> rerun -> owner receipt、independent reviewer direct evidence、human approval、default promotion 和 production readiness 是后置 evidence lane；controlled canary、suite pass、refs-only scaleout、OPL refs-only consumption 或 contract completeness 不能替代这些 live owner evidence。
 
 ## 当前结论
