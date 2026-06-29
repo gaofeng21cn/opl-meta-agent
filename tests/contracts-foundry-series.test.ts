@@ -172,6 +172,10 @@ test('foundry agent series contract binds OMA to shared Progress-First projectio
   assert.ok(asStrings(series.shared_progress_projection_fields).includes('platform_repair_delta'));
   assert.equal(series.domain_adapter_policy.no_parallel_progress_schema, true);
   assert.equal(series.domain_adapter_policy.no_parallel_blocker_lineage_schema, true);
+  assert.equal(
+    series.standard_public_projection_policy.active_public_projection_allows_forbidden_surface_roles,
+    false,
+  );
   assert.equal(series.app_projection_policy.app_consumes_shared_progress_projection_only, true);
   assert.equal(series.app_projection_policy.app_can_read_domain_body, false);
   assert.equal(series.authority_boundary.generated_surface_can_claim_domain_ready, false);
