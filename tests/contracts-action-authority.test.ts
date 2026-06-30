@@ -105,6 +105,11 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
     'stage_closeout_packet_ref',
     'target_owner_receipt_or_typed_blocker_or_human_gate_ref',
     'no_forbidden_target_truth_write_proof',
+    'target_source_morphology_ref',
+    'target_owner_route_ref',
+    'generated_surface_consumption_ref',
+    'private_residue_decision_ref',
+    'accepted_owner_answer_shape',
     'exactly_one_terminal_closeout',
   ]);
   assert.deepEqual(baselineAction.new_agent_delivery_gate.insufficient_completion_inputs, [
@@ -117,6 +122,10 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
     'stage_run_state_only',
     'stage_run_canary_or_operator_summary_only',
     'target_artifact_morphology_missing',
+    'target_owner_route_missing',
+    'generated_surface_consumption_missing',
+    'private_residue_decision_missing',
+    'accepted_owner_answer_shape_missing',
     'owner_receipt_human_gate_or_typed_blocker_missing',
   ]);
   assert.deepEqual(baselineAction.new_agent_delivery_gate.accepted_terminal_outcomes, [
@@ -157,6 +166,22 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   );
   assert.equal(
     baselineAction.new_agent_delivery_gate.target_domain_boundary.target_domain_artifact_morphology_required,
+    true,
+  );
+  assert.equal(
+    baselineAction.new_agent_delivery_gate.target_domain_boundary.target_owner_route_required,
+    true,
+  );
+  assert.equal(
+    baselineAction.new_agent_delivery_gate.target_domain_boundary.generated_surface_consumption_required,
+    true,
+  );
+  assert.equal(
+    baselineAction.new_agent_delivery_gate.target_domain_boundary.private_residue_decision_required,
+    true,
+  );
+  assert.equal(
+    baselineAction.new_agent_delivery_gate.target_domain_boundary.accepted_owner_answer_shape_required,
     true,
   );
   assert.equal(baselineAction.new_agent_delivery_gate.target_domain_boundary.oma_can_write_target_truth, false);

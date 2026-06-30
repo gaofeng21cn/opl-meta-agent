@@ -108,6 +108,51 @@ test('new agent delivery gate rejects terminal closeout without StageRun refs-on
   );
 });
 
+test('new agent delivery gate rejects half-standard default path without morphology route generated consumption private residue decision and owner answer shape', () => {
+  assert.throws(
+    () =>
+      assertNewAgentDeliveryGate({
+        targetAgent: {
+          domain_id: 'target-agent',
+          domain_label: 'Target Agent',
+          delivery_domain: 'opl_compatible_target_agent',
+        },
+        scaffoldValidationStatus: 'valid',
+        generatedInterfaceStatus: 'ready',
+        baselineSuiteResult: {
+          result_id: 'agent-lab-result:target-agent/baseline',
+          status: 'passed',
+          summary: {
+            recovery_probe_count: 1,
+            recovery_passed_count: 1,
+            forbidden_authority_flag_count: 0,
+          },
+        },
+        realTargetSuiteResult: {
+          result_id: 'agent-lab-result:target-agent/real-target',
+          status: 'passed',
+          summary: {
+            recovery_probe_count: 1,
+            recovery_passed_count: 1,
+            forbidden_authority_flag_count: 0,
+          },
+        },
+        aiReviewerEvaluation: reviewerEvaluation(),
+        selfEvolutionConsumptionRef: 'self-evolution-consumption:target-agent/external-suite',
+        deliveryReceipt: {
+          surface_kind: 'opl_meta_agent_real_target_agent_delivery_receipt',
+          receipt_id: 'receipt:target-agent/delivery',
+        },
+        stageRunRefsOnlyConsumptionRef: 'stage-run-ref:target-agent/baseline',
+        stageCompletionPolicyRef: 'stage-completion-policy-ref:target-agent/baseline',
+        stageCloseoutPacketRef: 'stage-closeout-packet-ref:target-agent/baseline',
+        targetOwnerReceiptOrTypedBlockerOrHumanGateRef: 'owner-receipt-ref:target-agent/baseline',
+        noForbiddenWriteProofRef: 'no-forbidden-write:target-agent/baseline',
+      }),
+    /source_morphology_ref_missing.*owner_route_ref_missing.*generated_surface_consumption_ref_missing.*private_residue_decision_ref_missing.*owner_answer_shape_missing_or_unaccepted/,
+  );
+});
+
 test('new agent delivery gate rejects provider completion and OMA target truth write authority', () => {
   assert.throws(
     () =>
@@ -154,6 +199,11 @@ test('new agent delivery gate rejects provider completion and OMA target truth w
         stageCloseoutPacketRef: 'stage-closeout-packet-ref:target-agent/baseline',
         targetOwnerReceiptOrTypedBlockerOrHumanGateRef: 'owner-receipt-ref:target-agent/baseline',
         noForbiddenWriteProofRef: 'no-forbidden-write:target-agent/baseline',
+        sourceMorphologyRef: 'artifact-morphology-ref:target-agent/baseline',
+        ownerRouteRef: 'target-owner-route-ref:target-agent/baseline',
+        generatedSurfaceConsumptionRef: 'generated-interface-bundle-ref:target-agent',
+        privateResidueDecisionRef: 'private-residue-decision-ref:target-agent/default-caller',
+        ownerAnswerShape: 'owner_receipt',
         providerCompletionIsDomainCompletion: true,
         omaTargetAuthorityBoundary: {
           can_write_target_domain_truth: true,
@@ -202,6 +252,11 @@ test('new agent delivery gate accepts exactly one delivery receipt closeout with
     stageCloseoutPacketRef: 'stage-closeout-packet-ref:target-agent/baseline',
     targetOwnerReceiptOrTypedBlockerOrHumanGateRef: 'owner-receipt-ref:target-agent/baseline',
     noForbiddenWriteProofRef: 'no-forbidden-write:target-agent/baseline',
+    sourceMorphologyRef: 'artifact-morphology-ref:target-agent/baseline',
+    ownerRouteRef: 'target-owner-route-ref:target-agent/baseline',
+    generatedSurfaceConsumptionRef: 'generated-interface-bundle-ref:target-agent',
+    privateResidueDecisionRef: 'private-residue-decision-ref:target-agent/default-caller',
+    ownerAnswerShape: 'owner_receipt',
     providerCompletionIsDomainCompletion: false,
     omaTargetAuthorityBoundary: {
       can_write_target_domain_truth: false,
@@ -217,6 +272,15 @@ test('new agent delivery gate accepts exactly one delivery receipt closeout with
   assert.equal(
     gate.required_evidence.target_owner_receipt_or_typed_blocker_or_human_gate_ref,
     'owner-receipt-ref:target-agent/baseline',
+  );
+  assert.equal(gate.required_evidence.source_morphology_ref, 'artifact-morphology-ref:target-agent/baseline');
+  assert.equal(gate.required_evidence.owner_route_ref, 'target-owner-route-ref:target-agent/baseline');
+  assert.equal(gate.required_evidence.generated_surface_consumption_ref, 'generated-interface-bundle-ref:target-agent');
+  assert.equal(gate.required_evidence.private_residue_decision_ref, 'private-residue-decision-ref:target-agent/default-caller');
+  assert.equal(gate.required_evidence.owner_answer_shape, 'owner_receipt');
+  assert.equal(
+    gate.false_completion_guard.missing_source_morphology_owner_route_generated_consumption_private_residue_or_owner_answer_fails_closed,
+    true,
   );
   assert.equal(gate.false_completion_guard.provider_completion_can_claim_complete, false);
   assert.equal(gate.authority_boundary.delegates_work_order_execution_to_opl, true);

@@ -75,6 +75,11 @@ type NewAgentDeliveryGateInput = {
   stageCloseoutPacketRef?: string | null;
   targetOwnerReceiptOrTypedBlockerOrHumanGateRef?: string | null;
   noForbiddenWriteProofRef?: string | null;
+  sourceMorphologyRef?: string | null;
+  ownerRouteRef?: string | null;
+  generatedSurfaceConsumptionRef?: string | null;
+  privateResidueDecisionRef?: string | null;
+  ownerAnswerShape?: string | null;
   providerCompletionIsDomainCompletion?: boolean;
   omaTargetAuthorityBoundary?: JsonObject | null;
 };
@@ -166,6 +171,29 @@ export function assertNewAgentDeliveryGate(input: NewAgentDeliveryGateInput): Js
     nonEmptyString(input.noForbiddenWriteProofRef)
       ? null
       : 'no_forbidden_write_proof_ref_missing',
+    nonEmptyString(input.sourceMorphologyRef)
+      ? null
+      : 'source_morphology_ref_missing',
+    nonEmptyString(input.ownerRouteRef)
+      ? null
+      : 'owner_route_ref_missing',
+    nonEmptyString(input.generatedSurfaceConsumptionRef)
+      ? null
+      : 'generated_surface_consumption_ref_missing',
+    nonEmptyString(input.privateResidueDecisionRef)
+      ? null
+      : 'private_residue_decision_ref_missing',
+    [
+      'owner_receipt',
+      'typed_blocker',
+      'human_gate',
+      'route_back',
+      'rejected',
+      'completed_and_continue',
+      'completed_and_wait_owner',
+    ].includes(input.ownerAnswerShape ?? '')
+      ? null
+      : 'owner_answer_shape_missing_or_unaccepted',
     input.providerCompletionIsDomainCompletion === true
       ? 'provider_completion_is_domain_completion_forbidden'
       : null,
@@ -207,6 +235,11 @@ export function assertNewAgentDeliveryGate(input: NewAgentDeliveryGateInput): Js
       target_owner_receipt_or_typed_blocker_or_human_gate_ref:
         input.targetOwnerReceiptOrTypedBlockerOrHumanGateRef,
       no_forbidden_write_proof_ref: input.noForbiddenWriteProofRef,
+      source_morphology_ref: input.sourceMorphologyRef,
+      owner_route_ref: input.ownerRouteRef,
+      generated_surface_consumption_ref: input.generatedSurfaceConsumptionRef,
+      private_residue_decision_ref: input.privateResidueDecisionRef,
+      owner_answer_shape: input.ownerAnswerShape,
       closeout_outcome: closeoutOutcomes[0],
       closeout_outcome_count: closeoutOutcomes.length,
     },
@@ -215,6 +248,7 @@ export function assertNewAgentDeliveryGate(input: NewAgentDeliveryGateInput): Js
       contract_validation_can_claim_complete: false,
       suite_pass_can_claim_complete: false,
       provider_completion_can_claim_complete: false,
+      missing_source_morphology_owner_route_generated_consumption_private_residue_or_owner_answer_fails_closed: true,
       exactly_one_closeout_outcome_required: true,
     },
     authority_boundary: {
@@ -781,6 +815,13 @@ export function runBuildAgentBaseline({
     stageCloseoutPacketRef: stageDecompositionAttempt.closeout_packet_ref,
     targetOwnerReceiptOrTypedBlockerOrHumanGateRef: realTargetDeliveryReceipt.owner_receipt_refs[0],
     noForbiddenWriteProofRef: realTargetDeliveryReceipt.no_forbidden_write_proof_refs[0],
+    sourceMorphologyRef: stageDecompositionAttempt.closeout_refs
+      .find(hasMorphologyEvidenceRef) ?? aiReviewerEvaluation.direct_evidence_refs.find(hasMorphologyEvidenceRef),
+    ownerRouteRef: realTargetDeliveryReceipt.owner_receipt_refs[0],
+    generatedSurfaceConsumptionRef:
+      generatedInterfaces.generated_agent_interfaces.generated_surface_consumption_bundle?.surface_kind,
+    privateResidueDecisionRef: 'contracts/default_caller_deletion_evidence.json',
+    ownerAnswerShape: 'owner_receipt',
     providerCompletionIsDomainCompletion: false,
     omaTargetAuthorityBoundary: {
       can_write_target_domain_truth: false,
