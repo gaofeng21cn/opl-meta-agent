@@ -131,7 +131,7 @@ Write scope:
 
 - `docs/active/opl-meta-agent-ideal-state-gap-plan.md`、`docs/status.md`、`docs/active/opl-private-implementation-migration-inventory.md`、OMA contracts、`agent/` pack、`runtime/authority_functions/`、`scripts/lib/*` 和 tests 中仍影响 OMA owner boundary、script/source morphology 或 target-agent handoff vocabulary 的部分。
 
-Functional truth inputs:
+Live truth inputs:
 
 - `AGENTS.md`、用户级 `~/.codex/TASTE.md`、核心五件套、本文、ideal-state reference、private implementation inventory。
 - `contracts/opl_domain_manifest_registration.json`、`contracts/app_workbench_projection.json`、generated surface handoff、stage control plane、script-to-pack gate receipt、source-purity contracts 和 private implementation inventory。Production acceptance / real target scaleout contracts 只用于 false-ready boundary 或后置 evidence routing。
