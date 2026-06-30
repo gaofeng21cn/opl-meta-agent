@@ -10,6 +10,12 @@ import {
   readDomainPackSummary,
 } from './lib/domain-pack.ts';
 import {
+  assertNewAgentDeliveryGate,
+} from './build-agent-baseline.ts';
+import {
+  loadAiReviewerEvaluation,
+} from './lib/meta-agent-loop-ai-reviewer.ts';
+import {
   type LearningCandidate,
   type OwnerReceipt,
   type SuiteResult,
@@ -35,6 +41,7 @@ export type TakeoverArgs = {
   targetAgentDir: string;
   outputDir: string;
   oplBin: string;
+  aiReviewerEvaluationPath: string;
 };
 
 export function parseTakeoverAgentArgs(argv: string[]): TakeoverArgs {
@@ -42,10 +49,12 @@ export function parseTakeoverAgentArgs(argv: string[]): TakeoverArgs {
     targetAgentDir: string | null;
     outputDir: string | null;
     oplBin: string;
+    aiReviewerEvaluationPath: string | null;
   } = {
     targetAgentDir: null,
     outputDir: null,
     oplBin: resolveOplBin(),
+    aiReviewerEvaluationPath: null,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -75,6 +84,14 @@ export function parseTakeoverAgentArgs(argv: string[]): TakeoverArgs {
       index += 1;
       continue;
     }
+    if (token === '--ai-reviewer-evaluation') {
+      if (!value) {
+        throw new Error('Missing value for --ai-reviewer-evaluation.');
+      }
+      parsed.aiReviewerEvaluationPath = path.resolve(value);
+      index += 1;
+      continue;
+    }
     throw new Error(`Unknown argument: ${token}.`);
   }
 
@@ -84,12 +101,16 @@ export function parseTakeoverAgentArgs(argv: string[]): TakeoverArgs {
   if (!fs.existsSync(parsed.targetAgentDir)) {
     throw new Error(`Target agent path does not exist: ${parsed.targetAgentDir}`);
   }
+  if (!parsed.aiReviewerEvaluationPath) {
+    throw new Error('Missing required --ai-reviewer-evaluation <path>.');
+  }
 
   parsed.outputDir ??= fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-takeover-'));
   return {
     targetAgentDir: parsed.targetAgentDir,
     outputDir: parsed.outputDir,
     oplBin: parsed.oplBin,
+    aiReviewerEvaluationPath: parsed.aiReviewerEvaluationPath,
   };
 }
 
@@ -188,14 +209,16 @@ function buildTakeoverMechanismPatchProposal(
   });
 }
 
-export function runTakeoverAgent({ targetAgentDir, outputDir, oplBin }: TakeoverArgs): JsonObject {
+export function runTakeoverAgent({ targetAgentDir, outputDir, oplBin, aiReviewerEvaluationPath }: TakeoverArgs): JsonObject {
   fs.mkdirSync(outputDir, { recursive: true });
   const domainPackSummary: DomainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
 
   const targetAgent = readTargetAgent(targetAgentDir);
+  const aiReviewerEvaluation = loadAiReviewerEvaluation(aiReviewerEvaluationPath);
 
   const suitePath = path.join(outputDir, 'agent-lab-takeover-suite.json');
   const receiptPath = path.join(outputDir, 'takeover-receipt.json');
+  const deliveryGatePath = path.join(outputDir, 'new-agent-delivery-gate.json');
   const learningPath = path.join(outputDir, 'takeover-online-learning-candidate.json');
   const mechanismPath = path.join(outputDir, 'takeover-mechanism-patch-proposal.json');
 
@@ -242,8 +265,54 @@ export function runTakeoverAgent({ targetAgentDir, outputDir, oplBin }: Takeover
     learningCandidate,
     targetAgent,
   );
+  const noPatchCoordinationReceipt: JsonObject = {
+    surface_kind: 'opl_meta_agent_no_patch_coordination_receipt',
+    receipt_id: `no-patch-coordination-receipt:opl-meta-agent/${targetAgent.domain_id}/testing-takeover`,
+    target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
+    takeover_receipt_ref: takeoverReceipt.receipt_id,
+    agent_lab_result_ref: suiteResult.result_id,
+    status: suiteResult.status === 'passed' ? 'recorded_requires_target_owner_wait' : 'blocked',
+    authority_boundary: {
+      refs_only: true,
+      can_write_target_domain_truth: false,
+      can_write_target_owner_receipt_body: false,
+      can_mutate_target_domain_artifact_body: false,
+      can_authorize_target_domain_quality_or_export: false,
+    },
+  };
+  const noForbiddenWriteProofRef = `no-forbidden-write:opl-meta-agent/${targetAgent.domain_id}/agent_testing_takeover`;
+  const newAgentDeliveryGate = assertNewAgentDeliveryGate({
+    targetAgent,
+    scaffoldValidationStatus: 'validated',
+    generatedInterfaceStatus: 'ready',
+    baselineSuiteResult: suiteResult as unknown as JsonObject,
+    realTargetSuiteResult: suiteResult as unknown as JsonObject,
+    aiReviewerEvaluation,
+    selfEvolutionConsumptionRef: learningCandidate.candidate_id,
+    noPatchCoordinationReceipt,
+    stageRunRefsOnlyConsumptionRef: suite.stage_native_artifact_refs.attempt_json_ref,
+    stageCompletionPolicyRef: suite.tasks[0].stage_completion_policy.policy_ref,
+    stageCloseoutPacketRef: suite.stage_native_artifact_refs.receipt_ref,
+    targetOwnerReceiptOrTypedBlockerOrHumanGateRef: noPatchCoordinationReceipt.receipt_id,
+    noForbiddenWriteProofRef,
+    sourceMorphologyRef: aiReviewerEvaluation.direct_evidence_refs
+      .find((ref: string) => ref.includes('morphology')) ?? aiReviewerEvaluation.direct_evidence_refs[0],
+    ownerRouteRef: aiReviewerEvaluation.source_refs
+      .find((ref: string) => ref.includes('owner-route')) ?? noPatchCoordinationReceipt.receipt_id,
+    generatedSurfaceConsumptionRef: `generated-surface-consumption:opl-meta-agent/${targetAgent.domain_id}/takeover`,
+    privateResidueDecisionRef: 'contracts/default_caller_deletion_evidence.json',
+    ownerAnswerShape: 'completed_and_wait_owner',
+    providerCompletionIsDomainCompletion: false,
+    omaTargetAuthorityBoundary: {
+      can_write_target_domain_truth: false,
+      can_write_target_owner_receipt_body: false,
+      can_mutate_target_domain_artifact_body: false,
+      can_authorize_target_domain_quality_or_export: false,
+    },
+  });
 
   writeJson(receiptPath, takeoverReceipt);
+  writeJson(deliveryGatePath, newAgentDeliveryGate);
   writeJson(learningPath, learningCandidate);
   writeJson(mechanismPath, mechanismPatchProposal);
 
@@ -272,6 +341,7 @@ export function runTakeoverAgent({ targetAgentDir, outputDir, oplBin }: Takeover
     artifacts: {
       suite_path: suitePath,
       takeover_receipt_path: receiptPath,
+      new_agent_delivery_gate_path: deliveryGatePath,
       online_learning_candidate_path: learningPath,
       mechanism_patch_proposal_path: mechanismPath,
     },
@@ -282,6 +352,7 @@ export function runTakeoverAgent({ targetAgentDir, outputDir, oplBin }: Takeover
       online_learning_policy: learningCandidate.online_learning_policy,
       mechanism_patch_proposal: mechanismPatchProposal,
     },
+    new_agent_delivery_gate: newAgentDeliveryGate,
   };
 }
 

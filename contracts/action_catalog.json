@@ -159,11 +159,11 @@
     {
       "action_id": "takeover-target-agent-test",
       "title": "Take Over Target Agent Test",
-      "summary": "Read an existing OPL-compatible agent repo, generate an Agent Lab takeover suite, run it, and emit takeover receipt plus gated self-evolution refs.",
+      "summary": "Read an existing OPL-compatible agent repo, generate an Agent Lab takeover suite, run it, consume structured AI reviewer evidence, and emit takeover receipt, gated self-evolution refs, and the shared new-agent delivery gate readback.",
       "owner": "opl-meta-agent",
       "effect": "mutating",
       "source_command": {
-        "command": "npm run takeover:test -- --agent-dir <agent_dir> --output-dir <output_dir> --opl-bin <opl_bin>",
+        "command": "npm run takeover:test -- --agent-dir <agent_dir> --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation>",
         "surface_kind": "domain_smoke_cli"
       },
       "input_schema_ref": "contracts/schemas/takeover-target-agent-test.input.schema.json",
@@ -171,14 +171,15 @@
       "workspace_locator_fields": [
         "agent_dir",
         "output_dir",
-        "opl_bin"
+        "opl_bin",
+        "ai_reviewer_evaluation"
       ],
       "human_gate_ids": [
         "testing_takeover_owner_review"
       ],
       "supported_surfaces": {
         "cli": {
-          "command": "npm run takeover:test -- --agent-dir <agent_dir> --output-dir <output_dir> --opl-bin <opl_bin>",
+          "command": "npm run takeover:test -- --agent-dir <agent_dir> --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation>",
           "surface_kind": "domain_smoke_cli"
         },
         "mcp": {
@@ -193,7 +194,7 @@
         },
         "product_entry": {
           "action_key": "takeover-target-agent-test",
-          "command": "npm run takeover:test -- --agent-dir <agent_dir> --output-dir <output_dir> --opl-bin <opl_bin>",
+          "command": "npm run takeover:test -- --agent-dir <agent_dir> --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation>",
           "surface_kind": "domain_product_entry_action"
         },
         "openai": {
@@ -210,6 +211,80 @@
         "can_authorize_target_domain_quality_or_export": false,
         "can_promote_default_agent_without_gate": false,
         "can_train_or_deploy_model_weights": false
+      },
+      "new_agent_delivery_gate": {
+        "surface_kind": "opl_meta_agent_new_agent_delivery_gate_policy",
+        "policy_id": "opl-meta-agent.new-agent-delivery-gate.v1",
+        "required_gates": [
+          "scaffold_validation",
+          "generated_interface_projection",
+          "agent_lab_baseline_or_takeover_suite",
+          "independent_reviewer_assessment",
+          "oma_self_evolution_consumption",
+          "temporal_or_stage_run_refs_only_consumption",
+          "stage_completion_policy_ref",
+          "stage_closeout_packet_ref",
+          "target_owner_receipt_or_typed_blocker_or_human_gate_ref",
+          "no_forbidden_target_truth_write_proof",
+          "target_source_morphology_ref",
+          "target_owner_route_ref",
+          "generated_surface_consumption_ref",
+          "private_residue_decision_ref",
+          "accepted_owner_answer_shape",
+          "exactly_one_terminal_closeout"
+        ],
+        "insufficient_completion_inputs": [
+          "repo_scaffold_only",
+          "contract_validation_only",
+          "generated_interface_projection_only",
+          "baseline_suite_pass_only",
+          "conformance_pass_only",
+          "temporal_provider_completion_only",
+          "stage_run_state_only",
+          "stage_run_canary_or_operator_summary_only",
+          "target_artifact_morphology_missing",
+          "target_owner_route_missing",
+          "generated_surface_consumption_missing",
+          "private_residue_decision_missing",
+          "accepted_owner_answer_shape_missing",
+          "owner_receipt_human_gate_or_typed_blocker_missing"
+        ],
+        "accepted_terminal_outcomes": [
+          "delivery_receipt",
+          "no_patch_coordination_receipt",
+          "developer_patch_work_order",
+          "typed_blocker"
+        ],
+        "exactly_one_terminal_outcome_required": true,
+        "output_readback_field": "new_agent_delivery_gate",
+        "authority_boundary": {
+          "delegates_work_order_execution_to_opl": true,
+          "oma_can_manage_target_worktree_lifecycle": false,
+          "oma_can_write_target_owner_receipt_body": false,
+          "oma_can_write_target_domain_truth": false,
+          "oma_can_mutate_target_domain_artifact_body": false,
+          "oma_can_authorize_target_domain_quality_or_export": false,
+          "oma_can_promote_default_agent_without_gate": false
+        },
+        "stage_run_boundary": {
+          "temporal_and_stage_run_consumption": "refs_only",
+          "opl_owns_runtime_stage_run_temporal_and_generated_surfaces": true,
+          "oma_can_create_runtime_state_or_attempt_ledger": false,
+          "provider_completion_is_domain_completion": false,
+          "stage_run_state_can_replace_domain_closeout_packet": false
+        },
+        "target_domain_boundary": {
+          "target_domain_owns_authority_owner_receipt_typed_blocker_and_human_gate": true,
+          "target_domain_artifact_morphology_required": true,
+          "target_owner_route_required": true,
+          "generated_surface_consumption_required": true,
+          "private_residue_decision_required": true,
+          "accepted_owner_answer_shape_required": true,
+          "oma_can_write_target_truth": false,
+          "oma_can_write_target_owner_receipt_body": false,
+          "oma_can_mutate_target_artifact_body": false,
+          "suite_pass_can_claim_target_artifact_readiness": false
+        }
       }
     },
     {

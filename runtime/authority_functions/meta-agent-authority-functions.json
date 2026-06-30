@@ -800,7 +800,9 @@
           "agent_lab_suite_ref",
           "testing_takeover_self_evolution_receipt",
           "online_learning_candidate_ref",
-          "mechanism_patch_proposal_ref"
+          "mechanism_patch_proposal_ref",
+          "new_agent_delivery_gate_ref",
+          "no_patch_coordination_receipt_ref"
         ],
         "forbidden_roles": []
       }
@@ -1320,13 +1322,12 @@
           "script_ref": "scripts/build-agent-baseline.ts",
           "active_caller_refs": [
             "package.json#scripts.build-agent-baseline",
+            "scripts/takeover-agent.ts#import",
             "tests/bootstrap-loop.test.ts#import",
             "tests/bootstrap-loop.test.ts#test_ref",
             "tests/new-agent-delivery-gate.test.ts#import",
             "tests/new-agent-delivery-gate.test.ts#test_ref",
-            "tests/stage-decomposition-materializer.test.ts#test_ref",
-            "tests/takeover-loop.test.ts#import",
-            "tests/takeover-loop.test.ts#test_ref"
+            "tests/stage-decomposition-materializer.test.ts#test_ref"
           ]
         },
         {
@@ -1439,6 +1440,7 @@
             "scripts/lib/agent-evidence-materializer.ts#import",
             "scripts/lib/meta-agent-loop-receipts.ts#import",
             "scripts/lib/target-improvement-policy.ts#import",
+            "scripts/takeover-agent.ts#import",
             "tests/target-improvement-policy.test.ts#import",
             "tests/target-improvement-policy.test.ts#test_ref"
           ]
@@ -1486,9 +1488,7 @@
             "tests/bootstrap-loop.test.ts#import",
             "tests/bootstrap-loop.test.ts#test_ref",
             "tests/stage-decomposition-materializer.test.ts#import",
-            "tests/stage-decomposition-materializer.test.ts#test_ref",
-            "tests/takeover-loop.test.ts#import",
-            "tests/takeover-loop.test.ts#test_ref"
+            "tests/stage-decomposition-materializer.test.ts#test_ref"
           ]
         },
         {

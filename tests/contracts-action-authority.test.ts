@@ -29,6 +29,13 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   assert.ok(takeoverAction);
   assert.equal(takeoverAction.supported_surfaces.mcp.descriptor_only, true);
   assert.equal(takeoverAction.supported_surfaces.mcp.public_runtime, false);
+  assert.ok(takeoverAction.workspace_locator_fields.includes('ai_reviewer_evaluation'));
+  assert.match(takeoverAction.source_command.command, /--ai-reviewer-evaluation <ai_reviewer_evaluation>/);
+  assert.match(takeoverAction.supported_surfaces.cli.command, /--ai-reviewer-evaluation <ai_reviewer_evaluation>/);
+  assert.match(
+    takeoverAction.supported_surfaces.product_entry.command,
+    /--ai-reviewer-evaluation <ai_reviewer_evaluation>/,
+  );
   assert.equal(takeoverAction.authority_boundary.can_write_target_domain_truth, false);
   assert.equal(takeoverAction.authority_boundary.can_promote_default_agent_without_gate, false);
   assert.equal(actions.some((action) => action.action_id === 'takeover-external-agent-test'), false);
@@ -94,6 +101,7 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
       ?.supported_surfaces.skill.intent_mapping,
     'Codex extracts domain_id, domain_label, delivery_domain, target_brief, output_dir, opl_bin, and ai_reviewer_evaluation from the user natural-language request before invoking this action.',
   );
+  assert.deepEqual(takeoverAction.new_agent_delivery_gate, baselineAction.new_agent_delivery_gate);
   assert.deepEqual(baselineAction.new_agent_delivery_gate.required_gates, [
     'scaffold_validation',
     'generated_interface_projection',

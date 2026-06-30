@@ -812,6 +812,14 @@ test('script morphology stays limited to authority refs, materializers, helpers,
         );
       });
     }
+    if (entry.script_ref === 'scripts/takeover-agent.ts') {
+      [
+        'new_agent_delivery_gate_ref',
+        'no_patch_coordination_receipt_ref',
+      ].forEach((writeRef) => {
+        assert.ok(asStrings(entry.writes_only).includes(writeRef), `${entry.script_ref} writes_only ${writeRef}`);
+      });
+    }
     if (entry.script_ref === 'scripts/check-source-structure.ts') {
       assert.deepEqual(asStrings(entry.contract_refs), [
         'contracts/source_structure_policy.json',

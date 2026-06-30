@@ -583,7 +583,9 @@
       "agent_lab_suite_ref",
       "testing_takeover_self_evolution_receipt",
       "online_learning_candidate_ref",
-      "mechanism_patch_proposal_ref"
+      "mechanism_patch_proposal_ref",
+      "new_agent_delivery_gate_ref",
+      "no_patch_coordination_receipt_ref"
     ],
     "forbidden_roles": []
   }
