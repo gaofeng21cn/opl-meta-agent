@@ -5,6 +5,7 @@ import { validateArtifactMorphologyContract } from './artifact-morphology-valida
 import {
   DEFAULT_STAGE_EXECUTOR_BINDING_REF,
   SERIES_DESIGN_PROFILE,
+  STANDARD_AGENT_PACK_ABI,
   STANDARD_STAGE_PACK_CONFORMANCE_VERSION,
   STAGE_COMPLETION_POLICY,
   STAGE_PROGRESS_DELTA_POLICY,
@@ -79,6 +80,51 @@ function validateStageRefs(
     }
     return relPath;
   });
+}
+
+function validateToolAffordanceBoundary(stageId: string, stage: JsonObject, files: Map<string, string>): string[] {
+  const toolRefs = asRecordArray(stage.tool_refs, `stage ${stageId}.tool_refs`);
+  const toolPaths = toolRefs.map((entry) => {
+    const relPath = validateRelativeMarkdownPath(entry.ref, `stage ${stageId}.tool_refs.ref`);
+    if (!relPath.startsWith('agent/tools/')) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} tool_refs must live under agent/tools/.`);
+    }
+    if (!files.has(relPath)) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} tool ref has no file body: ${relPath}`);
+    }
+    return relPath;
+  });
+  const boundary = asRecord(stage.tool_affordance_boundary, `stage ${stageId}.tool_affordance_boundary`);
+  if (boundary.catalog_role !== 'available_affordance_catalog_not_workflow_script') {
+    throw new Error(`stage-decomposition pack draft stage ${stageId} tool_affordance_boundary.catalog_role is invalid.`);
+  }
+  [
+    'capability_refs',
+    'permission_scope_refs',
+    'credential_boundary_refs',
+    'write_scope_refs',
+    'side_effect_risk_refs',
+    'forbidden_authority_refs',
+  ].forEach((field) => asRecordArray(boundary[field], `stage ${stageId}.tool_affordance_boundary.${field}`));
+  const autonomy = asRecord(boundary.executor_autonomy, `stage ${stageId}.tool_affordance_boundary.executor_autonomy`);
+  [
+    'executor_can_choose_tools',
+    'executor_can_skip_tools',
+    'executor_can_substitute_tools_within_boundary',
+    'executor_can_choose_order_and_parallelism',
+    'executor_can_request_missing_context_or_human_gate',
+  ].forEach((field) => {
+    if (autonomy[field] !== true) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} tool_affordance_boundary.${field} must be true.`);
+    }
+  });
+  [
+    'tool_catalog_can_prescribe_tool_sequence',
+    'tool_catalog_can_define_cognitive_strategy',
+    'tool_catalog_can_override_stage_goal',
+    'tool_catalog_can_authorize_forbidden_write',
+  ].forEach((field) => assertBooleanFalse(autonomy, field, `stage ${stageId}.tool_affordance_boundary.${field}`));
+  return toolPaths;
 }
 
 function validateQualityGateBody(files: Map<string, string>, qualityGatePath: string): void {
@@ -200,6 +246,7 @@ function validateStageControlPlane(
     }
     const promptRefs = validateStageRefs(stage, 'prompt_refs', 'domain_prompt_ref', 'agent/prompts/', files);
     const skillRefs = validateStageRefs(stage, 'skills', 'domain_skill_ref', 'agent/skills/', files);
+    const toolRefs = validateToolAffordanceBoundary(stageId, stage, files);
     const knowledgeRefs = validateStageRefs(stage, 'knowledge_refs', 'domain_knowledge_ref', 'agent/knowledge/', files);
     const qualityGateRefs = validateStageRefs(stage, 'evaluation', 'domain_quality_gate_ref', 'agent/quality_gates/', files);
     qualityGateRefs.forEach((qualityGatePath) => validateQualityGateBody(files, qualityGatePath));
@@ -238,6 +285,7 @@ function validateStageControlPlane(
       stageNativeRefs.artifactNativeContractRef,
       ...promptRefs.map((entry) => `prompt-ref:${entry}`),
       ...skillRefs.map((entry) => `skill-ref:${entry}`),
+      ...toolRefs.map((entry) => `tool-affordance-ref:${entry}`),
       ...knowledgeRefs.map((entry) => `knowledge-ref:${entry}`),
       ...qualityGateRefs.map((entry) => `quality-gate-ref:${entry}`),
       ...allowedActions.map((entry) => `action-ref:${entry}`),
@@ -293,6 +341,38 @@ function validateStageControlPlane(
     }
     if (!expectedReceiptRefs.some((entry) => entry.ref === stageCloseoutPacketRef)) {
       throw new Error(`stage-decomposition pack draft stage ${stageId} missing expected stage closeout packet ref.`);
+    }
+    const receiptSchemaRefs = asRecordArray(
+      contract.receipt_schema_refs,
+      `stage ${stageId}.stage_contract.receipt_schema_refs`,
+    );
+    if (!receiptSchemaRefs.some((entry) => entry.ref === 'contracts/owner_receipt_contract.json')) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} missing owner receipt schema ref.`);
+    }
+    const authorityFunctionRefs = asRecordArray(
+      contract.authority_function_refs,
+      `stage ${stageId}.stage_contract.authority_function_refs`,
+    );
+    if (!authorityFunctionRefs.some((entry) => entry.ref === 'runtime/authority_functions/README.md')) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} missing minimal authority function ref.`);
+    }
+    const l4EntryGate = asRecord(contract.l4_entry_gate, `stage ${stageId}.stage_contract.l4_entry_gate`);
+    if (
+      l4EntryGate.entry_level !== STANDARD_AGENT_PACK_ABI.l4_entry_gate.entry_level
+      || l4EntryGate.can_claim_l5 !== false
+      || l4EntryGate.can_claim_domain_ready !== false
+    ) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} l4_entry_gate is invalid.`);
+    }
+    const l5EntryGate = asRecord(contract.l5_entry_gate, `stage ${stageId}.stage_contract.l5_entry_gate`);
+    if (
+      l5EntryGate.entry_level !== STANDARD_AGENT_PACK_ABI.l5_entry_gate.entry_level
+      || l5EntryGate.conformance_pass_counts_as_l5 !== false
+      || l5EntryGate.contract_validation_counts_as_l5 !== false
+      || l5EntryGate.provider_completion_counts_as_l5 !== false
+      || l5EntryGate.app_projection_counts_as_l5 !== false
+    ) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} l5_entry_gate is invalid.`);
     }
     const embeddedMorphology = asRecord(
       contract.artifact_morphology_contract,

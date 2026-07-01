@@ -11,15 +11,19 @@ import type {
   StageDecompositionPackDraft,
 } from './shared.ts';
 import {
+  AGENT_MEMBERSHIP_PROJECTION_POLICY,
   DEFAULT_STAGE_EXECUTOR_BINDING_REF,
   FORBIDDEN_GENERIC_OWNER_ROLES,
   SERIES_DESIGN_PROFILE,
   SHARED_POLICY_RELEASE,
+  STANDARD_AGENT_PACK_ABI,
+  STANDARD_PUBLIC_PROJECTION_POLICY,
   STANDARD_STAGE_PACK_CONFORMANCE_VERSION,
   STAGE_COMPLETION_POLICY,
   STAGE_PROGRESS_DELTA_POLICY,
   TYPED_BLOCKER_LINEAGE_POLICY,
   USER_STAGE_LOG_CONTRACT,
+  WORKSPACE_TOPOLOGY_PROFILE,
   commandPrefix,
   domainLabelFor,
   ref,
@@ -222,6 +226,39 @@ function buildStageCompletionPolicy({
   };
 }
 
+const DEFAULT_TOOL_AFFORDANCE_REF = 'agent/tools/domain_affordances.md';
+
+function toolAffordanceRef(role: string): JsonObject {
+  return {
+    ref_kind: 'repo_path',
+    ref: DEFAULT_TOOL_AFFORDANCE_REF,
+    role,
+  };
+}
+
+function buildToolAffordanceBoundary(): JsonObject {
+  return {
+    catalog_role: 'available_affordance_catalog_not_workflow_script',
+    capability_refs: [toolAffordanceRef('tool_capability_boundary')],
+    permission_scope_refs: [toolAffordanceRef('tool_permission_scope_boundary')],
+    credential_boundary_refs: [toolAffordanceRef('tool_credential_boundary')],
+    write_scope_refs: [toolAffordanceRef('tool_write_scope_boundary')],
+    side_effect_risk_refs: [toolAffordanceRef('tool_side_effect_risk_boundary')],
+    forbidden_authority_refs: [toolAffordanceRef('tool_forbidden_authority_boundary')],
+    executor_autonomy: {
+      executor_can_choose_tools: true,
+      executor_can_skip_tools: true,
+      executor_can_substitute_tools_within_boundary: true,
+      executor_can_choose_order_and_parallelism: true,
+      executor_can_request_missing_context_or_human_gate: true,
+      tool_catalog_can_prescribe_tool_sequence: false,
+      tool_catalog_can_define_cognitive_strategy: false,
+      tool_catalog_can_override_stage_goal: false,
+      tool_catalog_can_authorize_forbidden_write: false,
+    },
+  };
+}
+
 function buildStageControlPlane({
   targetAgent,
   stageId,
@@ -281,6 +318,8 @@ function buildStageControlPlane({
         knowledge_refs: [ref('domain_knowledge_ref', knowledgePath)],
         skills: [ref('domain_skill_ref', skillPath)],
         prompt_refs: [ref('domain_prompt_ref', promptPath)],
+        tool_refs: [toolAffordanceRef('tool_affordance_catalog')],
+        tool_affordance_boundary: buildToolAffordanceBoundary(),
         allowed_action_refs: [actionId],
         outputs: [
           ref('artifact_ref', `artifact-ref:${stageId}/draft-output`),
@@ -323,6 +362,7 @@ function buildStageControlPlane({
             stageNativeRefs.artifactNativeContractRef,
             `prompt-ref:${promptPath}`,
             `skill-ref:${skillPath}`,
+            `tool-affordance-ref:${DEFAULT_TOOL_AFFORDANCE_REF}`,
             `knowledge-ref:${knowledgePath}`,
             `quality-gate-ref:${qualityGatePath}`,
             `action-ref:${actionId}`,
@@ -381,6 +421,22 @@ function buildStageControlPlane({
             ref('stage_artifact_conformance_ref', stageNativeRefs.conformanceRef),
             ref('stage_artifact_workbench_consumption_ref', stageNativeRefs.workbenchConsumptionRef),
           ],
+          receipt_schema_refs: [
+            {
+              ref_kind: 'repo_path',
+              ref: 'contracts/owner_receipt_contract.json',
+              role: 'owner_receipt_schema',
+            },
+          ],
+          authority_function_refs: [
+            {
+              ref_kind: 'repo_path',
+              ref: 'runtime/authority_functions/README.md',
+              role: 'minimal_authority_function_inventory',
+            },
+          ],
+          l4_entry_gate: STANDARD_AGENT_PACK_ABI.l4_entry_gate,
+          l5_entry_gate: STANDARD_AGENT_PACK_ABI.l5_entry_gate,
           source_scope_refs: [ref('source_scope_ref', `source-scope:${stageId}`)],
           artifact_scope_refs: [ref('artifact_scope_ref', `artifact-scope:${stageId}`)],
           artifact_morphology_contract: artifactMorphologyContract,
@@ -443,6 +499,8 @@ function buildFoundryAgentSeriesContract(targetAgent: TargetAgent, stageControlP
       domain_contract_version_pin_does_not_authorize_domain_truth: true,
     },
     shared_policy_release: SHARED_POLICY_RELEASE,
+    agent_membership_projection_policy: AGENT_MEMBERSHIP_PROJECTION_POLICY,
+    standard_public_projection_policy: STANDARD_PUBLIC_PROJECTION_POLICY,
     domain_id: domainId,
     foundry_agent_id: domainId,
     domain_label: targetAgent.domain_label ?? domainId,
@@ -498,6 +556,7 @@ function buildFoundryAgentSeriesContract(targetAgent: TargetAgent, stageControlP
       generated_surface_can_claim_domain_ready: false,
     },
     series_design_profile: SERIES_DESIGN_PROFILE,
+    workspace_topology_profile: WORKSPACE_TOPOLOGY_PROFILE,
   };
 }
 
@@ -550,6 +609,19 @@ function buildFiles({
         `Run the \`${stageId}\` stage through the domain action \`${actionId}\` while preserving OPL generated-interface boundaries.`,
         'Use OPL-hosted runtime, queue, attempt ledger, generated CLI/MCP/Skill/product-entry surfaces, and owner receipt projection as external framework services.',
         'Return typed blockers when source refs, workspace scope, artifact scope, or owner gate evidence is missing.',
+        '',
+      ].join('\n'),
+    },
+    {
+      path: DEFAULT_TOOL_AFFORDANCE_REF,
+      body: [
+        `# ${owner} Tool Affordances`,
+        '',
+        'This file is an available-affordance catalog, not a workflow script and not a mandatory tool order.',
+        'The Codex CLI executor may choose, skip, substitute, order, and parallelize tools within the declared stage boundary.',
+        'Allowed roles include repository/context reading, domain skill invocation, evidence inspection, owner handoff creation, and typed blocker routing.',
+        'Credential use, write scope, side effects, and forbidden authority remain bounded by the stage contract and no-forbidden-write policy.',
+        'The catalog cannot prescribe cognitive strategy, override the stage goal, authorize forbidden writes, or promote generated surfaces.',
         '',
       ].join('\n'),
     },

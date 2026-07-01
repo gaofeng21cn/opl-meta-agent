@@ -63,6 +63,12 @@ function requireBoolean(value: unknown, fieldName: string): void {
   }
 }
 
+function requireFalse(value: unknown, fieldName: string): void {
+  if (value !== false) {
+    throw new Error(`Invalid developer patch work order: ${fieldName} must be false.`);
+  }
+}
+
 function requireProgressDeltaClassification(value: unknown, fieldName: string): void {
   requireNonEmptyString(value, fieldName);
   if (!PROGRESS_DELTA_CLASSIFICATIONS.has(String(value))) {
@@ -84,6 +90,16 @@ function requireIncludes(values: unknown, expected: unknown, fieldName: string):
   if (!(values as unknown[]).includes(expected)) {
     throw new Error(`Invalid developer patch work order: ${fieldName} must include ${String(expected)}.`);
   }
+}
+
+function requireAllIncluded(values: unknown, expectedValues: unknown, fieldName: string): void {
+  const actual = requireStringArray(values, fieldName);
+  const expected = requireStringArray(expectedValues, `expected ${fieldName}`);
+  expected.forEach((expectedValue) => {
+    if (!actual.includes(expectedValue)) {
+      throw new Error(`Invalid developer patch work order: ${fieldName} must include ${expectedValue}.`);
+    }
+  });
 }
 
 function requireCurrentnessRouteEvidence(workOrder: JsonObject): void {
@@ -130,6 +146,153 @@ function requireCurrentnessRouteEvidence(workOrder: JsonObject): void {
       'Invalid developer patch work order: work_order_currentness.provider_owner_route_index_evidence.target_eval_work_order_owner_route_tuple must match current target/eval/work-order/owner-route refs.',
     );
   }
+}
+
+function requireForbiddenAuthorityFalse(boundary: JsonObject, fieldPrefix: string): void {
+  [
+    'can_write_target_domain_truth',
+    'can_write_target_domain_memory_body',
+    'can_mutate_target_domain_artifact_body',
+    'can_authorize_target_domain_quality_or_export',
+    'can_promote_default_agent_without_gate',
+  ].forEach((field) => {
+    requireFalse(boundary[field], `${fieldPrefix}.${field}`);
+  });
+}
+
+function requireExternalSuiteIntake(workOrder: JsonObject): void {
+  const intake = requireObject(workOrder.source_external_suite_intake, 'source_external_suite_intake');
+  requireNonEmptyString(intake.suite_id, 'source_external_suite_intake.suite_id');
+  requireNonEmptyString(intake.suite_kind, 'source_external_suite_intake.suite_kind');
+  requireNonEmptyString(intake.target_agent, 'source_external_suite_intake.target_agent');
+  requireEqualString(
+    intake.target_agent,
+    workOrder.target_agent?.domain_id,
+    'source_external_suite_intake.target_agent',
+  );
+  requireEqualString(
+    intake.source_agent_lab_result_ref,
+    workOrder.source_agent_lab_result_ref,
+    'source_external_suite_intake.source_agent_lab_result_ref',
+  );
+  requireNonEmptyStringArray(intake.accepted_input_profiles, 'source_external_suite_intake.accepted_input_profiles');
+  requireIncludes(
+    intake.accepted_input_profiles,
+    'target_agent_feedback_external_suite',
+    'source_external_suite_intake.accepted_input_profiles',
+  );
+  if (requireStringArray(
+    intake.accepted_input_profiles,
+    'source_external_suite_intake.accepted_input_profiles',
+  ).includes('mas_feedback_agent_lab_external_suite')) {
+    const profileText = requireStringArray(
+      intake.accepted_input_profiles,
+      'source_external_suite_intake.accepted_input_profiles',
+    ).join('\n');
+    if (
+      profileText.includes('mas_feedback_agent_lab_external_suite')
+      && !(
+        profileText.includes('high_quality_medical_manuscript_feedback')
+        || profileText.includes('reviewer_revision_feedback')
+      )
+    ) {
+      throw new Error(
+        'Invalid developer patch work order: MAS feedback external suites must name high-quality manuscript or reviewer revision feedback profile.',
+      );
+    }
+  }
+  requireForbiddenAuthorityFalse(
+    requireObject(intake.authority_boundary, 'source_external_suite_intake.authority_boundary'),
+    'source_external_suite_intake.authority_boundary',
+  );
+}
+
+function requireReviewerEvidenceRefs(workOrder: JsonObject): void {
+  requireNonEmptyStringArray(workOrder.reviewer_evidence_refs, 'reviewer_evidence_refs');
+  requireAllIncluded(
+    workOrder.reviewer_evidence_refs,
+    workOrder.ai_reviewer_evidence?.source_refs,
+    'reviewer_evidence_refs',
+  );
+  requireAllIncluded(
+    workOrder.reviewer_evidence_refs,
+    workOrder.ai_reviewer_evidence?.direct_evidence_refs,
+    'reviewer_evidence_refs',
+  );
+  requireAllIncluded(
+    workOrder.work_order_completeness?.reviewer_evidence?.refs,
+    workOrder.reviewer_evidence_refs,
+    'work_order_completeness.reviewer_evidence.refs',
+  );
+}
+
+function requireTargetOwnerCloseoutRefs(workOrder: JsonObject): void {
+  requireNonEmptyStringArray(workOrder.target_owner_closeout_refs, 'target_owner_closeout_refs');
+  requireAllIncluded(
+    workOrder.target_owner_closeout_refs,
+    workOrder.target_closeout_refs,
+    'target_owner_closeout_refs',
+  );
+  const refs = requireStringArray(workOrder.target_owner_closeout_refs, 'target_owner_closeout_refs');
+  [
+    'target-owner-receipt-or-typed-blocker:',
+    'patch-absorption:',
+    'worktree-cleanup:',
+    'agent-lab-re-evaluation:',
+  ].forEach((prefix) => {
+    if (!refs.some((ref) => ref.startsWith(prefix))) {
+      throw new Error(`Invalid developer patch work order: target_owner_closeout_refs must include ${prefix} refs.`);
+    }
+  });
+}
+
+function requireOplWorkOrderDelegationAperture(workOrder: JsonObject): void {
+  const aperture = requireObject(workOrder.opl_work_order_delegation_aperture, 'opl_work_order_delegation_aperture');
+  if (aperture.delegates_to_opl_work_order_execute !== true) {
+    throw new Error(
+      'Invalid developer patch work order: opl_work_order_delegation_aperture.delegates_to_opl_work_order_execute must be true.',
+    );
+  }
+  if (aperture.executor_first !== true) {
+    throw new Error('Invalid developer patch work order: opl_work_order_delegation_aperture.executor_first must be true.');
+  }
+  requireNonEmptyString(aperture.primitive_owner, 'opl_work_order_delegation_aperture.primitive_owner');
+  requireNonEmptyString(aperture.command, 'opl_work_order_delegation_aperture.command');
+  requireEqualString(
+    aperture.executor_lease_ref,
+    workOrder.executor_lease_ref,
+    'opl_work_order_delegation_aperture.executor_lease_ref',
+  );
+  requireEqualString(
+    aperture.patch_execution_bundle_ref,
+    workOrder.patch_execution_bundle_ref,
+    'opl_work_order_delegation_aperture.patch_execution_bundle_ref',
+  );
+  requireAllIncluded(
+    aperture.target_owner_closeout_refs,
+    workOrder.target_closeout_refs,
+    'opl_work_order_delegation_aperture.target_owner_closeout_refs',
+  );
+  [
+    'work_order_readiness_primitive_ref',
+    'target_owner_return_primitive_ref',
+    'patch_traceability_primitive_ref',
+    'readiness_projection_ref',
+  ].forEach((field) => {
+    requireNonEmptyString(
+      aperture.required_opl_work_order_primitive_refs?.[field],
+      `opl_work_order_delegation_aperture.required_opl_work_order_primitive_refs.${field}`,
+    );
+  });
+  requireForbiddenAuthorityFalse(
+    requireObject(aperture.authority_boundary, 'opl_work_order_delegation_aperture.authority_boundary'),
+    'opl_work_order_delegation_aperture.authority_boundary',
+  );
+  requireAllIncluded(
+    workOrder.work_order_completeness?.opl_work_order_delegation_aperture?.target_owner_closeout_refs,
+    workOrder.target_closeout_refs,
+    'work_order_completeness.opl_work_order_delegation_aperture.target_owner_closeout_refs',
+  );
 }
 
 function isPlatformOnlyProgressRef(ref: string): boolean {
@@ -340,6 +503,16 @@ export function validateDeveloperPatchWorkOrder(
       workOrder.work_order_completeness?.reviewer_pool_refs,
       'work_order_completeness.reviewer_pool_refs',
     );
+    if (workOrder.surface_kind === 'opl_meta_agent_developer_patch_work_order') {
+      requireExternalSuiteIntake(workOrder);
+      requireReviewerEvidenceRefs(workOrder);
+      requireTargetOwnerCloseoutRefs(workOrder);
+      requireOplWorkOrderDelegationAperture(workOrder);
+      requireForbiddenAuthorityFalse(
+        requireObject(workOrder.authority_boundary, 'authority_boundary'),
+        'authority_boundary',
+      );
+    }
   }
   requireNonEmptyString(
     workOrder.work_order_completeness?.executor_lease_ref,

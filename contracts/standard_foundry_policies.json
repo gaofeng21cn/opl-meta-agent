@@ -190,6 +190,115 @@
       "conformance_pass_counts_as_stage_complete": false
     }
   },
+  "standard_agent_pack_abi": {
+    "surface_kind": "opl_standard_agent_pack_abi",
+    "version": "standard-agent-pack-abi.v1",
+    "owner": "one-person-lab",
+    "baseline_status": "frozen_machine_verifiable_baseline",
+    "required_repo_layout": [
+      {
+        "path": "agent/",
+        "role": "declarative_domain_pack",
+        "required": true
+      },
+      {
+        "path": "contracts/",
+        "role": "machine_readable_contracts",
+        "required": true
+      },
+      {
+        "path": "runtime/authority_functions/",
+        "role": "minimal_authority_functions",
+        "required": true
+      }
+    ],
+    "required_stage_pack_shape": {
+      "prompt_refs": {
+        "required": true,
+        "accepted_ref_prefixes": [
+          "agent/prompts/"
+        ]
+      },
+      "skill_refs": {
+        "required": true,
+        "accepted_ref_prefixes": [
+          "agent/skills/"
+        ],
+        "accepted_ref_kinds": [
+          "repo_path",
+          "skill_id"
+        ]
+      },
+      "knowledge_refs": {
+        "required": true,
+        "accepted_ref_prefixes": [
+          "agent/knowledge/"
+        ]
+      },
+      "quality_gate_refs": {
+        "required": true,
+        "accepted_ref_prefixes": [
+          "agent/quality_gates/"
+        ]
+      },
+      "tool_affordance_boundary": {
+        "required": true,
+        "role": "available_affordance_catalog_not_workflow_script",
+        "required_ref_fields": [
+          "capability_refs",
+          "permission_scope_refs",
+          "credential_boundary_refs",
+          "write_scope_refs",
+          "side_effect_risk_refs",
+          "forbidden_authority_refs"
+        ]
+      },
+      "receipt_schema": {
+        "required": true,
+        "accepted_ref_prefixes": [
+          "contracts/"
+        ],
+        "default_source_ref": "contracts/owner_receipt_contract.json"
+      }
+    },
+    "l4_entry_gate": {
+      "entry_level": "L4_structural_baseline",
+      "required_gates": [
+        "repo_layout_declared",
+        "stage_pack_v2_required",
+        "stage_prompt_skill_knowledge_quality_gate_refs_resolve",
+        "tool_affordance_boundary_declared",
+        "receipt_schema_declared",
+        "minimal_authority_functions_declared",
+        "generated_surface_handoff_declared",
+        "no_forbidden_write_contract_declared"
+      ],
+      "can_claim_l5": false,
+      "can_claim_domain_ready": false
+    },
+    "l5_entry_gate": {
+      "entry_level": "L5_production_operating_maturity",
+      "evidence_required": [
+        "real_user_path",
+        "long_soak_recovery",
+        "release_install_evidence",
+        "owner_acceptance",
+        "direct_and_opl_hosted_parity_at_scale"
+      ],
+      "conformance_pass_counts_as_l5": false,
+      "contract_validation_counts_as_l5": false,
+      "provider_completion_counts_as_l5": false,
+      "app_projection_counts_as_l5": false
+    },
+    "authority_boundary": {
+      "abi_can_claim_domain_ready": false,
+      "abi_can_claim_quality_or_export": false,
+      "abi_can_claim_l5_complete": false,
+      "opl_can_write_domain_truth": false,
+      "opl_can_write_memory_body": false,
+      "opl_can_mutate_domain_artifact_body": false
+    }
+  },
   "series_design_profile": {
     "surface_kind": "opl_foundry_agent_series_design_profile",
     "version": "foundry-agent-series-design-profile.v1",
@@ -215,6 +324,7 @@
       "prompts",
       "stages",
       "skills",
+      "tools",
       "knowledge",
       "quality_gates",
       "stage_completion_policy",
@@ -270,6 +380,172 @@
       "opl_can_write_domain_truth": false,
       "opl_can_authorize_quality_or_export": false,
       "domain_owns_input_truth_and_output_authority": true
+    }
+  },
+  "agent_membership_projection_policy": {
+    "surface_kind": "opl_foundry_agent_membership_projection_policy",
+    "version": "foundry-agent-membership-projection.v1",
+    "policy_id": "standard_agent_membership_not_surface_origin",
+    "default_membership": "standard_domain_agent",
+    "public_agent_list_must_not_split_by_generated_surface": true,
+    "public_agent_list_must_not_split_by_plugin_transport": true,
+    "generated_surface_is_membership_axis": false,
+    "generated_surface_is_status_axis": false,
+    "plugin_transport_is_membership_axis": false,
+    "plugin_transport_is_status_axis": false
+  },
+  "standard_public_projection_policy": {
+    "surface_kind": "opl_foundry_agent_standard_public_projection_policy",
+    "version": "foundry-agent-standard-public-projection.v1",
+    "policy_id": "standard_agent_public_foundry_surface_is_opl_generated_hosted_series",
+    "standard_public_foundry_surface": "opl_generated_hosted_series",
+    "canonical_inspect_command_pattern": "opl foundry agents inspect <agent_id>",
+    "allowed_active_public_foundry_surfaces": [
+      "opl_foundry_agent_series_spine",
+      "opl_family_hosted_surfaces"
+    ],
+    "active_public_projection_allows_non_opl_foundry_cli": false,
+    "active_public_projection_allows_domain_owned_cli_as_standard_surface": false,
+    "active_public_projection_allows_forbidden_surface_roles": false,
+    "active_public_projection_allows_compatibility_aliases": false,
+    "active_public_projection_allows_legacy_json_aliases": false,
+    "minimal_authority_functions_are_membership_axis": false,
+    "domain_owned_helpers_are_membership_axis": false,
+    "allowed_domain_owned_helper_context": "minimal_authority_functions_only",
+    "non_standard_surface_retention_contexts": [
+      "history",
+      "tombstone"
+    ]
+  },
+  "workspace_topology_profile": {
+    "surface_kind": "opl_workspace_topology_profile",
+    "version": "workspace-topology-profile.v1",
+    "profile_id": "opl.workspace_topology_profile.v1",
+    "topology_model": [
+      "workspace_group",
+      "project_unit",
+      "stage_artifact_unit",
+      "owner_receipt_or_typed_blocker"
+    ],
+    "workspace_modes": [
+      "one_off",
+      "series",
+      "portfolio"
+    ],
+    "default_project_stage_outputs_root": "artifacts/stage_outputs",
+    "default_profiles": {
+      "one_off": {
+        "workspace_mode": "one_off",
+        "project_collection_path": "projects",
+        "series_capable_skeleton": true,
+        "shared_resource_roots": [
+          "shared/sources",
+          "shared/memory",
+          "shared/style_system"
+        ],
+        "project_stage_outputs_root": "artifacts/stage_outputs"
+      },
+      "rca_series": {
+        "workspace_mode": "series",
+        "project_collection_path": "projects",
+        "shared_resource_roots": [
+          "shared/sources",
+          "shared/brand",
+          "shared/visual_memory",
+          "shared/style_system",
+          "shared/material_inventory"
+        ],
+        "project_stage_outputs_root": "artifacts/stage_outputs"
+      },
+      "mas_portfolio": {
+        "workspace_mode": "portfolio",
+        "project_collection_path": "projects",
+        "shared_resource_roots": [
+          "data",
+          "literature",
+          "memory",
+          "shared/sources"
+        ],
+        "project_stage_outputs_root": "artifacts/stage_outputs"
+      }
+    },
+    "domain_profile_defaults": {
+      "mas": "mas_portfolio",
+      "mag": "one_off",
+      "rca": "rca_series",
+      "oma": "one_off",
+      "bookforge": "one_off"
+    },
+    "default_user_inspection_surface": {
+      "ordinary_user_default_surface": "workspace_local_project_stage_outputs",
+      "project_stage_outputs_pattern": "<project-root>/artifacts/stage_outputs/<stage-id>/",
+      "runtime_state_is_default_user_surface": false,
+      "product_views_are_stage_outputs": false
+    },
+    "runtime_state_boundary": {
+      "role": "provider_backing_provenance_restore_audit",
+      "runtime_state_can_be_canonical_project_root": false,
+      "runtime_state_can_close_stage": false,
+      "runtime_state_can_replace_owner_receipt_or_typed_blocker": false
+    },
+    "authority_boundary": {
+      "opl_can_define_topology_contract": true,
+      "opl_can_project_workspace_refs": true,
+      "opl_can_write_domain_truth": false,
+      "opl_can_mutate_artifact_body": false,
+      "opl_can_create_owner_receipt": false,
+      "opl_can_create_typed_blocker": false,
+      "runtime_state_counts_as_user_default_surface": false
+    },
+    "workspace_initialization_policy": {
+      "default_workspace_mode": "one_off",
+      "default_project_collection_path": "projects",
+      "legacy_project_collection_aliases": [
+        "deliverables",
+        "studies"
+      ],
+      "infer_series_when_user_requests_multiple_related_deliverables": true,
+      "infer_portfolio_when_user_requests_shared_research_workspace_with_multiple_studies": true,
+      "upgrading_one_off_to_series_must_not_move_existing_project_roots": true,
+      "explicit_workspace_mode_declaration_preferred": true
+    },
+    "example_project_layouts": {
+      "one_off": {
+        "project_collection_path": "projects",
+        "project_root_pattern": "projects/<project-id>",
+        "project_stage_outputs_pattern": "projects/<project-id>/artifacts/stage_outputs/<stage-id>/",
+        "legacy_project_collection_aliases": [
+          "deliverables"
+        ]
+      },
+      "rca_series": {
+        "shared_roots": [
+          "shared/sources",
+          "shared/brand",
+          "shared/visual_memory",
+          "shared/style_system",
+          "shared/material_inventory"
+        ],
+        "project_collection_path": "projects",
+        "project_root_pattern": "projects/<deck-id>",
+        "project_stage_outputs_pattern": "projects/<deck-id>/artifacts/stage_outputs/<stage-id>/",
+        "legacy_project_collection_aliases": [
+          "deliverables"
+        ]
+      },
+      "mas_portfolio": {
+        "shared_roots": [
+          "data",
+          "literature",
+          "memory"
+        ],
+        "project_collection_path": "projects",
+        "project_root_pattern": "projects/<study-id>",
+        "project_stage_outputs_pattern": "projects/<study-id>/artifacts/stage_outputs/<stage-id>/",
+        "legacy_project_collection_aliases": [
+          "studies"
+        ]
+      }
     }
   }
 }

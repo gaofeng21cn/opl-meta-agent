@@ -229,6 +229,50 @@ export function buildBlockedMedicalManuscriptSuite(suitePath: string): JsonObjec
   };
 }
 
+export function buildReviewerRevisionFeedbackSuite(suitePath: string): JsonObject {
+  const suite = buildBlockedMedicalManuscriptSuite(suitePath);
+  suite.suite_id = 'mas-agent-lab-suite:002-dm-china-us-mortality-attribution:reviewer_revision-feedback';
+  const task = (suite.tasks as JsonObject[])[0];
+  task.task_id = 'agent-lab-task:mas/002-dm-china-us-mortality-attribution/reviewer_revision-feedback';
+  task.task_family = 'reviewer_revision_feedback_self_evolution';
+  task.instructions_ref = 'instructions:mas/reviewer_revision-feedback-ai-reviewer';
+  task.feedback_refs = [
+    'feedback-ref:mas/002/reviewer_revision/mentor-round-1',
+    'feedback-ref:mas/002/reviewer_revision/statistical-methods',
+  ];
+  task.reviewer_evidence_refs = [
+    'reviewer-evidence:mas/002/reviewer_revision/response-matrix',
+    'reviewer-evidence:mas/002/reviewer_revision/methods-completeness',
+  ];
+  task.reviewer_revision_refs = [
+    'reviewer-revision:mas/002/checklist/text-revisions',
+    'reviewer-revision:mas/002/checklist/methods-completeness',
+    'reviewer-revision:mas/002/checklist/statistical-analysis',
+    'reviewer-revision:mas/002/checklist/tables-figures',
+  ];
+  task.revision_checklist_refs = [
+    'revision-checklist:mas/002/discussion-claim-guardrails',
+    'revision-checklist:mas/002/handoff-evidence-surface',
+  ];
+  task.owner_route_refs = ['target-agent-owner:med-autoscience'];
+  task.target_owner_closeout_refs = [
+    'target-owner-receipt-or-typed-blocker:med-autoscience/reviewer_revision-feedback',
+  ];
+  (task.trajectory as JsonObject).trajectory_ref = 'trajectory:mas/002/reviewer_revision-feedback';
+  (task.trajectory as JsonObject).run_ref = 'run:mas/002/reviewer_revision-feedback-agent-lab-projection';
+  (task.trajectory as JsonObject).trace_refs = ['trace-ref:agent-lab/mas-reviewer_revision-feedback'];
+  (task.scorecard as JsonObject).scorecard_ref = 'quality-scorecard:mas/002/reviewer_revision-feedback';
+  (task.scorecard as JsonObject).review_refs = [
+    'paper/review/reviewer_revision_ledger.json',
+    'reviewer-evidence:mas/002/reviewer_revision/response-matrix',
+  ];
+  (task.improvement_candidate as JsonObject).candidate_ref =
+    'improvement-candidate:mas/002/reviewer_revision-feedback-rubric-gap';
+  (task.improvement_candidate as JsonObject).target_ref = 'rubric-gap-ref:mas/reviewer_revision-feedback-ai-reviewer';
+  (task.promotion_gate as JsonObject).gate_ref = 'promotion-gate:mas/002/reviewer_revision-feedback';
+  return suite;
+}
+
 export function writeMedicalTargetImprovementPolicy(targetAgentDir: string): void {
   writeJson(path.join(targetAgentDir, 'contracts/agent_lab_handoff.json'), {
     surface_kind: 'domain_agent_lab_production_evidence_handoff',
@@ -239,6 +283,7 @@ export function writeMedicalTargetImprovementPolicy(targetAgentDir: string): voi
       default_change_ref_triggers: [
         'medical-manuscript',
         'medical_journal_prose_quality',
+        'reviewer_revision',
       ],
       default_change_refs: [
         'stage_policy_ref:mas/write/pre_draft_prediction_model_reporting',
@@ -484,6 +529,43 @@ export function writeOwnerReceiptAiReviewerEvaluation(filePath: string, override
   return evaluation;
 }
 
+function stageCompletionPolicy(domainId: string, taskFamily: string): JsonObject {
+  return {
+    surface_kind: 'domain_stage_completion_policy',
+    version: 'domain-stage-completion-policy.v1',
+    owner: 'one-person-lab',
+    standard_agent_requirement: 'domain_stage_owns_completion_judgment_and_emits_standard_closeout_packet',
+    policy_ref: `stage-completion-policy:${domainId}/${taskFamily}`,
+    stage_id: taskFamily,
+    target_domain_id: domainId,
+    completion_judgment_owner: 'domain_stage',
+    closeout_packet_required: true,
+    provider_completion_is_domain_completion: false,
+    opl_content_judgment_allowed: false,
+    next_stage_transition_owner: 'opl_runtime',
+    required_closeout_outcomes: [
+      'completed_and_continue',
+      'completed_and_wait_owner',
+      'route_back',
+      'blocked',
+      'rejected',
+    ],
+    accepted_closeout_ref_fields: [
+      'owner_receipt_ref',
+      'typed_blocker_ref',
+      'human_gate_ref',
+      'route_back_ref',
+    ],
+    authority_boundary: {
+      opl_can_decide_domain_completion: false,
+      provider_completion_counts_as_stage_complete: false,
+      file_presence_counts_as_stage_complete: false,
+      suite_pass_counts_as_stage_complete: false,
+      conformance_pass_counts_as_stage_complete: false,
+    },
+  };
+}
+
 export function buildPassedTargetAgentOwnerReceiptSuite(): JsonObject {
   return {
     suite_id: 'target-agent-suite:owner-receipt-consumption',
@@ -508,6 +590,7 @@ export function buildPassedTargetAgentOwnerReceiptSuite(): JsonObject {
         instructions_ref: 'instructions:target-agent/owner-receipt-consumption',
         agent_entry_ref: 'domain-agent-entry:target-agent',
         stage_refs: ['stage:target-agent/owner-review', 'stage:target-agent/package-closeout'],
+        stage_completion_policy: stageCompletionPolicy('target-agent', 'owner_receipt_result_consumption'),
         oracle_refs: ['oracle:target-agent/production-acceptance-authority-boundary'],
         scorer_refs: ['scorer:target-agent/owner-receipt-ref-projection'],
         recovery_probes: [
@@ -592,6 +675,7 @@ export function buildPassedGenericOwnerReceiptSuite(): JsonObject {
         instructions_ref: 'instructions:external/owner-receipt-coordination',
         agent_entry_ref: 'domain-agent-entry:external-agent',
         stage_refs: ['stage:external/review'],
+        stage_completion_policy: stageCompletionPolicy('external-agent', 'owner_receipt_coordination'),
         oracle_refs: ['oracle:external/owner-receipt-boundary'],
         scorer_refs: ['scorer:external/owner-receipt-ref-projection'],
         recovery_probes: [

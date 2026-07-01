@@ -11,6 +11,7 @@ import {
   assertTargetPatchLoopMachineRefs,
   writeAiReviewerEvaluation,
   buildBlockedMedicalManuscriptSuite,
+  buildReviewerRevisionFeedbackSuite,
   writeMedicalTargetImprovementPolicy,
 } from './support/external-suite-fixtures.ts';
 import type { JsonObject } from './support/external-suite-fixtures.ts';
@@ -142,6 +143,39 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
     assert.equal(workOrder.surface_kind, 'opl_meta_agent_developer_patch_work_order');
     assert.equal(workOrder.status, 'ready_for_target_agent_source_patch');
+    assert.equal(workOrder.source_external_suite_intake.status, 'accepted_external_agent_lab_suite_input');
+    assert.equal(workOrder.source_external_suite_intake.target_agent, 'med-autoscience');
+    assert.equal(
+      workOrder.source_external_suite_intake.source_agent_lab_result_ref,
+      workOrder.source_agent_lab_result_ref,
+    );
+    assert.ok(
+      workOrder.source_external_suite_intake.accepted_input_profiles.includes(
+        'mas_feedback_agent_lab_external_suite',
+      ),
+    );
+    assert.ok(
+      workOrder.source_external_suite_intake.accepted_input_profiles.includes(
+        'high_quality_medical_manuscript_feedback',
+      ),
+    );
+    assert.equal(workOrder.source_external_suite_intake.authority_boundary.can_write_target_domain_truth, false);
+    assert.ok(workOrder.reviewer_evidence_refs.includes('paper/evidence_ledger.json'));
+    assert.ok(workOrder.reviewer_evidence_refs.includes('paper/review/review_ledger.json'));
+    assert.ok(workOrder.work_order_completeness.reviewer_evidence.refs.includes('paper/evidence_ledger.json'));
+    assert.deepEqual(workOrder.target_owner_closeout_refs, workOrder.target_closeout_refs);
+    assert.equal(workOrder.opl_work_order_delegation_aperture.delegates_to_opl_work_order_execute, true);
+    assert.equal(workOrder.opl_work_order_delegation_aperture.primitive_owner, 'one-person-lab/OPL');
+    assert.equal(workOrder.opl_work_order_delegation_aperture.executor_first, true);
+    assert.equal(workOrder.opl_work_order_delegation_aperture.executor, 'codex_cli');
+    assert.deepEqual(
+      workOrder.opl_work_order_delegation_aperture.target_owner_closeout_refs,
+      workOrder.target_closeout_refs,
+    );
+    assert.equal(
+      workOrder.opl_work_order_delegation_aperture.authority_boundary.can_write_target_owner_receipt_body,
+      false,
+    );
     assert.deepEqual(workOrder.work_order_currentness, {
       target_agent_id: 'med-autoscience',
       eval_result_ref: workOrder.source_agent_lab_result_ref,
@@ -365,6 +399,85 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     );
     assert.equal(workOrder.target_workspace_environment_verification.can_write_target_domain_truth, false);
     assert.ok(workOrder.implementation_controls.forbidden_target_paths_or_surfaces.includes('publication_eval/latest.json'));
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
+test('MAS reviewer_revision feedback external suite is accepted as developer work-order input', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-reviewer-revision-suite-'));
+  try {
+    const targetAgentDir = path.join(outputRoot, 'med-autoscience');
+    writeJson(path.join(targetAgentDir, 'contracts/domain_descriptor.json'), {
+      domain_id: 'med-autoscience',
+      domain_label: 'MedAutoScience',
+      delivery_domain: 'medical_research',
+    });
+    writeMedicalTargetImprovementPolicy(targetAgentDir);
+    const suitePath = path.join(outputRoot, 'reviewer-revision-feedback-suite.json');
+    writeJson(suitePath, buildReviewerRevisionFeedbackSuite(suitePath));
+    const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+    writeAiReviewerEvaluation(reviewerEvaluationPath, {
+      run_ref: 'run:ai-reviewer/mas/002/reviewer_revision-feedback',
+      execution_attempt_ref: 'attempt:executor/mas/002/reviewer_revision-feedback',
+      review_attempt_ref: 'attempt:ai-reviewer/mas/002/reviewer_revision-feedback',
+      source_refs: [
+        'paper/review/reviewer_revision_ledger.json',
+        'reviewer-evidence:mas/002/reviewer_revision/response-matrix',
+        'rubric-gap:mas/002/internal-quality-language-purge',
+      ],
+      direct_evidence_refs: [
+        'reviewer-evidence:mas/002/reviewer_revision/methods-completeness',
+        'paper/evidence_ledger.json',
+      ],
+    });
+
+    const payload = runImproveArgs([
+      '--suite',
+      suitePath,
+      '--target-agent-dir',
+      targetAgentDir,
+      '--output-dir',
+      outputRoot,
+      '--feedback-ref',
+      'feedback-ref:mas/002/reviewer_revision/mentor-round-1',
+      '--ai-reviewer-evaluation',
+      reviewerEvaluationPath,
+      '--opl-bin',
+      oplBin,
+    ]);
+
+    assert.equal(payload.status, 'blocked_with_developer_patch_work_order');
+    const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
+    assert.equal(workOrder.target_agent.domain_id, 'med-autoscience');
+    assert.equal(workOrder.source_agent_lab_result_ref, workOrder.work_order_currentness.eval_result_ref);
+    assert.ok(
+      workOrder.source_external_suite_intake.accepted_input_profiles.includes(
+        'mas_feedback_agent_lab_external_suite',
+      ),
+    );
+    assert.ok(
+      workOrder.source_external_suite_intake.accepted_input_profiles.includes('reviewer_revision_feedback'),
+    );
+    assert.ok(workOrder.source_external_suite_intake.task_families.includes('reviewer_revision_feedback_self_evolution'));
+    assert.ok(workOrder.reviewer_evidence_refs.includes('reviewer-evidence:mas/002/reviewer_revision/response-matrix'));
+    assert.ok(workOrder.reviewer_evidence_refs.includes('paper/review/reviewer_revision_ledger.json'));
+    assert.equal(workOrder.authority_boundary.can_write_target_domain_truth, false);
+    assert.equal(workOrder.authority_boundary.can_authorize_target_domain_quality_or_export, false);
+    assert.equal(workOrder.opl_work_order_delegation_aperture.delegates_to_opl_work_order_execute, true);
+    assert.equal(workOrder.opl_work_order_delegation_aperture.authority_boundary.can_absorb_target_branch, false);
+    assert.ok(
+      workOrder.target_owner_closeout_refs.includes(
+        workOrder.machine_closeout_refs.target_owner_receipt_or_typed_blocker_ref,
+      ),
+    );
+    assert.equal(workOrder.target_progress_accounting.progress_delta_classification, 'mixed');
+    assert.equal(workOrder.target_progress_accounting.deliverable_progress_delta.count, workOrder.proposed_change_refs.length);
+    assert.ok(
+      workOrder.target_progress_accounting.platform_repair_delta.refs.includes(
+        workOrder.machine_closeout_refs.agent_lab_re_evaluation_ref,
+      ),
+    );
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }

@@ -448,11 +448,21 @@ test('materializer writes the target stage pack from typed stage-decomposition c
       'prompts',
       'stages',
       'skills',
+      'tools',
       'knowledge',
       'quality_gates',
       'stage_completion_policy',
       'artifact_morphology',
     ]);
+    assert.equal(stage.tool_refs[0].ref, 'agent/tools/domain_affordances.md');
+    assert.equal(
+      stage.tool_affordance_boundary.catalog_role,
+      'available_affordance_catalog_not_workflow_script',
+    );
+    assert.equal(stage.stage_contract.receipt_schema_refs[0].ref, 'contracts/owner_receipt_contract.json');
+    assert.equal(stage.stage_contract.authority_function_refs[0].ref, 'runtime/authority_functions/README.md');
+    assert.equal(stage.stage_contract.l4_entry_gate.can_claim_domain_ready, false);
+    assert.equal(stage.stage_contract.l5_entry_gate.contract_validation_counts_as_l5, false);
     assert.equal(foundrySeries.series_design_profile.shared_closeout_contract.provider_completion_is_closeout, false);
     assert.equal(foundrySeries.series_design_profile.shared_closeout_contract.completion_judgment_owner, 'domain_stage');
     assert.equal(foundrySeries.series_design_profile.shared_closeout_contract.opl_content_judgment_allowed, false);
@@ -547,6 +557,15 @@ test('stage-decomposition closeout validator rejects missing gate declarations a
   assert.throws(
     () => validateStageDecompositionCloseoutPacket(selfReviewPacket, { targetAgent }),
     /self-review|execution_review_separation_required/i,
+  );
+
+  const missingToolPacket = buildFixtureStageDecompositionCloseout({ targetAgent });
+  const missingToolDraft = missingToolPacket.stage_decomposition_pack_draft as JsonObject;
+  const missingToolStage = ((missingToolDraft.stage_control_plane as JsonObject).stages as JsonObject[])[0];
+  delete missingToolStage.tool_affordance_boundary;
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(missingToolPacket, { targetAgent }),
+    /tool_affordance_boundary/i,
   );
 
   const missingUserLogPacket = buildFixtureStageDecompositionCloseout({ targetAgent });

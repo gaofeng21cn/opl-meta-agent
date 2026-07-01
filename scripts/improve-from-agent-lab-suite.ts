@@ -175,6 +175,12 @@ function collectSuiteRefs(suite: JsonObject): string[] {
   const refs: unknown[] = [];
   for (const task of Array.isArray(suite.tasks) ? suite.tasks : []) {
     refs.push(task.task_id, task.task_family, task.instructions_ref, task.agent_entry_ref);
+    refs.push(...arrayOfStrings(task.feedback_refs));
+    refs.push(...arrayOfStrings(task.reviewer_evidence_refs));
+    refs.push(...arrayOfStrings(task.reviewer_revision_refs));
+    refs.push(...arrayOfStrings(task.revision_checklist_refs));
+    refs.push(...arrayOfStrings(task.owner_route_refs));
+    refs.push(...arrayOfStrings(task.target_owner_closeout_refs));
     refs.push(...arrayOfStrings(task.stage_refs));
     refs.push(...arrayOfStrings(task.oracle_refs));
     refs.push(...arrayOfStrings(task.scorer_refs));
@@ -182,8 +188,15 @@ function collectSuiteRefs(suite: JsonObject): string[] {
     refs.push(...arrayOfStrings(task.trajectory?.repair_refs));
     refs.push(...arrayOfStrings(task.scorecard?.metric_refs));
     refs.push(...arrayOfStrings(task.scorecard?.evidence_refs));
+    refs.push(...arrayOfStrings(task.scorecard?.review_refs));
+    refs.push(...arrayOfStrings(task.scorecard?.quality_gate_refs));
     refs.push(...arrayOfStrings(task.improvement_candidate?.evidence_refs));
     refs.push(task.improvement_candidate?.target_ref, task.improvement_candidate?.candidate_kind);
+    refs.push(task.improvement_candidate?.promotion_gate_ref);
+    refs.push(task.promotion_gate?.gate_ref);
+    refs.push(...arrayOfStrings(task.promotion_gate?.required_refs));
+    refs.push(...arrayOfStrings(task.promotion_gate?.regression_suite_refs));
+    refs.push(...arrayOfStrings(task.promotion_gate?.no_forbidden_write_proof_refs));
   }
   return refs
     .filter((ref): ref is string => typeof ref === 'string' && ref.trim().length > 0)
@@ -192,6 +205,142 @@ function collectSuiteRefs(suite: JsonObject): string[] {
 
 function arrayOfStrings(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item) => typeof item === 'string') : [];
+}
+
+function uniqueStrings(values: string[]): string[] {
+  return [...new Set(values.filter((value) => value.trim().length > 0))];
+}
+
+function suiteTaskFamilies(suite: JsonObject): string[] {
+  return uniqueStrings((Array.isArray(suite.tasks) ? suite.tasks : [])
+    .map((task) => task.task_family)
+    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+    .map((value) => value.trim()));
+}
+
+function feedbackProfiles({
+  suite,
+  suiteRefs,
+}: {
+  suite: JsonObject;
+  suiteRefs: string[];
+}): string[] {
+  const joined = [
+    String(suite.suite_id ?? ''),
+    String(suite.suite_kind ?? ''),
+    ...suiteTaskFamilies(suite),
+    ...suiteRefs,
+  ].join('\n').toLowerCase();
+  const normalizedJoined = joined.replace(/-/g, '_');
+  const profiles = ['target_agent_feedback_external_suite'];
+  if (
+    normalizedJoined.includes('high_quality_medical_manuscript')
+    || normalizedJoined.includes('reviewer_revision')
+  ) {
+    profiles.push('mas_feedback_agent_lab_external_suite');
+  }
+  if (normalizedJoined.includes('high_quality_medical_manuscript')) {
+    profiles.push('high_quality_medical_manuscript_feedback');
+  }
+  if (normalizedJoined.includes('reviewer_revision')) {
+    profiles.push('reviewer_revision_feedback');
+  }
+  return uniqueStrings(profiles);
+}
+
+function reviewerEvidenceRefs({
+  aiReviewerEvaluation,
+  aiReviewerEvaluationRef,
+  suiteRefs,
+}: {
+  aiReviewerEvaluation: AiReviewerEvaluation;
+  aiReviewerEvaluationRef: string;
+  suiteRefs: string[];
+}): string[] {
+  return uniqueStrings([
+    aiReviewerEvaluationRef,
+    ...aiReviewerEvaluation.source_refs,
+    ...aiReviewerEvaluation.direct_evidence_refs,
+    ...suiteRefs.filter((ref) =>
+      ref.includes('review')
+      || ref.includes('reviewer')
+      || ref.includes('evidence')
+      || ref.includes('rubric-gap:')
+      || ref.includes('quality-scorecard:')
+      || ref.includes('quality-gate:')
+    ),
+  ]);
+}
+
+function buildExternalSuiteConsumptionContract({
+  suite,
+  suiteResult,
+  targetAgent,
+  feedbackRef,
+  suiteRefs,
+  reviewerRefs,
+  developerPatchWorkOrder,
+}: {
+  suite: JsonObject;
+  suiteResult: SuiteResult;
+  targetAgent: TargetAgent;
+  feedbackRef: string | null;
+  suiteRefs: string[];
+  reviewerRefs: string[];
+  developerPatchWorkOrder: JsonObject;
+}): JsonObject {
+  const profiles = feedbackProfiles({ suite, suiteRefs });
+  const targetCloseoutRefs = arrayOfStrings(developerPatchWorkOrder.target_closeout_refs);
+  return {
+    source_external_suite_intake: {
+      surface_kind: 'opl_meta_agent_external_agent_lab_suite_intake',
+      status: 'accepted_external_agent_lab_suite_input',
+      suite_id: suite.suite_id,
+      suite_kind: suite.suite_kind,
+      accepted_input_profiles: profiles,
+      task_families: suiteTaskFamilies(suite),
+      target_agent: targetAgent.domain_id,
+      source_agent_lab_result_ref: suiteResult.result_id,
+      feedback_ref: feedbackRef,
+      consumed_as_refs_only: true,
+      authority_boundary: {
+        can_write_target_domain_truth: false,
+        can_write_target_domain_memory_body: false,
+        can_mutate_target_domain_artifact_body: false,
+        can_authorize_target_domain_quality_or_export: false,
+        can_promote_default_agent_without_gate: false,
+      },
+    },
+    reviewer_evidence_refs: reviewerRefs,
+    target_owner_closeout_refs: targetCloseoutRefs,
+    opl_work_order_delegation_aperture: {
+      delegates_to_opl_work_order_execute: true,
+      primitive_owner: 'one-person-lab/OPL',
+      command: 'work-order execute',
+      executor_first: true,
+      executor: 'codex_cli',
+      executor_lease_ref: developerPatchWorkOrder.executor_lease_ref,
+      patch_execution_bundle_ref: developerPatchWorkOrder.patch_execution_bundle_ref,
+      target_owner_closeout_refs: targetCloseoutRefs,
+      owner_closeout_hook_delegated: true,
+      target_owner_closeout_owner: 'target-domain via OPL',
+      oma_can_manage_target_worktree_lifecycle: false,
+      oma_can_write_owner_receipt_body: false,
+      required_opl_work_order_primitive_refs: developerPatchWorkOrder.required_opl_work_order_primitive_refs,
+      authority_boundary: {
+        can_manage_target_worktree_lifecycle: false,
+        can_absorb_target_branch: false,
+        can_clean_target_worktree: false,
+        can_invoke_target_owner_closeout_hook: false,
+        can_write_target_owner_receipt_body: false,
+        can_write_target_domain_truth: false,
+        can_write_target_domain_memory_body: false,
+        can_mutate_target_domain_artifact_body: false,
+        can_authorize_target_domain_quality_or_export: false,
+        can_promote_default_agent_without_gate: false,
+      },
+    },
+  };
 }
 
 function improvementAreaForTarget(targetAgent: TargetAgent): string {
@@ -346,6 +495,11 @@ export function runImproveFromAgentLabSuite({
   const agentLabRun = runOpl(oplBin, ['agent-lab', 'run', '--suite', suitePath, '--json']);
   const suiteResult = agentLabRun.agent_lab_run.suite_result as SuiteResult;
   const suiteRefs = collectSuiteRefs(suite);
+  const directReviewerEvidenceRefs = reviewerEvidenceRefs({
+    aiReviewerEvaluation,
+    aiReviewerEvaluationRef: aiReviewerEvaluationPath,
+    suiteRefs,
+  });
   const proposedChangeRefs = inferProposedChangeRefs({
     suiteRefs,
     aiReviewerEvaluation,
@@ -502,6 +656,21 @@ export function runImproveFromAgentLabSuite({
     receipt,
     capabilityCandidate,
     policy,
+  });
+  Object.assign(developerPatchWorkOrder, buildExternalSuiteConsumptionContract({
+    suite,
+    suiteResult,
+    targetAgent,
+    feedbackRef,
+    suiteRefs,
+    reviewerRefs: directReviewerEvidenceRefs,
+    developerPatchWorkOrder,
+  }));
+  Object.assign(developerPatchWorkOrder.work_order_completeness as JsonObject, {
+    reviewer_evidence: {
+      refs: directReviewerEvidenceRefs,
+    },
+    opl_work_order_delegation_aperture: developerPatchWorkOrder.opl_work_order_delegation_aperture,
   });
   Object.assign(mechanismPatchProposal, {
     repeat_budget: {

@@ -70,6 +70,57 @@ process.exit(0);
 }
 
 function buildWorkOrder(): JsonObject {
+  const targetCloseoutRefs = [
+    'target-owner-receipt-or-typed-blocker:example-agent/oma_developer_patch_work_order_test',
+    'worktree-cleanup:example-agent/oma_developer_patch_work_order_test/source-patch',
+    'patch-absorption:example-agent/oma_developer_patch_work_order_test/source-patch',
+    'agent-lab-re-evaluation:example-agent/agent-lab-result-ref/oma_developer_patch_work_order_test',
+  ];
+  const primitiveRefs = {
+    work_order_readiness_primitive_ref:
+      'opl-work-order-primitive:work-order-readiness/example-agent/oma_developer_patch_work_order_test/source-patch',
+    promotion_readiness_primitive_ref:
+      'opl-work-order-primitive:promotion-readiness/example-agent/oma_developer_patch_work_order_test/source-patch',
+    promotion_gate_projection_ref:
+      'opl-work-order-primitive:promotion-gate-projection/example-agent/oma_developer_patch_work_order_test/source-patch',
+    owner_gated_promotion_projection_ref:
+      'opl-work-order-primitive:owner-gated-promotion-projection/example-agent/oma_developer_patch_work_order_test/source-patch',
+    target_owner_return_primitive_ref:
+      'opl-work-order-primitive:target-owner-return/example-agent/oma_developer_patch_work_order_test',
+    patch_traceability_primitive_ref:
+      'opl-work-order-primitive:patch-traceability/example-agent/oma_developer_patch_work_order_test/source-patch',
+    readiness_projection_ref:
+      'opl-work-order-readiness-projection:example-agent/oma_developer_patch_work_order_test/source-patch',
+    owner: 'one-person-lab',
+    consumed_as_refs_only_by_oma: true,
+  };
+  const delegationAperture = {
+    delegates_to_opl_work_order_execute: true,
+    primitive_owner: 'one-person-lab/OPL',
+    command: 'work-order execute',
+    executor_first: true,
+    executor: 'codex_cli',
+    executor_lease_ref: 'executor-lease:codex-cli/oma_developer_patch_work_order_test',
+    patch_execution_bundle_ref: 'patch-execution-bundle:target-agent/example-agent/oma_developer_patch_work_order_test',
+    target_owner_closeout_refs: targetCloseoutRefs,
+    owner_closeout_hook_delegated: true,
+    target_owner_closeout_owner: 'target-domain via OPL',
+    oma_can_manage_target_worktree_lifecycle: false,
+    oma_can_write_owner_receipt_body: false,
+    required_opl_work_order_primitive_refs: primitiveRefs,
+    authority_boundary: {
+      can_manage_target_worktree_lifecycle: false,
+      can_absorb_target_branch: false,
+      can_clean_target_worktree: false,
+      can_invoke_target_owner_closeout_hook: false,
+      can_write_target_owner_receipt_body: false,
+      can_write_target_domain_truth: false,
+      can_write_target_domain_memory_body: false,
+      can_mutate_target_domain_artifact_body: false,
+      can_authorize_target_domain_quality_or_export: false,
+      can_promote_default_agent_without_gate: false,
+    },
+  };
   return {
     surface_kind: 'opl_meta_agent_developer_patch_work_order',
     version: 'opl-meta-agent.developer-patch-work-order.v1',
@@ -80,8 +131,28 @@ function buildWorkOrder(): JsonObject {
       repo_dir: '/tmp/example-agent',
     },
     source_agent_lab_result_ref: 'agent-lab-result-ref',
+    source_external_suite_intake: {
+      surface_kind: 'opl_meta_agent_external_agent_lab_suite_intake',
+      status: 'accepted_external_agent_lab_suite_input',
+      suite_id: 'agent-lab-suite:example-agent/source-patch',
+      suite_kind: 'agent_lab_external_suite',
+      accepted_input_profiles: ['target_agent_feedback_external_suite'],
+      task_families: ['source_patch_feedback'],
+      target_agent: 'example-agent',
+      source_agent_lab_result_ref: 'agent-lab-result-ref',
+      feedback_ref: 'feedback-ref:example-agent/source-patch',
+      consumed_as_refs_only: true,
+      authority_boundary: {
+        can_write_target_domain_truth: false,
+        can_write_target_domain_memory_body: false,
+        can_mutate_target_domain_artifact_body: false,
+        can_authorize_target_domain_quality_or_export: false,
+        can_promote_default_agent_without_gate: false,
+      },
+    },
     executor_lease_ref: 'executor-lease:codex-cli/oma_developer_patch_work_order_test',
     reviewer_pool_refs: ['reviewer:example/direct-evidence'],
+    reviewer_evidence_refs: ['reviewer:example/source', 'reviewer:example/direct-evidence'],
     ai_reviewer_evidence: {
       source_refs: ['reviewer:example/source'],
       direct_evidence_refs: ['reviewer:example/direct-evidence'],
@@ -93,12 +164,10 @@ function buildWorkOrder(): JsonObject {
       predicted_impact: 'The target agent source patch should close the observed capability gap.',
     },
     patch_execution_bundle_ref: 'patch-execution-bundle:target-agent/example-agent/oma_developer_patch_work_order_test',
-    target_closeout_refs: [
-      'target-owner-receipt-or-typed-blocker:example-agent/oma_developer_patch_work_order_test',
-      'worktree-cleanup:example-agent/oma_developer_patch_work_order_test/source-patch',
-      'patch-absorption:example-agent/oma_developer_patch_work_order_test/source-patch',
-      'agent-lab-re-evaluation:example-agent/agent-lab-result-ref/oma_developer_patch_work_order_test',
-    ],
+    target_closeout_refs: targetCloseoutRefs,
+    target_owner_closeout_refs: targetCloseoutRefs,
+    required_opl_work_order_primitive_refs: primitiveRefs,
+    opl_work_order_delegation_aperture: delegationAperture,
     owner_route_refs: ['target-agent-owner:example-agent'],
     required_verification_refs: ['npm test'],
     rollback_version_refs: ['target_agent_previous_head_ref'],
@@ -168,12 +237,11 @@ function buildWorkOrder(): JsonObject {
       reviewer_refs: ['reviewer:example/direct-evidence'],
       reviewer_pool_refs: ['reviewer:example/direct-evidence'],
       patch_execution_bundle_ref: 'patch-execution-bundle:target-agent/example-agent/oma_developer_patch_work_order_test',
-      target_closeout_refs: [
-        'target-owner-receipt-or-typed-blocker:example-agent/oma_developer_patch_work_order_test',
-        'worktree-cleanup:example-agent/oma_developer_patch_work_order_test/source-patch',
-        'patch-absorption:example-agent/oma_developer_patch_work_order_test/source-patch',
-        'agent-lab-re-evaluation:example-agent/agent-lab-result-ref/oma_developer_patch_work_order_test',
-      ],
+      target_closeout_refs: targetCloseoutRefs,
+      reviewer_evidence: {
+        refs: ['reviewer:example/source', 'reviewer:example/direct-evidence'],
+      },
+      opl_work_order_delegation_aperture: delegationAperture,
       patch_traceability: {
         matrix_ref: 'oma_developer_patch_work_order_test#/patch_traceability_matrix',
       },

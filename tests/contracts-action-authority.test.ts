@@ -55,6 +55,26 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   assert.equal(externalSuiteAction.authority_boundary.can_modify_target_agent_docs, true);
   assert.equal(externalSuiteAction.authority_boundary.can_authorize_target_domain_quality_or_export, false);
   assert.ok(externalSuiteAction.workspace_locator_fields.includes('ai_reviewer_evaluation'));
+  assert.equal(externalSuiteAction.accepted_external_suite_inputs.accepted_suite_kind, 'agent_lab_external_suite');
+  assert.ok(
+    externalSuiteAction.accepted_external_suite_inputs.accepted_feedback_profiles.includes(
+      'mas_feedback_agent_lab_external_suite',
+    ),
+  );
+  assert.ok(
+    externalSuiteAction.accepted_external_suite_inputs.accepted_feedback_profiles.includes(
+      'reviewer_revision_feedback',
+    ),
+  );
+  assert.ok(
+    externalSuiteAction.accepted_external_suite_inputs.required_work_order_readback_fields.includes(
+      'opl_work_order_delegation_aperture',
+    ),
+  );
+  assert.equal(
+    externalSuiteAction.accepted_external_suite_inputs.authority_boundary.can_write_target_domain_truth,
+    false,
+  );
   const executeWorkOrderAction = actions.find(
     (action) => action.action_id === 'execute-external-work-order',
   );
