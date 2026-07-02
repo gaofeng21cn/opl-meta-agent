@@ -232,7 +232,14 @@ function feedbackProfiles({
     ...suiteRefs,
   ].join('\n').toLowerCase();
   const normalizedJoined = joined.replace(/-/g, '_');
-  const profiles = ['target_agent_feedback_external_suite'];
+  const profiles: string[] = [];
+  if (
+    normalizedJoined.includes('high_quality_medical_manuscript')
+    || normalizedJoined.includes('reviewer_revision')
+    || normalizedJoined.includes('feedback')
+  ) {
+    profiles.push('target_agent_feedback_external_suite');
+  }
   if (
     normalizedJoined.includes('high_quality_medical_manuscript')
     || normalizedJoined.includes('reviewer_revision')
@@ -272,6 +279,22 @@ function reviewerEvidenceRefs({
   ]);
 }
 
+function sourceFeedbackRefs({
+  suite,
+  feedbackRef,
+}: {
+  suite: JsonObject;
+  feedbackRef: string | null;
+}): string[] {
+  return uniqueStrings([
+    ...(feedbackRef ? [feedbackRef] : []),
+    ...(Array.isArray(suite.tasks) ? suite.tasks : []).flatMap((task) => [
+      ...arrayOfStrings(task.feedback_refs),
+      ...arrayOfStrings(task.reviewer_evidence_refs),
+    ]),
+  ]);
+}
+
 function buildExternalSuiteConsumptionContract({
   suite,
   suiteResult,
@@ -302,6 +325,7 @@ function buildExternalSuiteConsumptionContract({
       target_agent: targetAgent.domain_id,
       source_agent_lab_result_ref: suiteResult.result_id,
       feedback_ref: feedbackRef,
+      source_feedback_refs: sourceFeedbackRefs({ suite, feedbackRef }),
       consumed_as_refs_only: true,
       authority_boundary: {
         can_write_target_domain_truth: false,

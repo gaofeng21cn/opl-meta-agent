@@ -5,6 +5,8 @@ import {
   os,
   path,
   oplBin,
+  repoRoot,
+  spawnSync,
   writeJson,
   readJson,
   runImproveArgs,
@@ -15,6 +17,153 @@ import {
   writeMedicalTargetImprovementPolicy,
 } from './support/external-suite-fixtures.ts';
 import type { JsonObject } from './support/external-suite-fixtures.ts';
+
+function executeWorkOrderExpectingValidationError(workOrder: JsonObject, outputRoot: string): string {
+  const workOrderPath = path.join(outputRoot, `invalid-${String(workOrder.work_order_id)}.json`);
+  writeJson(workOrderPath, workOrder);
+  const result = spawnSync(
+    'npm',
+    [
+      'run',
+      'execute:external-work-order',
+      '--',
+      '--work-order',
+      workOrderPath,
+      '--opl-bin',
+      oplBin,
+    ],
+    {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      maxBuffer: 16 * 1024 * 1024,
+    },
+  );
+  assert.notEqual(result.status, 0);
+  return `${result.stderr}\n${result.stdout}`;
+}
+
+function writeGenericFeedbackTargetImprovementPolicy(targetAgentDir: string): void {
+  writeJson(path.join(targetAgentDir, 'contracts/agent_lab_handoff.json'), {
+    surface_kind: 'domain_agent_lab_feedback_evidence_handoff',
+    domain_id: 'target-agent',
+    owner: 'target-agent',
+    handoff_status: 'ready_for_opl_meta_agent_feedback_work_order',
+    external_suite_improvement_policy: {
+      default_change_ref_triggers: ['artifact-morphology'],
+      default_change_refs: [
+        'target_agent_contract_ref:target-agent/artifact-morphology',
+        'target_agent_regression_suite_ref:target-agent/artifact-morphology',
+      ],
+      change_ref_mappings: [
+        {
+          token: 'artifact-morphology',
+          refs: [
+            'target_agent_contract_ref:target-agent/artifact-morphology',
+            'target_agent_regression_suite_ref:target-agent/artifact-morphology',
+          ],
+        },
+      ],
+      patch_surface_hints: {
+        target_agent_contract_ref: ['contracts/artifact_morphology.json'],
+        target_agent_regression_suite_ref: ['tests/artifact-morphology.test.ts'],
+      },
+      forbidden_target_paths_or_surfaces: [
+        'target truth',
+        'target owner receipt body',
+        'target quality verdict',
+      ],
+      runtime_required_surface_refs: [
+        'target_agent_owner_route',
+        'target_agent_feedback_projection',
+      ],
+      runtime_expected_outcomes: [
+        'target owner can consume feedback evidence refs without OMA writing target truth',
+      ],
+    },
+  });
+}
+
+function buildBlockedGenericFeedbackSuite(): JsonObject {
+  return {
+    suite_id: 'target-agent-feedback-suite:artifact-morphology',
+    suite_kind: 'agent_lab_external_suite',
+    authority_boundary: {
+      can_write_domain_truth: false,
+      can_write_memory_body: false,
+      can_authorize_quality_verdict: false,
+      can_promote_default_agent_without_gate: false,
+    },
+    tasks: [
+      {
+        task_id: 'agent-lab-task:target-agent/artifact-morphology-feedback',
+        domain_id: 'target-agent',
+        task_family: 'target_agent_feedback_self_evolution',
+        environment: {
+          environment_kind: 'local_workspace',
+          workspace_locator_ref: 'workspace-locator:target-agent/artifact-morphology',
+          sandbox_policy: 'refs_only_no_target_artifact_or_memory_mutation',
+          network_policy: 'domain_owner_policy',
+        },
+        instructions_ref: 'instructions:target-agent/artifact-morphology-feedback',
+        agent_entry_ref: 'domain-agent-entry:target-agent',
+        feedback_refs: [
+          'feedback-ref:target-agent/artifact-morphology/foundry-review',
+        ],
+        reviewer_evidence_refs: [
+          'feedback-evidence:target-agent/artifact-morphology/direct-review',
+        ],
+        stage_refs: ['stage:target-agent/artifact-morphology'],
+        oracle_refs: ['oracle:target-agent/feedback-boundary'],
+        scorer_refs: ['scorer:target-agent/artifact-morphology-feedback'],
+        recovery_probes: [
+          {
+            probe_ref: 'recovery-probe:target-agent/artifact-morphology-feedback',
+            probe_kind: 'resume_after_feedback',
+            expected_status: 'passed',
+            observed_status: 'passed',
+            source_refs: ['feedback-ref:target-agent/artifact-morphology/foundry-review'],
+          },
+        ],
+        trajectory: {
+          trajectory_ref: 'trajectory:target-agent/artifact-morphology-feedback',
+          run_ref: 'run:target-agent/artifact-morphology-feedback',
+          agent_executor: 'codex_cli',
+          stage_attempt_refs: ['stage-attempt:target-agent/artifact-morphology-feedback'],
+          tool_call_refs: ['tool-call:target-agent/feedback-read'],
+          artifact_refs: ['feedback-evidence:target-agent/artifact-morphology/direct-review'],
+          receipt_refs: ['feedback-ref:target-agent/artifact-morphology/foundry-review'],
+          repair_refs: ['rubric-gap:target-agent/artifact-morphology'],
+          trace_refs: ['trace-ref:agent-lab/target-agent-feedback'],
+        },
+        scorecard: {
+          scorecard_ref: 'quality-scorecard:target-agent/artifact-morphology-feedback',
+          domain_owned: true,
+          opl_scorecard_role: 'scorecard_ref_projection_only',
+          passed: false,
+          metric_refs: ['metric-ref:target-agent/artifact-morphology'],
+          evidence_refs: ['feedback-evidence:target-agent/artifact-morphology/direct-review'],
+          review_refs: ['feedback-ref:target-agent/artifact-morphology/foundry-review'],
+          quality_gate_refs: ['quality-gate:target-agent/owner'],
+        },
+        improvement_candidate: {
+          candidate_ref: 'improvement-candidate:target-agent/artifact-morphology',
+          candidate_kind: 'feedback_gap',
+          target_ref: 'rubric-gap-ref:target-agent/artifact-morphology',
+          evidence_refs: ['rubric-gap:target-agent/artifact-morphology'],
+          allowed_change_scope: 'branch_only',
+          promotion_gate_ref: 'promotion-gate:target-agent/artifact-morphology-feedback',
+        },
+        promotion_gate: {
+          gate_ref: 'promotion-gate:target-agent/artifact-morphology-feedback',
+          gate_status: 'blocked',
+          required_refs: ['quality-scorecard:target-agent/artifact-morphology-feedback'],
+          regression_suite_refs: ['regression-suite:target-agent/artifact-morphology'],
+          no_forbidden_write_proof_refs: ['no-forbidden-write:target-agent/feedback-suite'],
+        },
+      },
+    ],
+  };
+}
 
 test('external blocked Agent Lab suite becomes a MAS developer patch work order', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-external-suite-'));
@@ -404,6 +553,95 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
   }
 });
 
+test('generic target-agent feedback external suite is accepted without MAS-only profiles', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-generic-feedback-suite-'));
+  try {
+    const targetAgentDir = path.join(outputRoot, 'target-agent');
+    writeJson(path.join(targetAgentDir, 'contracts/domain_descriptor.json'), {
+      domain_id: 'target-agent',
+      domain_label: 'Target Agent',
+      delivery_domain: 'opl_compatible_target_agent',
+    });
+    writeGenericFeedbackTargetImprovementPolicy(targetAgentDir);
+    const suitePath = path.join(outputRoot, 'generic-feedback-suite.json');
+    writeJson(suitePath, buildBlockedGenericFeedbackSuite());
+    const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+    writeAiReviewerEvaluation(reviewerEvaluationPath, {
+      run_ref: 'run:ai-reviewer/target-agent/artifact-morphology-feedback',
+      execution_attempt_ref: 'attempt:executor/target-agent/artifact-morphology-feedback',
+      review_attempt_ref: 'attempt:ai-reviewer/target-agent/artifact-morphology-feedback',
+      critique: 'The target agent feedback shows an artifact-morphology gap in the generated package.',
+      suggestions: ['Patch the artifact-morphology contract and regression suite.'],
+      source_refs: [
+        'feedback-ref:target-agent/artifact-morphology/foundry-review',
+        'rubric-gap:target-agent/artifact-morphology',
+      ],
+      direct_evidence_refs: [
+        'feedback-evidence:target-agent/artifact-morphology/direct-review',
+      ],
+      predicted_impact: 'The patch should make target-agent artifact morphology auditable without OMA owning target truth.',
+      canary_refs: ['canary:target-agent/artifact-morphology-feedback'],
+      rollback_refs: ['rollback:target-agent/pre-artifact-morphology-feedback'],
+      version_refs: ['version:target-agent/current-head'],
+    });
+
+    const payload = runImproveArgs([
+      '--suite',
+      suitePath,
+      '--target-agent-dir',
+      targetAgentDir,
+      '--output-dir',
+      outputRoot,
+      '--feedback-ref',
+      'feedback-ref:target-agent/artifact-morphology/foundry-review',
+      '--ai-reviewer-evaluation',
+      reviewerEvaluationPath,
+      '--opl-bin',
+      oplBin,
+    ]);
+
+    assert.equal(payload.status, 'blocked_with_developer_patch_work_order');
+    const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
+    const profiles = workOrder.source_external_suite_intake.accepted_input_profiles as string[];
+    assert.ok(profiles.includes('target_agent_feedback_external_suite'));
+    assert.equal(profiles.includes('mas_feedback_agent_lab_external_suite'), false);
+    assert.equal(profiles.includes('high_quality_medical_manuscript_feedback'), false);
+    assert.equal(profiles.includes('reviewer_revision_feedback'), false);
+    assert.equal(workOrder.target_agent.domain_id, 'target-agent');
+    assert.equal(
+      workOrder.source_external_suite_intake.feedback_ref,
+      'feedback-ref:target-agent/artifact-morphology/foundry-review',
+    );
+    assert.ok(
+      workOrder.source_external_suite_intake.source_feedback_refs.includes(
+        'feedback-evidence:target-agent/artifact-morphology/direct-review',
+      ),
+    );
+    assert.ok(workOrder.reviewer_evidence_refs.includes('feedback-evidence:target-agent/artifact-morphology/direct-review'));
+    assert.equal(workOrder.authority_boundary.can_write_target_domain_truth, false);
+    assert.equal(workOrder.no_forbidden_write_proof.can_write_target_domain_truth, false);
+    assert.equal(workOrder.opl_work_order_delegation_aperture.delegates_to_opl_work_order_execute, true);
+    assert.equal(workOrder.target_progress_accounting.progress_delta_classification, 'mixed');
+
+    const missingFeedback = structuredClone(workOrder);
+    missingFeedback.source_external_suite_intake.feedback_ref = null;
+    missingFeedback.source_external_suite_intake.source_feedback_refs = [];
+    assert.match(
+      executeWorkOrderExpectingValidationError(missingFeedback, outputRoot),
+      /source_external_suite_intake requires feedback_ref or source_feedback_refs/,
+    );
+
+    const missingDirectReviewerEvidence = structuredClone(workOrder);
+    missingDirectReviewerEvidence.ai_reviewer_evidence.direct_evidence_refs = [];
+    assert.match(
+      executeWorkOrderExpectingValidationError(missingDirectReviewerEvidence, outputRoot),
+      /ai_reviewer_evidence\.direct_evidence_refs must be a non-empty string array/,
+    );
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
 test('MAS reviewer_revision feedback external suite is accepted as developer work-order input', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-reviewer-revision-suite-'));
   try {
@@ -477,6 +715,15 @@ test('MAS reviewer_revision feedback external suite is accepted as developer wor
       workOrder.target_progress_accounting.platform_repair_delta.refs.includes(
         workOrder.machine_closeout_refs.agent_lab_re_evaluation_ref,
       ),
+    );
+    const missingMasSpecializedProfile = structuredClone(workOrder);
+    missingMasSpecializedProfile.source_external_suite_intake.accepted_input_profiles = [
+      'target_agent_feedback_external_suite',
+      'mas_feedback_agent_lab_external_suite',
+    ];
+    assert.match(
+      executeWorkOrderExpectingValidationError(missingMasSpecializedProfile, outputRoot),
+      /MAS feedback external suites must name high-quality manuscript or reviewer revision feedback profile/,
     );
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });

@@ -175,31 +175,34 @@ function requireExternalSuiteIntake(workOrder: JsonObject): void {
     workOrder.source_agent_lab_result_ref,
     'source_external_suite_intake.source_agent_lab_result_ref',
   );
-  requireNonEmptyStringArray(intake.accepted_input_profiles, 'source_external_suite_intake.accepted_input_profiles');
-  requireIncludes(
+  const acceptedProfiles = requireStringArray(
     intake.accepted_input_profiles,
-    'target_agent_feedback_external_suite',
     'source_external_suite_intake.accepted_input_profiles',
   );
-  if (requireStringArray(
-    intake.accepted_input_profiles,
-    'source_external_suite_intake.accepted_input_profiles',
-  ).includes('mas_feedback_agent_lab_external_suite')) {
-    const profileText = requireStringArray(
-      intake.accepted_input_profiles,
-      'source_external_suite_intake.accepted_input_profiles',
-    ).join('\n');
-    if (
-      profileText.includes('mas_feedback_agent_lab_external_suite')
-      && !(
-        profileText.includes('high_quality_medical_manuscript_feedback')
-        || profileText.includes('reviewer_revision_feedback')
-      )
-    ) {
-      throw new Error(
-        'Invalid developer patch work order: MAS feedback external suites must name high-quality manuscript or reviewer revision feedback profile.',
-      );
-    }
+  const hasTargetAgentFeedbackProfile = acceptedProfiles.includes('target_agent_feedback_external_suite');
+  const hasMasFeedbackProfile = acceptedProfiles.includes('mas_feedback_agent_lab_external_suite');
+  if (hasMasFeedbackProfile && !hasTargetAgentFeedbackProfile) {
+    throw new Error(
+      'Invalid developer patch work order: MAS feedback external suites must include target_agent_feedback_external_suite.',
+    );
+  }
+  const feedbackRefPresent = typeof intake.feedback_ref === 'string' && intake.feedback_ref.trim().length > 0;
+  const sourceFeedbackRefs = Array.isArray(intake.source_feedback_refs)
+    ? requireStringArray(intake.source_feedback_refs, 'source_external_suite_intake.source_feedback_refs')
+    : [];
+  if (hasTargetAgentFeedbackProfile && !feedbackRefPresent && sourceFeedbackRefs.length === 0) {
+    throw new Error(
+      'Invalid developer patch work order: source_external_suite_intake requires feedback_ref or source_feedback_refs.',
+    );
+  }
+  if (
+    hasMasFeedbackProfile
+    && !acceptedProfiles.includes('high_quality_medical_manuscript_feedback')
+    && !acceptedProfiles.includes('reviewer_revision_feedback')
+  ) {
+    throw new Error(
+      'Invalid developer patch work order: MAS feedback external suites must name high-quality manuscript or reviewer revision feedback profile.',
+    );
   }
   requireForbiddenAuthorityFalse(
     requireObject(intake.authority_boundary, 'source_external_suite_intake.authority_boundary'),
@@ -208,6 +211,10 @@ function requireExternalSuiteIntake(workOrder: JsonObject): void {
 }
 
 function requireReviewerEvidenceRefs(workOrder: JsonObject): void {
+  requireNonEmptyStringArray(
+    workOrder.ai_reviewer_evidence?.direct_evidence_refs,
+    'ai_reviewer_evidence.direct_evidence_refs',
+  );
   requireNonEmptyStringArray(workOrder.reviewer_evidence_refs, 'reviewer_evidence_refs');
   requireAllIncluded(
     workOrder.reviewer_evidence_refs,
@@ -224,6 +231,19 @@ function requireReviewerEvidenceRefs(workOrder: JsonObject): void {
     workOrder.reviewer_evidence_refs,
     'work_order_completeness.reviewer_evidence.refs',
   );
+}
+
+function requireNoForbiddenWriteBoundary(workOrder: JsonObject): void {
+  const proof = requireObject(workOrder.no_forbidden_write_proof, 'no_forbidden_write_proof');
+  requireNonEmptyStringArray(proof.proof_refs, 'no_forbidden_write_proof.proof_refs');
+  [
+    'can_write_target_domain_truth',
+    'can_write_target_domain_memory_body',
+    'can_mutate_target_domain_artifact_body',
+    'can_authorize_target_domain_quality_or_export',
+  ].forEach((field) => {
+    requireFalse(proof[field], `no_forbidden_write_proof.${field}`);
+  });
 }
 
 function requireTargetOwnerCloseoutRefs(workOrder: JsonObject): void {
@@ -512,6 +532,7 @@ export function validateDeveloperPatchWorkOrder(
         requireObject(workOrder.authority_boundary, 'authority_boundary'),
         'authority_boundary',
       );
+      requireNoForbiddenWriteBoundary(workOrder);
     }
   }
   requireNonEmptyString(
