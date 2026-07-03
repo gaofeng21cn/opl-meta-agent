@@ -45,6 +45,7 @@ test('foundry agent series contract binds OMA to shared Progress-First projectio
     stage_pack_sections: [
       'prompts',
       'stages',
+      'tools',
       'skills',
       'knowledge',
       'quality_gates',

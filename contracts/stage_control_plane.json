@@ -82,7 +82,7 @@
         "executor_kind": "codex_cli",
         "default_executor": true,
         "executor_binding_ref": "default_codex_cli",
-        "binding_policy": "default_first_class_executor_for_ai_first_stage_execution",
+        "binding_policy": "default_first_class_executor_for_standard_stage_pack_v2",
         "required_capabilities": [
           "repo_context_reading",
           "domain_skill_invocation",
@@ -760,14 +760,188 @@
           "policy_ref": "stage-completion-policy-ref:opl-meta-agent/intent-intake",
           "stage_id": "intent-intake",
           "target_domain_id": "opl-meta-agent"
+        },
+        "requires": [
+          "stage:intent-intake",
+          "stage-completion-policy-ref:opl-meta-agent/intent-intake",
+          "prompt-ref:agent/prompts/intent-intake.md",
+          "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
+          "knowledge-ref:agent/knowledge/opl-boundary-policy.md",
+          "knowledge-ref:agent/knowledge/project-maturity-signals.md",
+          "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
+          "runtime-ref:stage-attempt-ledger",
+          "runtime-ref:generated-interface-bundle",
+          "runtime-ref:stage-executor-policy-gate",
+          "runtime-ref:stage-progress-log-user-stage-log",
+          "artifact-native-contract-ref:opl-meta-agent/intent-intake"
+        ],
+        "ensures": [
+          "stage-attempt-receipt-ref:intent-intake",
+          "executor-receipt-ref:intent-intake/codex-cli",
+          "no-forbidden-write-proof-ref:intent-intake",
+          "independent-ai-review-ref:intent-intake",
+          "output-ref:intent_brief_ref",
+          "output-ref:acceptance_criteria_ref",
+          "output-ref:authority_boundary_ref",
+          "stage-user-log-ref:intent-intake",
+          "stage-closeout-packet-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+          "stage-folder-contract-ref:opl-meta-agent/intent-intake",
+          "stage-manifest-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+          "stage-current-pointer-ref:opl-meta-agent/intent-intake",
+          "canonical-artifact-ref:opl-meta-agent/intent-intake",
+          "stage-json-ref:opl-meta-agent/intent-intake",
+          "stage-attempt-json-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+          "stage-attempt-receipt-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+          "stage-export-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+          "stage-lineage-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+          "stage-retention-ref:opl-meta-agent/intent-intake/{stage_attempt_id}",
+          "opl-physical-kernel-locator-ref:opl-meta-agent/intent-intake",
+          "stage-artifact-conformance-ref:opl-meta-agent/intent-intake",
+          "stage-artifact-workbench-consumption-ref:opl-meta-agent/intent-intake"
+        ],
+        "expected_receipt_refs": [
+          {
+            "ref_kind": "stage_attempt_receipt_ref",
+            "ref": "stage-attempt-receipt-ref:intent-intake"
+          },
+          {
+            "ref_kind": "stage_completion_policy_ref",
+            "ref": "stage-completion-policy-ref:opl-meta-agent/intent-intake"
+          },
+          {
+            "ref_kind": "executor_receipt_ref",
+            "ref": "executor-receipt-ref:intent-intake/codex-cli"
+          },
+          {
+            "ref_kind": "boundary_receipt_ref",
+            "ref": "boundary-receipt-ref:intent-intake/refs-only"
+          },
+          {
+            "ref_kind": "no_forbidden_write_proof_ref",
+            "ref": "no-forbidden-write-proof-ref:intent-intake"
+          },
+          {
+            "ref_kind": "independent_ai_review_ref",
+            "ref": "independent-ai-review-ref:intent-intake"
+          },
+          {
+            "ref_kind": "stage_user_log_ref",
+            "ref": "stage-user-log-ref:intent-intake"
+          },
+          {
+            "ref_kind": "stage_closeout_packet_ref",
+            "ref": "stage-closeout-packet-ref:opl-meta-agent/intent-intake/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "artifact_native_contract_ref",
+            "ref": "artifact-native-contract-ref:opl-meta-agent/intent-intake"
+          },
+          {
+            "ref_kind": "stage_folder_contract_ref",
+            "ref": "stage-folder-contract-ref:opl-meta-agent/intent-intake"
+          },
+          {
+            "ref_kind": "stage_manifest_ref",
+            "ref": "stage-manifest-ref:opl-meta-agent/intent-intake/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_typed_blocker_ref",
+            "ref": "stage-typed-blocker-ref:opl-meta-agent/intent-intake/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "canonical_artifact_ref",
+            "ref": "canonical-artifact-ref:opl-meta-agent/intent-intake"
+          },
+          {
+            "ref_kind": "stage_json_ref",
+            "ref": "stage-json-ref:opl-meta-agent/intent-intake"
+          },
+          {
+            "ref_kind": "stage_attempt_json_ref",
+            "ref": "stage-attempt-json-ref:opl-meta-agent/intent-intake/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_attempt_receipt_ref",
+            "ref": "stage-attempt-receipt-ref:opl-meta-agent/intent-intake/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_current_pointer_ref",
+            "ref": "stage-current-pointer-ref:opl-meta-agent/intent-intake"
+          },
+          {
+            "ref_kind": "stage_export_ref",
+            "ref": "stage-export-ref:opl-meta-agent/intent-intake/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_lineage_ref",
+            "ref": "stage-lineage-ref:opl-meta-agent/intent-intake/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_retention_ref",
+            "ref": "stage-retention-ref:opl-meta-agent/intent-intake/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "opl_physical_kernel_locator_ref",
+            "ref": "opl-physical-kernel-locator-ref:opl-meta-agent/intent-intake"
+          },
+          {
+            "ref_kind": "stage_artifact_conformance_ref",
+            "ref": "stage-artifact-conformance-ref:opl-meta-agent/intent-intake"
+          },
+          {
+            "ref_kind": "stage_artifact_workbench_consumption_ref",
+            "ref": "stage-artifact-workbench-consumption-ref:opl-meta-agent/intent-intake"
+          }
+        ],
+        "receipt_schema_refs": [
+          {
+            "ref_kind": "repo_path",
+            "ref": "contracts/owner_receipt_contract.json",
+            "role": "owner_receipt_or_typed_blocker_schema"
+          }
+        ],
+        "authority_function_refs": [
+          {
+            "ref_kind": "repo_path",
+            "ref": "runtime/authority_functions/meta-agent-authority-functions.json",
+            "role": "minimal_oma_authority_function_catalog"
+          }
+        ],
+        "l4_entry_gate": {
+          "entry_level": "L4_structural_baseline",
+          "required_gates": [
+            "repo_layout_declared",
+            "stage_pack_v2_required",
+            "stage_prompt_skill_knowledge_quality_gate_refs_resolve",
+            "tool_affordance_boundary_declared",
+            "receipt_schema_declared",
+            "minimal_authority_functions_declared",
+            "generated_surface_handoff_declared",
+            "no_forbidden_write_contract_declared"
+          ],
+          "can_claim_l5": false,
+          "can_claim_domain_ready": false
+        },
+        "l5_entry_gate": {
+          "entry_level": "L5_production_operating_maturity",
+          "evidence_required": [
+            "real_user_path",
+            "long_soak_recovery",
+            "release_install_evidence",
+            "owner_acceptance",
+            "direct_and_opl_hosted_parity_at_scale"
+          ],
+          "conformance_pass_counts_as_l5": false,
+          "contract_validation_counts_as_l5": false,
+          "provider_completion_counts_as_l5": false,
+          "app_projection_counts_as_l5": false
         }
       },
       "tool_refs": [
         {
-          "ref": "agent/tools/domain_affordances.md",
           "ref_kind": "repo_path",
-          "role": "stage_tool_affordance_catalog",
-          "catalog_role": "available_affordance_catalog_not_workflow_script"
+          "ref": "agent/tools/domain_affordances.md",
+          "role": "available_domain_tool_affordance_catalog"
         }
       ],
       "strategy_refs": [
@@ -838,6 +1012,73 @@
         "ref_kind": "json_pointer",
         "stage_id": "intent-intake",
         "role": "stage_tool_affordance_boundary"
+      },
+      "stage_pack_conformance_version": "standard-stage-pack.v2",
+      "tool_affordance_boundary": {
+        "catalog_role": "available_affordance_catalog_not_workflow_script",
+        "capability_refs": [
+          {
+            "ref_kind": "domain_capability_ref",
+            "ref": "oma:intent-intake",
+            "role": "produce_agent_building_semantics_candidate_package_work_order_or_typed_blocker_refs"
+          }
+        ],
+        "permission_scope_refs": [
+          {
+            "ref_kind": "permission_scope_ref",
+            "ref": "workspace-read-and-stage-output-write",
+            "role": "read_target_context_and_write_oma_stage_outputs_only"
+          }
+        ],
+        "credential_boundary_refs": [
+          {
+            "ref_kind": "credential_boundary_ref",
+            "ref": "no_new_credentials_required_by_stage_pack",
+            "role": "executor_must_request_human_gate_for_missing_external_credentials"
+          }
+        ],
+        "write_scope_refs": [
+          {
+            "ref_kind": "write_scope_ref",
+            "ref": "projects/<project-id>/artifacts/stage_outputs/intent-intake/",
+            "role": "oma_stage_output_refs_only_no_target_domain_truth_or_owner_receipt_body"
+          }
+        ],
+        "side_effect_risk_refs": [
+          {
+            "ref_kind": "side_effect_risk_ref",
+            "ref": "candidate_package_work_order_or_typed_blocker_requires_owner_gate_before_target_mutation",
+            "role": "no_quality_promotion_runtime_or_target_domain_ready_claim"
+          }
+        ],
+        "forbidden_authority_refs": [
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_write_target_domain_truth_or_memory_body",
+            "role": "target_domain_owner_retains_truth_and_memory_authority"
+          },
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_write_target_artifact_or_owner_receipt_body",
+            "role": "oma_may_emit_candidate_refs_work_orders_route_back_or_typed_blockers_only"
+          },
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_maintain_private_runner_queue_attempt_ledger_or_runtime_state",
+            "role": "generic_runtime_and_scaffold_surfaces_belong_to_one_person_lab"
+          }
+        ],
+        "executor_autonomy": {
+          "executor_can_choose_tools": true,
+          "executor_can_skip_tools": true,
+          "executor_can_substitute_tools_within_boundary": true,
+          "executor_can_choose_order_and_parallelism": true,
+          "executor_can_request_missing_context_or_human_gate": true,
+          "tool_catalog_can_prescribe_tool_sequence": false,
+          "tool_catalog_can_define_cognitive_strategy": false,
+          "tool_catalog_can_override_stage_goal": false,
+          "tool_catalog_can_authorize_forbidden_write": false
+        }
       }
     },
     {
@@ -898,15 +1139,16 @@
       },
       "selected_executor": {
         "executor_kind": "codex_cli",
-        "default_executor": false,
+        "default_executor": true,
         "executor_binding_ref": "default_codex_cli",
-        "binding_policy": "codex_cli_stage_executor_not_ordinary_default_route",
+        "binding_policy": "default_first_class_executor_for_standard_stage_pack_v2",
         "required_capabilities": [
           "repo_context_reading",
           "domain_skill_invocation",
           "receipt_or_typed_blocker_return",
           "no_forbidden_write_guard"
-        ]
+        ],
+        "lane_kind": "variant"
       },
       "executor_binding": {
         "binding_kind": "codex_cli_first_class_stage_executor",
@@ -1579,14 +1821,188 @@
           "policy_ref": "stage-completion-policy-ref:opl-meta-agent/web-experience-research",
           "stage_id": "web-experience-research",
           "target_domain_id": "opl-meta-agent"
+        },
+        "requires": [
+          "stage:web-experience-research",
+          "stage-completion-policy-ref:opl-meta-agent/web-experience-research",
+          "prompt-ref:agent/prompts/web-experience-research.md",
+          "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
+          "knowledge-ref:agent/knowledge/transferable-agent-practices.md",
+          "knowledge-ref:agent/knowledge/project-maturity-signals.md",
+          "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
+          "runtime-ref:stage-attempt-ledger",
+          "runtime-ref:generated-interface-bundle",
+          "runtime-ref:stage-executor-policy-gate",
+          "runtime-ref:stage-progress-log-user-stage-log",
+          "artifact-native-contract-ref:opl-meta-agent/web-experience-research"
+        ],
+        "ensures": [
+          "stage-attempt-receipt-ref:web-experience-research",
+          "executor-receipt-ref:web-experience-research/codex-cli",
+          "no-forbidden-write-proof-ref:web-experience-research",
+          "independent-ai-review-ref:web-experience-research",
+          "output-ref:research_brief_ref",
+          "output-ref:source_refs",
+          "output-ref:pattern_disposition_refs",
+          "stage-user-log-ref:web-experience-research",
+          "stage-closeout-packet-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+          "stage-folder-contract-ref:opl-meta-agent/web-experience-research",
+          "stage-manifest-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+          "stage-current-pointer-ref:opl-meta-agent/web-experience-research",
+          "canonical-artifact-ref:opl-meta-agent/web-experience-research",
+          "stage-json-ref:opl-meta-agent/web-experience-research",
+          "stage-attempt-json-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+          "stage-attempt-receipt-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+          "stage-export-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+          "stage-lineage-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+          "stage-retention-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}",
+          "opl-physical-kernel-locator-ref:opl-meta-agent/web-experience-research",
+          "stage-artifact-conformance-ref:opl-meta-agent/web-experience-research",
+          "stage-artifact-workbench-consumption-ref:opl-meta-agent/web-experience-research"
+        ],
+        "expected_receipt_refs": [
+          {
+            "ref_kind": "stage_attempt_receipt_ref",
+            "ref": "stage-attempt-receipt-ref:web-experience-research"
+          },
+          {
+            "ref_kind": "stage_completion_policy_ref",
+            "ref": "stage-completion-policy-ref:opl-meta-agent/web-experience-research"
+          },
+          {
+            "ref_kind": "executor_receipt_ref",
+            "ref": "executor-receipt-ref:web-experience-research/codex-cli"
+          },
+          {
+            "ref_kind": "boundary_receipt_ref",
+            "ref": "boundary-receipt-ref:web-experience-research/refs-only"
+          },
+          {
+            "ref_kind": "no_forbidden_write_proof_ref",
+            "ref": "no-forbidden-write-proof-ref:web-experience-research"
+          },
+          {
+            "ref_kind": "independent_ai_review_ref",
+            "ref": "independent-ai-review-ref:web-experience-research"
+          },
+          {
+            "ref_kind": "stage_user_log_ref",
+            "ref": "stage-user-log-ref:web-experience-research"
+          },
+          {
+            "ref_kind": "stage_closeout_packet_ref",
+            "ref": "stage-closeout-packet-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "artifact_native_contract_ref",
+            "ref": "artifact-native-contract-ref:opl-meta-agent/web-experience-research"
+          },
+          {
+            "ref_kind": "stage_folder_contract_ref",
+            "ref": "stage-folder-contract-ref:opl-meta-agent/web-experience-research"
+          },
+          {
+            "ref_kind": "stage_manifest_ref",
+            "ref": "stage-manifest-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_typed_blocker_ref",
+            "ref": "stage-typed-blocker-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "canonical_artifact_ref",
+            "ref": "canonical-artifact-ref:opl-meta-agent/web-experience-research"
+          },
+          {
+            "ref_kind": "stage_json_ref",
+            "ref": "stage-json-ref:opl-meta-agent/web-experience-research"
+          },
+          {
+            "ref_kind": "stage_attempt_json_ref",
+            "ref": "stage-attempt-json-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_attempt_receipt_ref",
+            "ref": "stage-attempt-receipt-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_current_pointer_ref",
+            "ref": "stage-current-pointer-ref:opl-meta-agent/web-experience-research"
+          },
+          {
+            "ref_kind": "stage_export_ref",
+            "ref": "stage-export-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_lineage_ref",
+            "ref": "stage-lineage-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_retention_ref",
+            "ref": "stage-retention-ref:opl-meta-agent/web-experience-research/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "opl_physical_kernel_locator_ref",
+            "ref": "opl-physical-kernel-locator-ref:opl-meta-agent/web-experience-research"
+          },
+          {
+            "ref_kind": "stage_artifact_conformance_ref",
+            "ref": "stage-artifact-conformance-ref:opl-meta-agent/web-experience-research"
+          },
+          {
+            "ref_kind": "stage_artifact_workbench_consumption_ref",
+            "ref": "stage-artifact-workbench-consumption-ref:opl-meta-agent/web-experience-research"
+          }
+        ],
+        "receipt_schema_refs": [
+          {
+            "ref_kind": "repo_path",
+            "ref": "contracts/owner_receipt_contract.json",
+            "role": "owner_receipt_or_typed_blocker_schema"
+          }
+        ],
+        "authority_function_refs": [
+          {
+            "ref_kind": "repo_path",
+            "ref": "runtime/authority_functions/meta-agent-authority-functions.json",
+            "role": "minimal_oma_authority_function_catalog"
+          }
+        ],
+        "l4_entry_gate": {
+          "entry_level": "L4_structural_baseline",
+          "required_gates": [
+            "repo_layout_declared",
+            "stage_pack_v2_required",
+            "stage_prompt_skill_knowledge_quality_gate_refs_resolve",
+            "tool_affordance_boundary_declared",
+            "receipt_schema_declared",
+            "minimal_authority_functions_declared",
+            "generated_surface_handoff_declared",
+            "no_forbidden_write_contract_declared"
+          ],
+          "can_claim_l5": false,
+          "can_claim_domain_ready": false
+        },
+        "l5_entry_gate": {
+          "entry_level": "L5_production_operating_maturity",
+          "evidence_required": [
+            "real_user_path",
+            "long_soak_recovery",
+            "release_install_evidence",
+            "owner_acceptance",
+            "direct_and_opl_hosted_parity_at_scale"
+          ],
+          "conformance_pass_counts_as_l5": false,
+          "contract_validation_counts_as_l5": false,
+          "provider_completion_counts_as_l5": false,
+          "app_projection_counts_as_l5": false
         }
       },
       "tool_refs": [
         {
-          "ref": "agent/tools/domain_affordances.md",
           "ref_kind": "repo_path",
-          "role": "stage_tool_affordance_catalog",
-          "catalog_role": "available_affordance_catalog_not_workflow_script"
+          "ref": "agent/tools/domain_affordances.md",
+          "role": "available_domain_tool_affordance_catalog"
         }
       ],
       "strategy_refs": [
@@ -1657,6 +2073,73 @@
         "ref_kind": "json_pointer",
         "stage_id": "web-experience-research",
         "role": "stage_tool_affordance_boundary"
+      },
+      "stage_pack_conformance_version": "standard-stage-pack.v2",
+      "tool_affordance_boundary": {
+        "catalog_role": "available_affordance_catalog_not_workflow_script",
+        "capability_refs": [
+          {
+            "ref_kind": "domain_capability_ref",
+            "ref": "oma:web-experience-research",
+            "role": "produce_agent_building_semantics_candidate_package_work_order_or_typed_blocker_refs"
+          }
+        ],
+        "permission_scope_refs": [
+          {
+            "ref_kind": "permission_scope_ref",
+            "ref": "workspace-read-and-stage-output-write",
+            "role": "read_target_context_and_write_oma_stage_outputs_only"
+          }
+        ],
+        "credential_boundary_refs": [
+          {
+            "ref_kind": "credential_boundary_ref",
+            "ref": "no_new_credentials_required_by_stage_pack",
+            "role": "executor_must_request_human_gate_for_missing_external_credentials"
+          }
+        ],
+        "write_scope_refs": [
+          {
+            "ref_kind": "write_scope_ref",
+            "ref": "projects/<project-id>/artifacts/stage_outputs/web-experience-research/",
+            "role": "oma_stage_output_refs_only_no_target_domain_truth_or_owner_receipt_body"
+          }
+        ],
+        "side_effect_risk_refs": [
+          {
+            "ref_kind": "side_effect_risk_ref",
+            "ref": "candidate_package_work_order_or_typed_blocker_requires_owner_gate_before_target_mutation",
+            "role": "no_quality_promotion_runtime_or_target_domain_ready_claim"
+          }
+        ],
+        "forbidden_authority_refs": [
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_write_target_domain_truth_or_memory_body",
+            "role": "target_domain_owner_retains_truth_and_memory_authority"
+          },
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_write_target_artifact_or_owner_receipt_body",
+            "role": "oma_may_emit_candidate_refs_work_orders_route_back_or_typed_blockers_only"
+          },
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_maintain_private_runner_queue_attempt_ledger_or_runtime_state",
+            "role": "generic_runtime_and_scaffold_surfaces_belong_to_one_person_lab"
+          }
+        ],
+        "executor_autonomy": {
+          "executor_can_choose_tools": true,
+          "executor_can_skip_tools": true,
+          "executor_can_substitute_tools_within_boundary": true,
+          "executor_can_choose_order_and_parallelism": true,
+          "executor_can_request_missing_context_or_human_gate": true,
+          "tool_catalog_can_prescribe_tool_sequence": false,
+          "tool_catalog_can_define_cognitive_strategy": false,
+          "tool_catalog_can_override_stage_goal": false,
+          "tool_catalog_can_authorize_forbidden_write": false
+        }
       }
     },
     {
@@ -1717,15 +2200,16 @@
       },
       "selected_executor": {
         "executor_kind": "codex_cli",
-        "default_executor": false,
+        "default_executor": true,
         "executor_binding_ref": "default_codex_cli",
-        "binding_policy": "codex_cli_stage_executor_not_ordinary_default_route",
+        "binding_policy": "default_first_class_executor_for_standard_stage_pack_v2",
         "required_capabilities": [
           "repo_context_reading",
           "domain_skill_invocation",
           "receipt_or_typed_blocker_return",
           "no_forbidden_write_guard"
-        ]
+        ],
+        "lane_kind": "variant"
       },
       "executor_binding": {
         "binding_kind": "codex_cli_first_class_stage_executor",
@@ -2397,14 +2881,188 @@
           "policy_ref": "stage-completion-policy-ref:opl-meta-agent/stage-decomposition",
           "stage_id": "stage-decomposition",
           "target_domain_id": "opl-meta-agent"
+        },
+        "requires": [
+          "stage:stage-decomposition",
+          "stage-completion-policy-ref:opl-meta-agent/stage-decomposition",
+          "prompt-ref:agent/prompts/stage-decomposition.md",
+          "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
+          "knowledge-ref:agent/knowledge/opl-boundary-policy.md",
+          "knowledge-ref:agent/knowledge/transferable-agent-practices.md",
+          "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
+          "runtime-ref:stage-attempt-ledger",
+          "runtime-ref:generated-interface-bundle",
+          "runtime-ref:stage-executor-policy-gate",
+          "runtime-ref:stage-progress-log-user-stage-log",
+          "artifact-native-contract-ref:opl-meta-agent/stage-decomposition"
+        ],
+        "ensures": [
+          "stage-attempt-receipt-ref:stage-decomposition",
+          "executor-receipt-ref:stage-decomposition/codex-cli",
+          "no-forbidden-write-proof-ref:stage-decomposition",
+          "independent-ai-review-ref:stage-decomposition",
+          "output-ref:stage_control_plane_ref",
+          "output-ref:action_catalog_ref",
+          "output-ref:memory_descriptor_ref",
+          "stage-user-log-ref:stage-decomposition",
+          "stage-closeout-packet-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+          "stage-folder-contract-ref:opl-meta-agent/stage-decomposition",
+          "stage-manifest-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+          "stage-current-pointer-ref:opl-meta-agent/stage-decomposition",
+          "canonical-artifact-ref:opl-meta-agent/stage-decomposition",
+          "stage-json-ref:opl-meta-agent/stage-decomposition",
+          "stage-attempt-json-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+          "stage-attempt-receipt-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+          "stage-export-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+          "stage-lineage-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+          "stage-retention-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}",
+          "opl-physical-kernel-locator-ref:opl-meta-agent/stage-decomposition",
+          "stage-artifact-conformance-ref:opl-meta-agent/stage-decomposition",
+          "stage-artifact-workbench-consumption-ref:opl-meta-agent/stage-decomposition"
+        ],
+        "expected_receipt_refs": [
+          {
+            "ref_kind": "stage_attempt_receipt_ref",
+            "ref": "stage-attempt-receipt-ref:stage-decomposition"
+          },
+          {
+            "ref_kind": "stage_completion_policy_ref",
+            "ref": "stage-completion-policy-ref:opl-meta-agent/stage-decomposition"
+          },
+          {
+            "ref_kind": "executor_receipt_ref",
+            "ref": "executor-receipt-ref:stage-decomposition/codex-cli"
+          },
+          {
+            "ref_kind": "boundary_receipt_ref",
+            "ref": "boundary-receipt-ref:stage-decomposition/refs-only"
+          },
+          {
+            "ref_kind": "no_forbidden_write_proof_ref",
+            "ref": "no-forbidden-write-proof-ref:stage-decomposition"
+          },
+          {
+            "ref_kind": "independent_ai_review_ref",
+            "ref": "independent-ai-review-ref:stage-decomposition"
+          },
+          {
+            "ref_kind": "stage_user_log_ref",
+            "ref": "stage-user-log-ref:stage-decomposition"
+          },
+          {
+            "ref_kind": "stage_closeout_packet_ref",
+            "ref": "stage-closeout-packet-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "artifact_native_contract_ref",
+            "ref": "artifact-native-contract-ref:opl-meta-agent/stage-decomposition"
+          },
+          {
+            "ref_kind": "stage_folder_contract_ref",
+            "ref": "stage-folder-contract-ref:opl-meta-agent/stage-decomposition"
+          },
+          {
+            "ref_kind": "stage_manifest_ref",
+            "ref": "stage-manifest-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_typed_blocker_ref",
+            "ref": "stage-typed-blocker-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "canonical_artifact_ref",
+            "ref": "canonical-artifact-ref:opl-meta-agent/stage-decomposition"
+          },
+          {
+            "ref_kind": "stage_json_ref",
+            "ref": "stage-json-ref:opl-meta-agent/stage-decomposition"
+          },
+          {
+            "ref_kind": "stage_attempt_json_ref",
+            "ref": "stage-attempt-json-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_attempt_receipt_ref",
+            "ref": "stage-attempt-receipt-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_current_pointer_ref",
+            "ref": "stage-current-pointer-ref:opl-meta-agent/stage-decomposition"
+          },
+          {
+            "ref_kind": "stage_export_ref",
+            "ref": "stage-export-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_lineage_ref",
+            "ref": "stage-lineage-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_retention_ref",
+            "ref": "stage-retention-ref:opl-meta-agent/stage-decomposition/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "opl_physical_kernel_locator_ref",
+            "ref": "opl-physical-kernel-locator-ref:opl-meta-agent/stage-decomposition"
+          },
+          {
+            "ref_kind": "stage_artifact_conformance_ref",
+            "ref": "stage-artifact-conformance-ref:opl-meta-agent/stage-decomposition"
+          },
+          {
+            "ref_kind": "stage_artifact_workbench_consumption_ref",
+            "ref": "stage-artifact-workbench-consumption-ref:opl-meta-agent/stage-decomposition"
+          }
+        ],
+        "receipt_schema_refs": [
+          {
+            "ref_kind": "repo_path",
+            "ref": "contracts/owner_receipt_contract.json",
+            "role": "owner_receipt_or_typed_blocker_schema"
+          }
+        ],
+        "authority_function_refs": [
+          {
+            "ref_kind": "repo_path",
+            "ref": "runtime/authority_functions/meta-agent-authority-functions.json",
+            "role": "minimal_oma_authority_function_catalog"
+          }
+        ],
+        "l4_entry_gate": {
+          "entry_level": "L4_structural_baseline",
+          "required_gates": [
+            "repo_layout_declared",
+            "stage_pack_v2_required",
+            "stage_prompt_skill_knowledge_quality_gate_refs_resolve",
+            "tool_affordance_boundary_declared",
+            "receipt_schema_declared",
+            "minimal_authority_functions_declared",
+            "generated_surface_handoff_declared",
+            "no_forbidden_write_contract_declared"
+          ],
+          "can_claim_l5": false,
+          "can_claim_domain_ready": false
+        },
+        "l5_entry_gate": {
+          "entry_level": "L5_production_operating_maturity",
+          "evidence_required": [
+            "real_user_path",
+            "long_soak_recovery",
+            "release_install_evidence",
+            "owner_acceptance",
+            "direct_and_opl_hosted_parity_at_scale"
+          ],
+          "conformance_pass_counts_as_l5": false,
+          "contract_validation_counts_as_l5": false,
+          "provider_completion_counts_as_l5": false,
+          "app_projection_counts_as_l5": false
         }
       },
       "tool_refs": [
         {
-          "ref": "agent/tools/domain_affordances.md",
           "ref_kind": "repo_path",
-          "role": "stage_tool_affordance_catalog",
-          "catalog_role": "available_affordance_catalog_not_workflow_script"
+          "ref": "agent/tools/domain_affordances.md",
+          "role": "available_domain_tool_affordance_catalog"
         }
       ],
       "strategy_refs": [
@@ -2475,6 +3133,73 @@
         "ref_kind": "json_pointer",
         "stage_id": "stage-decomposition",
         "role": "stage_tool_affordance_boundary"
+      },
+      "stage_pack_conformance_version": "standard-stage-pack.v2",
+      "tool_affordance_boundary": {
+        "catalog_role": "available_affordance_catalog_not_workflow_script",
+        "capability_refs": [
+          {
+            "ref_kind": "domain_capability_ref",
+            "ref": "oma:stage-decomposition",
+            "role": "produce_agent_building_semantics_candidate_package_work_order_or_typed_blocker_refs"
+          }
+        ],
+        "permission_scope_refs": [
+          {
+            "ref_kind": "permission_scope_ref",
+            "ref": "workspace-read-and-stage-output-write",
+            "role": "read_target_context_and_write_oma_stage_outputs_only"
+          }
+        ],
+        "credential_boundary_refs": [
+          {
+            "ref_kind": "credential_boundary_ref",
+            "ref": "no_new_credentials_required_by_stage_pack",
+            "role": "executor_must_request_human_gate_for_missing_external_credentials"
+          }
+        ],
+        "write_scope_refs": [
+          {
+            "ref_kind": "write_scope_ref",
+            "ref": "projects/<project-id>/artifacts/stage_outputs/stage-decomposition/",
+            "role": "oma_stage_output_refs_only_no_target_domain_truth_or_owner_receipt_body"
+          }
+        ],
+        "side_effect_risk_refs": [
+          {
+            "ref_kind": "side_effect_risk_ref",
+            "ref": "candidate_package_work_order_or_typed_blocker_requires_owner_gate_before_target_mutation",
+            "role": "no_quality_promotion_runtime_or_target_domain_ready_claim"
+          }
+        ],
+        "forbidden_authority_refs": [
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_write_target_domain_truth_or_memory_body",
+            "role": "target_domain_owner_retains_truth_and_memory_authority"
+          },
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_write_target_artifact_or_owner_receipt_body",
+            "role": "oma_may_emit_candidate_refs_work_orders_route_back_or_typed_blockers_only"
+          },
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_maintain_private_runner_queue_attempt_ledger_or_runtime_state",
+            "role": "generic_runtime_and_scaffold_surfaces_belong_to_one_person_lab"
+          }
+        ],
+        "executor_autonomy": {
+          "executor_can_choose_tools": true,
+          "executor_can_skip_tools": true,
+          "executor_can_substitute_tools_within_boundary": true,
+          "executor_can_choose_order_and_parallelism": true,
+          "executor_can_request_missing_context_or_human_gate": true,
+          "tool_catalog_can_prescribe_tool_sequence": false,
+          "tool_catalog_can_define_cognitive_strategy": false,
+          "tool_catalog_can_override_stage_goal": false,
+          "tool_catalog_can_authorize_forbidden_write": false
+        }
       }
     },
     {
@@ -2542,15 +3267,16 @@
       },
       "selected_executor": {
         "executor_kind": "codex_cli",
-        "default_executor": false,
+        "default_executor": true,
         "executor_binding_ref": "default_codex_cli",
-        "binding_policy": "codex_cli_stage_executor_not_ordinary_default_route",
+        "binding_policy": "default_first_class_executor_for_standard_stage_pack_v2",
         "required_capabilities": [
           "repo_context_reading",
           "domain_skill_invocation",
           "receipt_or_typed_blocker_return",
           "no_forbidden_write_guard"
-        ]
+        ],
+        "lane_kind": "variant"
       },
       "executor_binding": {
         "binding_kind": "codex_cli_first_class_stage_executor",
@@ -3225,14 +3951,191 @@
           "policy_ref": "stage-completion-policy-ref:opl-meta-agent/agent-skeleton-build",
           "stage_id": "agent-skeleton-build",
           "target_domain_id": "opl-meta-agent"
+        },
+        "requires": [
+          "stage:agent-skeleton-build",
+          "stage-completion-policy-ref:opl-meta-agent/agent-skeleton-build",
+          "prompt-ref:agent/prompts/agent-skeleton-build.md",
+          "skill-ref:agent/skills/agent-baseline-build.md",
+          "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
+          "knowledge-ref:agent/knowledge/opl-boundary-policy.md",
+          "knowledge-ref:agent/knowledge/transferable-agent-practices.md",
+          "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
+          "action-ref:build-agent-baseline",
+          "runtime-ref:stage-attempt-ledger",
+          "runtime-ref:generated-interface-bundle",
+          "runtime-ref:stage-executor-policy-gate",
+          "runtime-ref:stage-progress-log-user-stage-log",
+          "artifact-native-contract-ref:opl-meta-agent/agent-skeleton-build"
+        ],
+        "ensures": [
+          "stage-attempt-receipt-ref:agent-skeleton-build",
+          "executor-receipt-ref:agent-skeleton-build/codex-cli",
+          "no-forbidden-write-proof-ref:agent-skeleton-build",
+          "independent-ai-review-ref:agent-skeleton-build",
+          "output-ref:domain_descriptor_ref",
+          "output-ref:skill_refs",
+          "output-ref:prompt_refs",
+          "output-ref:candidate_agent_package_ref",
+          "stage-user-log-ref:agent-skeleton-build",
+          "stage-closeout-packet-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+          "stage-folder-contract-ref:opl-meta-agent/agent-skeleton-build",
+          "stage-manifest-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+          "stage-current-pointer-ref:opl-meta-agent/agent-skeleton-build",
+          "canonical-artifact-ref:opl-meta-agent/agent-skeleton-build",
+          "stage-json-ref:opl-meta-agent/agent-skeleton-build",
+          "stage-attempt-json-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+          "stage-attempt-receipt-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+          "stage-export-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+          "stage-lineage-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+          "stage-retention-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}",
+          "opl-physical-kernel-locator-ref:opl-meta-agent/agent-skeleton-build",
+          "stage-artifact-conformance-ref:opl-meta-agent/agent-skeleton-build",
+          "stage-artifact-workbench-consumption-ref:opl-meta-agent/agent-skeleton-build"
+        ],
+        "expected_receipt_refs": [
+          {
+            "ref_kind": "stage_attempt_receipt_ref",
+            "ref": "stage-attempt-receipt-ref:agent-skeleton-build"
+          },
+          {
+            "ref_kind": "stage_completion_policy_ref",
+            "ref": "stage-completion-policy-ref:opl-meta-agent/agent-skeleton-build"
+          },
+          {
+            "ref_kind": "executor_receipt_ref",
+            "ref": "executor-receipt-ref:agent-skeleton-build/codex-cli"
+          },
+          {
+            "ref_kind": "boundary_receipt_ref",
+            "ref": "boundary-receipt-ref:agent-skeleton-build/refs-only"
+          },
+          {
+            "ref_kind": "no_forbidden_write_proof_ref",
+            "ref": "no-forbidden-write-proof-ref:agent-skeleton-build"
+          },
+          {
+            "ref_kind": "independent_ai_review_ref",
+            "ref": "independent-ai-review-ref:agent-skeleton-build"
+          },
+          {
+            "ref_kind": "stage_user_log_ref",
+            "ref": "stage-user-log-ref:agent-skeleton-build"
+          },
+          {
+            "ref_kind": "stage_closeout_packet_ref",
+            "ref": "stage-closeout-packet-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "artifact_native_contract_ref",
+            "ref": "artifact-native-contract-ref:opl-meta-agent/agent-skeleton-build"
+          },
+          {
+            "ref_kind": "stage_folder_contract_ref",
+            "ref": "stage-folder-contract-ref:opl-meta-agent/agent-skeleton-build"
+          },
+          {
+            "ref_kind": "stage_manifest_ref",
+            "ref": "stage-manifest-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_typed_blocker_ref",
+            "ref": "stage-typed-blocker-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "canonical_artifact_ref",
+            "ref": "canonical-artifact-ref:opl-meta-agent/agent-skeleton-build"
+          },
+          {
+            "ref_kind": "stage_json_ref",
+            "ref": "stage-json-ref:opl-meta-agent/agent-skeleton-build"
+          },
+          {
+            "ref_kind": "stage_attempt_json_ref",
+            "ref": "stage-attempt-json-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_attempt_receipt_ref",
+            "ref": "stage-attempt-receipt-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_current_pointer_ref",
+            "ref": "stage-current-pointer-ref:opl-meta-agent/agent-skeleton-build"
+          },
+          {
+            "ref_kind": "stage_export_ref",
+            "ref": "stage-export-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_lineage_ref",
+            "ref": "stage-lineage-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_retention_ref",
+            "ref": "stage-retention-ref:opl-meta-agent/agent-skeleton-build/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "opl_physical_kernel_locator_ref",
+            "ref": "opl-physical-kernel-locator-ref:opl-meta-agent/agent-skeleton-build"
+          },
+          {
+            "ref_kind": "stage_artifact_conformance_ref",
+            "ref": "stage-artifact-conformance-ref:opl-meta-agent/agent-skeleton-build"
+          },
+          {
+            "ref_kind": "stage_artifact_workbench_consumption_ref",
+            "ref": "stage-artifact-workbench-consumption-ref:opl-meta-agent/agent-skeleton-build"
+          }
+        ],
+        "receipt_schema_refs": [
+          {
+            "ref_kind": "repo_path",
+            "ref": "contracts/owner_receipt_contract.json",
+            "role": "owner_receipt_or_typed_blocker_schema"
+          }
+        ],
+        "authority_function_refs": [
+          {
+            "ref_kind": "repo_path",
+            "ref": "runtime/authority_functions/meta-agent-authority-functions.json",
+            "role": "minimal_oma_authority_function_catalog"
+          }
+        ],
+        "l4_entry_gate": {
+          "entry_level": "L4_structural_baseline",
+          "required_gates": [
+            "repo_layout_declared",
+            "stage_pack_v2_required",
+            "stage_prompt_skill_knowledge_quality_gate_refs_resolve",
+            "tool_affordance_boundary_declared",
+            "receipt_schema_declared",
+            "minimal_authority_functions_declared",
+            "generated_surface_handoff_declared",
+            "no_forbidden_write_contract_declared"
+          ],
+          "can_claim_l5": false,
+          "can_claim_domain_ready": false
+        },
+        "l5_entry_gate": {
+          "entry_level": "L5_production_operating_maturity",
+          "evidence_required": [
+            "real_user_path",
+            "long_soak_recovery",
+            "release_install_evidence",
+            "owner_acceptance",
+            "direct_and_opl_hosted_parity_at_scale"
+          ],
+          "conformance_pass_counts_as_l5": false,
+          "contract_validation_counts_as_l5": false,
+          "provider_completion_counts_as_l5": false,
+          "app_projection_counts_as_l5": false
         }
       },
       "tool_refs": [
         {
-          "ref": "agent/tools/domain_affordances.md",
           "ref_kind": "repo_path",
-          "role": "stage_tool_affordance_catalog",
-          "catalog_role": "available_affordance_catalog_not_workflow_script"
+          "ref": "agent/tools/domain_affordances.md",
+          "role": "available_domain_tool_affordance_catalog"
         }
       ],
       "strategy_refs": [
@@ -3303,6 +4206,73 @@
         "ref_kind": "json_pointer",
         "stage_id": "agent-skeleton-build",
         "role": "stage_tool_affordance_boundary"
+      },
+      "stage_pack_conformance_version": "standard-stage-pack.v2",
+      "tool_affordance_boundary": {
+        "catalog_role": "available_affordance_catalog_not_workflow_script",
+        "capability_refs": [
+          {
+            "ref_kind": "domain_capability_ref",
+            "ref": "oma:agent-skeleton-build",
+            "role": "produce_agent_building_semantics_candidate_package_work_order_or_typed_blocker_refs"
+          }
+        ],
+        "permission_scope_refs": [
+          {
+            "ref_kind": "permission_scope_ref",
+            "ref": "workspace-read-and-stage-output-write",
+            "role": "read_target_context_and_write_oma_stage_outputs_only"
+          }
+        ],
+        "credential_boundary_refs": [
+          {
+            "ref_kind": "credential_boundary_ref",
+            "ref": "no_new_credentials_required_by_stage_pack",
+            "role": "executor_must_request_human_gate_for_missing_external_credentials"
+          }
+        ],
+        "write_scope_refs": [
+          {
+            "ref_kind": "write_scope_ref",
+            "ref": "projects/<project-id>/artifacts/stage_outputs/agent-skeleton-build/",
+            "role": "oma_stage_output_refs_only_no_target_domain_truth_or_owner_receipt_body"
+          }
+        ],
+        "side_effect_risk_refs": [
+          {
+            "ref_kind": "side_effect_risk_ref",
+            "ref": "candidate_package_work_order_or_typed_blocker_requires_owner_gate_before_target_mutation",
+            "role": "no_quality_promotion_runtime_or_target_domain_ready_claim"
+          }
+        ],
+        "forbidden_authority_refs": [
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_write_target_domain_truth_or_memory_body",
+            "role": "target_domain_owner_retains_truth_and_memory_authority"
+          },
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_write_target_artifact_or_owner_receipt_body",
+            "role": "oma_may_emit_candidate_refs_work_orders_route_back_or_typed_blockers_only"
+          },
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_maintain_private_runner_queue_attempt_ledger_or_runtime_state",
+            "role": "generic_runtime_and_scaffold_surfaces_belong_to_one_person_lab"
+          }
+        ],
+        "executor_autonomy": {
+          "executor_can_choose_tools": true,
+          "executor_can_skip_tools": true,
+          "executor_can_substitute_tools_within_boundary": true,
+          "executor_can_choose_order_and_parallelism": true,
+          "executor_can_request_missing_context_or_human_gate": true,
+          "tool_catalog_can_prescribe_tool_sequence": false,
+          "tool_catalog_can_define_cognitive_strategy": false,
+          "tool_catalog_can_override_stage_goal": false,
+          "tool_catalog_can_authorize_forbidden_write": false
+        }
       }
     },
     {
@@ -3367,15 +4337,16 @@
       },
       "selected_executor": {
         "executor_kind": "codex_cli",
-        "default_executor": false,
+        "default_executor": true,
         "executor_binding_ref": "default_codex_cli",
-        "binding_policy": "codex_cli_stage_executor_not_ordinary_default_route",
+        "binding_policy": "default_first_class_executor_for_standard_stage_pack_v2",
         "required_capabilities": [
           "repo_context_reading",
           "domain_skill_invocation",
           "receipt_or_typed_blocker_return",
           "no_forbidden_write_guard"
-        ]
+        ],
+        "lane_kind": "variant"
       },
       "executor_binding": {
         "binding_kind": "codex_cli_first_class_stage_executor",
@@ -4051,14 +5022,189 @@
           "policy_ref": "stage-completion-policy-ref:opl-meta-agent/eval-suite-build",
           "stage_id": "eval-suite-build",
           "target_domain_id": "opl-meta-agent"
+        },
+        "requires": [
+          "stage:eval-suite-build",
+          "stage-completion-policy-ref:opl-meta-agent/eval-suite-build",
+          "prompt-ref:agent/prompts/eval-suite-build.md",
+          "skill-ref:agent/skills/agent-baseline-build.md",
+          "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
+          "knowledge-ref:agent/knowledge/project-maturity-signals.md",
+          "knowledge-ref:agent/knowledge/transferable-agent-practices.md",
+          "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
+          "runtime-ref:stage-attempt-ledger",
+          "runtime-ref:generated-interface-bundle",
+          "runtime-ref:stage-executor-policy-gate",
+          "runtime-ref:stage-progress-log-user-stage-log",
+          "artifact-native-contract-ref:opl-meta-agent/eval-suite-build"
+        ],
+        "ensures": [
+          "stage-attempt-receipt-ref:eval-suite-build",
+          "executor-receipt-ref:eval-suite-build/codex-cli",
+          "no-forbidden-write-proof-ref:eval-suite-build",
+          "independent-ai-review-ref:eval-suite-build",
+          "output-ref:agent_lab_task_manifest_refs",
+          "output-ref:scorecard_refs",
+          "output-ref:promotion_gate_refs",
+          "stage-user-log-ref:eval-suite-build",
+          "stage-closeout-packet-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+          "stage-folder-contract-ref:opl-meta-agent/eval-suite-build",
+          "stage-manifest-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+          "stage-current-pointer-ref:opl-meta-agent/eval-suite-build",
+          "canonical-artifact-ref:opl-meta-agent/eval-suite-build",
+          "stage-json-ref:opl-meta-agent/eval-suite-build",
+          "stage-attempt-json-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+          "stage-attempt-receipt-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+          "stage-export-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+          "stage-lineage-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+          "stage-retention-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}",
+          "opl-physical-kernel-locator-ref:opl-meta-agent/eval-suite-build",
+          "stage-artifact-conformance-ref:opl-meta-agent/eval-suite-build",
+          "stage-artifact-workbench-consumption-ref:opl-meta-agent/eval-suite-build"
+        ],
+        "expected_receipt_refs": [
+          {
+            "ref_kind": "stage_attempt_receipt_ref",
+            "ref": "stage-attempt-receipt-ref:eval-suite-build"
+          },
+          {
+            "ref_kind": "stage_completion_policy_ref",
+            "ref": "stage-completion-policy-ref:opl-meta-agent/eval-suite-build"
+          },
+          {
+            "ref_kind": "executor_receipt_ref",
+            "ref": "executor-receipt-ref:eval-suite-build/codex-cli"
+          },
+          {
+            "ref_kind": "boundary_receipt_ref",
+            "ref": "boundary-receipt-ref:eval-suite-build/refs-only"
+          },
+          {
+            "ref_kind": "no_forbidden_write_proof_ref",
+            "ref": "no-forbidden-write-proof-ref:eval-suite-build"
+          },
+          {
+            "ref_kind": "independent_ai_review_ref",
+            "ref": "independent-ai-review-ref:eval-suite-build"
+          },
+          {
+            "ref_kind": "stage_user_log_ref",
+            "ref": "stage-user-log-ref:eval-suite-build"
+          },
+          {
+            "ref_kind": "stage_closeout_packet_ref",
+            "ref": "stage-closeout-packet-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "artifact_native_contract_ref",
+            "ref": "artifact-native-contract-ref:opl-meta-agent/eval-suite-build"
+          },
+          {
+            "ref_kind": "stage_folder_contract_ref",
+            "ref": "stage-folder-contract-ref:opl-meta-agent/eval-suite-build"
+          },
+          {
+            "ref_kind": "stage_manifest_ref",
+            "ref": "stage-manifest-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_typed_blocker_ref",
+            "ref": "stage-typed-blocker-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "canonical_artifact_ref",
+            "ref": "canonical-artifact-ref:opl-meta-agent/eval-suite-build"
+          },
+          {
+            "ref_kind": "stage_json_ref",
+            "ref": "stage-json-ref:opl-meta-agent/eval-suite-build"
+          },
+          {
+            "ref_kind": "stage_attempt_json_ref",
+            "ref": "stage-attempt-json-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_attempt_receipt_ref",
+            "ref": "stage-attempt-receipt-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_current_pointer_ref",
+            "ref": "stage-current-pointer-ref:opl-meta-agent/eval-suite-build"
+          },
+          {
+            "ref_kind": "stage_export_ref",
+            "ref": "stage-export-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_lineage_ref",
+            "ref": "stage-lineage-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_retention_ref",
+            "ref": "stage-retention-ref:opl-meta-agent/eval-suite-build/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "opl_physical_kernel_locator_ref",
+            "ref": "opl-physical-kernel-locator-ref:opl-meta-agent/eval-suite-build"
+          },
+          {
+            "ref_kind": "stage_artifact_conformance_ref",
+            "ref": "stage-artifact-conformance-ref:opl-meta-agent/eval-suite-build"
+          },
+          {
+            "ref_kind": "stage_artifact_workbench_consumption_ref",
+            "ref": "stage-artifact-workbench-consumption-ref:opl-meta-agent/eval-suite-build"
+          }
+        ],
+        "receipt_schema_refs": [
+          {
+            "ref_kind": "repo_path",
+            "ref": "contracts/owner_receipt_contract.json",
+            "role": "owner_receipt_or_typed_blocker_schema"
+          }
+        ],
+        "authority_function_refs": [
+          {
+            "ref_kind": "repo_path",
+            "ref": "runtime/authority_functions/meta-agent-authority-functions.json",
+            "role": "minimal_oma_authority_function_catalog"
+          }
+        ],
+        "l4_entry_gate": {
+          "entry_level": "L4_structural_baseline",
+          "required_gates": [
+            "repo_layout_declared",
+            "stage_pack_v2_required",
+            "stage_prompt_skill_knowledge_quality_gate_refs_resolve",
+            "tool_affordance_boundary_declared",
+            "receipt_schema_declared",
+            "minimal_authority_functions_declared",
+            "generated_surface_handoff_declared",
+            "no_forbidden_write_contract_declared"
+          ],
+          "can_claim_l5": false,
+          "can_claim_domain_ready": false
+        },
+        "l5_entry_gate": {
+          "entry_level": "L5_production_operating_maturity",
+          "evidence_required": [
+            "real_user_path",
+            "long_soak_recovery",
+            "release_install_evidence",
+            "owner_acceptance",
+            "direct_and_opl_hosted_parity_at_scale"
+          ],
+          "conformance_pass_counts_as_l5": false,
+          "contract_validation_counts_as_l5": false,
+          "provider_completion_counts_as_l5": false,
+          "app_projection_counts_as_l5": false
         }
       },
       "tool_refs": [
         {
-          "ref": "agent/tools/domain_affordances.md",
           "ref_kind": "repo_path",
-          "role": "stage_tool_affordance_catalog",
-          "catalog_role": "available_affordance_catalog_not_workflow_script"
+          "ref": "agent/tools/domain_affordances.md",
+          "role": "available_domain_tool_affordance_catalog"
         }
       ],
       "strategy_refs": [
@@ -4129,6 +5275,73 @@
         "ref_kind": "json_pointer",
         "stage_id": "eval-suite-build",
         "role": "stage_tool_affordance_boundary"
+      },
+      "stage_pack_conformance_version": "standard-stage-pack.v2",
+      "tool_affordance_boundary": {
+        "catalog_role": "available_affordance_catalog_not_workflow_script",
+        "capability_refs": [
+          {
+            "ref_kind": "domain_capability_ref",
+            "ref": "oma:eval-suite-build",
+            "role": "produce_agent_building_semantics_candidate_package_work_order_or_typed_blocker_refs"
+          }
+        ],
+        "permission_scope_refs": [
+          {
+            "ref_kind": "permission_scope_ref",
+            "ref": "workspace-read-and-stage-output-write",
+            "role": "read_target_context_and_write_oma_stage_outputs_only"
+          }
+        ],
+        "credential_boundary_refs": [
+          {
+            "ref_kind": "credential_boundary_ref",
+            "ref": "no_new_credentials_required_by_stage_pack",
+            "role": "executor_must_request_human_gate_for_missing_external_credentials"
+          }
+        ],
+        "write_scope_refs": [
+          {
+            "ref_kind": "write_scope_ref",
+            "ref": "projects/<project-id>/artifacts/stage_outputs/eval-suite-build/",
+            "role": "oma_stage_output_refs_only_no_target_domain_truth_or_owner_receipt_body"
+          }
+        ],
+        "side_effect_risk_refs": [
+          {
+            "ref_kind": "side_effect_risk_ref",
+            "ref": "candidate_package_work_order_or_typed_blocker_requires_owner_gate_before_target_mutation",
+            "role": "no_quality_promotion_runtime_or_target_domain_ready_claim"
+          }
+        ],
+        "forbidden_authority_refs": [
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_write_target_domain_truth_or_memory_body",
+            "role": "target_domain_owner_retains_truth_and_memory_authority"
+          },
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_write_target_artifact_or_owner_receipt_body",
+            "role": "oma_may_emit_candidate_refs_work_orders_route_back_or_typed_blockers_only"
+          },
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_maintain_private_runner_queue_attempt_ledger_or_runtime_state",
+            "role": "generic_runtime_and_scaffold_surfaces_belong_to_one_person_lab"
+          }
+        ],
+        "executor_autonomy": {
+          "executor_can_choose_tools": true,
+          "executor_can_skip_tools": true,
+          "executor_can_substitute_tools_within_boundary": true,
+          "executor_can_choose_order_and_parallelism": true,
+          "executor_can_request_missing_context_or_human_gate": true,
+          "tool_catalog_can_prescribe_tool_sequence": false,
+          "tool_catalog_can_define_cognitive_strategy": false,
+          "tool_catalog_can_override_stage_goal": false,
+          "tool_catalog_can_authorize_forbidden_write": false
+        }
       }
     },
     {
@@ -4191,15 +5404,16 @@
       },
       "selected_executor": {
         "executor_kind": "codex_cli",
-        "default_executor": false,
+        "default_executor": true,
         "executor_binding_ref": "default_codex_cli",
-        "binding_policy": "codex_cli_stage_executor_not_ordinary_default_route",
+        "binding_policy": "default_first_class_executor_for_standard_stage_pack_v2",
         "required_capabilities": [
           "repo_context_reading",
           "domain_skill_invocation",
           "receipt_or_typed_blocker_return",
           "no_forbidden_write_guard"
-        ]
+        ],
+        "lane_kind": "variant"
       },
       "executor_binding": {
         "binding_kind": "codex_cli_first_class_stage_executor",
@@ -4872,14 +6086,189 @@
           "policy_ref": "stage-completion-policy-ref:opl-meta-agent/baseline-run",
           "stage_id": "baseline-run",
           "target_domain_id": "opl-meta-agent"
+        },
+        "requires": [
+          "stage:baseline-run",
+          "stage-completion-policy-ref:opl-meta-agent/baseline-run",
+          "prompt-ref:agent/prompts/baseline-run.md",
+          "skill-ref:agent/skills/agent-baseline-build.md",
+          "knowledge-ref:agent/knowledge/opl-boundary-policy.md",
+          "knowledge-ref:agent/knowledge/project-maturity-signals.md",
+          "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
+          "action-ref:build-agent-baseline",
+          "runtime-ref:stage-attempt-ledger",
+          "runtime-ref:generated-interface-bundle",
+          "runtime-ref:stage-executor-policy-gate",
+          "runtime-ref:stage-progress-log-user-stage-log",
+          "artifact-native-contract-ref:opl-meta-agent/baseline-run"
+        ],
+        "ensures": [
+          "stage-attempt-receipt-ref:baseline-run",
+          "executor-receipt-ref:baseline-run/codex-cli",
+          "no-forbidden-write-proof-ref:baseline-run",
+          "independent-ai-review-ref:baseline-run",
+          "output-ref:trajectory_refs",
+          "output-ref:receipt_refs",
+          "output-ref:failure_taxonomy_refs",
+          "stage-user-log-ref:baseline-run",
+          "stage-closeout-packet-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+          "stage-folder-contract-ref:opl-meta-agent/baseline-run",
+          "stage-manifest-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+          "stage-current-pointer-ref:opl-meta-agent/baseline-run",
+          "canonical-artifact-ref:opl-meta-agent/baseline-run",
+          "stage-json-ref:opl-meta-agent/baseline-run",
+          "stage-attempt-json-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+          "stage-attempt-receipt-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+          "stage-export-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+          "stage-lineage-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+          "stage-retention-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
+          "opl-physical-kernel-locator-ref:opl-meta-agent/baseline-run",
+          "stage-artifact-conformance-ref:opl-meta-agent/baseline-run",
+          "stage-artifact-workbench-consumption-ref:opl-meta-agent/baseline-run"
+        ],
+        "expected_receipt_refs": [
+          {
+            "ref_kind": "stage_attempt_receipt_ref",
+            "ref": "stage-attempt-receipt-ref:baseline-run"
+          },
+          {
+            "ref_kind": "stage_completion_policy_ref",
+            "ref": "stage-completion-policy-ref:opl-meta-agent/baseline-run"
+          },
+          {
+            "ref_kind": "executor_receipt_ref",
+            "ref": "executor-receipt-ref:baseline-run/codex-cli"
+          },
+          {
+            "ref_kind": "boundary_receipt_ref",
+            "ref": "boundary-receipt-ref:baseline-run/refs-only"
+          },
+          {
+            "ref_kind": "no_forbidden_write_proof_ref",
+            "ref": "no-forbidden-write-proof-ref:baseline-run"
+          },
+          {
+            "ref_kind": "independent_ai_review_ref",
+            "ref": "independent-ai-review-ref:baseline-run"
+          },
+          {
+            "ref_kind": "stage_user_log_ref",
+            "ref": "stage-user-log-ref:baseline-run"
+          },
+          {
+            "ref_kind": "stage_closeout_packet_ref",
+            "ref": "stage-closeout-packet-ref:opl-meta-agent/baseline-run/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "artifact_native_contract_ref",
+            "ref": "artifact-native-contract-ref:opl-meta-agent/baseline-run"
+          },
+          {
+            "ref_kind": "stage_folder_contract_ref",
+            "ref": "stage-folder-contract-ref:opl-meta-agent/baseline-run"
+          },
+          {
+            "ref_kind": "stage_manifest_ref",
+            "ref": "stage-manifest-ref:opl-meta-agent/baseline-run/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_typed_blocker_ref",
+            "ref": "stage-typed-blocker-ref:opl-meta-agent/baseline-run/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "canonical_artifact_ref",
+            "ref": "canonical-artifact-ref:opl-meta-agent/baseline-run"
+          },
+          {
+            "ref_kind": "stage_json_ref",
+            "ref": "stage-json-ref:opl-meta-agent/baseline-run"
+          },
+          {
+            "ref_kind": "stage_attempt_json_ref",
+            "ref": "stage-attempt-json-ref:opl-meta-agent/baseline-run/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_attempt_receipt_ref",
+            "ref": "stage-attempt-receipt-ref:opl-meta-agent/baseline-run/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_current_pointer_ref",
+            "ref": "stage-current-pointer-ref:opl-meta-agent/baseline-run"
+          },
+          {
+            "ref_kind": "stage_export_ref",
+            "ref": "stage-export-ref:opl-meta-agent/baseline-run/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_lineage_ref",
+            "ref": "stage-lineage-ref:opl-meta-agent/baseline-run/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_retention_ref",
+            "ref": "stage-retention-ref:opl-meta-agent/baseline-run/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "opl_physical_kernel_locator_ref",
+            "ref": "opl-physical-kernel-locator-ref:opl-meta-agent/baseline-run"
+          },
+          {
+            "ref_kind": "stage_artifact_conformance_ref",
+            "ref": "stage-artifact-conformance-ref:opl-meta-agent/baseline-run"
+          },
+          {
+            "ref_kind": "stage_artifact_workbench_consumption_ref",
+            "ref": "stage-artifact-workbench-consumption-ref:opl-meta-agent/baseline-run"
+          }
+        ],
+        "receipt_schema_refs": [
+          {
+            "ref_kind": "repo_path",
+            "ref": "contracts/owner_receipt_contract.json",
+            "role": "owner_receipt_or_typed_blocker_schema"
+          }
+        ],
+        "authority_function_refs": [
+          {
+            "ref_kind": "repo_path",
+            "ref": "runtime/authority_functions/meta-agent-authority-functions.json",
+            "role": "minimal_oma_authority_function_catalog"
+          }
+        ],
+        "l4_entry_gate": {
+          "entry_level": "L4_structural_baseline",
+          "required_gates": [
+            "repo_layout_declared",
+            "stage_pack_v2_required",
+            "stage_prompt_skill_knowledge_quality_gate_refs_resolve",
+            "tool_affordance_boundary_declared",
+            "receipt_schema_declared",
+            "minimal_authority_functions_declared",
+            "generated_surface_handoff_declared",
+            "no_forbidden_write_contract_declared"
+          ],
+          "can_claim_l5": false,
+          "can_claim_domain_ready": false
+        },
+        "l5_entry_gate": {
+          "entry_level": "L5_production_operating_maturity",
+          "evidence_required": [
+            "real_user_path",
+            "long_soak_recovery",
+            "release_install_evidence",
+            "owner_acceptance",
+            "direct_and_opl_hosted_parity_at_scale"
+          ],
+          "conformance_pass_counts_as_l5": false,
+          "contract_validation_counts_as_l5": false,
+          "provider_completion_counts_as_l5": false,
+          "app_projection_counts_as_l5": false
         }
       },
       "tool_refs": [
         {
-          "ref": "agent/tools/domain_affordances.md",
           "ref_kind": "repo_path",
-          "role": "stage_tool_affordance_catalog",
-          "catalog_role": "available_affordance_catalog_not_workflow_script"
+          "ref": "agent/tools/domain_affordances.md",
+          "role": "available_domain_tool_affordance_catalog"
         }
       ],
       "strategy_refs": [
@@ -4950,6 +6339,73 @@
         "ref_kind": "json_pointer",
         "stage_id": "baseline-run",
         "role": "stage_tool_affordance_boundary"
+      },
+      "stage_pack_conformance_version": "standard-stage-pack.v2",
+      "tool_affordance_boundary": {
+        "catalog_role": "available_affordance_catalog_not_workflow_script",
+        "capability_refs": [
+          {
+            "ref_kind": "domain_capability_ref",
+            "ref": "oma:baseline-run",
+            "role": "produce_agent_building_semantics_candidate_package_work_order_or_typed_blocker_refs"
+          }
+        ],
+        "permission_scope_refs": [
+          {
+            "ref_kind": "permission_scope_ref",
+            "ref": "workspace-read-and-stage-output-write",
+            "role": "read_target_context_and_write_oma_stage_outputs_only"
+          }
+        ],
+        "credential_boundary_refs": [
+          {
+            "ref_kind": "credential_boundary_ref",
+            "ref": "no_new_credentials_required_by_stage_pack",
+            "role": "executor_must_request_human_gate_for_missing_external_credentials"
+          }
+        ],
+        "write_scope_refs": [
+          {
+            "ref_kind": "write_scope_ref",
+            "ref": "projects/<project-id>/artifacts/stage_outputs/baseline-run/",
+            "role": "oma_stage_output_refs_only_no_target_domain_truth_or_owner_receipt_body"
+          }
+        ],
+        "side_effect_risk_refs": [
+          {
+            "ref_kind": "side_effect_risk_ref",
+            "ref": "candidate_package_work_order_or_typed_blocker_requires_owner_gate_before_target_mutation",
+            "role": "no_quality_promotion_runtime_or_target_domain_ready_claim"
+          }
+        ],
+        "forbidden_authority_refs": [
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_write_target_domain_truth_or_memory_body",
+            "role": "target_domain_owner_retains_truth_and_memory_authority"
+          },
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_write_target_artifact_or_owner_receipt_body",
+            "role": "oma_may_emit_candidate_refs_work_orders_route_back_or_typed_blockers_only"
+          },
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_maintain_private_runner_queue_attempt_ledger_or_runtime_state",
+            "role": "generic_runtime_and_scaffold_surfaces_belong_to_one_person_lab"
+          }
+        ],
+        "executor_autonomy": {
+          "executor_can_choose_tools": true,
+          "executor_can_skip_tools": true,
+          "executor_can_substitute_tools_within_boundary": true,
+          "executor_can_choose_order_and_parallelism": true,
+          "executor_can_request_missing_context_or_human_gate": true,
+          "tool_catalog_can_prescribe_tool_sequence": false,
+          "tool_catalog_can_define_cognitive_strategy": false,
+          "tool_catalog_can_override_stage_goal": false,
+          "tool_catalog_can_authorize_forbidden_write": false
+        }
       }
     },
     {
@@ -5030,15 +6486,16 @@
       },
       "selected_executor": {
         "executor_kind": "codex_cli",
-        "default_executor": false,
+        "default_executor": true,
         "executor_binding_ref": "default_codex_cli",
-        "binding_policy": "codex_cli_stage_executor_not_ordinary_default_route",
+        "binding_policy": "default_first_class_executor_for_standard_stage_pack_v2",
         "required_capabilities": [
           "repo_context_reading",
           "domain_skill_invocation",
           "receipt_or_typed_blocker_return",
           "no_forbidden_write_guard"
-        ]
+        ],
+        "lane_kind": "variant"
       },
       "executor_binding": {
         "binding_kind": "codex_cli_first_class_stage_executor",
@@ -5714,14 +7171,192 @@
           "policy_ref": "stage-completion-policy-ref:opl-meta-agent/target-agent-takeover",
           "stage_id": "target-agent-takeover",
           "target_domain_id": "opl-meta-agent"
+        },
+        "requires": [
+          "stage:target-agent-takeover",
+          "stage-completion-policy-ref:opl-meta-agent/target-agent-takeover",
+          "prompt-ref:agent/prompts/target-agent-takeover.md",
+          "skill-ref:agent/skills/external-suite-improvement.md",
+          "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
+          "knowledge-ref:agent/knowledge/opl-boundary-policy.md",
+          "knowledge-ref:agent/knowledge/project-maturity-signals.md",
+          "quality-gate-ref:agent/quality_gates/takeover.md",
+          "quality-gate-ref:agent/quality_gates/external-suite-self-evolution.md",
+          "action-ref:takeover-target-agent-test",
+          "runtime-ref:stage-attempt-ledger",
+          "runtime-ref:generated-interface-bundle",
+          "runtime-ref:stage-executor-policy-gate",
+          "runtime-ref:stage-progress-log-user-stage-log",
+          "artifact-native-contract-ref:opl-meta-agent/target-agent-takeover"
+        ],
+        "ensures": [
+          "stage-attempt-receipt-ref:target-agent-takeover",
+          "executor-receipt-ref:target-agent-takeover/codex-cli",
+          "no-forbidden-write-proof-ref:target-agent-takeover",
+          "independent-ai-review-ref:target-agent-takeover",
+          "output-ref:agent_lab_external_suite_ref",
+          "output-ref:testing_takeover_receipt_ref",
+          "output-ref:gated_self_evolution_candidate_ref",
+          "output-ref:mechanism_patch_proposal_ref",
+          "stage-user-log-ref:target-agent-takeover",
+          "stage-closeout-packet-ref:opl-meta-agent/target-agent-takeover/{stage_attempt_id}",
+          "stage-folder-contract-ref:opl-meta-agent/target-agent-takeover",
+          "stage-manifest-ref:opl-meta-agent/target-agent-takeover/{stage_attempt_id}",
+          "stage-current-pointer-ref:opl-meta-agent/target-agent-takeover",
+          "canonical-artifact-ref:opl-meta-agent/target-agent-takeover",
+          "stage-json-ref:opl-meta-agent/target-agent-takeover",
+          "stage-attempt-json-ref:opl-meta-agent/target-agent-takeover/{stage_attempt_id}",
+          "stage-attempt-receipt-ref:opl-meta-agent/target-agent-takeover/{stage_attempt_id}",
+          "stage-export-ref:opl-meta-agent/target-agent-takeover/{stage_attempt_id}",
+          "stage-lineage-ref:opl-meta-agent/target-agent-takeover/{stage_attempt_id}",
+          "stage-retention-ref:opl-meta-agent/target-agent-takeover/{stage_attempt_id}",
+          "opl-physical-kernel-locator-ref:opl-meta-agent/target-agent-takeover",
+          "stage-artifact-conformance-ref:opl-meta-agent/target-agent-takeover",
+          "stage-artifact-workbench-consumption-ref:opl-meta-agent/target-agent-takeover"
+        ],
+        "expected_receipt_refs": [
+          {
+            "ref_kind": "stage_attempt_receipt_ref",
+            "ref": "stage-attempt-receipt-ref:target-agent-takeover"
+          },
+          {
+            "ref_kind": "stage_completion_policy_ref",
+            "ref": "stage-completion-policy-ref:opl-meta-agent/target-agent-takeover"
+          },
+          {
+            "ref_kind": "executor_receipt_ref",
+            "ref": "executor-receipt-ref:target-agent-takeover/codex-cli"
+          },
+          {
+            "ref_kind": "boundary_receipt_ref",
+            "ref": "boundary-receipt-ref:target-agent-takeover/refs-only"
+          },
+          {
+            "ref_kind": "no_forbidden_write_proof_ref",
+            "ref": "no-forbidden-write-proof-ref:target-agent-takeover"
+          },
+          {
+            "ref_kind": "independent_ai_review_ref",
+            "ref": "independent-ai-review-ref:target-agent-takeover"
+          },
+          {
+            "ref_kind": "stage_user_log_ref",
+            "ref": "stage-user-log-ref:target-agent-takeover"
+          },
+          {
+            "ref_kind": "stage_closeout_packet_ref",
+            "ref": "stage-closeout-packet-ref:opl-meta-agent/target-agent-takeover/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "artifact_native_contract_ref",
+            "ref": "artifact-native-contract-ref:opl-meta-agent/target-agent-takeover"
+          },
+          {
+            "ref_kind": "stage_folder_contract_ref",
+            "ref": "stage-folder-contract-ref:opl-meta-agent/target-agent-takeover"
+          },
+          {
+            "ref_kind": "stage_manifest_ref",
+            "ref": "stage-manifest-ref:opl-meta-agent/target-agent-takeover/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_typed_blocker_ref",
+            "ref": "stage-typed-blocker-ref:opl-meta-agent/target-agent-takeover/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "canonical_artifact_ref",
+            "ref": "canonical-artifact-ref:opl-meta-agent/target-agent-takeover"
+          },
+          {
+            "ref_kind": "stage_json_ref",
+            "ref": "stage-json-ref:opl-meta-agent/target-agent-takeover"
+          },
+          {
+            "ref_kind": "stage_attempt_json_ref",
+            "ref": "stage-attempt-json-ref:opl-meta-agent/target-agent-takeover/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_attempt_receipt_ref",
+            "ref": "stage-attempt-receipt-ref:opl-meta-agent/target-agent-takeover/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_current_pointer_ref",
+            "ref": "stage-current-pointer-ref:opl-meta-agent/target-agent-takeover"
+          },
+          {
+            "ref_kind": "stage_export_ref",
+            "ref": "stage-export-ref:opl-meta-agent/target-agent-takeover/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_lineage_ref",
+            "ref": "stage-lineage-ref:opl-meta-agent/target-agent-takeover/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_retention_ref",
+            "ref": "stage-retention-ref:opl-meta-agent/target-agent-takeover/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "opl_physical_kernel_locator_ref",
+            "ref": "opl-physical-kernel-locator-ref:opl-meta-agent/target-agent-takeover"
+          },
+          {
+            "ref_kind": "stage_artifact_conformance_ref",
+            "ref": "stage-artifact-conformance-ref:opl-meta-agent/target-agent-takeover"
+          },
+          {
+            "ref_kind": "stage_artifact_workbench_consumption_ref",
+            "ref": "stage-artifact-workbench-consumption-ref:opl-meta-agent/target-agent-takeover"
+          }
+        ],
+        "receipt_schema_refs": [
+          {
+            "ref_kind": "repo_path",
+            "ref": "contracts/owner_receipt_contract.json",
+            "role": "owner_receipt_or_typed_blocker_schema"
+          }
+        ],
+        "authority_function_refs": [
+          {
+            "ref_kind": "repo_path",
+            "ref": "runtime/authority_functions/meta-agent-authority-functions.json",
+            "role": "minimal_oma_authority_function_catalog"
+          }
+        ],
+        "l4_entry_gate": {
+          "entry_level": "L4_structural_baseline",
+          "required_gates": [
+            "repo_layout_declared",
+            "stage_pack_v2_required",
+            "stage_prompt_skill_knowledge_quality_gate_refs_resolve",
+            "tool_affordance_boundary_declared",
+            "receipt_schema_declared",
+            "minimal_authority_functions_declared",
+            "generated_surface_handoff_declared",
+            "no_forbidden_write_contract_declared"
+          ],
+          "can_claim_l5": false,
+          "can_claim_domain_ready": false
+        },
+        "l5_entry_gate": {
+          "entry_level": "L5_production_operating_maturity",
+          "evidence_required": [
+            "real_user_path",
+            "long_soak_recovery",
+            "release_install_evidence",
+            "owner_acceptance",
+            "direct_and_opl_hosted_parity_at_scale"
+          ],
+          "conformance_pass_counts_as_l5": false,
+          "contract_validation_counts_as_l5": false,
+          "provider_completion_counts_as_l5": false,
+          "app_projection_counts_as_l5": false
         }
       },
       "tool_refs": [
         {
-          "ref": "agent/tools/domain_affordances.md",
           "ref_kind": "repo_path",
-          "role": "stage_tool_affordance_catalog",
-          "catalog_role": "available_affordance_catalog_not_workflow_script"
+          "ref": "agent/tools/domain_affordances.md",
+          "role": "available_domain_tool_affordance_catalog"
         }
       ],
       "strategy_refs": [
@@ -5792,6 +7427,73 @@
         "ref_kind": "json_pointer",
         "stage_id": "target-agent-takeover",
         "role": "stage_tool_affordance_boundary"
+      },
+      "stage_pack_conformance_version": "standard-stage-pack.v2",
+      "tool_affordance_boundary": {
+        "catalog_role": "available_affordance_catalog_not_workflow_script",
+        "capability_refs": [
+          {
+            "ref_kind": "domain_capability_ref",
+            "ref": "oma:target-agent-takeover",
+            "role": "produce_agent_building_semantics_candidate_package_work_order_or_typed_blocker_refs"
+          }
+        ],
+        "permission_scope_refs": [
+          {
+            "ref_kind": "permission_scope_ref",
+            "ref": "workspace-read-and-stage-output-write",
+            "role": "read_target_context_and_write_oma_stage_outputs_only"
+          }
+        ],
+        "credential_boundary_refs": [
+          {
+            "ref_kind": "credential_boundary_ref",
+            "ref": "no_new_credentials_required_by_stage_pack",
+            "role": "executor_must_request_human_gate_for_missing_external_credentials"
+          }
+        ],
+        "write_scope_refs": [
+          {
+            "ref_kind": "write_scope_ref",
+            "ref": "projects/<project-id>/artifacts/stage_outputs/target-agent-takeover/",
+            "role": "oma_stage_output_refs_only_no_target_domain_truth_or_owner_receipt_body"
+          }
+        ],
+        "side_effect_risk_refs": [
+          {
+            "ref_kind": "side_effect_risk_ref",
+            "ref": "candidate_package_work_order_or_typed_blocker_requires_owner_gate_before_target_mutation",
+            "role": "no_quality_promotion_runtime_or_target_domain_ready_claim"
+          }
+        ],
+        "forbidden_authority_refs": [
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_write_target_domain_truth_or_memory_body",
+            "role": "target_domain_owner_retains_truth_and_memory_authority"
+          },
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_write_target_artifact_or_owner_receipt_body",
+            "role": "oma_may_emit_candidate_refs_work_orders_route_back_or_typed_blockers_only"
+          },
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_maintain_private_runner_queue_attempt_ledger_or_runtime_state",
+            "role": "generic_runtime_and_scaffold_surfaces_belong_to_one_person_lab"
+          }
+        ],
+        "executor_autonomy": {
+          "executor_can_choose_tools": true,
+          "executor_can_skip_tools": true,
+          "executor_can_substitute_tools_within_boundary": true,
+          "executor_can_choose_order_and_parallelism": true,
+          "executor_can_request_missing_context_or_human_gate": true,
+          "tool_catalog_can_prescribe_tool_sequence": false,
+          "tool_catalog_can_define_cognitive_strategy": false,
+          "tool_catalog_can_override_stage_goal": false,
+          "tool_catalog_can_authorize_forbidden_write": false
+        }
       }
     },
     {
@@ -5862,15 +7564,16 @@
       },
       "selected_executor": {
         "executor_kind": "codex_cli",
-        "default_executor": false,
+        "default_executor": true,
         "executor_binding_ref": "default_codex_cli",
-        "binding_policy": "codex_cli_stage_executor_not_ordinary_default_route",
+        "binding_policy": "default_first_class_executor_for_standard_stage_pack_v2",
         "required_capabilities": [
           "repo_context_reading",
           "domain_skill_invocation",
           "receipt_or_typed_blocker_return",
           "no_forbidden_write_guard"
-        ]
+        ],
+        "lane_kind": "variant"
       },
       "executor_binding": {
         "binding_kind": "codex_cli_first_class_stage_executor",
@@ -6548,14 +8251,194 @@
           "policy_ref": "stage-completion-policy-ref:opl-meta-agent/optimizer-iteration",
           "stage_id": "optimizer-iteration",
           "target_domain_id": "opl-meta-agent"
+        },
+        "requires": [
+          "stage:optimizer-iteration",
+          "stage-completion-policy-ref:opl-meta-agent/optimizer-iteration",
+          "prompt-ref:agent/prompts/optimizer-iteration.md",
+          "skill-ref:agent/skills/external-suite-improvement.md",
+          "knowledge-ref:agent/knowledge/transferable-agent-practices.md",
+          "knowledge-ref:agent/knowledge/project-maturity-signals.md",
+          "quality-gate-ref:agent/quality_gates/external-suite-self-evolution.md",
+          "quality-gate-ref:agent/quality_gates/mechanism-patch-adoption.md",
+          "action-ref:improve-from-external-agent-lab-suite",
+          "runtime-ref:stage-attempt-ledger",
+          "runtime-ref:generated-interface-bundle",
+          "runtime-ref:stage-executor-policy-gate",
+          "runtime-ref:stage-progress-log-user-stage-log",
+          "artifact-native-contract-ref:opl-meta-agent/optimizer-iteration"
+        ],
+        "ensures": [
+          "stage-attempt-receipt-ref:optimizer-iteration",
+          "executor-receipt-ref:optimizer-iteration/codex-cli",
+          "no-forbidden-write-proof-ref:optimizer-iteration",
+          "independent-ai-review-ref:optimizer-iteration",
+          "output-ref:improvement_candidate_refs",
+          "output-ref:target_capability_improvement_candidate_refs",
+          "output-ref:mechanism_patch_proposal_refs",
+          "output-ref:developer_patch_work_order_refs",
+          "output-ref:target_agent_version_receipt_refs",
+          "output-ref:candidate_branch_refs",
+          "output-ref:regression_result_refs",
+          "stage-user-log-ref:optimizer-iteration",
+          "stage-closeout-packet-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+          "stage-folder-contract-ref:opl-meta-agent/optimizer-iteration",
+          "stage-manifest-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+          "stage-current-pointer-ref:opl-meta-agent/optimizer-iteration",
+          "canonical-artifact-ref:opl-meta-agent/optimizer-iteration",
+          "stage-json-ref:opl-meta-agent/optimizer-iteration",
+          "stage-attempt-json-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+          "stage-attempt-receipt-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+          "stage-export-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+          "stage-lineage-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+          "stage-retention-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}",
+          "opl-physical-kernel-locator-ref:opl-meta-agent/optimizer-iteration",
+          "stage-artifact-conformance-ref:opl-meta-agent/optimizer-iteration",
+          "stage-artifact-workbench-consumption-ref:opl-meta-agent/optimizer-iteration"
+        ],
+        "expected_receipt_refs": [
+          {
+            "ref_kind": "stage_attempt_receipt_ref",
+            "ref": "stage-attempt-receipt-ref:optimizer-iteration"
+          },
+          {
+            "ref_kind": "stage_completion_policy_ref",
+            "ref": "stage-completion-policy-ref:opl-meta-agent/optimizer-iteration"
+          },
+          {
+            "ref_kind": "executor_receipt_ref",
+            "ref": "executor-receipt-ref:optimizer-iteration/codex-cli"
+          },
+          {
+            "ref_kind": "boundary_receipt_ref",
+            "ref": "boundary-receipt-ref:optimizer-iteration/refs-only"
+          },
+          {
+            "ref_kind": "no_forbidden_write_proof_ref",
+            "ref": "no-forbidden-write-proof-ref:optimizer-iteration"
+          },
+          {
+            "ref_kind": "independent_ai_review_ref",
+            "ref": "independent-ai-review-ref:optimizer-iteration"
+          },
+          {
+            "ref_kind": "stage_user_log_ref",
+            "ref": "stage-user-log-ref:optimizer-iteration"
+          },
+          {
+            "ref_kind": "stage_closeout_packet_ref",
+            "ref": "stage-closeout-packet-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "artifact_native_contract_ref",
+            "ref": "artifact-native-contract-ref:opl-meta-agent/optimizer-iteration"
+          },
+          {
+            "ref_kind": "stage_folder_contract_ref",
+            "ref": "stage-folder-contract-ref:opl-meta-agent/optimizer-iteration"
+          },
+          {
+            "ref_kind": "stage_manifest_ref",
+            "ref": "stage-manifest-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_typed_blocker_ref",
+            "ref": "stage-typed-blocker-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "canonical_artifact_ref",
+            "ref": "canonical-artifact-ref:opl-meta-agent/optimizer-iteration"
+          },
+          {
+            "ref_kind": "stage_json_ref",
+            "ref": "stage-json-ref:opl-meta-agent/optimizer-iteration"
+          },
+          {
+            "ref_kind": "stage_attempt_json_ref",
+            "ref": "stage-attempt-json-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_attempt_receipt_ref",
+            "ref": "stage-attempt-receipt-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_current_pointer_ref",
+            "ref": "stage-current-pointer-ref:opl-meta-agent/optimizer-iteration"
+          },
+          {
+            "ref_kind": "stage_export_ref",
+            "ref": "stage-export-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_lineage_ref",
+            "ref": "stage-lineage-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_retention_ref",
+            "ref": "stage-retention-ref:opl-meta-agent/optimizer-iteration/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "opl_physical_kernel_locator_ref",
+            "ref": "opl-physical-kernel-locator-ref:opl-meta-agent/optimizer-iteration"
+          },
+          {
+            "ref_kind": "stage_artifact_conformance_ref",
+            "ref": "stage-artifact-conformance-ref:opl-meta-agent/optimizer-iteration"
+          },
+          {
+            "ref_kind": "stage_artifact_workbench_consumption_ref",
+            "ref": "stage-artifact-workbench-consumption-ref:opl-meta-agent/optimizer-iteration"
+          }
+        ],
+        "receipt_schema_refs": [
+          {
+            "ref_kind": "repo_path",
+            "ref": "contracts/owner_receipt_contract.json",
+            "role": "owner_receipt_or_typed_blocker_schema"
+          }
+        ],
+        "authority_function_refs": [
+          {
+            "ref_kind": "repo_path",
+            "ref": "runtime/authority_functions/meta-agent-authority-functions.json",
+            "role": "minimal_oma_authority_function_catalog"
+          }
+        ],
+        "l4_entry_gate": {
+          "entry_level": "L4_structural_baseline",
+          "required_gates": [
+            "repo_layout_declared",
+            "stage_pack_v2_required",
+            "stage_prompt_skill_knowledge_quality_gate_refs_resolve",
+            "tool_affordance_boundary_declared",
+            "receipt_schema_declared",
+            "minimal_authority_functions_declared",
+            "generated_surface_handoff_declared",
+            "no_forbidden_write_contract_declared"
+          ],
+          "can_claim_l5": false,
+          "can_claim_domain_ready": false
+        },
+        "l5_entry_gate": {
+          "entry_level": "L5_production_operating_maturity",
+          "evidence_required": [
+            "real_user_path",
+            "long_soak_recovery",
+            "release_install_evidence",
+            "owner_acceptance",
+            "direct_and_opl_hosted_parity_at_scale"
+          ],
+          "conformance_pass_counts_as_l5": false,
+          "contract_validation_counts_as_l5": false,
+          "provider_completion_counts_as_l5": false,
+          "app_projection_counts_as_l5": false
         }
       },
       "tool_refs": [
         {
-          "ref": "agent/tools/domain_affordances.md",
           "ref_kind": "repo_path",
-          "role": "stage_tool_affordance_catalog",
-          "catalog_role": "available_affordance_catalog_not_workflow_script"
+          "ref": "agent/tools/domain_affordances.md",
+          "role": "available_domain_tool_affordance_catalog"
         }
       ],
       "strategy_refs": [
@@ -6626,6 +8509,73 @@
         "ref_kind": "json_pointer",
         "stage_id": "optimizer-iteration",
         "role": "stage_tool_affordance_boundary"
+      },
+      "stage_pack_conformance_version": "standard-stage-pack.v2",
+      "tool_affordance_boundary": {
+        "catalog_role": "available_affordance_catalog_not_workflow_script",
+        "capability_refs": [
+          {
+            "ref_kind": "domain_capability_ref",
+            "ref": "oma:optimizer-iteration",
+            "role": "produce_agent_building_semantics_candidate_package_work_order_or_typed_blocker_refs"
+          }
+        ],
+        "permission_scope_refs": [
+          {
+            "ref_kind": "permission_scope_ref",
+            "ref": "workspace-read-and-stage-output-write",
+            "role": "read_target_context_and_write_oma_stage_outputs_only"
+          }
+        ],
+        "credential_boundary_refs": [
+          {
+            "ref_kind": "credential_boundary_ref",
+            "ref": "no_new_credentials_required_by_stage_pack",
+            "role": "executor_must_request_human_gate_for_missing_external_credentials"
+          }
+        ],
+        "write_scope_refs": [
+          {
+            "ref_kind": "write_scope_ref",
+            "ref": "projects/<project-id>/artifacts/stage_outputs/optimizer-iteration/",
+            "role": "oma_stage_output_refs_only_no_target_domain_truth_or_owner_receipt_body"
+          }
+        ],
+        "side_effect_risk_refs": [
+          {
+            "ref_kind": "side_effect_risk_ref",
+            "ref": "candidate_package_work_order_or_typed_blocker_requires_owner_gate_before_target_mutation",
+            "role": "no_quality_promotion_runtime_or_target_domain_ready_claim"
+          }
+        ],
+        "forbidden_authority_refs": [
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_write_target_domain_truth_or_memory_body",
+            "role": "target_domain_owner_retains_truth_and_memory_authority"
+          },
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_write_target_artifact_or_owner_receipt_body",
+            "role": "oma_may_emit_candidate_refs_work_orders_route_back_or_typed_blockers_only"
+          },
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_maintain_private_runner_queue_attempt_ledger_or_runtime_state",
+            "role": "generic_runtime_and_scaffold_surfaces_belong_to_one_person_lab"
+          }
+        ],
+        "executor_autonomy": {
+          "executor_can_choose_tools": true,
+          "executor_can_skip_tools": true,
+          "executor_can_substitute_tools_within_boundary": true,
+          "executor_can_choose_order_and_parallelism": true,
+          "executor_can_request_missing_context_or_human_gate": true,
+          "tool_catalog_can_prescribe_tool_sequence": false,
+          "tool_catalog_can_define_cognitive_strategy": false,
+          "tool_catalog_can_override_stage_goal": false,
+          "tool_catalog_can_authorize_forbidden_write": false
+        }
       }
     },
     {
@@ -6692,15 +8642,16 @@
       },
       "selected_executor": {
         "executor_kind": "codex_cli",
-        "default_executor": false,
+        "default_executor": true,
         "executor_binding_ref": "default_codex_cli",
-        "binding_policy": "codex_cli_stage_executor_not_ordinary_default_route",
+        "binding_policy": "default_first_class_executor_for_standard_stage_pack_v2",
         "required_capabilities": [
           "repo_context_reading",
           "domain_skill_invocation",
           "receipt_or_typed_blocker_return",
           "no_forbidden_write_guard"
-        ]
+        ],
+        "lane_kind": "variant"
       },
       "executor_binding": {
         "binding_kind": "codex_cli_first_class_stage_executor",
@@ -7374,14 +9325,190 @@
           "policy_ref": "stage-completion-policy-ref:opl-meta-agent/baseline-delivery",
           "stage_id": "baseline-delivery",
           "target_domain_id": "opl-meta-agent"
+        },
+        "requires": [
+          "stage:baseline-delivery",
+          "stage-completion-policy-ref:opl-meta-agent/baseline-delivery",
+          "prompt-ref:agent/prompts/baseline-delivery.md",
+          "skill-ref:agent/skills/agent-baseline-build.md",
+          "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
+          "knowledge-ref:agent/knowledge/opl-boundary-policy.md",
+          "knowledge-ref:agent/knowledge/project-maturity-signals.md",
+          "quality-gate-ref:agent/quality_gates/baseline-delivery.md",
+          "action-ref:build-agent-baseline",
+          "runtime-ref:stage-attempt-ledger",
+          "runtime-ref:generated-interface-bundle",
+          "runtime-ref:stage-executor-policy-gate",
+          "runtime-ref:stage-progress-log-user-stage-log",
+          "artifact-native-contract-ref:opl-meta-agent/baseline-delivery"
+        ],
+        "ensures": [
+          "stage-attempt-receipt-ref:baseline-delivery",
+          "executor-receipt-ref:baseline-delivery/codex-cli",
+          "no-forbidden-write-proof-ref:baseline-delivery",
+          "independent-ai-review-ref:baseline-delivery",
+          "output-ref:baseline_agent_package_ref",
+          "output-ref:delivery_receipt_ref",
+          "output-ref:operator_runbook_ref",
+          "stage-user-log-ref:baseline-delivery",
+          "stage-closeout-packet-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+          "stage-folder-contract-ref:opl-meta-agent/baseline-delivery",
+          "stage-manifest-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+          "stage-current-pointer-ref:opl-meta-agent/baseline-delivery",
+          "canonical-artifact-ref:opl-meta-agent/baseline-delivery",
+          "stage-json-ref:opl-meta-agent/baseline-delivery",
+          "stage-attempt-json-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+          "stage-attempt-receipt-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+          "stage-export-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+          "stage-lineage-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+          "stage-retention-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}",
+          "opl-physical-kernel-locator-ref:opl-meta-agent/baseline-delivery",
+          "stage-artifact-conformance-ref:opl-meta-agent/baseline-delivery",
+          "stage-artifact-workbench-consumption-ref:opl-meta-agent/baseline-delivery"
+        ],
+        "expected_receipt_refs": [
+          {
+            "ref_kind": "stage_attempt_receipt_ref",
+            "ref": "stage-attempt-receipt-ref:baseline-delivery"
+          },
+          {
+            "ref_kind": "stage_completion_policy_ref",
+            "ref": "stage-completion-policy-ref:opl-meta-agent/baseline-delivery"
+          },
+          {
+            "ref_kind": "executor_receipt_ref",
+            "ref": "executor-receipt-ref:baseline-delivery/codex-cli"
+          },
+          {
+            "ref_kind": "boundary_receipt_ref",
+            "ref": "boundary-receipt-ref:baseline-delivery/refs-only"
+          },
+          {
+            "ref_kind": "no_forbidden_write_proof_ref",
+            "ref": "no-forbidden-write-proof-ref:baseline-delivery"
+          },
+          {
+            "ref_kind": "independent_ai_review_ref",
+            "ref": "independent-ai-review-ref:baseline-delivery"
+          },
+          {
+            "ref_kind": "stage_user_log_ref",
+            "ref": "stage-user-log-ref:baseline-delivery"
+          },
+          {
+            "ref_kind": "stage_closeout_packet_ref",
+            "ref": "stage-closeout-packet-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "artifact_native_contract_ref",
+            "ref": "artifact-native-contract-ref:opl-meta-agent/baseline-delivery"
+          },
+          {
+            "ref_kind": "stage_folder_contract_ref",
+            "ref": "stage-folder-contract-ref:opl-meta-agent/baseline-delivery"
+          },
+          {
+            "ref_kind": "stage_manifest_ref",
+            "ref": "stage-manifest-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_typed_blocker_ref",
+            "ref": "stage-typed-blocker-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "canonical_artifact_ref",
+            "ref": "canonical-artifact-ref:opl-meta-agent/baseline-delivery"
+          },
+          {
+            "ref_kind": "stage_json_ref",
+            "ref": "stage-json-ref:opl-meta-agent/baseline-delivery"
+          },
+          {
+            "ref_kind": "stage_attempt_json_ref",
+            "ref": "stage-attempt-json-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_attempt_receipt_ref",
+            "ref": "stage-attempt-receipt-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_current_pointer_ref",
+            "ref": "stage-current-pointer-ref:opl-meta-agent/baseline-delivery"
+          },
+          {
+            "ref_kind": "stage_export_ref",
+            "ref": "stage-export-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_lineage_ref",
+            "ref": "stage-lineage-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_retention_ref",
+            "ref": "stage-retention-ref:opl-meta-agent/baseline-delivery/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "opl_physical_kernel_locator_ref",
+            "ref": "opl-physical-kernel-locator-ref:opl-meta-agent/baseline-delivery"
+          },
+          {
+            "ref_kind": "stage_artifact_conformance_ref",
+            "ref": "stage-artifact-conformance-ref:opl-meta-agent/baseline-delivery"
+          },
+          {
+            "ref_kind": "stage_artifact_workbench_consumption_ref",
+            "ref": "stage-artifact-workbench-consumption-ref:opl-meta-agent/baseline-delivery"
+          }
+        ],
+        "receipt_schema_refs": [
+          {
+            "ref_kind": "repo_path",
+            "ref": "contracts/owner_receipt_contract.json",
+            "role": "owner_receipt_or_typed_blocker_schema"
+          }
+        ],
+        "authority_function_refs": [
+          {
+            "ref_kind": "repo_path",
+            "ref": "runtime/authority_functions/meta-agent-authority-functions.json",
+            "role": "minimal_oma_authority_function_catalog"
+          }
+        ],
+        "l4_entry_gate": {
+          "entry_level": "L4_structural_baseline",
+          "required_gates": [
+            "repo_layout_declared",
+            "stage_pack_v2_required",
+            "stage_prompt_skill_knowledge_quality_gate_refs_resolve",
+            "tool_affordance_boundary_declared",
+            "receipt_schema_declared",
+            "minimal_authority_functions_declared",
+            "generated_surface_handoff_declared",
+            "no_forbidden_write_contract_declared"
+          ],
+          "can_claim_l5": false,
+          "can_claim_domain_ready": false
+        },
+        "l5_entry_gate": {
+          "entry_level": "L5_production_operating_maturity",
+          "evidence_required": [
+            "real_user_path",
+            "long_soak_recovery",
+            "release_install_evidence",
+            "owner_acceptance",
+            "direct_and_opl_hosted_parity_at_scale"
+          ],
+          "conformance_pass_counts_as_l5": false,
+          "contract_validation_counts_as_l5": false,
+          "provider_completion_counts_as_l5": false,
+          "app_projection_counts_as_l5": false
         }
       },
       "tool_refs": [
         {
-          "ref": "agent/tools/domain_affordances.md",
           "ref_kind": "repo_path",
-          "role": "stage_tool_affordance_catalog",
-          "catalog_role": "available_affordance_catalog_not_workflow_script"
+          "ref": "agent/tools/domain_affordances.md",
+          "role": "available_domain_tool_affordance_catalog"
         }
       ],
       "strategy_refs": [
@@ -7452,6 +9579,73 @@
         "ref_kind": "json_pointer",
         "stage_id": "baseline-delivery",
         "role": "stage_tool_affordance_boundary"
+      },
+      "stage_pack_conformance_version": "standard-stage-pack.v2",
+      "tool_affordance_boundary": {
+        "catalog_role": "available_affordance_catalog_not_workflow_script",
+        "capability_refs": [
+          {
+            "ref_kind": "domain_capability_ref",
+            "ref": "oma:baseline-delivery",
+            "role": "produce_agent_building_semantics_candidate_package_work_order_or_typed_blocker_refs"
+          }
+        ],
+        "permission_scope_refs": [
+          {
+            "ref_kind": "permission_scope_ref",
+            "ref": "workspace-read-and-stage-output-write",
+            "role": "read_target_context_and_write_oma_stage_outputs_only"
+          }
+        ],
+        "credential_boundary_refs": [
+          {
+            "ref_kind": "credential_boundary_ref",
+            "ref": "no_new_credentials_required_by_stage_pack",
+            "role": "executor_must_request_human_gate_for_missing_external_credentials"
+          }
+        ],
+        "write_scope_refs": [
+          {
+            "ref_kind": "write_scope_ref",
+            "ref": "projects/<project-id>/artifacts/stage_outputs/baseline-delivery/",
+            "role": "oma_stage_output_refs_only_no_target_domain_truth_or_owner_receipt_body"
+          }
+        ],
+        "side_effect_risk_refs": [
+          {
+            "ref_kind": "side_effect_risk_ref",
+            "ref": "candidate_package_work_order_or_typed_blocker_requires_owner_gate_before_target_mutation",
+            "role": "no_quality_promotion_runtime_or_target_domain_ready_claim"
+          }
+        ],
+        "forbidden_authority_refs": [
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_write_target_domain_truth_or_memory_body",
+            "role": "target_domain_owner_retains_truth_and_memory_authority"
+          },
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_write_target_artifact_or_owner_receipt_body",
+            "role": "oma_may_emit_candidate_refs_work_orders_route_back_or_typed_blockers_only"
+          },
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_maintain_private_runner_queue_attempt_ledger_or_runtime_state",
+            "role": "generic_runtime_and_scaffold_surfaces_belong_to_one_person_lab"
+          }
+        ],
+        "executor_autonomy": {
+          "executor_can_choose_tools": true,
+          "executor_can_skip_tools": true,
+          "executor_can_substitute_tools_within_boundary": true,
+          "executor_can_choose_order_and_parallelism": true,
+          "executor_can_request_missing_context_or_human_gate": true,
+          "tool_catalog_can_prescribe_tool_sequence": false,
+          "tool_catalog_can_define_cognitive_strategy": false,
+          "tool_catalog_can_override_stage_goal": false,
+          "tool_catalog_can_authorize_forbidden_write": false
+        }
       }
     },
     {
@@ -7523,15 +9717,16 @@
       },
       "selected_executor": {
         "executor_kind": "codex_cli",
-        "default_executor": false,
+        "default_executor": true,
         "executor_binding_ref": "default_codex_cli",
-        "binding_policy": "codex_cli_stage_executor_not_ordinary_default_route",
+        "binding_policy": "default_first_class_executor_for_standard_stage_pack_v2",
         "required_capabilities": [
           "repo_context_reading",
           "domain_skill_invocation",
           "receipt_or_typed_blocker_return",
           "no_forbidden_write_guard"
-        ]
+        ],
+        "lane_kind": "variant"
       },
       "executor_binding": {
         "binding_kind": "codex_cli_first_class_stage_executor",
@@ -8224,14 +10419,213 @@
           "policy_ref": "stage-completion-policy-ref:opl-meta-agent/trajectory-learning-intake",
           "stage_id": "trajectory-learning-intake",
           "target_domain_id": "opl-meta-agent"
+        },
+        "requires": [
+          "stage:trajectory-learning-intake",
+          "stage-completion-policy-ref:opl-meta-agent/trajectory-learning-intake",
+          "prompt-ref:agent/prompts/trajectory-learning-intake.md",
+          "skill-ref:agent/skills/trajectory-learning-intake.md",
+          "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
+          "knowledge-ref:agent/knowledge/trajectory-learning-policy.md",
+          "knowledge-ref:agent/knowledge/opl-boundary-policy.md",
+          "quality-gate-ref:agent/quality_gates/trajectory-learning-proposal.md",
+          "action-ref:materialize-trajectory-learning-proposal",
+          "contract-ref:contracts/trajectory_learning_contract.json",
+          "runtime-ref:stage-attempt-ledger",
+          "runtime-ref:generated-interface-bundle",
+          "runtime-ref:stage-executor-policy-gate",
+          "runtime-ref:agent-lab-promotion-gate",
+          "runtime-ref:stage-progress-log-user-stage-log",
+          "artifact-native-contract-ref:opl-meta-agent/trajectory-learning-intake"
+        ],
+        "ensures": [
+          "stage-attempt-receipt-ref:trajectory-learning-intake",
+          "executor-receipt-ref:trajectory-learning-intake/codex-cli",
+          "no-forbidden-write-proof-ref:trajectory-learning-intake",
+          "independent-ai-review-ref:trajectory-learning-intake",
+          "output-ref:redacted_trajectory_ref",
+          "output-ref:trajectory_atom_refs",
+          "output-ref:candidate_buffer_ref",
+          "output-ref:skill_policy_candidate_ref",
+          "output-ref:prompt_policy_candidate_ref",
+          "output-ref:stage_policy_candidate_ref",
+          "output-ref:mechanism_patch_proposal_ref",
+          "output-ref:typed_blocker_refs",
+          "stage-user-log-ref:trajectory-learning-intake",
+          "stage-closeout-packet-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+          "stage-folder-contract-ref:opl-meta-agent/trajectory-learning-intake",
+          "stage-manifest-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+          "stage-current-pointer-ref:opl-meta-agent/trajectory-learning-intake",
+          "canonical-artifact-ref:opl-meta-agent/trajectory-learning-intake",
+          "stage-json-ref:opl-meta-agent/trajectory-learning-intake",
+          "stage-attempt-json-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+          "stage-attempt-receipt-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+          "stage-export-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+          "stage-lineage-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+          "stage-retention-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+          "opl-physical-kernel-locator-ref:opl-meta-agent/trajectory-learning-intake",
+          "stage-artifact-conformance-ref:opl-meta-agent/trajectory-learning-intake",
+          "stage-artifact-workbench-consumption-ref:opl-meta-agent/trajectory-learning-intake"
+        ],
+        "expected_receipt_refs": [
+          {
+            "ref_kind": "stage_attempt_receipt_ref",
+            "ref": "stage-attempt-receipt-ref:trajectory-learning-intake"
+          },
+          {
+            "ref_kind": "stage_completion_policy_ref",
+            "ref": "stage-completion-policy-ref:opl-meta-agent/trajectory-learning-intake"
+          },
+          {
+            "ref_kind": "executor_receipt_ref",
+            "ref": "executor-receipt-ref:trajectory-learning-intake/codex-cli"
+          },
+          {
+            "ref_kind": "boundary_receipt_ref",
+            "ref": "boundary-receipt-ref:trajectory-learning-intake/refs-only"
+          },
+          {
+            "ref_kind": "no_forbidden_write_proof_ref",
+            "ref": "no-forbidden-write-proof-ref:trajectory-learning-intake"
+          },
+          {
+            "ref_kind": "independent_ai_review_ref",
+            "ref": "independent-ai-review-ref:trajectory-learning-intake"
+          },
+          {
+            "ref_kind": "redaction_proof_ref",
+            "ref": "redaction-proof-ref:trajectory-learning-intake"
+          },
+          {
+            "ref_kind": "trajectory_atomization_receipt_ref",
+            "ref": "trajectory-atomization-receipt-ref:trajectory-learning-intake"
+          },
+          {
+            "ref_kind": "candidate_buffer_receipt_ref",
+            "ref": "candidate-buffer-receipt-ref:trajectory-learning-intake"
+          },
+          {
+            "ref_kind": "agent_lab_promotion_gate_ref",
+            "ref": "agent-lab-promotion-gate-ref:trajectory-learning-intake"
+          },
+          {
+            "ref_kind": "stage_user_log_ref",
+            "ref": "stage-user-log-ref:trajectory-learning-intake"
+          },
+          {
+            "ref_kind": "stage_closeout_packet_ref",
+            "ref": "stage-closeout-packet-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "artifact_native_contract_ref",
+            "ref": "artifact-native-contract-ref:opl-meta-agent/trajectory-learning-intake"
+          },
+          {
+            "ref_kind": "stage_folder_contract_ref",
+            "ref": "stage-folder-contract-ref:opl-meta-agent/trajectory-learning-intake"
+          },
+          {
+            "ref_kind": "stage_manifest_ref",
+            "ref": "stage-manifest-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_typed_blocker_ref",
+            "ref": "stage-typed-blocker-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "canonical_artifact_ref",
+            "ref": "canonical-artifact-ref:opl-meta-agent/trajectory-learning-intake"
+          },
+          {
+            "ref_kind": "stage_json_ref",
+            "ref": "stage-json-ref:opl-meta-agent/trajectory-learning-intake"
+          },
+          {
+            "ref_kind": "stage_attempt_json_ref",
+            "ref": "stage-attempt-json-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_attempt_receipt_ref",
+            "ref": "stage-attempt-receipt-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_current_pointer_ref",
+            "ref": "stage-current-pointer-ref:opl-meta-agent/trajectory-learning-intake"
+          },
+          {
+            "ref_kind": "stage_export_ref",
+            "ref": "stage-export-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_lineage_ref",
+            "ref": "stage-lineage-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_retention_ref",
+            "ref": "stage-retention-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "opl_physical_kernel_locator_ref",
+            "ref": "opl-physical-kernel-locator-ref:opl-meta-agent/trajectory-learning-intake"
+          },
+          {
+            "ref_kind": "stage_artifact_conformance_ref",
+            "ref": "stage-artifact-conformance-ref:opl-meta-agent/trajectory-learning-intake"
+          },
+          {
+            "ref_kind": "stage_artifact_workbench_consumption_ref",
+            "ref": "stage-artifact-workbench-consumption-ref:opl-meta-agent/trajectory-learning-intake"
+          }
+        ],
+        "receipt_schema_refs": [
+          {
+            "ref_kind": "repo_path",
+            "ref": "contracts/owner_receipt_contract.json",
+            "role": "owner_receipt_or_typed_blocker_schema"
+          }
+        ],
+        "authority_function_refs": [
+          {
+            "ref_kind": "repo_path",
+            "ref": "runtime/authority_functions/meta-agent-authority-functions.json",
+            "role": "minimal_oma_authority_function_catalog"
+          }
+        ],
+        "l4_entry_gate": {
+          "entry_level": "L4_structural_baseline",
+          "required_gates": [
+            "repo_layout_declared",
+            "stage_pack_v2_required",
+            "stage_prompt_skill_knowledge_quality_gate_refs_resolve",
+            "tool_affordance_boundary_declared",
+            "receipt_schema_declared",
+            "minimal_authority_functions_declared",
+            "generated_surface_handoff_declared",
+            "no_forbidden_write_contract_declared"
+          ],
+          "can_claim_l5": false,
+          "can_claim_domain_ready": false
+        },
+        "l5_entry_gate": {
+          "entry_level": "L5_production_operating_maturity",
+          "evidence_required": [
+            "real_user_path",
+            "long_soak_recovery",
+            "release_install_evidence",
+            "owner_acceptance",
+            "direct_and_opl_hosted_parity_at_scale"
+          ],
+          "conformance_pass_counts_as_l5": false,
+          "contract_validation_counts_as_l5": false,
+          "provider_completion_counts_as_l5": false,
+          "app_projection_counts_as_l5": false
         }
       },
       "tool_refs": [
         {
-          "ref": "agent/tools/domain_affordances.md",
           "ref_kind": "repo_path",
-          "role": "stage_tool_affordance_catalog",
-          "catalog_role": "available_affordance_catalog_not_workflow_script"
+          "ref": "agent/tools/domain_affordances.md",
+          "role": "available_domain_tool_affordance_catalog"
         }
       ],
       "strategy_refs": [
@@ -8302,6 +10696,73 @@
         "ref_kind": "json_pointer",
         "stage_id": "trajectory-learning-intake",
         "role": "stage_tool_affordance_boundary"
+      },
+      "stage_pack_conformance_version": "standard-stage-pack.v2",
+      "tool_affordance_boundary": {
+        "catalog_role": "available_affordance_catalog_not_workflow_script",
+        "capability_refs": [
+          {
+            "ref_kind": "domain_capability_ref",
+            "ref": "oma:trajectory-learning-intake",
+            "role": "produce_agent_building_semantics_candidate_package_work_order_or_typed_blocker_refs"
+          }
+        ],
+        "permission_scope_refs": [
+          {
+            "ref_kind": "permission_scope_ref",
+            "ref": "workspace-read-and-stage-output-write",
+            "role": "read_target_context_and_write_oma_stage_outputs_only"
+          }
+        ],
+        "credential_boundary_refs": [
+          {
+            "ref_kind": "credential_boundary_ref",
+            "ref": "no_new_credentials_required_by_stage_pack",
+            "role": "executor_must_request_human_gate_for_missing_external_credentials"
+          }
+        ],
+        "write_scope_refs": [
+          {
+            "ref_kind": "write_scope_ref",
+            "ref": "projects/<project-id>/artifacts/stage_outputs/trajectory-learning-intake/",
+            "role": "oma_stage_output_refs_only_no_target_domain_truth_or_owner_receipt_body"
+          }
+        ],
+        "side_effect_risk_refs": [
+          {
+            "ref_kind": "side_effect_risk_ref",
+            "ref": "candidate_package_work_order_or_typed_blocker_requires_owner_gate_before_target_mutation",
+            "role": "no_quality_promotion_runtime_or_target_domain_ready_claim"
+          }
+        ],
+        "forbidden_authority_refs": [
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_write_target_domain_truth_or_memory_body",
+            "role": "target_domain_owner_retains_truth_and_memory_authority"
+          },
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_write_target_artifact_or_owner_receipt_body",
+            "role": "oma_may_emit_candidate_refs_work_orders_route_back_or_typed_blockers_only"
+          },
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_maintain_private_runner_queue_attempt_ledger_or_runtime_state",
+            "role": "generic_runtime_and_scaffold_surfaces_belong_to_one_person_lab"
+          }
+        ],
+        "executor_autonomy": {
+          "executor_can_choose_tools": true,
+          "executor_can_skip_tools": true,
+          "executor_can_substitute_tools_within_boundary": true,
+          "executor_can_choose_order_and_parallelism": true,
+          "executor_can_request_missing_context_or_human_gate": true,
+          "tool_catalog_can_prescribe_tool_sequence": false,
+          "tool_catalog_can_define_cognitive_strategy": false,
+          "tool_catalog_can_override_stage_goal": false,
+          "tool_catalog_can_authorize_forbidden_write": false
+        }
       }
     },
     {
@@ -8369,15 +10830,16 @@
       },
       "selected_executor": {
         "executor_kind": "codex_cli",
-        "default_executor": false,
+        "default_executor": true,
         "executor_binding_ref": "default_codex_cli",
-        "binding_policy": "codex_cli_stage_executor_not_ordinary_default_route",
+        "binding_policy": "default_first_class_executor_for_standard_stage_pack_v2",
         "required_capabilities": [
           "repo_context_reading",
           "domain_skill_invocation",
           "receipt_or_typed_blocker_return",
           "no_forbidden_write_guard"
-        ]
+        ],
+        "lane_kind": "variant"
       },
       "executor_binding": {
         "binding_kind": "codex_cli_first_class_stage_executor",
@@ -9052,14 +11514,191 @@
           "policy_ref": "stage-completion-policy-ref:opl-meta-agent/online-learning",
           "stage_id": "online-learning",
           "target_domain_id": "opl-meta-agent"
+        },
+        "requires": [
+          "stage:online-learning",
+          "stage-completion-policy-ref:opl-meta-agent/online-learning",
+          "prompt-ref:agent/prompts/online-learning.md",
+          "skill-ref:agent/skills/external-suite-improvement.md",
+          "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
+          "knowledge-ref:agent/knowledge/opl-boundary-policy.md",
+          "knowledge-ref:agent/knowledge/transferable-agent-practices.md",
+          "quality-gate-ref:agent/quality_gates/mechanism-patch-adoption.md",
+          "action-ref:generate-mechanism-patch-proposal",
+          "runtime-ref:stage-attempt-ledger",
+          "runtime-ref:generated-interface-bundle",
+          "runtime-ref:stage-executor-policy-gate",
+          "runtime-ref:stage-progress-log-user-stage-log",
+          "artifact-native-contract-ref:opl-meta-agent/online-learning"
+        ],
+        "ensures": [
+          "stage-attempt-receipt-ref:online-learning",
+          "executor-receipt-ref:online-learning/codex-cli",
+          "no-forbidden-write-proof-ref:online-learning",
+          "independent-ai-review-ref:online-learning",
+          "output-ref:online_learning_dataset_refs",
+          "output-ref:human_review_refs",
+          "output-ref:mechanism_patch_proposal_refs",
+          "output-ref:future_candidate_refs",
+          "stage-user-log-ref:online-learning",
+          "stage-closeout-packet-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+          "stage-folder-contract-ref:opl-meta-agent/online-learning",
+          "stage-manifest-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+          "stage-current-pointer-ref:opl-meta-agent/online-learning",
+          "canonical-artifact-ref:opl-meta-agent/online-learning",
+          "stage-json-ref:opl-meta-agent/online-learning",
+          "stage-attempt-json-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+          "stage-attempt-receipt-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+          "stage-export-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+          "stage-lineage-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+          "stage-retention-ref:opl-meta-agent/online-learning/{stage_attempt_id}",
+          "opl-physical-kernel-locator-ref:opl-meta-agent/online-learning",
+          "stage-artifact-conformance-ref:opl-meta-agent/online-learning",
+          "stage-artifact-workbench-consumption-ref:opl-meta-agent/online-learning"
+        ],
+        "expected_receipt_refs": [
+          {
+            "ref_kind": "stage_attempt_receipt_ref",
+            "ref": "stage-attempt-receipt-ref:online-learning"
+          },
+          {
+            "ref_kind": "stage_completion_policy_ref",
+            "ref": "stage-completion-policy-ref:opl-meta-agent/online-learning"
+          },
+          {
+            "ref_kind": "executor_receipt_ref",
+            "ref": "executor-receipt-ref:online-learning/codex-cli"
+          },
+          {
+            "ref_kind": "boundary_receipt_ref",
+            "ref": "boundary-receipt-ref:online-learning/refs-only"
+          },
+          {
+            "ref_kind": "no_forbidden_write_proof_ref",
+            "ref": "no-forbidden-write-proof-ref:online-learning"
+          },
+          {
+            "ref_kind": "independent_ai_review_ref",
+            "ref": "independent-ai-review-ref:online-learning"
+          },
+          {
+            "ref_kind": "stage_user_log_ref",
+            "ref": "stage-user-log-ref:online-learning"
+          },
+          {
+            "ref_kind": "stage_closeout_packet_ref",
+            "ref": "stage-closeout-packet-ref:opl-meta-agent/online-learning/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "artifact_native_contract_ref",
+            "ref": "artifact-native-contract-ref:opl-meta-agent/online-learning"
+          },
+          {
+            "ref_kind": "stage_folder_contract_ref",
+            "ref": "stage-folder-contract-ref:opl-meta-agent/online-learning"
+          },
+          {
+            "ref_kind": "stage_manifest_ref",
+            "ref": "stage-manifest-ref:opl-meta-agent/online-learning/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_typed_blocker_ref",
+            "ref": "stage-typed-blocker-ref:opl-meta-agent/online-learning/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "canonical_artifact_ref",
+            "ref": "canonical-artifact-ref:opl-meta-agent/online-learning"
+          },
+          {
+            "ref_kind": "stage_json_ref",
+            "ref": "stage-json-ref:opl-meta-agent/online-learning"
+          },
+          {
+            "ref_kind": "stage_attempt_json_ref",
+            "ref": "stage-attempt-json-ref:opl-meta-agent/online-learning/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_attempt_receipt_ref",
+            "ref": "stage-attempt-receipt-ref:opl-meta-agent/online-learning/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_current_pointer_ref",
+            "ref": "stage-current-pointer-ref:opl-meta-agent/online-learning"
+          },
+          {
+            "ref_kind": "stage_export_ref",
+            "ref": "stage-export-ref:opl-meta-agent/online-learning/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_lineage_ref",
+            "ref": "stage-lineage-ref:opl-meta-agent/online-learning/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "stage_retention_ref",
+            "ref": "stage-retention-ref:opl-meta-agent/online-learning/{stage_attempt_id}"
+          },
+          {
+            "ref_kind": "opl_physical_kernel_locator_ref",
+            "ref": "opl-physical-kernel-locator-ref:opl-meta-agent/online-learning"
+          },
+          {
+            "ref_kind": "stage_artifact_conformance_ref",
+            "ref": "stage-artifact-conformance-ref:opl-meta-agent/online-learning"
+          },
+          {
+            "ref_kind": "stage_artifact_workbench_consumption_ref",
+            "ref": "stage-artifact-workbench-consumption-ref:opl-meta-agent/online-learning"
+          }
+        ],
+        "receipt_schema_refs": [
+          {
+            "ref_kind": "repo_path",
+            "ref": "contracts/owner_receipt_contract.json",
+            "role": "owner_receipt_or_typed_blocker_schema"
+          }
+        ],
+        "authority_function_refs": [
+          {
+            "ref_kind": "repo_path",
+            "ref": "runtime/authority_functions/meta-agent-authority-functions.json",
+            "role": "minimal_oma_authority_function_catalog"
+          }
+        ],
+        "l4_entry_gate": {
+          "entry_level": "L4_structural_baseline",
+          "required_gates": [
+            "repo_layout_declared",
+            "stage_pack_v2_required",
+            "stage_prompt_skill_knowledge_quality_gate_refs_resolve",
+            "tool_affordance_boundary_declared",
+            "receipt_schema_declared",
+            "minimal_authority_functions_declared",
+            "generated_surface_handoff_declared",
+            "no_forbidden_write_contract_declared"
+          ],
+          "can_claim_l5": false,
+          "can_claim_domain_ready": false
+        },
+        "l5_entry_gate": {
+          "entry_level": "L5_production_operating_maturity",
+          "evidence_required": [
+            "real_user_path",
+            "long_soak_recovery",
+            "release_install_evidence",
+            "owner_acceptance",
+            "direct_and_opl_hosted_parity_at_scale"
+          ],
+          "conformance_pass_counts_as_l5": false,
+          "contract_validation_counts_as_l5": false,
+          "provider_completion_counts_as_l5": false,
+          "app_projection_counts_as_l5": false
         }
       },
       "tool_refs": [
         {
-          "ref": "agent/tools/domain_affordances.md",
           "ref_kind": "repo_path",
-          "role": "stage_tool_affordance_catalog",
-          "catalog_role": "available_affordance_catalog_not_workflow_script"
+          "ref": "agent/tools/domain_affordances.md",
+          "role": "available_domain_tool_affordance_catalog"
         }
       ],
       "strategy_refs": [
@@ -9130,6 +11769,73 @@
         "ref_kind": "json_pointer",
         "stage_id": "online-learning",
         "role": "stage_tool_affordance_boundary"
+      },
+      "stage_pack_conformance_version": "standard-stage-pack.v2",
+      "tool_affordance_boundary": {
+        "catalog_role": "available_affordance_catalog_not_workflow_script",
+        "capability_refs": [
+          {
+            "ref_kind": "domain_capability_ref",
+            "ref": "oma:online-learning",
+            "role": "produce_agent_building_semantics_candidate_package_work_order_or_typed_blocker_refs"
+          }
+        ],
+        "permission_scope_refs": [
+          {
+            "ref_kind": "permission_scope_ref",
+            "ref": "workspace-read-and-stage-output-write",
+            "role": "read_target_context_and_write_oma_stage_outputs_only"
+          }
+        ],
+        "credential_boundary_refs": [
+          {
+            "ref_kind": "credential_boundary_ref",
+            "ref": "no_new_credentials_required_by_stage_pack",
+            "role": "executor_must_request_human_gate_for_missing_external_credentials"
+          }
+        ],
+        "write_scope_refs": [
+          {
+            "ref_kind": "write_scope_ref",
+            "ref": "projects/<project-id>/artifacts/stage_outputs/online-learning/",
+            "role": "oma_stage_output_refs_only_no_target_domain_truth_or_owner_receipt_body"
+          }
+        ],
+        "side_effect_risk_refs": [
+          {
+            "ref_kind": "side_effect_risk_ref",
+            "ref": "candidate_package_work_order_or_typed_blocker_requires_owner_gate_before_target_mutation",
+            "role": "no_quality_promotion_runtime_or_target_domain_ready_claim"
+          }
+        ],
+        "forbidden_authority_refs": [
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_write_target_domain_truth_or_memory_body",
+            "role": "target_domain_owner_retains_truth_and_memory_authority"
+          },
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_write_target_artifact_or_owner_receipt_body",
+            "role": "oma_may_emit_candidate_refs_work_orders_route_back_or_typed_blockers_only"
+          },
+          {
+            "ref_kind": "forbidden_authority_ref",
+            "ref": "cannot_maintain_private_runner_queue_attempt_ledger_or_runtime_state",
+            "role": "generic_runtime_and_scaffold_surfaces_belong_to_one_person_lab"
+          }
+        ],
+        "executor_autonomy": {
+          "executor_can_choose_tools": true,
+          "executor_can_skip_tools": true,
+          "executor_can_substitute_tools_within_boundary": true,
+          "executor_can_choose_order_and_parallelism": true,
+          "executor_can_request_missing_context_or_human_gate": true,
+          "tool_catalog_can_prescribe_tool_sequence": false,
+          "tool_catalog_can_define_cognitive_strategy": false,
+          "tool_catalog_can_override_stage_goal": false,
+          "tool_catalog_can_authorize_forbidden_write": false
+        }
       }
     }
   ],
@@ -13401,5 +16107,6 @@
     "stage_completion_policy",
     "independent_gate_policy",
     "handoff_policy"
-  ]
+  ],
+  "stage_pack_conformance_version": "standard-stage-pack.v2"
 }
