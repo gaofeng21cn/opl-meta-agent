@@ -71,6 +71,45 @@ function mappingFromRecord(entry: JsonObject): ChangeRefMapping | null {
   return { token, refs };
 }
 
+function slug(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'capability';
+}
+
+function capabilityRecords(source: JsonObject | null): JsonObject[] {
+  return [
+    ...records(source?.capabilities),
+    ...records(source?.capability_map?.capabilities),
+  ];
+}
+
+function capabilityRef(entry: JsonObject): string | null {
+  const capabilityId = stringValue(entry.capability_id) ?? stringValue(entry.id) ?? stringValue(entry.name);
+  if (!capabilityId) {
+    return null;
+  }
+  const kind = slug(stringValue(entry.kind) ?? stringValue(entry.capability_kind) ?? 'capability');
+  return `${kind}_${slug(capabilityId)}`;
+}
+
+function capabilityMappings(source: JsonObject | null): ChangeRefMapping[] {
+  return capabilityRecords(source).flatMap((entry) => {
+    const tokens = uniqueRefs([
+      ...stringList(entry.improvement_tokens),
+      ...stringList(entry.failure_tokens),
+      ...stringList(entry.trigger_terms),
+      ...stringList(entry.triggers),
+    ]);
+    const fallbackRef = capabilityRef(entry);
+    const refs = uniqueRefs([
+      ...stringList(entry.refs),
+      ...stringList(entry.required_patch_refs),
+      ...stringList(entry.change_refs),
+      ...(fallbackRef ? [fallbackRef] : []),
+    ]);
+    return tokens.map((token) => ({ token, refs })).filter((mapping) => mapping.refs.length > 0);
+  });
+}
+
 function collectPatchSurfaceHints(...sources: Array<JsonObject | null>): Record<string, string[]> {
   const hints: Record<string, string[]> = {};
   for (const source of sources) {
@@ -85,6 +124,20 @@ function collectPatchSurfaceHints(...sources: Array<JsonObject | null>): Record<
     for (const [surface, values] of Object.entries(raw as Record<string, unknown>)) {
       hints[surface] = uniqueRefs([...(hints[surface] ?? []), ...stringList(values)]);
     }
+    for (const capability of capabilityRecords(source)) {
+      const ref = capabilityRef(capability);
+      if (!ref) {
+        continue;
+      }
+      const paths = uniqueRefs([
+        ...stringList(capability.canonical_paths),
+        ...stringList(capability.paths),
+        ...stringList(capability.target_repo_file_hints),
+      ]);
+      if (paths.length > 0) {
+        hints[ref] = uniqueRefs([...(hints[ref] ?? []), ...paths]);
+      }
+    }
   }
   return hints;
 }
@@ -95,12 +148,14 @@ function collectMappings(...sources: Array<JsonObject | null>): ChangeRefMapping
     ...records(source?.meta_agent_work_order_contract?.change_ref_mappings),
     ...records(source?.oma_handoff?.change_ref_mappings),
     ...records(source?.change_ref_mappings),
-  ]).map(mappingFromRecord).filter((entry): entry is ChangeRefMapping => Boolean(entry));
+  ]).map(mappingFromRecord).filter((entry): entry is ChangeRefMapping => Boolean(entry))
+    .concat(sources.flatMap(capabilityMappings));
 }
 
 export function targetImprovementPolicy(targetAgentDir: string): TargetImprovementPolicy {
   const agentLabHandoff = optionalJson(targetAgentDir, 'contracts/agent_lab_handoff.json');
   const omaHandoff = optionalJson(targetAgentDir, 'contracts/oma_handoff_refs.json');
+  const capabilityMap = optionalJson(targetAgentDir, 'contracts/capability_map.json');
   const generatedSurfaceHandoff = optionalJson(targetAgentDir, 'contracts/generated_surface_handoff.json');
   const productionAcceptanceDir = path.join(targetAgentDir, 'contracts/production_acceptance');
   const productionAcceptances = fs.existsSync(productionAcceptanceDir)
@@ -108,7 +163,7 @@ export function targetImprovementPolicy(targetAgentDir: string): TargetImproveme
       .filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
       .map((entry) => readJson(path.join(productionAcceptanceDir, entry.name)))
     : [];
-  const sources = [agentLabHandoff, omaHandoff, generatedSurfaceHandoff, ...productionAcceptances];
+  const sources = [agentLabHandoff, omaHandoff, capabilityMap, generatedSurfaceHandoff, ...productionAcceptances];
   const defaultChangeRefs = uniqueRefs([
     ...sources.flatMap((source) => stringList(source?.external_suite_improvement_policy?.default_change_refs)),
     ...sources.flatMap((source) => stringList(source?.meta_agent_work_order_contract?.default_change_refs)),
@@ -123,10 +178,13 @@ export function targetImprovementPolicy(targetAgentDir: string): TargetImproveme
     ...sources.flatMap((source) => stringList(source?.external_suite_improvement_policy?.external_learning_refs)),
     ...sources.flatMap((source) => stringList(source?.meta_agent_work_order_contract?.external_learning_refs)),
     ...sources.flatMap((source) => stringList(source?.oma_handoff?.external_learning_refs)),
+    ...sources.flatMap((source) => stringList(source?.external_learning_refs)),
   ]);
   const forbiddenTargetPathsOrSurfaces = uniqueRefs([
     ...sources.flatMap((source) => stringList(source?.meta_agent_work_order_contract?.forbidden_target_writes)),
     ...sources.flatMap((source) => stringList(source?.external_suite_improvement_policy?.forbidden_target_paths_or_surfaces)),
+    ...sources.flatMap((source) => stringList(source?.authority_boundary?.forbidden_surfaces)),
+    ...sources.flatMap((source) => capabilityRecords(source).flatMap((entry) => stringList(entry.forbidden_surfaces))),
     ...stringList(generatedSurfaceHandoff?.generated_surface_policy?.must_not_write),
   ]);
   const runtimeRequiredSurfaceRefs = uniqueRefs([
@@ -202,7 +260,7 @@ export function inferProposedChangeRefs({
     policy.contractDefaultChangeRefs.forEach((ref) => inferred.add(ref));
   }
   for (const mapping of policy.changeRefMappings) {
-    if (combined.includes(mapping.token)) {
+    if (textMatchesToken(combined, mapping.token)) {
       mapping.refs.forEach((ref) => inferred.add(ref));
     }
   }
@@ -292,6 +350,11 @@ function surfaceRefsForPatchRefs(patchRefs: string[]): string[] {
 
 function fileHintsForPatchRefs({ patchRefs, policy }: { patchRefs: string[]; policy: TargetImprovementPolicy }): string[] {
   const files = new Set<string>();
+  for (const patchRef of patchRefs) {
+    for (const filePath of policy.patchSurfaceHints[patchRef] ?? []) {
+      files.add(filePath);
+    }
+  }
   for (const surfaceRef of surfaceRefsForPatchRefs(patchRefs)) {
     for (const filePath of policy.patchSurfaceHints[surfaceRef] ?? []) {
       files.add(filePath);

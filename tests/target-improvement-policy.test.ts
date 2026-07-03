@@ -6,6 +6,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import type { AiReviewerEvaluation } from '../scripts/lib/meta-agent-loop-ai-reviewer.ts';
 import {
+  buildPatchTraceabilityMatrix,
   inferProposedChangeRefs,
   targetImprovementPolicy,
 } from '../scripts/lib/target-improvement-policy.ts';
@@ -170,6 +171,61 @@ test('contract-owned owner receipt defaults map reviewer evidence without script
         'target_agent_owner_route_ref:target_agent/owner-receipt-projection',
       ),
     );
+  } finally {
+    fs.rmSync(targetAgentDir, { recursive: true, force: true });
+  }
+});
+
+test('capability map routes reviewer gaps to exact canonical skill paths', () => {
+  const targetAgentDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-target-policy-'));
+  try {
+    fs.mkdirSync(path.join(targetAgentDir, 'contracts'), { recursive: true });
+    fs.writeFileSync(
+      path.join(targetAgentDir, 'contracts/capability_map.json'),
+      `${JSON.stringify({
+        surface_kind: 'target_capability_map',
+        capabilities: [
+          {
+            capability_id: 'medical-figure-design',
+            kind: 'professional_skill',
+            canonical_paths: ['skills/medical-figure-design/SKILL.md'],
+            improvement_tokens: ['figure_quality', 'visual-template'],
+            verification_refs: ['target_repo_test_receipt'],
+            forbidden_surfaces: ['publication_readiness'],
+          },
+        ],
+        authority_boundary: {
+          forbidden_surfaces: ['owner_receipt_body'],
+        },
+      }, null, 2)}\n`,
+    );
+
+    const policy = targetImprovementPolicy(targetAgentDir);
+    const proposedChangeRefs = inferProposedChangeRefs({
+      suiteRefs: ['quality-scorecard:mas/figure_quality'],
+      aiReviewerEvaluation: reviewerEvaluation({
+        critique: 'The figure quality is weak and not publication facing.',
+        source_refs: ['rubric-gap:figure_quality'],
+      }),
+      policy,
+    });
+
+    assert.deepEqual(proposedChangeRefs, ['professional_skill_medical_figure_design']);
+    assert.ok(policy.forbiddenTargetPathsOrSurfaces.includes('publication_readiness'));
+    assert.ok(policy.forbiddenTargetPathsOrSurfaces.includes('owner_receipt_body'));
+
+    const matrix = buildPatchTraceabilityMatrix({
+      suiteRefs: ['quality-scorecard:mas/figure_quality'],
+      proposedChangeRefs,
+      aiReviewerEvaluation: reviewerEvaluation({
+        critique: 'The figure quality is weak and not publication facing.',
+        source_refs: ['rubric-gap:figure_quality'],
+      }),
+      policy,
+    });
+
+    assert.equal(matrix.length, 1);
+    assert.deepEqual(matrix[0]?.target_repo_file_hints, ['skills/medical-figure-design/SKILL.md']);
   } finally {
     fs.rmSync(targetAgentDir, { recursive: true, force: true });
   }

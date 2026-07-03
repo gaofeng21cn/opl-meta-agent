@@ -318,7 +318,7 @@ test('takeover fails closed when target agent descriptor is missing', () => {
         oplBin,
         aiReviewerEvaluationPath: path.join(outputRoot, 'ai-reviewer-evaluation.json'),
       }),
-      /Target agent descriptor is required: .*contracts\/domain_descriptor\.json/,
+      /Target descriptor is required: .*contracts\/domain_descriptor\.json.*contracts\/capability_pack_descriptor\.json/,
     );
     assert.equal(fs.existsSync(path.join(takeoverRoot, 'agent-lab-takeover-suite.json')), false);
     assert.equal(fs.existsSync(path.join(takeoverRoot, 'takeover-receipt.json')), false);
@@ -347,7 +347,7 @@ test('takeover fails closed when target agent descriptor domain_id is missing', 
         oplBin,
         aiReviewerEvaluationPath: path.join(outputRoot, 'ai-reviewer-evaluation.json'),
       }),
-      /Target agent descriptor is missing domain_id: .*contracts\/domain_descriptor\.json/,
+      /Target agent descriptor is missing domain_id or capability_pack_id: .*contracts\/domain_descriptor\.json/,
     );
     assert.equal(fs.existsSync(path.join(takeoverRoot, 'agent-lab-takeover-suite.json')), false);
     assert.equal(fs.existsSync(path.join(takeoverRoot, 'takeover-receipt.json')), false);

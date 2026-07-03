@@ -10,6 +10,7 @@ export type TargetAgent = {
   domain_id: string;
   domain_label?: string | null;
   delivery_domain?: string | null;
+  target_kind?: string | null;
   target_brief?: string | null;
   descriptor_ref?: string;
   repo_dir?: string;
@@ -64,18 +65,42 @@ function requireString(value: unknown, field: string, descriptorPath: string): s
 }
 
 export function readTargetAgent(targetAgentDir: string): TargetAgent {
-  const descriptorPath = path.join(targetAgentDir, 'contracts', 'domain_descriptor.json');
+  const domainDescriptorPath = path.join(targetAgentDir, 'contracts', 'domain_descriptor.json');
+  const capabilityPackDescriptorPath = path.join(targetAgentDir, 'contracts', 'capability_pack_descriptor.json');
+  const descriptorPath = fs.existsSync(domainDescriptorPath)
+    ? domainDescriptorPath
+    : capabilityPackDescriptorPath;
   if (!fs.existsSync(descriptorPath)) {
-    throw new Error(`Target agent descriptor is required: ${descriptorPath}`);
+    throw new Error(
+      `Target descriptor is required: ${domainDescriptorPath} or ${capabilityPackDescriptorPath}`,
+    );
   }
 
   const descriptor = readJson(descriptorPath);
-  const domainId = requireString(descriptor.domain_id, 'domain_id', descriptorPath);
+  const domainId = requireString(
+    descriptor.domain_id ?? descriptor.capability_pack_id,
+    'domain_id or capability_pack_id',
+    descriptorPath,
+  );
+  const targetKind = typeof descriptor.target_kind === 'string'
+    ? descriptor.target_kind
+    : typeof descriptor.surface_kind === 'string' && descriptor.surface_kind.includes('capability_pack')
+      ? 'capability_pack'
+      : 'domain_agent';
 
   return {
     domain_id: domainId,
-    domain_label: typeof descriptor.domain_label === 'string' ? descriptor.domain_label : null,
-    delivery_domain: typeof descriptor.delivery_domain === 'string' ? descriptor.delivery_domain : null,
+    domain_label: typeof descriptor.domain_label === 'string'
+      ? descriptor.domain_label
+      : typeof descriptor.capability_pack_label === 'string'
+        ? descriptor.capability_pack_label
+        : null,
+    delivery_domain: typeof descriptor.delivery_domain === 'string'
+      ? descriptor.delivery_domain
+      : targetKind === 'capability_pack'
+        ? 'capability_pack'
+        : null,
+    target_kind: targetKind,
     target_brief: typeof descriptor.target_brief === 'string' ? descriptor.target_brief : null,
     descriptor_ref: descriptorPath,
     repo_dir: targetAgentDir,

@@ -6,6 +6,7 @@ import {
   path,
   spawnSync,
   repoRoot,
+  runImproveArgs,
   oplBin,
   writeJson,
   writeAiReviewerEvaluation,
@@ -89,7 +90,7 @@ test('external suite improvement fails closed when target descriptor is missing'
     );
 
     assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /Target agent descriptor is required: .*contracts\/domain_descriptor\.json/);
+    assert.match(result.stderr, /Target descriptor is required: .*contracts\/domain_descriptor\.json.*contracts\/capability_pack_descriptor\.json/);
     assert.equal(fs.existsSync(path.join(outputRoot, 'developer-patch-work-order.json')), false);
     assert.equal(fs.existsSync(path.join(outputRoot, 'target-capability-improvement-candidate.json')), false);
   } finally {
@@ -134,9 +135,62 @@ test('external suite improvement fails closed when target descriptor domain_id i
     );
 
     assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /Target agent descriptor is missing domain_id: .*contracts\/domain_descriptor\.json/);
+    assert.match(result.stderr, /Target agent descriptor is missing domain_id or capability_pack_id: .*contracts\/domain_descriptor\.json/);
     assert.equal(fs.existsSync(path.join(outputRoot, 'developer-patch-work-order.json')), false);
     assert.equal(fs.existsSync(path.join(outputRoot, 'target-capability-improvement-candidate.json')), false);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
+test('external suite improvement accepts capability pack target descriptor', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-capability-pack-target-'));
+  try {
+    const targetAgentDir = path.join(outputRoot, 'mas-scholar-skills');
+    writeJson(path.join(targetAgentDir, 'contracts/capability_pack_descriptor.json'), {
+      surface_kind: 'capability_pack_descriptor',
+      capability_pack_id: 'mas-scholar-skills',
+      capability_pack_label: 'MAS Scholar Skills',
+    });
+    writeJson(path.join(targetAgentDir, 'contracts/capability_map.json'), {
+      surface_kind: 'target_capability_map',
+      capabilities: [
+        {
+          capability_id: 'medical-manuscript-writing',
+          kind: 'professional_skill',
+          canonical_paths: ['skills/medical-manuscript-writing/SKILL.md'],
+          improvement_tokens: ['medical_journal_prose_quality'],
+        },
+      ],
+    });
+    const suitePath = path.join(outputRoot, 'medical-manuscript-quality-suite.json');
+    writeJson(suitePath, buildBlockedMedicalManuscriptSuite(suitePath));
+    const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+    writeAiReviewerEvaluation(reviewerEvaluationPath, {
+      critique: 'The medical_journal_prose_quality gap belongs in the writing capability pack.',
+      source_refs: ['rubric-gap:medical_journal_prose_quality'],
+    });
+
+    const payload = runImproveArgs([
+      '--suite',
+      suitePath,
+      '--target-agent-dir',
+      targetAgentDir,
+      '--output-dir',
+      outputRoot,
+      '--feedback-ref',
+      'manual-review:capability-pack/medical-writing',
+      '--ai-reviewer-evaluation',
+      reviewerEvaluationPath,
+      '--opl-bin',
+      oplBin,
+    ]);
+
+    const workOrder = payload.learning_loop.developer_patch_work_order;
+    assert.equal(workOrder.target_agent.domain_id, 'mas-scholar-skills');
+    assert.equal(workOrder.target_agent.delivery_domain, 'capability_pack');
+    assert.ok(workOrder.proposed_change_refs.includes('professional_skill_medical_manuscript_writing'));
+    assert.deepEqual(workOrder.target_repo_file_hints, ['skills/medical-manuscript-writing/SKILL.md']);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }
