@@ -114,7 +114,7 @@ test('developer work-order policy defaults are contract-owned and helper-project
   assert.ok(
     asStrings(retirementGate.closed_retention_refs)
       .includes(`${DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF}#/target_improvement_default_change_ref_policy`),
-    'target improvement default change-ref mapping should be moved into the developer work-order policy contract',
+    'retired target improvement default change-ref mapping tombstone should stay in the developer work-order policy contract',
   );
 
   assert.ok(defaultForbiddenTargetPathsOrSurfaces.includes('target domain truth surfaces'));
@@ -134,21 +134,21 @@ test('developer work-order policy defaults are contract-owned and helper-project
   );
   assert.ok(defaultSourcePatchCloseoutEvidence.includes('patch_traceability_matrix addressed'));
   assert.ok(defaultSourcePatchCloseoutEvidence.includes('temporary worktree cleaned after absorb'));
-  assert.equal(targetImprovementDefaultChangeRefPolicy.surface_kind, 'target_improvement_default_change_ref_policy');
-  assert.equal(targetImprovementDefaultChangeRefPolicy.state, 'active_contract_policy');
-  assert.deepEqual(asStrings(targetImprovementDefaultChangeRefPolicy.active_policy_consumer_refs), [
-    'scripts/lib/target-improvement-policy.ts',
-  ]);
-  assert.ok(asStrings(targetImprovementDefaultChangeRefPolicy.triggers).includes('owner-receipt'));
-  assert.ok(asStrings(targetImprovementDefaultChangeRefPolicy.triggers).includes('production_acceptance'));
-  assert.ok(
-    asStrings(targetImprovementDefaultChangeRefPolicy.default_change_refs)
-      .includes('target_agent_owner_receipt_contract_ref:target_agent/live-acceptance'),
+  assert.equal(
+    targetImprovementDefaultChangeRefPolicy.surface_kind,
+    'retired_target_improvement_default_change_ref_policy',
   );
+  assert.equal(targetImprovementDefaultChangeRefPolicy.state, 'retired_no_source_patch_target_materialization');
+  assert.deepEqual(asStrings(targetImprovementDefaultChangeRefPolicy.active_policy_consumer_refs), []);
+  assert.equal(targetImprovementDefaultChangeRefPolicy.source_patch_target_materialization_allowed, false);
+  assert.equal(targetImprovementDefaultChangeRefPolicy.generic_keyword_patch_target_fallback_allowed, false);
+  assert.equal(targetImprovementDefaultChangeRefPolicy.typed_blocker_on_miss, true);
   assert.ok(
-    asObjects(targetImprovementDefaultChangeRefPolicy.change_ref_mappings)
-      .some((entry) => entry.token === 'live-acceptance'),
+    asStrings(targetImprovementDefaultChangeRefPolicy.replacement_policy_refs).includes('contracts/capability_map.json'),
   );
+  assert.equal(Object.hasOwn(targetImprovementDefaultChangeRefPolicy, 'triggers'), false);
+  assert.equal(Object.hasOwn(targetImprovementDefaultChangeRefPolicy, 'default_change_refs'), false);
+  assert.equal(Object.hasOwn(targetImprovementDefaultChangeRefPolicy, 'change_ref_mappings'), false);
   assert.equal(targetImprovementDefaultChangeRefPolicy.authority_boundary.can_write_target_domain_truth, false);
   assert.equal(targetImprovementDefaultChangeRefPolicy.authority_boundary.can_write_target_owner_receipt_body, false);
   assert.equal(targetImprovementDefaultChangeRefPolicy.authority_boundary.can_authorize_target_quality_or_export, false);

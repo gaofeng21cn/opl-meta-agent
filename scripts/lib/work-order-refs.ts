@@ -72,65 +72,6 @@ export const DEFAULT_SOURCE_PATCH_CLOSEOUT_EVIDENCE = contractStringList(
   'default_source_patch_closeout_evidence',
 );
 
-function contractObject(policy: DeveloperWorkOrderPolicy, field: string): JsonObject {
-  const value = policy[field];
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    throw new Error(`Developer work-order policy ${field} must be a JSON object.`);
-  }
-  return value as JsonObject;
-}
-
-function contractMappingList(policy: JsonObject, field: string): Array<{ token: string; refs: string[] }> {
-  const value = policy[field];
-  if (!Array.isArray(value) || value.length === 0) {
-    throw new Error(`Developer work-order policy ${field} must be a non-empty mapping array.`);
-  }
-  return value.map((entry, index) => {
-    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
-      throw new Error(`Developer work-order policy ${field}[${index}] must be a JSON object.`);
-    }
-    const token = (entry as JsonObject).token;
-    const refs = (entry as JsonObject).refs;
-    if (typeof token !== 'string' || !token.trim()) {
-      throw new Error(`Developer work-order policy ${field}[${index}].token must be a non-empty string.`);
-    }
-    if (!Array.isArray(refs) || refs.length === 0 || refs.some((ref) => typeof ref !== 'string' || !ref.trim())) {
-      throw new Error(`Developer work-order policy ${field}[${index}].refs must be a non-empty string array.`);
-    }
-    return {
-      token: token.trim(),
-      refs: refs.map((ref) => ref.trim()),
-    };
-  });
-}
-
-const TARGET_IMPROVEMENT_DEFAULT_CHANGE_REF_POLICY = contractObject(
-  DEVELOPER_WORK_ORDER_POLICY,
-  'target_improvement_default_change_ref_policy',
-);
-
-if (
-  !stringList(TARGET_IMPROVEMENT_DEFAULT_CHANGE_REF_POLICY.active_policy_consumer_refs)
-    .includes('scripts/lib/target-improvement-policy.ts')
-) {
-  throw new Error('Target improvement default change-ref policy must name target-improvement-policy as a consumer.');
-}
-
-export const DEFAULT_TARGET_IMPROVEMENT_CHANGE_REF_TRIGGERS = contractStringList(
-  TARGET_IMPROVEMENT_DEFAULT_CHANGE_REF_POLICY,
-  'triggers',
-);
-
-export const DEFAULT_TARGET_IMPROVEMENT_CHANGE_REFS = contractStringList(
-  TARGET_IMPROVEMENT_DEFAULT_CHANGE_REF_POLICY,
-  'default_change_refs',
-);
-
-export const DEFAULT_TARGET_IMPROVEMENT_CHANGE_REF_MAPPINGS = contractMappingList(
-  TARGET_IMPROVEMENT_DEFAULT_CHANGE_REF_POLICY,
-  'change_ref_mappings',
-);
-
 export function records(value: unknown): JsonObject[] {
   return Array.isArray(value)
     ? value.filter((entry): entry is JsonObject => Boolean(entry) && typeof entry === 'object' && !Array.isArray(entry))

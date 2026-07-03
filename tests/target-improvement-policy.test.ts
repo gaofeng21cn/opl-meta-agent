@@ -75,14 +75,6 @@ test('target improvement policy does not synthesize generic external-agent chang
 
     const policy = targetImprovementPolicy(targetAgentDir);
     assert.deepEqual(policy.defaultChangeRefs, []);
-    assert.ok(policy.contractDefaultChangeRefTriggers.includes('owner-receipt'));
-    assert.ok(policy.contractDefaultChangeRefTriggers.includes('production_acceptance'));
-    assert.ok(
-      policy.contractDefaultChangeRefs.includes(
-        'target_agent_owner_receipt_contract_ref:target_agent/live-acceptance',
-      ),
-    );
-    assert.ok(policy.contractChangeRefMappings.some((mapping) => mapping.token === 'live-acceptance'));
 
     const proposedChangeRefs = inferProposedChangeRefs({
       suiteRefs: [
@@ -129,13 +121,16 @@ test('target improvement policy still applies explicit target-owned owner receip
     });
 
     assert.ok(proposedChangeRefs.includes('target_agent_owner_receipt_contract_ref:target-agent/live-acceptance'));
-    assert.ok(proposedChangeRefs.includes('target_agent_owner_route_ref:target_agent/owner-receipt-projection'));
+    assert.equal(
+      proposedChangeRefs.includes('target_agent_owner_route_ref:target_agent/owner-receipt-projection'),
+      false,
+    );
   } finally {
     fs.rmSync(targetAgentDir, { recursive: true, force: true });
   }
 });
 
-test('contract-owned owner receipt defaults map reviewer evidence without script-local policy constants', () => {
+test('owner receipt wording without target policy does not become a generic patch target', () => {
   const targetAgentDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-target-policy-'));
   try {
     fs.mkdirSync(path.join(targetAgentDir, 'contracts'), { recursive: true });
@@ -161,16 +156,7 @@ test('contract-owned owner receipt defaults map reviewer evidence without script
     assert.deepEqual(policy.defaultChangeRefs, []);
     assert.deepEqual(policy.defaultChangeRefTriggers, []);
     assert.deepEqual(policy.changeRefMappings, []);
-    assert.ok(
-      proposedChangeRefs.includes(
-        'target_agent_owner_receipt_contract_ref:target_agent/live-acceptance',
-      ),
-    );
-    assert.ok(
-      proposedChangeRefs.includes(
-        'target_agent_owner_route_ref:target_agent/owner-receipt-projection',
-      ),
-    );
+    assert.deepEqual(proposedChangeRefs, []);
   } finally {
     fs.rmSync(targetAgentDir, { recursive: true, force: true });
   }

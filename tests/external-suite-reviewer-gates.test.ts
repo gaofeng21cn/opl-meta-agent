@@ -160,6 +160,8 @@ test('external suite improvement accepts capability pack target descriptor', () 
           kind: 'professional_skill',
           canonical_paths: ['skills/medical-manuscript-writing/SKILL.md'],
           improvement_tokens: ['medical_journal_prose_quality'],
+          verification_refs: ['target_repo_test_receipt'],
+          forbidden_surfaces: ['target owner receipt body'],
         },
       ],
     });
@@ -300,7 +302,15 @@ test('external blocked suite writes typed blocker when target-owned improvement 
     const suitePath = path.join(outputRoot, 'medical-manuscript-quality-suite.json');
     writeJson(suitePath, buildBlockedMedicalManuscriptSuite(suitePath));
     const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
-    writeAiReviewerEvaluation(reviewerEvaluationPath);
+    writeAiReviewerEvaluation(reviewerEvaluationPath, {
+      critique: 'The owner-receipt package typed-blocker language is generic and has no target-owned patch target.',
+      suggestions: ['Do not synthesize a package patch target without a capability_map or target-owned policy.'],
+      source_refs: [
+        'owner-receipt:external-agent/live-acceptance',
+        'typed-blocker:external-agent/package-closeout',
+      ],
+      direct_evidence_refs: ['agent-lab-result:external-agent/generic-owner-boundary'],
+    });
 
     const result = spawnSync(
       process.execPath,
@@ -336,6 +346,10 @@ test('external blocked suite writes typed blocker when target-owned improvement 
     assert.deepEqual(candidate.proposed_change_refs, []);
     assert.deepEqual(candidate.patch_traceability_matrix, []);
     assert.equal(candidate.traceability_status, 'target_owned_patch_refs_missing');
+    assert.equal(
+      candidate.target_editable_surface_refs.some((ref: string) => ref.startsWith('target_agent_')),
+      false,
+    );
 
     const blocker = JSON.parse(fs.readFileSync(path.join(outputRoot, 'typed-blocker.json'), 'utf8'));
     assert.equal(blocker.surface_kind, 'opl_meta_agent_target_improvement_policy_typed_blocker');
@@ -358,6 +372,8 @@ test('external blocked suite writes typed blocker when target-owned improvement 
     );
     assert.equal(blocker.authority_boundary.typed_blocker_only, true);
     assert.equal(blocker.authority_boundary.no_executable_work_order_issued, true);
+    assert.ok(blocker.missing_required_fields.includes('target_improvement_policy.proposed_change_refs'));
+    assert.ok(blocker.missing_required_fields.includes('target_improvement_policy.patch_traceability_matrix'));
     assert.equal(payload.authority_boundary.no_executable_work_order_issued, true);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });

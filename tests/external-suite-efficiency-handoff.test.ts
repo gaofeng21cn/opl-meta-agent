@@ -190,6 +190,10 @@ test('external suite efficiency handoff projection becomes a developer work orde
           'target_agent_efficiency_handoff_projection',
           'target_agent_owner_route',
         ],
+        forbidden_target_paths_or_surfaces: [
+          'target quality verdict bodies',
+          'target export authority',
+        ],
         runtime_expected_outcomes: [
           'RedCube runtime projection preserves screenshot review and export authority while reducing redundant review calls',
         ],

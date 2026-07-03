@@ -53,27 +53,17 @@ test('target-agent owner receipt Agent Lab suite becomes a no-patch result-consu
     const candidate = payload.learning_loop.target_capability_improvement_candidate;
     assert.equal(candidate.improvement_area, 'target_agent_agent_lab_result_consumption_capability');
     assert.equal(candidate.status, 'candidate_recorded_requires_target_owner_gate');
-    assert.ok(
-      candidate.proposed_change_refs.includes(
-        'target_agent_production_acceptance_contract_ref:target_agent/production_acceptance',
-      ),
-    );
-    assert.ok(candidate.proposed_change_refs.includes('target_agent_owner_receipt_contract_ref:target_agent/live-acceptance'));
-    assert.ok(candidate.target_editable_surface_refs.includes('target_agent_production_acceptance_contract_ref'));
+    assert.deepEqual(candidate.proposed_change_refs, []);
+    assert.deepEqual(candidate.target_editable_surface_refs, []);
     assert.equal(candidate.ai_reviewer_review.critique, reviewerEvaluation.critique);
     assert.equal(candidate.ai_reviewer_independence.no_shared_context, true);
     assert.equal(path.basename(payload.artifacts.target_capability_improvement_candidate_path), 'target-capability-improvement-candidate.json');
     const candidateFromFile = readJson(payload.artifacts.target_capability_improvement_candidate_path);
     assert.equal(candidateFromFile.candidate_id, candidate.candidate_id);
-    const liveTrace = (candidate.patch_traceability_matrix as JsonObject[]).find((item) =>
-      item.gap_token === 'live-acceptance'
-    );
-    assert.ok(liveTrace);
-    assert.deepEqual(liveTrace.target_repo_file_hints, []);
-    assert.ok(liveTrace.required_patch_refs.includes('target_agent_owner_receipt_contract_ref:target_agent/live-acceptance'));
+    assert.deepEqual(candidate.patch_traceability_matrix as JsonObject[], []);
 
     const mechanism = readJson(payload.artifacts.mechanism_patch_proposal_path);
-    assert.ok(mechanism.editable_surfaces.includes('target_agent_owner_receipt_contract_ref'));
+    assert.deepEqual(mechanism.editable_surfaces, []);
     assert.equal(mechanism.authority_boundary.can_authorize_target_domain_quality_or_export, false);
 
     const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);

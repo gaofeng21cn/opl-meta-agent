@@ -675,7 +675,7 @@
           "patch_traceability_matrix_ref",
           "target_editable_surface_refs",
           "target_repo_file_hints",
-          "target_improvement_default_change_ref_policy_consumer_ref",
+          "target_owned_capability_map_or_explicit_policy_consumer_ref",
           "missing_target_improvement_policy_typed_blocker_ref"
         ],
         "contract_refs": [

@@ -7,9 +7,6 @@ import {
   DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
   DEFAULT_RUNTIME_EXPECTED_OUTCOMES,
   DEFAULT_RUNTIME_REQUIRED_SURFACE_REFS,
-  DEFAULT_TARGET_IMPROVEMENT_CHANGE_REF_MAPPINGS,
-  DEFAULT_TARGET_IMPROVEMENT_CHANGE_REF_TRIGGERS,
-  DEFAULT_TARGET_IMPROVEMENT_CHANGE_REFS,
   records,
   stringList,
   stringValue,
@@ -59,14 +56,14 @@ export type TargetImprovementPolicy = {
   defaultChangeRefs: string[];
   defaultChangeRefTriggers: string[];
   changeRefMappings: ChangeRefMapping[];
-  contractDefaultChangeRefs: string[];
-  contractDefaultChangeRefTriggers: string[];
-  contractChangeRefMappings: ChangeRefMapping[];
   patchSurfaceHints: Record<string, string[]>;
   externalLearningRefs: string[];
   forbiddenTargetPathsOrSurfaces: string[];
+  targetOwnedForbiddenTargetPathsOrSurfaces: string[];
   runtimeRequiredSurfaceRefs: string[];
+  targetOwnedRuntimeRequiredSurfaceRefs: string[];
   runtimeExpectedOutcomes: string[];
+  targetOwnedRuntimeExpectedOutcomes: string[];
 };
 
 function optionalJson(targetAgentDir: string, relativePath: string): JsonObject | null {
@@ -218,13 +215,15 @@ function collectPatchSurfaceHints(...sources: Array<JsonObject | null>): Record<
 }
 
 function collectMappings(...sources: Array<JsonObject | null>): ChangeRefMapping[] {
-  return sources.flatMap((source) => [
-    ...records(source?.external_suite_improvement_policy?.change_ref_mappings),
-    ...records(source?.meta_agent_work_order_contract?.change_ref_mappings),
-    ...records(source?.oma_handoff?.change_ref_mappings),
-    ...records(source?.change_ref_mappings),
-  ]).map(mappingFromRecord).filter((entry): entry is ChangeRefMapping => Boolean(entry))
-    .concat(sources.flatMap(capabilityMappings));
+  return [
+    ...sources.flatMap(capabilityMappings),
+    ...sources.flatMap((source) => [
+      ...records(source?.external_suite_improvement_policy?.change_ref_mappings),
+      ...records(source?.meta_agent_work_order_contract?.change_ref_mappings),
+      ...records(source?.oma_handoff?.change_ref_mappings),
+      ...records(source?.change_ref_mappings),
+    ]).map(mappingFromRecord).filter((entry): entry is ChangeRefMapping => Boolean(entry)),
+  ];
 }
 
 export function targetImprovementPolicy(targetAgentDir: string): TargetImprovementPolicy {
@@ -255,19 +254,19 @@ export function targetImprovementPolicy(targetAgentDir: string): TargetImproveme
     ...sources.flatMap((source) => stringList(source?.oma_handoff?.external_learning_refs)),
     ...sources.flatMap((source) => stringList(source?.external_learning_refs)),
   ]);
-  const forbiddenTargetPathsOrSurfaces = uniqueRefs([
+  const targetOwnedForbiddenTargetPathsOrSurfaces = uniqueRefs([
     ...sources.flatMap((source) => stringList(source?.meta_agent_work_order_contract?.forbidden_target_writes)),
     ...sources.flatMap((source) => stringList(source?.external_suite_improvement_policy?.forbidden_target_paths_or_surfaces)),
     ...sources.flatMap((source) => stringList(source?.authority_boundary?.forbidden_surfaces)),
     ...sources.flatMap((source) => capabilityRecords(source).flatMap((entry) => stringList(entry.forbidden_surfaces))),
     ...stringList(generatedSurfaceHandoff?.generated_surface_policy?.must_not_write),
   ]);
-  const runtimeRequiredSurfaceRefs = uniqueRefs([
+  const targetOwnedRuntimeRequiredSurfaceRefs = uniqueRefs([
     ...sources.flatMap((source) => stringList(source?.external_suite_improvement_policy?.runtime_required_surface_refs)),
     ...sources.flatMap((source) => stringList(source?.meta_agent_work_order_contract?.runtime_required_surface_refs)),
     ...sources.flatMap((source) => stringList(source?.oma_handoff?.runtime_required_surface_refs)),
   ]);
-  const runtimeExpectedOutcomes = uniqueRefs([
+  const targetOwnedRuntimeExpectedOutcomes = uniqueRefs([
     ...sources.flatMap((source) => stringList(source?.external_suite_improvement_policy?.runtime_expected_outcomes)),
     ...sources.flatMap((source) => stringList(source?.meta_agent_work_order_contract?.runtime_expected_outcomes)),
     ...sources.flatMap((source) => stringList(source?.oma_handoff?.runtime_expected_outcomes)),
@@ -276,31 +275,39 @@ export function targetImprovementPolicy(targetAgentDir: string): TargetImproveme
     defaultChangeRefs,
     defaultChangeRefTriggers,
     changeRefMappings: collectMappings(...sources),
-    contractDefaultChangeRefs: DEFAULT_TARGET_IMPROVEMENT_CHANGE_REFS,
-    contractDefaultChangeRefTriggers: DEFAULT_TARGET_IMPROVEMENT_CHANGE_REF_TRIGGERS,
-    contractChangeRefMappings: DEFAULT_TARGET_IMPROVEMENT_CHANGE_REF_MAPPINGS,
     patchSurfaceHints: collectPatchSurfaceHints(...sources),
     externalLearningRefs,
-    forbiddenTargetPathsOrSurfaces: forbiddenTargetPathsOrSurfaces.length
-      ? forbiddenTargetPathsOrSurfaces
+    forbiddenTargetPathsOrSurfaces: targetOwnedForbiddenTargetPathsOrSurfaces.length
+      ? targetOwnedForbiddenTargetPathsOrSurfaces
       : DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
-    runtimeRequiredSurfaceRefs: runtimeRequiredSurfaceRefs.length
-      ? runtimeRequiredSurfaceRefs
+    targetOwnedForbiddenTargetPathsOrSurfaces,
+    runtimeRequiredSurfaceRefs: targetOwnedRuntimeRequiredSurfaceRefs.length
+      ? targetOwnedRuntimeRequiredSurfaceRefs
       : DEFAULT_RUNTIME_REQUIRED_SURFACE_REFS,
-    runtimeExpectedOutcomes: runtimeExpectedOutcomes.length
-      ? runtimeExpectedOutcomes
+    targetOwnedRuntimeRequiredSurfaceRefs,
+    runtimeExpectedOutcomes: targetOwnedRuntimeExpectedOutcomes.length
+      ? targetOwnedRuntimeExpectedOutcomes
       : DEFAULT_RUNTIME_EXPECTED_OUTCOMES,
+    targetOwnedRuntimeExpectedOutcomes,
   };
 }
 
+function normalizeTokenSearchText(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
 function textMatchesToken(text: string, token: string): boolean {
-  const normalizedText = text.toLowerCase();
-  const normalizedToken = token.toLowerCase();
-  if (normalizedText.includes(normalizedToken)) {
-    return true;
+  const normalizedToken = normalizeTokenSearchText(token);
+  if (!normalizedToken) {
+    return false;
   }
-  const tokenWords = normalizedToken.split(/[-_]/).filter((word) => word.length > 2);
-  return tokenWords.length > 0 && tokenWords.every((word) => normalizedText.includes(word));
+  return ` ${normalizeTokenSearchText(text)} `.includes(` ${normalizedToken} `);
+}
+
+function textMentionsTokenWords(text: string, token: string): boolean {
+  const normalizedText = ` ${normalizeTokenSearchText(text)} `;
+  const tokenWords = normalizeTokenSearchText(token).split(' ').filter((word) => word.length > 2);
+  return tokenWords.length > 0 && tokenWords.every((word) => normalizedText.includes(` ${word} `));
 }
 
 function reviewerEvidenceText(aiReviewerEvaluation: AiReviewerEvaluation): string[] {
@@ -329,18 +336,8 @@ export function inferProposedChangeRefs({
   if (triggeredByDefaultPolicy) {
     policy.defaultChangeRefs.forEach((ref) => inferred.add(ref));
   }
-  if (
-    policy.contractDefaultChangeRefTriggers.some((trigger) => combined.includes(trigger))
-  ) {
-    policy.contractDefaultChangeRefs.forEach((ref) => inferred.add(ref));
-  }
   for (const mapping of policy.changeRefMappings) {
     if (textMatchesToken(combined, mapping.token)) {
-      mapping.refs.forEach((ref) => inferred.add(ref));
-    }
-  }
-  for (const mapping of policy.contractChangeRefMappings) {
-    if (combined.includes(mapping.token)) {
       mapping.refs.forEach((ref) => inferred.add(ref));
     }
   }
@@ -370,13 +367,13 @@ export function buildPatchTraceabilityMatrix({
     || ref.includes('typed-blocker')
   );
   const matrix = [];
-  for (const mapping of [...policy.changeRefMappings, ...policy.contractChangeRefMappings]) {
+  for (const mapping of policy.changeRefMappings) {
     if (!textMatchesToken(combined, mapping.token)) {
       continue;
     }
     const requiredPatchRefs = mapping.refs.filter((ref: string) => proposedChangeRefs.includes(ref));
     const reviewerSuggestions = aiReviewerEvaluation.suggestions.filter((suggestion) =>
-      textMatchesToken(suggestion, mapping.token)
+      textMatchesToken(suggestion, mapping.token) || textMentionsTokenWords(suggestion, mapping.token)
     );
     const reviewerSourceRefs = aiReviewerEvaluation.source_refs.filter((ref) => textMatchesToken(ref, mapping.token));
     const capability = mapping.capability;

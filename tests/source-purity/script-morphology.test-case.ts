@@ -750,10 +750,6 @@ test('script morphology stays limited to authority refs, materializers, helpers,
       assert.deepEqual(asStrings(entry.contract_refs), [
         DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF,
       ]);
-      assert.ok(
-        asStrings(entry.writes_only).includes('target_improvement_default_change_ref_policy_consumer_ref'),
-        'target-improvement-policy should consume default change-ref mapping from the developer work-order policy contract',
-      );
       assert.deepEqual(asStrings(entry.retired_tail_refs), [
         'retired-tail:opl-meta-agent/target-improvement-policy/generic-external-agent-patch-ref-fallback',
       ]);

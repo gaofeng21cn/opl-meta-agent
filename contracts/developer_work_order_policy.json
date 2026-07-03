@@ -70,56 +70,21 @@
     "temporary worktree cleaned after absorb"
   ],
   "target_improvement_default_change_ref_policy": {
-    "surface_kind": "target_improvement_default_change_ref_policy",
-    "state": "active_contract_policy",
+    "surface_kind": "retired_target_improvement_default_change_ref_policy",
+    "state": "retired_no_source_patch_target_materialization",
     "owner": "opl-meta-agent",
-    "active_policy_consumer_refs": [
-      "scripts/lib/target-improvement-policy.ts"
+    "retired_reason": "generic owner-receipt/package/typed-blocker keyword mappings can create unowned patch targets",
+    "replacement_policy_refs": [
+      "contracts/capability_map.json",
+      "target_agent/contracts/capability_map.json",
+      "target_agent/contracts/agent_lab_handoff.json#external_suite_improvement_policy.change_ref_mappings",
+      "target_agent/contracts/oma_handoff_refs.json#oma_handoff.change_ref_mappings",
+      "target_agent/contracts/production_acceptance/*.json#meta_agent_work_order_contract.change_ref_mappings"
     ],
-    "triggers": [
-      "owner-receipt",
-      "owner_receipt",
-      "live-acceptance",
-      "production-acceptance",
-      "production_acceptance"
-    ],
-    "default_change_refs": [
-      "target_agent_production_acceptance_contract_ref:target_agent/production_acceptance",
-      "target_agent_owner_receipt_contract_ref:target_agent/live-acceptance",
-      "target_agent_owner_route_ref:target_agent/owner-receipt-projection",
-      "target_agent_quality_gate_ref:target_agent/export-owner",
-      "target_agent_regression_suite_ref:target_agent/owner-boundary"
-    ],
-    "change_ref_mappings": [
-      {
-        "token": "live-acceptance",
-        "refs": [
-          "target_agent_production_acceptance_contract_ref:target_agent/production_acceptance",
-          "target_agent_owner_receipt_contract_ref:target_agent/live-acceptance"
-        ]
-      },
-      {
-        "token": "owner-receipt",
-        "refs": [
-          "target_agent_owner_receipt_contract_ref:target_agent/live-acceptance",
-          "target_agent_owner_route_ref:target_agent/owner-receipt-projection"
-        ]
-      },
-      {
-        "token": "package",
-        "refs": [
-          "target_agent_delivery_policy_ref:target_agent/package-owner-closeout",
-          "target_agent_quality_gate_ref:target_agent/export-owner"
-        ]
-      },
-      {
-        "token": "typed-blocker",
-        "refs": [
-          "target_agent_production_acceptance_contract_ref:target_agent/production_acceptance",
-          "target_agent_regression_suite_ref:target_agent/owner-boundary"
-        ]
-      }
-    ],
+    "active_policy_consumer_refs": [],
+    "source_patch_target_materialization_allowed": false,
+    "generic_keyword_patch_target_fallback_allowed": false,
+    "typed_blocker_on_miss": true,
     "authority_boundary": {
       "can_write_target_domain_truth": false,
       "can_write_target_owner_receipt_body": false,
