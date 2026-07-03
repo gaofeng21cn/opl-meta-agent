@@ -394,12 +394,10 @@ function missingTargetImprovementPolicyFields({
   suiteResult,
   proposedChangeRefs,
   patchTraceabilityMatrix,
-  policy,
 }: {
   suiteResult: SuiteResult;
   proposedChangeRefs: string[];
   patchTraceabilityMatrix: PatchTraceabilityEntry[];
-  policy: TargetImprovementPolicy;
 }): string[] {
   if (suiteResult.status === 'passed') {
     return [];
@@ -419,14 +417,12 @@ function missingTargetImprovementPolicyFields({
     missing.push('target_improvement_policy.capability_map_or_explicit_policy_canonical_paths');
   }
   if (
-    policy.targetOwnedRuntimeRequiredSurfaceRefs.length === 0
-    && patchTraceabilityMatrix.some((entry) => entry.capability_verification_refs.length === 0)
+    patchTraceabilityMatrix.some((entry) => entry.capability_verification_refs.length === 0)
   ) {
     missing.push('target_improvement_policy.capability_map_or_explicit_policy_verification_refs');
   }
   if (
-    policy.targetOwnedForbiddenTargetPathsOrSurfaces.length === 0
-    && patchTraceabilityMatrix.some((entry) => entry.forbidden_target_paths_or_surfaces.length === 0)
+    patchTraceabilityMatrix.some((entry) => entry.forbidden_target_paths_or_surfaces.length === 0)
   ) {
     missing.push('target_improvement_policy.capability_map_or_explicit_policy_forbidden_surfaces');
   }
@@ -658,7 +654,6 @@ export function runImproveFromAgentLabSuite({
     suiteResult,
     proposedChangeRefs,
     patchTraceabilityMatrix,
-    policy,
   });
   if (missingTargetImprovementPolicy.length > 0) {
     const blocker = buildTargetImprovementPolicyTypedBlocker({

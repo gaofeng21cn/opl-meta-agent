@@ -9,6 +9,18 @@
   "map_ref": "contracts/capability_map.json",
   "resolver_policy": "resolver_index_only_no_domain_truth",
   "capability_map_role": "single_source_locator_index_for_stage_prompt_skill_tool_knowledge_gate_eval_refs",
+  "target_improvement_resolver_policy": {
+    "patch_target_authority_ref": "target_agent/contracts/capability_map.json#capabilities",
+    "target_owned_explicit_fallback_ref": "target_agent/contracts/production_acceptance/*.json#meta_agent_work_order_contract.change_ref_mappings",
+    "handoff_contract_role": "external_suite_entry_and_fixture_context_only",
+    "patch_target_authority_must_not_read_refs": [
+      "target_agent/contracts/agent_lab_handoff.json#external_suite_improvement_policy.default_change_refs",
+      "target_agent/contracts/agent_lab_handoff.json#external_suite_improvement_policy.change_ref_mappings"
+    ],
+    "generic_keyword_patch_target_fallback_allowed": false,
+    "typed_blocker_on_miss": true,
+    "resolver_may_write_target_truth": false
+  },
   "capability_pack": {
     "pack_id": "opl-meta-agent.capability_pack.v1",
     "pack_root_ref": "agent/",

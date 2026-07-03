@@ -77,8 +77,6 @@
     "replacement_policy_refs": [
       "contracts/capability_map.json",
       "target_agent/contracts/capability_map.json",
-      "target_agent/contracts/agent_lab_handoff.json#external_suite_improvement_policy.change_ref_mappings",
-      "target_agent/contracts/oma_handoff_refs.json#oma_handoff.change_ref_mappings",
       "target_agent/contracts/production_acceptance/*.json#meta_agent_work_order_contract.change_ref_mappings"
     ],
     "active_policy_consumer_refs": [],

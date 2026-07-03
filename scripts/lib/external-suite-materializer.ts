@@ -431,14 +431,10 @@ export function buildTargetImprovementPolicyTypedBlocker({
     work_order_ref: workOrderId,
     missing_required_fields: missingFields,
     required_input_refs: [
+      'contracts/capability_map.json#capabilities[].canonical_paths',
       'contracts/capability_map.json#capabilities[].improvement_tokens',
       'contracts/capability_map.json#capabilities[].failure_token_registry_ref',
       'contracts/capability_map.json#capabilities[].verification_refs',
-      'contracts/agent_lab_handoff.json#external_suite_improvement_policy.default_change_refs',
-      'contracts/agent_lab_handoff.json#external_suite_improvement_policy.change_ref_mappings',
-      'contracts/oma_handoff_refs.json#oma_handoff.default_change_refs',
-      'contracts/oma_handoff_refs.json#oma_handoff.change_ref_mappings',
-      'contracts/production_acceptance/*.json#meta_agent_work_order_contract.change_ref_mappings',
     ],
     authority_boundary: {
       typed_blocker_only: true,

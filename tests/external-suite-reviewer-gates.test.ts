@@ -198,6 +198,94 @@ test('external suite improvement accepts capability pack target descriptor', () 
   }
 });
 
+test('external suite improvement uses capability map as patch-target source when handoff duplicates token refs', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-capability-map-source-'));
+  try {
+    const targetAgentDir = path.join(outputRoot, 'med-autoscience');
+    writeJson(path.join(targetAgentDir, 'contracts/domain_descriptor.json'), {
+      domain_id: 'med-autoscience',
+      domain_label: 'MedAutoScience',
+      delivery_domain: 'medical_research',
+    });
+    writeJson(path.join(targetAgentDir, 'contracts/agent_lab_handoff.json'), {
+      surface_kind: 'domain_agent_lab_production_evidence_handoff',
+      domain_id: 'med-autoscience',
+      owner: 'MedAutoScience',
+      handoff_status: 'ready_for_opl_meta_agent_and_agent_lab_execution',
+      external_suite_improvement_policy: {
+        default_change_ref_triggers: ['medical_journal_prose_quality'],
+        default_change_refs: ['legacy_handoff_patch_ref:must_not_be_used'],
+        change_ref_mappings: [
+          {
+            token: 'medical_journal_prose_quality',
+            refs: ['legacy_handoff_patch_ref:must_not_be_used'],
+          },
+        ],
+        patch_surface_hints: {
+          legacy_handoff_patch_ref: ['legacy/handoff/path.ts'],
+        },
+        runtime_required_surface_refs: ['target_agent_owner_route'],
+      },
+    });
+    writeJson(path.join(targetAgentDir, 'contracts/capability_map.json'), {
+      surface_kind: 'target_capability_map',
+      capabilities: [
+        {
+          capability_id: 'medical-journal-prose-quality',
+          kind: 'professional_skill',
+          failure_token_registry_ref: 'failure-token-registry:mas/medical-journal-prose-quality',
+          canonical_paths: ['skills/medical-journal-prose-quality/SKILL.md'],
+          improvement_tokens: ['medical_journal_prose_quality'],
+          verification_refs: ['target_repo_test_receipt'],
+          forbidden_surfaces: ['target owner receipt body'],
+          authority_boundary: {
+            can_write_target_owner_receipt_body: false,
+          },
+        },
+      ],
+    });
+    const suitePath = path.join(outputRoot, 'medical-manuscript-quality-suite.json');
+    writeJson(suitePath, buildBlockedMedicalManuscriptSuite(suitePath));
+    const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+    writeAiReviewerEvaluation(reviewerEvaluationPath, {
+      critique: 'The medical_journal_prose_quality gap belongs to the target capability map.',
+      source_refs: ['rubric-gap:mas/002/medical_journal_prose_quality'],
+    });
+
+    const payload = runImproveArgs([
+      '--suite',
+      suitePath,
+      '--target-agent-dir',
+      targetAgentDir,
+      '--output-dir',
+      outputRoot,
+      '--feedback-ref',
+      'manual-review:capability-map-source-of-truth',
+      '--ai-reviewer-evaluation',
+      reviewerEvaluationPath,
+      '--opl-bin',
+      oplBin,
+    ]);
+
+    const candidate = payload.learning_loop.target_capability_improvement_candidate;
+    assert.deepEqual(candidate.proposed_change_refs, ['professional_skill_medical_journal_prose_quality']);
+    assert.equal(candidate.proposed_change_refs.includes('legacy_handoff_patch_ref:must_not_be_used'), false);
+    const trace = candidate.patch_traceability_matrix[0];
+    assert.deepEqual(trace.required_patch_refs, ['professional_skill_medical_journal_prose_quality']);
+    assert.deepEqual(trace.target_repo_file_hints, ['skills/medical-journal-prose-quality/SKILL.md']);
+    assert.deepEqual(trace.capability_ids, ['medical-journal-prose-quality']);
+    assert.equal(trace.capability_authority_boundary.can_write_target_owner_receipt_body, false);
+
+    const workOrder = JSON.parse(
+      fs.readFileSync(path.join(outputRoot, 'developer-patch-work-order.json'), 'utf8'),
+    );
+    assert.equal(workOrder.proposed_change_refs.includes('legacy_handoff_patch_ref:must_not_be_used'), false);
+    assert.deepEqual(workOrder.target_repo_file_hints, ['skills/medical-journal-prose-quality/SKILL.md']);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
 test('external suite improvement fails closed when AI reviewer predicted impact is missing', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-external-suite-missing-impact-'));
   try {
@@ -357,6 +445,11 @@ test('external blocked suite writes typed blocker when target-owned improvement 
     assert.equal(blocker.blocked_reason, 'target_owned_change_refs_required');
     assert.ok(
       blocker.required_input_refs.includes(
+        'contracts/capability_map.json#capabilities[].canonical_paths',
+      ),
+    );
+    assert.ok(
+      blocker.required_input_refs.includes(
         'contracts/capability_map.json#capabilities[].improvement_tokens',
       ),
     );
@@ -367,8 +460,12 @@ test('external blocked suite writes typed blocker when target-owned improvement 
     );
     assert.ok(
       blocker.required_input_refs.includes(
-        'contracts/agent_lab_handoff.json#external_suite_improvement_policy.default_change_refs',
+        'contracts/capability_map.json#capabilities[].verification_refs',
       ),
+    );
+    assert.equal(
+      blocker.required_input_refs.some((ref: string) => ref.includes('agent_lab_handoff.json#external_suite_improvement_policy')),
+      false,
     );
     assert.equal(blocker.authority_boundary.typed_blocker_only, true);
     assert.equal(blocker.authority_boundary.no_executable_work_order_issued, true);

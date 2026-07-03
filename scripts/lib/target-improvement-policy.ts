@@ -237,16 +237,18 @@ export function targetImprovementPolicy(targetAgentDir: string): TargetImproveme
       .filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
       .map((entry) => readJson(path.join(productionAcceptanceDir, entry.name)))
     : [];
-  const sources = [agentLabHandoff, omaHandoff, capabilityMap, generatedSurfaceHandoff, ...productionAcceptances];
+  const patchTargetSources = [capabilityMap, ...productionAcceptances];
+  const contextSources = [agentLabHandoff, omaHandoff, generatedSurfaceHandoff];
+  const sources = [...patchTargetSources, ...contextSources];
   const defaultChangeRefs = uniqueRefs([
-    ...sources.flatMap((source) => stringList(source?.external_suite_improvement_policy?.default_change_refs)),
-    ...sources.flatMap((source) => stringList(source?.meta_agent_work_order_contract?.default_change_refs)),
-    ...sources.flatMap((source) => stringList(source?.oma_handoff?.default_change_refs)),
+    ...patchTargetSources.flatMap((source) => stringList(source?.external_suite_improvement_policy?.default_change_refs)),
+    ...patchTargetSources.flatMap((source) => stringList(source?.meta_agent_work_order_contract?.default_change_refs)),
+    ...patchTargetSources.flatMap((source) => stringList(source?.oma_handoff?.default_change_refs)),
   ]);
   const defaultChangeRefTriggers = uniqueRefs([
-    ...sources.flatMap((source) => stringList(source?.external_suite_improvement_policy?.default_change_ref_triggers)),
-    ...sources.flatMap((source) => stringList(source?.meta_agent_work_order_contract?.default_change_ref_triggers)),
-    ...sources.flatMap((source) => stringList(source?.oma_handoff?.default_change_ref_triggers)),
+    ...patchTargetSources.flatMap((source) => stringList(source?.external_suite_improvement_policy?.default_change_ref_triggers)),
+    ...patchTargetSources.flatMap((source) => stringList(source?.meta_agent_work_order_contract?.default_change_ref_triggers)),
+    ...patchTargetSources.flatMap((source) => stringList(source?.oma_handoff?.default_change_ref_triggers)),
   ]);
   const externalLearningRefs = uniqueRefs([
     ...sources.flatMap((source) => stringList(source?.external_suite_improvement_policy?.external_learning_refs)),
@@ -274,8 +276,8 @@ export function targetImprovementPolicy(targetAgentDir: string): TargetImproveme
   return {
     defaultChangeRefs,
     defaultChangeRefTriggers,
-    changeRefMappings: collectMappings(...sources),
-    patchSurfaceHints: collectPatchSurfaceHints(...sources),
+    changeRefMappings: collectMappings(...patchTargetSources),
+    patchSurfaceHints: collectPatchSurfaceHints(...patchTargetSources),
     externalLearningRefs,
     forbiddenTargetPathsOrSurfaces: targetOwnedForbiddenTargetPathsOrSurfaces.length
       ? targetOwnedForbiddenTargetPathsOrSurfaces
