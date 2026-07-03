@@ -27,12 +27,13 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 ### OMA 是独立 Foundry Agent，不是 OPL Framework 内置模块
 
 - 决策：`opl-meta-agent` 采用 OPL standard domain-agent scaffold，长期形态是 `Declarative Agent-Building Pack + OPL generated/hosted surfaces + minimal agent-building authority functions`。
+- 决策：OMA 通过 `contracts/standard-agent-principles-adoption.json`、`agent/principles/opl-standard-agent-principles.md` 和 `agent/principles/domain-specialization.md` 采用 OPL Standard Agent AI-first Principle Pack；`intent-intake` 是 OMA 的 domain intake mapping，不是独立 Skill。
 - 理由：Agent-building semantics、candidate package、developer work order、mechanism proposal 和 typed blocker 是 OMA 的 domain value；generic runtime、Agent Lab、registry、generated interfaces、queue、attempt ledger、App/workbench 和 promotion gate 属于 OPL Framework / App。
-- 影响：本仓不实现 repo-local generic CLI/MCP/Skill/product-entry wrapper、sidecar/status/workbench shell、scheduler、queue、attempt ledger、registry/App shell、Agent Lab runner、promotion engine 或 target worktree lifecycle。
+- 影响：本仓不实现 repo-local generic CLI/MCP/Skill/product-entry wrapper、sidecar/status/workbench shell、scheduler、queue、attempt ledger、registry/App shell、Agent Lab runner、promotion engine、通用 intake Skill 或 target worktree lifecycle。
 
 ### `agent/` 是 repo-tracked declarative pack root
 
-- 决策：`agent/` 下的 prompts、stages、skills、quality gates 和 knowledge files 是机器可验证 pack source；README 与文档章节只做人读索引。
+- 决策：`agent/` 下的 principles、prompts、stages、skills、quality gates 和 knowledge files 是机器可验证 pack source；README 与文档章节只做人读索引。
 - 理由：标准 OPL Agent 需要 contracts/tests 能解析真实 pack path，避免把 prose heading、目录存在性或 README 当成 semantic pack truth。
 - 影响：`contracts/pack_compiler_input.json`、`contracts/stage_control_plane.json` 和 pack tests 必须指向非 README 的真实文件；新增 stage/action/quality gate 先进入 pack/contracts，再同步人读说明。
 

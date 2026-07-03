@@ -9,6 +9,8 @@
     "agent/knowledge/project-maturity-signals.md",
     "agent/knowledge/trajectory-learning-policy.md",
     "agent/knowledge/transferable-agent-practices.md",
+    "agent/principles/domain-specialization.md",
+    "agent/principles/opl-standard-agent-principles.md",
     "agent/prompts/agent-skeleton-build.md",
     "agent/prompts/baseline-delivery.md",
     "agent/prompts/baseline-run.md",
@@ -46,6 +48,7 @@
   ],
   "declarative_domain_pack": [
     "domain_truth_schema",
+    "principle_adoption_refs",
     "stage_descriptors",
     "transition_table",
     "action_metadata",
