@@ -24,6 +24,24 @@ test('external suite efficiency evidence is projected into developer work order 
       delivery_domain: 'generic_target_agent',
     });
     writeEfficiencyTargetImprovementPolicy(targetAgentDir);
+    writeJson(path.join(targetAgentDir, 'contracts/capability_map.json'), {
+      surface_kind: 'target_capability_map',
+      failure_token_registry_ref: 'failure-token-registry:target-agent/efficiency',
+      capabilities: [
+        {
+          capability_id: 'target-agent.efficiency-runtime',
+          capability_kind: 'contract_module',
+          canonical_paths: ['src/runtime/efficiency-policy.ts'],
+          improvement_tokens: ['efficiency', 'latency', 'usage cost', 'cache reuse'],
+          verification_refs: ['target-verification:target-agent/capability-map-efficiency-redrive'],
+          forbidden_surfaces: ['target_quality_verdict_body'],
+          authority_boundary: {
+            can_write_target_owner_receipt_body: false,
+            can_create_target_typed_blocker: false,
+          },
+        },
+      ],
+    });
     const suitePath = path.join(outputRoot, 'efficiency-suite.json');
     writeJson(suitePath, buildBlockedEfficiencySuite());
     const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
@@ -67,6 +85,18 @@ test('external suite efficiency evidence is projected into developer work order 
       workOrder.efficiency_non_regression_refs,
     );
     assert.ok(workOrder.required_verification_refs.includes('target-verification:target-agent/efficiency-redrive'));
+    assert.ok(
+      workOrder.required_verification_refs.includes(
+        'target-verification:target-agent/capability-map-efficiency-redrive',
+      ),
+    );
+    assert.deepEqual(workOrder.matched_capability_ids, ['target-agent.efficiency-runtime']);
+    assert.deepEqual(workOrder.canonical_target_paths, ['src/runtime/efficiency-policy.ts']);
+    assert.deepEqual(workOrder.failure_token_registry_refs, ['failure-token-registry:target-agent/efficiency']);
+    assert.ok(workOrder.improvement_tokens.includes('usage cost'));
+    assert.ok(workOrder.forbidden_target_paths_or_surfaces.includes('target_quality_verdict_body'));
+    assert.equal(workOrder.owner_closeout_boundary.oma_can_write_target_owner_receipt_body, false);
+    assert.equal(workOrder.owner_closeout_boundary.oma_can_create_target_typed_blocker, false);
     assert.equal(workOrder.implementation_controls.quality_floor_non_regression_required, true);
     assert.equal(workOrder.authority_boundary.can_authorize_target_domain_quality_or_export, false);
   } finally {

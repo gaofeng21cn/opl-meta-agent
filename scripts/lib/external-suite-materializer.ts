@@ -133,6 +133,24 @@ export function buildDeveloperPatchWorkOrder({
   const targetRepoFileHints = unique(capabilityCandidate.patch_traceability_matrix.flatMap((entry) =>
     entry.target_repo_file_hints
   ));
+  const matchedCapabilityIds = unique(capabilityCandidate.patch_traceability_matrix.flatMap((entry) =>
+    stringList(entry.capability_ids)
+  ));
+  const canonicalTargetPaths = unique(capabilityCandidate.patch_traceability_matrix.flatMap((entry) =>
+    stringList(entry.canonical_target_paths)
+  ));
+  const failureTokenRegistryRefs = unique(capabilityCandidate.patch_traceability_matrix.flatMap((entry) =>
+    stringList(entry.failure_token_registry_refs)
+  ));
+  const improvementTokens = unique(capabilityCandidate.patch_traceability_matrix.flatMap((entry) =>
+    stringList(entry.improvement_tokens)
+  ));
+  const forbiddenTargetPathsOrSurfaces = unique([
+    ...policy.forbiddenTargetPathsOrSurfaces,
+    ...capabilityCandidate.patch_traceability_matrix.flatMap((entry) =>
+      stringList(entry.forbidden_target_paths_or_surfaces)
+    ),
+  ]);
   const requiredVerificationRefs = unique((noPatchRequired
     ? [
         'target_owner_receipt_projection_ref',
@@ -151,6 +169,7 @@ export function buildDeveloperPatchWorkOrder({
     ...capabilityCandidate.failure_taxonomy_refs,
     ...capabilityCandidate.ai_reviewer_evidence.source_refs,
     ...capabilityCandidate.ai_reviewer_evidence.direct_evidence_refs,
+    ...capabilityCandidate.patch_traceability_matrix.flatMap((entry) => entry.failure_evidence),
   ]);
   const patchMode = noPatchRequired ? 'no-source-patch' : 'source-patch';
   const reviewerPoolRefs = unique([
@@ -263,6 +282,11 @@ export function buildDeveloperPatchWorkOrder({
         : capabilityCandidate.proposed_change_refs,
       predicted_impact: capabilityCandidate.ai_reviewer_review.predicted_impact,
     },
+    failure_evidence_refs: failureEvidence,
+    matched_capability_ids: matchedCapabilityIds,
+    canonical_target_paths: noPatchRequired ? [] : canonicalTargetPaths,
+    failure_token_registry_refs: failureTokenRegistryRefs,
+    improvement_tokens: improvementTokens,
     target_progress_accounting: buildTargetProgressAccounting({
       substantiveDeliverableDeltaRefs,
       machineCloseoutRefs,
@@ -271,6 +295,7 @@ export function buildDeveloperPatchWorkOrder({
     allowed_editable_surfaces: noPatchRequired ? [] : capabilityCandidate.target_editable_surface_refs,
     target_repo_file_hints: noPatchRequired ? [] : targetRepoFileHints,
     required_verification_refs: requiredVerificationRefs,
+    forbidden_target_paths_or_surfaces: forbiddenTargetPathsOrSurfaces,
     ...(hasEfficiencyEvidence ? { efficiency_non_regression_refs: efficiencyNonRegressionRefs } : {}),
     rollback_version_refs: noPatchRequired
       ? ['owner_receipt_coordination_record']
@@ -282,6 +307,20 @@ export function buildDeveloperPatchWorkOrder({
     no_forbidden_write_proof: {
       required: true,
       proof_refs: noForbiddenWriteProofRefs,
+      can_write_target_domain_truth: false,
+      can_write_target_domain_memory_body: false,
+      can_mutate_target_domain_artifact_body: false,
+      can_authorize_target_domain_quality_or_export: false,
+    },
+    owner_closeout_boundary: {
+      owner: 'target-domain via OPL',
+      owner_closeout_hook_delegated: true,
+      target_owner_receipt_or_typed_blocker_required: true,
+      target_owner_closeout_refs: bundleRefs.target_closeout_refs,
+      oma_can_write_target_owner_receipt_body: false,
+      oma_can_write_target_owner_typed_blocker_body: false,
+      oma_can_create_target_typed_blocker: false,
+      oma_can_invoke_target_owner_closeout_hook: false,
       can_write_target_domain_truth: false,
       can_write_target_domain_memory_body: false,
       can_mutate_target_domain_artifact_body: false,
@@ -306,7 +345,7 @@ export function buildDeveloperPatchWorkOrder({
       no_target_domain_truth_write_proof_required: true,
       no_quality_verdict_or_submission_readiness_authority: true,
       quality_floor_non_regression_required: hasEfficiencyEvidence,
-      forbidden_target_paths_or_surfaces: policy.forbiddenTargetPathsOrSurfaces,
+      forbidden_target_paths_or_surfaces: forbiddenTargetPathsOrSurfaces,
       required_closeout_evidence: targetPatchLoopCloseoutEvidence({
         sourcePatchRequired: !noPatchRequired,
       }),
@@ -392,6 +431,9 @@ export function buildTargetImprovementPolicyTypedBlocker({
     work_order_ref: workOrderId,
     missing_required_fields: missingFields,
     required_input_refs: [
+      'contracts/capability_map.json#capabilities[].improvement_tokens',
+      'contracts/capability_map.json#capabilities[].failure_token_registry_ref',
+      'contracts/capability_map.json#capabilities[].verification_refs',
       'contracts/agent_lab_handoff.json#external_suite_improvement_policy.default_change_refs',
       'contracts/agent_lab_handoff.json#external_suite_improvement_policy.change_ref_mappings',
       'contracts/oma_handoff_refs.json#oma_handoff.default_change_refs',

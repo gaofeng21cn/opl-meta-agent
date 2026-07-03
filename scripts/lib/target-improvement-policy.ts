@@ -19,6 +19,18 @@ import {
 type ChangeRefMapping = {
   token: string;
   refs: string[];
+  capability?: CapabilityMapEntry;
+};
+
+export type CapabilityMapEntry = {
+  capabilityId: string;
+  capabilityRef: string;
+  canonicalTargetPaths: string[];
+  requiredVerificationRefs: string[];
+  forbiddenTargetPathsOrSurfaces: string[];
+  failureTokenRegistryRef: string | null;
+  improvementTokens: string[];
+  authorityBoundary: JsonObject;
 };
 
 export type PatchTraceabilityEntry = JsonObject & {
@@ -32,6 +44,13 @@ export type PatchTraceabilityEntry = JsonObject & {
   editable_surface_refs: string[];
   target_repo_file_hints: string[];
   required_verification_refs: string[];
+  capability_ids: string[];
+  canonical_target_paths: string[];
+  capability_verification_refs: string[];
+  forbidden_target_paths_or_surfaces: string[];
+  failure_token_registry_refs: string[];
+  improvement_tokens: string[];
+  capability_authority_boundary: JsonObject;
   ai_reviewer_suggestions: string[];
   ai_reviewer_source_refs: string[];
 };
@@ -91,22 +110,80 @@ function capabilityRef(entry: JsonObject): string | null {
   return `${kind}_${slug(capabilityId)}`;
 }
 
-function capabilityMappings(source: JsonObject | null): ChangeRefMapping[] {
-  return capabilityRecords(source).flatMap((entry) => {
-    const tokens = uniqueRefs([
+function refsFromRefLike(value: unknown): string[] {
+  if (typeof value === 'string') {
+    return [value];
+  }
+  if (Array.isArray(value)) {
+    return value.flatMap(refsFromRefLike);
+  }
+  if (value && typeof value === 'object') {
+    const record = value as JsonObject;
+    return [
+      ...(typeof record.ref === 'string' ? [record.ref] : []),
+      ...(typeof record.path === 'string' ? [record.path] : []),
+    ];
+  }
+  return [];
+}
+
+function capabilityMapEntry(source: JsonObject | null, entry: JsonObject): CapabilityMapEntry | null {
+  const capabilityId = stringValue(entry.capability_id) ?? stringValue(entry.id) ?? stringValue(entry.name);
+  const capabilityMapRef = capabilityRef(entry);
+  if (!capabilityId || !capabilityMapRef) {
+    return null;
+  }
+  const authorityBoundary = entry.authority_boundary && typeof entry.authority_boundary === 'object'
+    && !Array.isArray(entry.authority_boundary)
+    ? entry.authority_boundary as JsonObject
+    : {};
+  const fallbackRegistryRef = stringValue(source?.failure_token_registry_ref)
+    ?? stringValue(source?.capability_map?.failure_token_registry_ref);
+  return {
+    capabilityId,
+    capabilityRef: capabilityMapRef,
+    canonicalTargetPaths: uniqueRefs([
+      ...stringList(entry.canonical_paths),
+      ...stringList(entry.paths),
+      ...stringList(entry.target_repo_file_hints),
+      ...refsFromRefLike(entry.physical_source_ref),
+    ]),
+    requiredVerificationRefs: uniqueRefs([
+      ...stringList(entry.verification_refs),
+      ...stringList(entry.required_verification_refs),
+    ]),
+    forbiddenTargetPathsOrSurfaces: uniqueRefs([
+      ...stringList(entry.forbidden_surfaces),
+      ...stringList(entry.forbidden_target_paths_or_surfaces),
+      ...stringList(authorityBoundary.forbidden_surfaces),
+    ]),
+    failureTokenRegistryRef: stringValue(entry.failure_token_registry_ref) ?? fallbackRegistryRef,
+    improvementTokens: uniqueRefs([
       ...stringList(entry.improvement_tokens),
       ...stringList(entry.failure_tokens),
       ...stringList(entry.trigger_terms),
       ...stringList(entry.triggers),
+    ]),
+    authorityBoundary,
+  };
+}
+
+function capabilityMappings(source: JsonObject | null): ChangeRefMapping[] {
+  return capabilityRecords(source).flatMap((entry) => {
+    const capability = capabilityMapEntry(source, entry);
+    if (!capability) {
+      return [];
+    }
+    const tokens = uniqueRefs([
+      ...capability.improvementTokens,
     ]);
-    const fallbackRef = capabilityRef(entry);
     const refs = uniqueRefs([
       ...stringList(entry.refs),
       ...stringList(entry.required_patch_refs),
       ...stringList(entry.change_refs),
-      ...(fallbackRef ? [fallbackRef] : []),
+      capability.capabilityRef,
     ]);
-    return tokens.map((token) => ({ token, refs })).filter((mapping) => mapping.refs.length > 0);
+    return tokens.map((token) => ({ token, refs, capability })).filter((mapping) => mapping.refs.length > 0);
   });
 }
 
@@ -125,17 +202,15 @@ function collectPatchSurfaceHints(...sources: Array<JsonObject | null>): Record<
       hints[surface] = uniqueRefs([...(hints[surface] ?? []), ...stringList(values)]);
     }
     for (const capability of capabilityRecords(source)) {
-      const ref = capabilityRef(capability);
-      if (!ref) {
+      const metadata = capabilityMapEntry(source, capability);
+      if (!metadata) {
         continue;
       }
       const paths = uniqueRefs([
-        ...stringList(capability.canonical_paths),
-        ...stringList(capability.paths),
-        ...stringList(capability.target_repo_file_hints),
+        ...metadata.canonicalTargetPaths,
       ]);
       if (paths.length > 0) {
-        hints[ref] = uniqueRefs([...(hints[ref] ?? []), ...paths]);
+        hints[metadata.capabilityRef] = uniqueRefs([...(hints[metadata.capabilityRef] ?? []), ...paths]);
       }
     }
   }
@@ -304,10 +379,21 @@ export function buildPatchTraceabilityMatrix({
       textMatchesToken(suggestion, mapping.token)
     );
     const reviewerSourceRefs = aiReviewerEvaluation.source_refs.filter((ref) => textMatchesToken(ref, mapping.token));
+    const capability = mapping.capability;
+    const capabilityVerificationRefs = capability?.requiredVerificationRefs ?? [];
+    const canonicalTargetPaths = capability?.canonicalTargetPaths ?? [];
+    const forbiddenTargetPathsOrSurfaces = capability?.forbiddenTargetPathsOrSurfaces ?? [];
     const failureEvidence = uniqueRefs([
       ...sourceFailureRefs.filter((ref) => textMatchesToken(ref, mapping.token)),
       ...reviewerSourceRefs,
       ...reviewerSuggestions.map((suggestion) => `ai-reviewer-suggestion:${suggestion}`),
+    ]);
+    const targetRepoFileHints = uniqueRefs([
+      ...fileHintsForPatchRefs({
+        patchRefs: requiredPatchRefs,
+        policy,
+      }),
+      ...canonicalTargetPaths,
     ]);
     matrix.push({
       gap_token: mapping.token,
@@ -321,15 +407,20 @@ export function buildPatchTraceabilityMatrix({
       source_failure_refs: sourceFailureRefs.filter((ref) => textMatchesToken(ref, mapping.token)),
       required_patch_refs: requiredPatchRefs,
       editable_surface_refs: surfaceRefsForPatchRefs(requiredPatchRefs),
-      target_repo_file_hints: fileHintsForPatchRefs({
-        patchRefs: requiredPatchRefs,
-        policy,
-      }),
-      required_verification_refs: [
+      target_repo_file_hints: targetRepoFileHints,
+      required_verification_refs: uniqueRefs([
         'target_repo_test_receipt',
         'no_target_domain_truth_write_proof',
         'developer_patch_receipt',
-      ],
+        ...capabilityVerificationRefs,
+      ]),
+      capability_ids: capability ? [capability.capabilityId] : [],
+      canonical_target_paths: canonicalTargetPaths,
+      capability_verification_refs: capabilityVerificationRefs,
+      forbidden_target_paths_or_surfaces: forbiddenTargetPathsOrSurfaces,
+      failure_token_registry_refs: capability?.failureTokenRegistryRef ? [capability.failureTokenRegistryRef] : [],
+      improvement_tokens: capability?.improvementTokens ?? [],
+      capability_authority_boundary: capability?.authorityBoundary ?? {},
       ai_reviewer_suggestions: reviewerSuggestions,
       ai_reviewer_source_refs: reviewerSourceRefs,
     });

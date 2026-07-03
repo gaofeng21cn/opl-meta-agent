@@ -188,10 +188,14 @@ test('capability map routes reviewer gaps to exact canonical skill paths', () =>
           {
             capability_id: 'medical-figure-design',
             kind: 'professional_skill',
+            failure_token_registry_ref: 'failure-token-registry:mas/figures',
             canonical_paths: ['skills/medical-figure-design/SKILL.md'],
             improvement_tokens: ['figure_quality', 'visual-template'],
             verification_refs: ['target_repo_test_receipt'],
             forbidden_surfaces: ['publication_readiness'],
+            authority_boundary: {
+              can_write_target_owner_receipt_body: false,
+            },
           },
         ],
         authority_boundary: {
@@ -225,7 +229,15 @@ test('capability map routes reviewer gaps to exact canonical skill paths', () =>
     });
 
     assert.equal(matrix.length, 1);
+    assert.deepEqual(matrix[0]?.capability_ids, ['medical-figure-design']);
     assert.deepEqual(matrix[0]?.target_repo_file_hints, ['skills/medical-figure-design/SKILL.md']);
+    assert.deepEqual(matrix[0]?.canonical_target_paths, ['skills/medical-figure-design/SKILL.md']);
+    assert.deepEqual(matrix[0]?.capability_verification_refs, ['target_repo_test_receipt']);
+    assert.ok(matrix[0]?.required_verification_refs.includes('target_repo_test_receipt'));
+    assert.deepEqual(matrix[0]?.forbidden_target_paths_or_surfaces, ['publication_readiness']);
+    assert.deepEqual(matrix[0]?.failure_token_registry_refs, ['failure-token-registry:mas/figures']);
+    assert.ok(matrix[0]?.improvement_tokens.includes('figure_quality'));
+    assert.equal(matrix[0]?.capability_authority_boundary.can_write_target_owner_receipt_body, false);
   } finally {
     fs.rmSync(targetAgentDir, { recursive: true, force: true });
   }

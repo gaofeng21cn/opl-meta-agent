@@ -343,6 +343,16 @@ test('external blocked suite writes typed blocker when target-owned improvement 
     assert.equal(blocker.blocked_reason, 'target_owned_change_refs_required');
     assert.ok(
       blocker.required_input_refs.includes(
+        'contracts/capability_map.json#capabilities[].improvement_tokens',
+      ),
+    );
+    assert.ok(
+      blocker.required_input_refs.includes(
+        'contracts/capability_map.json#capabilities[].failure_token_registry_ref',
+      ),
+    );
+    assert.ok(
+      blocker.required_input_refs.includes(
         'contracts/agent_lab_handoff.json#external_suite_improvement_policy.default_change_refs',
       ),
     );

@@ -246,6 +246,36 @@ function requireNoForbiddenWriteBoundary(workOrder: JsonObject): void {
   });
 }
 
+function requireOwnerCloseoutBoundary(workOrder: JsonObject): void {
+  const boundary = requireObject(workOrder.owner_closeout_boundary, 'owner_closeout_boundary');
+  requireNonEmptyString(boundary.owner, 'owner_closeout_boundary.owner');
+  if (boundary.owner_closeout_hook_delegated !== true) {
+    throw new Error('Invalid developer patch work order: owner_closeout_boundary.owner_closeout_hook_delegated must be true.');
+  }
+  if (boundary.target_owner_receipt_or_typed_blocker_required !== true) {
+    throw new Error(
+      'Invalid developer patch work order: owner_closeout_boundary.target_owner_receipt_or_typed_blocker_required must be true.',
+    );
+  }
+  requireAllIncluded(
+    boundary.target_owner_closeout_refs,
+    workOrder.target_closeout_refs,
+    'owner_closeout_boundary.target_owner_closeout_refs',
+  );
+  [
+    'oma_can_write_target_owner_receipt_body',
+    'oma_can_write_target_owner_typed_blocker_body',
+    'oma_can_create_target_typed_blocker',
+    'oma_can_invoke_target_owner_closeout_hook',
+    'can_write_target_domain_truth',
+    'can_write_target_domain_memory_body',
+    'can_mutate_target_domain_artifact_body',
+    'can_authorize_target_domain_quality_or_export',
+  ].forEach((field) => {
+    requireFalse(boundary[field], `owner_closeout_boundary.${field}`);
+  });
+}
+
 function requireTargetOwnerCloseoutRefs(workOrder: JsonObject): void {
   requireNonEmptyStringArray(workOrder.target_owner_closeout_refs, 'target_owner_closeout_refs');
   requireAllIncluded(
@@ -524,6 +554,17 @@ export function validateDeveloperPatchWorkOrder(
       'work_order_completeness.reviewer_pool_refs',
     );
     if (workOrder.surface_kind === 'opl_meta_agent_developer_patch_work_order') {
+      requireNonEmptyStringArray(workOrder.failure_evidence_refs, 'failure_evidence_refs');
+      requireAllIncluded(
+        workOrder.failure_evidence_refs,
+        workOrder.ahe_developer_work_order?.failure_evidence,
+        'failure_evidence_refs',
+      );
+      requireStringArray(workOrder.matched_capability_ids, 'matched_capability_ids');
+      requireStringArray(workOrder.canonical_target_paths, 'canonical_target_paths');
+      requireStringArray(workOrder.failure_token_registry_refs, 'failure_token_registry_refs');
+      requireStringArray(workOrder.improvement_tokens, 'improvement_tokens');
+      requireNonEmptyStringArray(workOrder.forbidden_target_paths_or_surfaces, 'forbidden_target_paths_or_surfaces');
       requireExternalSuiteIntake(workOrder);
       requireReviewerEvidenceRefs(workOrder);
       requireTargetOwnerCloseoutRefs(workOrder);
@@ -533,6 +574,7 @@ export function validateDeveloperPatchWorkOrder(
         'authority_boundary',
       );
       requireNoForbiddenWriteBoundary(workOrder);
+      requireOwnerCloseoutBoundary(workOrder);
     }
   }
   requireNonEmptyString(
