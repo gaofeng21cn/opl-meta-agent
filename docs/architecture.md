@@ -45,6 +45,19 @@ Agent Lab 与 `opl-meta-agent` 是标准消费者。目标 agent 兼容它们，
 - OMA 消费目标 agent 的 production/live acceptance、Agent Lab handoff、generated-surface handoff、owner receipt contract、editable surface policy、verification command refs 和 no-forbidden-write proof refs。OMA 产出 target-agent generic work order / candidate / proposal / blocker，不维护 MAS/MAG/RCA 私有 command family。
 - 目标 agent 可以在 owner routes、receipt refs、artifact refs 或 smoke fixture 中出现自己的 domain id；这些 domain refs 不能反向污染 Agent Lab / OMA 的顶层 contract vocabulary。
 
+## Standard Target Agent Repo Generation
+
+OMA 生成 target agent 时只提供 agent-building 语义，不维护私有 repo 目录标准。目标 repo 的物理骨架必须来自 OPL Framework 的 standard agent scaffold；OMA 的 stage-decomposition、candidate package 和 developer work order 只能填充 domain-owned pack refs、stage refs、artifact morphology refs、owner route refs 和 closeout refs。
+
+当前默认链路是：
+
+1. `build-agent-baseline` 调用 `opl agents scaffold --target-dir ... --domain-id ... --domain-label ... --json` 生成标准目录。
+2. OMA 写入最小 domain pack refs，并用 stage-decomposition typed closeout 物化 target stage / prompt / skill / quality / knowledge refs。
+3. OMA 调用 `opl agents scaffold --validate <targetAgentDir> --json` 和 `opl agents interfaces --repo-dir <targetAgentDir> --json`，让 OPL 持有 scaffold validation 与 generated interface projection。
+4. Agent Lab suite、independent reviewer、new-agent delivery gate、target owner receipt / typed blocker / human gate 共同决定收口形态。
+
+这条链路的边界是：OPL scaffold 负责目录和接口标准；OMA 负责目标智能体的语义设计、候选包和受限改进建议；target domain owner 持有 domain truth、artifact body、quality/export verdict、owner receipt 和 typed blocker。`writeMinimalAgentDomainPack` 里的 README 只做人读索引，不能作为 semantic pack source；可被合同消费的 source 必须是非 README pack files、stage control plane refs 和 closeout packet refs。
+
 ## Self-Evolution Responsibility Split
 
 自进化闭环的 owner split 固定为三段：

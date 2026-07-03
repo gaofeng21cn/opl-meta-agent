@@ -37,6 +37,13 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 - 理由：标准 OPL Agent 需要 contracts/tests 能解析真实 pack path，避免把 prose heading、目录存在性或 README 当成 semantic pack truth。
 - 影响：`contracts/pack_compiler_input.json`、`contracts/stage_control_plane.json` 和 pack tests 必须指向非 README 的真实文件；新增 stage/action/quality gate 先进入 pack/contracts，再同步人读说明。
 
+### Target agent repo 目录标准归 OPL scaffold，OMA 只写领域语义
+
+- 决策：OMA 生成新 target agent 时，目标 repo 的物理目录标准必须来自 OPL Framework `opl agents scaffold`；OMA 不维护并行目录模板、私有 scaffold 标准或 repo-local generated interface owner。
+- 决策：`build-agent-baseline` 的正确顺序是 OPL scaffold -> OMA stage-decomposition / domain pack refs -> OPL scaffold validation -> OPL generated interfaces -> Agent Lab / reviewer / delivery gate -> owner receipt、typed blocker、developer work order 或 no-patch coordination。
+- 理由：标准目录属于 OPL family 统一 scaffold / conformance；OMA 的核心价值是 agent-building reasoning、stage decomposition、artifact morphology、candidate package、developer work order 和 mechanism proposal，而不是复制 OPL Pack / Stagecraft / Connect / generated surface。
+- 影响：README、目录存在、suite pass、generated interface readiness 或 scaffold validation 都不能单独声明新 target agent 完成；可消费语义必须来自非 README pack files、`contracts/stage_control_plane.json`、typed closeout refs、owner route refs 和 delivery gate refs。后续 Stage Pack v2 字段稳定后，OMA 应把 target agent v2 缺口从 advisory 收紧为 delivery gate blocker。
+
 ### OPL 持有 generated surfaces，OMA 只提供 refs-only inputs
 
 - 决策：CLI、MCP、Skill、product-entry、OpenAI tool 与 AI SDK descriptors 由 OPL Framework 从 action/stage contracts 生成或托管；OMA 可以暴露 declared minimal authority actions，但不拥有 generated surface。
