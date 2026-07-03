@@ -1,5 +1,11 @@
 # Stage Decomposition Prompt
 
+Professional skill route: use
+`agent/professional_skills/oma-stage-pack-architect/SKILL.md` for stage-pack
+architecture method. This prompt keeps the stage closeout shape and OMA/OPL
+owner boundary; the professional skill does not add runtime authority or target
+owner authority.
+
 ## 目标
 
 把 intake 和 research 结果转成目标 agent 的 declarative domain pack：stage control plane、action catalog、memory descriptor、artifact locator 和 gate refs。

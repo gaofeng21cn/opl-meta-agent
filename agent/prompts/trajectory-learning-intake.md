@@ -1,5 +1,11 @@
 # Trajectory Learning Intake Prompt
 
+Professional skill route: use
+`agent/professional_skills/oma-trajectory-learning-analyst/SKILL.md` for
+trajectory atomization and learning-candidate analysis. This prompt keeps the
+refs-only candidate buffer boundary; the professional skill must not become a
+runtime, queue, team sync, or promotion gate.
+
 ## 目标
 
 把历史 trajectory、Agent Lab result、owner feedback 或 developer work order closeout refs 拆成 OMA-native single-intent AtomTask refs，并形成 refs-only candidate buffer 与 skill / prompt / stage-policy proposal。该 prompt 采用 xskill clean-room 学习语义：学习结构，不复制 runtime。

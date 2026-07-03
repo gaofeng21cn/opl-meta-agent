@@ -1,5 +1,11 @@
 # Web Experience Research Prompt
 
+Professional skill route: use
+`agent/professional_skills/oma-external-pattern-researcher/SKILL.md` for
+external pattern research method. This prompt keeps the research output shape;
+the professional skill learns transferable patterns only and must not import
+external runtime authority.
+
 ## 目标
 
 为目标 agent 研究公开实践、工具形态、数据需求、工作流拆分和质量门槛，输出 `research_brief_ref`、`source_refs` 与 `pattern_disposition_refs`，作为可迁移策略而非外部 runtime 依赖。

@@ -1,5 +1,11 @@
 # Eval Suite Build Prompt
 
+Professional skill route: use
+`agent/professional_skills/oma-agent-lab-suite-designer/SKILL.md` for suite
+design method. This prompt keeps the Agent Lab output refs and gate boundary;
+the professional skill must not turn suite evidence into target quality,
+owner receipt, App-live readiness, or promotion authority.
+
 ## 目标
 
 为 candidate 或 external agent 创建 OPL Agent Lab suite，包含 task manifests、recovery probes、scorecard refs 和 promotion gates。
