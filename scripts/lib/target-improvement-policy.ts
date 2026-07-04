@@ -59,11 +59,11 @@ export type TargetImprovementPolicy = {
   patchSurfaceHints: Record<string, string[]>;
   externalLearningRefs: string[];
   forbiddenTargetPathsOrSurfaces: string[];
-  targetOwnedForbiddenTargetPathsOrSurfaces: string[];
+  contextualForbiddenTargetPathsOrSurfaces: string[];
   runtimeRequiredSurfaceRefs: string[];
-  targetOwnedRuntimeRequiredSurfaceRefs: string[];
+  contextualRuntimeRequiredSurfaceRefs: string[];
   runtimeExpectedOutcomes: string[];
-  targetOwnedRuntimeExpectedOutcomes: string[];
+  contextualRuntimeExpectedOutcomes: string[];
 };
 
 function optionalJson(targetAgentDir: string, relativePath: string): JsonObject | null {
@@ -74,7 +74,80 @@ function optionalJson(targetAgentDir: string, relativePath: string): JsonObject 
   return readJson(filePath);
 }
 
-function mappingFromRecord(entry: JsonObject): ChangeRefMapping | null {
+function objectRecord(value: unknown): JsonObject {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value as JsonObject
+    : {};
+}
+
+function explicitPolicyCapability(token: string, entry: JsonObject, policy: JsonObject): CapabilityMapEntry | undefined {
+  const authorityBoundary = Object.keys(objectRecord(entry.authority_boundary)).length > 0
+    ? objectRecord(entry.authority_boundary)
+    : objectRecord(policy.authority_boundary);
+  const canonicalTargetPaths = uniqueRefs([
+    ...stringList(policy.canonical_paths),
+    ...stringList(policy.target_repo_file_hints),
+    ...refsFromRefLike(policy.physical_source_ref),
+    ...stringList(entry.canonical_paths),
+    ...stringList(entry.target_repo_file_hints),
+    ...refsFromRefLike(entry.physical_source_ref),
+  ]);
+  const requiredVerificationRefs = uniqueRefs([
+    ...stringList(policy.verification_refs),
+    ...stringList(policy.required_verification_refs),
+    ...stringList(entry.verification_refs),
+    ...stringList(entry.required_verification_refs),
+  ]);
+  const forbiddenTargetPathsOrSurfaces = uniqueRefs([
+    ...stringList(policy.forbidden_surfaces),
+    ...stringList(policy.forbidden_target_paths_or_surfaces),
+    ...stringList(policy.forbidden_target_writes),
+    ...stringList(entry.forbidden_surfaces),
+    ...stringList(entry.forbidden_target_paths_or_surfaces),
+    ...stringList(entry.forbidden_target_writes),
+    ...stringList(authorityBoundary.forbidden_surfaces),
+  ]);
+  const failureTokenRegistryRef = stringValue(entry.failure_token_registry_ref)
+    ?? stringValue(policy.failure_token_registry_ref);
+  const improvementTokens = uniqueRefs([
+    ...stringList(policy.improvement_tokens),
+    ...stringList(policy.failure_tokens),
+    ...stringList(policy.trigger_terms),
+    ...stringList(policy.triggers),
+    ...stringList(entry.improvement_tokens),
+    ...stringList(entry.failure_tokens),
+    ...stringList(entry.trigger_terms),
+    ...stringList(entry.triggers),
+    token,
+  ]);
+  if (
+    canonicalTargetPaths.length === 0
+    && requiredVerificationRefs.length === 0
+    && forbiddenTargetPathsOrSurfaces.length === 0
+    && !failureTokenRegistryRef
+    && Object.keys(authorityBoundary).length === 0
+  ) {
+    return undefined;
+  }
+  const capabilityId = stringValue(entry.capability_id)
+    ?? stringValue(policy.capability_id)
+    ?? token;
+  const capabilityRef = stringValue(entry.capability_ref)
+    ?? stringValue(policy.capability_ref)
+    ?? `explicit_policy_${slug(capabilityId)}`;
+  return {
+    capabilityId,
+    capabilityRef,
+    canonicalTargetPaths,
+    requiredVerificationRefs,
+    forbiddenTargetPathsOrSurfaces,
+    failureTokenRegistryRef,
+    improvementTokens,
+    authorityBoundary,
+  };
+}
+
+function mappingFromRecord(entry: JsonObject, metadataSource: JsonObject = {}): ChangeRefMapping | null {
   const token = stringValue(entry.token) ?? stringValue(entry.gap_token) ?? stringValue(entry.trigger_token);
   const refs = uniqueRefs([
     ...stringList(entry.refs),
@@ -84,7 +157,8 @@ function mappingFromRecord(entry: JsonObject): ChangeRefMapping | null {
   if (!token || refs.length === 0) {
     return null;
   }
-  return { token, refs };
+  const capability = explicitPolicyCapability(token, entry, metadataSource);
+  return { token, refs, ...(capability ? { capability } : {}) };
 }
 
 function slug(value: string): string {
@@ -130,10 +204,7 @@ function capabilityMapEntry(source: JsonObject | null, entry: JsonObject): Capab
   if (!capabilityId || !capabilityMapRef) {
     return null;
   }
-  const authorityBoundary = entry.authority_boundary && typeof entry.authority_boundary === 'object'
-    && !Array.isArray(entry.authority_boundary)
-    ? entry.authority_boundary as JsonObject
-    : {};
+  const authorityBoundary = objectRecord(entry.authority_boundary);
   const fallbackRegistryRef = stringValue(source?.failure_token_registry_ref)
     ?? stringValue(source?.capability_map?.failure_token_registry_ref);
   return {
@@ -188,8 +259,6 @@ function collectPatchSurfaceHints(...sources: Array<JsonObject | null>): Record<
   const hints: Record<string, string[]> = {};
   for (const source of sources) {
     const raw = source?.meta_agent_work_order_contract?.patch_surface_hints
-      ?? source?.oma_handoff?.patch_surface_hints
-      ?? source?.external_suite_improvement_policy?.patch_surface_hints
       ?? source?.patch_surface_hints
       ?? {};
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
@@ -218,11 +287,11 @@ function collectMappings(...sources: Array<JsonObject | null>): ChangeRefMapping
   return [
     ...sources.flatMap(capabilityMappings),
     ...sources.flatMap((source) => [
-      ...records(source?.external_suite_improvement_policy?.change_ref_mappings),
-      ...records(source?.meta_agent_work_order_contract?.change_ref_mappings),
-      ...records(source?.oma_handoff?.change_ref_mappings),
-      ...records(source?.change_ref_mappings),
-    ]).map(mappingFromRecord).filter((entry): entry is ChangeRefMapping => Boolean(entry)),
+      ...records(source?.meta_agent_work_order_contract?.change_ref_mappings)
+        .map((entry) => mappingFromRecord(entry, objectRecord(source?.meta_agent_work_order_contract))),
+      ...records(source?.change_ref_mappings)
+        .map((entry) => mappingFromRecord(entry, objectRecord(source))),
+    ]).filter((entry): entry is ChangeRefMapping => Boolean(entry)),
   ];
 }
 
@@ -237,18 +306,15 @@ export function targetImprovementPolicy(targetAgentDir: string): TargetImproveme
       .filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
       .map((entry) => readJson(path.join(productionAcceptanceDir, entry.name)))
     : [];
+  // Patch targets only come from target-owned policy surfaces; handoff files stay context-only.
   const patchTargetSources = [capabilityMap, ...productionAcceptances];
   const contextSources = [agentLabHandoff, omaHandoff, generatedSurfaceHandoff];
   const sources = [...patchTargetSources, ...contextSources];
   const defaultChangeRefs = uniqueRefs([
-    ...patchTargetSources.flatMap((source) => stringList(source?.external_suite_improvement_policy?.default_change_refs)),
     ...patchTargetSources.flatMap((source) => stringList(source?.meta_agent_work_order_contract?.default_change_refs)),
-    ...patchTargetSources.flatMap((source) => stringList(source?.oma_handoff?.default_change_refs)),
   ]);
   const defaultChangeRefTriggers = uniqueRefs([
-    ...patchTargetSources.flatMap((source) => stringList(source?.external_suite_improvement_policy?.default_change_ref_triggers)),
     ...patchTargetSources.flatMap((source) => stringList(source?.meta_agent_work_order_contract?.default_change_ref_triggers)),
-    ...patchTargetSources.flatMap((source) => stringList(source?.oma_handoff?.default_change_ref_triggers)),
   ]);
   const externalLearningRefs = uniqueRefs([
     ...sources.flatMap((source) => stringList(source?.external_suite_improvement_policy?.external_learning_refs)),
@@ -256,19 +322,19 @@ export function targetImprovementPolicy(targetAgentDir: string): TargetImproveme
     ...sources.flatMap((source) => stringList(source?.oma_handoff?.external_learning_refs)),
     ...sources.flatMap((source) => stringList(source?.external_learning_refs)),
   ]);
-  const targetOwnedForbiddenTargetPathsOrSurfaces = uniqueRefs([
+  const contextualForbiddenTargetPathsOrSurfaces = uniqueRefs([
     ...sources.flatMap((source) => stringList(source?.meta_agent_work_order_contract?.forbidden_target_writes)),
     ...sources.flatMap((source) => stringList(source?.external_suite_improvement_policy?.forbidden_target_paths_or_surfaces)),
     ...sources.flatMap((source) => stringList(source?.authority_boundary?.forbidden_surfaces)),
     ...sources.flatMap((source) => capabilityRecords(source).flatMap((entry) => stringList(entry.forbidden_surfaces))),
     ...stringList(generatedSurfaceHandoff?.generated_surface_policy?.must_not_write),
   ]);
-  const targetOwnedRuntimeRequiredSurfaceRefs = uniqueRefs([
+  const contextualRuntimeRequiredSurfaceRefs = uniqueRefs([
     ...sources.flatMap((source) => stringList(source?.external_suite_improvement_policy?.runtime_required_surface_refs)),
     ...sources.flatMap((source) => stringList(source?.meta_agent_work_order_contract?.runtime_required_surface_refs)),
     ...sources.flatMap((source) => stringList(source?.oma_handoff?.runtime_required_surface_refs)),
   ]);
-  const targetOwnedRuntimeExpectedOutcomes = uniqueRefs([
+  const contextualRuntimeExpectedOutcomes = uniqueRefs([
     ...sources.flatMap((source) => stringList(source?.external_suite_improvement_policy?.runtime_expected_outcomes)),
     ...sources.flatMap((source) => stringList(source?.meta_agent_work_order_contract?.runtime_expected_outcomes)),
     ...sources.flatMap((source) => stringList(source?.oma_handoff?.runtime_expected_outcomes)),
@@ -279,18 +345,18 @@ export function targetImprovementPolicy(targetAgentDir: string): TargetImproveme
     changeRefMappings: collectMappings(...patchTargetSources),
     patchSurfaceHints: collectPatchSurfaceHints(...patchTargetSources),
     externalLearningRefs,
-    forbiddenTargetPathsOrSurfaces: targetOwnedForbiddenTargetPathsOrSurfaces.length
-      ? targetOwnedForbiddenTargetPathsOrSurfaces
+    forbiddenTargetPathsOrSurfaces: contextualForbiddenTargetPathsOrSurfaces.length
+      ? contextualForbiddenTargetPathsOrSurfaces
       : DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
-    targetOwnedForbiddenTargetPathsOrSurfaces,
-    runtimeRequiredSurfaceRefs: targetOwnedRuntimeRequiredSurfaceRefs.length
-      ? targetOwnedRuntimeRequiredSurfaceRefs
+    contextualForbiddenTargetPathsOrSurfaces,
+    runtimeRequiredSurfaceRefs: contextualRuntimeRequiredSurfaceRefs.length
+      ? contextualRuntimeRequiredSurfaceRefs
       : DEFAULT_RUNTIME_REQUIRED_SURFACE_REFS,
-    targetOwnedRuntimeRequiredSurfaceRefs,
-    runtimeExpectedOutcomes: targetOwnedRuntimeExpectedOutcomes.length
-      ? targetOwnedRuntimeExpectedOutcomes
+    contextualRuntimeRequiredSurfaceRefs,
+    runtimeExpectedOutcomes: contextualRuntimeExpectedOutcomes.length
+      ? contextualRuntimeExpectedOutcomes
       : DEFAULT_RUNTIME_EXPECTED_OUTCOMES,
-    targetOwnedRuntimeExpectedOutcomes,
+    contextualRuntimeExpectedOutcomes,
   };
 }
 

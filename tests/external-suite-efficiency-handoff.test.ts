@@ -136,7 +136,7 @@ function buildEfficiencyHandoffSuite(): JsonObject {
   };
 }
 
-test('external suite efficiency handoff projection becomes a developer work order', () => {
+test('external suite efficiency handoff context plus target policy becomes a developer work order', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-efficiency-handoff-suite-'));
   try {
     const targetAgentDir = path.join(outputRoot, 'redcube-ai');
@@ -145,12 +145,10 @@ test('external suite efficiency handoff projection becomes a developer work orde
       domain_label: 'RedCube AI',
       delivery_domain: 'visual_deliverable',
     });
-    writeJson(path.join(targetAgentDir, 'contracts/agent_lab_handoff.json'), {
-      surface_kind: 'domain_agent_lab_efficiency_evidence_handoff',
-      domain_id: 'redcube-ai',
+    writeJson(path.join(targetAgentDir, 'contracts/production_acceptance/meta-agent-work-order-contract.json'), {
+      surface_kind: 'target_owned_explicit_improvement_policy',
       owner: 'RedCube AI',
-      handoff_status: 'ready_for_opl_meta_agent_efficiency_work_order',
-      external_suite_improvement_policy: {
+      meta_agent_work_order_contract: {
         default_change_ref_triggers: [
           'efficiency',
           'redundant review',
@@ -161,6 +159,20 @@ test('external suite efficiency handoff projection becomes a developer work orde
           'target_agent_runtime_contract_ref:redcube-ai/route-summary-cache-reuse',
           'target_agent_regression_suite_ref:redcube-ai/efficiency-handoff',
         ],
+        capability_id: 'redcube-ai.efficiency-runtime',
+        canonical_paths: [
+          'packages/redcube-domain-entry/src/actions/domain-action-adapter-parts/visual-pack-compiler-handoff.ts',
+          'packages/redcube-runtime-family-ppt/src/ppt-deck-runtime-family-parts/native-ppt.ts',
+          'tests/opl-family-contract-adoption.test.ts',
+        ],
+        verification_refs: ['target-verification:redcube-ai/typecheck'],
+        forbidden_target_paths_or_surfaces: [
+          'target quality verdict bodies',
+          'target export authority',
+        ],
+        authority_boundary: {
+          can_write_target_owner_receipt_body: false,
+        },
         change_ref_mappings: [
           {
             token: 'redundant-review',
@@ -186,6 +198,14 @@ test('external suite efficiency handoff projection becomes a developer work orde
             'tests/opl-family-contract-adoption.test.ts',
           ],
         },
+      },
+    });
+    writeJson(path.join(targetAgentDir, 'contracts/agent_lab_handoff.json'), {
+      surface_kind: 'domain_agent_lab_efficiency_evidence_handoff',
+      domain_id: 'redcube-ai',
+      owner: 'RedCube AI',
+      handoff_status: 'ready_for_opl_meta_agent_efficiency_work_order',
+      external_suite_improvement_policy: {
         runtime_required_surface_refs: [
           'target_agent_efficiency_handoff_projection',
           'target_agent_owner_route',

@@ -43,17 +43,29 @@ function executeWorkOrderExpectingValidationError(workOrder: JsonObject, outputR
 }
 
 function writeGenericFeedbackTargetImprovementPolicy(targetAgentDir: string): void {
-  writeJson(path.join(targetAgentDir, 'contracts/agent_lab_handoff.json'), {
-    surface_kind: 'domain_agent_lab_feedback_evidence_handoff',
-    domain_id: 'target-agent',
+  writeJson(path.join(targetAgentDir, 'contracts/production_acceptance/meta-agent-work-order-contract.json'), {
+    surface_kind: 'target_owned_explicit_improvement_policy',
     owner: 'target-agent',
-    handoff_status: 'ready_for_opl_meta_agent_feedback_work_order',
-    external_suite_improvement_policy: {
+    meta_agent_work_order_contract: {
       default_change_ref_triggers: ['artifact-morphology'],
       default_change_refs: [
         'target_agent_contract_ref:target-agent/artifact-morphology',
         'target_agent_regression_suite_ref:target-agent/artifact-morphology',
       ],
+      capability_id: 'target-agent.artifact-morphology',
+      canonical_paths: [
+        'contracts/artifact_morphology.json',
+        'tests/artifact-morphology.test.ts',
+      ],
+      verification_refs: ['target_repo_test_receipt'],
+      forbidden_target_paths_or_surfaces: [
+        'target truth',
+        'target owner receipt body',
+        'target quality verdict',
+      ],
+      authority_boundary: {
+        can_write_target_owner_receipt_body: false,
+      },
       change_ref_mappings: [
         {
           token: 'artifact-morphology',
@@ -67,6 +79,14 @@ function writeGenericFeedbackTargetImprovementPolicy(targetAgentDir: string): vo
         target_agent_contract_ref: ['contracts/artifact_morphology.json'],
         target_agent_regression_suite_ref: ['tests/artifact-morphology.test.ts'],
       },
+    },
+  });
+  writeJson(path.join(targetAgentDir, 'contracts/agent_lab_handoff.json'), {
+    surface_kind: 'domain_agent_lab_feedback_evidence_handoff',
+    domain_id: 'target-agent',
+    owner: 'target-agent',
+    handoff_status: 'ready_for_opl_meta_agent_feedback_work_order',
+    external_suite_improvement_policy: {
       forbidden_target_paths_or_surfaces: [
         'target truth',
         'target owner receipt body',

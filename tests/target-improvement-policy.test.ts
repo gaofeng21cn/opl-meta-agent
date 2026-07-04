@@ -99,7 +99,7 @@ test('target improvement policy still applies explicit target-owned owner receip
     fs.writeFileSync(
       path.join(targetAgentDir, 'contracts/production_acceptance/owner-receipt.json'),
       `${JSON.stringify({
-        external_suite_improvement_policy: {
+        meta_agent_work_order_contract: {
           default_change_ref_triggers: ['target-owner'],
           default_change_refs: [
             'target_agent_owner_receipt_contract_ref:target-agent/live-acceptance',

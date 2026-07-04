@@ -224,6 +224,7 @@ test('external suite improvement uses capability map as patch-target source when
         patch_surface_hints: {
           legacy_handoff_patch_ref: ['legacy/handoff/path.ts'],
         },
+        external_learning_refs: ['external-source:legacy-handoff/context-only'],
         runtime_required_surface_refs: ['target_agent_owner_route'],
       },
     });
@@ -270,6 +271,7 @@ test('external suite improvement uses capability map as patch-target source when
     const candidate = payload.learning_loop.target_capability_improvement_candidate;
     assert.deepEqual(candidate.proposed_change_refs, ['professional_skill_medical_journal_prose_quality']);
     assert.equal(candidate.proposed_change_refs.includes('legacy_handoff_patch_ref:must_not_be_used'), false);
+    assert.ok(candidate.external_learning_refs.includes('external-source:legacy-handoff/context-only'));
     const trace = candidate.patch_traceability_matrix[0];
     assert.deepEqual(trace.required_patch_refs, ['professional_skill_medical_journal_prose_quality']);
     assert.deepEqual(trace.target_repo_file_hints, ['skills/medical-journal-prose-quality/SKILL.md']);
@@ -280,6 +282,7 @@ test('external suite improvement uses capability map as patch-target source when
       fs.readFileSync(path.join(outputRoot, 'developer-patch-work-order.json'), 'utf8'),
     );
     assert.equal(workOrder.proposed_change_refs.includes('legacy_handoff_patch_ref:must_not_be_used'), false);
+    assert.equal(JSON.stringify(workOrder.patch_traceability_matrix).includes('legacy_handoff_patch_ref'), false);
     assert.deepEqual(workOrder.target_repo_file_hints, ['skills/medical-journal-prose-quality/SKILL.md']);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
