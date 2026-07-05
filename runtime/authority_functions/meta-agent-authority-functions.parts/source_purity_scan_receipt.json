@@ -21,13 +21,11 @@
   "scanned_script_refs": [
     "scripts/build-agent-baseline.ts",
     "scripts/check-source-structure.ts",
-    "scripts/sync-authority-functions.ts",
     "scripts/execute-external-work-order.ts",
     "scripts/improve-from-agent-lab-suite.ts",
-    "scripts/repo-hygiene.sh",
-    "scripts/run-with-repo-temp-env.sh",
     "scripts/lib/agent-evidence-contracts.ts",
     "scripts/lib/agent-evidence-materializer.ts",
+    "scripts/lib/agent-evidence-typed-blocker.ts",
     "scripts/lib/domain-pack.ts",
     "scripts/lib/external-suite-materializer.ts",
     "scripts/lib/meta-agent-loop-ai-reviewer.ts",
@@ -46,9 +44,12 @@
     "scripts/lib/work-order-efficiency.ts",
     "scripts/lib/work-order-refs.ts",
     "scripts/lib/work-order-validation.ts",
+    "scripts/repo-hygiene.sh",
+    "scripts/run-with-repo-temp-env.sh",
+    "scripts/sync-authority-functions.ts",
     "scripts/sync-stage-control-plane.ts",
-    "scripts/verify.sh",
-    "scripts/takeover-agent.ts"
+    "scripts/takeover-agent.ts",
+    "scripts/verify.sh"
   ],
   "active_script_caller_scan": {
     "status": "passed",
@@ -121,8 +122,15 @@
         "active_caller_refs": [
           "package.json#scripts.agent:evidence",
           "scripts/lib/agent-evidence-contracts.ts#import",
+          "scripts/lib/agent-evidence-typed-blocker.ts#import",
           "tests/agent-evidence-materializer.test.ts#test_ref",
           "tests/contracts-generated-surfaces.test.ts#test_ref"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/agent-evidence-typed-blocker.ts",
+        "active_caller_refs": [
+          "scripts/lib/agent-evidence-materializer.ts#import"
         ]
       },
       {
@@ -133,6 +141,7 @@
           "scripts/improve-from-agent-lab-suite.ts#import",
           "scripts/lib/agent-evidence-contracts.ts#import",
           "scripts/lib/agent-evidence-materializer.ts#import",
+          "scripts/lib/agent-evidence-typed-blocker.ts#import",
           "scripts/lib/external-suite-materializer.ts#import",
           "scripts/lib/meta-agent-loop-ai-reviewer.ts#import",
           "scripts/lib/meta-agent-loop-io.ts#import",
@@ -198,6 +207,7 @@
           "scripts/improve-from-agent-lab-suite.ts#import",
           "scripts/lib/agent-evidence-contracts.ts#import",
           "scripts/lib/agent-evidence-materializer.ts#import",
+          "scripts/lib/agent-evidence-typed-blocker.ts#import",
           "scripts/lib/external-suite-materializer.ts#import",
           "scripts/lib/meta-agent-loop-ai-reviewer.ts#import",
           "scripts/lib/meta-agent-loop-receipts.ts#import",
@@ -316,13 +326,14 @@
         "script_ref": "scripts/lib/work-order-refs.ts",
         "active_caller_refs": [
           "scripts/lib/agent-evidence-materializer.ts#import",
-        "scripts/lib/external-suite-materializer.ts#import",
-        "scripts/lib/target-improvement-policy.ts#import",
-        "scripts/lib/work-order-builders.ts#import",
-        "scripts/lib/work-order-efficiency.ts#import",
-        "scripts/lib/work-order-validation.ts#import"
-      ]
-    },
+          "scripts/lib/agent-evidence-typed-blocker.ts#import",
+          "scripts/lib/external-suite-materializer.ts#import",
+          "scripts/lib/target-improvement-policy.ts#import",
+          "scripts/lib/work-order-builders.ts#import",
+          "scripts/lib/work-order-efficiency.ts#import",
+          "scripts/lib/work-order-validation.ts#import"
+        ]
+      },
       {
         "script_ref": "scripts/lib/work-order-validation.ts",
         "active_caller_refs": [

@@ -5,6 +5,7 @@
       "scripts/improve-from-agent-lab-suite.ts",
       "scripts/lib/agent-evidence-contracts.ts",
       "scripts/lib/agent-evidence-materializer.ts",
+      "scripts/lib/agent-evidence-typed-blocker.ts",
       "scripts/lib/external-suite-materializer.ts",
       "scripts/lib/target-improvement-policy.ts",
       "scripts/lib/work-order-builders.ts",

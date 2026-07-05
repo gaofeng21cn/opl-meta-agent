@@ -258,26 +258,6 @@
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/sync-authority-functions.ts",
-        "classes": [
-          "fixture_or_proof_helper"
-        ],
-        "authority_function_refs": [],
-        "consumes_opl_surfaces": [],
-        "writes_only": [
-          "authority_functions_source_contract_ref",
-          "authority_functions_leaf_index_ref",
-          "authority_functions_aggregate_ref",
-          "authority_functions_drift_check_ref"
-        ],
-        "contract_refs": [
-          "runtime/authority_functions/meta-agent-authority-functions.json",
-          "runtime/authority_functions/meta-agent-authority-functions.source.json",
-          "runtime/authority_functions/meta-agent-authority-functions.leaf-index.json"
-        ],
-        "forbidden_roles": []
-      },
-      {
         "script_ref": "scripts/execute-external-work-order.ts",
         "classes": [
           "smoke_helper",
@@ -317,28 +297,20 @@
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/repo-hygiene.sh",
+        "script_ref": "scripts/lib/agent-evidence-contracts.ts",
         "classes": [
-          "fixture_or_proof_helper"
+          "fixture_or_proof_helper",
+          "developer_work_order_materializer"
         ],
         "authority_function_refs": [],
         "consumes_opl_surfaces": [],
         "writes_only": [
-          "repo_hygiene_check_ref",
-          "ignored_generated_cleanup_ref"
-        ],
-        "forbidden_roles": []
-      },
-      {
-        "script_ref": "scripts/run-with-repo-temp-env.sh",
-        "classes": [
-          "fixture_or_proof_helper"
-        ],
-        "authority_function_refs": [],
-        "consumes_opl_surfaces": [],
-        "writes_only": [
-          "repo_temp_env_boundary_ref",
-          "external_cache_redirect_ref"
+          "target_agent_contract_intake_ref",
+          "production_acceptance_contract_ref",
+          "agent_lab_handoff_contract_ref",
+          "domain_descriptor_contract_ref",
+          "generated_surface_handoff_contract_ref",
+          "owner_receipt_contract_ref"
         ],
         "forbidden_roles": []
       },
@@ -364,7 +336,7 @@
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/lib/agent-evidence-contracts.ts",
+        "script_ref": "scripts/lib/agent-evidence-typed-blocker.ts",
         "classes": [
           "fixture_or_proof_helper",
           "developer_work_order_materializer"
@@ -372,12 +344,7 @@
         "authority_function_refs": [],
         "consumes_opl_surfaces": [],
         "writes_only": [
-          "target_agent_contract_intake_ref",
-          "production_acceptance_contract_ref",
-          "agent_lab_handoff_contract_ref",
-          "domain_descriptor_contract_ref",
-          "generated_surface_handoff_contract_ref",
-          "owner_receipt_contract_ref"
+          "typed_blocker_ref"
         ],
         "forbidden_roles": []
       },
@@ -470,6 +437,25 @@
         "forbidden_roles": []
       },
       {
+        "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/artifact-morphology-validator.ts",
+        "classes": [
+          "fixture_or_proof_helper",
+          "developer_work_order_materializer"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [
+          "opl_family_runtime_stage_attempt",
+          "opl_standard_domain_agent_scaffold"
+        ],
+        "writes_only": [
+          "artifact_morphology_contract_validation_ref",
+          "target_domain_artifact_body_authority_guard_ref",
+          "no_forbidden_write_proof_ref",
+          "typed_blocker_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
         "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts",
         "classes": [
           "fixture_or_proof_helper",
@@ -543,25 +529,6 @@
         ]
       },
       {
-        "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/artifact-morphology-validator.ts",
-        "classes": [
-          "fixture_or_proof_helper",
-          "developer_work_order_materializer"
-        ],
-        "authority_function_refs": [],
-        "consumes_opl_surfaces": [
-          "opl_family_runtime_stage_attempt",
-          "opl_standard_domain_agent_scaffold"
-        ],
-        "writes_only": [
-          "artifact_morphology_contract_validation_ref",
-          "target_domain_artifact_body_authority_guard_ref",
-          "no_forbidden_write_proof_ref",
-          "typed_blocker_ref"
-        ],
-        "forbidden_roles": []
-      },
-      {
         "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/stage-native-contract-validator.ts",
         "classes": [
           "fixture_or_proof_helper",
@@ -607,6 +574,29 @@
         "forbidden_roles": []
       },
       {
+        "script_ref": "scripts/lib/stage-decomposition-runner.ts",
+        "classes": [
+          "smoke_helper",
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [
+          "opl_family_runtime_stage_attempt",
+          "codex_cli_stage_runner"
+        ],
+        "writes_only": [
+          "stage_packet_ref",
+          "stage_decomposition_closeout_ref",
+          "stage_decomposition_attempt_receipt_ref",
+          "fixture_closeout_packet_required_typed_blocker_ref",
+          "typed_blocker_ref"
+        ],
+        "retired_tail_refs": [
+          "retired-tail:opl-meta-agent/build-agent-baseline/no-closeout-implicit-fixture-graph"
+        ],
+        "forbidden_roles": []
+      },
+      {
         "script_ref": "scripts/lib/stage-native-artifact-contract.ts",
         "classes": [
           "fixture_or_proof_helper",
@@ -636,29 +626,6 @@
           "opl_physical_kernel_locator_ref",
           "stage_artifact_conformance_ref",
           "stage_artifact_workbench_consumption_ref"
-        ],
-        "forbidden_roles": []
-      },
-      {
-        "script_ref": "scripts/lib/stage-decomposition-runner.ts",
-        "classes": [
-          "smoke_helper",
-          "fixture_or_proof_helper"
-        ],
-        "authority_function_refs": [],
-        "consumes_opl_surfaces": [
-          "opl_family_runtime_stage_attempt",
-          "codex_cli_stage_runner"
-        ],
-        "writes_only": [
-          "stage_packet_ref",
-          "stage_decomposition_closeout_ref",
-          "stage_decomposition_attempt_receipt_ref",
-          "fixture_closeout_packet_required_typed_blocker_ref",
-          "typed_blocker_ref"
-        ],
-        "retired_tail_refs": [
-          "retired-tail:opl-meta-agent/build-agent-baseline/no-closeout-implicit-fixture-graph"
         ],
         "forbidden_roles": []
       },
@@ -752,6 +719,52 @@
         "forbidden_roles": []
       },
       {
+        "script_ref": "scripts/repo-hygiene.sh",
+        "classes": [
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": [
+          "repo_hygiene_check_ref",
+          "ignored_generated_cleanup_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
+        "script_ref": "scripts/run-with-repo-temp-env.sh",
+        "classes": [
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": [
+          "repo_temp_env_boundary_ref",
+          "external_cache_redirect_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
+        "script_ref": "scripts/sync-authority-functions.ts",
+        "classes": [
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": [
+          "authority_functions_source_contract_ref",
+          "authority_functions_leaf_index_ref",
+          "authority_functions_aggregate_ref",
+          "authority_functions_drift_check_ref"
+        ],
+        "contract_refs": [
+          "runtime/authority_functions/meta-agent-authority-functions.json",
+          "runtime/authority_functions/meta-agent-authority-functions.source.json",
+          "runtime/authority_functions/meta-agent-authority-functions.leaf-index.json"
+        ],
+        "forbidden_roles": []
+      },
+      {
         "script_ref": "scripts/sync-stage-control-plane.ts",
         "classes": [
           "fixture_or_proof_helper"
@@ -768,21 +781,6 @@
           "contracts/stage_control_plane.json",
           "contracts/stage_control_plane.source.json",
           "contracts/stage_control_plane.leaf-index.json"
-        ],
-        "forbidden_roles": []
-      },
-      {
-        "script_ref": "scripts/verify.sh",
-        "classes": [
-          "smoke_helper",
-          "fixture_or_proof_helper"
-        ],
-        "authority_function_refs": [],
-        "consumes_opl_surfaces": [],
-        "writes_only": [
-          "repo_native_verification_entrypoint_ref",
-          "repo_hygiene_check_ref",
-          "smoke_behavior_structure_verification_lane_ref"
         ],
         "forbidden_roles": []
       },
@@ -805,6 +803,21 @@
           "no_patch_coordination_receipt_ref"
         ],
         "forbidden_roles": []
+      },
+      {
+        "script_ref": "scripts/verify.sh",
+        "classes": [
+          "smoke_helper",
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": [
+          "repo_native_verification_entrypoint_ref",
+          "repo_hygiene_check_ref",
+          "smoke_behavior_structure_verification_lane_ref"
+        ],
+        "forbidden_roles": []
       }
     ],
     "script_to_pack_retirement_gates": [
@@ -814,6 +827,7 @@
           "scripts/improve-from-agent-lab-suite.ts",
           "scripts/lib/agent-evidence-contracts.ts",
           "scripts/lib/agent-evidence-materializer.ts",
+          "scripts/lib/agent-evidence-typed-blocker.ts",
           "scripts/lib/external-suite-materializer.ts",
           "scripts/lib/target-improvement-policy.ts",
           "scripts/lib/work-order-builders.ts",
@@ -1276,13 +1290,11 @@
     "scanned_script_refs": [
       "scripts/build-agent-baseline.ts",
       "scripts/check-source-structure.ts",
-      "scripts/sync-authority-functions.ts",
       "scripts/execute-external-work-order.ts",
       "scripts/improve-from-agent-lab-suite.ts",
-      "scripts/repo-hygiene.sh",
-      "scripts/run-with-repo-temp-env.sh",
       "scripts/lib/agent-evidence-contracts.ts",
       "scripts/lib/agent-evidence-materializer.ts",
+      "scripts/lib/agent-evidence-typed-blocker.ts",
       "scripts/lib/domain-pack.ts",
       "scripts/lib/external-suite-materializer.ts",
       "scripts/lib/meta-agent-loop-ai-reviewer.ts",
@@ -1301,9 +1313,12 @@
       "scripts/lib/work-order-efficiency.ts",
       "scripts/lib/work-order-refs.ts",
       "scripts/lib/work-order-validation.ts",
+      "scripts/repo-hygiene.sh",
+      "scripts/run-with-repo-temp-env.sh",
+      "scripts/sync-authority-functions.ts",
       "scripts/sync-stage-control-plane.ts",
-      "scripts/verify.sh",
-      "scripts/takeover-agent.ts"
+      "scripts/takeover-agent.ts",
+      "scripts/verify.sh"
     ],
     "active_script_caller_scan": {
       "status": "passed",
@@ -1376,8 +1391,15 @@
           "active_caller_refs": [
             "package.json#scripts.agent:evidence",
             "scripts/lib/agent-evidence-contracts.ts#import",
+            "scripts/lib/agent-evidence-typed-blocker.ts#import",
             "tests/agent-evidence-materializer.test.ts#test_ref",
             "tests/contracts-generated-surfaces.test.ts#test_ref"
+          ]
+        },
+        {
+          "script_ref": "scripts/lib/agent-evidence-typed-blocker.ts",
+          "active_caller_refs": [
+            "scripts/lib/agent-evidence-materializer.ts#import"
           ]
         },
         {
@@ -1388,6 +1410,7 @@
             "scripts/improve-from-agent-lab-suite.ts#import",
             "scripts/lib/agent-evidence-contracts.ts#import",
             "scripts/lib/agent-evidence-materializer.ts#import",
+            "scripts/lib/agent-evidence-typed-blocker.ts#import",
             "scripts/lib/external-suite-materializer.ts#import",
             "scripts/lib/meta-agent-loop-ai-reviewer.ts#import",
             "scripts/lib/meta-agent-loop-io.ts#import",
@@ -1453,6 +1476,7 @@
             "scripts/improve-from-agent-lab-suite.ts#import",
             "scripts/lib/agent-evidence-contracts.ts#import",
             "scripts/lib/agent-evidence-materializer.ts#import",
+            "scripts/lib/agent-evidence-typed-blocker.ts#import",
             "scripts/lib/external-suite-materializer.ts#import",
             "scripts/lib/meta-agent-loop-ai-reviewer.ts#import",
             "scripts/lib/meta-agent-loop-receipts.ts#import",
@@ -1571,6 +1595,7 @@
           "script_ref": "scripts/lib/work-order-refs.ts",
           "active_caller_refs": [
             "scripts/lib/agent-evidence-materializer.ts#import",
+            "scripts/lib/agent-evidence-typed-blocker.ts#import",
             "scripts/lib/external-suite-materializer.ts#import",
             "scripts/lib/target-improvement-policy.ts#import",
             "scripts/lib/work-order-builders.ts#import",
