@@ -11,6 +11,7 @@ import type { JsonObject } from './support/contracts.ts';
 
 test('foundry agent series contract binds OMA to shared Progress-First projection', () => {
   const series = readJson('contracts/foundry_agent_series.json');
+  const actionCatalog = readJson('contracts/action_catalog.json');
   const packageJson = readJson('package.json');
   const packageLock = readJson('package-lock.json');
 
@@ -166,6 +167,60 @@ test('foundry agent series contract binds OMA to shared Progress-First projectio
     domain_adapter_must_not_copy_policy_body_as_authority: true,
     consumer_alignment_check: 'foundry:policy-release',
   });
+  assert.deepEqual(series.standard_feedback_self_evolution_trigger_policy, {
+    surface_kind: 'opl_foundry_agent_standard_feedback_self_evolution_trigger_policy',
+    version: 'foundry-agent-feedback-self-evolution-trigger.v1',
+    policy_id: 'standard_agent_feedback_self_evolution_trigger.v1',
+    applies_to_series_memberships: [
+      'standard_domain_agent',
+      'framework_capability_package',
+    ],
+    feedbackops_event_kind: 'target_agent_feedback_external_suite',
+    accepted_feedback_profile: 'target_agent_feedback_external_suite',
+    trigger_chain: [
+      'domain_or_package_thin_feedback_adapter',
+      'opl_feedbackops_agent_lab_status_projection',
+      'opl_meta_agent_oma_agent_evolution_work_order',
+      'developer_mode_direct_fix_or_fork_pr_route',
+      'target_owner_closeout_readback',
+    ],
+    required_trigger_fields: [
+      'feedbackops_event_kind',
+      'accepted_feedback_profile',
+      'target_agent_id',
+      'idempotency_key',
+      'external_suite_ref',
+      'developer_mode_execution_gate_refs',
+      'oma_evolution_skill_ref',
+      'owner_closeout_readback_refs',
+    ],
+    standard_status_projection_ref:
+      'contracts/opl-framework/agent-lab-contract.json#domain_feedback_self_evolution_surface',
+    feedback_capture_requires_developer_mode: false,
+    repo_fix_execution_requires_opl_developer_mode: true,
+    contract_can_trigger_execution: false,
+    developer_mode_execution_gate_refs: [
+      'opl-developer-mode:repo-fix-execution',
+      'opl-developer-mode:direct-fix-or-fork-pr-route',
+    ],
+    developer_route_policy: {
+      feedback_capture_route: 'allowed_for_all_users_refs_only',
+      direct_fix_route: 'requires_target_repo_direct_write_authority_or_agent_owner_developer_authority',
+      manual_enable_without_direct_write_route: 'fork_pull_request',
+      official_or_third_party_agent_without_authority_route: 'fork_pull_request_or_owner_handoff',
+      manual_developer_mode_cannot_grant_direct_repo_write: true,
+      auto_developer_mode_can_select_local_checkout_source_when_identity_matches: true,
+    },
+    authority_boundary: {
+      refs_only: true,
+      can_write_domain_truth: false,
+      can_mutate_artifact_body: false,
+      can_authorize_quality_or_export: false,
+      can_create_owner_receipt: false,
+      can_create_typed_blocker: false,
+      can_execute_repo_patch_without_developer_mode: false,
+    },
+  });
   assert.ok(asStrings(series.required_stage_packets).includes('stage_completion_policy'));
   assert.ok(asStrings(series.required_stage_packets).includes('progress_delta_policy'));
   assert.ok(asStrings(series.required_stage_packets).includes('typed_blocker_lineage_policy'));
@@ -197,6 +252,20 @@ test('foundry agent series contract binds OMA to shared Progress-First projectio
     true,
     'opl-framework-shared lockfile entry must pin the OPL shared release commit',
   );
+  const trigger = actionCatalog.feedback_self_evolution_trigger as JsonObject;
+  assert.equal(trigger.surface_kind, 'opl_foundry_agent_feedback_self_evolution_trigger');
+  assert.equal(
+    trigger.policy_ref,
+    'contracts/foundry_agent_series.json#/standard_feedback_self_evolution_trigger_policy',
+  );
+  assert.equal(trigger.policy_id, 'standard_agent_feedback_self_evolution_trigger.v1');
+  assert.equal(trigger.target_agent_id, 'opl-meta-agent');
+  assert.equal(trigger.feedbackops_event_kind, 'target_agent_feedback_external_suite');
+  assert.equal(trigger.oma_evolution_skill_ref, 'opl-meta-agent:oma-agent-evolution');
+  assert.deepEqual(trigger.developer_mode_execution_gate_refs, [
+    'opl-developer-mode:repo-fix-execution',
+    'opl-developer-mode:direct-fix-or-fork-pr-route',
+  ]);
 });
 
 test('foundry agent series policy fingerprint matches the OPL owner release contract', () => {
