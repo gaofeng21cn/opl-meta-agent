@@ -33,7 +33,9 @@
     "forbidden_roles",
     "allowed_opl_surface_consumption_policy_ref",
     "script_classifications",
-    "script_to_pack_retirement_gates"
+    "script_to_pack_retirement_gates",
+    "source_ref_integrity_guard",
+    "generic_materializer_no_resurrection_guard"
   ],
   "maintenance_policy": {
     "aggregate_is_generated_consumer_surface": true,

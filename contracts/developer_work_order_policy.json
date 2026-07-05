@@ -39,6 +39,25 @@
     "blocked suite redrive no longer parks as stale human handoff when target owner work remains",
     "no forbidden target domain truth, artifact, memory, quality verdict, or submission readiness surface is written by opl-meta-agent"
   ],
+  "agent_evolution_failure_classes": [
+    "stage-route",
+    "specialist-skill",
+    "tool-connector",
+    "quality-gate",
+    "read-model-currentness",
+    "authority-boundary",
+    "app-observability"
+  ],
+  "required_agent_evolution_work_order_fields": [
+    "agent_evolution_decision_ref",
+    "failure_class",
+    "target_owner_route",
+    "target_editable_surface_refs",
+    "forbidden_surfaces",
+    "expected_behavior_delta",
+    "verification_refs",
+    "owner_closeout_readback"
+  ],
   "default_target_workspace_required_surface_refs": [
     "target_workspace_pyproject_or_lock",
     "target_workspace_profile_or_config_env",

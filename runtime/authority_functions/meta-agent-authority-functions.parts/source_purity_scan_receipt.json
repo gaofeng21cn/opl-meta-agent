@@ -316,12 +316,13 @@
         "script_ref": "scripts/lib/work-order-refs.ts",
         "active_caller_refs": [
           "scripts/lib/agent-evidence-materializer.ts#import",
-          "scripts/lib/external-suite-materializer.ts#import",
-          "scripts/lib/target-improvement-policy.ts#import",
-          "scripts/lib/work-order-builders.ts#import",
-          "scripts/lib/work-order-efficiency.ts#import"
-        ]
-      },
+        "scripts/lib/external-suite-materializer.ts#import",
+        "scripts/lib/target-improvement-policy.ts#import",
+        "scripts/lib/work-order-builders.ts#import",
+        "scripts/lib/work-order-efficiency.ts#import",
+        "scripts/lib/work-order-validation.ts#import"
+      ]
+    },
       {
         "script_ref": "scripts/lib/work-order-validation.ts",
         "active_caller_refs": [

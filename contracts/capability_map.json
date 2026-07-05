@@ -91,6 +91,41 @@
       }
     },
     {
+      "capability_id": "opl-meta-agent.agent-evolution.professional_skill",
+      "surface_role": "professional_skill",
+      "capability_kind": "professional_skill",
+      "canonical_owner": "opl-meta-agent",
+      "physical_source_ref": {
+        "ref_kind": "repo_path",
+        "ref": "agent/professional_skills/oma-agent-evolution/SKILL.md",
+        "role": "professional_skill_source"
+      },
+      "runtime_projection_refs": [
+        {
+          "ref_kind": "contract_ref",
+          "ref": "contracts/developer_work_order_policy.json#agent_evolution_failure_classes",
+          "role": "agent_evolution_diagnosis_router"
+        },
+        {
+          "ref_kind": "contract_ref",
+          "ref": "contracts/developer_work_order_policy.json#required_agent_evolution_work_order_fields",
+          "role": "developer_work_order_field_contract"
+        }
+      ],
+      "sync_policy": "domain_agent_builtin_refs_only",
+      "externalization_reason": "repo-owned OMA agent-evolution diagnosis and patch playbook; resolver metadata only, not target-domain truth or readiness evidence",
+      "authority_boundary": {
+        "can_write_domain_truth": false,
+        "can_write_memory_body": false,
+        "can_mutate_artifact_body": false,
+        "can_sign_owner_receipt": false,
+        "can_create_typed_blocker": false,
+        "can_authorize_quality_or_export": false,
+        "can_claim_domain_ready": false,
+        "can_claim_production_ready": false
+      }
+    },
+    {
       "capability_id": "opl-meta-agent.domain-affordances.tool_connector",
       "surface_role": "tool_connector",
       "capability_kind": "tool_connector",

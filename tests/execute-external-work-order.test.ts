@@ -76,6 +76,21 @@ function buildWorkOrder(): JsonObject {
     'patch-absorption:example-agent/oma_developer_patch_work_order_test/source-patch',
     'agent-lab-re-evaluation:example-agent/agent-lab-result-ref/oma_developer_patch_work_order_test',
   ];
+  const machineCloseoutRefs = {
+    blocked_suite_result_ref: 'agent-lab-result-ref',
+    developer_patch_work_order_ref: 'oma_developer_patch_work_order_test',
+    patch_traceability_matrix_ref: 'oma_developer_patch_work_order_test#/patch_traceability_matrix',
+    target_repo_verification_refs: ['npm test'],
+    target_runtime_read_model_consumption_ref:
+      'target-runtime-read-model-consumption:example-agent/oma_developer_patch_work_order_test/source-patch',
+    workspace_environment_proof_ref:
+      'workspace-environment-proof:example-agent/oma_developer_patch_work_order_test/source-patch',
+    no_forbidden_write_proof_ref: 'no_target_domain_truth_write_proof',
+    target_owner_receipt_or_typed_blocker_ref: targetCloseoutRefs[0],
+    patch_absorption_ref: targetCloseoutRefs[2],
+    worktree_cleanup_ref: targetCloseoutRefs[1],
+    agent_lab_re_evaluation_ref: targetCloseoutRefs[3],
+  };
   const primitiveRefs = {
     work_order_readiness_primitive_ref:
       'opl-work-order-primitive:work-order-readiness/example-agent/oma_developer_patch_work_order_test/source-patch',
@@ -131,6 +146,39 @@ function buildWorkOrder(): JsonObject {
       repo_dir: '/tmp/example-agent',
     },
     source_agent_lab_result_ref: 'agent-lab-result-ref',
+    agent_evolution_decision_ref:
+      'agent-evolution-decision:opl-meta-agent/example-agent/oma_developer_patch_work_order_test',
+    failure_class: 'quality-gate',
+    target_owner_route: {
+      target_agent_id: 'example-agent',
+      owner_route_ref: 'target-agent-owner:example-agent',
+      route_refs: ['target-agent-owner:example-agent'],
+      currentness_ref: 'oma_developer_patch_work_order_test#/work_order_currentness',
+    },
+    target_editable_surface_refs: ['target-agent-source-ref:example-agent/source-patch'],
+    allowed_editable_surfaces: ['target-agent-source-ref:example-agent/source-patch'],
+    forbidden_surfaces: ['target domain truth surfaces'],
+    expected_behavior_delta: {
+      failure_class: 'quality-gate',
+      summary: 'Target agent owner-gated source patch closes the observed quality-gate gap.',
+      expected_change_refs: ['target-agent-change-ref:example'],
+      verification_refs: ['npm test'],
+      read_model_consumption_ref: machineCloseoutRefs.target_runtime_read_model_consumption_ref,
+    },
+    verification_refs: ['npm test'],
+    owner_closeout_readback: {
+      owner: 'target-domain via OPL',
+      target_owner_receipt_or_typed_blocker_ref: machineCloseoutRefs.target_owner_receipt_or_typed_blocker_ref,
+      target_owner_closeout_refs: targetCloseoutRefs,
+      oma_can_write_target_owner_receipt_body: false,
+      oma_can_write_target_owner_typed_blocker_body: false,
+      oma_can_create_target_typed_blocker: false,
+      oma_can_invoke_target_owner_closeout_hook: false,
+      can_write_target_domain_truth: false,
+      can_write_target_domain_memory_body: false,
+      can_mutate_target_domain_artifact_body: false,
+      can_authorize_target_domain_quality_or_export: false,
+    },
     source_external_suite_intake: {
       surface_kind: 'opl_meta_agent_external_agent_lab_suite_intake',
       status: 'accepted_external_agent_lab_suite_input',
@@ -223,6 +271,7 @@ function buildWorkOrder(): JsonObject {
         fail_closed_without_route_or_ledger_proof: true,
       },
     },
+    machine_closeout_refs: machineCloseoutRefs,
     target_progress_accounting: {
       progress_delta_classification: 'mixed',
       deliverable_progress_delta: {
@@ -366,6 +415,16 @@ test('execute external work order delegates execution and lifecycle to the OPL w
   assert.equal(payload.opl_work_order_command.command, 'work-order execute');
   assert.deepEqual(payload.opl_work_order_command.args, oplInvocation.argv);
   assert.equal(payload.work_order_ref, 'oma_developer_patch_work_order_test');
+  assert.equal(payload.work_order_readback.agent_evolution_decision_ref,
+    'agent-evolution-decision:opl-meta-agent/example-agent/oma_developer_patch_work_order_test');
+  assert.equal(payload.work_order_readback.failure_class, 'quality-gate');
+  assert.deepEqual(payload.work_order_readback.target_editable_surface_refs, [
+    'target-agent-source-ref:example-agent/source-patch',
+  ]);
+  assert.equal(
+    payload.work_order_readback.owner_closeout_readback.target_owner_receipt_or_typed_blocker_ref,
+    'target-owner-receipt-or-typed-blocker:example-agent/oma_developer_patch_work_order_test',
+  );
   assert.equal(payload.opl_result.primitive_owner, 'one-person-lab/OPL');
   assert.equal(payload.opl_result.target_worktree_lifecycle_owner, 'one-person-lab/OPL');
   assert.equal(
@@ -563,6 +622,37 @@ test('execute external work order rejects retired target progress alias fields',
 
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /retired target_progress_accounting alias field substantive_deliverable_delta_refs is not accepted/);
+});
+
+test('execute external work order rejects missing agent-evolution decision readback before delegation', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-execute-work-order-agent-evolution-test-'));
+  const workOrderPath = path.join(tempDir, 'developer-patch-work-order.json');
+  const workOrder = buildWorkOrder();
+  delete workOrder.agent_evolution_decision_ref;
+  writeJson(workOrderPath, workOrder);
+
+  const result = spawnSync(
+    process.execPath,
+    [
+      '--experimental-strip-types',
+      path.join(repoRoot, 'scripts/execute-external-work-order.ts'),
+      '--work-order',
+      workOrderPath,
+      '--opl-bin',
+      path.join(tempDir, 'opl-not-called'),
+    ],
+    {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        NODE_NO_WARNINGS: '1',
+      },
+    },
+  );
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /agent_evolution_decision_ref/);
 });
 
 test('execute external work order rejects deliverable progress when platform repairs are also counted', () => {

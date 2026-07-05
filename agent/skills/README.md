@@ -15,6 +15,7 @@ Repo-local professional skill pack:
 - `../professional_skills/oma-agent-lab-suite-designer/SKILL.md`
 - `../professional_skills/oma-takeover-reviewer/SKILL.md`
 - `../professional_skills/oma-work-order-author/SKILL.md`
+- `../professional_skills/oma-agent-evolution/SKILL.md`
 - `../professional_skills/oma-trajectory-learning-analyst/SKILL.md`
 
 These are Codex-style professional method skills. They route expertise out of

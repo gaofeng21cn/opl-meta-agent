@@ -12,7 +12,7 @@ Machine boundary: 本文是人读架构说明。机器真相继续归 `contracts
 - `opl-meta-agent` owns：agent-building semantics、intent brief、research brief、stage decomposition、candidate agent package policy、Agent Lab suite specs、baseline delivery receipt、online learning review policy 和 mechanism patch proposal 记录。
 - `opl-meta-agent` owns as candidate author：每个 stage 的 `stage_executor_policy_candidate`，用于描述可试验的 executor / model / provider / capability / receipt 组合；这些 candidate 只是 refs-only policy proposal。
 - `opl-meta-agent` owns as domain pack：`agent/knowledge`、`agent/prompts`、`agent/quality_gates`、`agent/skills`、`agent/stages` 下的领域引用文件，以及 `contracts/` 中声明这些文件、阶段、动作、handoff 和 authority boundary 的机器合同。
-- `opl-meta-agent` owns as repo-local professional skills：`agent/professional_skills/*/SKILL.md` 下的 Codex-style agent-building 方法技能。这些技能把 intent architecture、external pattern research、stage pack architecture、Agent Lab suite design、takeover review、work-order authoring 和 trajectory learning analysis 从 stage prompt / domain skill prose 中拆出；它们不是 OPL generated Skill surface、runtime wrapper、target artifact、owner receipt、typed blocker 或 promotion gate state。
+- `opl-meta-agent` owns as repo-local professional skills：`agent/professional_skills/*/SKILL.md` 下的 Codex-style agent-building 方法技能。这些技能把 intent architecture、external pattern research、stage pack architecture、Agent Lab suite design、takeover review、work-order authoring、agent-evolution diagnosis / patch playbook 和 trajectory learning analysis 从 stage prompt / domain skill prose 中拆出；它们不是 OPL generated Skill surface、runtime wrapper、target artifact、owner receipt、typed blocker 或 promotion gate state。
 - `opl-meta-agent` can consume standard target-agent handoff：既有 OPL-compatible agent 的测试编排、自进化候选组织、developer patch work order、mechanism patch proposal 产出和 takeover receipt。
 - `OPL Framework` owns：generic runtime、Agent Lab、standard scaffold、queue、attempt ledger、provider receipt、observability projection、optimizer/RL transition refs、stage executor policy read model、stage executor policy gate、work order execution / absorb / cleanup 和 promotion gates。
 - target domain agent owns：domain truth、quality verdict、artifact authority、memory body、owner receipt，并负责提供 Agent Lab / OMA 可消费的标准 descriptor、handoff、owner-route、owner closeout hook、receipt、verification 和 no-forbidden-write refs。
@@ -63,10 +63,12 @@ OMA 生成 target agent 时只提供 agent-building 语义，不维护私有 rep
 自进化闭环的 owner split 固定为三段：
 
 1. `OPL Agent Lab`：运行 suite，归并 evidence / root cause / targeted fix / predicted impact / next-run falsification refs，比较 variant candidates，执行 risk-tiered promotion gate，并输出 refs-only App/workbench read model。
-2. `opl-meta-agent`：消费 Agent Lab result 与目标 agent handoff，生成 developer patch work order、target capability improvement candidate、mechanism patch proposal 或 typed blocker；work order 必须说明 allowed editable surfaces、target repo file hints、required verification refs、rollback/version refs、owner route refs、no-forbidden-write proof 和 target runtime/read-model consumption verification。
+2. `opl-meta-agent`：消费 Agent Lab result 与目标 agent handoff，生成 developer patch work order、target capability improvement candidate、mechanism patch proposal 或 typed blocker；work order 必须说明 `agent_evolution_decision_ref`、`failure_class`、target owner route、target editable surfaces、forbidden surfaces、expected behavior delta、verification refs、owner closeout readback、rollback/version refs、no-forbidden-write proof 和 target runtime/read-model consumption verification。
 3. `target domain agent`：通过 target-domain owner closeout hook 签发 owner receipt 或 typed blocker，持有 domain truth、quality verdict、artifact authority、memory body 和最终 owner acceptance。
 
 因此，OMA 的 self-evolution 不是“自己判断并推广目标 agent”，而是把可审计证据转成受限 patch loop。Codex 只能在 work order 授权的文件范围内修改目标仓；目标验证和 owner receipt 回填后，下一轮仍回到 Agent Lab 做 evidence delta、falsification 和 promotion gate 评估。
+
+`oma-agent-evolution` 是本仓专业能力，不属于 MAS ScholarSkills。它只负责把失败路由到 `stage-route`、`specialist-skill`、`tool-connector`、`quality-gate`、`read-model-currentness`、`authority-boundary` 或 `app-observability`，并据此组织 OMA-owned agent design/source patch work order。MAS、MAG、RCA 等 target domain 仍只通过标准 handoff、owner route、feedback refs 和 owner closeout refs 参与；OPL Agent Lab / FeedbackOps / App 只提供 refs-only evidence、projection 或队列，不持有 MAS study truth。
 
 ## Clean-Room Skill Pattern Intake
 

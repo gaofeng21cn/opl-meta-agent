@@ -14,6 +14,7 @@ import type {
   TargetImprovementPolicy,
 } from './target-improvement-policy.ts';
 import {
+  buildAgentEvolutionWorkOrderFields,
   buildOplWorkOrderPrimitiveRefs,
   buildRefsOnlyWorkOrderCompleteness,
   buildRuntimeConsumptionVerification,
@@ -196,6 +197,27 @@ export function buildDeveloperPatchWorkOrder({
   const substantiveDeliverableDeltaRefs = noPatchRequired
     ? []
     : capabilityCandidate.proposed_change_refs;
+  const ownerRouteRefs = [
+    ownerRouteRef,
+    `promotion-gate:opl-meta-agent/${targetAgent.domain_id}/external-suite-self-evolution`,
+  ];
+  const agentEvolutionReadback = buildAgentEvolutionWorkOrderFields({
+    domainId: targetAgent.domain_id,
+    workOrderId,
+    failureClass: 'quality-gate',
+    ownerRouteRef,
+    ownerRouteRefs,
+    targetEditableSurfaceRefs: noPatchRequired ? [] : capabilityCandidate.target_editable_surface_refs,
+    forbiddenSurfaces: forbiddenTargetPathsOrSurfaces,
+    expectedChangeRefs: noPatchRequired ? ['owner_receipt_coordination_record'] : capabilityCandidate.proposed_change_refs,
+    expectedBehaviorSummary: noPatchRequired
+      ? 'Target owner consumes OMA coordination refs without a source patch.'
+      : 'Target agent owner-gated source patch closes the Agent Lab and independent reviewer quality-gate gap.',
+    verificationRefs: requiredVerificationRefs,
+    targetCloseoutRefs: bundleRefs.target_closeout_refs as string[],
+    ownerReceiptOrTypedBlockerRef: String(machineCloseoutRefs.target_owner_receipt_or_typed_blocker_ref),
+    readModelConsumptionRef: String(machineCloseoutRefs.target_runtime_read_model_consumption_ref),
+  });
   return {
     surface_kind: 'opl_meta_agent_developer_patch_work_order',
     version: 'opl-meta-agent.developer-patch-work-order.v1',
@@ -204,6 +226,7 @@ export function buildDeveloperPatchWorkOrder({
     product_id: 'opl-meta-agent',
     target_agent: capabilityCandidate.target_agent,
     source_agent_lab_result_ref: suiteResult.result_id,
+    ...agentEvolutionReadback,
     work_order_currentness: buildWorkOrderCurrentness({
       domainId: targetAgent.domain_id,
       suiteResultRef: suiteResult.result_id,
@@ -236,7 +259,7 @@ export function buildDeveloperPatchWorkOrder({
         noPatchRequired ? 'target_owner_receipt_projection_ref' : 'target_repo_test_receipt',
       ],
       ownerRouteRefs: [
-        ownerRouteRef,
+        ...ownerRouteRefs,
         `target-owner-receipt-or-typed-blocker:${capabilityCandidate.target_agent.domain_id}/${workOrderId}`,
       ],
       noForbiddenWriteProofRefs,
@@ -300,10 +323,8 @@ export function buildDeveloperPatchWorkOrder({
     rollback_version_refs: noPatchRequired
       ? ['owner_receipt_coordination_record']
       : ['git_commit', 'target_agent_previous_head_ref', 'temporary_worktree_ref'],
-    owner_route_refs: [
-      ownerRouteRef,
-      `promotion-gate:opl-meta-agent/${targetAgent.domain_id}/external-suite-self-evolution`,
-    ],
+    owner_route_refs: ownerRouteRefs,
+    target_owner_closeout_refs: bundleRefs.target_closeout_refs,
     no_forbidden_write_proof: {
       required: true,
       proof_refs: noForbiddenWriteProofRefs,

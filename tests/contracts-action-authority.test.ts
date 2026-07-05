@@ -71,6 +71,20 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
       'opl_work_order_delegation_aperture',
     ),
   );
+  [
+    'agent_evolution_decision_ref',
+    'failure_class',
+    'target_owner_route',
+    'target_editable_surface_refs',
+    'forbidden_surfaces',
+    'expected_behavior_delta',
+    'verification_refs',
+    'owner_closeout_readback',
+  ].forEach((field) => {
+    assert.ok(
+      externalSuiteAction.accepted_external_suite_inputs.required_work_order_readback_fields.includes(field),
+    );
+  });
   assert.equal(
     externalSuiteAction.accepted_external_suite_inputs.authority_boundary.can_write_target_domain_truth,
     false,

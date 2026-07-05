@@ -51,6 +51,22 @@ type WorkOrderBundleRefOptions = {
   machineCloseoutRefs: JsonObject;
 };
 
+type AgentEvolutionWorkOrderFieldOptions = {
+  domainId: string;
+  workOrderId: string;
+  failureClass: string;
+  ownerRouteRef: string;
+  ownerRouteRefs: string[];
+  targetEditableSurfaceRefs: string[];
+  forbiddenSurfaces: string[];
+  expectedChangeRefs: string[];
+  expectedBehaviorSummary: string;
+  verificationRefs: string[];
+  targetCloseoutRefs: string[];
+  ownerReceiptOrTypedBlockerRef: string;
+  readModelConsumptionRef?: string;
+};
+
 function workOrderRouteTuple({
   domainId,
   suiteResultRef,
@@ -319,6 +335,57 @@ export function buildWorkOrderBundleRefs({
         .flatMap((value) => Array.isArray(value) ? value : [value])
         .filter((value): value is string => typeof value === 'string'),
     ),
+  };
+}
+
+export function buildAgentEvolutionWorkOrderFields({
+  domainId,
+  workOrderId,
+  failureClass,
+  ownerRouteRef,
+  ownerRouteRefs,
+  targetEditableSurfaceRefs,
+  forbiddenSurfaces,
+  expectedChangeRefs,
+  expectedBehaviorSummary,
+  verificationRefs,
+  targetCloseoutRefs,
+  ownerReceiptOrTypedBlockerRef,
+  readModelConsumptionRef,
+}: AgentEvolutionWorkOrderFieldOptions): JsonObject {
+  return {
+    agent_evolution_decision_ref: `agent-evolution-decision:opl-meta-agent/${domainId}/${workOrderId}`,
+    failure_class: failureClass,
+    target_owner_route: {
+      target_agent_id: domainId,
+      owner_route_ref: ownerRouteRef,
+      route_refs: uniqueRefs(ownerRouteRefs),
+      currentness_ref: `${workOrderId}#/work_order_currentness`,
+    },
+    target_editable_surface_refs: uniqueRefs(targetEditableSurfaceRefs),
+    forbidden_surfaces: uniqueRefs(forbiddenSurfaces),
+    expected_behavior_delta: {
+      failure_class: failureClass,
+      summary: expectedBehaviorSummary,
+      expected_change_refs: uniqueRefs(expectedChangeRefs),
+      verification_refs: uniqueRefs(verificationRefs),
+      read_model_consumption_ref: readModelConsumptionRef
+        ?? `target-runtime-read-model-consumption:${domainId}/${workOrderId}`,
+    },
+    verification_refs: uniqueRefs(verificationRefs),
+    owner_closeout_readback: {
+      owner: 'target-domain via OPL',
+      target_owner_receipt_or_typed_blocker_ref: ownerReceiptOrTypedBlockerRef,
+      target_owner_closeout_refs: uniqueRefs(targetCloseoutRefs),
+      oma_can_write_target_owner_receipt_body: false,
+      oma_can_write_target_owner_typed_blocker_body: false,
+      oma_can_create_target_typed_blocker: false,
+      oma_can_invoke_target_owner_closeout_hook: false,
+      can_write_target_domain_truth: false,
+      can_write_target_domain_memory_body: false,
+      can_mutate_target_domain_artifact_body: false,
+      can_authorize_target_domain_quality_or_export: false,
+    },
   };
 }
 

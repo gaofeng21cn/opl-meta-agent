@@ -52,6 +52,16 @@ export const DEFAULT_RUNTIME_EXPECTED_OUTCOMES = contractStringList(
   'default_runtime_expected_outcomes',
 );
 
+export const AGENT_EVOLUTION_FAILURE_CLASSES = contractStringList(
+  DEVELOPER_WORK_ORDER_POLICY,
+  'agent_evolution_failure_classes',
+);
+
+export const REQUIRED_AGENT_EVOLUTION_WORK_ORDER_FIELDS = contractStringList(
+  DEVELOPER_WORK_ORDER_POLICY,
+  'required_agent_evolution_work_order_fields',
+);
+
 export const DEFAULT_TARGET_WORKSPACE_REQUIRED_SURFACE_REFS = contractStringList(
   DEVELOPER_WORK_ORDER_POLICY,
   'default_target_workspace_required_surface_refs',

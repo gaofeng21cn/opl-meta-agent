@@ -1,4 +1,8 @@
 import type { JsonObject } from './domain-pack.ts';
+import {
+  AGENT_EVOLUTION_FAILURE_CLASSES,
+  REQUIRED_AGENT_EVOLUTION_WORK_ORDER_FIELDS,
+} from './work-order-refs.ts';
 
 type DeveloperPatchWorkOrderValidationOptions = {
   allowMissingReviewerFields?: boolean;
@@ -12,6 +16,8 @@ const PROGRESS_DELTA_CLASSIFICATIONS = new Set([
   'human_gate',
   'stop_loss',
 ]);
+
+const AGENT_EVOLUTION_FAILURE_CLASS_SET = new Set<string>(AGENT_EVOLUTION_FAILURE_CLASSES);
 
 function requireNonEmptyStringArray(value: unknown, fieldName: string): void {
   if (!Array.isArray(value) || !value.some((entry) => typeof entry === 'string' && entry.trim().length > 0)) {
@@ -73,6 +79,13 @@ function requireProgressDeltaClassification(value: unknown, fieldName: string): 
   requireNonEmptyString(value, fieldName);
   if (!PROGRESS_DELTA_CLASSIFICATIONS.has(String(value))) {
     throw new Error(`Invalid developer patch work order: ${fieldName} must be an OPL progress delta classification.`);
+  }
+}
+
+function requireAgentEvolutionFailureClass(value: unknown, fieldName: string): void {
+  requireNonEmptyString(value, fieldName);
+  if (!AGENT_EVOLUTION_FAILURE_CLASS_SET.has(String(value))) {
+    throw new Error(`Invalid developer patch work order: ${fieldName} must be an OMA agent-evolution failure class.`);
   }
 }
 
@@ -488,6 +501,87 @@ function requireTargetProgressAccounting(workOrder: JsonObject): void {
   }
 }
 
+function requireAgentEvolutionReadback(workOrder: JsonObject): void {
+  REQUIRED_AGENT_EVOLUTION_WORK_ORDER_FIELDS.forEach((field) => {
+    if (!Object.hasOwn(workOrder, field)) {
+      throw new Error(`Invalid developer patch work order: ${field} is required by developer work-order policy.`);
+    }
+  });
+  requireNonEmptyString(workOrder.agent_evolution_decision_ref, 'agent_evolution_decision_ref');
+  requireAgentEvolutionFailureClass(workOrder.failure_class, 'failure_class');
+
+  const ownerRoute = requireObject(workOrder.target_owner_route, 'target_owner_route');
+  requireEqualString(ownerRoute.target_agent_id, workOrder.target_agent?.domain_id, 'target_owner_route.target_agent_id');
+  requireEqualString(
+    ownerRoute.owner_route_ref,
+    workOrder.work_order_currentness?.owner_route_ref,
+    'target_owner_route.owner_route_ref',
+  );
+  requireAllIncluded(ownerRoute.route_refs, workOrder.owner_route_refs, 'target_owner_route.route_refs');
+  requireNonEmptyString(ownerRoute.currentness_ref, 'target_owner_route.currentness_ref');
+
+  const editableSurfaceRefs = requireStringArray(
+    workOrder.target_editable_surface_refs,
+    'target_editable_surface_refs',
+  );
+  if (workOrder.status === 'ready_for_target_agent_source_patch' && editableSurfaceRefs.length === 0) {
+    throw new Error(
+      'Invalid developer patch work order: ready source patch requires target_editable_surface_refs.',
+    );
+  }
+  requireAllIncluded(
+    workOrder.target_editable_surface_refs,
+    workOrder.allowed_editable_surfaces ?? [],
+    'target_editable_surface_refs',
+  );
+  requireNonEmptyStringArray(workOrder.forbidden_surfaces, 'forbidden_surfaces');
+  requireAllIncluded(
+    workOrder.forbidden_surfaces,
+    workOrder.forbidden_target_paths_or_surfaces,
+    'forbidden_surfaces',
+  );
+
+  const expectedBehavior = requireObject(workOrder.expected_behavior_delta, 'expected_behavior_delta');
+  requireEqualString(expectedBehavior.failure_class, workOrder.failure_class, 'expected_behavior_delta.failure_class');
+  requireNonEmptyString(expectedBehavior.summary, 'expected_behavior_delta.summary');
+  requireStringArray(expectedBehavior.expected_change_refs, 'expected_behavior_delta.expected_change_refs');
+  requireAllIncluded(
+    expectedBehavior.verification_refs,
+    workOrder.required_verification_refs,
+    'expected_behavior_delta.verification_refs',
+  );
+  requireNonEmptyString(
+    expectedBehavior.read_model_consumption_ref,
+    'expected_behavior_delta.read_model_consumption_ref',
+  );
+  requireAllIncluded(workOrder.verification_refs, workOrder.required_verification_refs, 'verification_refs');
+
+  const closeoutReadback = requireObject(workOrder.owner_closeout_readback, 'owner_closeout_readback');
+  requireEqualString(closeoutReadback.owner, workOrder.owner_closeout_boundary?.owner, 'owner_closeout_readback.owner');
+  requireEqualString(
+    closeoutReadback.target_owner_receipt_or_typed_blocker_ref,
+    workOrder.machine_closeout_refs?.target_owner_receipt_or_typed_blocker_ref,
+    'owner_closeout_readback.target_owner_receipt_or_typed_blocker_ref',
+  );
+  requireAllIncluded(
+    closeoutReadback.target_owner_closeout_refs,
+    workOrder.target_closeout_refs,
+    'owner_closeout_readback.target_owner_closeout_refs',
+  );
+  [
+    'oma_can_write_target_owner_receipt_body',
+    'oma_can_write_target_owner_typed_blocker_body',
+    'oma_can_create_target_typed_blocker',
+    'oma_can_invoke_target_owner_closeout_hook',
+    'can_write_target_domain_truth',
+    'can_write_target_domain_memory_body',
+    'can_mutate_target_domain_artifact_body',
+    'can_authorize_target_domain_quality_or_export',
+  ].forEach((field) => {
+    requireFalse(closeoutReadback[field], `owner_closeout_readback.${field}`);
+  });
+}
+
 export function validateDeveloperPatchWorkOrder(
   workOrder: JsonObject,
   options: DeveloperPatchWorkOrderValidationOptions = {},
@@ -545,6 +639,7 @@ export function validateDeveloperPatchWorkOrder(
     'owner_route_refs',
   );
   requireTargetProgressAccounting(workOrder);
+  requireAgentEvolutionReadback(workOrder);
   requireNonEmptyStringArray(workOrder.rollback_version_refs, 'rollback_version_refs');
   requireNonEmptyStringArray(workOrder.no_forbidden_write_proof?.proof_refs, 'no_forbidden_write_proof.proof_refs');
   if (!options.allowMissingReviewerFields) {

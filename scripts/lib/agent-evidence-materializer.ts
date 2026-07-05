@@ -18,6 +18,7 @@ import {
   parseAgentEvidenceArgs,
 } from './agent-evidence-contracts.ts';
 import {
+  buildAgentEvolutionWorkOrderFields,
   buildOplWorkOrderPrimitiveRefs,
   buildRefsOnlyWorkOrderCompleteness,
   buildRuntimeConsumptionVerification,
@@ -533,6 +534,31 @@ export function buildDeveloperWorkOrder({
     domainTruthOwner: 'opl-meta-agent',
     attemptId: workOrderId,
   });
+  const targetEditableSurfaceRefs = stringList(capabilityCandidate.editable_surface_limits?.editable_surfaces);
+  const forbiddenSurfaces = stringList(capabilityCandidate.editable_surface_limits?.forbidden_write_surfaces)
+    .length
+    ? stringList(capabilityCandidate.editable_surface_limits?.forbidden_write_surfaces)
+    : TARGET_AGENT_FORBIDDEN_WRITE_SURFACES;
+  const agentEvolutionReadback = buildAgentEvolutionWorkOrderFields({
+    domainId: targetAgent.domainId,
+    workOrderId,
+    failureClass: 'quality-gate',
+    ownerRouteRef,
+    ownerRouteRefs,
+    targetEditableSurfaceRefs,
+    forbiddenSurfaces,
+    expectedChangeRefs: stringList(capabilityCandidate.proposed_change_refs),
+    expectedBehaviorSummary:
+      'Target agent owner-gated source patch closes the production evidence quality-gate gap.',
+    verificationRefs: requiredVerificationRefs,
+    targetCloseoutRefs: bundleRefs.target_closeout_refs as string[],
+    ownerReceiptOrTypedBlockerRef: String(machineCloseoutRefs.target_owner_receipt_or_typed_blocker_ref),
+    readModelConsumptionRef: String(machineCloseoutRefs.target_runtime_read_model_consumption_ref),
+  });
+  agentEvolutionReadback.target_owner_route = {
+    ...(capabilityCandidate.target_owner_route as JsonObject),
+    ...(agentEvolutionReadback.target_owner_route as JsonObject),
+  };
   return {
     surface_kind: 'opl_meta_agent_target_developer_patch_work_order',
     version: 'opl-meta-agent.target-developer-patch-work-order.v1',
@@ -542,6 +568,7 @@ export function buildDeveloperWorkOrder({
       : 'blocked_missing_ai_reviewer_evaluation',
     target_agent: capabilityCandidate.target_agent,
     source_agent_lab_result_ref: suiteResult.result_id,
+    ...agentEvolutionReadback,
     work_order_currentness: buildWorkOrderCurrentness({
       domainId: targetAgent.domainId,
       suiteResultRef: stringValue(suiteResult.result_id) ?? stableId('agent_lab_result', [workOrderId]),
@@ -553,10 +580,9 @@ export function buildDeveloperWorkOrder({
     stage_native_artifact_refs: stageNativeArtifactRefs,
     artifact_native_contract_ref: stageNativeArtifactRefs.artifact_native_contract_ref,
     stage_folder_contract: stageNativeArtifactRefs.stage_folder_contract,
-    target_owner_route: capabilityCandidate.target_owner_route,
     editable_surface_limits: capabilityCandidate.editable_surface_limits,
-    allowed_editable_surfaces: capabilityCandidate.editable_surface_limits.editable_surfaces,
-    target_repo_file_hints: capabilityCandidate.editable_surface_limits.editable_surfaces,
+    allowed_editable_surfaces: targetEditableSurfaceRefs,
+    target_repo_file_hints: targetEditableSurfaceRefs,
     required_verification_refs: requiredVerificationRefs,
     rollback_version_refs: [
       'target_agent_current_head_ref',
@@ -564,6 +590,22 @@ export function buildDeveloperWorkOrder({
       'owner_receipt_or_typed_blocker_version_ref',
     ],
     owner_route_refs: ownerRouteRefs,
+    target_owner_closeout_refs: bundleRefs.target_closeout_refs,
+    forbidden_target_paths_or_surfaces: forbiddenSurfaces,
+    owner_closeout_boundary: {
+      owner: 'target-domain via OPL',
+      owner_closeout_hook_delegated: true,
+      target_owner_receipt_or_typed_blocker_required: true,
+      target_owner_closeout_refs: bundleRefs.target_closeout_refs,
+      oma_can_write_target_owner_receipt_body: false,
+      oma_can_write_target_owner_typed_blocker_body: false,
+      oma_can_create_target_typed_blocker: false,
+      oma_can_invoke_target_owner_closeout_hook: false,
+      can_write_target_domain_truth: false,
+      can_write_target_domain_memory_body: false,
+      can_mutate_target_domain_artifact_body: false,
+      can_authorize_target_domain_quality_or_export: false,
+    },
     proposed_change_refs: capabilityCandidate.proposed_change_refs,
     ai_reviewer_evaluation_ref: capabilityCandidate.ai_reviewer_evaluation_ref,
     ai_reviewer_status: capabilityCandidate.ai_reviewer_status,
@@ -608,10 +650,7 @@ export function buildDeveloperWorkOrder({
       noForbiddenWriteProofRefs: noForbiddenRefs,
       executorAllowedScope: 'refs_only_target_agent_owner_gated_patch_proposal',
       executorAllowedWriteSurfaces: TARGET_AGENT_EDITABLE_SURFACES,
-      executorForbiddenWriteSurfaces: stringList(capabilityCandidate.editable_surface_limits?.forbidden_write_surfaces)
-        .length
-        ? stringList(capabilityCandidate.editable_surface_limits?.forbidden_write_surfaces)
-        : TARGET_AGENT_FORBIDDEN_WRITE_SURFACES,
+      executorForbiddenWriteSurfaces: forbiddenSurfaces,
       canaryRefs: [
         ...stringList(recoveryRefs.canary_refs),
         `agent-lab-canary:${targetAgent.domainId}/production-evidence-tail`,

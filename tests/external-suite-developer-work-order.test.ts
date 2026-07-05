@@ -314,6 +314,20 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     assert.equal(workOrder.status, 'ready_for_target_agent_source_patch');
     assert.equal(workOrder.source_external_suite_intake.status, 'accepted_external_agent_lab_suite_input');
     assert.equal(workOrder.source_external_suite_intake.target_agent, 'med-autoscience');
+    assert.match(workOrder.agent_evolution_decision_ref, /^agent-evolution-decision:opl-meta-agent\/med-autoscience\//);
+    assert.equal(workOrder.failure_class, 'quality-gate');
+    assert.equal(workOrder.target_owner_route.owner_route_ref, 'target-agent-owner:med-autoscience');
+    assert.deepEqual(workOrder.target_editable_surface_refs, workOrder.allowed_editable_surfaces);
+    assert.deepEqual(workOrder.verification_refs, workOrder.required_verification_refs);
+    assert.equal(
+      workOrder.expected_behavior_delta.read_model_consumption_ref,
+      workOrder.machine_closeout_refs.target_runtime_read_model_consumption_ref,
+    );
+    assert.equal(
+      workOrder.owner_closeout_readback.target_owner_receipt_or_typed_blocker_ref,
+      workOrder.machine_closeout_refs.target_owner_receipt_or_typed_blocker_ref,
+    );
+    assert.deepEqual(workOrder.owner_closeout_readback.target_owner_closeout_refs, workOrder.target_closeout_refs);
     assert.equal(
       workOrder.source_external_suite_intake.source_agent_lab_result_ref,
       workOrder.source_agent_lab_result_ref,
