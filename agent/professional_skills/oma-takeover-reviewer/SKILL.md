@@ -16,15 +16,6 @@ Assess an existing target agent for OMA testing takeover and improvement routing
 - Existing Agent Lab suite/result refs, owner feedback refs, or target constraints.
 - Artifact morphology and realistic target task refs.
 
-## Outputs
-
-- `takeover_review_ref`
-- `agent_lab_external_suite_ref`
-- `testing_takeover_receipt_ref`
-- `artifact_morphology_gap_refs`
-- `gated_self_evolution_candidate_ref`
-- `mechanism_patch_proposal_ref` or `typed_blocker_refs`
-
 ## Execution Rules
 
 - Verify OPL-compatible contracts before writing suite or improvement candidates.
@@ -35,11 +26,4 @@ Assess an existing target agent for OMA testing takeover and improvement routing
 
 ## Stage Prompt Boundary
 
-Use with `agent/prompts/target-agent-takeover.md` and downstream external-suite improvement skills. The prompt owns takeover closeout shape; this skill supplies reviewer judgment and gap taxonomy.
-
-## Blockers And Repair Targets
-
-- `blocker:not_opl_compatible_target` when required target contracts are missing.
-- `blocker:owner_route_missing` when findings cannot be routed to a target owner.
-- `repair:morphology_gap` for missing native source, shards, asset custody, extent contract, or realistic task review.
-- `repair:takeover_overclaims_authority` when receipt language implies OMA owns target quality or promotion.
+Use with `agent/prompts/target-agent-takeover.md` and downstream external-suite improvement skills. The prompt owns takeover closeout refs and blocker shape; this skill supplies reviewer judgment and gap taxonomy only.

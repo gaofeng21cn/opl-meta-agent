@@ -15,18 +15,6 @@ Analyze redacted trajectory, Agent Lab, owner feedback, or work-order closeout r
 - Redaction proof refs, source owner refs, team sync policy refs, and allowed consumer refs.
 - UX/canary signal refs, rollback/version refs, and OMA policy refs.
 
-## Outputs
-
-- `trajectory_atom_refs`
-- `single_intent_atom_task_refs`
-- `candidate_buffer_refs`
-- `skill_policy_proposal_refs`
-- `prompt_policy_proposal_refs`
-- `stage_policy_proposal_refs`
-- `ux_canary_signal_refs`
-- `redaction_team_sync_boundary_refs`
-- `typed_blocker_refs`
-
 ## Execution Rules
 
 - Split each evidence slice into one user intent and one reviewable evidence delta.
@@ -37,11 +25,4 @@ Analyze redacted trajectory, Agent Lab, owner feedback, or work-order closeout r
 
 ## Stage Prompt Boundary
 
-Use with `agent/prompts/trajectory-learning-intake.md` and `agent/skills/trajectory-learning-intake.md`. The prompt and domain skill own output shape; this skill supplies atomization and learning-analysis method.
-
-## Blockers And Repair Targets
-
-- `blocker:missing_redaction_proof` when source material cannot be safely shared.
-- `blocker:atom_boundary_ambiguous` when multiple user intents are mixed.
-- `repair:candidate_buffer_becoming_queue` when proposals are treated as execution or promotion state.
-- `repair:owner_route_missing` when a proposed mechanism change lacks review, rollback, or owner gate.
+Use with `agent/prompts/trajectory-learning-intake.md` and `agent/skills/trajectory-learning-intake.md`. The prompt and domain skill own output refs and blocker shape; this skill supplies atomization and learning-analysis method only.

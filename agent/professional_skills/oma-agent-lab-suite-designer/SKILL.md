@@ -16,15 +16,6 @@ Design Agent Lab suite specs for new or existing target agents. This skill defin
 - Artifact morphology brief and realistic target task refs.
 - Required normal, failure, recovery, and no-forbidden-write evidence.
 
-## Outputs
-
-- `agent_lab_task_manifest_refs`
-- `scorecard_refs`
-- `promotion_gate_refs`
-- `artifact_morphology_probe_refs`
-- `agent_lab_external_suite_ref` when testing an external target.
-- `suite_blocker_refs` with actionable failure taxonomy when the suite cannot run.
-
 ## Execution Rules
 
 - Map each task to a concrete acceptance criterion, stage contract, artifact morphology risk, or authority boundary.
@@ -35,11 +26,4 @@ Design Agent Lab suite specs for new or existing target agents. This skill defin
 
 ## Stage Prompt Boundary
 
-Use with `agent/prompts/eval-suite-build.md`, and for takeover evidence with `agent/prompts/target-agent-takeover.md`. The stage prompts own output shape; this skill supplies suite design judgment.
-
-## Blockers And Repair Targets
-
-- `blocker:missing_target_contract_refs` when stage/action/memory/artifact contracts are unavailable.
-- `blocker:missing_morphology_refs` when artifact-shape probes cannot be grounded.
-- `repair:suite_only_tests_scaffold` when coverage proves only runner, scaffold, or interface shape.
-- `repair:promotion_gate_missing` when suite outputs could be misread as default adoption.
+Use with `agent/prompts/eval-suite-build.md`, and for takeover evidence with `agent/prompts/target-agent-takeover.md`. The stage prompts own output refs and blocker shape; this skill supplies suite design judgment only.

@@ -15,13 +15,6 @@ Turn public references into OMA-safe pattern dispositions for stage, suite, prom
 - Public docs, papers, repos, products, demos, or user-supplied references.
 - Target artifact morphology and known risk areas.
 
-## Outputs
-
-- `research_brief_ref`
-- `source_refs`
-- `pattern_disposition_refs` with `adopt`, `adapt`, `reject`, or `watch`.
-- `research_blocker_refs` for missing locator, unclear license, unavailable source, or non-transferable runtime dependency.
-
 ## Execution Rules
 
 - Prefer official docs, mature open-source repos, papers, and reproducible examples.
@@ -32,11 +25,4 @@ Turn public references into OMA-safe pattern dispositions for stage, suite, prom
 
 ## Stage Prompt Boundary
 
-Use with `agent/prompts/web-experience-research.md`. The prompt owns the research stage outputs; this skill supplies the research method and disposition discipline.
-
-## Blockers And Repair Targets
-
-- `blocker:missing_source_locator` when a recommendation has no durable source ref.
-- `blocker:license_or_provenance_unclear` when reuse would affect generated agent assets or code.
-- `repair:pattern_not_actionable` when notes do not map to a stage, suite, gate, prompt, skill, or handoff.
-- `repair:external_runtime_dependency` when a pattern would replace OPL Framework ownership.
+Use with `agent/prompts/web-experience-research.md`. The prompt owns research outputs and blocker shape; this skill supplies the research method and disposition discipline only.

@@ -15,14 +15,6 @@ Design the target agent's declarative domain pack from intent and research refs.
 - `research_brief_ref`, `source_refs`, and `pattern_disposition_refs`.
 - Target artifact morphology requirements, realistic task examples, and owner constraints.
 
-## Outputs
-
-- `stage_decomposition_pack_draft`
-- Stage graph with prompt, skill, knowledge, quality gate, handoff, and owner boundary refs.
-- Action catalog draft limited to domain authority functions or smoke checks.
-- Artifact morphology brief and artifact locator refs.
-- `no_forbidden_write_policy`
-
 ## Execution Rules
 
 - Build the smallest stage sequence that preserves distinct owners and handoffs.
@@ -33,11 +25,4 @@ Design the target agent's declarative domain pack from intent and research refs.
 
 ## Stage Prompt Boundary
 
-Use with `agent/prompts/stage-decomposition.md`. The prompt owns the typed closeout packet; this skill supplies the architecture method used to produce the pack draft.
-
-## Blockers And Repair Targets
-
-- `blocker:missing_artifact_morphology` when native source, sharding, extent, asset custody, or realistic task review is absent.
-- `blocker:owner_split_unclear` when a stage would mix OMA, OPL, and target-domain authority.
-- `repair:stage_graph_too_mechanical` when stages only prove scaffold/interface shape.
-- `repair:unconsumable_output` when a proposed output has no downstream consumer.
+Use with `agent/prompts/stage-decomposition.md`. The prompt owns the typed closeout packet, output fields, and blocker shape; this skill supplies the architecture method used to produce the pack draft.

@@ -24,3 +24,9 @@ Boundary:
 - `agent/professional_skills/*/SKILL.md` carries specialist methods used inside stage execution.
 - Stage prompts own goals, routes, accepted refs, handoff shapes, and blocker enums.
 - Professional skills do not create runtime wrappers, target artifacts, owner receipts, typed blockers, quality verdicts, promotion gate state, or target-domain authority.
+
+Stability rule:
+
+- Keep each repo-local professional method as `<skill-id>/SKILL.md` unless `contracts/capability_map.json`, pack compiler input, and the generated Codex carrier all prove an equivalent discovery surface.
+- `method_skill` is an authority/capability classification, not a reason to flatten the file into `agent/skills/*.md`.
+- If a professional method is demoted to a plain Markdown support file, treat it as a discovery regression unless the stage prompt no longer needs Codex-style Skill invocation.

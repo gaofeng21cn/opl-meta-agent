@@ -12,6 +12,13 @@
 
 OPL Framework 持有通用 runtime、Agent Lab、queue、stage attempt ledger、provider receipt、observability、optimizer/RL transition refs、scaffold generator、generated interface bundle 和 promotion gate。`opl-meta-agent` 只消费这些能力，不在本仓实现第二套 generic runtime 或私有通用入口包装层。
 
+## Skill 目录语义
+
+- `agent/skills/*.md` 是 OMA domain skill declarations：供 `contracts/stage_control_plane.json`、OPL generated surface、stage prompt 或 domain action flow 引用。它不是 Codex-style 专业方法 Skill 目录。
+- `agent/professional_skills/<skill-id>/SKILL.md` 是 OMA repo-local Codex-style 专业方法 Skill：供 stage prompt 按需路由 intent architecture、external pattern research、stage-pack architecture、Agent Lab suite design、takeover review、work-order authoring、agent evolution 和 trajectory learning 等开放式专家判断。
+- 不要为了“统一目录”把 `agent/professional_skills/*/SKILL.md` 降成 `agent/skills/*.md`，除非同时有明确的 OPL generated Skill surface、capability map source/projection 更新、Codex discovery 等价证据和 no-authority 边界说明。
+- `method_skill` / `professional_skill` 是能力语义；`SKILL.md` 目录是 Codex discovery 物理形态。OMA 可以把专业方法能力标为 `method_skill`，但不应牺牲一等 Skill source 形态。
+
 ## 边界
 
 - 不把 `opl-meta-agent` 写成 OPL Framework 内置模块。
