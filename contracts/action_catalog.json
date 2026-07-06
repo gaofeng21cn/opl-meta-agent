@@ -81,13 +81,13 @@
       "can_execute_repo_patch_without_developer_mode": false
     }
   },
-  "mas_reviewer_revision_feedback_self_evolution_readback": {
+  "target_agent_feedback_self_evolution_readback": {
     "surface_kind": "opl_meta_agent_external_feedback_trigger_consumption_readback",
     "schema_version": 1,
-    "target_agent_id": "med-autoscience",
-    "feedback_profile": "reviewer_revision_feedback",
+    "target_agent_id": "target-agent",
+    "feedback_profile": "target_agent_feedback_external_suite",
     "accepted_materialized_input": "agent_lab_external_suite",
-    "source_trigger_ref": "mas:feedback_self_evolution_trigger/reviewer_revision",
+    "source_trigger_ref": "target-agent:feedback_self_evolution_trigger/latest",
     "status_projection": {
       "suite_materialized_only": "runnable_pending",
       "contract_itself_triggers_execution": false,
@@ -418,10 +418,7 @@
         "surface_kind": "opl_meta_agent_external_suite_input_contract",
         "accepted_suite_kind": "agent_lab_external_suite",
         "accepted_feedback_profiles": [
-          "target_agent_feedback_external_suite",
-          "mas_feedback_agent_lab_external_suite",
-          "high_quality_medical_manuscript_feedback",
-          "reviewer_revision_feedback"
+          "target_agent_feedback_external_suite"
         ],
       "required_work_order_readback_fields": [
         "agent_evolution_decision_ref",
@@ -465,12 +462,8 @@
           "target_owner_closeout_refs",
           "owner_closeout_readback",
           "target_progress_accounting"
-        ],
-          "mas_feedback_agent_lab_external_suite": [
-            "target_agent_feedback_external_suite",
-            "high_quality_medical_manuscript_feedback_or_reviewer_revision_feedback"
-          ]
-        },
+        ]
+      },
         "authority_boundary": {
           "can_write_target_domain_truth": false,
           "can_write_target_domain_memory_body": false,

@@ -1,9 +1,9 @@
 # Trajectory Learning Intake Prompt
 
-Professional skill route: use
-`agent/professional_skills/oma-trajectory-learning-analyst/SKILL.md` for
+Method skill route: use
+`agent/skills/oma-trajectory-learning-analyst.md` for
 trajectory atomization and learning-candidate analysis. This prompt keeps the
-refs-only candidate buffer boundary; the professional skill must not become a
+refs-only candidate buffer boundary; the method skill must not become a
 runtime, queue, team sync, or promotion gate.
 
 ## 目标

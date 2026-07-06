@@ -61,14 +61,14 @@
       }
     },
     {
-      "capability_id": "opl-meta-agent.intent-architect.professional_skill",
-      "surface_role": "professional_skill",
-      "capability_kind": "professional_skill",
+      "capability_id": "opl-meta-agent.intent-architect.method_skill",
+      "surface_role": "method_skill",
+      "capability_kind": "method_skill",
       "canonical_owner": "opl-meta-agent",
       "physical_source_ref": {
         "ref_kind": "repo_path",
-        "ref": "agent/professional_skills/oma-intent-architect/SKILL.md",
-        "role": "professional_skill_source"
+        "ref": "agent/skills/oma-intent-architect.md",
+        "role": "method_skill_source"
       },
       "runtime_projection_refs": [
         {
@@ -91,14 +91,14 @@
       }
     },
     {
-      "capability_id": "opl-meta-agent.agent-evolution.professional_skill",
-      "surface_role": "professional_skill",
-      "capability_kind": "professional_skill",
+      "capability_id": "opl-meta-agent.agent-evolution.method_skill",
+      "surface_role": "method_skill",
+      "capability_kind": "method_skill",
       "canonical_owner": "opl-meta-agent",
       "physical_source_ref": {
         "ref_kind": "repo_path",
-        "ref": "agent/professional_skills/oma-agent-evolution/SKILL.md",
-        "role": "professional_skill_source"
+        "ref": "agent/skills/oma-agent-evolution.md",
+        "role": "method_skill_source"
       },
       "runtime_projection_refs": [
         {
@@ -250,8 +250,8 @@
     "stage_prompt_refs": [
       "contracts/capability_map.json#/capabilities?surface_role=stage_prompt"
     ],
-    "professional_skill_refs": [
-      "contracts/capability_map.json#/capabilities?surface_role=professional_skill"
+    "method_skill_refs": [
+      "contracts/capability_map.json#/capabilities?surface_role=method_skill"
     ],
     "tool_connector_refs": [
       "contracts/capability_map.json#/capabilities?surface_role=tool_connector"

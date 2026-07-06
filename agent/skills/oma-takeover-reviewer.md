@@ -7,7 +7,7 @@ description: Use when OMA must review an existing OPL-compatible target agent, d
 
 ## Purpose
 
-Assess an existing target agent for OMA testing takeover and improvement routing. This skill supplies professional review method; it does not take over target truth, memory, artifact body, quality verdict, owner receipt, worktree lifecycle, or default promotion.
+Assess an existing target agent for OMA testing takeover and improvement routing. This skill supplies review method; it does not take over target truth, memory, artifact body, quality verdict, owner receipt, worktree lifecycle, or default promotion.
 
 ## Inputs
 

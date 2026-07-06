@@ -7,22 +7,22 @@ Machine boundary: 本文是人读支撑索引。机器 truth 继续归 `contract
 
 本目录定义 `opl-meta-agent` 作为 Foundry Agent 的 domain skill 使用说明。OPL Framework 可从 contracts 生成 skill surface；这里保留 domain-owned 操作语义。
 
-Repo-local professional skill pack:
+Agent-building method skills:
 
-- `../professional_skills/oma-intent-architect/SKILL.md`
-- `../professional_skills/oma-external-pattern-researcher/SKILL.md`
-- `../professional_skills/oma-stage-pack-architect/SKILL.md`
-- `../professional_skills/oma-agent-lab-suite-designer/SKILL.md`
-- `../professional_skills/oma-takeover-reviewer/SKILL.md`
-- `../professional_skills/oma-work-order-author/SKILL.md`
-- `../professional_skills/oma-agent-evolution/SKILL.md`
-- `../professional_skills/oma-trajectory-learning-analyst/SKILL.md`
+- `oma-intent-architect.md`
+- `oma-external-pattern-researcher.md`
+- `oma-stage-pack-architect.md`
+- `oma-agent-lab-suite-designer.md`
+- `oma-takeover-reviewer.md`
+- `oma-work-order-author.md`
+- `oma-agent-evolution.md`
+- `oma-trajectory-learning-analyst.md`
 
-These are Codex-style professional method skills. They route expertise out of
+These Codex-style method skills live in the same domain skill directory as the
+rest of the OMA skill pack. They route reusable agent-building judgment out of
 stage prompts and domain policy prose, but they do not become machine truth,
-generated OPL Skill surfaces, runtime wrappers, target artifacts, owner
-receipts, typed blockers, or promotion gate state. OMA/OPL/target-owner
-authority boundaries stay unchanged.
+runtime wrappers, target artifacts, owner receipts, typed blockers, or
+promotion gate state. OMA/OPL/target-owner authority boundaries stay unchanged.
 
 Skills:
 

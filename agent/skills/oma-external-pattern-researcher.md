@@ -7,7 +7,7 @@ description: Use when OMA must research external agent, workflow, product, or op
 
 ## Purpose
 
-Turn public references into OMA-safe pattern dispositions for stage, suite, prompt, skill, gate, and handoff design. This skill learns professional method and vocabulary only; it does not import external runtime, database, queue, model training, or promotion authority.
+Turn public references into OMA-safe pattern dispositions for stage, suite, prompt, skill, gate, and handoff design. This skill learns method and vocabulary only; it does not import external runtime, database, queue, model training, or promotion authority.
 
 ## Inputs
 
@@ -32,7 +32,7 @@ Turn public references into OMA-safe pattern dispositions for stage, suite, prom
 
 ## Stage Prompt Boundary
 
-Use with `agent/prompts/web-experience-research.md`. The prompt owns the research stage outputs; this skill supplies the professional research method and disposition discipline.
+Use with `agent/prompts/web-experience-research.md`. The prompt owns the research stage outputs; this skill supplies the research method and disposition discipline.
 
 ## Blockers And Repair Targets
 

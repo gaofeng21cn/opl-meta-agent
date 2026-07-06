@@ -7,7 +7,7 @@ description: Use when OMA must design Agent Lab baseline, takeover, or external 
 
 ## Purpose
 
-Design Agent Lab suite specs for new or existing target agents. This skill defines professional test and scorecard method only; Agent Lab execution, receipts, promotion gates, and runtime remain OPL-owned.
+Design Agent Lab suite specs for new or existing target agents. This skill defines test and scorecard method only; Agent Lab execution, receipts, promotion gates, and runtime remain OPL-owned.
 
 ## Inputs
 

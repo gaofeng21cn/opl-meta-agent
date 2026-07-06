@@ -14,7 +14,7 @@ Turn Agent Lab, FeedbackOps, owner-feedback, work-order validation, and refs-onl
 Classify one primary `failure_class` before authoring a work order:
 
 - `stage-route`: stage graph, closeout packet, owner route, next-stage transition, or stage policy mismatch.
-- `specialist-skill`: prompt, professional skill, rubric, domain pack, candidate package, or target-agent source design gap.
+- `specialist-skill`: prompt, method skill, rubric, domain pack, candidate package, or target-agent source design gap.
 - `tool-connector`: CLI, MCP, connector, affordance catalog, scaffold/generator invocation, or tool binding failure.
 - `quality-gate`: Agent Lab suite, independent reviewer, regression, quality gate, or promotion gate evidence gap.
 - `read-model-currentness`: stale route ledger, status/read-model projection, generated interface, or currentness proof mismatch.

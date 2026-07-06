@@ -232,6 +232,7 @@ function cleanupReadbackForScripts(
       active_caller_refs: row.active_caller_refs,
       future_retirement_requires: row.future_retirement_requires,
       owner_delta_route: row.owner_delta_route,
+      typed_blocker_ref_shape: row.typed_blocker_ref_shape,
       can_apply_cleanup: false,
     }));
   const cleanupCandidates = rows
@@ -367,6 +368,7 @@ function directCompactCleanupReadback(
     cleanup_candidate_count: compact.cleanup_candidate_count,
     retained_current_count: compact.retained_current_count,
     retained_current_authority_function_count: compact.retained_current_authority_function_count,
+    retained_current_repo_native_surface_count: compact.retained_current_repo_native_surface_count,
     fixture_or_proof_only_retained_count: compact.fixture_or_proof_only_retained_count,
     cleanup_apply_candidate_count: compact.cleanup_apply_candidate_count,
     missing_evidence_item_count: compact.missing_evidence_item_count,

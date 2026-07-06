@@ -7,7 +7,7 @@ description: Use when OMA must design a target agent stage pack, action catalog,
 
 ## Purpose
 
-Design the target agent's declarative domain pack from intent and research refs. This skill provides the professional architecture method; OMA still emits refs-only pack material and OPL Framework still owns generated interfaces, runtime, Agent Lab, queue, attempt ledger, and promotion gates.
+Design the target agent's declarative domain pack from intent and research refs. This skill provides the architecture method; OMA still emits refs-only pack material and OPL Framework still owns generated interfaces, runtime, Agent Lab, queue, attempt ledger, and promotion gates.
 
 ## Inputs
 

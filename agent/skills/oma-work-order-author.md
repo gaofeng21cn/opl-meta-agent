@@ -7,7 +7,7 @@ description: Use when OMA must turn Agent Lab, reviewer, or owner-feedback evide
 
 ## Purpose
 
-Convert evidence into a bounded developer patch work order for OPL Framework execution or target-owner handoff. This skill authors professional work-order content only; it does not implement OPL work-order execution, target worktree lifecycle, absorb, cleanup, owner closeout hook, or target owner receipt body.
+Convert evidence into a bounded developer patch work order for OPL Framework execution or target-owner handoff. This skill authors work-order method content only; it does not implement OPL work-order execution, target worktree lifecycle, absorb, cleanup, owner closeout hook, or target owner receipt body.
 
 ## Inputs
 

@@ -7,7 +7,7 @@ description: Use when OMA must turn a natural-language target-agent request into
 
 ## Purpose
 
-Shape a target-agent request into an OMA-ready intent packet before stage decomposition. This is a professional method skill, not an OPL runtime, queue, scaffold generator, or target-domain owner.
+Shape a target-agent request into an OMA-ready intent packet before stage decomposition. This is a method skill, not an OPL runtime, queue, scaffold generator, or target-domain owner.
 
 ## Inputs
 
@@ -32,7 +32,7 @@ Shape a target-agent request into an OMA-ready intent packet before stage decomp
 
 ## Stage Prompt Boundary
 
-Use with `agent/prompts/intent-intake.md`. The prompt owns the stage closeout shape; this skill supplies the professional analysis method used inside that stage. Downstream `stage-decomposition` may consume the three refs, but this skill must not pre-build the stage graph.
+Use with `agent/prompts/intent-intake.md`. The prompt owns the stage closeout shape; this skill supplies the analysis method used inside that stage. Downstream `stage-decomposition` may consume the three refs, but this skill must not pre-build the stage graph.
 
 ## Blockers And Repair Targets
 
