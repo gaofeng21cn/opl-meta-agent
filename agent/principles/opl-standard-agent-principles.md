@@ -12,7 +12,7 @@ This projection does not create a second truth source. OPL owns the shared princ
 | `ai_first_execution` | AI-first execution | AI performs open-ended understanding, comparison, creation, review, diagnosis, and revision inside bounded stage attempts. |
 | `contract_backed_boundary` | Contract-backed boundary | Contracts, schemas, tests, and readbacks guard identity, authority, inputs, outputs, evidence, and recovery. |
 | `domain_truth_authority` | Domain truth authority | Domain truth, quality/export verdicts, artifact authority, memory body, owner receipts, and typed blockers stay with the domain owner. |
-| `stage_prompt_skill_tool_separation` | Prompt / Skill / Tool separation | Stage prompts define goals and accepted answer shapes; domain method skills carry reusable methods; tool catalogs describe affordances and limits. |
+| `stage_prompt_skill_tool_separation` | Prompt / Skill / Tool separation | Stage prompts define goals and accepted answer shapes; domain professional skills carry reusable methods; tool catalogs describe affordances and limits. |
 | `domain_intake_mapping` | Domain intake mapping | `domain_intake` is an owner-handoff pattern mapped to OMA `intent-intake`, not an independent Skill. |
 | `workspace_source_intake_shell` | Workspace/source shell | OPL owns generic locator and refs-only source intake transport; OMA owns agent-building source semantics and owner route decisions. |
 | `owner_delta_progress` | Owner-delta progress | Progress is measured by deliverable deltas, owner receipts, route-back refs, typed blockers, human gates, or handoff packets. |

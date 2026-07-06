@@ -7,7 +7,7 @@ Machine boundary: 本文是人读支撑索引。机器 truth 继续归 `contract
 
 本目录定义 `opl-meta-agent` 作为 Foundry Agent 的 domain skill 使用说明。OPL Framework 可从 contracts 生成 skill surface；这里保留 domain-owned 操作语义。
 
-Agent-building method skills:
+Agent-building professional skills:
 
 - `oma-intent-architect.md`
 - `oma-external-pattern-researcher.md`
@@ -18,7 +18,7 @@ Agent-building method skills:
 - `oma-agent-evolution.md`
 - `oma-trajectory-learning-analyst.md`
 
-These Codex-style method skills live in the same domain skill directory as the
+These Codex-style professional skills live in the same domain skill directory as the
 rest of the OMA skill pack. They route reusable agent-building judgment out of
 stage prompts and domain policy prose, but they do not become machine truth,
 runtime wrappers, target artifacts, owner receipts, typed blockers, or

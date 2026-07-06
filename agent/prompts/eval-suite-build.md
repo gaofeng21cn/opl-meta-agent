@@ -1,9 +1,9 @@
 # Eval Suite Build Prompt
 
-Method skill route: use
-`agent/skills/oma-agent-lab-suite-designer.md` for suite
+Professional skill route: use
+`agent/professional_skills/oma-agent-lab-suite-designer/SKILL.md` for suite
 design method. This prompt keeps the Agent Lab output refs and gate boundary;
-the method skill must not turn suite evidence into target quality,
+the professional skill must not turn suite evidence into target quality,
 owner receipt, App-live readiness, or promotion authority.
 
 ## 目标

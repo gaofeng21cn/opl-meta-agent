@@ -1,9 +1,9 @@
 # Stage Decomposition Prompt
 
-Method skill route: use
-`agent/skills/oma-stage-pack-architect.md` for stage-pack
+Professional skill route: use
+`agent/professional_skills/oma-stage-pack-architect/SKILL.md` for stage-pack
 architecture method. This prompt keeps the stage closeout shape and OMA/OPL
-owner boundary; the method skill does not add runtime authority or target
+owner boundary; the professional skill does not add runtime authority or target
 owner authority.
 
 ## 目标
