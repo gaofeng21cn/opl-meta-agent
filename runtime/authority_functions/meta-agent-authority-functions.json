@@ -1813,7 +1813,7 @@
         "tests/source-purity/policy-projection.test-case.ts",
         "tests/source-purity/gate-receipt.test-case.ts"
       ],
-      "support_module_ref": "tests/source-purity/support.ts",
+      "support_module_ref": "tests/support/source-purity.ts",
       "self_guard_test_refs": [
         "tests/source-purity.test.ts",
         "tests/source-purity/"

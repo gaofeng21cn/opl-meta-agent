@@ -1,14 +1,17 @@
 // @ts-nocheck
+import fs from 'node:fs';
+import path from 'node:path';
+import test from 'node:test';
 import {
-  test,
   assert,
   assertRepoRefExists,
   asObjects,
   asStrings,
-  fs,
-  path,
   repoRoot,
   readJson,
+  type JsonObject,
+} from '../support/contracts.ts';
+import {
   ACTIVE_CALLER_SCAN_POLICY_ID,
   DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF,
   STANDARD_FOUNDRY_POLICIES_CONTRACT_REF,
@@ -23,8 +26,7 @@ import {
   assertRepoLocalScriptRef,
   valuesAtDottedPath,
   listScriptRefs,
-  type JsonObject,
-} from './support.ts';
+} from '../support/source-purity.ts';
 
 test('script morphology stays limited to authority refs, materializers, helpers, and verification wrappers', () => {
   const privatePolicy = readJson('contracts/private_functional_surface_policy.json');

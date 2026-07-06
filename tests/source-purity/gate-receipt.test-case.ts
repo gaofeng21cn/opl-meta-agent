@@ -1,14 +1,17 @@
 // @ts-nocheck
+import fs from 'node:fs';
+import path from 'node:path';
+import test from 'node:test';
 import {
-  test,
   assert,
   assertRepoRefExists,
   asObjects,
   asStrings,
-  fs,
-  path,
   repoRoot,
   readJson,
+  type JsonObject,
+} from '../support/contracts.ts';
+import {
   ACTIVE_CALLER_SCAN_POLICY_ID,
   DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF,
   STANDARD_FOUNDRY_POLICIES_CONTRACT_REF,
@@ -23,8 +26,7 @@ import {
   assertRepoLocalScriptRef,
   valuesAtDottedPath,
   listScriptRefs,
-  type JsonObject,
-} from './support.ts';
+} from '../support/source-purity.ts';
 
 test('script-to-pack gate receipt materializes machine gate without retirement or readiness authority', () => {
   const gateReceipt = readJson('contracts/script_to_pack_gate_receipt.json');
@@ -102,7 +104,7 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
     'tests/source-purity/policy-projection.test-case.ts',
     'tests/source-purity/gate-receipt.test-case.ts',
   ]);
-  assert.equal(testStructure.support_module_ref, 'tests/source-purity/support.ts');
+  assert.equal(testStructure.support_module_ref, 'tests/support/source-purity.ts');
   assert.deepEqual(asStrings(testStructure.self_guard_test_refs), [
     'tests/source-purity.test.ts',
     'tests/source-purity/',
@@ -321,7 +323,7 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
     'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.script_to_pack_retirement_gates',
     'contracts/private_functional_surface_policy.json#allowed_opl_surface_consumption_refs',
     'tests/source-purity.test.ts#script-morphology-gate',
-    'tests/source-purity/support.ts#source-purity-test-structure',
+    'tests/support/source-purity.ts#source-purity-test-structure',
     'tests/source-purity-boundary.test.ts#source-shape-boundary',
     'npm-script:script-to-pack:readback',
     'npm-script:script-to-pack:readback:full',
