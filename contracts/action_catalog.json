@@ -81,6 +81,47 @@
       "can_execute_repo_patch_without_developer_mode": false
     }
   },
+  "mas_reviewer_revision_feedback_self_evolution_readback": {
+    "surface_kind": "opl_meta_agent_external_feedback_trigger_consumption_readback",
+    "schema_version": 1,
+    "target_agent_id": "med-autoscience",
+    "feedback_profile": "reviewer_revision_feedback",
+    "accepted_materialized_input": "agent_lab_external_suite",
+    "source_trigger_ref": "mas:feedback_self_evolution_trigger/reviewer_revision",
+    "status_projection": {
+      "suite_materialized_only": "runnable_pending",
+      "contract_itself_triggers_execution": false,
+      "must_not_report_as": [
+        "executed",
+        "target_owner_closeout_complete",
+        "target_owner_receipt_written_by_oma"
+      ],
+      "executed_requires_refs": [
+        "developer_patch_work_order_ref",
+        "opl_work_order_execute_receipt_ref",
+        "target_owner_closeout_readback_ref"
+      ]
+    },
+    "required_action_route": [
+      "improve-from-external-agent-lab-suite",
+      "execute-external-work-order",
+      "target_owner_closeout_readback"
+    ],
+    "consumer_actions": {
+      "materialized_suite_consumer": "improve-from-external-agent-lab-suite",
+      "work_order_execution_delegation": "execute-external-work-order",
+      "target_owner_closeout_owner": "target-domain via OPL"
+    },
+    "authority_boundary": {
+      "oma_can_consume_materialized_agent_lab_suite": true,
+      "oma_can_materialize_developer_work_order": true,
+      "oma_can_own_runner_or_queue": false,
+      "oma_can_manage_target_worktree_lifecycle": false,
+      "oma_can_write_target_owner_receipt_body": false,
+      "oma_can_write_target_domain_truth": false,
+      "oma_can_create_target_typed_blocker_body": false
+    }
+  },
   "actions": [
     {
       "action_id": "build-agent-baseline",
@@ -351,7 +392,7 @@
     {
       "action_id": "improve-from-external-agent-lab-suite",
       "title": "Improve From External Agent Lab Suite",
-      "summary": "Consume a target-domain Agent Lab suite result and the same structured AI reviewer evaluation, create a versioned developer patch work order, and drive target-agent source changes while preserving target truth and quality authority.",
+      "summary": "Consume a target-domain Agent Lab suite result and the same structured AI reviewer evaluation, then prepare a versioned developer patch work order for OPL execution while preserving target truth and quality authority.",
       "owner": "opl-meta-agent",
       "effect": "mutating",
       "source_command": {

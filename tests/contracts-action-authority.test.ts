@@ -49,6 +49,7 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   assert.ok(externalSuiteAction);
   assert.equal(externalSuiteAction.supported_surfaces.mcp.descriptor_only, true);
   assert.equal(externalSuiteAction.supported_surfaces.product_entry.action_key, 'improve-from-external-agent-lab-suite');
+  assert.match(externalSuiteAction.summary, /prepare a versioned developer patch work order for OPL execution/);
   assert.equal(externalSuiteAction.authority_boundary.can_write_target_domain_truth, false);
   assert.equal(externalSuiteAction.authority_boundary.can_modify_target_agent_source_repo, true);
   assert.equal(externalSuiteAction.authority_boundary.can_modify_target_agent_tests, true);
@@ -89,6 +90,44 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
     externalSuiteAction.accepted_external_suite_inputs.authority_boundary.can_write_target_domain_truth,
     false,
   );
+  const masReviewerRevisionReadback =
+    actionCatalog.mas_reviewer_revision_feedback_self_evolution_readback as JsonObject;
+  assert.equal(
+    masReviewerRevisionReadback.surface_kind,
+    'opl_meta_agent_external_feedback_trigger_consumption_readback',
+  );
+  assert.equal(masReviewerRevisionReadback.target_agent_id, 'med-autoscience');
+  assert.equal(masReviewerRevisionReadback.feedback_profile, 'reviewer_revision_feedback');
+  assert.equal(masReviewerRevisionReadback.accepted_materialized_input, 'agent_lab_external_suite');
+  assert.equal(masReviewerRevisionReadback.status_projection.suite_materialized_only, 'runnable_pending');
+  assert.equal(masReviewerRevisionReadback.status_projection.contract_itself_triggers_execution, false);
+  assert.ok(
+    asStrings(masReviewerRevisionReadback.status_projection.must_not_report_as).includes('executed'),
+  );
+  assert.deepEqual(masReviewerRevisionReadback.status_projection.executed_requires_refs, [
+    'developer_patch_work_order_ref',
+    'opl_work_order_execute_receipt_ref',
+    'target_owner_closeout_readback_ref',
+  ]);
+  assert.deepEqual(masReviewerRevisionReadback.required_action_route, [
+    'improve-from-external-agent-lab-suite',
+    'execute-external-work-order',
+    'target_owner_closeout_readback',
+  ]);
+  assert.equal(
+    masReviewerRevisionReadback.consumer_actions.materialized_suite_consumer,
+    'improve-from-external-agent-lab-suite',
+  );
+  assert.equal(
+    masReviewerRevisionReadback.consumer_actions.work_order_execution_delegation,
+    'execute-external-work-order',
+  );
+  assert.equal(masReviewerRevisionReadback.authority_boundary.oma_can_consume_materialized_agent_lab_suite, true);
+  assert.equal(masReviewerRevisionReadback.authority_boundary.oma_can_materialize_developer_work_order, true);
+  assert.equal(masReviewerRevisionReadback.authority_boundary.oma_can_own_runner_or_queue, false);
+  assert.equal(masReviewerRevisionReadback.authority_boundary.oma_can_manage_target_worktree_lifecycle, false);
+  assert.equal(masReviewerRevisionReadback.authority_boundary.oma_can_write_target_owner_receipt_body, false);
+  assert.equal(masReviewerRevisionReadback.authority_boundary.oma_can_write_target_domain_truth, false);
   const executeWorkOrderAction = actions.find(
     (action) => action.action_id === 'execute-external-work-order',
   );

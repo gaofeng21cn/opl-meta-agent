@@ -155,6 +155,8 @@ Usable landing 的当前真实 target patch-loop / scaleout evidence 已由 MAS/
 
 OMA 侧执行入口保持薄委托：`execute:external-work-order` 读取已经生成的 developer patch work order，只校验 refs-only shape 与 authority boundary，然后调用 OPL Framework 的 `opl work-order execute --work-order <path> --json`。target worktree lifecycle、generic runner、queue、attempt ledger、absorb、cleanup、post-absorb owner closeout hook invocation 和 execution receipt 均由 OPL Framework primitive / target owner 控制面持有；Agent Lab 只消费 re-evaluation refs；OMA 不在本仓实现第二套执行器、worktree 管理或 owner receipt writer。
 
+MAS `reviewer_revision` feedback self-evolution trigger 进入 OMA 时按标准 external-suite 消费：`improve-from-external-agent-lab-suite -> execute-external-work-order -> target owner closeout/readback`。如果 MAS 侧只物化了 suite/result，且 trigger contract 声明 `contract_itself_triggers_execution=false`，OMA/App readback 必须显示 `runnable_pending`，不能显示 `executed`。执行态只能由 OPL work-order execute receipt 加 target owner closeout/readback 证明；OMA 只持有 materialized suite consumer 和 work-order materializer 边界。
+
 该 takeover 只覆盖测试接管和候选生成。target domain truth、quality verdict、artifact body、memory body、默认 agent promotion authority 继续由目标 domain owner 持有；receipt 和 candidate 必须显式声明 `can_write_target_domain_memory_body=false`、`can_promote_default_agent_without_gate=false`。
 
 ## Mechanism Patch Proposal
