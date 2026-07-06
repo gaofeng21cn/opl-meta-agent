@@ -41,7 +41,7 @@ Machine boundary: 本文是人读治理入口和 lifecycle role map。当前机�
 | Docs index/current truth | `docs/README.md`, `docs/project.md`, `docs/status.md`, `docs/architecture.md`, `docs/invariants.md`, `docs/decisions.md` |
 | Active/support owner docs | `docs/active/opl-meta-agent-ideal-state-gap-plan.md`, `docs/active/foundry-agent-os-target-delta.md`, `docs/active/opl-private-implementation-migration-inventory.md`, `docs/references/opl-meta-agent-ideal-state.md`, `docs/docs_portfolio_consolidation.md` |
 | History / provenance | `docs/history/README.md`, `docs/history/process/README.md`, `docs/history/process/retired-surface-provenance.md` |
-| Agent pack support indexes | `agent/knowledge/README.md`, `agent/prompts/README.md`, `agent/quality_gates/README.md`, `agent/skills/README.md`, `agent/stages/README.md` |
+| Agent pack support indexes | `agent/knowledge/README.md`, `agent/prompts/README.md`, `agent/quality_gates/README.md`, `agent/skills/README.md`, `agent/professional_skills/README.md`, `agent/stages/README.md` |
 
 ## Rules
 

@@ -99,6 +99,59 @@ test('domain pack files and stage prompt refs resolve to usable repo files', () 
   assert.equal(generatedInterfaceBoundary.generated_interface_can_authorize_quality_or_export, false);
 });
 
+test('domain skill declarations and professional skills stay separate', () => {
+  const packCompilerInput = readJson('contracts/pack_compiler_input.json');
+  const capabilityMap = readJson('contracts/capability_map.json');
+  const requiredPackPaths = asStrings(packCompilerInput.required_domain_pack_paths);
+  const expectedDomainSkillPaths = [
+    'agent/skills/agent-baseline-build.md',
+    'agent/skills/external-suite-improvement.md',
+    'agent/skills/external-work-order-execution.md',
+    'agent/skills/opl-meta-agent-domain-skill.md',
+    'agent/skills/trajectory-learning-intake.md',
+  ];
+  const expectedProfessionalSkillPaths = [
+    'agent/professional_skills/oma-agent-evolution/SKILL.md',
+    'agent/professional_skills/oma-agent-lab-suite-designer/SKILL.md',
+    'agent/professional_skills/oma-external-pattern-researcher/SKILL.md',
+    'agent/professional_skills/oma-intent-architect/SKILL.md',
+    'agent/professional_skills/oma-stage-pack-architect/SKILL.md',
+    'agent/professional_skills/oma-takeover-reviewer/SKILL.md',
+    'agent/professional_skills/oma-trajectory-learning-analyst/SKILL.md',
+    'agent/professional_skills/oma-work-order-author/SKILL.md',
+  ];
+
+  assert.deepEqual(
+    requiredPackPaths.filter((relativePath) => relativePath.startsWith('agent/skills/')),
+    expectedDomainSkillPaths,
+  );
+  assert.deepEqual(
+    requiredPackPaths.filter((relativePath) => relativePath.startsWith('agent/professional_skills/')),
+    expectedProfessionalSkillPaths,
+  );
+  assert.equal(
+    requiredPackPaths.some((relativePath) => /^agent\/skills\/oma-.+\.md$/.test(relativePath)),
+    false,
+  );
+
+  const professionalCapabilities = asObjects(capabilityMap.capabilities)
+    .filter((capability) => capability.surface_role === 'professional_skill');
+  assert.deepEqual(
+    professionalCapabilities.map((capability) => capability.physical_source_ref.ref).sort(),
+    [
+      'agent/professional_skills/oma-agent-evolution/SKILL.md',
+      'agent/professional_skills/oma-intent-architect/SKILL.md',
+    ],
+  );
+  professionalCapabilities.forEach((capability) => {
+    assert.equal(capability.capability_kind, 'professional_skill');
+    assert.equal(capability.physical_source_ref.role, 'professional_skill_source');
+  });
+
+  assert.match(readText('agent/skills/README.md'), /domain skill declarations/);
+  assert.match(readText('agent/professional_skills/README.md'), /repo-local Codex-style/);
+});
+
 test('semantic pack keeps Codex-first expert judgment above mechanical gates', () => {
   const requiredFragmentsByFile: Record<string, string[]> = {
     'agent/knowledge/opl-boundary-policy.md': [

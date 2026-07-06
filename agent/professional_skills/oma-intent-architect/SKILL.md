@@ -7,7 +7,7 @@ description: Use when OMA must turn a natural-language target-agent request into
 
 ## Purpose
 
-Shape a target-agent request into an OMA-ready intent packet before stage decomposition. This is a method skill, not an OPL runtime, queue, scaffold generator, or target-domain owner.
+Shape a target-agent request into an OMA-ready intent packet before stage decomposition. This is a professional skill, not an OPL runtime, queue, scaffold generator, or target-domain owner.
 
 ## Inputs
 
