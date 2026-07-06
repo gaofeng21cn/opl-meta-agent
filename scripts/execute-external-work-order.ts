@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import path from 'node:path';
+import { parseArgs as parseNodeArgs } from 'node:util';
 import {
   readJson,
   resolveOplBin,
@@ -29,39 +30,35 @@ function parseArgs(argv: string[]): ExecuteArgs {
     passthroughArgs: [],
   };
 
-  for (let index = 0; index < argv.length; index += 1) {
-    const token = argv[index];
-    const value = argv[index + 1];
-
-    if (token === '--') {
-      parsed.passthroughArgs = argv.slice(index + 1);
-      break;
-    }
-    if (token === '--work-order') {
-      if (!value) {
-        throw new Error('Missing value for --work-order.');
-      }
-      parsed.workOrderPath = path.resolve(value);
-      index += 1;
-      continue;
-    }
-    if (token === '--output') {
-      if (!value) {
-        throw new Error('Missing value for --output.');
-      }
-      parsed.outputPath = path.resolve(value);
-      index += 1;
-      continue;
-    }
-    if (token === '--opl-bin') {
-      if (!value) {
-        throw new Error('Missing value for --opl-bin.');
-      }
-      parsed.oplBin = resolveOplBin(value);
-      index += 1;
-      continue;
-    }
-    throw new Error(`Unknown argument: ${token}.`);
+  const { values, tokens } = parseNodeArgs({
+    args: argv,
+    options: {
+      'work-order': { type: 'string' },
+      output: { type: 'string' },
+      'opl-bin': { type: 'string' },
+    },
+    strict: true,
+    allowPositionals: true,
+    tokens: true,
+  });
+  const terminator = tokens.find((token) => token.kind === 'option-terminator');
+  const unexpectedPositional = tokens.find((token) =>
+    token.kind === 'positional' && (!terminator || token.index < terminator.index)
+  );
+  if (unexpectedPositional?.kind === 'positional') {
+    throw new Error(`Unknown argument: ${unexpectedPositional.value}.`);
+  }
+  if (terminator) {
+    parsed.passthroughArgs = argv.slice(terminator.index + 1);
+  }
+  if (typeof values['work-order'] === 'string') {
+    parsed.workOrderPath = path.resolve(values['work-order']);
+  }
+  if (typeof values.output === 'string') {
+    parsed.outputPath = path.resolve(values.output);
+  }
+  if (typeof values['opl-bin'] === 'string') {
+    parsed.oplBin = resolveOplBin(values['opl-bin']);
   }
 
   if (!parsed.workOrderPath) {

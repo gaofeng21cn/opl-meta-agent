@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { parseArgs as parseNodeArgs } from 'node:util';
 import type { JsonObject } from './domain-pack.ts';
 import { readJson, resolveOplBin } from './meta-agent-loop-io.ts';
 import type { AgentContracts } from './agent-evidence-materializer.ts';
@@ -27,35 +28,32 @@ export function parseAgentEvidenceArgs(argv: string[]) {
     aiReviewerEvaluationPath: null,
   };
 
-  for (let index = 0; index < argv.length; index += 1) {
-    const token = argv[index];
-    const value = argv[index + 1];
-    if (token === '--agent-repo') {
-      parsed.agentRepo = requiredPathValue(token, value);
-      index += 1;
-      continue;
-    }
-    if (token === '--production-acceptance') {
-      parsed.productionAcceptancePath = requiredValue(token, value);
-      index += 1;
-      continue;
-    }
-    if (token === '--output-dir') {
-      parsed.outputDir = requiredPathValue(token, value);
-      index += 1;
-      continue;
-    }
-    if (token === '--opl-bin') {
-      parsed.oplBin = resolveOplBin(requiredValue(token, value));
-      index += 1;
-      continue;
-    }
-    if (token === '--ai-reviewer-evaluation') {
-      parsed.aiReviewerEvaluationPath = requiredPathValue(token, value);
-      index += 1;
-      continue;
-    }
-    throw new Error(`Unknown argument: ${token}.`);
+  const { values } = parseNodeArgs({
+    args: argv,
+    options: {
+      'agent-repo': { type: 'string' },
+      'production-acceptance': { type: 'string' },
+      'output-dir': { type: 'string' },
+      'opl-bin': { type: 'string' },
+      'ai-reviewer-evaluation': { type: 'string' },
+    },
+    strict: true,
+    allowPositionals: false,
+  });
+  if (typeof values['agent-repo'] === 'string') {
+    parsed.agentRepo = requiredPathValue('--agent-repo', values['agent-repo']);
+  }
+  if (typeof values['production-acceptance'] === 'string') {
+    parsed.productionAcceptancePath = requiredValue('--production-acceptance', values['production-acceptance']);
+  }
+  if (typeof values['output-dir'] === 'string') {
+    parsed.outputDir = requiredPathValue('--output-dir', values['output-dir']);
+  }
+  if (typeof values['opl-bin'] === 'string') {
+    parsed.oplBin = resolveOplBin(requiredValue('--opl-bin', values['opl-bin']));
+  }
+  if (typeof values['ai-reviewer-evaluation'] === 'string') {
+    parsed.aiReviewerEvaluationPath = requiredPathValue('--ai-reviewer-evaluation', values['ai-reviewer-evaluation']);
   }
 
   if (!parsed.agentRepo) {

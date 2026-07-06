@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { parseArgs as parseNodeArgs } from 'node:util';
 import {
   type DomainPackSummary,
   type JsonObject,
@@ -298,59 +299,60 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
     stageCloseoutPacketPath: null,
   };
 
-  for (let index = 0; index < argv.length; index += 1) {
-    const token = argv[index];
-    const value = argv[index + 1];
-    if (token === '--output-dir') {
-      parsed.outputDir = path.resolve(nonEmptyValue(token, value));
-      index += 1;
-      continue;
+  const { values, tokens } = parseNodeArgs({
+    args: argv,
+    options: {
+      'output-dir': { type: 'string' },
+      'opl-bin': { type: 'string' },
+      'ai-reviewer-evaluation': { type: 'string' },
+      'domain-id': { type: 'string' },
+      'domain-label': { type: 'string' },
+      'delivery-domain': { type: 'string' },
+      'target-brief': { type: 'string' },
+      'stage-runner': { type: 'string' },
+      'stage-closeout-packet': { type: 'string' },
+      'stage-decomposition-closeout': { type: 'string' },
+    },
+    strict: true,
+    allowPositionals: false,
+    tokens: true,
+  });
+  if (typeof values['output-dir'] === 'string') {
+    parsed.outputDir = path.resolve(nonEmptyValue('--output-dir', values['output-dir']));
+  }
+  if (typeof values['opl-bin'] === 'string') {
+    parsed.oplBin = resolveOplBin(nonEmptyValue('--opl-bin', values['opl-bin']));
+  }
+  if (typeof values['ai-reviewer-evaluation'] === 'string') {
+    parsed.aiReviewerEvaluationPath = path.resolve(nonEmptyValue('--ai-reviewer-evaluation', values['ai-reviewer-evaluation']));
+  }
+  if (typeof values['domain-id'] === 'string') {
+    parsed.domainId = nonEmptyValue('--domain-id', values['domain-id']);
+  }
+  if (typeof values['domain-label'] === 'string') {
+    parsed.domainLabel = nonEmptyValue('--domain-label', values['domain-label']);
+  }
+  if (typeof values['delivery-domain'] === 'string') {
+    parsed.deliveryDomain = nonEmptyValue('--delivery-domain', values['delivery-domain']);
+  }
+  if (typeof values['target-brief'] === 'string') {
+    parsed.targetBrief = nonEmptyValue('--target-brief', values['target-brief']);
+  }
+  if (typeof values['stage-runner'] === 'string') {
+    const runner = nonEmptyValue('--stage-runner', values['stage-runner']);
+    if (runner !== 'fixture' && runner !== 'live') {
+      throw new Error('Value for --stage-runner must be fixture or live.');
     }
-    if (token === '--opl-bin') {
-      parsed.oplBin = resolveOplBin(nonEmptyValue(token, value));
-      index += 1;
-      continue;
-    }
-    if (token === '--ai-reviewer-evaluation') {
-      parsed.aiReviewerEvaluationPath = path.resolve(nonEmptyValue(token, value));
-      index += 1;
-      continue;
-    }
-    if (token === '--domain-id') {
-      parsed.domainId = nonEmptyValue(token, value);
-      index += 1;
-      continue;
-    }
-    if (token === '--domain-label') {
-      parsed.domainLabel = nonEmptyValue(token, value);
-      index += 1;
-      continue;
-    }
-    if (token === '--delivery-domain') {
-      parsed.deliveryDomain = nonEmptyValue(token, value);
-      index += 1;
-      continue;
-    }
-    if (token === '--target-brief') {
-      parsed.targetBrief = nonEmptyValue(token, value);
-      index += 1;
-      continue;
-    }
-    if (token === '--stage-runner') {
-      const runner = nonEmptyValue(token, value);
-      if (runner !== 'fixture' && runner !== 'live') {
-        throw new Error('Value for --stage-runner must be fixture or live.');
-      }
-      parsed.stageRunner = runner;
-      index += 1;
-      continue;
-    }
-    if (token === '--stage-closeout-packet' || token === '--stage-decomposition-closeout') {
-      parsed.stageCloseoutPacketPath = path.resolve(nonEmptyValue(token, value));
-      index += 1;
-      continue;
-    }
-    throw new Error(`Unknown argument: ${token}.`);
+    parsed.stageRunner = runner;
+  }
+  const stageCloseoutPacket = tokens
+    .filter((token) =>
+      token.kind === 'option'
+      && (token.name === 'stage-closeout-packet' || token.name === 'stage-decomposition-closeout')
+    )
+    .at(-1);
+  if (stageCloseoutPacket?.kind === 'option') {
+    parsed.stageCloseoutPacketPath = path.resolve(nonEmptyValue(stageCloseoutPacket.rawName, stageCloseoutPacket.value));
   }
 
   if (!parsed.aiReviewerEvaluationPath) {

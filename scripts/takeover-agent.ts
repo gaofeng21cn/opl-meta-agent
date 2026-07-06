@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { parseArgs as parseNodeArgs } from 'node:util';
 import {
   type DomainPackSummary,
   type JsonObject,
@@ -57,42 +58,28 @@ export function parseTakeoverAgentArgs(argv: string[]): TakeoverArgs {
     aiReviewerEvaluationPath: null,
   };
 
-  for (let index = 0; index < argv.length; index += 1) {
-    const token = argv[index];
-    const value = argv[index + 1];
-    if (token === '--agent-dir') {
-      if (!value) {
-        throw new Error(`Missing value for ${token}.`);
-      }
-      parsed.targetAgentDir = path.resolve(value);
-      index += 1;
-      continue;
-    }
-    if (token === '--output-dir') {
-      if (!value) {
-        throw new Error('Missing value for --output-dir.');
-      }
-      parsed.outputDir = path.resolve(value);
-      index += 1;
-      continue;
-    }
-    if (token === '--opl-bin') {
-      if (!value) {
-        throw new Error('Missing value for --opl-bin.');
-      }
-      parsed.oplBin = resolveOplBin(value);
-      index += 1;
-      continue;
-    }
-    if (token === '--ai-reviewer-evaluation') {
-      if (!value) {
-        throw new Error('Missing value for --ai-reviewer-evaluation.');
-      }
-      parsed.aiReviewerEvaluationPath = path.resolve(value);
-      index += 1;
-      continue;
-    }
-    throw new Error(`Unknown argument: ${token}.`);
+  const { values } = parseNodeArgs({
+    args: argv,
+    options: {
+      'agent-dir': { type: 'string' },
+      'output-dir': { type: 'string' },
+      'opl-bin': { type: 'string' },
+      'ai-reviewer-evaluation': { type: 'string' },
+    },
+    strict: true,
+    allowPositionals: false,
+  });
+  if (typeof values['agent-dir'] === 'string') {
+    parsed.targetAgentDir = path.resolve(values['agent-dir']);
+  }
+  if (typeof values['output-dir'] === 'string') {
+    parsed.outputDir = path.resolve(values['output-dir']);
+  }
+  if (typeof values['opl-bin'] === 'string') {
+    parsed.oplBin = resolveOplBin(values['opl-bin']);
+  }
+  if (typeof values['ai-reviewer-evaluation'] === 'string') {
+    parsed.aiReviewerEvaluationPath = path.resolve(values['ai-reviewer-evaluation']);
   }
 
   if (!parsed.targetAgentDir) {
