@@ -722,6 +722,7 @@ if (jsonOutput) {
       violation_count: violations.length,
       violations,
     },
+    compatibility_aliases: policy.compatibility_aliases ?? [],
     script_to_pack_receipt_guard: {
       ...scriptToPackReceiptGuardJson,
       violation_count: guardViolations.length,

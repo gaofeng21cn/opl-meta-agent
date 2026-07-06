@@ -114,6 +114,22 @@ test:behavior`；完整 Node suite 进入 `npm run test:full` / `scripts/verify.
 full`。默认验证只检查 repo hygiene；需要删除 ignored cache/build byproducts
 时显式运行 `scripts/verify.sh cleanup`。
 
+`line-budget` / `line-budget:strict` 当前只作为 compatibility aliases 保留，canonical
+maintenance lane 是 `source-structure` / `source-structure:strict`。它们仍留在
+`package.json` 和 `scripts/verify.sh`，原因是 active caller receipt、operator muscle
+memory 和 machine readback 仍引用这些入口；删除前必须先取得无 active package/verify
+caller、刷新 source-purity scan receipt，并留下 tombstone/provenance ref。本轮没有物理删除
+alias，而是在 `contracts/source_structure_policy.json#compatibility_aliases` 和
+`source-structure:json` readback 中固定 alias 语义。
+
+`scripts/sync-authority-functions.ts` 与 `scripts/sync-stage-control-plane.ts` 继续作为两条
+generated aggregate 维护 helper 保留，不抽公共 helper。当前二者共享的是文件 IO、
+digest 和 aggregate check 形态，但 refs、leaf index、source digest input 和 rebuild
+规则不同；抽出单消费者或双消费者 helper 会新增 script-to-pack gate row，并要求新的
+source-structure strict / script-to-pack receipt 维护面。后续只有在 OPL Framework 或本仓
+已有同一 pack-source aggregate helper 能同时覆盖 authority-functions 与 stage-control
+parity，且不新增 script-to-pack gate 负担时，才考虑物理收薄。
+
 ## 当前证据尾项
 
 当前证据尾项的 single Active Truth 是 [opl-meta-agent 理想目标态差距与完善计划](./active/opl-meta-agent-ideal-state-gap-plan.md)。Status 只保留摘要：registry / App live consumption、真实 target patch-loop、独立 reviewer、standard target-agent handoff 与非默认 executor policy 都仍是 owner-delta / evidence tail；script-to-pack hygiene 当前只保留为 closed-structure-gate 后的持续退役/上收治理。具体 tail id、typed blocker ref、accepted shape、所需 receipt 和下一步执行顺序归 active plan、`contracts/live_stage_run_progress_evidence.json`、`contracts/target_agent_owner_chain_evidence.json`、production acceptance contracts 和 focused tests。
