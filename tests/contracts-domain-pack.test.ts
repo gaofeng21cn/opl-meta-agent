@@ -115,6 +115,7 @@ test('domain skill declarations and professional skills stay separate', () => {
     'agent/professional_skills/oma-agent-lab-suite-designer/SKILL.md',
     'agent/professional_skills/oma-external-pattern-researcher/SKILL.md',
     'agent/professional_skills/oma-intent-architect/SKILL.md',
+    'agent/professional_skills/oma-script-to-pack-hygiene-reviewer/SKILL.md',
     'agent/professional_skills/oma-stage-pack-architect/SKILL.md',
     'agent/professional_skills/oma-takeover-reviewer/SKILL.md',
     'agent/professional_skills/oma-trajectory-learning-analyst/SKILL.md',

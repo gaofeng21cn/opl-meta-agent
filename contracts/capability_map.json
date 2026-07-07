@@ -391,6 +391,85 @@
       "owner_closeout_boundary_ref": "contracts/capability_map.json#/authority_boundary"
     },
     {
+      "capability_id": "opl-meta-agent.script-to-pack-hygiene-reviewer.professional_skill",
+      "surface_role": "professional_skill",
+      "capability_kind": "professional_skill",
+      "canonical_owner": "opl-meta-agent",
+      "physical_source_ref": {
+        "ref_kind": "repo_path",
+        "ref": "agent/professional_skills/oma-script-to-pack-hygiene-reviewer/SKILL.md",
+        "role": "professional_skill_source"
+      },
+      "canonical_paths": [
+        "agent/professional_skills/oma-script-to-pack-hygiene-reviewer/SKILL.md"
+      ],
+      "improvement_tokens": [
+        "script-to-pack hygiene",
+        "script-to-pack-hygiene-reviewer",
+        "source-purity review",
+        "retained script active caller"
+      ],
+      "failure_token_registry_ref": "failure-token-registry:opl-meta-agent/script-to-pack-hygiene-reviewer",
+      "verification_refs": [
+        "git diff --check",
+        "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
+        "scripts/verify.sh"
+      ],
+      "forbidden_surfaces": [
+        "physical delete authority",
+        "script retirement authority",
+        "target domain truth",
+        "target memory body",
+        "target artifact body",
+        "target owner receipt body",
+        "target typed blocker body",
+        "OPL primitive parity claim",
+        "App/generated readiness",
+        "default promotion",
+        "target/domain/production readiness"
+      ],
+      "runtime_projection_refs": [
+        {
+          "ref_kind": "contract_ref",
+          "ref": "contracts/script_to_pack_gate_receipt.json",
+          "role": "script_to_pack_gate_readback"
+        },
+        {
+          "ref_kind": "contract_ref",
+          "ref": "runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy",
+          "role": "script_morphology_policy"
+        },
+        {
+          "ref_kind": "doc_ref",
+          "ref": "docs/active/opl-private-implementation-migration-inventory.md",
+          "role": "private_migration_inventory"
+        }
+      ],
+      "sync_policy": "domain_agent_builtin_refs_only",
+      "externalization_reason": "repo-owned OMA script-to-pack hygiene review method; resolver metadata only, not physical delete, readiness, owner receipt, typed blocker, or parity authority",
+      "authority_boundary": {
+        "can_write_domain_truth": false,
+        "can_write_memory_body": false,
+        "can_mutate_artifact_body": false,
+        "can_sign_owner_receipt": false,
+        "can_create_typed_blocker": false,
+        "can_authorize_quality_or_export": false,
+        "can_claim_domain_ready": false,
+        "can_claim_production_ready": false
+      },
+      "exposure_layer": "repo_internal_professional_skill",
+      "codex_default_exposure": false,
+      "allowed_exposure_scopes": [
+        "domain_runtime_stage"
+      ],
+      "codex_visibility_policy": "not_registered_as_global_codex_skill",
+      "exposure_owner": "opl-meta-agent",
+      "canonical_target_paths": [
+        "agent/professional_skills/oma-script-to-pack-hygiene-reviewer/SKILL.md"
+      ],
+      "owner_closeout_boundary_ref": "contracts/capability_map.json#/authority_boundary"
+    },
+    {
       "capability_id": "opl-meta-agent.takeover-reviewer.professional_skill",
       "surface_role": "professional_skill",
       "capability_kind": "professional_skill",
