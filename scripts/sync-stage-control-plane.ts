@@ -1,11 +1,16 @@
 import fs from 'node:fs';
-import path from 'node:path';
-import crypto from 'node:crypto';
-import { fileURLToPath } from 'node:url';
-
-type JsonObject = Record<string, any>;
-
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+import {
+  absolute,
+  asObjects,
+  checkJsonFile,
+  type JsonObject,
+  orderedObject,
+  readJson,
+  runSyncJsonBundleCli,
+  sha256ForFiles,
+  withoutKeys,
+  writeJson,
+} from './lib/sync-json-bundle.ts';
 
 const refs = {
   aggregate: 'contracts/stage_control_plane.json',
@@ -18,53 +23,12 @@ const refs = {
   stageNativeLeafDir: 'contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts',
 };
 
-function absolute(relativePath: string): string {
-  return path.join(repoRoot, relativePath);
-}
-
-function readJson(relativePath: string): JsonObject {
-  return JSON.parse(fs.readFileSync(absolute(relativePath), 'utf8'));
-}
-
-function writeJson(relativePath: string, payload: unknown): void {
-  fs.mkdirSync(path.dirname(absolute(relativePath)), { recursive: true });
-  fs.writeFileSync(absolute(relativePath), `${JSON.stringify(payload, null, 2)}\n`);
-}
-
-function orderedObject(source: JsonObject, keyOrder: string[]): JsonObject {
-  const output: JsonObject = {};
-  keyOrder.forEach((key) => {
-    if (Object.hasOwn(source, key)) {
-      output[key] = source[key];
-    }
-  });
-  Object.keys(source).forEach((key) => {
-    if (!Object.hasOwn(output, key)) {
-      output[key] = source[key];
-    }
-  });
-  return output;
-}
-
-function withoutKeys(source: JsonObject, omittedKeys: string[]): JsonObject {
-  return Object.fromEntries(
-    Object.entries(source).filter(([key]) => !omittedKeys.includes(key)),
-  );
-}
-
 function stageFileRef(stageId: string): string {
   return `${refs.stageLeafDir}/${stageId}.json`;
 }
 
 function stageNativeFileRef(stageId: string): string {
   return `${refs.stageNativeLeafDir}/${stageId}.json`;
-}
-
-function asObjects(value: unknown, label: string): JsonObject[] {
-  if (!Array.isArray(value)) {
-    throw new Error(`${label} must be an array.`);
-  }
-  return value as JsonObject[];
 }
 
 function sourceDigestInputRefs(source: JsonObject, index: JsonObject): string[] {
@@ -77,20 +41,6 @@ function sourceDigestInputRefs(source: JsonObject, index: JsonObject): string[] 
     ...asObjects(index.stage_native_artifact_contracts, 'stage control leaf index native contracts')
       .map((entry) => String(entry.ref)),
   ];
-}
-
-function sha256ForFiles(relativePaths: string[]): string {
-  const hash = crypto.createHash('sha256');
-  relativePaths.forEach((relativePath) => {
-    const content = fs.readFileSync(absolute(relativePath), 'utf8');
-    hash.update(relativePath);
-    hash.update('\0');
-    hash.update(String(Buffer.byteLength(content)));
-    hash.update('\0');
-    hash.update(content);
-    hash.update('\0');
-  });
-  return `sha256:${hash.digest('hex')}`;
 }
 
 function resetGeneratedDir(relativePath: string): void {
@@ -318,13 +268,7 @@ function validateLeafIndex(source: JsonObject, index: JsonObject): void {
 }
 
 function validateBundleManifest(source: JsonObject, index: JsonObject): void {
-  const expected = `${JSON.stringify(buildBundleManifest(source, index), null, 2)}\n`;
-  const actual = fs.readFileSync(absolute(refs.bundleManifest), 'utf8');
-  if (actual !== expected) {
-    console.error(`${refs.bundleManifest} is out of sync with ${refs.source} and ${refs.leafIndex}.`);
-    console.error('Run npm run stage-control:write to regenerate the generated bundle metadata.');
-    process.exit(1);
-  }
+  checkJsonFile(refs.bundleManifest, buildBundleManifest(source, index), 'npm run stage-control:write');
 }
 
 function reconstructAggregate(): JsonObject {
@@ -364,13 +308,7 @@ function checkAggregate(): void {
   validateLeafIndex(source, index);
   validateBundleManifest(source, index);
 
-  const expected = `${JSON.stringify(reconstructAggregate(), null, 2)}\n`;
-  const actual = fs.readFileSync(absolute(refs.aggregate), 'utf8');
-  if (actual !== expected) {
-    console.error(`${refs.aggregate} is out of sync with ${refs.source}.`);
-    console.error('Run npm run stage-control:write to regenerate the aggregate consumer surface.');
-    process.exit(1);
-  }
+  checkJsonFile(refs.aggregate, reconstructAggregate(), 'npm run stage-control:write');
   console.log(`stage control plane aggregate matches ${refs.source}`);
 }
 
@@ -380,15 +318,9 @@ function writeAggregate(): void {
   console.log(`wrote ${refs.aggregate} and ${refs.bundleManifest} from ${refs.source}`);
 }
 
-const command = process.argv[2] ?? '--check';
-
-if (command === '--split') {
-  splitFromAggregate();
-} else if (command === '--check') {
-  checkAggregate();
-} else if (command === '--write') {
-  writeAggregate();
-} else {
-  console.error('Usage: node scripts/sync-stage-control-plane.ts [--split|--check|--write]');
-  process.exit(2);
-}
+runSyncJsonBundleCli({
+  split: splitFromAggregate,
+  check: checkAggregate,
+  write: writeAggregate,
+  usage: 'Usage: node scripts/sync-stage-control-plane.ts [--split|--check|--write]',
+});

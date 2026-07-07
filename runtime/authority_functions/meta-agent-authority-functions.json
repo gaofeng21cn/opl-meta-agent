@@ -630,6 +630,24 @@
         "forbidden_roles": []
       },
       {
+        "script_ref": "scripts/lib/sync-json-bundle.ts",
+        "classes": [
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": [
+          "sync_json_bundle_file_io_ref",
+          "sync_json_bundle_digest_ref",
+          "sync_json_bundle_cli_mode_ref"
+        ],
+        "contract_refs": [
+          "contracts/stage_control_plane.source.json",
+          "runtime/authority_functions/meta-agent-authority-functions.source.json"
+        ],
+        "forbidden_roles": []
+      },
+      {
         "script_ref": "scripts/lib/target-improvement-policy.ts",
         "classes": [
           "fixture_or_proof_helper",
@@ -997,6 +1015,53 @@
         ]
       },
       {
+        "gate_id": "sync_json_bundle_shared_helper",
+        "tracked_script_refs": [
+          "scripts/lib/sync-json-bundle.ts"
+        ],
+        "current_role": "shared_json_bundle_file_io_digest_and_cli_dispatch_helper_for_authority_and_stage_aggregate_sync",
+        "retention_state": "retained_current_repo_native_surface",
+        "retention_reason": "current thin repo-local helper imported by both generated aggregate sync entrypoints to share mechanical JSON IO, stable JSON text, source digest, and CLI mode dispatch without owning refs, leaf semantics, runtime, generated interface, or domain truth",
+        "retention_evidence_refs": [
+          "scripts/sync-authority-functions.ts#import",
+          "scripts/sync-stage-control-plane.ts#import",
+          "npm run authority-functions:check",
+          "npm run stage-control:check",
+          "npm run source-structure:json"
+        ],
+        "allowed_until": "authority_functions_and_stage_control_aggregate_consumer_paths_share_mechanical_json_bundle_sync_logic",
+        "required_before_retire_or_absorb": [
+          "authority_functions_source_aggregate_sync_parity_ref",
+          "stage_control_plane_source_aggregate_sync_parity_ref",
+          "no_generated_aggregate_drift_ref",
+          "no_active_npm_or_test_caller_ref",
+          "tombstone_or_provenance_ref"
+        ],
+        "closed_retention_refs": [
+          "runtime/authority_functions/meta-agent-authority-functions.source.json",
+          "contracts/stage_control_plane.source.json",
+          "scripts/sync-authority-functions.ts",
+          "scripts/sync-stage-control-plane.ts"
+        ],
+        "no_resurrection_policy": {
+          "policy_id": "oma.sync_json_bundle_helper.no_resurrection.v1",
+          "state": "active_machine_policy",
+          "retained_only_while_both_aggregate_sync_entrypoints_import_it": true,
+          "must_not_become_generic_framework_helper": true,
+          "must_not_become_runtime_owner": true,
+          "must_not_become_generated_interface_owner": true,
+          "must_not_become_domain_truth_writer": true
+        },
+        "forbidden_long_term_claims": [
+          "generic_framework_helper",
+          "generic_runtime_owner",
+          "generated_interface_owner",
+          "domain_truth_writer",
+          "authority_truth_owner",
+          "stage_runtime_owner"
+        ]
+      },
+      {
         "gate_id": "repo_shell_verification_wrappers",
         "tracked_script_refs": [
           "scripts/repo-hygiene.sh",
@@ -1308,6 +1373,7 @@
       "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts",
       "scripts/lib/stage-decomposition-runner.ts",
       "scripts/lib/stage-native-artifact-contract.ts",
+      "scripts/lib/sync-json-bundle.ts",
       "scripts/lib/target-improvement-policy.ts",
       "scripts/lib/work-order-builders.ts",
       "scripts/lib/work-order-efficiency.ts",
@@ -1563,6 +1629,13 @@
             "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts#import",
             "scripts/lib/stage-decomposition-runner.ts#import",
             "scripts/takeover-agent.ts#import"
+          ]
+        },
+        {
+          "script_ref": "scripts/lib/sync-json-bundle.ts",
+          "active_caller_refs": [
+            "scripts/sync-authority-functions.ts#import",
+            "scripts/sync-stage-control-plane.ts#import"
           ]
         },
         {

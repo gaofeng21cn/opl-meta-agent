@@ -188,8 +188,8 @@ test('source-structure publishes a JSON machine readback for script-to-pack guar
   );
   assert.equal(payload.script_to_pack_receipt_guard.guard_id, 'oma.source_structure.script_to_pack_receipt_drift_guard.v1');
   assert.equal(payload.script_to_pack_receipt_guard.json_readback_command_ref, 'npm run source-structure:json');
-  assert.equal(payload.script_to_pack_receipt_guard.scanned_script_count, 31);
-  assert.equal(payload.script_to_pack_receipt_guard.gated_script_count, 31);
+  assert.equal(payload.script_to_pack_receipt_guard.scanned_script_count, 32);
+  assert.equal(payload.script_to_pack_receipt_guard.gated_script_count, 32);
   assert.equal(payload.script_to_pack_receipt_guard.orphan_script_count, 0);
   assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback_command_ref, 'npm run script-to-pack:readback');
   assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.surface_kind, 'oma_script_to_pack_retirement_cleanup_readback');
@@ -202,14 +202,14 @@ test('source-structure publishes a JSON machine readback for script-to-pack guar
     'compact_cleanup_summary_not_second_script_inventory',
   );
   assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.cleanup_candidate_count, 0);
-  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.retained_current_count, 31);
+  assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.retained_current_count, 32);
   assert.equal(
     payload.script_to_pack_receipt_guard.cleanup_readback.retained_current_authority_function_count,
     25,
   );
   assert.equal(
     payload.script_to_pack_receipt_guard.cleanup_readback.retained_current_repo_native_surface_count,
-    6,
+    7,
   );
   assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.cleanup_apply_candidate_count, 0);
   assert.equal(payload.script_to_pack_receipt_guard.cleanup_readback.sample_cleanup_candidate_count, 0);
@@ -246,9 +246,9 @@ test('script-to-pack default readback is compact and does not become a second sc
   assert.equal(payload.full_detail_command_ref, 'npm run script-to-pack:readback:full');
   assert.equal(payload.readback_is_authority, false);
   assert.equal(payload.cleanup_candidate_count, 0);
-  assert.equal(payload.retained_current_count, 31);
+  assert.equal(payload.retained_current_count, 32);
   assert.equal(payload.retained_current_authority_function_count, 25);
-  assert.equal(payload.retained_current_repo_native_surface_count, 6);
+  assert.equal(payload.retained_current_repo_native_surface_count, 7);
   assert.equal(payload.fixture_or_proof_only_retained_count, 0);
   assert.equal(payload.cleanup_apply_candidate_count, 0);
   assert.equal(payload.full_candidate_rows_omitted_from_default, true);
@@ -293,13 +293,13 @@ test('script-to-pack full readback materializes cleanup candidates without autho
   assert.equal(payload.compact_cleanup_summary_ref, 'npm run script-to-pack:readback');
   assert.equal(payload.compact_cleanup_summary_omitted_from_full, true);
   assert.equal(payload.cleanup_candidate_count, 0);
-  assert.equal(payload.retained_current_count, 31);
+  assert.equal(payload.retained_current_count, 32);
   assert.equal(payload.retained_current_authority_function_count, 25);
-  assert.equal(payload.retained_current_repo_native_surface_count, 6);
+  assert.equal(payload.retained_current_repo_native_surface_count, 7);
   assert.equal(payload.fixture_or_proof_only_retained_count, 0);
   assert.equal(payload.cleanup_apply_candidate_count, 0);
   assert.equal(payload.cleanup_candidates.length, 0);
-  assert.equal(payload.retained_current_rows.length, 31);
+  assert.equal(payload.retained_current_rows.length, 32);
   const retainedExecuteWorkOrder = payload.retained_current_authority_functions.find(
     (candidate: { script_ref: string }) => candidate.script_ref === 'scripts/execute-external-work-order.ts',
   );
@@ -460,7 +460,7 @@ test('structure maintenance scripts pass in focused advisory check mode', () => 
     });
     assert.equal(result.status, 0, `${script} ${flag}\n${result.stdout}\n${result.stderr}`);
     if (script === 'scripts/check-source-structure.ts') {
-      assert.match(result.stdout, /script-to-pack receipt guard checked 31 scripts, 31 gated refs, 0 orphan scripts/);
+      assert.match(result.stdout, /script-to-pack receipt guard checked 32 scripts, 32 gated refs, 0 orphan scripts/);
     }
   });
 });

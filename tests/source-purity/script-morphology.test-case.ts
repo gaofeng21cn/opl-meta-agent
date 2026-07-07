@@ -304,6 +304,7 @@ test('script morphology stays limited to authority refs, materializers, helpers,
     'build_agent_baseline_and_stage_decomposition_materializers',
     'external_work_order_execution_delegation',
     'source_structure_and_stage_control_maintenance_helpers',
+    'sync_json_bundle_shared_helper',
     'repo_shell_verification_wrappers',
     'retained_thin_authority_helpers_and_takeover_smoke',
   ]);

@@ -153,12 +153,11 @@ Stage-Native refs template、work-order refs/progress/no-forbidden-write validat
 无 active import/test/package caller、source-purity receipt 刷新、tombstone/provenance 完成。
 
 `scripts/sync-authority-functions.ts` 与 `scripts/sync-stage-control-plane.ts` 继续作为两条
-generated aggregate 维护 helper 保留，不抽公共 helper。当前二者共享的是文件 IO、
-digest 和 aggregate check 形态，但 refs、leaf index、source digest input 和 rebuild
-规则不同；抽出单消费者或双消费者 helper 会新增 script-to-pack gate row，并要求新的
-source-structure strict / script-to-pack receipt 维护面。后续只有在 OPL Framework 或本仓
-已有同一 pack-source aggregate helper 能同时覆盖 authority-functions 与 stage-control
-parity，且不新增 script-to-pack gate 负担时，才考虑物理收薄。
+generated aggregate 维护入口保留；二者共享的文件 IO、stable JSON、digest 和 CLI mode
+dispatch 已收薄到 `scripts/lib/sync-json-bundle.ts`。refs、leaf index、source digest input
+和 rebuild 规则仍由各入口自己持有；这个 helper 只作为 repo-local sync-json-bundle
+maintenance helper 被 script-to-pack gate 跟踪，不是通用 framework、runtime owner、
+generated interface owner 或 authority truth owner。
 
 ## 当前证据尾项
 

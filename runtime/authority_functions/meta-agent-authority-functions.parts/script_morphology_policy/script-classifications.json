@@ -413,6 +413,24 @@
     "forbidden_roles": []
   },
   {
+    "script_ref": "scripts/lib/sync-json-bundle.ts",
+    "classes": [
+      "fixture_or_proof_helper"
+    ],
+    "authority_function_refs": [],
+    "consumes_opl_surfaces": [],
+    "writes_only": [
+      "sync_json_bundle_file_io_ref",
+      "sync_json_bundle_digest_ref",
+      "sync_json_bundle_cli_mode_ref"
+    ],
+    "contract_refs": [
+      "contracts/stage_control_plane.source.json",
+      "runtime/authority_functions/meta-agent-authority-functions.source.json"
+    ],
+    "forbidden_roles": []
+  },
+  {
     "script_ref": "scripts/lib/target-improvement-policy.ts",
     "classes": [
       "fixture_or_proof_helper",

@@ -39,6 +39,7 @@
     "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts",
     "scripts/lib/stage-decomposition-runner.ts",
     "scripts/lib/stage-native-artifact-contract.ts",
+    "scripts/lib/sync-json-bundle.ts",
     "scripts/lib/target-improvement-policy.ts",
     "scripts/lib/work-order-builders.ts",
     "scripts/lib/work-order-efficiency.ts",
@@ -294,6 +295,13 @@
           "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts#import",
           "scripts/lib/stage-decomposition-runner.ts#import",
           "scripts/takeover-agent.ts#import"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/sync-json-bundle.ts",
+        "active_caller_refs": [
+          "scripts/sync-authority-functions.ts#import",
+          "scripts/sync-stage-control-plane.ts#import"
         ]
       },
       {
