@@ -103,6 +103,9 @@ test('domain skill declarations and professional skills stay separate', () => {
   const packCompilerInput = readJson('contracts/pack_compiler_input.json');
   const capabilityMap = readJson('contracts/capability_map.json');
   const requiredPackPaths = asStrings(packCompilerInput.required_domain_pack_paths);
+  const expectedPrimarySkillPaths = [
+    'agent/primary_skill/SKILL.md',
+  ];
   const expectedDomainSkillPaths = [
     'agent/skills/agent-baseline-build.md',
     'agent/skills/external-suite-improvement.md',
@@ -123,6 +126,10 @@ test('domain skill declarations and professional skills stay separate', () => {
   ];
 
   assert.deepEqual(
+    requiredPackPaths.filter((relativePath) => relativePath.startsWith('agent/primary_skill/')),
+    expectedPrimarySkillPaths,
+  );
+  assert.deepEqual(
     requiredPackPaths.filter((relativePath) => relativePath.startsWith('agent/skills/')),
     expectedDomainSkillPaths,
   );
@@ -133,6 +140,20 @@ test('domain skill declarations and professional skills stay separate', () => {
   assert.equal(
     requiredPackPaths.some((relativePath) => /^agent\/skills\/oma-.+\.md$/.test(relativePath)),
     false,
+  );
+
+  const primaryCapability = capabilityMap.primary_skill_capability;
+  assert.equal(primaryCapability.surface_role, 'primary_skill');
+  assert.equal(primaryCapability.capability_kind, 'codex_primary_skill');
+  assert.equal(primaryCapability.physical_source_ref.ref, 'agent/primary_skill/SKILL.md');
+  assert.equal(primaryCapability.physical_source_ref.role, 'primary_skill_source');
+  assert.deepEqual(asStrings(primaryCapability.canonical_paths), expectedPrimarySkillPaths);
+  assert.equal(primaryCapability.codex_default_exposure, true);
+  assert.equal(primaryCapability.exposure_layer, 'codex_default_primary_skill');
+  assert.ok(asStrings(primaryCapability.allowed_exposure_scopes).includes('codex_default_entry'));
+  assert.equal(
+    capabilityMap.resolver_index.primary_skill_refs[0],
+    'contracts/capability_map.json#/primary_skill_capability',
   );
 
   const professionalCapabilities = asObjects(capabilityMap.capabilities)
@@ -149,8 +170,11 @@ test('domain skill declarations and professional skills stay separate', () => {
     assert.ok(asStrings(capability.verification_refs).length > 0);
     assert.ok(asStrings(capability.forbidden_surfaces).length > 0);
     assert.equal(typeof capability.failure_token_registry_ref, 'string');
+    assert.equal(capability.codex_default_exposure, false);
   });
 
+  assert.match(readText('agent/primary_skill/SKILL.md'), /New-Agent Delivery Gate/);
+  assert.match(readText('agent/primary_skill/SKILL.md'), /Scaffold created is not completion/);
   assert.match(readText('agent/skills/README.md'), /domain skill declarations/);
   assert.match(readText('agent/professional_skills/README.md'), /repo-local Codex-style/);
 });

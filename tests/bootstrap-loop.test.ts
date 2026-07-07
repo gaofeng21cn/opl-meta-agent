@@ -298,6 +298,8 @@ test('opl-meta-agent bootstraps an explicit target agent and validates it throug
     const realTargetReceiptPath = path.join(outputRoot, 'real-target-delivery-receipt.json');
     const realTargetLedgerPath = path.join(outputRoot, 'real-target-scaleout-evidence-ledger.json');
     const packageManifestPath = path.join(targetDir, 'contracts', 'opl_agent_package_manifest.json');
+    const capabilityMapPath = path.join(targetDir, 'contracts', 'capability_map.json');
+    const primarySkillPath = path.join(targetDir, 'agent', 'primary_skill', 'SKILL.md');
     const fixturePath = path.join(
       targetDir,
       'contracts',
@@ -315,12 +317,20 @@ test('opl-meta-agent bootstraps an explicit target agent and validates it throug
     assert.equal(fs.existsSync(realTargetReceiptPath), true);
     assert.equal(fs.existsSync(realTargetLedgerPath), true);
     assert.equal(fs.existsSync(packageManifestPath), true);
+    assert.equal(fs.existsSync(capabilityMapPath), true);
+    assert.equal(fs.existsSync(primarySkillPath), true);
     assert.equal(payload.artifacts.opl_agent_package_manifest_path, packageManifestPath);
+    assert.equal(payload.artifacts.target_agent_capability_map_path, capabilityMapPath);
+    assert.equal(payload.artifacts.target_agent_primary_skill_path, primarySkillPath);
     assert.equal(payload.real_target_delivery.opl_agent_package_manifest_ref, packageManifestPath);
+    assert.equal(payload.real_target_delivery.capability_map_ref, capabilityMapPath);
+    assert.equal(payload.real_target_delivery.primary_skill_ref, primarySkillPath);
     assert.equal(payload.opl_agent_package_manifest_validation.status, 'valid');
     assert.equal(payload.opl_agent_package_manifest_validation.package_id, 'baseline-fixture-agent');
 
     const packageManifest = readJson(packageManifestPath);
+    const capabilityMap = readJson(capabilityMapPath);
+    const primarySkill = fs.readFileSync(primarySkillPath, 'utf8');
     const fixture = readJson(fixturePath);
     const stagePacket = readJson(stagePacketPath);
     const stageControl = readJson(path.join(targetDir, 'contracts', 'stage_control_plane.json'));
@@ -329,9 +339,24 @@ test('opl-meta-agent bootstraps an explicit target agent and validates it throug
     assert.equal(packageManifest.carrier_source_role, 'codex_plugin_default_carrier_not_package_truth');
     assert.equal(packageManifest.codex_surface.standalone_distribution, 'generated_carrier_surface');
     assert.deepEqual(packageManifest.codex_surface.required_skill_ids, ['baseline-fixture-agent']);
+    assert.equal(packageManifest.codex_surface.primary_skill_ref, 'agent/primary_skill/SKILL.md');
+    assert.equal(
+      packageManifest.codex_surface.primary_skill_capability_ref,
+      'contracts/capability_map.json#/primary_skill_capability',
+    );
     assert.deepEqual(packageManifest.capability_dependencies, []);
     assert.equal(packageManifest.carrier_adapters[0].owns_package_core, false);
     assert.equal(packageManifest.carrier_adapters[0].owns_domain_truth, false);
+    assert.equal(capabilityMap.surface_kind, 'opl_standard_agent_capability_map');
+    assert.equal(capabilityMap.domain_id, 'baseline-fixture-agent');
+    assert.equal(capabilityMap.primary_skill_capability.surface_role, 'primary_skill');
+    assert.equal(capabilityMap.primary_skill_capability.physical_source_ref.ref, 'agent/primary_skill/SKILL.md');
+    assert.equal(capabilityMap.primary_skill_capability.codex_default_exposure, true);
+    assert.deepEqual(capabilityMap.primary_skill_capability.canonical_paths, ['agent/primary_skill/SKILL.md']);
+    assert.equal(capabilityMap.primary_skill_capability.authority_boundary.can_write_domain_truth, false);
+    assert.equal(capabilityMap.resolver_index.primary_skill_refs[0], 'contracts/capability_map.json#/primary_skill_capability');
+    assert.match(primarySkill, /Agent Lab And Owner Handoff/);
+    assert.match(primarySkill, /Scaffold exists is not completion/);
     assertGeneratedTargetStagePack(targetDir, stageControl, {
       stageId: 'agent-output-draft',
       actionRef: 'draft-agent-output',
@@ -536,6 +561,8 @@ test('build-agent-baseline bootstraps a requested target agent from structured s
     const realTargetReceipt = readJson(path.join(outputRoot, 'real-target-delivery-receipt.json'));
     const scaleoutLedger = readJson(path.join(outputRoot, 'real-target-scaleout-evidence-ledger.json'));
     const packageManifest = readJson(path.join(targetDir, 'contracts', 'opl_agent_package_manifest.json'));
+    const capabilityMap = readJson(path.join(targetDir, 'contracts', 'capability_map.json'));
+    const primarySkill = fs.readFileSync(path.join(targetDir, 'agent', 'primary_skill', 'SKILL.md'), 'utf8');
 
     assert.equal(payload.target_agent.domain_id, 'research-workbench-agent');
     assert.equal(payload.target_agent.domain_label, 'Research Workbench Agent');
@@ -560,6 +587,11 @@ test('build-agent-baseline bootstraps a requested target agent from structured s
     assert.equal(packageManifest.source, 'oma_generated_target_agent');
     assert.equal(packageManifest.codex_surface.plugin_id, 'research-workbench-agent');
     assert.equal(packageManifest.codex_surface.standalone_distribution, 'generated_carrier_surface');
+    assert.equal(packageManifest.codex_surface.primary_skill_ref, 'agent/primary_skill/SKILL.md');
+    assert.equal(capabilityMap.primary_skill_capability.capability_id, 'research-workbench-agent.primary-skill.codex_entry');
+    assert.equal(capabilityMap.primary_skill_capability.codex_default_exposure, true);
+    assert.match(primarySkill, /Research Workbench Agent/);
+    assert.match(primarySkill, /Provider completion is not domain completion/);
     assert.equal(packageManifest.distribution_payload.install_truth, 'resolved_digest_lock');
     assert.equal(packageManifest.distribution_payload.live_download_proof, false);
 

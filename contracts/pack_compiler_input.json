@@ -9,6 +9,7 @@
     "agent/knowledge/project-maturity-signals.md",
     "agent/knowledge/trajectory-learning-policy.md",
     "agent/knowledge/transferable-agent-practices.md",
+    "agent/primary_skill/SKILL.md",
     "agent/principles/domain-specialization.md",
     "agent/principles/opl-standard-agent-principles.md",
     "agent/professional_skills/oma-agent-evolution/SKILL.md",
@@ -57,6 +58,7 @@
   ],
   "declarative_domain_pack": [
     "domain_truth_schema",
+    "primary_skill_ref",
     "principle_adoption_refs",
     "stage_descriptors",
     "transition_table",

@@ -29,6 +29,56 @@
     "pack_role": "declarative_domain_capability_pack",
     "capability_pack_can_claim_domain_ready": false
   },
+  "primary_skill_capability": {
+    "capability_id": "opl-meta-agent.primary-skill.codex_entry",
+    "surface_role": "primary_skill",
+    "capability_kind": "codex_primary_skill",
+    "canonical_owner": "opl-meta-agent",
+    "physical_source_ref": {
+      "ref_kind": "repo_path",
+      "ref": "agent/primary_skill/SKILL.md",
+      "role": "primary_skill_source"
+    },
+    "canonical_paths": [
+      "agent/primary_skill/SKILL.md"
+    ],
+    "runtime_projection_refs": [
+      {
+        "ref_kind": "contract_ref",
+        "ref": "contracts/opl_agent_package_manifest.json#/codex_surface",
+        "role": "codex_default_entry_ref"
+      },
+      {
+        "ref_kind": "opl_generated_surface_ref",
+        "ref": "one-person-lab/src/modules/connect/opl-skills-parts/generated-plugin.ts#OPL Meta Agent",
+        "role": "generated_carrier_projection_context"
+      }
+    ],
+    "sync_policy": "repo_owned_primary_skill_projected_by_opl_generated_carrier",
+    "externalization_reason": "rich repo-owned primary Codex entry for OMA; OPL owns generated carrier projection and package validation, while professional skills remain non-default stage-routed methods",
+    "authority_boundary": {
+      "can_write_domain_truth": false,
+      "can_write_memory_body": false,
+      "can_mutate_artifact_body": false,
+      "can_sign_owner_receipt": false,
+      "can_create_typed_blocker": false,
+      "can_authorize_quality_or_export": false,
+      "can_claim_domain_ready": false,
+      "can_claim_production_ready": false
+    },
+    "exposure_layer": "codex_default_primary_skill",
+    "codex_default_exposure": true,
+    "allowed_exposure_scopes": [
+      "codex_default_entry",
+      "opl_generated_plugin_carrier"
+    ],
+    "codex_visibility_policy": "registered_as_primary_codex_skill_entry",
+    "exposure_owner": "opl-meta-agent",
+    "canonical_target_paths": [
+      "agent/primary_skill/SKILL.md"
+    ],
+    "owner_closeout_boundary_ref": "contracts/capability_map.json#/authority_boundary"
+  },
   "capabilities": [
     {
       "capability_id": "opl-meta-agent.intent-intake.stage_prompt",
@@ -786,6 +836,9 @@
     }
   ],
   "resolver_index": {
+    "primary_skill_refs": [
+      "contracts/capability_map.json#/primary_skill_capability"
+    ],
     "stage_prompt_refs": [
       "contracts/capability_map.json#/capabilities?surface_role=stage_prompt"
     ],
