@@ -138,14 +138,16 @@ test('domain skill declarations and professional skills stay separate', () => {
     .filter((capability) => capability.surface_role === 'professional_skill');
   assert.deepEqual(
     professionalCapabilities.map((capability) => capability.physical_source_ref.ref).sort(),
-    [
-      'agent/professional_skills/oma-agent-evolution/SKILL.md',
-      'agent/professional_skills/oma-intent-architect/SKILL.md',
-    ],
+    expectedProfessionalSkillPaths,
   );
   professionalCapabilities.forEach((capability) => {
     assert.equal(capability.capability_kind, 'professional_skill');
     assert.equal(capability.physical_source_ref.role, 'professional_skill_source');
+    assert.deepEqual(asStrings(capability.canonical_paths), [capability.physical_source_ref.ref]);
+    assert.ok(asStrings(capability.improvement_tokens).length > 0);
+    assert.ok(asStrings(capability.verification_refs).length > 0);
+    assert.ok(asStrings(capability.forbidden_surfaces).length > 0);
+    assert.equal(typeof capability.failure_token_registry_ref, 'string');
   });
 
   assert.match(readText('agent/skills/README.md'), /domain skill declarations/);

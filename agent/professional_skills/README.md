@@ -7,6 +7,8 @@ Machine boundary: 本文是人读索引。机器 locator 归 `contracts/capabili
 
 本目录持有 repo-local Codex-style 专业方法技能。它们把 agent-building 专家判断从 stage prompts 和 domain skill declarations 中拆出，供 Codex 在对应 stage 内手工/显式调用。
 
+`contracts/capability_map.json` 覆盖本目录全部 8 个 repo-local professional skills，并为 target improvement routing 登记 locator 元数据。
+
 Professional skills:
 
 - `oma-intent-architect/SKILL.md`

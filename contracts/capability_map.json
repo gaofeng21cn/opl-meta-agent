@@ -61,36 +61,6 @@
       }
     },
     {
-      "capability_id": "opl-meta-agent.intent-architect.professional_skill",
-      "surface_role": "professional_skill",
-      "capability_kind": "professional_skill",
-      "canonical_owner": "opl-meta-agent",
-      "physical_source_ref": {
-        "ref_kind": "repo_path",
-        "ref": "agent/professional_skills/oma-intent-architect/SKILL.md",
-        "role": "professional_skill_source"
-      },
-      "runtime_projection_refs": [
-        {
-          "ref_kind": "contract_ref",
-          "ref": "contracts/stage_control_plane.json#/stages",
-          "role": "stage_control_plane_skill_refs"
-        }
-      ],
-      "sync_policy": "domain_agent_builtin_refs_only",
-      "externalization_reason": "repo-owned standard OPL agent capability locator; resolver metadata only, not domain truth or readiness evidence",
-      "authority_boundary": {
-        "can_write_domain_truth": false,
-        "can_write_memory_body": false,
-        "can_mutate_artifact_body": false,
-        "can_sign_owner_receipt": false,
-        "can_create_typed_blocker": false,
-        "can_authorize_quality_or_export": false,
-        "can_claim_domain_ready": false,
-        "can_claim_production_ready": false
-      }
-    },
-    {
       "capability_id": "opl-meta-agent.agent-evolution.professional_skill",
       "surface_role": "professional_skill",
       "capability_kind": "professional_skill",
@@ -100,6 +70,30 @@
         "ref": "agent/professional_skills/oma-agent-evolution/SKILL.md",
         "role": "professional_skill_source"
       },
+      "canonical_paths": [
+        "agent/professional_skills/oma-agent-evolution/SKILL.md"
+      ],
+      "improvement_tokens": [
+        "agent evolution",
+        "agent-evolution",
+        "diagnosis router",
+        "patch playbook"
+      ],
+      "failure_token_registry_ref": "failure-token-registry:opl-meta-agent/agent-evolution",
+      "verification_refs": [
+        "git diff --check",
+        "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
+        "scripts/verify.sh"
+      ],
+      "forbidden_surfaces": [
+        "target domain truth",
+        "target memory body",
+        "target artifact body",
+        "target owner receipt body",
+        "target typed blocker body",
+        "quality/export verdict",
+        "promotion gate state"
+      ],
       "runtime_projection_refs": [
         {
           "ref_kind": "contract_ref",
@@ -114,6 +108,384 @@
       ],
       "sync_policy": "domain_agent_builtin_refs_only",
       "externalization_reason": "repo-owned OMA agent-evolution diagnosis and patch playbook; resolver metadata only, not target-domain truth or readiness evidence",
+      "authority_boundary": {
+        "can_write_domain_truth": false,
+        "can_write_memory_body": false,
+        "can_mutate_artifact_body": false,
+        "can_sign_owner_receipt": false,
+        "can_create_typed_blocker": false,
+        "can_authorize_quality_or_export": false,
+        "can_claim_domain_ready": false,
+        "can_claim_production_ready": false
+      }
+    },
+    {
+      "capability_id": "opl-meta-agent.agent-lab-suite-designer.professional_skill",
+      "surface_role": "professional_skill",
+      "capability_kind": "professional_skill",
+      "canonical_owner": "opl-meta-agent",
+      "physical_source_ref": {
+        "ref_kind": "repo_path",
+        "ref": "agent/professional_skills/oma-agent-lab-suite-designer/SKILL.md",
+        "role": "professional_skill_source"
+      },
+      "canonical_paths": [
+        "agent/professional_skills/oma-agent-lab-suite-designer/SKILL.md"
+      ],
+      "improvement_tokens": [
+        "agent lab suite design",
+        "agent-lab-suite-designer",
+        "baseline suite",
+        "takeover suite"
+      ],
+      "failure_token_registry_ref": "failure-token-registry:opl-meta-agent/agent-lab-suite-designer",
+      "verification_refs": [
+        "git diff --check",
+        "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
+        "scripts/verify.sh"
+      ],
+      "forbidden_surfaces": [
+        "target domain truth",
+        "target memory body",
+        "target artifact body",
+        "target owner receipt body",
+        "target typed blocker body",
+        "quality/export verdict",
+        "promotion gate state"
+      ],
+      "runtime_projection_refs": [
+        {
+          "ref_kind": "contract_ref",
+          "ref": "contracts/stage_control_plane.json#/stages",
+          "role": "stage_control_plane_skill_refs"
+        }
+      ],
+      "sync_policy": "domain_agent_builtin_refs_only",
+      "externalization_reason": "repo-owned OMA Agent Lab suite design method; resolver metadata only, not target-domain truth or readiness evidence",
+      "authority_boundary": {
+        "can_write_domain_truth": false,
+        "can_write_memory_body": false,
+        "can_mutate_artifact_body": false,
+        "can_sign_owner_receipt": false,
+        "can_create_typed_blocker": false,
+        "can_authorize_quality_or_export": false,
+        "can_claim_domain_ready": false,
+        "can_claim_production_ready": false
+      }
+    },
+    {
+      "capability_id": "opl-meta-agent.external-pattern-researcher.professional_skill",
+      "surface_role": "professional_skill",
+      "capability_kind": "professional_skill",
+      "canonical_owner": "opl-meta-agent",
+      "physical_source_ref": {
+        "ref_kind": "repo_path",
+        "ref": "agent/professional_skills/oma-external-pattern-researcher/SKILL.md",
+        "role": "professional_skill_source"
+      },
+      "canonical_paths": [
+        "agent/professional_skills/oma-external-pattern-researcher/SKILL.md"
+      ],
+      "improvement_tokens": [
+        "external pattern research",
+        "external-pattern-researcher",
+        "pattern disposition",
+        "external learning"
+      ],
+      "failure_token_registry_ref": "failure-token-registry:opl-meta-agent/external-pattern-researcher",
+      "verification_refs": [
+        "git diff --check",
+        "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
+        "scripts/verify.sh"
+      ],
+      "forbidden_surfaces": [
+        "target domain truth",
+        "target memory body",
+        "target artifact body",
+        "target owner receipt body",
+        "target typed blocker body",
+        "quality/export verdict",
+        "promotion gate state"
+      ],
+      "runtime_projection_refs": [
+        {
+          "ref_kind": "contract_ref",
+          "ref": "contracts/stage_control_plane.json#/stages",
+          "role": "stage_control_plane_skill_refs"
+        }
+      ],
+      "sync_policy": "domain_agent_builtin_refs_only",
+      "externalization_reason": "repo-owned OMA external-pattern research method; resolver metadata only, not target-domain truth or readiness evidence",
+      "authority_boundary": {
+        "can_write_domain_truth": false,
+        "can_write_memory_body": false,
+        "can_mutate_artifact_body": false,
+        "can_sign_owner_receipt": false,
+        "can_create_typed_blocker": false,
+        "can_authorize_quality_or_export": false,
+        "can_claim_domain_ready": false,
+        "can_claim_production_ready": false
+      }
+    },
+    {
+      "capability_id": "opl-meta-agent.intent-architect.professional_skill",
+      "surface_role": "professional_skill",
+      "capability_kind": "professional_skill",
+      "canonical_owner": "opl-meta-agent",
+      "physical_source_ref": {
+        "ref_kind": "repo_path",
+        "ref": "agent/professional_skills/oma-intent-architect/SKILL.md",
+        "role": "professional_skill_source"
+      },
+      "canonical_paths": [
+        "agent/professional_skills/oma-intent-architect/SKILL.md"
+      ],
+      "improvement_tokens": [
+        "intent architecture",
+        "intent architect",
+        "intent-architect",
+        "acceptance criteria"
+      ],
+      "failure_token_registry_ref": "failure-token-registry:opl-meta-agent/intent-architect",
+      "verification_refs": [
+        "git diff --check",
+        "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
+        "scripts/verify.sh"
+      ],
+      "forbidden_surfaces": [
+        "target domain truth",
+        "target memory body",
+        "target artifact body",
+        "target owner receipt body",
+        "target typed blocker body",
+        "quality/export verdict",
+        "promotion gate state"
+      ],
+      "runtime_projection_refs": [
+        {
+          "ref_kind": "contract_ref",
+          "ref": "contracts/stage_control_plane.json#/stages",
+          "role": "stage_control_plane_skill_refs"
+        }
+      ],
+      "sync_policy": "domain_agent_builtin_refs_only",
+      "externalization_reason": "repo-owned OMA intent architecture method; resolver metadata only, not target-domain truth or readiness evidence",
+      "authority_boundary": {
+        "can_write_domain_truth": false,
+        "can_write_memory_body": false,
+        "can_mutate_artifact_body": false,
+        "can_sign_owner_receipt": false,
+        "can_create_typed_blocker": false,
+        "can_authorize_quality_or_export": false,
+        "can_claim_domain_ready": false,
+        "can_claim_production_ready": false
+      }
+    },
+    {
+      "capability_id": "opl-meta-agent.stage-pack-architect.professional_skill",
+      "surface_role": "professional_skill",
+      "capability_kind": "professional_skill",
+      "canonical_owner": "opl-meta-agent",
+      "physical_source_ref": {
+        "ref_kind": "repo_path",
+        "ref": "agent/professional_skills/oma-stage-pack-architect/SKILL.md",
+        "role": "professional_skill_source"
+      },
+      "canonical_paths": [
+        "agent/professional_skills/oma-stage-pack-architect/SKILL.md"
+      ],
+      "improvement_tokens": [
+        "stage pack architecture",
+        "stage-pack-architect",
+        "stage decomposition",
+        "artifact morphology"
+      ],
+      "failure_token_registry_ref": "failure-token-registry:opl-meta-agent/stage-pack-architect",
+      "verification_refs": [
+        "git diff --check",
+        "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
+        "scripts/verify.sh"
+      ],
+      "forbidden_surfaces": [
+        "target domain truth",
+        "target memory body",
+        "target artifact body",
+        "target owner receipt body",
+        "target typed blocker body",
+        "quality/export verdict",
+        "promotion gate state"
+      ],
+      "runtime_projection_refs": [
+        {
+          "ref_kind": "contract_ref",
+          "ref": "contracts/stage_control_plane.json#/stages",
+          "role": "stage_control_plane_skill_refs"
+        }
+      ],
+      "sync_policy": "domain_agent_builtin_refs_only",
+      "externalization_reason": "repo-owned OMA stage-pack architecture method; resolver metadata only, not target-domain truth or readiness evidence",
+      "authority_boundary": {
+        "can_write_domain_truth": false,
+        "can_write_memory_body": false,
+        "can_mutate_artifact_body": false,
+        "can_sign_owner_receipt": false,
+        "can_create_typed_blocker": false,
+        "can_authorize_quality_or_export": false,
+        "can_claim_domain_ready": false,
+        "can_claim_production_ready": false
+      }
+    },
+    {
+      "capability_id": "opl-meta-agent.takeover-reviewer.professional_skill",
+      "surface_role": "professional_skill",
+      "capability_kind": "professional_skill",
+      "canonical_owner": "opl-meta-agent",
+      "physical_source_ref": {
+        "ref_kind": "repo_path",
+        "ref": "agent/professional_skills/oma-takeover-reviewer/SKILL.md",
+        "role": "professional_skill_source"
+      },
+      "canonical_paths": [
+        "agent/professional_skills/oma-takeover-reviewer/SKILL.md"
+      ],
+      "improvement_tokens": [
+        "takeover review",
+        "takeover-reviewer",
+        "target agent takeover",
+        "owner authority review"
+      ],
+      "failure_token_registry_ref": "failure-token-registry:opl-meta-agent/takeover-reviewer",
+      "verification_refs": [
+        "git diff --check",
+        "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
+        "scripts/verify.sh"
+      ],
+      "forbidden_surfaces": [
+        "target domain truth",
+        "target memory body",
+        "target artifact body",
+        "target owner receipt body",
+        "target typed blocker body",
+        "quality/export verdict",
+        "promotion gate state"
+      ],
+      "runtime_projection_refs": [
+        {
+          "ref_kind": "contract_ref",
+          "ref": "contracts/stage_control_plane.json#/stages",
+          "role": "stage_control_plane_skill_refs"
+        }
+      ],
+      "sync_policy": "domain_agent_builtin_refs_only",
+      "externalization_reason": "repo-owned OMA takeover review method; resolver metadata only, not target-domain truth or readiness evidence",
+      "authority_boundary": {
+        "can_write_domain_truth": false,
+        "can_write_memory_body": false,
+        "can_mutate_artifact_body": false,
+        "can_sign_owner_receipt": false,
+        "can_create_typed_blocker": false,
+        "can_authorize_quality_or_export": false,
+        "can_claim_domain_ready": false,
+        "can_claim_production_ready": false
+      }
+    },
+    {
+      "capability_id": "opl-meta-agent.trajectory-learning-analyst.professional_skill",
+      "surface_role": "professional_skill",
+      "capability_kind": "professional_skill",
+      "canonical_owner": "opl-meta-agent",
+      "physical_source_ref": {
+        "ref_kind": "repo_path",
+        "ref": "agent/professional_skills/oma-trajectory-learning-analyst/SKILL.md",
+        "role": "professional_skill_source"
+      },
+      "canonical_paths": [
+        "agent/professional_skills/oma-trajectory-learning-analyst/SKILL.md"
+      ],
+      "improvement_tokens": [
+        "trajectory learning",
+        "trajectory-learning-analyst",
+        "mechanism learning",
+        "redacted trajectory"
+      ],
+      "failure_token_registry_ref": "failure-token-registry:opl-meta-agent/trajectory-learning-analyst",
+      "verification_refs": [
+        "git diff --check",
+        "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
+        "scripts/verify.sh"
+      ],
+      "forbidden_surfaces": [
+        "target domain truth",
+        "target memory body",
+        "target artifact body",
+        "target owner receipt body",
+        "target typed blocker body",
+        "quality/export verdict",
+        "promotion gate state"
+      ],
+      "runtime_projection_refs": [
+        {
+          "ref_kind": "contract_ref",
+          "ref": "contracts/stage_control_plane.json#/stages",
+          "role": "stage_control_plane_skill_refs"
+        }
+      ],
+      "sync_policy": "domain_agent_builtin_refs_only",
+      "externalization_reason": "repo-owned OMA trajectory-learning analysis method; resolver metadata only, not target-domain truth or readiness evidence",
+      "authority_boundary": {
+        "can_write_domain_truth": false,
+        "can_write_memory_body": false,
+        "can_mutate_artifact_body": false,
+        "can_sign_owner_receipt": false,
+        "can_create_typed_blocker": false,
+        "can_authorize_quality_or_export": false,
+        "can_claim_domain_ready": false,
+        "can_claim_production_ready": false
+      }
+    },
+    {
+      "capability_id": "opl-meta-agent.work-order-author.professional_skill",
+      "surface_role": "professional_skill",
+      "capability_kind": "professional_skill",
+      "canonical_owner": "opl-meta-agent",
+      "physical_source_ref": {
+        "ref_kind": "repo_path",
+        "ref": "agent/professional_skills/oma-work-order-author/SKILL.md",
+        "role": "professional_skill_source"
+      },
+      "canonical_paths": [
+        "agent/professional_skills/oma-work-order-author/SKILL.md"
+      ],
+      "improvement_tokens": [
+        "work order authoring",
+        "work-order-author",
+        "developer patch work order",
+        "owner closeout readback"
+      ],
+      "failure_token_registry_ref": "failure-token-registry:opl-meta-agent/work-order-author",
+      "verification_refs": [
+        "git diff --check",
+        "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
+        "scripts/verify.sh"
+      ],
+      "forbidden_surfaces": [
+        "target domain truth",
+        "target memory body",
+        "target artifact body",
+        "target owner receipt body",
+        "target typed blocker body",
+        "quality/export verdict",
+        "promotion gate state"
+      ],
+      "runtime_projection_refs": [
+        {
+          "ref_kind": "contract_ref",
+          "ref": "contracts/stage_control_plane.json#/stages",
+          "role": "stage_control_plane_skill_refs"
+        }
+      ],
+      "sync_policy": "domain_agent_builtin_refs_only",
+      "externalization_reason": "repo-owned OMA work-order authoring method; resolver metadata only, not target-domain truth or readiness evidence",
       "authority_boundary": {
         "can_write_domain_truth": false,
         "can_write_memory_body": false,
