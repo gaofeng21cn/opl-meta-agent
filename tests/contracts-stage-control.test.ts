@@ -1,7 +1,7 @@
+import assert from 'node:assert/strict';
 import './contracts-stage-control-cases/stage-launch-contract.ts';
 import test from 'node:test';
 import {
-  assert,
   asObjects,
   asStrings,
   readJson,

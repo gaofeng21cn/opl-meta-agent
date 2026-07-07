@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
-import { readJson, repoRoot } from './support/contracts.ts';
+import {
+  readJson,
+  repoRoot,
+} from './support/contracts.ts';
 
 const requiredStagePackSections = [
   'prompt_refs',

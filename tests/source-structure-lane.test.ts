@@ -1,12 +1,12 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import {
-  assert,
-  fs,
-  path,
   repoRoot,
   readJson,
   readText,
-  spawnSync,
   asObjects,
   asStrings,
 } from './support/contracts.ts';

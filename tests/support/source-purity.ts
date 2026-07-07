@@ -1,8 +1,8 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import {
-  assert,
   assertRepoRefExists,
-  fs,
-  path,
   repoRoot,
   readJson,
   readText,

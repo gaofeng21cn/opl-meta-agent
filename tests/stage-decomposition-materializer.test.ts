@@ -5,7 +5,10 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import type { JsonObject } from '../scripts/lib/domain-pack.ts';
-import { readJsonFile as readJson, repoRoot } from './support/contracts.ts';
+import {
+  readJsonFile as readJson,
+  repoRoot,
+} from './support/contracts.ts';
 import {
   buildFixtureStageDecompositionCloseout,
 } from '../scripts/lib/stage-decomposition-pack-draft-parts/builder.ts';

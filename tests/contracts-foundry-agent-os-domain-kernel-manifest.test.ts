@@ -1,6 +1,6 @@
+import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  assert,
   asStrings,
   readJson,
 } from './support/contracts.ts';

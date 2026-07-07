@@ -1,14 +1,16 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import {
+  repoRoot,
+  oplBin,
+  writeJsonFile as writeJson,
+} from './support/contracts.ts';
 import test from 'node:test';
 import {
-  assert,
-  fs,
-  os,
-  path,
-  spawnSync,
-  repoRoot,
   runImproveArgs,
-  oplBin,
-  writeJson,
   writeAiReviewerEvaluation,
   buildBlockedMedicalManuscriptSuite,
   writeMedicalTargetImprovementPolicy,

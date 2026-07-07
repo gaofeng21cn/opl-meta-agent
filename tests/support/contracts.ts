@@ -1,17 +1,10 @@
-import assertModule from 'node:assert/strict';
-import fsModule from 'node:fs';
-import osModule from 'node:os';
-import pathModule from 'node:path';
-import { spawnSync as spawnSyncFn } from 'node:child_process';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { JsonObject } from '../../scripts/lib/domain-pack.ts';
 
 export type { JsonObject };
-export const assert: typeof assertModule = assertModule;
-export const fs: typeof fsModule = fsModule;
-export const os: typeof osModule = osModule;
-export const path: typeof pathModule = pathModule;
-export const spawnSync: typeof spawnSyncFn = spawnSyncFn;
 
 export const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 export const oplBin = process.env.OPL_BIN

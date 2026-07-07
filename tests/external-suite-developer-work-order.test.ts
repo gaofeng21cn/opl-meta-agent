@@ -1,14 +1,17 @@
-import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import type { JsonObject } from './support/contracts.ts';
 import {
-  assert,
-  fs,
-  os,
-  path,
   oplBin,
   repoRoot,
-  spawnSync,
-  writeJson,
-  readJson,
+  writeJsonFile as writeJson,
+  readJsonFile as readJson,
+} from './support/contracts.ts';
+import test from 'node:test';
+import {
   runImproveArgs,
   assertTargetPatchLoopMachineRefs,
   writeAiReviewerEvaluation,
@@ -16,7 +19,6 @@ import {
   buildReviewerRevisionFeedbackSuite,
   writeMedicalTargetImprovementPolicy,
 } from './support/external-suite-fixtures.ts';
-import type { JsonObject } from './support/external-suite-fixtures.ts';
 
 function executeWorkOrderExpectingValidationError(workOrder: JsonObject, outputRoot: string): string {
   const workOrderPath = path.join(outputRoot, `invalid-${String(workOrder.work_order_id)}.json`);

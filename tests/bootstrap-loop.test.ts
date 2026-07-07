@@ -4,7 +4,10 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
-import { readJsonFile as readJson, repoRoot } from './support/contracts.ts';
+import {
+  readJsonFile as readJson,
+  repoRoot,
+} from './support/contracts.ts';
 import {
   parseBuildAgentBaselineArgs,
   runBuildAgentBaseline,

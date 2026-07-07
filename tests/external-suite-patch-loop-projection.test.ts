@@ -1,14 +1,16 @@
+import assert from 'node:assert/strict';
+import path from 'node:path';
+import type { JsonObject } from './support/contracts.ts';
+import {
+  repoRoot,
+  readJsonFile as readJson,
+} from './support/contracts.ts';
 import test from 'node:test';
 import {
-  assert,
-  path,
-  repoRoot,
   targetPatchLoopMachineRefFields,
   targetPatchLoopProjectionRequiredFields,
   targetPatchLoopReviewerProjectionFields,
-  readJson,
 } from './support/external-suite-fixtures.ts';
-import type { JsonObject } from './support/external-suite-fixtures.ts';
 
 test('workbench and scaleout contracts expose target patch-loop machine and reviewer refs only', () => {
   const appProjection = readJson(path.join(repoRoot, 'contracts/app_workbench_projection.json'));

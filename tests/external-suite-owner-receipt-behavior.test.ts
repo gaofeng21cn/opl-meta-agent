@@ -1,19 +1,21 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import type { JsonObject } from './support/contracts.ts';
+import {
+  oplBin,
+  writeJsonFile as writeJson,
+  readJsonFile as readJson,
+} from './support/contracts.ts';
 import test from 'node:test';
 import {
-  assert,
-  fs,
-  os,
-  path,
-  oplBin,
-  writeJson,
-  readJson,
   runImproveArgs,
   assertTargetPatchLoopMachineRefs,
   writeOwnerReceiptAiReviewerEvaluation,
   buildPassedTargetAgentOwnerReceiptSuite,
   buildPassedGenericOwnerReceiptSuite,
 } from './support/external-suite-fixtures.ts';
-import type { JsonObject } from './support/external-suite-fixtures.ts';
 
 test('target-agent owner receipt Agent Lab suite becomes a no-patch result-consumer coordination record', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-target-owner-receipt-'));

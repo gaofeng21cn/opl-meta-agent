@@ -1,25 +1,12 @@
-import assertModule from 'node:assert/strict';
-import fsModule from 'node:fs';
-import osModule from 'node:os';
-import pathModule from 'node:path';
-import { spawnSync as spawnSyncFn } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
+import assert from 'node:assert/strict';
+import path from 'node:path';
 import {
   parseImproveFromAgentLabSuiteArgs,
   runImproveFromAgentLabSuite,
 } from '../../scripts/improve-from-agent-lab-suite.ts';
 import type { JsonObject } from '../../scripts/lib/domain-pack.ts';
+import { writeJsonFile } from './contracts.ts';
 
-export type { JsonObject };
-export const assert: typeof assertModule = assertModule;
-export const fs: typeof fsModule = fsModule;
-export const os: typeof osModule = osModule;
-export const path: typeof pathModule = pathModule;
-export const spawnSync: typeof spawnSyncFn = spawnSyncFn;
-
-export const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-export const oplBin = process.env.OPL_BIN
-  ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
 export const targetPatchLoopMachineRefFields = [
   'blocked_suite_result_ref',
   'developer_patch_work_order_ref',
@@ -48,16 +35,6 @@ export const targetPatchLoopProjectionRequiredFields = [
   ...targetPatchLoopMachineRefFields,
   ...targetPatchLoopReviewerProjectionFields,
 ];
-
-export function writeJson<T>(filePath: string, payload: T): T {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`);
-  return payload;
-}
-
-export function readJson(filePath: string): JsonObject {
-  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-}
 
 export function runImproveArgs(args: string[]): JsonObject {
   return runImproveFromAgentLabSuite(parseImproveFromAgentLabSuiteArgs(args));
@@ -90,7 +67,7 @@ export function assertTargetPatchLoopMachineRefs(refs: JsonObject, expected: {
 }
 
 export function writeAiReviewerEvaluation(filePath: string, overrides: JsonObject = {}): JsonObject {
-  return writeJson(filePath, {
+  const payload = {
     reviewer_kind: 'ai_reviewer',
     model_or_provider: 'gpt-5.5',
     run_ref: 'run:ai-reviewer/mas/002/high-quality-medical-manuscript',
@@ -125,7 +102,9 @@ export function writeAiReviewerEvaluation(filePath: string, overrides: JsonObjec
       created_by: 'test-fixture',
     },
     ...overrides,
-  });
+  };
+  writeJsonFile(filePath, payload);
+  return payload;
 }
 
 export function buildBlockedMedicalManuscriptSuite(suitePath: string): JsonObject {
@@ -415,12 +394,12 @@ export function writeMedicalTargetImprovementPolicy(targetAgentDir: string): voi
       ],
     },
   };
-  writeJson(path.join(targetAgentDir, 'contracts/production_acceptance/meta-agent-work-order-contract.json'), {
+  writeJsonFile(path.join(targetAgentDir, 'contracts/production_acceptance/meta-agent-work-order-contract.json'), {
     surface_kind: 'target_owned_explicit_improvement_policy',
     owner: 'MedAutoScience',
     meta_agent_work_order_contract: metaAgentWorkOrderContract,
   });
-  writeJson(path.join(targetAgentDir, 'contracts/agent_lab_handoff.json'), {
+  writeJsonFile(path.join(targetAgentDir, 'contracts/agent_lab_handoff.json'), {
     surface_kind: 'domain_agent_lab_production_evidence_handoff',
     domain_id: 'med-autoscience',
     owner: 'MedAutoScience',
@@ -456,7 +435,7 @@ export function writeMedicalTargetImprovementPolicy(targetAgentDir: string): voi
 }
 
 export function writeEfficiencyTargetImprovementPolicy(targetAgentDir: string): void {
-  writeJson(path.join(targetAgentDir, 'contracts/production_acceptance/meta-agent-work-order-contract.json'), {
+  writeJsonFile(path.join(targetAgentDir, 'contracts/production_acceptance/meta-agent-work-order-contract.json'), {
     surface_kind: 'target_owned_explicit_improvement_policy',
     owner: 'target-agent',
     meta_agent_work_order_contract: {
@@ -514,7 +493,7 @@ export function writeEfficiencyTargetImprovementPolicy(targetAgentDir: string): 
       },
     },
   });
-  writeJson(path.join(targetAgentDir, 'contracts/agent_lab_handoff.json'), {
+  writeJsonFile(path.join(targetAgentDir, 'contracts/agent_lab_handoff.json'), {
     surface_kind: 'domain_agent_lab_efficiency_evidence_handoff',
     domain_id: 'target-agent',
     owner: 'target-agent',
@@ -534,7 +513,7 @@ export function writeEfficiencyTargetImprovementPolicy(targetAgentDir: string): 
 }
 
 export function writeOwnerReceiptAiReviewerEvaluation(filePath: string, overrides: JsonObject = {}): JsonObject {
-  return writeJson(filePath, {
+  const payload = {
     reviewer_kind: 'ai_reviewer',
     model_or_provider: 'gpt-5.5',
     run_ref: 'run:ai-reviewer/target-agent/owner-receipt-consumption',
@@ -569,7 +548,9 @@ export function writeOwnerReceiptAiReviewerEvaluation(filePath: string, override
       created_by: 'test-fixture',
     },
     ...overrides,
-  });
+  };
+  writeJsonFile(filePath, payload);
+  return payload;
 }
 
 function stageCompletionPolicy(domainId: string, taskFamily: string): JsonObject {

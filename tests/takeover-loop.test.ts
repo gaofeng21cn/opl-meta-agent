@@ -1,3 +1,7 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
 import {
   parseTakeoverAgentArgs,
@@ -5,10 +9,6 @@ import {
 } from '../scripts/takeover-agent.ts';
 import type { JsonObject } from '../scripts/lib/domain-pack.ts';
 import {
-  assert,
-  fs,
-  os,
-  path,
   readJsonFile as readJson,
   writeJsonFile as writeJson,
 } from './support/contracts.ts';

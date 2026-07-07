@@ -1,14 +1,14 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import type { JsonObject } from '../scripts/lib/domain-pack.ts';
 import {
-  assert,
-  fs,
   oplBin,
-  os,
-  path,
   readJsonFile as readJson,
   repoRoot,
-  spawnSync,
   writeJsonFile as writeJson,
 } from './support/contracts.ts';
 
