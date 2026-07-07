@@ -567,6 +567,8 @@
       "canonical_ref": "agent/professional_skills/oma-agent-design-evolution/SKILL.md",
       "state": "legacy_redirect",
       "capability_kind": "legacy_professional_skill_redirect",
+      "capability_preserved": true,
+      "default_codex_exposure": false,
       "authority_boundary": "no_independent_authority"
     },
     {
@@ -574,6 +576,8 @@
       "canonical_ref": "agent/professional_skills/oma-agent-design-evolution/SKILL.md",
       "state": "legacy_redirect",
       "capability_kind": "legacy_professional_skill_redirect",
+      "capability_preserved": true,
+      "default_codex_exposure": false,
       "authority_boundary": "no_independent_authority"
     },
     {
@@ -581,6 +585,8 @@
       "canonical_ref": "agent/professional_skills/oma-stage-pack-intent-architecture/SKILL.md",
       "state": "legacy_redirect",
       "capability_kind": "legacy_professional_skill_redirect",
+      "capability_preserved": true,
+      "default_codex_exposure": false,
       "authority_boundary": "no_independent_authority"
     },
     {
@@ -588,6 +594,8 @@
       "canonical_ref": "agent/professional_skills/oma-stage-pack-intent-architecture/SKILL.md",
       "state": "legacy_redirect",
       "capability_kind": "legacy_professional_skill_redirect",
+      "capability_preserved": true,
+      "default_codex_exposure": false,
       "authority_boundary": "no_independent_authority"
     },
     {
@@ -595,6 +603,8 @@
       "canonical_ref": "agent/professional_skills/oma-stage-pack-intent-architecture/SKILL.md",
       "state": "legacy_redirect",
       "capability_kind": "legacy_professional_skill_redirect",
+      "capability_preserved": true,
+      "default_codex_exposure": false,
       "authority_boundary": "no_independent_authority"
     },
     {
@@ -602,6 +612,8 @@
       "canonical_ref": "agent/professional_skills/oma-eval-takeover-review/SKILL.md",
       "state": "legacy_redirect",
       "capability_kind": "legacy_professional_skill_redirect",
+      "capability_preserved": true,
+      "default_codex_exposure": false,
       "authority_boundary": "no_independent_authority"
     },
     {
@@ -609,6 +621,8 @@
       "canonical_ref": "agent/professional_skills/oma-eval-takeover-review/SKILL.md",
       "state": "legacy_redirect",
       "capability_kind": "legacy_professional_skill_redirect",
+      "capability_preserved": true,
+      "default_codex_exposure": false,
       "authority_boundary": "no_independent_authority"
     },
     {
@@ -616,6 +630,8 @@
       "canonical_ref": "agent/professional_skills/oma-work-order-hygiene/SKILL.md",
       "state": "legacy_redirect",
       "capability_kind": "legacy_professional_skill_redirect",
+      "capability_preserved": true,
+      "default_codex_exposure": false,
       "authority_boundary": "no_independent_authority"
     },
     {
@@ -623,6 +639,8 @@
       "canonical_ref": "agent/professional_skills/oma-work-order-hygiene/SKILL.md",
       "state": "legacy_redirect",
       "capability_kind": "legacy_professional_skill_redirect",
+      "capability_preserved": true,
+      "default_codex_exposure": false,
       "authority_boundary": "no_independent_authority"
     }
   ]

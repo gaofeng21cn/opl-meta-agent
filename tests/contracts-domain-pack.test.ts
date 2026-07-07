@@ -205,6 +205,8 @@ test('domain skill declarations and professional skills stay separate', () => {
     assert.match(String(entry.legacy_ref), /^legacy-professional-skill:oma-.+$/);
     assert.equal(String(entry.legacy_ref).includes('/'), false);
     assert.ok(expectedActiveProfessionalSkillPaths.includes(String(entry.canonical_ref)));
+    assert.equal(entry.capability_preserved, true);
+    assert.equal(entry.default_codex_exposure, false);
     assert.equal(entry.authority_boundary, 'no_independent_authority');
   });
 
