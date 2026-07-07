@@ -386,7 +386,7 @@ function runExternalWorkOrder(
   }
   args.push('--opl-bin', options.oplBin ?? path.join(fixture.tempDir, 'opl-not-called'));
 
-  const env = {
+  const env: NodeJS.ProcessEnv = {
     ...process.env,
     NODE_NO_WARNINGS: '1',
   };
