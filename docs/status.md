@@ -131,7 +131,7 @@ alias，而是在 `contracts/source_structure_policy.json#compatibility_aliases`
 同时不再引用 alias，且 source-purity receipt 刷新后无 alias caller。
 
 同一轮 re-audit 确认 OPL Framework `/Users/gaofeng/workspace/one-person-lab`
-HEAD `7964fd79e8848d990e1d25a8e090a62b65a52f67` 已提供
+HEAD `8fa4731b94ca7badfcb70b3e2bed0a731061d90a` 已提供
 `opl work-order execute` public command、Codex worktree execution、dry-run、absorb、
 cleanup 和 target owner closeout readback primitive；这只证明 OPL executor primitive
 存在，不证明 OMA 可以删除 `scripts/execute-external-work-order.ts`。该脚本当前仍是
