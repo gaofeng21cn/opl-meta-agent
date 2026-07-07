@@ -1,13 +1,16 @@
-import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
-import { spawnSync } from 'node:child_process';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
 import type { JsonObject } from '../scripts/lib/domain-pack.ts';
+import {
+  assert,
+  fs,
+  os,
+  path,
+  readJsonFile as readJson,
+  repoRoot,
+  spawnSync,
+  writeJsonFile as writeJson,
+} from './support/contracts.ts';
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const targetPatchLoopMachineRefFields = [
   'blocked_suite_result_ref',
   'developer_patch_work_order_ref',
@@ -21,15 +24,6 @@ const targetPatchLoopMachineRefFields = [
   'worktree_cleanup_ref',
   'agent_lab_re_evaluation_ref',
 ];
-
-function writeJson(filePath: string, payload: unknown): void {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`);
-}
-
-function readJson(filePath: string): JsonObject {
-  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-}
 
 function assertStageFolderContractRefs(
   contract: JsonObject,

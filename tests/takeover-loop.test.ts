@@ -1,25 +1,17 @@
-import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
 import {
   parseTakeoverAgentArgs,
   runTakeoverAgent,
 } from '../scripts/takeover-agent.ts';
 import type { JsonObject } from '../scripts/lib/domain-pack.ts';
-
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-
-function readJson(filePath: string): JsonObject {
-  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-}
-
-function writeJson(filePath: string, payload: unknown): void {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`);
-}
+import {
+  assert,
+  fs,
+  os,
+  path,
+  readJsonFile as readJson,
+  writeJsonFile as writeJson,
+} from './support/contracts.ts';
 
 function assertStageFolderContractRefs(
   contract: JsonObject,

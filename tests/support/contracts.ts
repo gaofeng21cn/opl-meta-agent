@@ -1,5 +1,6 @@
 import assertModule from 'node:assert/strict';
 import fsModule from 'node:fs';
+import osModule from 'node:os';
 import pathModule from 'node:path';
 import { spawnSync as spawnSyncFn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -8,6 +9,7 @@ import type { JsonObject } from '../../scripts/lib/domain-pack.ts';
 export type { JsonObject };
 export const assert: typeof assertModule = assertModule;
 export const fs: typeof fsModule = fsModule;
+export const os: typeof osModule = osModule;
 export const path: typeof pathModule = pathModule;
 export const spawnSync: typeof spawnSyncFn = spawnSyncFn;
 
@@ -31,6 +33,15 @@ export function asStrings(value: unknown): string[] {
 
 export function readJson(relativePath: string): JsonObject {
   return JSON.parse(fs.readFileSync(path.join(repoRoot, relativePath), 'utf8'));
+}
+
+export function readJsonFile(filePath: string): JsonObject {
+  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+export function writeJsonFile(filePath: string, payload: unknown): void {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`);
 }
 
 export function readText(relativePath: string): string {

@@ -1,24 +1,16 @@
-import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
-import { spawnSync } from 'node:child_process';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
 import type { JsonObject } from '../scripts/lib/domain-pack.ts';
-
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const oplBin = process.env.OPL_BIN
-  ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
-
-function writeJson(filePath: string, payload: unknown): void {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`);
-}
-
-function readJson(filePath: string): JsonObject {
-  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-}
+import {
+  assert,
+  fs,
+  oplBin,
+  os,
+  path,
+  readJsonFile as readJson,
+  repoRoot,
+  spawnSync,
+  writeJsonFile as writeJson,
+} from './support/contracts.ts';
 
 function writeAiReviewerEvaluation(filePath: string): void {
   writeJson(filePath, {
