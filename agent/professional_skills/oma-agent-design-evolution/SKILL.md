@@ -14,8 +14,9 @@ This skill is not MAS ScholarSkills, not xskill runtime, and not target-domain a
 ## AI-First / Contract-Light Boundary
 
 - Use AI judgment here for root-cause classification, trajectory slice meaning, repair-boundary choice, adoption risk, and whether the next output should be a patch work order, mechanism proposal, route-back, or typed blocker.
+- Use AI judgment here to review target-agent evolution trajectories: separate one-off execution noise from reusable design learning, baseline drift from real capability drift, target-owner dissatisfaction from OMA pack defects, and App/read-model visibility gaps from source behavior gaps.
 - Treat `contracts/capability_map.json`, target capability maps, and work-order policies as lightweight locators and authority guards only; they bind allowed refs and forbidden surfaces, not the design diagnosis itself.
-- Do not encode evolution reasoning into token maps, scorecards, App projections, or generated descriptors. If the evidence cannot support a design decision, return a typed blocker.
+- Do not encode evolution reasoning into token maps, scorecards, App projections, generated descriptors, or work-order schemas. If the evidence cannot support a design decision, return a typed blocker.
 
 ## Inputs
 
@@ -27,9 +28,10 @@ This skill is not MAS ScholarSkills, not xskill runtime, and not target-domain a
 
 1. Classify the first repairable boundary: `stage-route`, `specialist-skill`, `tool-connector`, `quality-gate`, `read-model-currentness`, `authority-boundary`, `app-observability`, `trajectory-policy`, `redaction`, `team-sync`, or `owner-route`.
 2. Split trajectory evidence into single-intent slices before proposing reusable learning.
-3. Bind any patch target to target-owned `capability_map`, explicit work-order policy, or OMA-owned source policy. Do not infer patch targets from package, owner-receipt, typed-blocker, or domain keywords.
-4. Emit one outcome: source/design patch work order, skill/prompt/stage-policy proposal, mechanism proposal, route-back, or typed blocker shape.
-5. Require independent reviewer, Agent Lab gate, rollback/version ref, no-forbidden-write proof, and owner closeout readback before adoption.
+3. Interpret baseline/gate movement before patch selection: a new failure, stale read model, missing owner receipt, suite-pass overclaim, or changed target expectation can route to different owners even when the same contract field is involved.
+4. Bind any patch target to target-owned `capability_map`, explicit work-order policy, or OMA-owned source policy. Do not infer patch targets from package, owner-receipt, typed-blocker, or domain keywords.
+5. Emit one outcome: source/design patch work order, skill/prompt/stage-policy proposal, mechanism proposal, route-back, or typed blocker shape.
+6. Require independent reviewer, Agent Lab gate, rollback/version ref, no-forbidden-write proof, and owner closeout readback before adoption.
 
 ## Forbidden Authority
 
