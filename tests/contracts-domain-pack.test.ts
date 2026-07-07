@@ -47,7 +47,8 @@ test('domain pack files and stage prompt refs resolve to usable repo files', () 
   assert.ok(generatedSurfaceHandoff.required_domain_handoff.includes('stage_prompt_refs_resolve_to_domain_pack_files'));
 
   const actualDomainPackPaths = listMarkdownFiles('agent')
-    .filter((relativePath) => !relativePath.endsWith('/README.md'));
+    .filter((relativePath) => !relativePath.endsWith('/README.md'))
+    .filter((relativePath) => !relativePath.endsWith('/TOMBSTONE.md'));
   assert.deepEqual(packCompilerInput.required_domain_pack_paths, actualDomainPackPaths);
   assert.equal(packCompilerInput.required_domain_pack_paths.some((relativePath) => (
     relativePath.endsWith('/README.md')
@@ -115,17 +116,8 @@ test('domain skill declarations and professional skills stay separate', () => {
   ];
   const expectedProfessionalSkillPaths = [
     'agent/professional_skills/oma-agent-design-evolution/SKILL.md',
-    'agent/professional_skills/oma-agent-evolution/SKILL.md',
-    'agent/professional_skills/oma-agent-lab-suite-designer/SKILL.md',
     'agent/professional_skills/oma-eval-takeover-review/SKILL.md',
-    'agent/professional_skills/oma-external-pattern-researcher/SKILL.md',
-    'agent/professional_skills/oma-intent-architect/SKILL.md',
-    'agent/professional_skills/oma-script-to-pack-hygiene-reviewer/SKILL.md',
-    'agent/professional_skills/oma-stage-pack-architect/SKILL.md',
     'agent/professional_skills/oma-stage-pack-intent-architecture/SKILL.md',
-    'agent/professional_skills/oma-takeover-reviewer/SKILL.md',
-    'agent/professional_skills/oma-trajectory-learning-analyst/SKILL.md',
-    'agent/professional_skills/oma-work-order-author/SKILL.md',
     'agent/professional_skills/oma-work-order-hygiene/SKILL.md',
   ];
   const expectedActiveProfessionalSkillPaths = [
@@ -133,6 +125,17 @@ test('domain skill declarations and professional skills stay separate', () => {
     'agent/professional_skills/oma-eval-takeover-review/SKILL.md',
     'agent/professional_skills/oma-stage-pack-intent-architecture/SKILL.md',
     'agent/professional_skills/oma-work-order-hygiene/SKILL.md',
+  ];
+  const expectedLegacyTombstonePaths = [
+    'agent/professional_skills/oma-agent-evolution/TOMBSTONE.md',
+    'agent/professional_skills/oma-agent-lab-suite-designer/TOMBSTONE.md',
+    'agent/professional_skills/oma-external-pattern-researcher/TOMBSTONE.md',
+    'agent/professional_skills/oma-intent-architect/TOMBSTONE.md',
+    'agent/professional_skills/oma-script-to-pack-hygiene-reviewer/TOMBSTONE.md',
+    'agent/professional_skills/oma-stage-pack-architect/TOMBSTONE.md',
+    'agent/professional_skills/oma-takeover-reviewer/TOMBSTONE.md',
+    'agent/professional_skills/oma-trajectory-learning-analyst/TOMBSTONE.md',
+    'agent/professional_skills/oma-work-order-author/TOMBSTONE.md',
   ];
 
   assert.deepEqual(
@@ -146,6 +149,10 @@ test('domain skill declarations and professional skills stay separate', () => {
   assert.deepEqual(
     requiredPackPaths.filter((relativePath) => relativePath.startsWith('agent/professional_skills/')),
     expectedProfessionalSkillPaths,
+  );
+  assert.equal(
+    requiredPackPaths.some((relativePath) => /agent\/professional_skills\/oma-.+\/TOMBSTONE\.md$/.test(relativePath)),
+    false,
   );
   assert.equal(
     requiredPackPaths.some((relativePath) => /^agent\/skills\/oma-.+\.md$/.test(relativePath)),
@@ -186,9 +193,7 @@ test('domain skill declarations and professional skills stay separate', () => {
   const legacyRedirects = asObjects(capabilityMap.legacy_professional_skill_redirects);
   assert.deepEqual(
     legacyRedirects.map((entry) => entry.legacy_ref).sort(),
-    expectedProfessionalSkillPaths
-      .filter((relativePath) => !expectedActiveProfessionalSkillPaths.includes(relativePath))
-      .sort(),
+    expectedLegacyTombstonePaths,
   );
   legacyRedirects.forEach((entry) => {
     assert.equal(entry.state, 'legacy_redirect');
