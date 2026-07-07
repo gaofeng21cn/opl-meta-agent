@@ -77,7 +77,7 @@
       "runtime/authority_functions/meta-agent-authority-functions.parts/functions.json",
       "runtime/authority_functions/meta-agent-authority-functions.parts/forbidden_roles.json"
     ],
-    "value": "sha256:dad043798a140ad36daed4a83fe2859303c81c555eaf49d4b668bed459bc2b07"
+    "value": "sha256:8d25d2e6bd5bcc01db26899ac4a85871c11db82b15ea2c4b49897f73eb246357"
   },
   "generated_consumer_surface": {
     "ref": "runtime/authority_functions/meta-agent-authority-functions.json",

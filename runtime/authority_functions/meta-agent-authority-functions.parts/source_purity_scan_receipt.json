@@ -122,7 +122,6 @@
         "script_ref": "scripts/lib/agent-evidence-materializer.ts",
         "active_caller_refs": [
           "package.json#scripts.agent:evidence",
-          "scripts/lib/agent-evidence-contracts.ts#import",
           "scripts/lib/agent-evidence-typed-blocker.ts#import",
           "tests/agent-evidence-materializer.test.ts#test_ref",
           "tests/contracts-generated-surfaces.test.ts#test_ref"
@@ -333,6 +332,7 @@
       {
         "script_ref": "scripts/lib/work-order-refs.ts",
         "active_caller_refs": [
+          "scripts/lib/agent-evidence-contracts.ts#import",
           "scripts/lib/agent-evidence-materializer.ts#import",
           "scripts/lib/agent-evidence-typed-blocker.ts#import",
           "scripts/lib/external-suite-materializer.ts#import",
