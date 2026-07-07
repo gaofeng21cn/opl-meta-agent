@@ -152,6 +152,13 @@ primitive 能接管 typed packet validation、pack draft materialization、artif
 Stage-Native refs template、work-order refs/progress/no-forbidden-write validation，并且本仓
 无 active import/test/package caller、source-purity receipt 刷新、tombstone/provenance 完成。
 
+2026-07-07 source-purity / fixture 收薄补充：`tests/source-purity/script-morphology.test-case.ts`
+当前主要锁 `script_morphology_policy`、`source_purity_scan_receipt`、caller graph、
+false-ready 和 retirement gate 字段，未发现不改 machine contract 就能安全删除的 matrix
+切片；本轮只在 `tests/support/external-suite-fixtures.ts` 收掉重复“写 JSON 后返回同一
+payload”的 fixture 样板。item `5/6/7` 的删除状态仍按上面的 blocked parity re-audit
+执行，不因 focused tests 或 readback 通过而升级为 physical delete authority。
+
 `scripts/sync-authority-functions.ts` 与 `scripts/sync-stage-control-plane.ts` 继续作为两条
 generated aggregate 维护入口保留；二者共享的文件 IO、stable JSON、digest 和 CLI mode
 dispatch 已收薄到 `scripts/lib/sync-json-bundle.ts`。refs、leaf index、source digest input

@@ -49,9 +49,10 @@ export const targetPatchLoopProjectionRequiredFields = [
   ...targetPatchLoopReviewerProjectionFields,
 ];
 
-export function writeJson(filePath: string, payload: unknown): void {
+export function writeJson<T>(filePath: string, payload: T): T {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`);
+  return payload;
 }
 
 export function readJson(filePath: string): JsonObject {
@@ -89,7 +90,7 @@ export function assertTargetPatchLoopMachineRefs(refs: JsonObject, expected: {
 }
 
 export function writeAiReviewerEvaluation(filePath: string, overrides: JsonObject = {}): JsonObject {
-  const evaluation = {
+  return writeJson(filePath, {
     reviewer_kind: 'ai_reviewer',
     model_or_provider: 'gpt-5.5',
     run_ref: 'run:ai-reviewer/mas/002/high-quality-medical-manuscript',
@@ -124,10 +125,7 @@ export function writeAiReviewerEvaluation(filePath: string, overrides: JsonObjec
       created_by: 'test-fixture',
     },
     ...overrides,
-  };
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, `${JSON.stringify(evaluation, null, 2)}\n`);
-  return evaluation;
+  });
 }
 
 export function buildBlockedMedicalManuscriptSuite(suitePath: string): JsonObject {
@@ -536,7 +534,7 @@ export function writeEfficiencyTargetImprovementPolicy(targetAgentDir: string): 
 }
 
 export function writeOwnerReceiptAiReviewerEvaluation(filePath: string, overrides: JsonObject = {}): JsonObject {
-  const evaluation = {
+  return writeJson(filePath, {
     reviewer_kind: 'ai_reviewer',
     model_or_provider: 'gpt-5.5',
     run_ref: 'run:ai-reviewer/target-agent/owner-receipt-consumption',
@@ -571,10 +569,7 @@ export function writeOwnerReceiptAiReviewerEvaluation(filePath: string, override
       created_by: 'test-fixture',
     },
     ...overrides,
-  };
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, `${JSON.stringify(evaluation, null, 2)}\n`);
-  return evaluation;
+  });
 }
 
 function stageCompletionPolicy(domainId: string, taskFamily: string): JsonObject {
