@@ -53,17 +53,12 @@ Target agent handoff 必须保留：
 
 默认先用本 primary skill 收敛任务和边界；只有 stage 内需要专门判断时再调用 repo-local professional skills：
 
-- `agent/professional_skills/oma-intent-architect/SKILL.md`：自然语言 intent、acceptance criteria 和 owner boundary。
-- `agent/professional_skills/oma-external-pattern-researcher/SKILL.md`：外部 agent / workflow / product 模式调研与安全吸收。
-- `agent/professional_skills/oma-stage-pack-architect/SKILL.md`：stage pack、action catalog、artifact morphology 和 no-forbidden-write policy。
-- `agent/professional_skills/oma-agent-lab-suite-designer/SKILL.md`：Agent Lab baseline、takeover 和 external suite 设计。
-- `agent/professional_skills/oma-takeover-reviewer/SKILL.md`：已有 target agent takeover 评审。
-- `agent/professional_skills/oma-work-order-author/SKILL.md`：refs-only developer patch work order 或 typed blocker。
-- `agent/professional_skills/oma-agent-evolution/SKILL.md`：Agent Lab / FeedbackOps / work-order / App projection failure diagnosis and owner-gated repair route。
-- `agent/professional_skills/oma-trajectory-learning-analyst/SKILL.md`：trajectory evidence atomization and proposal routing。
-- `agent/professional_skills/oma-script-to-pack-hygiene-reviewer/SKILL.md`：script-to-pack hygiene review and route-back recommendation。
+- `agent/professional_skills/oma-stage-pack-intent-architecture/SKILL.md`：intent、external pattern research、stage pack、action catalog、artifact morphology 和 no-forbidden-write policy。
+- `agent/professional_skills/oma-eval-takeover-review/SKILL.md`：Agent Lab baseline / external suite design、existing target-agent takeover review 和 evaluation boundary。
+- `agent/professional_skills/oma-work-order-hygiene/SKILL.md`：refs-only developer patch work order、typed blocker shape、script-to-pack/source-purity hygiene 和 route-back recommendation。
+- `agent/professional_skills/oma-agent-design-evolution/SKILL.md`：Agent Lab / FeedbackOps / work-order / App projection / trajectory evidence diagnosis、mechanism learning 和 owner-gated repair route。
 
-这些 professional skills 不是默认全局 Codex entry；它们由 OMA stage prompt 或本 primary skill 按需路由。
+这些 active workflow-level professional skills 不是默认全局 Codex entry；旧 9 个细粒度入口仅作 redirect/tombstone，由 OMA stage prompt 或本 primary skill 按需路由到 canonical workflow skill。
 
 ## Completion Rules
 

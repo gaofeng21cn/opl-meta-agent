@@ -1,0 +1,34 @@
+---
+name: oma-work-order-hygiene
+description: Use when OMA must author bounded developer work orders or review script-to-pack/source-purity hygiene without authorizing physical deletion or target-domain writes.
+---
+
+# OMA Work Order Hygiene
+
+## Purpose
+
+Convert evidence into bounded refs-only developer patch work orders, typed blocker shapes, script-retention recommendations, OPL absorption candidates, deletion readiness, tombstone/provenance, or route-back. This skill authors and reviews method content only; it does not execute work orders or authorize cleanup actions.
+
+## Inputs
+
+- Agent Lab suite result refs, reviewer evaluation refs, owner feedback refs, production evidence refs, script-to-pack readback, source-purity tests, script morphology policy, and private migration inventory refs.
+- Target editable surface policy, no-forbidden-write proof, verification refs, rollback/version refs, owner route refs, active caller evidence, and tombstone/provenance refs.
+
+## Workflow
+
+1. Require direct evidence, independent reviewer provenance, source refs, critique, suggestions, and verdict before authoring executable work.
+2. Bind each patch target to a failure, owner feedback item, morphology gap, or verified mechanism gap.
+3. Include allowed and forbidden write sets, expected verification, rollback/version refs, owner route, no-forbidden-write proof, and target runtime/read-model consumption checks.
+4. Classify scripts or helpers as `retain`, `absorb`, `delete`, `tombstone`, `route-back`, or `work-order`.
+5. Require real non-self active callers, repo-local source refs, no-forbidden-write evidence, OPL primitive parity or explicit fixture/proof refs, no-active-caller evidence, and tombstone/provenance refs before recommending deletion readiness.
+6. Prefer keep, route, or bounded work order before adding wrappers.
+
+## Forbidden Authority
+
+- Do not execute work-order lifecycle, target worktree lifecycle, absorb, cleanup, owner closeout hook or physical deletion.
+- Do not claim script retirement, owner receipt, typed blocker instance, OPL primitive parity, App/generated readiness, target/domain/production readiness, default promotion or target owner acceptance.
+- Do not create MAS/MAG/RCA-specific command families.
+
+## Legacy Redirects
+
+The old `oma-work-order-author` and `oma-script-to-pack-hygiene-reviewer` entries redirect here.

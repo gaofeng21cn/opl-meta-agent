@@ -114,15 +114,25 @@ test('domain skill declarations and professional skills stay separate', () => {
     'agent/skills/trajectory-learning-intake.md',
   ];
   const expectedProfessionalSkillPaths = [
+    'agent/professional_skills/oma-agent-design-evolution/SKILL.md',
     'agent/professional_skills/oma-agent-evolution/SKILL.md',
     'agent/professional_skills/oma-agent-lab-suite-designer/SKILL.md',
+    'agent/professional_skills/oma-eval-takeover-review/SKILL.md',
     'agent/professional_skills/oma-external-pattern-researcher/SKILL.md',
     'agent/professional_skills/oma-intent-architect/SKILL.md',
     'agent/professional_skills/oma-script-to-pack-hygiene-reviewer/SKILL.md',
     'agent/professional_skills/oma-stage-pack-architect/SKILL.md',
+    'agent/professional_skills/oma-stage-pack-intent-architecture/SKILL.md',
     'agent/professional_skills/oma-takeover-reviewer/SKILL.md',
     'agent/professional_skills/oma-trajectory-learning-analyst/SKILL.md',
     'agent/professional_skills/oma-work-order-author/SKILL.md',
+    'agent/professional_skills/oma-work-order-hygiene/SKILL.md',
+  ];
+  const expectedActiveProfessionalSkillPaths = [
+    'agent/professional_skills/oma-agent-design-evolution/SKILL.md',
+    'agent/professional_skills/oma-eval-takeover-review/SKILL.md',
+    'agent/professional_skills/oma-stage-pack-intent-architecture/SKILL.md',
+    'agent/professional_skills/oma-work-order-hygiene/SKILL.md',
   ];
 
   assert.deepEqual(
@@ -160,7 +170,7 @@ test('domain skill declarations and professional skills stay separate', () => {
     .filter((capability) => capability.surface_role === 'professional_skill');
   assert.deepEqual(
     professionalCapabilities.map((capability) => capability.physical_source_ref.ref).sort(),
-    expectedProfessionalSkillPaths,
+    expectedActiveProfessionalSkillPaths,
   );
   professionalCapabilities.forEach((capability) => {
     assert.equal(capability.capability_kind, 'professional_skill');
@@ -171,6 +181,19 @@ test('domain skill declarations and professional skills stay separate', () => {
     assert.ok(asStrings(capability.forbidden_surfaces).length > 0);
     assert.equal(typeof capability.failure_token_registry_ref, 'string');
     assert.equal(capability.codex_default_exposure, false);
+  });
+
+  const legacyRedirects = asObjects(capabilityMap.legacy_professional_skill_redirects);
+  assert.deepEqual(
+    legacyRedirects.map((entry) => entry.legacy_ref).sort(),
+    expectedProfessionalSkillPaths
+      .filter((relativePath) => !expectedActiveProfessionalSkillPaths.includes(relativePath))
+      .sort(),
+  );
+  legacyRedirects.forEach((entry) => {
+    assert.equal(entry.state, 'legacy_redirect');
+    assert.ok(expectedActiveProfessionalSkillPaths.includes(String(entry.canonical_ref)));
+    assert.equal(entry.authority_boundary, 'no_independent_authority');
   });
 
   assert.match(readText('agent/primary_skill/SKILL.md'), /New-Agent Delivery Gate/);
