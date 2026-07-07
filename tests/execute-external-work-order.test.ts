@@ -807,6 +807,56 @@ test('execute external work order accepts OPL g2 envelope dry-run ready admissio
   assert.equal(payload.opl_result_currentness.opl_result_envelope, 'g2_work_order_execution_receipt');
 });
 
+test('execute external work order accepts OPL g2 structural execution receipt closeout', () => {
+  const fixture = writeWorkOrderFixture('oma-execute-work-order-opl-g2-executed-test-');
+  const fakeBinDir = makeFakeBinDir(fixture.tempDir);
+  const oplLogPath = path.join(fixture.tempDir, 'fake-opl-argv.json');
+  const fakeOplPath = path.join(fakeBinDir, 'opl');
+  writeFakeOplResultBin(fakeOplPath, oplLogPath, {
+    version: 'g2',
+    work_order_execution: {
+      surface_id: 'opl_work_order_codex_execution',
+      status: 'executed_absorbed_and_cleaned',
+      receipt: {
+        surface_kind: 'opl_work_order_codex_execution_receipt',
+        version: 'opl.work-order-execution.v1',
+        status: 'executed_absorbed_and_cleaned',
+        work_order_id: 'oma_developer_patch_work_order_test',
+        target_owner_receipt_or_typed_blocker: {
+          status: 'typed_blocker_recorded',
+          blocker_ref:
+            'target-owner-receipt-or-typed-blocker:example-agent/oma_developer_patch_work_order_test',
+          can_write_owner_receipt: false,
+        },
+        absorption: {
+          absorbed: true,
+          target_branch: 'main',
+          absorbed_head: 'abc123',
+        },
+        cleanup: {
+          worktree_removed: true,
+          branch_removed: true,
+        },
+        agent_lab_re_evaluation: {
+          suite_result: {
+            status: 'blocked',
+          },
+        },
+      },
+    },
+  });
+
+  const result = runExternalWorkOrder(fixture, { fakeBinDir, oplBin: fakeOplPath, output: true });
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const payload = readJson(fixture.outputPath);
+  assert.equal(payload.opl_result_currentness.closeout_refs_verified, false);
+  assert.equal(payload.opl_result_currentness.structural_closeout_verified, true);
+  assert.equal(payload.opl_result_currentness.typed_blocker_refs_present, false);
+  assert.equal(payload.opl_result_currentness.dry_run_ready, false);
+  assert.equal(payload.opl_result_currentness.opl_result_envelope, 'g2_work_order_execution_receipt');
+});
+
 test('execute external work order accepts OPL typed blocker refs as closed delegation result', () => {
   const fixture = writeWorkOrderFixture('oma-execute-work-order-opl-blocker-test-');
   const fakeBinDir = makeFakeBinDir(fixture.tempDir);

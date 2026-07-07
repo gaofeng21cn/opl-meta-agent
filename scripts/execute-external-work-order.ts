@@ -161,6 +161,23 @@ function isDryRunReadyResult(oplResult: JsonObject): boolean {
     && plannedCloseout.target_owner_receipt_or_typed_blocker_ref.trim().length > 0;
 }
 
+function hasStructuralExecutionCloseout(oplResult: JsonObject): boolean {
+  const targetCloseout = jsonObject(oplResult.target_owner_receipt_or_typed_blocker);
+  const absorption = jsonObject(oplResult.absorption);
+  const cleanup = jsonObject(oplResult.cleanup);
+  const reEvaluation = jsonObject(oplResult.agent_lab_re_evaluation);
+  return oplResult.surface_kind === 'opl_work_order_codex_execution_receipt'
+    && oplResult.status === 'executed_absorbed_and_cleaned'
+    && typeof targetCloseout?.status === 'string'
+    && targetCloseout.status.trim().length > 0
+    && absorption?.absorbed === true
+    && typeof absorption.absorbed_head === 'string'
+    && absorption.absorbed_head.trim().length > 0
+    && cleanup?.worktree_removed === true
+    && cleanup.branch_removed === true
+    && Boolean(reEvaluation);
+}
+
 function assertOplResultHasCloseoutOrBlocker(oplResult: JsonObject): JsonObject {
   const receipt = executionReceipt(oplResult);
   const closeoutRefs = receipt.closeout_refs as JsonObject | undefined;
@@ -174,15 +191,17 @@ function assertOplResultHasCloseoutOrBlocker(oplResult: JsonObject): JsonObject 
     && requiredCloseoutFields.every((field) =>
       typeof closeoutRefs?.[field] === 'string' && String(closeoutRefs[field]).trim().length > 0
     );
+  const hasStructuralCloseout = hasStructuralExecutionCloseout(receipt);
   const hasBlockerRefs = hasTypedBlockerRefs(receipt);
   const dryRunReady = isDryRunReadyResult(receipt);
-  if (!hasCloseoutRefs && !hasBlockerRefs && !dryRunReady) {
+  if (!hasCloseoutRefs && !hasStructuralCloseout && !hasBlockerRefs && !dryRunReady) {
     throw new Error(
       'OPL work-order result must include target owner closeout, cleanup, absorption, Agent Lab re-evaluation refs, or typed blocker refs.',
     );
   }
   return {
     closeout_refs_verified: hasCloseoutRefs,
+    structural_closeout_verified: hasStructuralCloseout,
     typed_blocker_refs_present: hasBlockerRefs,
     dry_run_ready: dryRunReady,
     opl_result_envelope: receipt === oplResult ? 'direct' : 'g2_work_order_execution_receipt',
