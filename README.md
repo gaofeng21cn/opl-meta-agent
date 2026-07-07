@@ -112,6 +112,7 @@ The loop turns each run into reviewable improvement material:
 ## Current Position And Boundary
 
 - `opl-meta-agent` is the agent-building / improvement member of the OPL Foundry Agent series. It is for turning a professional workflow into a testable agent.
+- In the OPL family, OMA is the agent-building Foundry package: OMA keeps agent-building semantics, while OPL owns generic runtime, package carrier, generated interfaces, Agent Lab execution, registry/discovery, and promotion gates.
 - It organizes goals, boundaries, working steps, agent skeletons, test suites, and next-version improvement proposals.
 - It can generate a new agent baseline from scratch, and it can also take over testing and failure-evidence organization for an existing agent.
 - It emits candidates, test results, and improvement proposals only. It does not make the target domain's final judgment or directly rewrite that agent's domain content, memory body, or deliverables.

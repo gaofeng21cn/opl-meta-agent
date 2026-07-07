@@ -112,6 +112,7 @@ Machine boundary: 本 README 是人读仓库入口。机器真相继续归 `cont
 ## 当前定位与边界
 
 - `OPL Meta Agent` 是 OPL Foundry Agent 系列里的 agent-building / improvement 成员，面向“把一个专业工作流做成可测试 Agent”。
+- 在 OPL family 中，OMA 是智能体构建 Foundry package：OMA 保留 agent-building semantics，OPL 持有通用 runtime、package carrier、generated interfaces、Agent Lab execution、registry/discovery 和 promotion gates。
 - 它负责整理目标、边界、工作步骤、Agent 骨架、测试套件和下一版改进建议。
 - 它可以从零生成新 Agent 基线，也可以先接管已有 Agent 的测试和失败证据整理。
 - 它只提出候选、测试结果和改进建议，不替目标领域做最终判断，不直接改写目标 Agent 的领域内容、记忆正文或交付物。
