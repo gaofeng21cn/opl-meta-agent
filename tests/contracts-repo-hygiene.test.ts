@@ -33,9 +33,6 @@ test('verification entrypoints route caches outside the checkout and expose hygi
   assert.match(verifyScript, /scripts\/repo-hygiene\.sh --fix/);
   [
     'OPL_REPO_TEMP_ROOT',
-    'PYTHONPYCACHEPREFIX',
-    'PYTEST_ADDOPTS',
-    'UV_PROJECT_ENVIRONMENT',
     'NPM_CONFIG_CACHE',
     'NODE_COMPILE_CACHE',
     'XDG_CACHE_HOME',

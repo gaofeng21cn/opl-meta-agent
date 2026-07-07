@@ -53,7 +53,7 @@ function readStandardFoundryPolicies(): StandardFoundryPolicies {
   const consumers = Array.isArray(policy.active_policy_consumer_refs)
     ? policy.active_policy_consumer_refs
     : [];
-  if (!consumers.includes('scripts/lib/stage-decomposition-pack-draft-parts/shared.ts')) {
+  if (!consumers.includes('scripts/lib/stage-decomposition-pack-draft/shared.ts')) {
     throw new Error('Standard Foundry policies contract must name stage-decomposition shared as an active consumer.');
   }
   const requiredFields = stringList(policy, 'user_stage_log_required_fields');

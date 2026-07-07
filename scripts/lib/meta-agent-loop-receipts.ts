@@ -2,7 +2,7 @@ import type { JsonObject } from './domain-pack.ts';
 import type { AiReviewerEvaluation } from './meta-agent-loop-ai-reviewer.ts';
 import type { TargetAgent } from './meta-agent-loop-io.ts';
 import { stableId } from './meta-agent-loop-io.ts';
-import { STAGE_COMPLETION_POLICY } from './stage-decomposition-pack-draft-parts/shared.ts';
+import { STAGE_COMPLETION_POLICY } from './stage-decomposition-pack-draft/shared.ts';
 
 export type SuiteResult = {
   result_id: string;

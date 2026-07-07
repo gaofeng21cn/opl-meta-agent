@@ -16,13 +16,13 @@ import {
 } from './lib/domain-pack.ts';
 import {
   materializeStageDecompositionPackDraft,
-} from './lib/stage-decomposition-pack-draft-parts/materializer.ts';
+} from './lib/stage-decomposition-pack-draft/materializer.ts';
 import type {
   StageRunnerKind,
-} from './lib/stage-decomposition-pack-draft-parts/shared.ts';
+} from './lib/stage-decomposition-pack-draft/shared.ts';
 import {
   validateStageDecompositionCloseoutPacket,
-} from './lib/stage-decomposition-pack-draft-parts/validator.ts';
+} from './lib/stage-decomposition-pack-draft/validator.ts';
 import {
   type StageDecompositionAttemptReceipt,
   runStageDecompositionAttempt,

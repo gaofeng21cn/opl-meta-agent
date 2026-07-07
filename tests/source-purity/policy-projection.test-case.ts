@@ -164,7 +164,7 @@ test('standard Foundry policies are contract-owned and helper-projection free', 
   const retirementGate = asObjects(morphologyPolicy.script_to_pack_retirement_gates)
     .find((gate) => gate.gate_id === 'build_agent_baseline_and_stage_decomposition_materializers');
   const activeConsumer = asObjects(morphologyPolicy.script_classifications)
-    .find((entry) => entry.script_ref === 'scripts/lib/stage-decomposition-pack-draft-parts/shared.ts');
+    .find((entry) => entry.script_ref === 'scripts/lib/stage-decomposition-pack-draft/shared.ts');
   const retiredProjection = asObjects(morphologyPolicy.script_classifications)
     .find((entry) => entry.script_ref === 'scripts/lib/standard-foundry-policies.ts');
   const userStageLogRequiredFields = assertPolicyStringList(contract, 'user_stage_log_required_fields');
@@ -187,7 +187,7 @@ test('standard Foundry policies are contract-owned and helper-projection free', 
   assert.equal(contract.retired_script_projection_no_resurrection, true);
   assert.equal(Object.hasOwn(contract, 'retired_script_projection_ref'), false);
   assert.deepEqual(asStrings(contract.active_policy_consumer_refs), [
-    'scripts/lib/stage-decomposition-pack-draft-parts/shared.ts',
+    'scripts/lib/stage-decomposition-pack-draft/shared.ts',
   ]);
   assert.equal(contract.authority_boundary.can_write_target_domain_truth, false);
   assert.equal(contract.authority_boundary.can_read_target_domain_body, false);

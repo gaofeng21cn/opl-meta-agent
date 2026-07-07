@@ -6,6 +6,7 @@ import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import type { JsonObject } from '../scripts/lib/domain-pack.ts';
 import {
+  parseJsonText,
   readJsonFile as readJson,
   repoRoot,
   writeJsonFile as writeJson,
@@ -371,7 +372,7 @@ test('agent:evidence projects production efficiency evidence into work order ref
     );
 
     assert.equal(result.status, 0, result.stderr);
-    const payload = JSON.parse(result.stdout) as JsonObject;
+    const payload = parseJsonText(result.stdout);
     assert.equal(payload.status, 'proposal_recorded_requires_target_owner_gate');
     const workOrder = readJson(path.join(outputDir, 'developer-patch-work-order.json'));
     assert.equal(workOrder.source_morphology_proof_ref, workOrder.source_morphology_proof.ref);
@@ -444,7 +445,7 @@ test('agent:evidence efficiency production evidence without quality floor emits 
     );
 
     assert.equal(result.status, 0, result.stderr);
-    const payload = JSON.parse(result.stdout) as JsonObject;
+    const payload = parseJsonText(result.stdout);
     assert.equal(payload.status, 'blocked_efficiency_quality_floor_missing');
     assert.equal(fs.existsSync(path.join(outputDir, 'mechanism-patch-proposal.json')), false);
     const typedBlocker = readJson(path.join(outputDir, 'typed-blocker.json'));
@@ -489,7 +490,7 @@ test('agent:evidence generates domain Agent Lab suite and proposal artifacts fro
     );
 
     assert.equal(result.status, 0, result.stderr);
-    const payload = JSON.parse(result.stdout) as JsonObject;
+    const payload = parseJsonText(result.stdout);
     assert.equal(payload.surface_kind, 'opl_meta_agent_agent_evidence_materializer_result');
     assert.equal(payload.status, 'proposal_recorded_requires_target_owner_gate');
     assert.equal(payload.authority_boundary.can_write_target_domain_truth, false);
@@ -775,7 +776,7 @@ test('agent:evidence emits typed blocker and no delivery receipt when reviewer e
     );
 
     assert.equal(result.status, 0, result.stderr);
-    const payload = JSON.parse(result.stdout) as JsonObject;
+    const payload = parseJsonText(result.stdout);
     assert.equal(payload.status, 'blocked_missing_ai_reviewer_evaluation');
     assert.equal(fs.existsSync(path.join(outputDir, 'mechanism-patch-proposal.json')), false);
     assert.equal(fs.existsSync(path.join(outputDir, 'baseline-delivery-receipt.json')), false);

@@ -7,6 +7,7 @@ import test from 'node:test';
 import type { JsonObject } from '../scripts/lib/domain-pack.ts';
 import {
   oplBin,
+  parseJsonText,
   readJsonFile as readJson,
   repoRoot,
   writeJsonFile as writeJson,
@@ -239,7 +240,7 @@ test('external suite efficiency handoff context plus target policy becomes a dev
     );
 
     assert.equal(result.status, 0, result.stderr);
-    const payload = JSON.parse(result.stdout) as JsonObject;
+    const payload = parseJsonText(result.stdout);
     assert.equal(payload.status, 'blocked_with_developer_patch_work_order');
     const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
     assert.deepEqual(workOrder.efficiency_non_regression_refs.latency_baseline_refs, [

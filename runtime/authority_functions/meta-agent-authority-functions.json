@@ -437,7 +437,7 @@
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/artifact-morphology-validator.ts",
+        "script_ref": "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts",
         "classes": [
           "fixture_or_proof_helper",
           "developer_work_order_materializer"
@@ -456,7 +456,7 @@
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts",
+        "script_ref": "scripts/lib/stage-decomposition-pack-draft/builder.ts",
         "classes": [
           "fixture_or_proof_helper",
           "developer_work_order_materializer"
@@ -480,7 +480,7 @@
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts",
+        "script_ref": "scripts/lib/stage-decomposition-pack-draft/materializer.ts",
         "classes": [
           "fixture_or_proof_helper",
           "developer_work_order_materializer"
@@ -503,7 +503,7 @@
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts",
+        "script_ref": "scripts/lib/stage-decomposition-pack-draft/shared.ts",
         "classes": [
           "fixture_or_proof_helper"
         ],
@@ -529,7 +529,7 @@
         ]
       },
       {
-        "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/stage-native-contract-validator.ts",
+        "script_ref": "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts",
         "classes": [
           "fixture_or_proof_helper",
           "developer_work_order_materializer"
@@ -552,7 +552,7 @@
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts",
+        "script_ref": "scripts/lib/stage-decomposition-pack-draft/validator.ts",
         "classes": [
           "fixture_or_proof_helper",
           "developer_work_order_materializer"
@@ -896,12 +896,12 @@
         "tracked_script_refs": [
           "scripts/build-agent-baseline.ts",
           "scripts/lib/stage-decomposition-runner.ts",
-          "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts",
-          "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts",
-          "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts",
-          "scripts/lib/stage-decomposition-pack-draft-parts/artifact-morphology-validator.ts",
-          "scripts/lib/stage-decomposition-pack-draft-parts/stage-native-contract-validator.ts",
-          "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts",
+          "scripts/lib/stage-decomposition-pack-draft/builder.ts",
+          "scripts/lib/stage-decomposition-pack-draft/materializer.ts",
+          "scripts/lib/stage-decomposition-pack-draft/shared.ts",
+          "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts",
+          "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts",
+          "scripts/lib/stage-decomposition-pack-draft/validator.ts",
           "scripts/lib/stage-native-artifact-contract.ts",
           "scripts/lib/domain-pack.ts"
         ],
@@ -1365,12 +1365,12 @@
       "scripts/lib/meta-agent-loop-ai-reviewer.ts",
       "scripts/lib/meta-agent-loop-io.ts",
       "scripts/lib/meta-agent-loop-receipts.ts",
-      "scripts/lib/stage-decomposition-pack-draft-parts/artifact-morphology-validator.ts",
-      "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts",
-      "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts",
-      "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts",
-      "scripts/lib/stage-decomposition-pack-draft-parts/stage-native-contract-validator.ts",
-      "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts",
+      "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts",
+      "scripts/lib/stage-decomposition-pack-draft/builder.ts",
+      "scripts/lib/stage-decomposition-pack-draft/materializer.ts",
+      "scripts/lib/stage-decomposition-pack-draft/shared.ts",
+      "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts",
+      "scripts/lib/stage-decomposition-pack-draft/validator.ts",
       "scripts/lib/stage-decomposition-runner.ts",
       "scripts/lib/stage-native-artifact-contract.ts",
       "scripts/lib/sync-json-bundle.ts",
@@ -1478,12 +1478,12 @@
             "scripts/lib/meta-agent-loop-ai-reviewer.ts#import",
             "scripts/lib/meta-agent-loop-io.ts#import",
             "scripts/lib/meta-agent-loop-receipts.ts#import",
-            "scripts/lib/stage-decomposition-pack-draft-parts/artifact-morphology-validator.ts#import",
-            "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts#import",
-            "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts#import",
-            "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts#import",
-            "scripts/lib/stage-decomposition-pack-draft-parts/stage-native-contract-validator.ts#import",
-            "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts#import",
+            "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts#import",
+            "scripts/lib/stage-decomposition-pack-draft/builder.ts#import",
+            "scripts/lib/stage-decomposition-pack-draft/materializer.ts#import",
+            "scripts/lib/stage-decomposition-pack-draft/shared.ts#import",
+            "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts#import",
+            "scripts/lib/stage-decomposition-pack-draft/validator.ts#import",
             "scripts/lib/stage-decomposition-runner.ts#import",
             "scripts/lib/stage-native-artifact-contract.ts#import",
             "scripts/lib/target-improvement-policy.ts#import",
@@ -1543,12 +1543,12 @@
             "scripts/lib/external-suite-materializer.ts#import",
             "scripts/lib/meta-agent-loop-ai-reviewer.ts#import",
             "scripts/lib/meta-agent-loop-receipts.ts#import",
-            "scripts/lib/stage-decomposition-pack-draft-parts/artifact-morphology-validator.ts#import",
-            "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts#import",
-            "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts#import",
-            "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts#import",
-            "scripts/lib/stage-decomposition-pack-draft-parts/stage-native-contract-validator.ts#import",
-            "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts#import",
+            "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts#import",
+            "scripts/lib/stage-decomposition-pack-draft/builder.ts#import",
+            "scripts/lib/stage-decomposition-pack-draft/materializer.ts#import",
+            "scripts/lib/stage-decomposition-pack-draft/shared.ts#import",
+            "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts#import",
+            "scripts/lib/stage-decomposition-pack-draft/validator.ts#import",
             "scripts/lib/stage-decomposition-runner.ts#import",
             "scripts/lib/target-improvement-policy.ts#import",
             "scripts/takeover-agent.ts#import"
@@ -1564,13 +1564,13 @@
           ]
         },
         {
-          "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/artifact-morphology-validator.ts",
+          "script_ref": "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts",
           "active_caller_refs": [
-            "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts#import"
+            "scripts/lib/stage-decomposition-pack-draft/validator.ts#import"
           ]
         },
         {
-          "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts",
+          "script_ref": "scripts/lib/stage-decomposition-pack-draft/builder.ts",
           "active_caller_refs": [
             "tests/bootstrap-loop.test.ts#import",
             "tests/bootstrap-loop.test.ts#test_ref",
@@ -1579,7 +1579,7 @@
           ]
         },
         {
-          "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts",
+          "script_ref": "scripts/lib/stage-decomposition-pack-draft/materializer.ts",
           "active_caller_refs": [
             "scripts/build-agent-baseline.ts#import",
             "tests/stage-decomposition-materializer.test.ts#import",
@@ -1587,26 +1587,26 @@
           ]
         },
         {
-          "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts",
+          "script_ref": "scripts/lib/stage-decomposition-pack-draft/shared.ts",
           "active_caller_refs": [
             "scripts/build-agent-baseline.ts#import",
             "scripts/lib/meta-agent-loop-receipts.ts#import",
-            "scripts/lib/stage-decomposition-pack-draft-parts/artifact-morphology-validator.ts#import",
-            "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts#import",
-            "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts#import",
-            "scripts/lib/stage-decomposition-pack-draft-parts/stage-native-contract-validator.ts#import",
-            "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts#import",
+            "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts#import",
+            "scripts/lib/stage-decomposition-pack-draft/builder.ts#import",
+            "scripts/lib/stage-decomposition-pack-draft/materializer.ts#import",
+            "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts#import",
+            "scripts/lib/stage-decomposition-pack-draft/validator.ts#import",
             "scripts/lib/stage-decomposition-runner.ts#import"
           ]
         },
         {
-          "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/stage-native-contract-validator.ts",
+          "script_ref": "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts",
           "active_caller_refs": [
-            "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts#import"
+            "scripts/lib/stage-decomposition-pack-draft/validator.ts#import"
           ]
         },
         {
-          "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts",
+          "script_ref": "scripts/lib/stage-decomposition-pack-draft/validator.ts",
           "active_caller_refs": [
             "scripts/build-agent-baseline.ts#import",
             "tests/stage-decomposition-materializer.test.ts#import",
@@ -1623,7 +1623,7 @@
           "script_ref": "scripts/lib/stage-native-artifact-contract.ts",
           "active_caller_refs": [
             "scripts/lib/agent-evidence-materializer.ts#import",
-            "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts#import",
+            "scripts/lib/stage-decomposition-pack-draft/builder.ts#import",
             "scripts/lib/stage-decomposition-runner.ts#import",
             "scripts/takeover-agent.ts#import"
           ]

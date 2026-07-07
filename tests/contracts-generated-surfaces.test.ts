@@ -6,6 +6,7 @@ import {
   oplBin,
   asObjects,
   asStrings,
+  parseJsonText,
   readJson,
   assertRepoRefExists,
   assertNoForbiddenAuthority,
@@ -378,7 +379,7 @@ test('OPL generated interfaces expose CLI, MCP, Skill, and product-entry descrip
   });
 
   assert.equal(result.status, 0, result.stderr);
-  const payload = JSON.parse(result.stdout) as JsonObject;
+  const payload = parseJsonText(result.stdout);
   const bundle = payload.generated_agent_interfaces;
   assert.equal(bundle.surface_kind, 'opl_generated_agent_interface_bundle');
   assert.equal(bundle.owner, 'one-person-lab');
@@ -541,7 +542,7 @@ test('OPL default-caller deletion evidence is closed by domain-owned refs withou
   });
 
   assert.equal(result.status, 0, result.stderr);
-  const payload = JSON.parse(result.stdout) as JsonObject;
+  const payload = parseJsonText(result.stdout);
   const report = payload.agent_default_caller_readiness as JsonObject;
   const summary = report.summary as JsonObject;
   assert.equal(summary.generated_default_caller_surface_count, 8);

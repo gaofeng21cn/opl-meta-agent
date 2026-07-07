@@ -7,6 +7,7 @@ import {
   repoRoot,
   readJson,
   readText,
+  parseJsonText,
   asObjects,
   asStrings,
 } from './support/contracts.ts';
@@ -169,7 +170,7 @@ test('source-structure publishes a JSON machine readback for script-to-pack guar
     encoding: 'utf8',
   });
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-  const payload = JSON.parse(result.stdout);
+  const payload = parseJsonText(result.stdout);
 
   assert.equal(payload.surface_kind, 'oma_source_structure_readback');
   assert.equal(payload.version, 'source-structure-readback.v1');
@@ -231,7 +232,7 @@ test('script-to-pack default readback is compact and does not become a second sc
     encoding: 'utf8',
   });
   assert.ok([0, 1].includes(result.status ?? -1), `${result.stdout}\n${result.stderr}`);
-  const payload = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
+  const payload = parseJsonText(fs.readFileSync(outputPath, 'utf8'));
 
   assert.equal(payload.surface_kind, 'oma_script_to_pack_retirement_cleanup_compact_readback');
   assert.equal(payload.version, 'script-to-pack-retirement-cleanup-compact-readback.v1');
@@ -291,7 +292,7 @@ test('script-to-pack full readback materializes cleanup candidates without autho
     encoding: 'utf8',
   });
   assert.ok([0, 1].includes(result.status ?? -1), `${result.stdout}\n${result.stderr}`);
-  const payload = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
+  const payload = parseJsonText(fs.readFileSync(outputPath, 'utf8'));
 
   assert.equal(payload.surface_kind, 'oma_script_to_pack_retirement_cleanup_readback');
   assert.equal(payload.version, 'script-to-pack-retirement-cleanup-readback.v1');

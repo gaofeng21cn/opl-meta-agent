@@ -8,7 +8,7 @@
   "retired_script_projection_tombstone_ref": "scripts/lib/standard-foundry-policies.ts",
   "retired_script_projection_no_resurrection": true,
   "active_policy_consumer_refs": [
-    "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts"
+    "scripts/lib/stage-decomposition-pack-draft/shared.ts"
   ],
   "authority_boundary": {
     "can_write_target_domain_truth": false,

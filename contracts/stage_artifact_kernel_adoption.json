@@ -91,10 +91,10 @@
       "contracts/stage_control_plane.json",
       "contracts/foundry_agent_series.json",
       "scripts/lib/stage-native-artifact-contract.ts",
-      "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts",
-      "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts",
-      "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts",
-      "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts"
+      "scripts/lib/stage-decomposition-pack-draft/builder.ts",
+      "scripts/lib/stage-decomposition-pack-draft/materializer.ts",
+      "scripts/lib/stage-decomposition-pack-draft/shared.ts",
+      "scripts/lib/stage-decomposition-pack-draft/validator.ts"
     ],
     "domain_output_roles_are_interface": true,
     "file_name_is_not_interface": true,

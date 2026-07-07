@@ -11,13 +11,13 @@ import {
 } from './support/contracts.ts';
 import {
   buildFixtureStageDecompositionCloseout,
-} from '../scripts/lib/stage-decomposition-pack-draft-parts/builder.ts';
+} from '../scripts/lib/stage-decomposition-pack-draft/builder.ts';
 import {
   materializeStageDecompositionPackDraft,
-} from '../scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts';
+} from '../scripts/lib/stage-decomposition-pack-draft/materializer.ts';
 import {
   validateStageDecompositionCloseoutPacket,
-} from '../scripts/lib/stage-decomposition-pack-draft-parts/validator.ts';
+} from '../scripts/lib/stage-decomposition-pack-draft/validator.ts';
 
 const standardFoundryPolicies = readJson(path.join(repoRoot, 'contracts/standard_foundry_policies.json'));
 const stageNativeArtifactVocabulary = readJson(path.join(repoRoot, 'contracts/stage_native_artifact_vocabulary.json'));

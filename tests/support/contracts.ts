@@ -25,11 +25,15 @@ export function asStrings(value: unknown): string[] {
 }
 
 export function readJson(relativePath: string): JsonObject {
-  return JSON.parse(fs.readFileSync(path.join(repoRoot, relativePath), 'utf8'));
+  return parseJsonText(fs.readFileSync(path.join(repoRoot, relativePath), 'utf8'));
 }
 
 export function readJsonFile(filePath: string): JsonObject {
-  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  return parseJsonText(fs.readFileSync(filePath, 'utf8'));
+}
+
+export function parseJsonText(text: string): JsonObject {
+  return JSON.parse(text);
 }
 
 export function writeJsonFile(filePath: string, payload: unknown): void {
@@ -42,7 +46,7 @@ export function readText(relativePath: string): string {
 }
 
 export function readOwnerJson(relativePath: string): JsonObject {
-  return JSON.parse(fs.readFileSync(path.join(oplOwnerRepoRoot, relativePath), 'utf8'));
+  return parseJsonText(fs.readFileSync(path.join(oplOwnerRepoRoot, relativePath), 'utf8'));
 }
 
 export function listMarkdownFiles(relativeDir: string): string[] {

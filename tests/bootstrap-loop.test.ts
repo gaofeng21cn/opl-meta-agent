@@ -15,7 +15,7 @@ import {
 import type { JsonObject } from '../scripts/lib/domain-pack.ts';
 import {
   buildFixtureStageDecompositionCloseout,
-} from '../scripts/lib/stage-decomposition-pack-draft-parts/builder.ts';
+} from '../scripts/lib/stage-decomposition-pack-draft/builder.ts';
 
 function runBaselineArgs(args: string[]): JsonObject {
   return runBuildAgentBaseline(parseBuildAgentBaselineArgs(args));

@@ -16,17 +16,7 @@ Active workflow-level professional skills:
 - `oma-eval-takeover-review/SKILL.md`
 - `oma-work-order-hygiene/SKILL.md`
 
-Legacy redirects:
-
-- `legacy-professional-skill:oma-agent-evolution` -> `oma-agent-design-evolution/SKILL.md`
-- `legacy-professional-skill:oma-trajectory-learning-analyst` -> `oma-agent-design-evolution/SKILL.md`
-- `legacy-professional-skill:oma-intent-architect` -> `oma-stage-pack-intent-architecture/SKILL.md`
-- `legacy-professional-skill:oma-external-pattern-researcher` -> `oma-stage-pack-intent-architecture/SKILL.md`
-- `legacy-professional-skill:oma-stage-pack-architect` -> `oma-stage-pack-intent-architecture/SKILL.md`
-- `legacy-professional-skill:oma-agent-lab-suite-designer` -> `oma-eval-takeover-review/SKILL.md`
-- `legacy-professional-skill:oma-takeover-reviewer` -> `oma-eval-takeover-review/SKILL.md`
-- `legacy-professional-skill:oma-work-order-author` -> `oma-work-order-hygiene/SKILL.md`
-- `legacy-professional-skill:oma-script-to-pack-hygiene-reviewer` -> `oma-work-order-hygiene/SKILL.md`
+Legacy redirects live in `contracts/capability_map.json#legacy_professional_skill_redirects`.
 
 Boundary:
 

@@ -220,7 +220,7 @@
     "forbidden_roles": []
   },
   {
-    "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/artifact-morphology-validator.ts",
+    "script_ref": "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts",
     "classes": [
       "fixture_or_proof_helper",
       "developer_work_order_materializer"
@@ -239,7 +239,7 @@
     "forbidden_roles": []
   },
   {
-    "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/builder.ts",
+    "script_ref": "scripts/lib/stage-decomposition-pack-draft/builder.ts",
     "classes": [
       "fixture_or_proof_helper",
       "developer_work_order_materializer"
@@ -263,7 +263,7 @@
     "forbidden_roles": []
   },
   {
-    "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/materializer.ts",
+    "script_ref": "scripts/lib/stage-decomposition-pack-draft/materializer.ts",
     "classes": [
       "fixture_or_proof_helper",
       "developer_work_order_materializer"
@@ -286,7 +286,7 @@
     "forbidden_roles": []
   },
   {
-    "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/shared.ts",
+    "script_ref": "scripts/lib/stage-decomposition-pack-draft/shared.ts",
     "classes": [
       "fixture_or_proof_helper"
     ],
@@ -312,7 +312,7 @@
     ]
   },
   {
-    "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/stage-native-contract-validator.ts",
+    "script_ref": "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts",
     "classes": [
       "fixture_or_proof_helper",
       "developer_work_order_materializer"
@@ -335,7 +335,7 @@
     "forbidden_roles": []
   },
   {
-    "script_ref": "scripts/lib/stage-decomposition-pack-draft-parts/validator.ts",
+    "script_ref": "scripts/lib/stage-decomposition-pack-draft/validator.ts",
     "classes": [
       "fixture_or_proof_helper",
       "developer_work_order_materializer"

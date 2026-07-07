@@ -4,8 +4,10 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import {
+  parseJsonText,
   repoRoot,
   oplBin,
+  readJsonFile as readJson,
   writeJsonFile as writeJson,
 } from './support/contracts.ts';
 import test from 'node:test';
@@ -280,9 +282,7 @@ test('external suite improvement uses capability map as patch-target source when
     assert.deepEqual(trace.capability_ids, ['medical-journal-prose-quality']);
     assert.equal(trace.capability_authority_boundary.can_write_target_owner_receipt_body, false);
 
-    const workOrder = JSON.parse(
-      fs.readFileSync(path.join(outputRoot, 'developer-patch-work-order.json'), 'utf8'),
-    );
+    const workOrder = readJson(path.join(outputRoot, 'developer-patch-work-order.json'));
     assert.equal(workOrder.proposed_change_refs.includes('legacy_handoff_patch_ref:must_not_be_used'), false);
     assert.equal(JSON.stringify(workOrder.patch_traceability_matrix).includes('legacy_handoff_patch_ref'), false);
     assert.deepEqual(workOrder.target_repo_file_hints, ['skills/medical-journal-prose-quality/SKILL.md']);
@@ -428,14 +428,12 @@ test('external blocked suite writes typed blocker when target-owned improvement 
     );
 
     assert.equal(result.status, 0);
-    const payload = JSON.parse(result.stdout);
+    const payload = parseJsonText(result.stdout);
     assert.equal(payload.status, 'blocked_target_improvement_policy_missing');
     assert.equal(fs.existsSync(path.join(outputRoot, 'developer-patch-work-order.json')), false);
     assert.equal(fs.existsSync(path.join(outputRoot, 'typed-blocker.json')), true);
 
-    const candidate = JSON.parse(
-      fs.readFileSync(path.join(outputRoot, 'target-capability-improvement-candidate.json'), 'utf8'),
-    );
+    const candidate = readJson(path.join(outputRoot, 'target-capability-improvement-candidate.json'));
     assert.deepEqual(candidate.proposed_change_refs, []);
     assert.deepEqual(candidate.patch_traceability_matrix, []);
     assert.equal(candidate.traceability_status, 'target_owned_patch_refs_missing');
@@ -444,7 +442,7 @@ test('external blocked suite writes typed blocker when target-owned improvement 
       false,
     );
 
-    const blocker = JSON.parse(fs.readFileSync(path.join(outputRoot, 'typed-blocker.json'), 'utf8'));
+    const blocker = readJson(path.join(outputRoot, 'typed-blocker.json'));
     assert.equal(blocker.surface_kind, 'opl_meta_agent_target_improvement_policy_typed_blocker');
     assert.equal(blocker.status, 'blocked_target_improvement_policy_missing');
     assert.equal(blocker.blocked_reason, 'target_owned_change_refs_required');

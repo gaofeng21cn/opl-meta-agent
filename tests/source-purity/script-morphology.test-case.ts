@@ -757,7 +757,7 @@ test('script morphology stays limited to authority refs, materializers, helpers,
         'retired-tail:opl-meta-agent/target-improvement-policy/generic-external-agent-patch-ref-fallback',
       ]);
     }
-    if (entry.script_ref === 'scripts/lib/stage-decomposition-pack-draft-parts/shared.ts') {
+    if (entry.script_ref === 'scripts/lib/stage-decomposition-pack-draft/shared.ts') {
       assert.deepEqual(asStrings(entry.contract_refs), [
         STANDARD_FOUNDRY_POLICIES_CONTRACT_REF,
       ]);

@@ -81,7 +81,7 @@ MAS `reviewer_revision` feedback self-evolution trigger 的当前可读状态是
 | New-agent delivery gate | `build-agent-baseline` 和 `takeover:test` 现在必须输出 `new_agent_delivery_gate` readback；scaffold、contract validation、generated interface、conformance pass、baseline/takeover suite pass 或 takeover receipt 都只是输入 | `contracts/action_catalog.json#actions/build-agent-baseline/new_agent_delivery_gate`、`contracts/action_catalog.json#actions/takeover-target-agent-test/new_agent_delivery_gate`、`scripts/build-agent-baseline.ts#assertNewAgentDeliveryGate`、`scripts/takeover-agent.ts`、`tests/new-agent-delivery-gate.test.ts`、`tests/takeover-loop.test.ts`、`tests/contracts-action-authority.test.ts` | 必须同时有 Agent Lab suite、independent reviewer、OMA self-evolution / no-patch consumption、StageRun refs-only boundary、target source morphology、owner route、generated surface consumption、private residue decision、accepted owner-answer shape 和 exactly-one delivery receipt / no-patch coordination / developer work order / typed blocker；缺任一项都 fail closed。OMA 不管理 target worktree lifecycle、不写 target owner receipt body、不声明 target/domain/production ready。 |
 | Developer work-order policy | 默认 forbidden surfaces、runtime/workspace verification refs 和 closeout evidence policy 已迁入 machine-readable contract | `contracts/developer_work_order_policy.json`、`scripts/lib/work-order-refs.ts`、source-purity tests | Active caller 通过 work-order refs owner helper 直接消费 contract；旧 standalone projection helper 已退役，不持有 policy truth、不运行 Agent Lab、不接管 OPL work-order primitive、target owner closeout、absorb、cleanup 或 promotion gate。 |
 | Target improvement change-ref policy | `improve:external-suite` 的 source patch target 定位消费目标 agent `contracts/capability_map.json`，并保留 target-owned production acceptance 的显式 contract fallback；Agent Lab handoff 只保留 suite entry、fixture/runtime context 和 external learning refs，不提供 patch target authority；generic owner-receipt / package / typed-blocker 关键词不再生成 source patch target；命不中时只返回 typed blocker 或 refs-only coordination result | `contracts/capability_map.json`、`contracts/developer_work_order_policy.json`、`scripts/lib/target-improvement-policy.ts`、`scripts/lib/external-suite-materializer.ts`、`runtime/authority_functions/meta-agent-authority-functions.json`、`tests/target-improvement-policy.test.ts`、`tests/external-suite-developer-work-order.test.ts`、source-purity tests | source-patch work order 的 canonical paths、verification 和 forbidden surfaces 必须来自 capability_map 或 target-owned production acceptance explicit policy；target-improvement helper 不持有 runner、promotion gate、target truth 或 generic patch-target fallback。 |
-| Standard Foundry policy | Stage-log、progress-delta、typed-blocker lineage、series-design defaults、stage pack defaults、domain-owned stage completion policy、shared policy release 和 forbidden generic owner roles 已迁入 machine-readable contract | `contracts/standard_foundry_policies.json`、`scripts/lib/stage-decomposition-pack-draft-parts/shared.ts`、source-purity tests、`tests/stage-decomposition-materializer.test.ts` | Stage-decomposition owner helper 直接消费 contract；每个 generated target stage 必须带 `stage_completion_policy` 和标准 closeout packet refs；旧 standalone projection helper 已退役，不持有 policy truth、不替代 OPL Framework / Agent Lab、不授权 target truth、quality/export、default promotion、stage content completion judgment 或 owner receipt body。 |
+| Standard Foundry policy | Stage-log、progress-delta、typed-blocker lineage、series-design defaults、stage pack defaults、domain-owned stage completion policy、shared policy release 和 forbidden generic owner roles 已迁入 machine-readable contract | `contracts/standard_foundry_policies.json`、`scripts/lib/stage-decomposition-pack-draft/shared.ts`、source-purity tests、`tests/stage-decomposition-materializer.test.ts` | Stage-decomposition owner helper 直接消费 contract；每个 generated target stage 必须带 `stage_completion_policy` 和标准 closeout packet refs；旧 standalone projection helper 已退役，不持有 policy truth、不替代 OPL Framework / Agent Lab、不授权 target truth、quality/export、default promotion、stage content completion judgment 或 owner receipt body。 |
 | Stage Native Artifact vocabulary | Stage folder files、stage/attempt/manifest/lineage required fields、physical kernel entries、conformance units、workbench projections、output roles 和 false-authority flags 已迁入 machine-readable contract | `contracts/stage_native_artifact_vocabulary.json`、`scripts/lib/stage-native-artifact-contract.ts`、source-purity tests、`tests/stage-decomposition-materializer.test.ts` | Stage-native helper 直接消费 contract 并只生成 refs-only templates；它仍是 retained materializer/helper，不是 OPL physical kernel / conformance / App workbench primitive parity，也不授权 runtime state、target truth、owner receipt body、promotion 或 target worktree lifecycle。 |
 | State Index Kernel adoption | OMA 声明消费 OPL-owned SQLite sidecar index，只提供可索引 refs | `contracts/stage_artifact_kernel_adoption.json`、`contracts/stage_control_plane.json`、`tests/contracts-stage-control.test.ts` | 只索引 candidate package / Agent Lab result / developer work-order / typed blocker / proposal refs；不能拥有 target runtime、queue、attempt ledger、promotion gate、worktree lifecycle、target truth 或 owner receipt body。 |
 | StageRun Kernel canary | OMA 声明 agent-building StageRun canary、controlled evidence fixture、operator summary、overclaim boundary 和旧 wrapper/status/workbench residue guard | `contracts/stage_run_kernel_profile.json`、`contracts/stage_run_canary_evidence.json`、`tests/contracts-stage-run-kernel.test.ts` | canary 只允许 intent / candidate / review / receipt-or-blocker refs；controlled fixture 的 `evidence_scope=controlled_fixture_not_live_domain_progress`，operator summary 不能升级 readiness，旧脚本、runtime wrapper、status shell、workbench wrapper 只能作为 migration input、diagnostic 或 provenance refs，不能恢复为 active workflow owner。 |
@@ -124,26 +124,26 @@ skill 物理 tombstone 文件合并为 `capability_map` / README redirect ledger
 `script-to-pack:readback` / `script-to-pack:readback:full` 仍运行在 strict
 source-structure gate 下；若 source-structure gate 失败，会以
 `failed_source_structure_gate` 暴露原因。这不改变 cleanup candidate 数量，也不授权
-remaining item `6/7` 物理删除。
+item `6/7` 物理删除；它们已完成 parity re-audit，当前结论是 retained。
 
 同一轮 re-audit 确认 OPL Framework `/Users/gaofeng/workspace/one-person-lab`
-HEAD `8fa4731b94ca7badfcb70b3e2bed0a731061d90a` 已提供
-`opl work-order execute` public command、Codex worktree execution、dry-run、absorb、
-cleanup 和 target owner closeout readback primitive；这只证明 OPL executor primitive
-存在，不证明 OMA 可以删除 `scripts/execute-external-work-order.ts`。该脚本当前仍是
-OMA-owned validation aperture：先校验 `opl_meta_agent_developer_patch_work_order.v1`、
-current OPL route/ledger binding、target progress accounting、no-forbidden-write 和
-target-owner closeout shape，再委托 OPL。退役条件缩小为：OPL 导出并测试等价 OMA
-developer-work-order validator，或 OPL generated action 直接消费同一 schema 且提供同等
-pre-executor fail-closed evidence；随后取得 no-active-caller、source-purity receipt refresh
-和 tombstone/provenance ref。
+提供 `opl work-order execute` public command、Codex worktree execution、dry-run、absorb、
+cleanup、target owner closeout readback primitive，以及 OMA target-agent guard
+missing-fields fail-closed 测试。这证明 OPL executor primitive 和部分 OMA guard 已存在，
+但不证明本仓可以删除 `scripts/execute-external-work-order.ts`。该脚本当前仍有 package
+script、action catalog 和 tests active caller，并继续作为 OMA-owned validation aperture
+先校验 `opl_meta_agent_developer_patch_work_order.v1`、current OPL route/ledger binding、
+target progress accounting、no-forbidden-write 和 target-owner closeout shape，再委托 OPL。
+退役条件缩小为：OPL generated action 直接消费同一 OMA schema 并替代本仓 action surface；
+随后取得 no-active-caller、source-purity receipt refresh 和 tombstone/provenance ref。
 
-Stage-decomposition pack draft parts 与 `scripts/lib/work-order-{refs,efficiency,builders,validation}.ts`
-也不能物理删除。OPL 同一 HEAD 已有 domain-pack compiler、standard scaffold、
+`scripts/lib/stage-decomposition-pack-draft/` 与
+`scripts/lib/work-order-{refs,efficiency,builders,validation}.ts` 也不能物理删除。
+OPL 同一侧已有 domain-pack compiler、standard scaffold、
 Stage Artifact runtime、OMA stage-decomposition admission 和 stage attempt closeout transport，
 但未提供 `opl_meta_agent_stage_decomposition_pack_draft.v1` builder/validator/materializer
-parity，也未提供 OMA work-order helper 的 full schema parity。当前 parts 仍只作为
-refs-only strict materializer / validator / helper 保留；退役停止条件是 OPL Pack/Stage
+parity，也未提供 OMA work-order helper 的 full schema parity。当前目录按 target pack draft
+自然边界保留为 refs-only strict materializer / validator / helper；退役停止条件是 OPL Pack/Stage
 primitive 能接管 typed packet validation、pack draft materialization、artifact morphology、
 Stage-Native refs template、work-order refs/progress/no-forbidden-write validation，并且本仓
 无 active import/test/package caller、source-purity receipt 刷新、tombstone/provenance 完成。
