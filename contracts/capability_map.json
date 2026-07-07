@@ -117,7 +117,18 @@
         "can_authorize_quality_or_export": false,
         "can_claim_domain_ready": false,
         "can_claim_production_ready": false
-      }
+      },
+      "exposure_layer": "repo_internal_professional_skill",
+      "codex_default_exposure": false,
+      "allowed_exposure_scopes": [
+        "domain_runtime_stage"
+      ],
+      "codex_visibility_policy": "not_registered_as_global_codex_skill",
+      "exposure_owner": "opl-meta-agent",
+      "canonical_target_paths": [
+        "agent/professional_skills/oma-agent-evolution/SKILL.md"
+      ],
+      "owner_closeout_boundary_ref": "contracts/capability_map.json#/authority_boundary"
     },
     {
       "capability_id": "opl-meta-agent.agent-lab-suite-designer.professional_skill",
@@ -171,7 +182,18 @@
         "can_authorize_quality_or_export": false,
         "can_claim_domain_ready": false,
         "can_claim_production_ready": false
-      }
+      },
+      "exposure_layer": "repo_internal_professional_skill",
+      "codex_default_exposure": false,
+      "allowed_exposure_scopes": [
+        "domain_runtime_stage"
+      ],
+      "codex_visibility_policy": "not_registered_as_global_codex_skill",
+      "exposure_owner": "opl-meta-agent",
+      "canonical_target_paths": [
+        "agent/professional_skills/oma-agent-lab-suite-designer/SKILL.md"
+      ],
+      "owner_closeout_boundary_ref": "contracts/capability_map.json#/authority_boundary"
     },
     {
       "capability_id": "opl-meta-agent.external-pattern-researcher.professional_skill",
@@ -225,7 +247,18 @@
         "can_authorize_quality_or_export": false,
         "can_claim_domain_ready": false,
         "can_claim_production_ready": false
-      }
+      },
+      "exposure_layer": "repo_internal_professional_skill",
+      "codex_default_exposure": false,
+      "allowed_exposure_scopes": [
+        "domain_runtime_stage"
+      ],
+      "codex_visibility_policy": "not_registered_as_global_codex_skill",
+      "exposure_owner": "opl-meta-agent",
+      "canonical_target_paths": [
+        "agent/professional_skills/oma-external-pattern-researcher/SKILL.md"
+      ],
+      "owner_closeout_boundary_ref": "contracts/capability_map.json#/authority_boundary"
     },
     {
       "capability_id": "opl-meta-agent.intent-architect.professional_skill",
@@ -279,7 +312,18 @@
         "can_authorize_quality_or_export": false,
         "can_claim_domain_ready": false,
         "can_claim_production_ready": false
-      }
+      },
+      "exposure_layer": "repo_internal_professional_skill",
+      "codex_default_exposure": false,
+      "allowed_exposure_scopes": [
+        "domain_runtime_stage"
+      ],
+      "codex_visibility_policy": "not_registered_as_global_codex_skill",
+      "exposure_owner": "opl-meta-agent",
+      "canonical_target_paths": [
+        "agent/professional_skills/oma-intent-architect/SKILL.md"
+      ],
+      "owner_closeout_boundary_ref": "contracts/capability_map.json#/authority_boundary"
     },
     {
       "capability_id": "opl-meta-agent.stage-pack-architect.professional_skill",
@@ -333,7 +377,18 @@
         "can_authorize_quality_or_export": false,
         "can_claim_domain_ready": false,
         "can_claim_production_ready": false
-      }
+      },
+      "exposure_layer": "repo_internal_professional_skill",
+      "codex_default_exposure": false,
+      "allowed_exposure_scopes": [
+        "domain_runtime_stage"
+      ],
+      "codex_visibility_policy": "not_registered_as_global_codex_skill",
+      "exposure_owner": "opl-meta-agent",
+      "canonical_target_paths": [
+        "agent/professional_skills/oma-stage-pack-architect/SKILL.md"
+      ],
+      "owner_closeout_boundary_ref": "contracts/capability_map.json#/authority_boundary"
     },
     {
       "capability_id": "opl-meta-agent.takeover-reviewer.professional_skill",
@@ -387,7 +442,18 @@
         "can_authorize_quality_or_export": false,
         "can_claim_domain_ready": false,
         "can_claim_production_ready": false
-      }
+      },
+      "exposure_layer": "repo_internal_professional_skill",
+      "codex_default_exposure": false,
+      "allowed_exposure_scopes": [
+        "domain_runtime_stage"
+      ],
+      "codex_visibility_policy": "not_registered_as_global_codex_skill",
+      "exposure_owner": "opl-meta-agent",
+      "canonical_target_paths": [
+        "agent/professional_skills/oma-takeover-reviewer/SKILL.md"
+      ],
+      "owner_closeout_boundary_ref": "contracts/capability_map.json#/authority_boundary"
     },
     {
       "capability_id": "opl-meta-agent.trajectory-learning-analyst.professional_skill",
@@ -441,7 +507,18 @@
         "can_authorize_quality_or_export": false,
         "can_claim_domain_ready": false,
         "can_claim_production_ready": false
-      }
+      },
+      "exposure_layer": "repo_internal_professional_skill",
+      "codex_default_exposure": false,
+      "allowed_exposure_scopes": [
+        "domain_runtime_stage"
+      ],
+      "codex_visibility_policy": "not_registered_as_global_codex_skill",
+      "exposure_owner": "opl-meta-agent",
+      "canonical_target_paths": [
+        "agent/professional_skills/oma-trajectory-learning-analyst/SKILL.md"
+      ],
+      "owner_closeout_boundary_ref": "contracts/capability_map.json#/authority_boundary"
     },
     {
       "capability_id": "opl-meta-agent.work-order-author.professional_skill",
@@ -495,7 +572,18 @@
         "can_authorize_quality_or_export": false,
         "can_claim_domain_ready": false,
         "can_claim_production_ready": false
-      }
+      },
+      "exposure_layer": "repo_internal_professional_skill",
+      "codex_default_exposure": false,
+      "allowed_exposure_scopes": [
+        "domain_runtime_stage"
+      ],
+      "codex_visibility_policy": "not_registered_as_global_codex_skill",
+      "exposure_owner": "opl-meta-agent",
+      "canonical_target_paths": [
+        "agent/professional_skills/oma-work-order-author/SKILL.md"
+      ],
+      "owner_closeout_boundary_ref": "contracts/capability_map.json#/authority_boundary"
     },
     {
       "capability_id": "opl-meta-agent.domain-affordances.tool_connector",
