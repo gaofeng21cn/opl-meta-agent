@@ -14,8 +14,15 @@ import {
   writeJson,
 } from './meta-agent-loop-io.ts';
 import {
+  type AgentContracts,
+  TARGET_AGENT_EDITABLE_SURFACES,
+  TARGET_AGENT_FORBIDDEN_WRITE_SURFACES,
+  type TargetAgentIdentity,
   loadAgentContracts,
   parseAgentEvidenceArgs,
+  productionEvidenceGate,
+  sourceContractRefs,
+  targetAgentIdentity,
 } from './agent-evidence-contracts.ts';
 import {
   buildTypedBlocker,
@@ -41,20 +48,14 @@ import {
   buildStageNativeArtifactAttemptRefs,
 } from './stage-native-artifact-contract.ts';
 import {
-  DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
-  firstString,
   forbiddenWriteSurfaces,
   noForbiddenWriteProofRefs,
-  ownerRouteRef,
   productionAcceptanceEvidenceRefs,
-  records,
-  refsFromEntries,
   refsFromRecord,
   requiredReturnShapes,
   stringList,
   stringValue,
   targetOwnerRoute,
-  taskRequiredReturnShapeRefs,
   uniqueRefs,
   verificationRefs,
 } from './work-order-refs.ts';
@@ -62,43 +63,7 @@ import {
   validateDeveloperPatchWorkOrder,
 } from './work-order-validation.ts';
 
-export type AgentContracts = {
-  productionAcceptance: JsonObject;
-  productionAcceptanceRef: string;
-  agentLabHandoff: JsonObject;
-  domainDescriptor: JsonObject;
-  generatedSurfaceHandoff: JsonObject;
-  ownerReceiptContract: JsonObject;
-};
-
-export type TargetAgentIdentity = {
-  domainId: string;
-  domainLabel: string;
-  owner: string;
-  generatedSurfaceOwner: string;
-  targetAgentRef: string;
-};
-
-const TARGET_AGENT_EDITABLE_SURFACES = [
-  'agent/prompts',
-  'agent/skills',
-  'agent/knowledge',
-  'agent/quality_gates',
-  'contracts/agent_lab_handoff.json',
-  'contracts/stage_control_plane.json',
-  'contracts/owner_receipt_contract.json',
-  'contracts/generated_surface_handoff.json',
-  'contracts/functional_privatization_audit.json',
-  'tests',
-  'docs/status.md',
-];
-
-export const TARGET_AGENT_FORBIDDEN_WRITE_SURFACES = [
-  ...DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
-  'target export verdict',
-  'target owner receipt body',
-  'default agent promotion without gate',
-];
+export type { AgentContracts, TargetAgentIdentity } from './agent-evidence-contracts.ts';
 
 function unique(values: string[]): string[] {
   return uniqueRefs(values);
@@ -164,88 +129,6 @@ function buildPrivateResidueDecision({
     target_truth_write_authorized: false,
     target_artifact_mutation_authorized: false,
     owner_receipt_or_typed_blocker_body_authorized: false,
-  };
-}
-
-function handoffTasks(agentLabHandoff: JsonObject): JsonObject[] {
-  return records(agentLabHandoff.external_suite_seed?.tasks);
-}
-
-export function targetAgentIdentity(contracts: AgentContracts, agentRepo: string): TargetAgentIdentity {
-  const domainId = firstString([
-    contracts.domainDescriptor.domain_id,
-    contracts.productionAcceptance.domain_id,
-    contracts.agentLabHandoff.domain_id,
-  ], path.basename(agentRepo));
-  const domainLabel = firstString([
-    contracts.domainDescriptor.domain_label,
-    contracts.productionAcceptance.domain_label,
-    contracts.agentLabHandoff.domain_label,
-  ], domainId);
-  const owner = firstString([
-    contracts.productionAcceptance.owner,
-    contracts.agentLabHandoff.owner,
-    contracts.domainDescriptor.owner,
-  ], domainId);
-  const generatedSurfaceOwner = firstString([
-    contracts.domainDescriptor.generated_surface_owner,
-    contracts.generatedSurfaceHandoff.generated_surface_owner,
-  ], 'one-person-lab');
-  return {
-    domainId,
-    domainLabel,
-    owner,
-    generatedSurfaceOwner,
-    targetAgentRef: `target-agent:${domainId}`,
-  };
-}
-
-export function sourceContractRefs(contracts: AgentContracts): string[] {
-  return [
-    contracts.productionAcceptanceRef,
-    'contracts/agent_lab_handoff.json',
-    'contracts/domain_descriptor.json',
-    'contracts/generated_surface_handoff.json',
-    'contracts/owner_receipt_contract.json',
-  ];
-}
-
-export function productionEvidenceGate(contracts: AgentContracts, targetAgent: TargetAgentIdentity): JsonObject {
-  const tasks = handoffTasks(contracts.agentLabHandoff);
-  const handoffGateIds = tasks
-    .map((task) => stringValue(task.gate_id))
-    .filter((gateId): gateId is string => Boolean(gateId));
-  const routeRefs = unique(
-    tasks.map((task) => ownerRouteRef(task.owner_route, targetAgent)).filter((ref): ref is string => Boolean(ref)),
-  );
-  const evidenceRefs = productionAcceptanceEvidenceRefs(contracts.productionAcceptance);
-  const returnShapeRefs = taskRequiredReturnShapeRefs(tasks, targetAgent);
-  return {
-    surface_kind: 'production_evidence_gate_refs',
-    target_agent_ref: targetAgent.targetAgentRef,
-    gate_ids: handoffGateIds.length > 0
-      ? handoffGateIds
-      : [
-          'production_acceptance_contract_read',
-          'agent_lab_handoff_suite_generation',
-          'owner_receipt_or_typed_blocker_route',
-          'no_forbidden_write_verification',
-        ],
-    owner_route_refs: routeRefs.length > 0
-      ? routeRefs
-      : [`owner-route:${targetAgent.domainId}/${targetAgent.owner}`],
-    no_forbidden_write_proof_refs: noForbiddenWriteProofRefs(contracts, targetAgent),
-    typed_blocker_refs: unique([
-      ...refsFromEntries(contracts.productionAcceptance.domain_acceptance_receipt?.typed_blocker_refs),
-      `typed-blocker-ref:${targetAgent.domainId}/production-evidence-tail/owner-receipt-required`,
-    ]),
-    required_return_shapes: requiredReturnShapes(contracts),
-    required_owner_receipt_refs: evidenceRefs.length > 0 || returnShapeRefs.length > 0
-      ? unique([...evidenceRefs, ...returnShapeRefs])
-      : [`required-owner-receipt-ref:${targetAgent.domainId}/production-evidence-tail`],
-    gate_result_refs: [`gate-result-ref:opl-agent-lab/${targetAgent.domainId}/production-evidence-tail`],
-    domain_verdict_claimed: false,
-    source_handoff_ref: 'contracts/agent_lab_handoff.json',
   };
 }
 
