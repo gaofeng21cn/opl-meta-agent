@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
+import { readJsonFile as readJson, repoRoot } from './support/contracts.ts';
 import {
   parseBuildAgentBaselineArgs,
   runBuildAgentBaseline,
@@ -13,12 +13,6 @@ import type { JsonObject } from '../scripts/lib/domain-pack.ts';
 import {
   buildFixtureStageDecompositionCloseout,
 } from '../scripts/lib/stage-decomposition-pack-draft-parts/builder.ts';
-
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-
-function readJson(filePath: string): JsonObject {
-  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-}
 
 function runBaselineArgs(args: string[]): JsonObject {
   return runBuildAgentBaseline(parseBuildAgentBaselineArgs(args));

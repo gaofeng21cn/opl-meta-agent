@@ -3,6 +3,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { parseArgs } from 'node:util';
 
 type JsonObject = Record<string, any>;
 
@@ -623,10 +624,20 @@ function validateAggregateExemption(entry: JsonObject): string | undefined {
   return undefined;
 }
 
-const jsonOutput = process.argv.includes('--json');
-const scriptToPackReadbackOutput = process.argv.includes('--script-to-pack-readback');
-const scriptToPackFullReadbackOutput = process.argv.includes('--script-to-pack-readback-full');
-const strict = process.argv.includes('--strict') || process.argv.includes('strict');
+const args = parseArgs({
+  options: {
+    advisory: { type: 'boolean' },
+    json: { type: 'boolean' },
+    'script-to-pack-readback': { type: 'boolean' },
+    'script-to-pack-readback-full': { type: 'boolean' },
+    strict: { type: 'boolean' },
+  },
+  allowPositionals: true,
+});
+const jsonOutput = args.values.json === true;
+const scriptToPackReadbackOutput = args.values['script-to-pack-readback'] === true;
+const scriptToPackFullReadbackOutput = args.values['script-to-pack-readback-full'] === true;
+const strict = args.values.strict === true || args.positionals.includes('strict');
 const policy = readJson(policyPath);
 const lane = (policy.lanes as JsonObject)[strict ? 'strict' : 'advisory'] as JsonObject;
 const budget = Number(lane.budget_lines);
