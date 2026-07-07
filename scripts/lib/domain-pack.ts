@@ -52,6 +52,7 @@ export type DomainPackReceiptFields = {
 export type MinimalTargetAgent = {
   domain_id: string;
   domain_label?: string | null;
+  target_brief?: string | null;
 };
 
 const DOMAIN_PACK_SECTIONS: DomainPackSection[] = [
@@ -88,6 +89,13 @@ const DOMAIN_PACK_SECTIONS: DomainPackSection[] = [
 ];
 
 const placeholderPattern = new RegExp(`\\b(?:TO${'DO'}|T${'BD'})\\b`, 'i');
+
+const targetPrimarySkillRef = 'agent/primary_skill/SKILL.md';
+
+function writeJson(filePath: string, payload: unknown): void {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`);
+}
 
 function policyRef({
   domainId,
@@ -265,4 +273,204 @@ export function writeMinimalAgentDomainPack(targetAgentDir: string, targetAgent:
       },
     }, null, 2)}\n`,
   );
+}
+
+function buildTargetAgentPrimarySkillMarkdown(targetAgent: MinimalTargetAgent): string {
+  const domainId = targetAgent.domain_id;
+  const domainLabel = targetAgent.domain_label ?? domainId;
+  const targetBrief = targetAgent.target_brief
+    ?? `Create an owner-gated ${domainLabel} delivery from declared workspace refs.`;
+  return [
+    '---',
+    `name: ${domainId}`,
+    `description: Use when Codex should operate ${domainLabel} as an OPL-compatible target agent.`,
+    '---',
+    '',
+    `# ${domainLabel}`,
+    '',
+    '## Purpose',
+    '',
+    `Use this primary skill to operate the OPL-compatible ${domainLabel} target agent. The target job is: ${targetBrief}`,
+    '',
+    '## Entry',
+    '',
+    '- Start from the user-visible requested deliverable, source refs, quality bar, non-goals, and owner boundary.',
+    '- Route work through this target agent primary skill before invoking narrower prompt, stage, quality gate, or method refs.',
+    '- Keep OPL generated interfaces as carrier and runtime projection surfaces, not as target truth or quality verdicts.',
+    '',
+    '## Agent Lab And Owner Handoff',
+    '',
+    '- Preserve descriptor, action catalog, stage control plane, quality gate, capability map, and owner route refs.',
+    '- Return Agent Lab evidence, independent reviewer evidence, no-forbidden-write proof, and owner-facing closeout refs.',
+    '- When the target cannot proceed without authority, return typed blocker, human gate, route-back, or owner-gated continuation.',
+    '',
+    '## Delivery Gate',
+    '',
+    '- Scaffold exists is not completion.',
+    '- Generated interface readiness is not completion.',
+    '- Contract or manifest validation is not completion.',
+    '- Suite pass is not completion.',
+    '- Provider completion is not domain completion.',
+    '- Complete delivery requires owner-routable evidence and one accepted closeout outcome: owner receipt, typed blocker, human gate, route-back, or owner-gated continuation.',
+    '',
+    '## Authority Boundary',
+    '',
+    '- OPL owns standard runtime, generated / hosted surfaces, package validation, Agent Lab execution, registry / App projection, and work-order lifecycle.',
+    '- OPL Meta Agent generated this candidate primary skill and capability sidecar, but does not own final target truth.',
+    '- The target domain owner owns domain truth, memory body, artifact body, quality/export verdict, owner receipt, human gate, and default promotion authority.',
+    '',
+  ].join('\n');
+}
+
+export function writeTargetAgentPrimarySkill(targetAgentDir: string, targetAgent: MinimalTargetAgent): string {
+  const primarySkillPath = path.join(targetAgentDir, targetPrimarySkillRef);
+  fs.mkdirSync(path.dirname(primarySkillPath), { recursive: true });
+  fs.writeFileSync(primarySkillPath, buildTargetAgentPrimarySkillMarkdown(targetAgent), 'utf8');
+  return primarySkillPath;
+}
+
+function buildTargetAgentPrimarySkillCapability(targetAgent: MinimalTargetAgent): JsonObject {
+  const domainId = targetAgent.domain_id;
+  return {
+    capability_id: `${domainId}.primary-skill.codex_entry`,
+    surface_role: 'primary_skill',
+    capability_kind: 'codex_primary_skill',
+    canonical_owner: domainId,
+    physical_source_ref: { ref_kind: 'repo_path', ref: targetPrimarySkillRef, role: 'primary_skill_source' },
+    canonical_paths: [targetPrimarySkillRef],
+    improvement_tokens: ['primary skill', 'agent entry', 'owner handoff', 'delivery gate'],
+    failure_token_registry_ref: `failure-token-registry:${domainId}/primary-skill`,
+    verification_refs: [
+      'git diff --check',
+      'opl agents scaffold --validate <target-agent-dir> --json',
+      'opl connect agent-packages validate-manifest --manifest-url <sidecar> --json',
+    ],
+    forbidden_surfaces: [
+      'target domain truth',
+      'target memory body',
+      'target artifact body',
+      'target owner receipt body',
+      'target typed blocker body',
+      'quality/export verdict',
+      'promotion gate state',
+    ],
+    runtime_projection_refs: [{
+      ref_kind: 'contract_ref',
+      ref: 'contracts/opl_agent_package_manifest.json#/codex_surface/primary_skill_ref',
+      role: 'package_primary_skill_ref',
+    }],
+    sync_policy: 'oma_generated_candidate_refs_only',
+    externalization_reason: 'standard generated target agent primary Codex entry; OPL owns generated carrier projection and package validation',
+    authority_boundary: {
+      can_write_domain_truth: false,
+      can_write_memory_body: false,
+      can_mutate_artifact_body: false,
+      can_sign_owner_receipt: false,
+      can_create_typed_blocker: false,
+      can_authorize_quality_or_export: false,
+      can_claim_domain_ready: false,
+      can_claim_production_ready: false,
+    },
+    exposure_layer: 'codex_default_primary_skill',
+    codex_default_exposure: true,
+    allowed_exposure_scopes: ['codex_default_entry', 'opl_generated_plugin_carrier'],
+    codex_visibility_policy: 'registered_as_primary_codex_skill_entry',
+    exposure_owner: domainId,
+    canonical_target_paths: [targetPrimarySkillRef],
+  };
+}
+
+export function writeTargetAgentCapabilityMap(targetAgentDir: string, targetAgent: MinimalTargetAgent): string {
+  const capabilityMapPath = path.join(targetAgentDir, 'contracts', 'capability_map.json');
+  const capabilityMap = JSON.parse(fs.readFileSync(capabilityMapPath, 'utf8')) as JsonObject;
+  const resolverIndex = typeof capabilityMap.resolver_index === 'object'
+    && capabilityMap.resolver_index !== null
+    && !Array.isArray(capabilityMap.resolver_index)
+    ? capabilityMap.resolver_index as JsonObject
+    : {};
+  writeJson(capabilityMapPath, {
+    ...capabilityMap,
+    primary_skill_capability: buildTargetAgentPrimarySkillCapability(targetAgent),
+    resolver_index: {
+      ...resolverIndex,
+      primary_skill_refs: ['contracts/capability_map.json#/primary_skill_capability'],
+    },
+  });
+  return capabilityMapPath;
+}
+
+function buildTargetAgentPackageManifest(targetAgent: MinimalTargetAgent): JsonObject {
+  const domainId = targetAgent.domain_id;
+  const domainLabel = targetAgent.domain_label ?? domainId;
+  return {
+    surface_kind: 'opl_agent_package_manifest.v1',
+    agent_id: domainId,
+    package_id: domainId,
+    display_name: domainLabel,
+    publisher: 'one-person-lab',
+    version: '0.1.0',
+    source: 'oma_generated_target_agent',
+    carrier_source_role: 'codex_plugin_default_carrier_not_package_truth',
+    schema_ref: 'contracts/opl-framework/agent-package-manifest.schema.json',
+    machine_boundary: 'OMA generates this package sidecar for OPL App/package management. Codex consumes the projected .codex-plugin carrier; this sidecar does not write target truth, owner receipts, runtime queues, or quality/export verdicts.',
+    package_core: {
+      core_kind: 'opl_agent_package_core',
+      identity_fields: ['package_id', 'agent_id', 'version'],
+      content_identity_fields: [
+        'manifest_sha256',
+        'payload_digest_ref',
+        'required_skill_pack_lock_refs',
+        'package_lock_ref',
+      ],
+      dependency_source: 'manifest_declared_capability_dependencies',
+      lock_owner: 'opl_connect_agent_package_registry',
+      lifecycle_receipt_owner: 'opl_connect_agent_package_registry',
+      exposure_owner: 'opl_connect_agent_package_registry',
+    },
+    distribution_payload: {
+      payload_kind: 'oma_generated_agent_package',
+      payload_ref: `opl://agent-packages/${domainId}/candidate`,
+      payload_digest_ref: 'sha256:0000000000000000000000000000000000000000000000000000000000000000',
+      required_skill_pack_lock_refs: [],
+      proof_status: 'candidate_sidecar_pending_publish',
+      live_download_proof: false,
+      installed_reload_proof: false,
+      oci_ref: `ghcr.io/gaofeng21cn/opl-agent-${domainId}:latest`,
+      oci_media_type: 'application/vnd.oci.image.manifest.v1+json',
+      immutable_tag: '0.1.0',
+      rolling_tag: 'latest',
+      promotion_policy: 'daily_candidate_gates_then_promote_latest',
+      install_truth: 'resolved_digest_lock',
+    },
+    codex_surface: {
+      plugin_id: domainId,
+      standalone_distribution: 'generated_carrier_surface',
+      required_skill_ids: [domainId],
+      primary_skill_ref: targetPrimarySkillRef,
+      primary_skill_capability_ref: 'contracts/capability_map.json#/primary_skill_capability',
+      bundled_capability_package_ids: [],
+      user_install_action_count: 1,
+    },
+    carrier_adapters: [{
+      adapter_kind: 'codex_plugin_carrier',
+      carrier: 'codex_plugin',
+      source_surface: 'codex_surface',
+      projection_role: 'package_carrier_adapter',
+      owns_package_core: false,
+      owns_domain_truth: false,
+    }],
+    opl_managed_surface: {
+      package_shape: 'thin_agent_package',
+      dependency_resolution: 'managed_dependency_graph',
+      dependency_update_policy: 'independent_package_target',
+      developer_mode_dependency_policy: 'source_checkout_when_authorized_else_pull_request',
+    },
+    capability_dependencies: [],
+  };
+}
+
+export function writeTargetAgentPackageManifest(targetAgentDir: string, targetAgent: MinimalTargetAgent): string {
+  const packageManifestPath = path.join(targetAgentDir, 'contracts', 'opl_agent_package_manifest.json');
+  writeJson(packageManifestPath, buildTargetAgentPackageManifest(targetAgent));
+  return packageManifestPath;
 }
