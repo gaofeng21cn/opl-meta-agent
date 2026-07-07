@@ -90,11 +90,11 @@ MAS `reviewer_revision` feedback self-evolution trigger 的当前可读状态是
 | External work-order execution | OMA 只做 shape validation 和 OPL primitive delegation | `npm run execute:external-work-order`、`tests/execute-external-work-order.test.ts` | target worktree lifecycle、runner、queue、attempt ledger、absorb、cleanup 和 owner closeout hook invocation 归 OPL / target owner。 |
 | Source-purity guard | repo-owned wrapper/runtime surface 仍保持缺席；retained scripts have machine-checked active callers, source-ref integrity / false-ready / cleanup-readback guards, reciprocal consumer-chain guard, source-structure drift guard, compact cleanup readback, and full cleanup candidate readback | `contracts/functional_privatization_audit.json`、`contracts/script_to_pack_gate_receipt.json`、`contracts/source_structure_policy.json#script_to_pack_receipt_guard`、`runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt`、`runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy`、`npm run script-to-pack:readback`、`npm run script-to-pack:readback:full`、source-purity tests | `scripts/` 只能是 authority implementation、smoke/proof helper、fixture helper、thin delegation 或 developer work-order materializer。逐脚本分类和 gate 语义归 private inventory；status 只保留 cleanup/readback 可以列候选和 blocker shape、但不能授权 retirement、primitive parity、physical delete、App/registry live evidence、generated-hosted readiness、default promotion、target/domain readiness、production readiness 或 owner receipt body write 的边界。 |
 
-Source-structure / line-budget 检查属于 daily / strict maintenance 的
+Source-structure 检查属于 daily / strict maintenance 的
 source-size 治理信号，不进入普通开发的 hard gate。`scripts/verify.sh
-structure`、`npm run source-structure` 和 `npm run line-budget` 执行 advisory
+structure` 和 `npm run source-structure` 执行 advisory
 lane；`scripts/verify.sh structure:strict`、`npm run source-structure:strict`
-和 `npm run line-budget:strict` 才作为硬失败。当前有两个保留 consumer
+才作为硬失败。当前有两个保留 consumer
 aggregate path：`runtime/authority_functions/meta-agent-authority-functions.json`
 和 `contracts/stage_control_plane.json`。前者的维护源是
 `runtime/authority_functions/meta-agent-authority-functions.source.json`、
@@ -106,7 +106,7 @@ aggregate path：`runtime/authority_functions/meta-agent-authority-functions.jso
 和 `contracts/stage_control_plane.parts/**`，用 `npm run stage-control:write`
 和 `npm run stage-control:check` 维护。两个 bundle manifest 都记录 source digest、
 generator commands、do-not-edit consumer surface 和 false-authority flags。
-同一 source-structure 命令现在也执行 `script_to_pack_receipt_guard`，所以 receipt / active caller / tracked script / morphology summary 漂移在 advisory 与 strict 模式下都会 hard fail，不能被 line-budget advisory 语义降级。`npm run source-structure:json`、`npm run script-to-pack:readback` 和 `npm run script-to-pack:readback:full` 只提供 drift / cleanup-candidate readback；完整 per-script detail 不进入 status，也不能替代 private inventory 或 machine contracts。
+同一 source-structure 命令现在也执行 `script_to_pack_receipt_guard`，所以 receipt / active caller / tracked script / morphology summary 漂移在 advisory 与 strict 模式下都会 hard fail。`npm run source-structure:json`、`npm run script-to-pack:readback` 和 `npm run script-to-pack:readback:full` 只提供 drift / cleanup-candidate readback；完整 per-script detail 不进入 status，也不能替代 private inventory 或 machine contracts。
 `scripts/verify.sh smoke`、`npm test` / `npm run test:smoke`、`npm run
 typecheck` 和 repo hygiene 继续验证当前核心合同、源码、测试与生成物边界，
 不把普通开发默认升级为行数硬门。bootstrap、external-suite、work-order、
@@ -115,25 +115,16 @@ test:behavior`；完整 Node suite 进入 `npm run test:full` / `scripts/verify.
 full`。默认验证只检查 repo hygiene；需要删除 ignored cache/build byproducts
 时显式运行 `scripts/verify.sh cleanup`。
 
-`line-budget` / `line-budget:strict` 当前只作为 compatibility aliases 保留，canonical
-maintenance lane 是 `source-structure` / `source-structure:strict`。它们仍留在
-`package.json` 和 `scripts/verify.sh`，原因是 active caller receipt、operator muscle
-memory 和 machine readback 仍引用这些入口；删除前必须先取得无 active package/verify
-caller、刷新 source-purity scan receipt，并留下 tombstone/provenance ref。本轮没有物理删除
-alias，而是在 `contracts/source_structure_policy.json#compatibility_aliases` 和
-`source-structure:json` readback 中固定 alias 语义。
-
-2026-07-07 blocked cleanup parity re-audit 读法：`npm run source-structure:json`
-新鲜读回 `state=passed`、`compatibility_aliases[*].state=compatibility_alias_retained`，
-并把两个 alias 的 future retirement 条件固定为 `no_active_package_or_verify_caller_ref`、
-`source_purity_scan_receipt_refreshed_without_alias_callers` 和
-`tombstone_or_provenance_ref`。因此 line-budget aliases 不能退役；退役停止条件是
-`package.json`、`scripts/verify.sh`、machine active-caller receipt 和 operator readback
-同时不再引用 alias，且 source-purity receipt 刷新后无 alias caller。
-`script-to-pack:readback` / `script-to-pack:readback:full` 运行在 strict
-source-structure gate 下；若 primary shrink 尚未消除 line-budget violation，它们会以
-`failed_source_structure_gate` 失败并在 `source_structure_gate.line_budget` 暴露原因。
-这不改变 cleanup candidate 数量，也不授权 item `5/6/7` 物理删除。
+`line-budget` / `line-budget:strict` npm 与 shell aliases 已退役。Canonical
+maintenance lane 是 `source-structure` / `source-structure:strict`；
+`contracts/source_structure_policy.json#compatibility_aliases` 和
+`source-structure:json` readback 均保持空 alias list。2026-07-07 cleanup landing
+同时移除了测试 support 对 Node 标准库的 re-export facade，并把 legacy professional
+skill 物理 tombstone 文件合并为 `capability_map` / README redirect ledger。
+`script-to-pack:readback` / `script-to-pack:readback:full` 仍运行在 strict
+source-structure gate 下；若 source-structure gate 失败，会以
+`failed_source_structure_gate` 暴露原因。这不改变 cleanup candidate 数量，也不授权
+remaining item `6/7` 物理删除。
 
 同一轮 re-audit 确认 OPL Framework `/Users/gaofeng/workspace/one-person-lab`
 HEAD `8fa4731b94ca7badfcb70b3e2bed0a731061d90a` 已提供
