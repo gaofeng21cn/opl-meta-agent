@@ -64,6 +64,74 @@ function unique(values: string[]): string[] {
   return [...new Set(values.filter((value) => value.trim().length > 0))];
 }
 
+function buildSourceMorphologyProof({
+  targetAgent,
+  suite,
+  suiteResult,
+  workOrderId,
+  capabilityCandidate,
+  patchMode,
+}: {
+  targetAgent: TargetAgent;
+  suite: JsonObject;
+  suiteResult: SuiteResult;
+  workOrderId: string;
+  capabilityCandidate: CapabilityCandidate;
+  patchMode: string;
+}): JsonObject {
+  const ref = `source-morphology-proof:${targetAgent.domain_id}/${workOrderId}/${patchMode}`;
+  return {
+    ref,
+    morphology_kind: 'external_agent_lab_suite_to_target_agent_developer_patch_work_order',
+    target_agent_id: targetAgent.domain_id,
+    work_order_ref: workOrderId,
+    source_suite_ref: String(suite.suite_id ?? 'external-agent-lab-suite'),
+    source_agent_lab_result_ref: suiteResult.result_id,
+    target_capability_improvement_candidate_ref: capabilityCandidate.candidate_id,
+    input_surface_refs: unique([
+      String(suite.suite_id ?? ''),
+      suiteResult.result_id,
+      String(capabilityCandidate.ai_reviewer_evaluation_ref ?? ''),
+      capabilityCandidate.candidate_id,
+    ]),
+    consumed_as_refs_only: true,
+    source_patch_required: patchMode === 'source-patch',
+    authority_boundary: {
+      can_write_target_domain_truth: false,
+      can_write_target_domain_memory_body: false,
+      can_mutate_target_domain_artifact_body: false,
+      can_authorize_target_domain_quality_or_export: false,
+      can_promote_default_agent_without_gate: false,
+    },
+  };
+}
+
+function buildPrivateResidueDecision({
+  targetAgent,
+  workOrderId,
+  patchMode,
+  sourceMorphologyProofRef,
+}: {
+  targetAgent: TargetAgent;
+  workOrderId: string;
+  patchMode: string;
+  sourceMorphologyProofRef: string;
+}): JsonObject {
+  const ref = `private-residue-decision:${targetAgent.domain_id}/${workOrderId}/${patchMode}/refs-only`;
+  return {
+    ref,
+    decision: 'refs_only_no_private_residue_promotion',
+    target_agent_id: targetAgent.domain_id,
+    work_order_ref: workOrderId,
+    source_morphology_proof_ref: sourceMorphologyProofRef,
+    local_refs_may_be_retained_for_owner_consumption: true,
+    private_residue_body_materialized: false,
+    target_truth_write_authorized: false,
+    target_artifact_mutation_authorized: false,
+    owner_receipt_or_typed_blocker_body_authorized: false,
+  };
+}
+
 export function writeTypedBlockerArtifacts({
   outputDir,
   capabilityCandidate,
@@ -173,6 +241,20 @@ export function buildDeveloperPatchWorkOrder({
     ...capabilityCandidate.patch_traceability_matrix.flatMap((entry) => entry.failure_evidence),
   ]);
   const patchMode = noPatchRequired ? 'no-source-patch' : 'source-patch';
+  const sourceMorphologyProof = buildSourceMorphologyProof({
+    targetAgent,
+    suite,
+    suiteResult,
+    workOrderId,
+    capabilityCandidate,
+    patchMode,
+  });
+  const privateResidueDecision = buildPrivateResidueDecision({
+    targetAgent,
+    workOrderId,
+    patchMode,
+    sourceMorphologyProofRef: String(sourceMorphologyProof.ref),
+  });
   const reviewerPoolRefs = unique([
     String(capabilityCandidate.ai_reviewer_evaluation_ref),
     ...capabilityCandidate.ai_reviewer_evidence.source_refs,
@@ -226,6 +308,10 @@ export function buildDeveloperPatchWorkOrder({
     product_id: 'opl-meta-agent',
     target_agent: capabilityCandidate.target_agent,
     source_agent_lab_result_ref: suiteResult.result_id,
+    source_morphology_proof_ref: sourceMorphologyProof.ref,
+    source_morphology_proof: sourceMorphologyProof,
+    private_residue_decision_ref: privateResidueDecision.ref,
+    private_residue_decision: privateResidueDecision,
     ...agentEvolutionReadback,
     work_order_currentness: buildWorkOrderCurrentness({
       domainId: targetAgent.domain_id,

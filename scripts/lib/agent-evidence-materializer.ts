@@ -104,6 +104,69 @@ function unique(values: string[]): string[] {
   return uniqueRefs(values);
 }
 
+function buildSourceMorphologyProof({
+  targetAgent,
+  suite,
+  suiteResult,
+  workOrderId,
+  capabilityCandidate,
+  sourceRefs,
+}: {
+  targetAgent: TargetAgentIdentity;
+  suite: JsonObject;
+  suiteResult: JsonObject;
+  workOrderId: string;
+  capabilityCandidate: JsonObject;
+  sourceRefs: string[];
+}): JsonObject {
+  const ref = `source-morphology-proof:${targetAgent.domainId}/${workOrderId}/source-patch-proposal`;
+  return {
+    ref,
+    morphology_kind: 'target_agent_production_evidence_tail_to_developer_patch_work_order',
+    target_agent_id: targetAgent.domainId,
+    work_order_ref: workOrderId,
+    source_suite_ref: stringValue(suite.suite_id) ?? 'agent-production-evidence-suite',
+    source_agent_lab_result_ref: stringValue(suiteResult.result_id)
+      ?? `agent-lab-result:${targetAgent.domainId}/${workOrderId}`,
+    target_capability_improvement_candidate_ref: stringValue(capabilityCandidate.candidate_id)
+      ?? `target-capability-candidate:${targetAgent.domainId}/${workOrderId}`,
+    inspected_refs: unique(sourceRefs),
+    consumed_as_refs_only: true,
+    source_patch_required: capabilityCandidate.ai_reviewer_status === 'present',
+    authority_boundary: {
+      can_write_target_domain_truth: false,
+      can_write_target_domain_memory_body: false,
+      can_mutate_target_domain_artifact_body: false,
+      can_authorize_target_domain_quality_or_export: false,
+      can_promote_default_agent_without_gate: false,
+    },
+  };
+}
+
+function buildPrivateResidueDecision({
+  targetAgent,
+  workOrderId,
+  sourceMorphologyProofRef,
+}: {
+  targetAgent: TargetAgentIdentity;
+  workOrderId: string;
+  sourceMorphologyProofRef: string;
+}): JsonObject {
+  const ref = `private-residue-decision:${targetAgent.domainId}/${workOrderId}/source-patch-proposal/refs-only`;
+  return {
+    ref,
+    decision: 'refs_only_no_private_residue_promotion',
+    target_agent_id: targetAgent.domainId,
+    work_order_ref: workOrderId,
+    source_morphology_proof_ref: sourceMorphologyProofRef,
+    local_refs_may_be_retained_for_owner_consumption: true,
+    private_residue_body_materialized: false,
+    target_truth_write_authorized: false,
+    target_artifact_mutation_authorized: false,
+    owner_receipt_or_typed_blocker_body_authorized: false,
+  };
+}
+
 function handoffTasks(agentLabHandoff: JsonObject): JsonObject[] {
   return records(agentLabHandoff.external_suite_seed?.tasks);
 }
@@ -453,8 +516,11 @@ export function buildCapabilityCandidate({
       proof_refs: noForbiddenRefs,
       can_write_target_domain_truth: false,
       can_write_target_memory_body: false,
+      can_write_target_domain_memory_body: false,
       can_mutate_target_artifact_body: false,
+      can_mutate_target_domain_artifact_body: false,
       can_authorize_target_quality_or_export: false,
+      can_authorize_target_domain_quality_or_export: false,
       can_promote_default_agent_without_gate: false,
     },
     efficiency_non_regression_refs: efficiencyNonRegressionRefs,
@@ -558,6 +624,25 @@ export function buildDeveloperWorkOrder({
     ownerReceiptOrTypedBlockerRef: String(machineCloseoutRefs.target_owner_receipt_or_typed_blocker_ref),
     readModelConsumptionRef: String(machineCloseoutRefs.target_runtime_read_model_consumption_ref),
   });
+  const sourceMorphologyProof = buildSourceMorphologyProof({
+    targetAgent,
+    suite,
+    suiteResult,
+    workOrderId,
+    capabilityCandidate,
+    sourceRefs: [
+      ...stringList(suite.source_contract_refs),
+      ownerReceiptRefsPath,
+      ...sourceFailureRefs,
+      ...reviewerEvidenceRefs,
+      ...targetEditableSurfaceRefs,
+    ],
+  });
+  const privateResidueDecision = buildPrivateResidueDecision({
+    targetAgent,
+    workOrderId,
+    sourceMorphologyProofRef: String(sourceMorphologyProof.ref),
+  });
   agentEvolutionReadback.target_owner_route = {
     ...(capabilityCandidate.target_owner_route as JsonObject),
     ...(agentEvolutionReadback.target_owner_route as JsonObject),
@@ -571,6 +656,10 @@ export function buildDeveloperWorkOrder({
       : 'blocked_missing_ai_reviewer_evaluation',
     target_agent: capabilityCandidate.target_agent,
     source_agent_lab_result_ref: suiteResult.result_id,
+    source_morphology_proof_ref: sourceMorphologyProof.ref,
+    source_morphology_proof: sourceMorphologyProof,
+    private_residue_decision_ref: privateResidueDecision.ref,
+    private_residue_decision: privateResidueDecision,
     ...agentEvolutionReadback,
     work_order_currentness: buildWorkOrderCurrentness({
       domainId: targetAgent.domainId,

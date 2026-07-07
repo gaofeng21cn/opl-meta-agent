@@ -167,6 +167,18 @@ dispatch 已收薄到 `scripts/lib/sync-json-bundle.ts`。refs、leaf index、so
 maintenance helper 被 script-to-pack gate 跟踪，不是通用 framework、runtime owner、
 generated interface owner 或 authority truth owner。
 
+2026-07-07 OMA external work-order guard 修复：DM003 high-quality medical manuscript
+external suite 暴露出 OMA 生成的 developer work order 通过 OMA 自校验、但被 OPL
+`work-order execute --dry-run` 在 pre-executor guard 拒绝的问题。根因是 OMA 生成器和
+validator 落后于 OPL guard：缺少顶层 `source_morphology_proof(_ref)` 与
+`private_residue_decision_ref`，且 execute wrapper 没识别 OPL g2 dry-run envelope。
+`scripts/lib/external-suite-materializer.ts` 与 `scripts/lib/agent-evidence-materializer.ts`
+现在都生成 refs-only source morphology / private residue decision 证据；`work-order-validation.ts`
+在委托 OPL 前 fail closed；`execute-external-work-order.ts` 同时接受 direct receipt 与
+g2 `work_order_execution.receipt` dry-run ready。验证证据：`npm run test:behavior`
+66/66、`npm run typecheck`、以及 DM003 OMA external-suite materialization 后真实
+`/opt/homebrew/bin/opl work-order execute --dry-run` 返回 `dry_run_ready`。
+
 ## 当前证据尾项
 
 当前证据尾项的 single Active Truth 是 [opl-meta-agent 理想目标态差距与完善计划](./active/opl-meta-agent-ideal-state-gap-plan.md)。Status 只保留摘要：registry / App live consumption、真实 target patch-loop、独立 reviewer、standard target-agent handoff 与非默认 executor policy 都仍是 owner-delta / evidence tail；script-to-pack hygiene 当前只保留为 closed-structure-gate 后的持续退役/上收治理。具体 tail id、typed blocker ref、accepted shape、所需 receipt 和下一步执行顺序归 active plan、`contracts/live_stage_run_progress_evidence.json`、`contracts/target_agent_owner_chain_evidence.json`、production acceptance contracts 和 focused tests。

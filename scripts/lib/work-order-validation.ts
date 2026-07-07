@@ -259,6 +259,85 @@ function requireNoForbiddenWriteBoundary(workOrder: JsonObject): void {
   });
 }
 
+function requireOplExecutionGuardFields(workOrder: JsonObject): void {
+  if (requireStringArray(workOrder.owner_route_refs, 'owner_route_refs').length === 0) {
+    throw new Error('Invalid developer patch work order: owner_route_refs must satisfy OPL target_owner_route guard.');
+  }
+  const sourceMorphologyProofRef = typeof workOrder.source_morphology_proof_ref === 'string'
+    ? workOrder.source_morphology_proof_ref.trim()
+    : '';
+  const hasSourceMorphologyProof = Boolean(
+    workOrder.source_morphology_proof
+      && typeof workOrder.source_morphology_proof === 'object'
+      && !Array.isArray(workOrder.source_morphology_proof),
+  );
+  if (!hasSourceMorphologyProof && !sourceMorphologyProofRef) {
+    throw new Error(
+      'Invalid developer patch work order: source_morphology_proof or source_morphology_proof_ref is required by OPL work-order execute guard.',
+    );
+  }
+  if (hasSourceMorphologyProof) {
+    const proof = requireObject(workOrder.source_morphology_proof, 'source_morphology_proof');
+    requireNonEmptyString(proof.ref, 'source_morphology_proof.ref');
+    requireEqualString(proof.target_agent_id, workOrder.target_agent?.domain_id, 'source_morphology_proof.target_agent_id');
+    requireEqualString(proof.work_order_ref, workOrder.work_order_id, 'source_morphology_proof.work_order_ref');
+    requireEqualString(
+      proof.source_agent_lab_result_ref,
+      workOrder.source_agent_lab_result_ref,
+      'source_morphology_proof.source_agent_lab_result_ref',
+    );
+    if (sourceMorphologyProofRef) {
+      requireEqualString(
+        sourceMorphologyProofRef,
+        proof.ref,
+        'source_morphology_proof_ref',
+      );
+    }
+    if (proof.consumed_as_refs_only !== true) {
+      throw new Error('Invalid developer patch work order: source_morphology_proof.consumed_as_refs_only must be true.');
+    }
+    requireForbiddenAuthorityFalse(
+      requireObject(proof.authority_boundary, 'source_morphology_proof.authority_boundary'),
+      'source_morphology_proof.authority_boundary',
+    );
+  }
+  requireNonEmptyString(
+    workOrder.machine_closeout_refs?.target_runtime_read_model_consumption_ref,
+    'machine_closeout_refs.target_runtime_read_model_consumption_ref',
+  );
+  requireNonEmptyString(
+    workOrder.private_residue_decision_ref,
+    'private_residue_decision_ref',
+  );
+  if (workOrder.private_residue_decision && typeof workOrder.private_residue_decision === 'object') {
+    const decision = requireObject(workOrder.private_residue_decision, 'private_residue_decision');
+    requireEqualString(
+      decision.ref,
+      workOrder.private_residue_decision_ref,
+      'private_residue_decision.ref',
+    );
+    requireEqualString(decision.target_agent_id, workOrder.target_agent?.domain_id, 'private_residue_decision.target_agent_id');
+    requireEqualString(decision.work_order_ref, workOrder.work_order_id, 'private_residue_decision.work_order_ref');
+    requireFalse(
+      decision.private_residue_body_materialized,
+      'private_residue_decision.private_residue_body_materialized',
+    );
+    requireFalse(
+      decision.target_truth_write_authorized,
+      'private_residue_decision.target_truth_write_authorized',
+    );
+    requireFalse(
+      decision.target_artifact_mutation_authorized,
+      'private_residue_decision.target_artifact_mutation_authorized',
+    );
+  }
+  requireNonEmptyString(
+    workOrder.machine_closeout_refs?.target_owner_receipt_or_typed_blocker_ref,
+    'machine_closeout_refs.target_owner_receipt_or_typed_blocker_ref',
+  );
+  requireNoForbiddenWriteBoundary(workOrder);
+}
+
 function requireOwnerCloseoutBoundary(workOrder: JsonObject): void {
   const boundary = requireObject(workOrder.owner_closeout_boundary, 'owner_closeout_boundary');
   requireNonEmptyString(boundary.owner, 'owner_closeout_boundary.owner');
@@ -638,6 +717,7 @@ export function validateDeveloperPatchWorkOrder(
     workOrder.work_order_currentness?.owner_route_ref,
     'owner_route_refs',
   );
+  requireOplExecutionGuardFields(workOrder);
   requireTargetProgressAccounting(workOrder);
   requireAgentEvolutionReadback(workOrder);
   requireNonEmptyStringArray(workOrder.rollback_version_refs, 'rollback_version_refs');

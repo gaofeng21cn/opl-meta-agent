@@ -94,6 +94,12 @@ function stringArray(value: unknown): string[] {
   return value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0);
 }
 
+function jsonObject(value: unknown): JsonObject | null {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value as JsonObject
+    : null;
+}
+
 function assertExternalWorkOrderIsDelegable(workOrder: JsonObject): void {
   requireString(workOrder.work_order_id, 'work_order_id');
   if (workOrder.surface_kind !== 'opl_meta_agent_developer_patch_work_order') {
@@ -135,8 +141,29 @@ function hasTypedBlockerRefs(oplResult: JsonObject): boolean {
     || typeof oplResult.closeout_refs?.typed_blocker_ref === 'string';
 }
 
+function executionReceipt(oplResult: JsonObject): JsonObject {
+  const execution = jsonObject(oplResult.work_order_execution);
+  const receipt = jsonObject(execution?.receipt);
+  return receipt ?? oplResult;
+}
+
+function isDryRunReadyResult(oplResult: JsonObject): boolean {
+  const noExecutorLaunchProof = oplResult.no_executor_launch_proof as JsonObject | undefined;
+  const plannedCloseout = oplResult.planned_closeout as JsonObject | undefined;
+  return oplResult.surface_kind === 'opl_work_order_codex_execution_dry_run_receipt'
+    && oplResult.status === 'dry_run_ready'
+    && oplResult.dry_run === true
+    && noExecutorLaunchProof?.codex_process_started === false
+    && noExecutorLaunchProof?.target_worktree_opened === false
+    && noExecutorLaunchProof?.absorption_attempted === false
+    && noExecutorLaunchProof?.reason === 'dry_run'
+    && typeof plannedCloseout?.target_owner_receipt_or_typed_blocker_ref === 'string'
+    && plannedCloseout.target_owner_receipt_or_typed_blocker_ref.trim().length > 0;
+}
+
 function assertOplResultHasCloseoutOrBlocker(oplResult: JsonObject): JsonObject {
-  const closeoutRefs = oplResult.closeout_refs as JsonObject | undefined;
+  const receipt = executionReceipt(oplResult);
+  const closeoutRefs = receipt.closeout_refs as JsonObject | undefined;
   const requiredCloseoutFields = [
     'target_owner_receipt_or_typed_blocker_ref',
     'patch_absorption_ref',
@@ -147,8 +174,9 @@ function assertOplResultHasCloseoutOrBlocker(oplResult: JsonObject): JsonObject 
     && requiredCloseoutFields.every((field) =>
       typeof closeoutRefs?.[field] === 'string' && String(closeoutRefs[field]).trim().length > 0
     );
-  const hasBlockerRefs = hasTypedBlockerRefs(oplResult);
-  if (!hasCloseoutRefs && !hasBlockerRefs) {
+  const hasBlockerRefs = hasTypedBlockerRefs(receipt);
+  const dryRunReady = isDryRunReadyResult(receipt);
+  if (!hasCloseoutRefs && !hasBlockerRefs && !dryRunReady) {
     throw new Error(
       'OPL work-order result must include target owner closeout, cleanup, absorption, Agent Lab re-evaluation refs, or typed blocker refs.',
     );
@@ -156,6 +184,8 @@ function assertOplResultHasCloseoutOrBlocker(oplResult: JsonObject): JsonObject 
   return {
     closeout_refs_verified: hasCloseoutRefs,
     typed_blocker_refs_present: hasBlockerRefs,
+    dry_run_ready: dryRunReady,
+    opl_result_envelope: receipt === oplResult ? 'direct' : 'g2_work_order_execution_receipt',
   };
 }
 

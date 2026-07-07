@@ -312,6 +312,26 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
     assert.equal(workOrder.surface_kind, 'opl_meta_agent_developer_patch_work_order');
     assert.equal(workOrder.status, 'ready_for_target_agent_source_patch');
+    assert.equal(
+      workOrder.source_morphology_proof_ref,
+      workOrder.source_morphology_proof.ref,
+    );
+    assert.equal(
+      workOrder.source_morphology_proof.source_agent_lab_result_ref,
+      workOrder.source_agent_lab_result_ref,
+    );
+    assert.equal(workOrder.source_morphology_proof.consumed_as_refs_only, true);
+    assert.equal(workOrder.source_morphology_proof.authority_boundary.can_write_target_domain_truth, false);
+    assert.equal(
+      workOrder.private_residue_decision_ref,
+      workOrder.private_residue_decision.ref,
+    );
+    assert.equal(
+      workOrder.private_residue_decision.source_morphology_proof_ref,
+      workOrder.source_morphology_proof_ref,
+    );
+    assert.equal(workOrder.private_residue_decision.private_residue_body_materialized, false);
+    assert.equal(workOrder.private_residue_decision.target_truth_write_authorized, false);
     assert.equal(workOrder.source_external_suite_intake.status, 'accepted_external_agent_lab_suite_input');
     assert.equal(workOrder.source_external_suite_intake.target_agent, 'med-autoscience');
     assert.match(workOrder.agent_evolution_decision_ref, /^agent-evolution-decision:opl-meta-agent\/med-autoscience\//);
@@ -582,6 +602,22 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     );
     assert.equal(workOrder.target_workspace_environment_verification.can_write_target_domain_truth, false);
     assert.ok(workOrder.implementation_controls.forbidden_target_paths_or_surfaces.includes('publication_eval/latest.json'));
+
+    const missingSourceMorphology = structuredClone(workOrder);
+    delete missingSourceMorphology.source_morphology_proof_ref;
+    delete missingSourceMorphology.source_morphology_proof;
+    assert.match(
+      executeWorkOrderExpectingValidationError(missingSourceMorphology, outputRoot),
+      /source_morphology_proof or source_morphology_proof_ref is required by OPL work-order execute guard/,
+    );
+
+    const missingPrivateResidueDecision = structuredClone(workOrder);
+    delete missingPrivateResidueDecision.private_residue_decision_ref;
+    delete missingPrivateResidueDecision.private_residue_decision;
+    assert.match(
+      executeWorkOrderExpectingValidationError(missingPrivateResidueDecision, outputRoot),
+      /private_residue_decision_ref/,
+    );
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }

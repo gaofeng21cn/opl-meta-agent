@@ -139,6 +139,46 @@ function buildWorkOrder(): JsonObject {
       repo_dir: '/tmp/example-agent',
     },
     source_agent_lab_result_ref: 'agent-lab-result-ref',
+    source_morphology_proof_ref:
+      'source-morphology-proof:example-agent/oma_developer_patch_work_order_test/source-patch',
+    source_morphology_proof: {
+      ref: 'source-morphology-proof:example-agent/oma_developer_patch_work_order_test/source-patch',
+      morphology_kind: 'external_agent_lab_suite_to_target_agent_developer_patch_work_order',
+      target_agent_id: 'example-agent',
+      work_order_ref: 'oma_developer_patch_work_order_test',
+      source_suite_ref: 'agent-lab-suite:example-agent/source-patch',
+      source_agent_lab_result_ref: 'agent-lab-result-ref',
+      target_capability_improvement_candidate_ref: 'target-capability-candidate:example-agent/source-patch',
+      input_surface_refs: [
+        'agent-lab-suite:example-agent/source-patch',
+        'agent-lab-result-ref',
+        'reviewer:example/direct-evidence',
+      ],
+      consumed_as_refs_only: true,
+      source_patch_required: true,
+      authority_boundary: {
+        can_write_target_domain_truth: false,
+        can_write_target_domain_memory_body: false,
+        can_mutate_target_domain_artifact_body: false,
+        can_authorize_target_domain_quality_or_export: false,
+        can_promote_default_agent_without_gate: false,
+      },
+    },
+    private_residue_decision_ref:
+      'private-residue-decision:example-agent/oma_developer_patch_work_order_test/source-patch/refs-only',
+    private_residue_decision: {
+      ref: 'private-residue-decision:example-agent/oma_developer_patch_work_order_test/source-patch/refs-only',
+      decision: 'refs_only_no_private_residue_promotion',
+      target_agent_id: 'example-agent',
+      work_order_ref: 'oma_developer_patch_work_order_test',
+      source_morphology_proof_ref:
+        'source-morphology-proof:example-agent/oma_developer_patch_work_order_test/source-patch',
+      local_refs_may_be_retained_for_owner_consumption: true,
+      private_residue_body_materialized: false,
+      target_truth_write_authorized: false,
+      target_artifact_mutation_authorized: false,
+      owner_receipt_or_typed_blocker_body_authorized: false,
+    },
     agent_evolution_decision_ref:
       'agent-evolution-decision:opl-meta-agent/example-agent/oma_developer_patch_work_order_test',
     failure_class: 'quality-gate',
@@ -523,6 +563,28 @@ test('execute external work order rejects missing provider owner route ledger pr
   );
 });
 
+test('execute external work order rejects missing OPL source morphology guard before delegation', () => {
+  assertExternalWorkOrderRejected(
+    'oma-execute-work-order-source-morphology-test-',
+    (workOrder) => {
+      delete workOrder.source_morphology_proof_ref;
+      delete workOrder.source_morphology_proof;
+    },
+    /source_morphology_proof or source_morphology_proof_ref is required by OPL work-order execute guard/,
+  );
+});
+
+test('execute external work order rejects missing private residue decision guard before delegation', () => {
+  assertExternalWorkOrderRejected(
+    'oma-execute-work-order-private-residue-test-',
+    (workOrder) => {
+      delete workOrder.private_residue_decision_ref;
+      delete workOrder.private_residue_decision;
+    },
+    /private_residue_decision_ref/,
+  );
+});
+
 test('execute external work order rejects platform-only refs counted as deliverable progress', () => {
   assertExternalWorkOrderRejected(
     'oma-execute-work-order-platform-progress-test-',
@@ -665,6 +727,84 @@ test('execute external work order rejects OPL result without closeout refs or ty
 
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /OPL work-order result must include target owner closeout, cleanup, absorption, Agent Lab re-evaluation refs, or typed blocker refs/);
+});
+
+test('execute external work order accepts OPL dry-run ready admission without closeout refs', () => {
+  const fixture = writeWorkOrderFixture('oma-execute-work-order-opl-dry-run-test-');
+  const fakeBinDir = makeFakeBinDir(fixture.tempDir);
+  const oplLogPath = path.join(fixture.tempDir, 'fake-opl-argv.json');
+  const fakeOplPath = path.join(fakeBinDir, 'opl');
+  writeFakeOplResultBin(fakeOplPath, oplLogPath, {
+    surface_kind: 'opl_work_order_codex_execution_dry_run_receipt',
+    version: 'opl.work-order-execution.dry-run.v1',
+    status: 'dry_run_ready',
+    dry_run: true,
+    work_order_id: 'oma_developer_patch_work_order_test',
+    planned_closeout: {
+      target_owner_receipt_or_typed_blocker_ref:
+        'target-owner-receipt-or-typed-blocker:example-agent/oma_developer_patch_work_order_test',
+      closeout_requires_target_owner: true,
+    },
+    no_executor_launch_proof: {
+      codex_process_started: false,
+      target_worktree_opened: false,
+      absorption_attempted: false,
+      cleanup_needed: false,
+      reason: 'dry_run',
+    },
+  });
+
+  const result = runExternalWorkOrder(fixture, { fakeBinDir, oplBin: fakeOplPath, output: true });
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const payload = readJson(fixture.outputPath);
+  assert.equal(payload.opl_result_currentness.closeout_refs_verified, false);
+  assert.equal(payload.opl_result_currentness.typed_blocker_refs_present, false);
+  assert.equal(payload.opl_result_currentness.dry_run_ready, true);
+  assert.equal(payload.opl_result_currentness.opl_result_envelope, 'direct');
+});
+
+test('execute external work order accepts OPL g2 envelope dry-run ready admission', () => {
+  const fixture = writeWorkOrderFixture('oma-execute-work-order-opl-g2-dry-run-test-');
+  const fakeBinDir = makeFakeBinDir(fixture.tempDir);
+  const oplLogPath = path.join(fixture.tempDir, 'fake-opl-argv.json');
+  const fakeOplPath = path.join(fakeBinDir, 'opl');
+  writeFakeOplResultBin(fakeOplPath, oplLogPath, {
+    version: 'g2',
+    work_order_execution: {
+      surface_id: 'opl_work_order_codex_execution',
+      status: 'dry_run_ready',
+      dry_run: true,
+      receipt: {
+        surface_kind: 'opl_work_order_codex_execution_dry_run_receipt',
+        version: 'opl.work-order-execution.dry-run.v1',
+        status: 'dry_run_ready',
+        dry_run: true,
+        work_order_id: 'oma_developer_patch_work_order_test',
+        planned_closeout: {
+          target_owner_receipt_or_typed_blocker_ref:
+            'target-owner-receipt-or-typed-blocker:example-agent/oma_developer_patch_work_order_test',
+          closeout_requires_target_owner: true,
+        },
+        no_executor_launch_proof: {
+          codex_process_started: false,
+          target_worktree_opened: false,
+          absorption_attempted: false,
+          cleanup_needed: false,
+          reason: 'dry_run',
+        },
+      },
+    },
+  });
+
+  const result = runExternalWorkOrder(fixture, { fakeBinDir, oplBin: fakeOplPath, output: true });
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const payload = readJson(fixture.outputPath);
+  assert.equal(payload.opl_result_currentness.closeout_refs_verified, false);
+  assert.equal(payload.opl_result_currentness.typed_blocker_refs_present, false);
+  assert.equal(payload.opl_result_currentness.dry_run_ready, true);
+  assert.equal(payload.opl_result_currentness.opl_result_envelope, 'g2_work_order_execution_receipt');
 });
 
 test('execute external work order accepts OPL typed blocker refs as closed delegation result', () => {

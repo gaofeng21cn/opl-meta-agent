@@ -374,6 +374,12 @@ test('agent:evidence projects production efficiency evidence into work order ref
     const payload = JSON.parse(result.stdout) as JsonObject;
     assert.equal(payload.status, 'proposal_recorded_requires_target_owner_gate');
     const workOrder = readJson(path.join(outputDir, 'developer-patch-work-order.json'));
+    assert.equal(workOrder.source_morphology_proof_ref, workOrder.source_morphology_proof.ref);
+    assert.equal(workOrder.source_morphology_proof.target_agent_id, 'med-autoscience');
+    assert.equal(workOrder.source_morphology_proof.consumed_as_refs_only, true);
+    assert.equal(workOrder.private_residue_decision_ref, workOrder.private_residue_decision.ref);
+    assert.equal(workOrder.private_residue_decision.private_residue_body_materialized, false);
+    assert.equal(workOrder.private_residue_decision.target_truth_write_authorized, false);
     assert.deepEqual(workOrder.efficiency_non_regression_refs.quality_floor_refs, [
       'quality-floor:med-autoscience/current-publication-quality',
     ]);
@@ -558,6 +564,20 @@ test('agent:evidence generates domain Agent Lab suite and proposal artifacts fro
 
     const workOrder = readJson(path.join(outputDir, 'developer-patch-work-order.json'));
     assert.equal(workOrder.status, 'ready_for_target_agent_source_patch_proposal');
+    assert.equal(workOrder.source_morphology_proof_ref, workOrder.source_morphology_proof.ref);
+    assert.equal(
+      workOrder.source_morphology_proof.source_agent_lab_result_ref,
+      workOrder.source_agent_lab_result_ref,
+    );
+    assert.ok(workOrder.source_morphology_proof.inspected_refs.includes('contracts/agent_lab_handoff.json'));
+    assert.ok(workOrder.source_morphology_proof.inspected_refs.includes('contracts/owner_receipt_contract.json'));
+    assert.equal(workOrder.source_morphology_proof.authority_boundary.can_write_target_domain_truth, false);
+    assert.equal(workOrder.private_residue_decision_ref, workOrder.private_residue_decision.ref);
+    assert.equal(
+      workOrder.private_residue_decision.source_morphology_proof_ref,
+      workOrder.source_morphology_proof_ref,
+    );
+    assert.equal(workOrder.private_residue_decision.target_artifact_mutation_authorized, false);
     assert.equal(
       workOrder.artifact_native_contract_ref,
       'artifact-native-contract-ref:med-autoscience/agent-evidence-takeover',
