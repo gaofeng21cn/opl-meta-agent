@@ -532,6 +532,82 @@ function assertBaselineReviewerMorphologyEvidence(aiReviewerEvaluation: AiReview
   }
 }
 
+function buildTargetAgentPackageManifest(targetAgent: TargetAgent): JsonObject {
+  const domainId = targetAgent.domain_id;
+  const domainLabel = targetAgent.domain_label ?? domainId;
+  return {
+    surface_kind: 'opl_agent_package_manifest.v1',
+    agent_id: domainId,
+    package_id: domainId,
+    display_name: domainLabel,
+    publisher: 'one-person-lab',
+    version: '0.1.0',
+    source: 'oma_generated_target_agent',
+    carrier_source_role: 'codex_plugin_default_carrier_not_package_truth',
+    schema_ref: 'contracts/opl-framework/agent-package-manifest.schema.json',
+    machine_boundary: 'OMA generates this package sidecar for OPL App/package management. Codex consumes the projected .codex-plugin carrier; this sidecar does not write target truth, owner receipts, runtime queues, or quality/export verdicts.',
+    package_core: {
+      core_kind: 'opl_agent_package_core',
+      identity_fields: ['package_id', 'agent_id', 'version'],
+      content_identity_fields: [
+        'manifest_sha256',
+        'payload_digest_ref',
+        'required_skill_pack_lock_refs',
+        'package_lock_ref',
+      ],
+      dependency_source: 'manifest_declared_capability_dependencies',
+      lock_owner: 'opl_connect_agent_package_registry',
+      lifecycle_receipt_owner: 'opl_connect_agent_package_registry',
+      exposure_owner: 'opl_connect_agent_package_registry',
+    },
+    distribution_payload: {
+      payload_kind: 'oma_generated_agent_package',
+      payload_ref: `opl://agent-packages/${domainId}/candidate`,
+      payload_digest_ref: 'sha256:0000000000000000000000000000000000000000000000000000000000000000',
+      required_skill_pack_lock_refs: [],
+      proof_status: 'candidate_sidecar_pending_publish',
+      live_download_proof: false,
+      installed_reload_proof: false,
+      oci_ref: `ghcr.io/gaofeng21cn/opl-agent-${domainId}:latest`,
+      oci_media_type: 'application/vnd.oci.image.manifest.v1+json',
+      immutable_tag: '0.1.0',
+      rolling_tag: 'latest',
+      promotion_policy: 'daily_candidate_gates_then_promote_latest',
+      install_truth: 'resolved_digest_lock',
+    },
+    codex_surface: {
+      plugin_id: domainId,
+      standalone_distribution: 'generated_carrier_surface',
+      required_skill_ids: [domainId],
+      bundled_capability_package_ids: [],
+      user_install_action_count: 1,
+    },
+    carrier_adapters: [
+      {
+        adapter_kind: 'codex_plugin_carrier',
+        carrier: 'codex_plugin',
+        source_surface: 'codex_surface',
+        projection_role: 'package_carrier_adapter',
+        owns_package_core: false,
+        owns_domain_truth: false,
+      },
+    ],
+    opl_managed_surface: {
+      package_shape: 'thin_agent_package',
+      dependency_resolution: 'managed_dependency_graph',
+      dependency_update_policy: 'independent_package_target',
+      developer_mode_dependency_policy: 'source_checkout_when_authorized_else_pull_request',
+    },
+    capability_dependencies: [],
+  };
+}
+
+function writeTargetAgentPackageManifest(targetAgentDir: string, targetAgent: TargetAgent): string {
+  const packageManifestPath = path.join(targetAgentDir, 'contracts', 'opl_agent_package_manifest.json');
+  writeJson(packageManifestPath, buildTargetAgentPackageManifest(targetAgent));
+  return packageManifestPath;
+}
+
 function buildBaselineReceipt(
   targetAgent: TargetAgent,
   suiteResult: SuiteResult,
@@ -741,6 +817,7 @@ export function runBuildAgentBaseline({
     targetAgentDir,
     '--json',
   ]);
+  const targetAgentPackageManifestPath = writeTargetAgentPackageManifest(targetAgentDir, targetAgent);
 
   const suite = buildAgentLabSuite({
     targetAgent,
@@ -845,6 +922,7 @@ export function runBuildAgentBaseline({
     new_agent_delivery_gate: newAgentDeliveryGate,
     scaleout_evidence_ledger: scaleoutEvidenceLedger,
     stage_decomposition_attempt: stageDecompositionAttempt,
+    opl_agent_package_manifest_ref: targetAgentPackageManifestPath,
   };
 
   return {
@@ -875,6 +953,7 @@ export function runBuildAgentBaseline({
       real_target_agent_lab_suite_path: path.join(outputDir, 'real-target-agent-lab-suite.json'),
       real_target_delivery_receipt_path: realTargetReceiptPath,
       real_target_scaleout_evidence_ledger_path: scaleoutLedgerPath,
+      opl_agent_package_manifest_path: targetAgentPackageManifestPath,
     },
     opl_agent_lab: agentLabRun.agent_lab_run,
     opl_generated_interfaces: generatedInterfaces.generated_agent_interfaces,

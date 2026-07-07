@@ -2,7 +2,7 @@
 
 ## 用途
 
-当用户要把一个高价值知识交付流程做成 OPL-compatible Foundry Agent 时，使用本 skill 驱动从 intent intake 到 baseline delivery 的完整 domain pack 构建。OMA 是 OPL Foundry Agent 系列里的 agent-building / improvement 成员，复用 MAS/MAG/RCA 同一 canonical OPL agent lifecycle、generic slots、stage sections、closeout shape 和 authority invariants，但外显入口是 OPL generated skill surface，不走 plugin packaged structure。面向 Codex 的默认入口是用户自然语言，例如“帮我做一个能交付 X 的智能体”；本 skill 负责把自然语言归一成 `build-agent-baseline` 的目标 agent 字段。
+当用户要把一个高价值知识交付流程做成 OPL-compatible Foundry Agent 时，使用本 skill 驱动从 intent intake 到 baseline delivery 的完整 domain pack 构建。OMA 是 OPL Foundry Agent 系列里的 agent-building / improvement 成员，复用 MAS/MAG/RCA 同一 canonical OPL agent lifecycle、generic slots、stage sections、closeout shape 和 authority invariants。OMA 自身不维护 repo-owned generic plugin wrapper；目标 agent 必须生成 OPL Agent Package manifest sidecar，并由 OPL generated skill / Codex plugin carrier surface 对外投影。面向 Codex 的默认入口是用户自然语言，例如“帮我做一个能交付 X 的智能体”；本 skill 负责把自然语言归一成 `build-agent-baseline` 的目标 agent 字段。
 
 ## 输入
 
@@ -21,11 +21,12 @@
 6. 对生成后的 target agent repo 执行 takeover / Agent Lab external suite，获得 takeover receipt、online-learning candidate 和 mechanism proposal。
 7. 消费结构化 independent AI reviewer evaluation，并执行 `improve:external-suite` 或等价 self-evolution action，把 Agent Lab / reviewer evidence 转成 target capability candidate、developer patch work order、no-patch coordination receipt 或 typed blocker。
 8. 若存在可修复缺口，进入 owner-gated improvement loop 并重跑目标 repo verification / Agent Lab re-evaluation；若无 source patch required，记录 no-patch coordination work order 和 re-evaluation refs。
-9. 通过 `baseline-delivery` gate 后签发 package/runbook/receipt。
+9. 通过 `baseline-delivery` gate 后签发 package/runbook/receipt，并写出 `contracts/opl_agent_package_manifest.json` sidecar；Codex carrier 由 OPL generated surface 投影，sidecar 由 OPL App/Connect 管理安装、更新、依赖、repair 和按需暴露。
 
 ## 输出
 
 - OPL-compatible agent package refs。
+- OPL Agent Package manifest sidecar ref。
 - stage/action/memory/artifact/gate refs。
 - baseline delivery receipt refs。
 - takeover / external suite result refs。

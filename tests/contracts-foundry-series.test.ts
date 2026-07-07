@@ -73,8 +73,10 @@ test('foundry agent series contract binds OMA to shared Progress-First projectio
     series_member_kind: 'opl_foundry_agent',
     series_peers: ['mas', 'mag', 'rca'],
     domain_design_center: 'agent_building_and_improvement',
-    packaging_model: 'opl_generated_skill_surface_not_plugin_packaged',
+    packaging_model: 'opl_agent_package_sidecar_plus_opl_generated_codex_carrier',
     plugin_packaged_structure_required: false,
+    codex_plugin_carrier_is_package_truth: false,
+    target_agent_package_manifest_required: true,
     shared_opl_agent_lifecycle: {
       shared_with_series_peers: true,
       lifecycle_packets: [
@@ -236,9 +238,17 @@ test('foundry agent series contract binds OMA to shared Progress-First projectio
   assert.equal(series.app_projection_policy.app_can_read_domain_body, false);
   assert.equal(series.authority_boundary.generated_surface_can_claim_domain_ready, false);
   assert.equal(series.workspace_topology_profile.default_profiles.one_off.project_collection_path, 'projects');
-  assert.equal(series.workspace_topology_profile.default_profiles.rca_series.project_collection_path, 'projects');
-  assert.equal(series.workspace_topology_profile.default_profiles.mas_portfolio.project_collection_path, 'projects');
+  assert.equal(series.workspace_topology_profile.default_profiles.series.project_collection_path, 'projects');
+  assert.equal(series.workspace_topology_profile.default_profiles.portfolio.project_collection_path, 'projects');
+  assert.equal(series.workspace_topology_profile.default_profiles.rca_series.canonical_profile_id, 'series');
+  assert.equal(series.workspace_topology_profile.default_profiles.mas_portfolio.canonical_profile_id, 'portfolio');
+  assert.equal(series.workspace_topology_profile.domain_profile_defaults.mas, 'portfolio');
+  assert.equal(series.workspace_topology_profile.domain_profile_defaults.rca, 'series');
   assert.equal(series.workspace_topology_profile.domain_profile_defaults.bookforge, 'one_off');
+  assert.equal(
+    series.workspace_topology_profile.legacy_domain_profile_aliases.mas_portfolio.canonical_profile_id,
+    'portfolio',
+  );
   assert.deepEqual(
     series.workspace_topology_profile.workspace_initialization_policy.legacy_project_collection_aliases,
     ['deliverables', 'studies'],

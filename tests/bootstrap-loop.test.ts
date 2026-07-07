@@ -303,6 +303,7 @@ test('opl-meta-agent bootstraps an explicit target agent and validates it throug
     const mechanismPath = path.join(outputRoot, 'mechanism-patch-proposal.json');
     const realTargetReceiptPath = path.join(outputRoot, 'real-target-delivery-receipt.json');
     const realTargetLedgerPath = path.join(outputRoot, 'real-target-scaleout-evidence-ledger.json');
+    const packageManifestPath = path.join(targetDir, 'contracts', 'opl_agent_package_manifest.json');
     const fixturePath = path.join(
       targetDir,
       'contracts',
@@ -319,10 +320,22 @@ test('opl-meta-agent bootstraps an explicit target agent and validates it throug
     assert.equal(fs.existsSync(mechanismPath), true);
     assert.equal(fs.existsSync(realTargetReceiptPath), true);
     assert.equal(fs.existsSync(realTargetLedgerPath), true);
+    assert.equal(fs.existsSync(packageManifestPath), true);
+    assert.equal(payload.artifacts.opl_agent_package_manifest_path, packageManifestPath);
+    assert.equal(payload.real_target_delivery.opl_agent_package_manifest_ref, packageManifestPath);
 
+    const packageManifest = readJson(packageManifestPath);
     const fixture = readJson(fixturePath);
     const stagePacket = readJson(stagePacketPath);
     const stageControl = readJson(path.join(targetDir, 'contracts', 'stage_control_plane.json'));
+    assert.equal(packageManifest.surface_kind, 'opl_agent_package_manifest.v1');
+    assert.equal(packageManifest.package_id, 'baseline-fixture-agent');
+    assert.equal(packageManifest.carrier_source_role, 'codex_plugin_default_carrier_not_package_truth');
+    assert.equal(packageManifest.codex_surface.standalone_distribution, 'generated_carrier_surface');
+    assert.deepEqual(packageManifest.codex_surface.required_skill_ids, ['baseline-fixture-agent']);
+    assert.deepEqual(packageManifest.capability_dependencies, []);
+    assert.equal(packageManifest.carrier_adapters[0].owns_package_core, false);
+    assert.equal(packageManifest.carrier_adapters[0].owns_domain_truth, false);
     assertGeneratedTargetStagePack(targetDir, stageControl, {
       stageId: 'agent-output-draft',
       actionRef: 'draft-agent-output',
@@ -526,12 +539,14 @@ test('build-agent-baseline bootstraps a requested target agent from structured s
     const mechanism = readJson(path.join(outputRoot, 'mechanism-patch-proposal.json'));
     const realTargetReceipt = readJson(path.join(outputRoot, 'real-target-delivery-receipt.json'));
     const scaleoutLedger = readJson(path.join(outputRoot, 'real-target-scaleout-evidence-ledger.json'));
+    const packageManifest = readJson(path.join(targetDir, 'contracts', 'opl_agent_package_manifest.json'));
 
     assert.equal(payload.target_agent.domain_id, 'research-workbench-agent');
     assert.equal(payload.target_agent.domain_label, 'Research Workbench Agent');
     assert.equal(payload.target_agent.delivery_domain, 'research_workbench');
     assert.equal(payload.target_agent.repo_dir, targetDir);
     assert.equal(payload.target_agent.target_brief, targetBrief);
+    assert.equal(payload.artifacts.opl_agent_package_manifest_path, path.join(targetDir, 'contracts', 'opl_agent_package_manifest.json'));
     assert.equal(payload.opl_generated_interfaces.skill.descriptors[0].command_contract_id, 'research-workbench-agent.draft-agent-output');
     assert.equal(payload.opl_generated_interfaces.product_entry.descriptors[0].action_key, 'draft-agent-output');
     assert.equal(payload.real_target_delivery.target_agent.domain_id, 'research-workbench-agent');
@@ -542,6 +557,13 @@ test('build-agent-baseline bootstraps a requested target agent from structured s
     assert.equal(descriptor.target_brief, targetBrief);
     assert.equal(descriptor.authority_boundary.opl_can_write_domain_truth, false);
     assert.equal(descriptor.authority_boundary.opl_can_authorize_quality_or_export, false);
+    assert.equal(packageManifest.package_id, 'research-workbench-agent');
+    assert.equal(packageManifest.display_name, 'Research Workbench Agent');
+    assert.equal(packageManifest.source, 'oma_generated_target_agent');
+    assert.equal(packageManifest.codex_surface.plugin_id, 'research-workbench-agent');
+    assert.equal(packageManifest.codex_surface.standalone_distribution, 'generated_carrier_surface');
+    assert.equal(packageManifest.distribution_payload.install_truth, 'resolved_digest_lock');
+    assert.equal(packageManifest.distribution_payload.live_download_proof, false);
 
     assert.equal(actionCatalog.target_domain_id, 'research-workbench-agent');
     assert.equal(actionCatalog.actions[0].action_id, 'draft-agent-output');

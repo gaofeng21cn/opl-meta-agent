@@ -38,6 +38,7 @@
 ## 输出
 
 - `candidate_agent_package_ref`
+- `opl_agent_package_manifest_ref`，指向目标 agent repo 的 `contracts/opl_agent_package_manifest.json`
 - scaffold validation ref
 - generated interface bundle ref
 - artifact morphology brief ref
@@ -54,6 +55,7 @@
 ## 质量门槛
 
 - package 可以在 clean output root 中重建。
+- package 必须包含 OPL Agent Package manifest sidecar；Codex plugin 是默认 carrier/projection，不是 package truth。
 - contract metadata 足以生成 CLI/MCP/Skill/product-entry/OpenAI/AI SDK surface。
 - stage graph 和 action catalog 来自 typed closeout，而不是脚本内固定 graph。
 - artifact morphology brief 来自 typed closeout，并被 artifact locator、suite task manifest、takeover/external-suite evidence 和 delivery receipt 引用。
