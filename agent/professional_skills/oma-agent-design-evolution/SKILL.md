@@ -11,6 +11,12 @@ Turn Agent Lab, FeedbackOps, owner feedback, work-order closeout, App projection
 
 This skill is not MAS ScholarSkills, not xskill runtime, and not target-domain authority.
 
+## AI-First / Contract-Light Boundary
+
+- Use AI judgment here for root-cause classification, trajectory slice meaning, repair-boundary choice, adoption risk, and whether the next output should be a patch work order, mechanism proposal, route-back, or typed blocker.
+- Treat `contracts/capability_map.json`, target capability maps, and work-order policies as lightweight locators and authority guards only; they bind allowed refs and forbidden surfaces, not the design diagnosis itself.
+- Do not encode evolution reasoning into token maps, scorecards, App projections, or generated descriptors. If the evidence cannot support a design decision, return a typed blocker.
+
 ## Inputs
 
 - Agent Lab result refs, independent reviewer evidence, owner feedback refs, work-order closeout refs, App/workbench projection refs, or redacted trajectory refs.

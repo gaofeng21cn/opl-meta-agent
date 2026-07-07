@@ -9,6 +9,12 @@ description: Use when OMA must author bounded developer work orders or review sc
 
 Convert evidence into bounded refs-only developer patch work orders, typed blocker shapes, script-retention recommendations, OPL absorption candidates, deletion readiness, tombstone/provenance, or route-back. This skill authors and reviews method content only; it does not execute work orders or authorize cleanup actions.
 
+## AI-First / Contract-Light Boundary
+
+- Use AI judgment here for bounded work-order scope, evidence-to-patch traceability, script retention vs deletion readiness, OPL absorption fit, and when hygiene evidence is still too weak to act.
+- Treat `contracts/capability_map.json`, script-to-pack receipts, source-purity contracts, and work-order schemas as compact authorization and verification indexes; they do not execute, absorb, delete, or close owner routes.
+- Do not manufacture cleanup authority through extra contract fields. If active callers, parity, owner closeout, or tombstone evidence is missing, emit a route-back or typed blocker.
+
 ## Inputs
 
 - Agent Lab suite result refs, reviewer evaluation refs, owner feedback refs, production evidence refs, script-to-pack readback, source-purity tests, script morphology policy, and private migration inventory refs.

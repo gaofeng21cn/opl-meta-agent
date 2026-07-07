@@ -9,6 +9,12 @@ description: Use when OMA must turn user intent, external patterns, and owner bo
 
 Shape a target-agent request into an auditable intent packet, research disposition, stage sequence, action catalog, artifact morphology brief, and no-forbidden-write policy. The result stays refs-only and declarative; OPL owns generated interfaces and runtime, while target owners keep domain truth.
 
+## AI-First / Contract-Light Boundary
+
+- Use AI judgment here for user-intent reframing, external-pattern transfer, stage decomposition, acceptance criteria, artifact morphology, non-goals, and owner split.
+- Treat `contracts/capability_map.json`, stage control contracts, and generated-interface refs as a compact index and safety boundary; they record the selected architecture, but they do not discover it.
+- Prefer the smallest declarative stage pack that preserves owner handoffs. Do not create compatibility aliases, runtime wrappers, or schema detail to avoid making an architectural judgment.
+
 ## Inputs
 
 - User request, target audience, delivery domain, target artifact, quality bar, non-goals, tools, data custody, and owner routes.

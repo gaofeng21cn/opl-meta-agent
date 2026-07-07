@@ -9,6 +9,12 @@ description: Use when OMA must design Agent Lab suites or review existing target
 
 Design Agent Lab baseline, takeover, and external suite specs; review existing OPL-compatible target agents; and convert findings into suite specs, work-order candidates, mechanism proposals, route-back, or typed blocker shape. Suite pass/fail remains evidence input, not target quality verdict.
 
+## AI-First / Contract-Light Boundary
+
+- Use AI judgment here for suite realism, failure taxonomy, takeover gap severity, evidence sufficiency, independent-review quality, and whether findings should become a work order, mechanism proposal, route-back, or blocker.
+- Treat Agent Lab results, contracts, and `contracts/capability_map.json` as evidence and routing inputs only; they cannot turn a passing suite into target quality authority or readiness.
+- Keep evaluation contracts light: probe the few risks that would actually break takeover, and return blocked-suite repair targets rather than padding happy-path checks.
+
 ## Inputs
 
 - Candidate package refs, target external agent descriptor/contracts, target stage/action/memory/artifact/owner receipt refs.
