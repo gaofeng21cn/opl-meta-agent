@@ -7,7 +7,7 @@ Machine boundary: 本文是人读索引。机器 locator 归 `contracts/capabili
 
 本目录持有 repo-local Codex-style 专业方法技能。它们把 agent-building 专家判断从 stage prompts 和 domain skill declarations 中拆出，供 Codex 在对应 stage 内手工/显式调用。
 
-`contracts/capability_map.json` 覆盖本目录 active workflow-level professional skills，并登记 legacy fine-grained redirect/tombstone locator。旧入口只保留 discovery 迁移路径，不再写成独立 authority 或 active capability。
+`contracts/capability_map.json` 覆盖本目录 active workflow-level professional skills，并登记 legacy fine-grained redirect ledger。旧入口只保留 discovery 迁移路径，不再写成独立 authority、active capability 或物理 tombstone 文件。
 
 Active workflow-level professional skills:
 
@@ -18,21 +18,21 @@ Active workflow-level professional skills:
 
 Legacy redirects:
 
-- `oma-agent-evolution/SKILL.md` -> `oma-agent-design-evolution/SKILL.md`
-- `oma-trajectory-learning-analyst/SKILL.md` -> `oma-agent-design-evolution/SKILL.md`
-- `oma-intent-architect/SKILL.md` -> `oma-stage-pack-intent-architecture/SKILL.md`
-- `oma-external-pattern-researcher/SKILL.md` -> `oma-stage-pack-intent-architecture/SKILL.md`
-- `oma-stage-pack-architect/SKILL.md` -> `oma-stage-pack-intent-architecture/SKILL.md`
-- `oma-agent-lab-suite-designer/SKILL.md` -> `oma-eval-takeover-review/SKILL.md`
-- `oma-takeover-reviewer/SKILL.md` -> `oma-eval-takeover-review/SKILL.md`
-- `oma-work-order-author/SKILL.md` -> `oma-work-order-hygiene/SKILL.md`
-- `oma-script-to-pack-hygiene-reviewer/SKILL.md` -> `oma-work-order-hygiene/SKILL.md`
+- `legacy-professional-skill:oma-agent-evolution` -> `oma-agent-design-evolution/SKILL.md`
+- `legacy-professional-skill:oma-trajectory-learning-analyst` -> `oma-agent-design-evolution/SKILL.md`
+- `legacy-professional-skill:oma-intent-architect` -> `oma-stage-pack-intent-architecture/SKILL.md`
+- `legacy-professional-skill:oma-external-pattern-researcher` -> `oma-stage-pack-intent-architecture/SKILL.md`
+- `legacy-professional-skill:oma-stage-pack-architect` -> `oma-stage-pack-intent-architecture/SKILL.md`
+- `legacy-professional-skill:oma-agent-lab-suite-designer` -> `oma-eval-takeover-review/SKILL.md`
+- `legacy-professional-skill:oma-takeover-reviewer` -> `oma-eval-takeover-review/SKILL.md`
+- `legacy-professional-skill:oma-work-order-author` -> `oma-work-order-hygiene/SKILL.md`
+- `legacy-professional-skill:oma-script-to-pack-hygiene-reviewer` -> `oma-work-order-hygiene/SKILL.md`
 
 Boundary:
 
 - `agent/skills/*.md` declares domain skill surfaces that OPL generated interfaces may expose or consume.
 - Active `agent/professional_skills/*/SKILL.md` carries workflow-level specialist methods used inside stage execution.
-- Legacy redirect entries carry no independent authority and should not be used as new capability targets.
+- Legacy redirect entries carry no independent authority, are not repo paths, and should not be used as new capability targets.
 - Stage prompts own goals, routes, accepted refs, handoff shapes, and blocker enums.
 - Professional skills do not create runtime wrappers, target artifacts, owner receipts, typed blockers, quality verdicts, promotion gate state, or target-domain authority.
 

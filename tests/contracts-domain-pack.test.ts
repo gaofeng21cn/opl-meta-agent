@@ -126,16 +126,16 @@ test('domain skill declarations and professional skills stay separate', () => {
     'agent/professional_skills/oma-stage-pack-intent-architecture/SKILL.md',
     'agent/professional_skills/oma-work-order-hygiene/SKILL.md',
   ];
-  const expectedLegacyTombstonePaths = [
-    'agent/professional_skills/oma-agent-evolution/TOMBSTONE.md',
-    'agent/professional_skills/oma-agent-lab-suite-designer/TOMBSTONE.md',
-    'agent/professional_skills/oma-external-pattern-researcher/TOMBSTONE.md',
-    'agent/professional_skills/oma-intent-architect/TOMBSTONE.md',
-    'agent/professional_skills/oma-script-to-pack-hygiene-reviewer/TOMBSTONE.md',
-    'agent/professional_skills/oma-stage-pack-architect/TOMBSTONE.md',
-    'agent/professional_skills/oma-takeover-reviewer/TOMBSTONE.md',
-    'agent/professional_skills/oma-trajectory-learning-analyst/TOMBSTONE.md',
-    'agent/professional_skills/oma-work-order-author/TOMBSTONE.md',
+  const expectedLegacyProfessionalSkillRefs = [
+    'legacy-professional-skill:oma-agent-evolution',
+    'legacy-professional-skill:oma-agent-lab-suite-designer',
+    'legacy-professional-skill:oma-external-pattern-researcher',
+    'legacy-professional-skill:oma-intent-architect',
+    'legacy-professional-skill:oma-script-to-pack-hygiene-reviewer',
+    'legacy-professional-skill:oma-stage-pack-architect',
+    'legacy-professional-skill:oma-takeover-reviewer',
+    'legacy-professional-skill:oma-trajectory-learning-analyst',
+    'legacy-professional-skill:oma-work-order-author',
   ];
 
   assert.deepEqual(
@@ -153,6 +153,11 @@ test('domain skill declarations and professional skills stay separate', () => {
   assert.equal(
     requiredPackPaths.some((relativePath) => /agent\/professional_skills\/oma-.+\/TOMBSTONE\.md$/.test(relativePath)),
     false,
+  );
+  assert.deepEqual(
+    listMarkdownFiles('agent/professional_skills')
+      .filter((relativePath) => relativePath.endsWith('/TOMBSTONE.md')),
+    [],
   );
   assert.equal(
     requiredPackPaths.some((relativePath) => /^agent\/skills\/oma-.+\.md$/.test(relativePath)),
@@ -193,10 +198,12 @@ test('domain skill declarations and professional skills stay separate', () => {
   const legacyRedirects = asObjects(capabilityMap.legacy_professional_skill_redirects);
   assert.deepEqual(
     legacyRedirects.map((entry) => entry.legacy_ref).sort(),
-    expectedLegacyTombstonePaths,
+    expectedLegacyProfessionalSkillRefs,
   );
   legacyRedirects.forEach((entry) => {
     assert.equal(entry.state, 'legacy_redirect');
+    assert.match(String(entry.legacy_ref), /^legacy-professional-skill:oma-.+$/);
+    assert.equal(String(entry.legacy_ref).includes('/'), false);
     assert.ok(expectedActiveProfessionalSkillPaths.includes(String(entry.canonical_ref)));
     assert.equal(entry.authority_boundary, 'no_independent_authority');
   });

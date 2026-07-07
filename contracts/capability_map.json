@@ -563,63 +563,63 @@
   },
   "legacy_professional_skill_redirects": [
     {
-      "legacy_ref": "agent/professional_skills/oma-agent-evolution/TOMBSTONE.md",
+      "legacy_ref": "legacy-professional-skill:oma-agent-evolution",
       "canonical_ref": "agent/professional_skills/oma-agent-design-evolution/SKILL.md",
       "state": "legacy_redirect",
       "capability_kind": "legacy_professional_skill_redirect",
       "authority_boundary": "no_independent_authority"
     },
     {
-      "legacy_ref": "agent/professional_skills/oma-trajectory-learning-analyst/TOMBSTONE.md",
+      "legacy_ref": "legacy-professional-skill:oma-trajectory-learning-analyst",
       "canonical_ref": "agent/professional_skills/oma-agent-design-evolution/SKILL.md",
       "state": "legacy_redirect",
       "capability_kind": "legacy_professional_skill_redirect",
       "authority_boundary": "no_independent_authority"
     },
     {
-      "legacy_ref": "agent/professional_skills/oma-intent-architect/TOMBSTONE.md",
+      "legacy_ref": "legacy-professional-skill:oma-intent-architect",
       "canonical_ref": "agent/professional_skills/oma-stage-pack-intent-architecture/SKILL.md",
       "state": "legacy_redirect",
       "capability_kind": "legacy_professional_skill_redirect",
       "authority_boundary": "no_independent_authority"
     },
     {
-      "legacy_ref": "agent/professional_skills/oma-external-pattern-researcher/TOMBSTONE.md",
+      "legacy_ref": "legacy-professional-skill:oma-external-pattern-researcher",
       "canonical_ref": "agent/professional_skills/oma-stage-pack-intent-architecture/SKILL.md",
       "state": "legacy_redirect",
       "capability_kind": "legacy_professional_skill_redirect",
       "authority_boundary": "no_independent_authority"
     },
     {
-      "legacy_ref": "agent/professional_skills/oma-stage-pack-architect/TOMBSTONE.md",
+      "legacy_ref": "legacy-professional-skill:oma-stage-pack-architect",
       "canonical_ref": "agent/professional_skills/oma-stage-pack-intent-architecture/SKILL.md",
       "state": "legacy_redirect",
       "capability_kind": "legacy_professional_skill_redirect",
       "authority_boundary": "no_independent_authority"
     },
     {
-      "legacy_ref": "agent/professional_skills/oma-agent-lab-suite-designer/TOMBSTONE.md",
+      "legacy_ref": "legacy-professional-skill:oma-agent-lab-suite-designer",
       "canonical_ref": "agent/professional_skills/oma-eval-takeover-review/SKILL.md",
       "state": "legacy_redirect",
       "capability_kind": "legacy_professional_skill_redirect",
       "authority_boundary": "no_independent_authority"
     },
     {
-      "legacy_ref": "agent/professional_skills/oma-takeover-reviewer/TOMBSTONE.md",
+      "legacy_ref": "legacy-professional-skill:oma-takeover-reviewer",
       "canonical_ref": "agent/professional_skills/oma-eval-takeover-review/SKILL.md",
       "state": "legacy_redirect",
       "capability_kind": "legacy_professional_skill_redirect",
       "authority_boundary": "no_independent_authority"
     },
     {
-      "legacy_ref": "agent/professional_skills/oma-work-order-author/TOMBSTONE.md",
+      "legacy_ref": "legacy-professional-skill:oma-work-order-author",
       "canonical_ref": "agent/professional_skills/oma-work-order-hygiene/SKILL.md",
       "state": "legacy_redirect",
       "capability_kind": "legacy_professional_skill_redirect",
       "authority_boundary": "no_independent_authority"
     },
     {
-      "legacy_ref": "agent/professional_skills/oma-script-to-pack-hygiene-reviewer/TOMBSTONE.md",
+      "legacy_ref": "legacy-professional-skill:oma-script-to-pack-hygiene-reviewer",
       "canonical_ref": "agent/professional_skills/oma-work-order-hygiene/SKILL.md",
       "state": "legacy_redirect",
       "capability_kind": "legacy_professional_skill_redirect",
