@@ -3,7 +3,7 @@
   "version": "source-structure-policy.v1",
   "owner": "opl-meta-agent",
   "target_domain_id": "opl-meta-agent",
-  "purpose": "family_level_source_structure_and_line_budget_lane",
+  "purpose": "family_level_source_structure_lane",
   "state": "active_machine_policy",
   "machine_boundary": "scripts/check-source-structure.ts consumes this policy; scripts/sync-authority-functions.ts consumes the authority-functions source contract; scripts/sync-stage-control-plane.ts consumes the stage control plane source contract.",
   "scan_scope": {
@@ -35,30 +35,7 @@
       "command_ref": "npm run source-structure:strict"
     }
   },
-  "compatibility_aliases": [
-    {
-      "alias_command_ref": "npm run line-budget",
-      "canonical_command_ref": "npm run source-structure",
-      "state": "compatibility_alias_retained",
-      "retention_reason": "retained for existing package, verify, and machine active-caller receipts; source-structure is the canonical maintenance lane",
-      "future_retirement_requires": [
-        "no_active_package_or_verify_caller_ref",
-        "source_purity_scan_receipt_refreshed_without_alias_callers",
-        "tombstone_or_provenance_ref"
-      ]
-    },
-    {
-      "alias_command_ref": "npm run line-budget:strict",
-      "canonical_command_ref": "npm run source-structure:strict",
-      "state": "compatibility_alias_retained",
-      "retention_reason": "retained for existing package, verify, and machine active-caller receipts; source-structure:strict is the canonical hard-gate lane",
-      "future_retirement_requires": [
-        "no_active_package_or_verify_caller_ref",
-        "source_purity_scan_receipt_refreshed_without_alias_callers",
-        "tombstone_or_provenance_ref"
-      ]
-    }
-  ],
+  "compatibility_aliases": [],
   "generated_aggregate_exemptions": [
     {
       "aggregate_ref": "runtime/authority_functions/meta-agent-authority-functions.json",

@@ -26,12 +26,12 @@ case "$lane" in
   typecheck)
     npm run typecheck
     ;;
-  structure|line-budget)
+  structure)
     node scripts/sync-authority-functions.ts --check
     node scripts/sync-stage-control-plane.ts --check
     node scripts/check-source-structure.ts --advisory
     ;;
-  structure:strict|line-budget:strict)
+  structure:strict)
     node scripts/sync-authority-functions.ts --check
     node scripts/sync-stage-control-plane.ts --check
     node scripts/check-source-structure.ts --strict
@@ -45,7 +45,7 @@ case "$lane" in
     ;;
   *)
     echo "Unknown lane: $lane" >&2
-    echo "Usage: scripts/verify.sh [smoke|behavior|typecheck|structure|line-budget|structure:strict|line-budget:strict|full|cleanup]" >&2
+    echo "Usage: scripts/verify.sh [smoke|behavior|typecheck|structure|structure:strict|full|cleanup]" >&2
     exit 1
     ;;
 esac

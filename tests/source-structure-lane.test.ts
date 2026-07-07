@@ -11,11 +11,7 @@ import {
   asStrings,
 } from './support/contracts.ts';
 
-function npmScriptName(commandRef: string): string {
-  return commandRef.replace(/^npm run /, '');
-}
-
-test('source-structure and line-budget lanes are repo-native package and verify entrypoints', () => {
+test('source-structure lanes are repo-native package and verify entrypoints without retired line-budget aliases', () => {
   const packageJson = readJson('package.json');
   const verifyScript = readText('scripts/verify.sh');
   const policy = readJson('contracts/source_structure_policy.json');
@@ -30,13 +26,12 @@ test('source-structure and line-budget lanes are repo-native package and verify 
   assert.equal(packageJson.scripts['source-structure:strict:json'], 'scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --strict --json');
   assert.equal(packageJson.scripts['script-to-pack:readback'], 'scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --strict --script-to-pack-readback');
   assert.equal(packageJson.scripts['script-to-pack:readback:full'], 'scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --strict --script-to-pack-readback-full');
-  compatibilityAliases.forEach((entry) => {
-    const aliasName = npmScriptName(String(entry.alias_command_ref));
-    const canonicalName = npmScriptName(String(entry.canonical_command_ref));
-    assert.equal(entry.state, 'compatibility_alias_retained');
-    assert.equal(packageJson.scripts[aliasName], packageJson.scripts[canonicalName]);
-    assert.ok(verifyScript.includes(`${canonicalName.replace('source-', '')}|${aliasName})`));
-  });
+  assert.equal(packageJson.scripts['line-budget'], undefined);
+  assert.equal(packageJson.scripts['line-budget:strict'], undefined);
+  assert.deepEqual(compatibilityAliases, []);
+  assert.ok(verifyScript.includes('structure)'));
+  assert.ok(verifyScript.includes('structure:strict)'));
+  assert.equal(verifyScript.includes('line-budget'), false);
 
   const stageControlExemption = asObjects(policy.generated_aggregate_exemptions)
     .find((entry) => entry.aggregate_ref === 'contracts/stage_control_plane.json');
@@ -184,7 +179,7 @@ test('source-structure publishes a JSON machine readback for script-to-pack guar
   assert.equal(payload.readback_is_authority, false);
   assert.deepEqual(
     asObjects(payload.compatibility_aliases).map((entry) => entry.alias_command_ref),
-    ['npm run line-budget', 'npm run line-budget:strict'],
+    [],
   );
   assert.equal(payload.script_to_pack_receipt_guard.guard_id, 'oma.source_structure.script_to_pack_receipt_drift_guard.v1');
   assert.equal(payload.script_to_pack_receipt_guard.json_readback_command_ref, 'npm run source-structure:json');

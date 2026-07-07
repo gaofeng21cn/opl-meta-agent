@@ -1414,8 +1414,6 @@
         {
           "script_ref": "scripts/check-source-structure.ts",
           "active_caller_refs": [
-            "package.json#scripts.line-budget",
-            "package.json#scripts.line-budget:strict",
             "package.json#scripts.script-to-pack:readback",
             "package.json#scripts.script-to-pack:readback:full",
             "package.json#scripts.source-structure",
@@ -1699,8 +1697,6 @@
             "package.json#scripts.authority-functions:check",
             "package.json#scripts.authority-functions:split",
             "package.json#scripts.authority-functions:write",
-            "package.json#scripts.line-budget",
-            "package.json#scripts.line-budget:strict",
             "package.json#scripts.script-to-pack:readback",
             "package.json#scripts.script-to-pack:readback:full",
             "package.json#scripts.source-structure",
