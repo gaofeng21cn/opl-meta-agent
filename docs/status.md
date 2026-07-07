@@ -130,6 +130,10 @@ alias，而是在 `contracts/source_structure_policy.json#compatibility_aliases`
 `tombstone_or_provenance_ref`。因此 line-budget aliases 不能退役；退役停止条件是
 `package.json`、`scripts/verify.sh`、machine active-caller receipt 和 operator readback
 同时不再引用 alias，且 source-purity receipt 刷新后无 alias caller。
+`script-to-pack:readback` / `script-to-pack:readback:full` 运行在 strict
+source-structure gate 下；若 primary shrink 尚未消除 line-budget violation，它们会以
+`failed_source_structure_gate` 失败并在 `source_structure_gate.line_budget` 暴露原因。
+这不改变 cleanup candidate 数量，也不授权 item `5/6/7` 物理删除。
 
 同一轮 re-audit 确认 OPL Framework `/Users/gaofeng/workspace/one-person-lab`
 HEAD `8fa4731b94ca7badfcb70b3e2bed0a731061d90a` 已提供

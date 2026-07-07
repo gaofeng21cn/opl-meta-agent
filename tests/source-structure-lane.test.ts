@@ -235,16 +235,30 @@ test('script-to-pack default readback is compact and does not become a second sc
     cwd: repoRoot,
     encoding: 'utf8',
   });
-  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+  assert.ok([0, 1].includes(result.status ?? -1), `${result.stdout}\n${result.stderr}`);
   const payload = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
 
   assert.equal(payload.surface_kind, 'oma_script_to_pack_retirement_cleanup_compact_readback');
   assert.equal(payload.version, 'script-to-pack-retirement-cleanup-compact-readback.v1');
-  assert.equal(payload.ok, true);
+  assert.equal(payload.ok, result.status === 0);
   assert.equal(payload.policy_ref, 'contracts/source_structure_policy.json');
   assert.equal(payload.command_ref, 'npm run script-to-pack:readback');
   assert.equal(payload.full_detail_command_ref, 'npm run script-to-pack:readback:full');
   assert.equal(payload.readback_is_authority, false);
+  assert.equal(payload.source_structure_gate.mode, 'strict');
+  assert.equal(payload.source_structure_gate.line_budget.fail_on_over_budget, true);
+  assert.equal(payload.cleanup_violation_count, 0);
+  assert.equal(payload.cleanup_violations.length, 0);
+  if (result.status === 0) {
+    assert.equal(payload.state, 'readback_available_cleanup_not_authorized');
+    assert.equal(payload.violation_count, 0);
+  } else {
+    assert.equal(payload.state, 'failed_source_structure_gate');
+    assert.ok(payload.source_structure_gate.fail_reasons.includes('line_budget'));
+    assert.ok(payload.source_structure_gate.line_budget.violation_count > 0);
+    assert.ok(payload.violations.every((entry: string) => entry.startsWith('line_budget: ')));
+    assert.equal(payload.violation_count, payload.source_structure_gate.line_budget.violation_count);
+  }
   assert.equal(payload.cleanup_candidate_count, 0);
   assert.equal(payload.retained_current_count, 32);
   assert.equal(payload.retained_current_authority_function_count, 25);
@@ -281,17 +295,31 @@ test('script-to-pack full readback materializes cleanup candidates without autho
     cwd: repoRoot,
     encoding: 'utf8',
   });
-  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+  assert.ok([0, 1].includes(result.status ?? -1), `${result.stdout}\n${result.stderr}`);
   const payload = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
 
   assert.equal(payload.surface_kind, 'oma_script_to_pack_retirement_cleanup_readback');
   assert.equal(payload.version, 'script-to-pack-retirement-cleanup-readback.v1');
-  assert.equal(payload.ok, true);
+  assert.equal(payload.ok, result.status === 0);
   assert.equal(payload.policy_ref, 'contracts/source_structure_policy.json');
   assert.equal(payload.command_ref, 'npm run script-to-pack:readback:full');
   assert.equal(payload.readback_is_authority, false);
   assert.equal(payload.compact_cleanup_summary_ref, 'npm run script-to-pack:readback');
   assert.equal(payload.compact_cleanup_summary_omitted_from_full, true);
+  assert.equal(payload.source_structure_gate.mode, 'strict');
+  assert.equal(payload.source_structure_gate.line_budget.fail_on_over_budget, true);
+  assert.equal(payload.cleanup_violation_count, 0);
+  assert.equal(payload.cleanup_violations.length, 0);
+  if (result.status === 0) {
+    assert.equal(payload.state, 'readback_available_cleanup_not_authorized');
+    assert.equal(payload.violation_count, 0);
+  } else {
+    assert.equal(payload.state, 'failed_source_structure_gate');
+    assert.ok(payload.source_structure_gate.fail_reasons.includes('line_budget'));
+    assert.ok(payload.source_structure_gate.line_budget.violation_count > 0);
+    assert.ok(payload.violations.every((entry: string) => entry.startsWith('line_budget: ')));
+    assert.equal(payload.violation_count, payload.source_structure_gate.line_budget.violation_count);
+  }
   assert.equal(payload.cleanup_candidate_count, 0);
   assert.equal(payload.retained_current_count, 32);
   assert.equal(payload.retained_current_authority_function_count, 25);

@@ -345,21 +345,70 @@ function compactCleanupReadback(readback: JsonObject): JsonObject {
   };
 }
 
+function sourceStructureGateReadback(
+  exitCode: number,
+  strict: boolean,
+  budget: number,
+  failOnOverBudget: boolean,
+  scannedFileCount: number,
+  acceptedAggregates: string[],
+  lineBudgetViolations: string[],
+  guardViolations: string[],
+): JsonObject {
+  const failReasons = [
+    ...(guardViolations.length > 0 ? ['script_to_pack_receipt_guard'] : []),
+    ...(lineBudgetViolations.length > 0 && failOnOverBudget ? ['line_budget'] : []),
+  ];
+  return {
+    state: exitCode === 0 ? 'passed' : 'failed',
+    ok: exitCode === 0,
+    mode: strict ? 'strict' : 'advisory',
+    command_ref: strict ? 'npm run source-structure:strict:json' : 'npm run source-structure:json',
+    fail_reasons: failReasons,
+    line_budget: {
+      budget_lines: budget,
+      fail_on_over_budget: failOnOverBudget,
+      scanned_file_count: scannedFileCount,
+      accepted_generated_aggregate_count: acceptedAggregates.length,
+      accepted_generated_aggregates: acceptedAggregates,
+      violation_count: lineBudgetViolations.length,
+      violations: lineBudgetViolations,
+    },
+    script_to_pack_receipt_guard: {
+      violation_count: guardViolations.length,
+      violations: guardViolations,
+    },
+  };
+}
+
+function cleanupReadbackState(exitCode: number, cleanupState: unknown): string {
+  return exitCode === 0 ? String(cleanupState) : 'failed_source_structure_gate';
+}
+
+function combinedViolations(sourceStructureGate: JsonObject): string[] {
+  return [
+    ...asStringArray(sourceStructureGate.script_to_pack_receipt_guard?.violations),
+    ...asStringArray(sourceStructureGate.line_budget?.violations)
+      .map((entry) => `line_budget: ${entry}`),
+  ];
+}
+
 function directCompactCleanupReadback(
   readback: JsonObject,
   exitCode: number,
-  guardViolations: string[],
+  sourceStructureGate: JsonObject,
 ): JsonObject {
   const compact = compactCleanupReadback({
     ...readback,
     command_ref: 'npm run script-to-pack:readback',
   });
+  const violations = combinedViolations(sourceStructureGate);
   return {
     surface_kind: 'oma_script_to_pack_retirement_cleanup_compact_readback',
     version: 'script-to-pack-retirement-cleanup-compact-readback.v1',
     owner: readback.owner ?? 'opl-meta-agent',
     target_domain_id: readback.target_domain_id ?? 'opl-meta-agent',
-    state: exitCode === 0 ? compact.state : 'failed',
+    state: cleanupReadbackState(exitCode, compact.state),
     ok: exitCode === 0 && readback.ok !== false,
     policy_ref: policyPath,
     command_ref: 'npm run script-to-pack:readback',
@@ -380,8 +429,11 @@ function directCompactCleanupReadback(
     false_ready_claims: compact.false_ready_claims,
     authority_boundary: compact.authority_boundary,
     compact_cleanup_summary: compact,
-    violation_count: guardViolations.length,
-    violations: guardViolations,
+    source_structure_gate: sourceStructureGate,
+    cleanup_violation_count: sourceStructureGate.script_to_pack_receipt_guard?.violation_count ?? 0,
+    cleanup_violations: sourceStructureGate.script_to_pack_receipt_guard?.violations ?? [],
+    violation_count: violations.length,
+    violations,
   };
 }
 
@@ -668,6 +720,16 @@ scanned.forEach((relativePath) => {
 });
 
 const exitCode = guardViolations.length > 0 || (violations.length > 0 && failOnOverBudget) ? 1 : 0;
+const sourceStructureGate = sourceStructureGateReadback(
+  exitCode,
+  strict,
+  budget,
+  failOnOverBudget,
+  scanned.length,
+  acceptedAggregates,
+  violations,
+  guardViolations,
+);
 
 if (scriptToPackReadbackOutput || scriptToPackFullReadbackOutput) {
   const cleanupReadback = scriptToPackReceiptGuardSummary?.cleanup_readback_full ?? {
@@ -684,24 +746,26 @@ if (scriptToPackReadbackOutput || scriptToPackFullReadbackOutput) {
   };
   if (scriptToPackReadbackOutput) {
     console.log(JSON.stringify(
-      directCompactCleanupReadback(cleanupReadback, exitCode, guardViolations),
+      directCompactCleanupReadback(cleanupReadback, exitCode, sourceStructureGate),
       null,
       2,
     ));
     process.exit(exitCode);
   }
+  const combined = combinedViolations(sourceStructureGate);
   console.log(JSON.stringify({
     ...cleanupReadback,
     command_ref: 'npm run script-to-pack:readback:full',
     ok: exitCode === 0 && cleanupReadback.ok !== false,
-    state: exitCode === 0
-      ? cleanupReadback.state
-      : 'failed',
+    state: cleanupReadbackState(exitCode, cleanupReadback.state),
     policy_ref: policyPath,
     compact_cleanup_summary_ref: 'npm run script-to-pack:readback',
     compact_cleanup_summary_omitted_from_full: true,
-    violation_count: guardViolations.length,
-    violations: guardViolations,
+    source_structure_gate: sourceStructureGate,
+    cleanup_violation_count: sourceStructureGate.script_to_pack_receipt_guard?.violation_count ?? 0,
+    cleanup_violations: sourceStructureGate.script_to_pack_receipt_guard?.violations ?? [],
+    violation_count: combined.length,
+    violations: combined,
   }, null, 2));
   process.exit(exitCode);
 }
