@@ -122,6 +122,7 @@ Active plan 只保留非 live 功能/结构缺口：script-to-pack / source-puri
 1. `script_to_pack_hygiene`
    当前 missing-machine-gate blocker 已关闭；后续工作是持续减少仍需保留的 materializer/helper 语义，而不是扩大脚本职责。每次新增或收薄脚本，都先回到私有实现迁移台账、script-to-pack receipt、script morphology policy、readback 和 source-purity tests 分类；新增保留脚本如果没有真实 active caller、只被 source-purity 自身字符串引用，或 source refs 不是 repo-local `scripts/` 下 `.ts` / `.sh`，必须 fail closed。`scripts/lib/domain-pack.ts` 这类共享 pack helper 只能保留为 pack summary / deterministic target-agent fixture helper，不能升级为 OPL pack compiler、generated interface owner、scaffold generator owner、target pack authority 或 target truth writer。
    2026-07-07 的 item `5/6/7` cleanup re-audit 已把开放项压缩为三个可验证退役条件：line-budget aliases 需无 active package/verify/test/machine caller；`execute-external-work-order.ts` 需 OPL exported/generated OMA work-order validator parity；stage-decomposition parts 与 work-order helpers 需 OPL Pack/Stage/WorkOrder primitive 覆盖 typed packet validation、pack draft materialization、artifact morphology、Stage-Native refs template 和 work-order progress/no-forbidden-write validation。以上任一条件未满足时，只能保留并继续收薄，不能用 OPL generic primitive 存在来删除 OMA-specific validation/materializer surface。
+   本轮 source-purity / fixture 收薄只确认两点：`script-morphology.test-case.ts` 的大块 matrix 仍是 machine receipt / policy field guard，不做脆弱重写；`external-suite-fixtures.ts` 的 reviewer evaluation 写入样板已压回现有 `writeJson` helper。后续若继续收薄 fixture，只删重复构造或单 caller pass-through，不新增 fixture abstraction 层。
 
 ## 下一轮 Agent prompt
 
