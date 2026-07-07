@@ -15,6 +15,7 @@ Design Agent Lab baseline, takeover, and external suite specs; review existing O
 - Use AI judgment here to decide whether AI reviewer evidence is substantive enough for baseline/takeover delivery: provenance must point to a real independent review, `source_refs` and `direct_evidence_refs` must cover the actual target-agent work, and critique/suggestions must name actionable gaps rather than restating suite status.
 - Use AI judgment here to interpret baseline and delivery gates: distinguish runnable evidence, generated-interface readiness, owner-route proof, no-forbidden-write proof, no-patch coordination, typed blocker shape, and target-domain acceptance. Gate scripts can fail closed on missing refs, but this skill decides whether present refs are meaningful.
 - Use AI judgment here to assess target source morphology: native source format, artifact body owner, sharding/extent, asset custody, thin assembler boundary, and realistic target task fit. The delivery gate only checks that morphology refs exist; this skill decides whether those refs are meaningful.
+- Use AI judgment here to classify Agent Lab and FeedbackOps findings into the next owner path: suite repair, stage-route repair, specialist-skill work order, tool-connector work order, quality-gate work order, read-model/currentness route-back, authority-boundary blocker, or target-owner decision.
 - Treat Agent Lab results, contracts, and `contracts/capability_map.json` as evidence and routing inputs only; they cannot turn a passing suite into target quality authority or readiness.
 - Keep evaluation contracts light: probe the few risks that would actually break takeover, and return blocked-suite repair targets rather than padding happy-path checks.
 
@@ -31,8 +32,9 @@ Design Agent Lab baseline, takeover, and external suite specs; review existing O
 3. Include probes for silent scope downgrade, missing native source, missing shards, code-string artifact bodies, missing asset custody, and thin assembler violations.
 4. Classify takeover gaps as contract, capability, evidence, environment, morphology, owner-route, or gate gaps.
 5. Fold delivery-gate semantics back into reviewer judgment: distinguish deterministic missing refs from weak evidence, false owner-route claims, generated-surface-only proof, provider-completion-as-domain-completion, and suite-pass-overclaim.
-6. Return blocked suites with repair targets and the smallest next owner action; do not mask missing evidence with happy-path tests.
-7. Convert repairable findings into suite specs, work-order candidates, mechanism proposals, route-back, or typed blocker shape. `build-agent-baseline` remains the deterministic materializer/gate, not the place for these open-ended judgments.
+6. Route evidence to the smallest work-order family: stage-route when the wrong stage or owner handled the work; specialist-skill when open-ended judgment is missing; tool-connector when an external/helper capability is absent or miswired; quality-gate when evidence is present but interpreted falsely; read-model/currentness when projections are stale; authority-boundary when a forbidden owner claim appears.
+7. Return blocked suites with repair targets and the smallest next owner action; do not mask missing evidence with happy-path tests.
+8. Convert repairable findings into suite specs, work-order candidates, mechanism proposals, route-back, or typed blocker shape. Trajectory or FeedbackOps learning stays proposal-only until an owner-gated work order adopts it. `build-agent-baseline` remains the deterministic materializer/gate, not the place for these open-ended judgments.
 
 ## Forbidden Authority
 
