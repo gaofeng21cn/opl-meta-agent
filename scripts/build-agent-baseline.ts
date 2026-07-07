@@ -818,6 +818,15 @@ export function runBuildAgentBaseline({
     '--json',
   ]);
   const targetAgentPackageManifestPath = writeTargetAgentPackageManifest(targetAgentDir, targetAgent);
+  const targetAgentPackageManifestValidation = runOpl(oplBin, [
+    'connect',
+    'agent-packages',
+    'validate-manifest',
+    '--manifest-url', pathToFileURL(targetAgentPackageManifestPath).href,
+    '--trust-tier', 'first_party',
+    '--source-kind', 'local_file',
+    '--json',
+  ]);
 
   const suite = buildAgentLabSuite({
     targetAgent,
@@ -955,6 +964,8 @@ export function runBuildAgentBaseline({
       real_target_scaleout_evidence_ledger_path: scaleoutLedgerPath,
       opl_agent_package_manifest_path: targetAgentPackageManifestPath,
     },
+    opl_agent_package_manifest_validation:
+      targetAgentPackageManifestValidation.opl_agent_package_manifest,
     opl_agent_lab: agentLabRun.agent_lab_run,
     opl_generated_interfaces: generatedInterfaces.generated_agent_interfaces,
     stage_decomposition_attempt: stageDecompositionAttempt,

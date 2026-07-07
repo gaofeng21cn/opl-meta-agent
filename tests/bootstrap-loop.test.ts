@@ -317,6 +317,8 @@ test('opl-meta-agent bootstraps an explicit target agent and validates it throug
     assert.equal(fs.existsSync(packageManifestPath), true);
     assert.equal(payload.artifacts.opl_agent_package_manifest_path, packageManifestPath);
     assert.equal(payload.real_target_delivery.opl_agent_package_manifest_ref, packageManifestPath);
+    assert.equal(payload.opl_agent_package_manifest_validation.status, 'valid');
+    assert.equal(payload.opl_agent_package_manifest_validation.package_id, 'baseline-fixture-agent');
 
     const packageManifest = readJson(packageManifestPath);
     const fixture = readJson(fixturePath);
@@ -541,6 +543,8 @@ test('build-agent-baseline bootstraps a requested target agent from structured s
     assert.equal(payload.target_agent.repo_dir, targetDir);
     assert.equal(payload.target_agent.target_brief, targetBrief);
     assert.equal(payload.artifacts.opl_agent_package_manifest_path, path.join(targetDir, 'contracts', 'opl_agent_package_manifest.json'));
+    assert.equal(payload.opl_agent_package_manifest_validation.status, 'valid');
+    assert.equal(payload.opl_agent_package_manifest_validation.package_id, 'research-workbench-agent');
     assert.equal(payload.opl_generated_interfaces.skill.descriptors[0].command_contract_id, 'research-workbench-agent.draft-agent-output');
     assert.equal(payload.opl_generated_interfaces.product_entry.descriptors[0].action_key, 'draft-agent-output');
     assert.equal(payload.real_target_delivery.target_agent.domain_id, 'research-workbench-agent');
