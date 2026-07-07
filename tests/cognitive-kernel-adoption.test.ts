@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+import { readJson, repoRoot } from './support/contracts.ts';
 
 const requiredStagePackSections = [
   'prompt_refs',
@@ -19,10 +17,6 @@ const requiredStagePackSections = [
   'independent_gate_policy',
   'handoff_policy',
 ];
-
-function readJson(relativePath: string): any {
-  return JSON.parse(fs.readFileSync(path.join(repoRoot, relativePath), 'utf8'));
-}
 
 function refs(entries: any[]): Set<string> {
   return new Set(entries.map((entry) => entry.ref));

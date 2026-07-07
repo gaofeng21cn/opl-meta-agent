@@ -4,8 +4,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
 import type { JsonObject } from '../scripts/lib/domain-pack.ts';
+import { readJsonFile as readJson, repoRoot } from './support/contracts.ts';
 import {
   buildFixtureStageDecompositionCloseout,
 } from '../scripts/lib/stage-decomposition-pack-draft-parts/builder.ts';
@@ -16,7 +16,6 @@ import {
   validateStageDecompositionCloseoutPacket,
 } from '../scripts/lib/stage-decomposition-pack-draft-parts/validator.ts';
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const standardFoundryPolicies = readJson(path.join(repoRoot, 'contracts/standard_foundry_policies.json'));
 const stageNativeArtifactVocabulary = readJson(path.join(repoRoot, 'contracts/stage_native_artifact_vocabulary.json'));
 const stagePackDefaults = standardFoundryPolicies.stage_pack_defaults as JsonObject;
@@ -27,10 +26,6 @@ const targetAgent = {
   delivery_domain: 'research_workbench',
   target_brief: 'Create an owner-gated research workbench agent from declared workspace refs.',
 };
-
-function readJson(filePath: string): JsonObject {
-  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-}
 
 function stageById(stageControl: JsonObject, stageId: string): JsonObject {
   const stage = (stageControl.stages as JsonObject[]).find((entry) => entry.stage_id === stageId);
