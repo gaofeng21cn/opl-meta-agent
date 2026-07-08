@@ -166,10 +166,19 @@ test('domain skill declarations and professional skills stay separate', () => {
 
   const primaryCapability = capabilityMap.primary_skill_capability;
   assert.equal(primaryCapability.surface_role, 'primary_skill');
-  assert.equal(primaryCapability.capability_kind, 'codex_primary_skill');
+  assert.equal(primaryCapability.capability_kind, 'primary_skill');
   assert.equal(primaryCapability.physical_source_ref.ref, 'agent/primary_skill/SKILL.md');
   assert.equal(primaryCapability.physical_source_ref.role, 'primary_skill_source');
   assert.deepEqual(asStrings(primaryCapability.canonical_paths), expectedPrimarySkillPaths);
+  assert.deepEqual(primaryCapability.projection_contract, {
+    canonical_source: 'agent/primary_skill/SKILL.md',
+    carrier_materialization: 'opl_generated_full_skill_copy',
+    materializer: 'opl_standard_codex_plugin_materializer',
+    codex_install_requires_real_skill_md: true,
+    plugin_transport_is_membership_axis: false,
+    plugin_transport_is_status_axis: false,
+    generated_surface_can_claim_domain_ready: false,
+  });
   assert.equal(primaryCapability.codex_default_exposure, true);
   assert.equal(primaryCapability.exposure_layer, 'codex_default_primary_skill');
   assert.ok(asStrings(primaryCapability.allowed_exposure_scopes).includes('codex_default_entry'));

@@ -334,7 +334,7 @@ function buildTargetAgentPrimarySkillCapability(targetAgent: MinimalTargetAgent)
   return {
     capability_id: `${domainId}.primary-skill.codex_entry`,
     surface_role: 'primary_skill',
-    capability_kind: 'codex_primary_skill',
+    capability_kind: 'primary_skill',
     canonical_owner: domainId,
     physical_source_ref: { ref_kind: 'repo_path', ref: targetPrimarySkillRef, role: 'primary_skill_source' },
     canonical_paths: [targetPrimarySkillRef],

@@ -32,7 +32,7 @@
   "primary_skill_capability": {
     "capability_id": "opl-meta-agent.primary-skill.codex_entry",
     "surface_role": "primary_skill",
-    "capability_kind": "codex_primary_skill",
+    "capability_kind": "primary_skill",
     "canonical_owner": "opl-meta-agent",
     "physical_source_ref": {
       "ref_kind": "repo_path",
@@ -54,6 +54,15 @@
         "role": "generated_carrier_projection_context"
       }
     ],
+    "projection_contract": {
+      "canonical_source": "agent/primary_skill/SKILL.md",
+      "carrier_materialization": "opl_generated_full_skill_copy",
+      "materializer": "opl_standard_codex_plugin_materializer",
+      "codex_install_requires_real_skill_md": true,
+      "plugin_transport_is_membership_axis": false,
+      "plugin_transport_is_status_axis": false,
+      "generated_surface_can_claim_domain_ready": false
+    },
     "sync_policy": "repo_owned_primary_skill_projected_by_opl_generated_carrier",
     "externalization_reason": "rich repo-owned primary Codex entry for OMA; OPL owns generated carrier projection and package validation, while professional skills remain non-default stage-routed methods",
     "authority_boundary": {
