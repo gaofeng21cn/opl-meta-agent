@@ -1,29 +1,19 @@
 // @ts-nocheck
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import path from 'node:path';
 import test from 'node:test';
 import {
   assertRepoRefExists,
   asObjects,
   asStrings,
-  repoRoot,
   readJson,
   type JsonObject,
 } from '../support/contracts.ts';
 import {
   ACTIVE_CALLER_SCAN_POLICY_ID,
-  DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF,
-  STANDARD_FOUNDRY_POLICIES_CONTRACT_REF,
-  STAGE_NATIVE_ARTIFACT_VOCABULARY_CONTRACT_REF,
+  assertEveryFlagFalse,
+  assertFalseFlags,
   assertPolicyObject,
-  assertPolicyStringList,
   asBooleanRecord,
-  collectActiveScriptCallerScan,
-  collectFalseReadyClaimMatches,
-  collectFalseReadyClaimMatchesFromSource,
-  sourceRefIntegrityViolations,
-  assertRepoLocalScriptRef,
   valuesAtDottedPath,
   listScriptRefs,
 } from '../support/source-purity.ts';
@@ -112,10 +102,10 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
   assert.equal(testStructure.no_second_truth_policy.anchor_test_remains_receipt_ref, true);
   assert.equal(testStructure.no_second_truth_policy.case_modules_cannot_prove_active_script_callers, true);
   assert.equal(testStructure.no_second_truth_policy.case_modules_cannot_claim_retirement_or_readiness, true);
-  const testStructureBoundary = asBooleanRecord(testStructure.authority_boundary);
-  Object.entries(testStructureBoundary).forEach(([claim, value]) => {
-    assert.equal(value, false, `source-purity test structure boundary ${claim} must be false`);
-  });
+  assertEveryFlagFalse(
+    asBooleanRecord(testStructure.authority_boundary),
+    'source-purity test structure boundary',
+  );
   assert.deepEqual(gateReceipt.machine_gate_inputs.allowed_classes, morphologyPolicy.allowed_classes);
   assert.deepEqual(gateReceipt.machine_gate_inputs.forbidden_roles, morphologyPolicy.forbidden_roles);
   assert.equal(sourceRefIntegrityGuard.guard_id, 'oma.script_morphology.source_ref_integrity_guard.v1');
@@ -133,7 +123,7 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
     'contracts/script_to_pack_gate_receipt.json#current_scan_summary.gated_script_refs',
   ]);
   assert.equal(sourceRefIntegrityGuard.required_ref_shape, 'repo_local_relative_path_under_scripts');
-  [
+  assertFalseFlags(sourceRefBoundary, [
     'guard_can_create_missing_refs',
     'guard_can_create_alias_files',
     'guard_can_authorize_physical_delete',
@@ -144,9 +134,7 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
     'guard_can_claim_target_agent_ready',
     'guard_can_claim_domain_ready',
     'guard_can_claim_production_ready',
-  ].forEach((flag) => {
-    assert.equal(sourceRefBoundary[flag], false, `${flag} must be false`);
-  });
+  ], 'source-ref integrity boundary');
   assert.equal(readbackGuard.guard_id, 'oma.script_morphology.retirement_readback_cleanup_guard.v1');
   assert.equal(readbackGuard.state, 'readback_guard_available_physical_delete_not_authorized');
   assert.equal(
@@ -224,12 +212,10 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
       `cleanup readback guard key ${claimKey} should be scanned by the false-ready guard`,
     );
   });
-  Object.entries(readbackGuardClaims).forEach(([claim, value]) => {
-    assert.equal(value, false, `cleanup readback guard claim ${claim} must be false`);
-  });
+  assertEveryFlagFalse(readbackGuardClaims, 'cleanup readback guard claim');
   assert.equal(readbackGuardBoundary.guard_can_identify_cleanup_candidates, true);
   assert.equal(readbackGuardBoundary.guard_can_route_owner_delta, true);
-  [
+  assertFalseFlags(readbackGuardBoundary, [
     'guard_can_authorize_physical_delete',
     'guard_can_sign_owner_receipt',
     'guard_can_create_typed_blocker',
@@ -240,9 +226,7 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
     'guard_can_claim_app_or_registry_readiness',
     'guard_can_claim_generated_hosted_readiness',
     'guard_can_claim_default_promotion_or_cutover',
-  ].forEach((flag) => {
-    assert.equal(readbackGuardBoundary[flag], false, `${flag} must be false`);
-  });
+  ], 'cleanup readback guard boundary');
   assert.equal(gateSummary.source_purity_scan_status, sourceReceipt.status);
   assert.equal(gateSummary.active_script_caller_scan_status, activeCallerScan.status);
   assert.equal(gateSummary.active_caller_scan_policy_id, ACTIVE_CALLER_SCAN_POLICY_ID);
@@ -426,16 +410,18 @@ test('script-to-pack gate receipt materializes machine gate without retirement o
     'consumer_claims_retirement_or_readiness_authority',
   ]);
   assert.equal(boundary.refs_only, true);
-  assert.equal(boundary.can_create_runtime_truth, false);
-  assert.equal(boundary.can_write_target_domain_truth, false);
-  assert.equal(boundary.can_write_target_owner_receipt_body, false);
-  assert.equal(boundary.can_claim_target_domain_ready, false);
-  assert.equal(boundary.can_claim_domain_ready, false);
-  assert.equal(boundary.can_claim_production_ready, false);
-  assert.equal(boundary.can_claim_OPL_primitive_parity, false);
-  assert.equal(boundary.can_authorize_script_retirement, false);
-  assert.equal(boundary.can_own_agent_lab_runner, false);
-  assert.equal(boundary.can_own_generated_interface, false);
-  assert.equal(boundary.can_own_pack_compiler, false);
-  assert.equal(boundary.can_own_work_order_lifecycle, false);
+  assertFalseFlags(boundary, [
+    'can_create_runtime_truth',
+    'can_write_target_domain_truth',
+    'can_write_target_owner_receipt_body',
+    'can_claim_target_domain_ready',
+    'can_claim_domain_ready',
+    'can_claim_production_ready',
+    'can_claim_OPL_primitive_parity',
+    'can_authorize_script_retirement',
+    'can_own_agent_lab_runner',
+    'can_own_generated_interface',
+    'can_own_pack_compiler',
+    'can_own_work_order_lifecycle',
+  ], 'script-to-pack gate receipt boundary');
 });

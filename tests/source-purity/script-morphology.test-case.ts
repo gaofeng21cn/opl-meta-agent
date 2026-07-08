@@ -16,6 +16,8 @@ import {
   DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF,
   STANDARD_FOUNDRY_POLICIES_CONTRACT_REF,
   STAGE_NATIVE_ARTIFACT_VOCABULARY_CONTRACT_REF,
+  assertEveryFlagFalse,
+  assertFalseFlags,
   assertPolicyObject,
   assertPolicyStringList,
   asBooleanRecord,
@@ -24,7 +26,6 @@ import {
   collectFalseReadyClaimMatchesFromSource,
   sourceRefIntegrityViolations,
   assertRepoLocalScriptRef,
-  valuesAtDottedPath,
   listScriptRefs,
 } from '../support/source-purity.ts';
 
@@ -98,11 +99,13 @@ test('script morphology stays limited to authority refs, materializers, helpers,
     'human gate receipt',
   ]);
   const falseReadyBoundary = asBooleanRecord(falseReadyClaimGuard.authority_boundary);
-  assert.equal(falseReadyBoundary.oma_can_claim_app_live_rendering, false);
-  assert.equal(falseReadyBoundary.oma_can_claim_registry_live_discovery, false);
-  assert.equal(falseReadyBoundary.oma_can_claim_generated_hosted_live_ready, false);
-  assert.equal(falseReadyBoundary.oma_can_claim_default_promotion, false);
-  assert.equal(falseReadyBoundary.oma_can_claim_target_agent_ready, false);
+  assertFalseFlags(falseReadyBoundary, [
+    'oma_can_claim_app_live_rendering',
+    'oma_can_claim_registry_live_discovery',
+    'oma_can_claim_generated_hosted_live_ready',
+    'oma_can_claim_default_promotion',
+    'oma_can_claim_target_agent_ready',
+  ], 'false-ready boundary');
   assert.deepEqual(
     collectFalseReadyClaimMatches(falseReadyClaimKeys),
     [],
@@ -155,18 +158,14 @@ test('script morphology stays limited to authority refs, materializers, helpers,
       );
     });
     const boundary = asBooleanRecord(surface.boundary);
-    [
+    assertFalseFlags(boundary, [
       'can_create_runtime_truth',
       'can_write_target_truth',
       'can_write_owner_receipt_body',
-    ].forEach((flag) => {
-      assert.equal(boundary[flag], false, `${surface.surface_ref} boundary ${flag} must be false`);
-    });
+    ], `${surface.surface_ref} boundary`);
+    assertEveryFlagFalse(boundary, `${surface.surface_ref} boundary`, (flag) => flag.startsWith('can_claim_'));
     Object.entries(boundary).forEach(([flag, value]) => {
       assert.equal(typeof value, 'boolean', `${surface.surface_ref} boundary ${flag} must be boolean`);
-      if (flag.startsWith('can_claim_')) {
-        assert.equal(value, false, `${surface.surface_ref} boundary ${flag} must be false`);
-      }
     });
   });
   assert.ok(
@@ -276,8 +275,8 @@ test('script morphology stays limited to authority refs, materializers, helpers,
   ]);
   const materializerGuardBoundary = asBooleanRecord(genericMaterializerGuard.authority_boundary);
   const materializerScanBoundary = asBooleanRecord(materializerScan.authority_boundary);
-  Object.entries(materializerGuardBoundary).forEach(([flag, value]) => {
-    assert.equal(value, false, `generic materializer guard boundary ${flag} must be false`);
+  assertEveryFlagFalse(materializerGuardBoundary, 'generic materializer guard boundary');
+  Object.keys(materializerGuardBoundary).forEach((flag) => {
     assert.equal(
       materializerScanBoundary[flag.replace('guard_', 'scan_')],
       false,
@@ -375,7 +374,7 @@ test('script morphology stays limited to authority refs, materializers, helpers,
   scripts.forEach(assertRepoLocalScriptRef);
   gatedScriptRefs.forEach(assertRepoLocalScriptRef);
   const sourceRefBoundary = asBooleanRecord(sourceRefIntegrityGuard.authority_boundary);
-  [
+  assertFalseFlags(sourceRefBoundary, [
     'guard_can_create_missing_refs',
     'guard_can_create_alias_files',
     'guard_can_authorize_physical_delete',
@@ -386,9 +385,7 @@ test('script morphology stays limited to authority refs, materializers, helpers,
     'guard_can_claim_target_agent_ready',
     'guard_can_claim_domain_ready',
     'guard_can_claim_production_ready',
-  ].forEach((flag) => {
-    assert.equal(sourceRefBoundary[flag], false, `source-ref integrity boundary ${flag} must be false`);
-  });
+  ], 'source-ref integrity boundary');
   retirementGates.forEach((gate) => {
     const trackedScriptRefs = asStrings(gate.tracked_script_refs);
     assert.ok(trackedScriptRefs.length > 0, `${gate.gate_id} should track at least one script`);

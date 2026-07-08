@@ -36,6 +36,20 @@ export const targetPatchLoopProjectionRequiredFields = [
   ...targetPatchLoopReviewerProjectionFields,
 ];
 
+const refsOnlySuiteAuthorityBoundary = (): JsonObject => ({
+  can_write_domain_truth: false,
+  can_write_memory_body: false,
+  can_authorize_quality_verdict: false,
+  can_promote_default_agent_without_gate: false,
+});
+
+const localRefsOnlyEnvironment = (workspaceLocatorRef: string): JsonObject => ({
+  environment_kind: 'local_workspace',
+  workspace_locator_ref: workspaceLocatorRef,
+  sandbox_policy: 'refs_only_no_artifact_mutation',
+  network_policy: 'domain_owner_policy',
+});
+
 export function runImproveArgs(args: string[]): JsonObject {
   return runImproveFromAgentLabSuite(parseImproveFromAgentLabSuiteArgs(args));
 }
@@ -111,23 +125,13 @@ export function buildBlockedMedicalManuscriptSuite(suitePath: string): JsonObjec
   return {
     suite_id: 'mas-agent-lab-suite:002-dm-china-us-mortality-attribution:high-quality-medical-manuscript',
     suite_kind: 'agent_lab_external_suite',
-    authority_boundary: {
-      can_write_domain_truth: false,
-      can_write_memory_body: false,
-      can_authorize_quality_verdict: false,
-      can_promote_default_agent_without_gate: false,
-    },
+    authority_boundary: refsOnlySuiteAuthorityBoundary(),
     tasks: [
       {
         task_id: 'agent-lab-task:mas/002-dm-china-us-mortality-attribution/high-quality-medical-manuscript',
         domain_id: 'med-autoscience',
         task_family: 'high_quality_medical_manuscript_self_evolution',
-        environment: {
-          environment_kind: 'local_workspace',
-          workspace_locator_ref: 'workspace-locator:mas/002-dm-china-us-mortality-attribution',
-          sandbox_policy: 'refs_only_no_artifact_mutation',
-          network_policy: 'domain_owner_policy',
-        },
+        environment: localRefsOnlyEnvironment('workspace-locator:mas/002-dm-china-us-mortality-attribution'),
         instructions_ref: 'instructions:mas/high-quality-medical-manuscript-ai-reviewer',
         agent_entry_ref: 'domain-agent-entry:med-autoscience',
         stage_refs: [
@@ -594,12 +598,7 @@ export function buildPassedTargetAgentOwnerReceiptSuite(): JsonObject {
   return {
     suite_id: 'target-agent-suite:owner-receipt-consumption',
     suite_kind: 'agent_lab_external_suite',
-    authority_boundary: {
-      can_write_domain_truth: false,
-      can_write_memory_body: false,
-      can_authorize_quality_verdict: false,
-      can_promote_default_agent_without_gate: false,
-    },
+    authority_boundary: refsOnlySuiteAuthorityBoundary(),
     tasks: [
       {
         task_id: 'agent-lab-task:target-agent/owner-receipt-consumption',
@@ -679,23 +678,13 @@ export function buildPassedGenericOwnerReceiptSuite(): JsonObject {
   return {
     suite_id: 'external-agent-suite:owner-receipt-coordination',
     suite_kind: 'agent_lab_external_suite',
-    authority_boundary: {
-      can_write_domain_truth: false,
-      can_write_memory_body: false,
-      can_authorize_quality_verdict: false,
-      can_promote_default_agent_without_gate: false,
-    },
+    authority_boundary: refsOnlySuiteAuthorityBoundary(),
     tasks: [
       {
         task_id: 'agent-lab-task:external/owner-receipt-coordination',
         domain_id: 'external-agent',
         task_family: 'owner_receipt_coordination',
-        environment: {
-          environment_kind: 'local_workspace',
-          workspace_locator_ref: 'workspace-locator:external/owner-receipt',
-          sandbox_policy: 'refs_only_no_artifact_mutation',
-          network_policy: 'domain_owner_policy',
-        },
+        environment: localRefsOnlyEnvironment('workspace-locator:external/owner-receipt'),
         instructions_ref: 'instructions:external/owner-receipt-coordination',
         agent_entry_ref: 'domain-agent-entry:external-agent',
         stage_refs: ['stage:external/review'],
@@ -759,23 +748,13 @@ export function buildBlockedEfficiencySuite(): JsonObject {
   return {
     suite_id: 'external-agent-suite:efficiency-non-regression',
     suite_kind: 'agent_lab_external_suite',
-    authority_boundary: {
-      can_write_domain_truth: false,
-      can_write_memory_body: false,
-      can_authorize_quality_verdict: false,
-      can_promote_default_agent_without_gate: false,
-    },
+    authority_boundary: refsOnlySuiteAuthorityBoundary(),
     tasks: [
       {
         task_id: 'agent-lab-task:target-agent/efficiency-non-regression',
         domain_id: 'target-agent',
         task_family: 'target_agent_generic_efficiency_work_order',
-        environment: {
-          environment_kind: 'local_workspace',
-          workspace_locator_ref: 'workspace-locator:target-agent/efficiency',
-          sandbox_policy: 'refs_only_no_artifact_mutation',
-          network_policy: 'domain_owner_policy',
-        },
+        environment: localRefsOnlyEnvironment('workspace-locator:target-agent/efficiency'),
         instructions_ref: 'instructions:target-agent/efficiency-non-regression',
         agent_entry_ref: 'domain-agent-entry:target-agent',
         stage_refs: ['stage:target-agent/efficiency-review'],

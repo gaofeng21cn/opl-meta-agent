@@ -4,7 +4,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import {
-  assertRepoRefExists,
   asObjects,
   asStrings,
   repoRoot,
@@ -12,20 +11,11 @@ import {
   type JsonObject,
 } from '../support/contracts.ts';
 import {
-  ACTIVE_CALLER_SCAN_POLICY_ID,
   DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF,
   STANDARD_FOUNDRY_POLICIES_CONTRACT_REF,
-  STAGE_NATIVE_ARTIFACT_VOCABULARY_CONTRACT_REF,
+  assertFalseFlags,
   assertPolicyObject,
   assertPolicyStringList,
-  asBooleanRecord,
-  collectActiveScriptCallerScan,
-  collectFalseReadyClaimMatches,
-  collectFalseReadyClaimMatchesFromSource,
-  sourceRefIntegrityViolations,
-  assertRepoLocalScriptRef,
-  valuesAtDottedPath,
-  listScriptRefs,
 } from '../support/source-purity.ts';
 
 test('developer work-order policy defaults are contract-owned and helper-projection free', () => {
@@ -83,12 +73,14 @@ test('developer work-order policy defaults are contract-owned and helper-project
   assert.deepEqual(asStrings(contract.active_policy_consumer_refs), [
     'scripts/lib/work-order-refs.ts',
   ]);
-  assert.equal(contract.authority_boundary.can_write_target_domain_truth, false);
-  assert.equal(contract.authority_boundary.can_write_target_memory_body, false);
-  assert.equal(contract.authority_boundary.can_write_target_artifact_body, false);
-  assert.equal(contract.authority_boundary.can_authorize_target_quality_or_export, false);
-  assert.equal(contract.authority_boundary.can_authorize_submission_readiness, false);
-  assert.equal(contract.authority_boundary.can_promote_default_agent, false);
+  assertFalseFlags(contract.authority_boundary, [
+    'can_write_target_domain_truth',
+    'can_write_target_memory_body',
+    'can_write_target_artifact_body',
+    'can_authorize_target_quality_or_export',
+    'can_authorize_submission_readiness',
+    'can_promote_default_agent',
+  ], 'developer work-order policy authority boundary');
 
   assert.equal(
     fs.existsSync(path.join(repoRoot, 'scripts/lib/work-order-policy-constants.ts')),
@@ -151,9 +143,11 @@ test('developer work-order policy defaults are contract-owned and helper-project
   assert.equal(Object.hasOwn(targetImprovementDefaultChangeRefPolicy, 'triggers'), false);
   assert.equal(Object.hasOwn(targetImprovementDefaultChangeRefPolicy, 'default_change_refs'), false);
   assert.equal(Object.hasOwn(targetImprovementDefaultChangeRefPolicy, 'change_ref_mappings'), false);
-  assert.equal(targetImprovementDefaultChangeRefPolicy.authority_boundary.can_write_target_domain_truth, false);
-  assert.equal(targetImprovementDefaultChangeRefPolicy.authority_boundary.can_write_target_owner_receipt_body, false);
-  assert.equal(targetImprovementDefaultChangeRefPolicy.authority_boundary.can_authorize_target_quality_or_export, false);
+  assertFalseFlags(targetImprovementDefaultChangeRefPolicy.authority_boundary, [
+    'can_write_target_domain_truth',
+    'can_write_target_owner_receipt_body',
+    'can_authorize_target_quality_or_export',
+  ], 'target improvement policy authority boundary');
 });
 
 test('standard Foundry policies are contract-owned and helper-projection free', () => {
@@ -189,11 +183,13 @@ test('standard Foundry policies are contract-owned and helper-projection free', 
   assert.deepEqual(asStrings(contract.active_policy_consumer_refs), [
     'scripts/lib/stage-decomposition-pack-draft/shared.ts',
   ]);
-  assert.equal(contract.authority_boundary.can_write_target_domain_truth, false);
-  assert.equal(contract.authority_boundary.can_read_target_domain_body, false);
-  assert.equal(contract.authority_boundary.can_authorize_target_quality_or_export, false);
-  assert.equal(contract.authority_boundary.can_promote_default_agent, false);
-  assert.equal(contract.authority_boundary.can_replace_opl_framework_or_agent_lab, false);
+  assertFalseFlags(contract.authority_boundary, [
+    'can_write_target_domain_truth',
+    'can_read_target_domain_body',
+    'can_authorize_target_quality_or_export',
+    'can_promote_default_agent',
+    'can_replace_opl_framework_or_agent_lab',
+  ], 'standard Foundry policy authority boundary');
 
   assert.equal(
     fs.existsSync(path.join(repoRoot, 'scripts/lib/standard-foundry-policies.ts')),
@@ -260,8 +256,10 @@ test('standard Foundry policies are contract-owned and helper-projection free', 
   assert.equal(stageCompletionPolicy.next_stage_transition_owner, 'opl_runtime');
   assert.ok(asStrings(stageCompletionPolicy.required_closeout_outcomes).includes('completed_and_continue'));
   assert.ok(asStrings(stageCompletionPolicy.accepted_closeout_ref_fields).includes('owner_receipt_ref'));
-  assert.equal(stageCompletionPolicy.authority_boundary.opl_can_decide_domain_completion, false);
-  assert.equal(stageCompletionPolicy.authority_boundary.provider_completion_counts_as_stage_complete, false);
+  assertFalseFlags(stageCompletionPolicy.authority_boundary, [
+    'opl_can_decide_domain_completion',
+    'provider_completion_counts_as_stage_complete',
+  ], 'stage completion policy authority boundary');
   assert.equal(seriesDesignProfile.profile_id, 'opl_foundry_agent_series_design_profile.v1');
   assert.ok(asStrings(seriesDesignProfile.stage_pack_sections).includes('prompts'));
   assert.ok(asStrings(seriesDesignProfile.stage_pack_sections).includes('quality_gates'));
@@ -276,6 +274,8 @@ test('standard Foundry policies are contract-owned and helper-projection free', 
     asStrings(artifactMorphologyPolicy.fail_closed_conditions)
       .includes('owner/source declared extent is silently reduced'),
   );
-  assert.equal(artifactMorphologyPolicy.authority_boundary.oma_can_write_target_artifact_body, false);
+  assertFalseFlags(artifactMorphologyPolicy.authority_boundary, [
+    'oma_can_write_target_artifact_body',
+  ], 'artifact morphology policy authority boundary');
   assert.equal(artifactMorphologyPolicy.authority_boundary.target_domain_owner_must_accept_artifact_shape, true);
 });

@@ -160,6 +160,20 @@ export function asBooleanRecord(value: unknown): Record<string, boolean> {
   return value as Record<string, boolean>;
 }
 
+export function assertFalseFlags(record: Record<string, boolean>, flags: string[], label: string): void {
+  flags.forEach((flag) => {
+    assert.equal(record[flag], false, `${label} ${flag} must be false`);
+  });
+}
+
+export function assertEveryFlagFalse(
+  record: Record<string, boolean>,
+  label: string,
+  predicate: (flag: string) => boolean = () => true,
+): void {
+  assertFalseFlags(record, Object.keys(record).filter(predicate), label);
+}
+
 export function listFilesByExtension(relativeDir: string, extension: string): string[] {
   const absoluteDir = path.join(repoRoot, relativeDir);
   return fs.readdirSync(absoluteDir, { withFileTypes: true })
