@@ -1,6 +1,7 @@
 {
   "surface_kind": "family_stage_control_plane",
   "version": "family-stage-control-plane.v1",
+  "stage_pack_conformance_version": "standard-stage-pack.v2",
   "plane_id": "opl_meta_agent_stage_plane",
   "target_domain_id": "opl-meta-agent",
   "owner": "opl-meta-agent",

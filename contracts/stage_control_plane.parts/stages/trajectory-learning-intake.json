@@ -1,6 +1,7 @@
 {
   "stage_id": "trajectory-learning-intake",
   "stage_kind": "revision",
+  "stage_pack_conformance_version": "standard-stage-pack.v2",
   "title": "Trajectory Learning Intake",
   "summary": "Turn redacted external coding-agent trajectory refs into single-intent atoms, candidate buffers, and gated skill, prompt, stage-policy, or mechanism proposal refs.",
   "goal": "Produce trajectory atom refs, candidate buffer refs, and proposal refs without running a daemon, installing user-scope skills, or claiming UX/canary evidence as quality verdict.",
@@ -768,6 +769,113 @@
       "policy_ref": "stage-completion-policy-ref:opl-meta-agent/trajectory-learning-intake",
       "stage_id": "trajectory-learning-intake",
       "target_domain_id": "opl-meta-agent"
+    },
+    "requires": [
+      "stage:trajectory-learning-intake",
+      "stage-completion-policy-ref:opl-meta-agent/trajectory-learning-intake",
+      "prompt-ref:agent/prompts/trajectory-learning-intake.md",
+      "skill-ref:agent/skills/trajectory-learning-intake.md",
+      "skill-ref:agent/skills/opl-meta-agent-domain-skill.md",
+      "knowledge-ref:agent/knowledge/trajectory-learning-policy.md",
+      "knowledge-ref:agent/knowledge/opl-boundary-policy.md",
+      "quality-gate-ref:agent/quality_gates/trajectory-learning-proposal.md",
+      "action-ref:materialize-trajectory-learning-proposal",
+      "contract-ref:contracts/trajectory_learning_contract.json",
+      "runtime-ref:stage-attempt-ledger",
+      "runtime-ref:generated-interface-bundle",
+      "runtime-ref:stage-executor-policy-gate",
+      "runtime-ref:agent-lab-promotion-gate",
+      "runtime-ref:stage-progress-log-user-stage-log",
+      "artifact-native-contract-ref:opl-meta-agent/trajectory-learning-intake"
+    ],
+    "ensures": [
+      "stage-attempt-receipt-ref:trajectory-learning-intake",
+      "executor-receipt-ref:trajectory-learning-intake/codex-cli",
+      "no-forbidden-write-proof-ref:trajectory-learning-intake",
+      "independent-ai-review-ref:trajectory-learning-intake",
+      "output-ref:redacted_trajectory_ref",
+      "output-ref:trajectory_atom_refs",
+      "output-ref:candidate_buffer_ref",
+      "output-ref:skill_policy_candidate_ref",
+      "output-ref:prompt_policy_candidate_ref",
+      "output-ref:stage_policy_candidate_ref",
+      "output-ref:mechanism_patch_proposal_ref",
+      "output-ref:typed_blocker_refs",
+      "stage-user-log-ref:trajectory-learning-intake",
+      "stage-closeout-packet-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+      "stage-folder-contract-ref:opl-meta-agent/trajectory-learning-intake",
+      "stage-manifest-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+      "stage-current-pointer-ref:opl-meta-agent/trajectory-learning-intake",
+      "canonical-artifact-ref:opl-meta-agent/trajectory-learning-intake",
+      "stage-json-ref:opl-meta-agent/trajectory-learning-intake",
+      "stage-attempt-json-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+      "stage-attempt-receipt-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+      "stage-export-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+      "stage-lineage-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+      "stage-retention-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+      "opl-physical-kernel-locator-ref:opl-meta-agent/trajectory-learning-intake",
+      "stage-artifact-conformance-ref:opl-meta-agent/trajectory-learning-intake",
+      "stage-artifact-workbench-consumption-ref:opl-meta-agent/trajectory-learning-intake"
+    ],
+    "expected_receipt_refs": [
+      {
+        "ref_kind": "stage_attempt_receipt_ref",
+        "ref": "stage-attempt-receipt-ref:trajectory-learning-intake",
+        "role": "stage_attempt_receipt"
+      },
+      {
+        "ref_kind": "stage_closeout_packet_ref",
+        "ref": "stage-closeout-packet-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+        "role": "domain_stage_completion_closeout"
+      },
+      {
+        "ref_kind": "typed_blocker_ref",
+        "ref": "stage-typed-blocker-ref:opl-meta-agent/trajectory-learning-intake/{stage_attempt_id}",
+        "role": "route_back_or_blocker"
+      }
+    ],
+    "receipt_schema_refs": [
+      {
+        "ref_kind": "repo_path",
+        "ref": "contracts/owner_receipt_contract.json",
+        "role": "owner_receipt_schema"
+      }
+    ],
+    "authority_function_refs": [
+      {
+        "ref_kind": "repo_path",
+        "ref": "runtime/authority_functions/meta-agent-authority-functions.json",
+        "role": "minimal_authority_functions"
+      }
+    ],
+    "l4_entry_gate": {
+      "entry_level": "L4_structural_baseline",
+      "required_gates": [
+        "repo_layout_declared",
+        "stage_pack_v2_required",
+        "stage_prompt_skill_knowledge_quality_gate_refs_resolve",
+        "tool_affordance_boundary_declared",
+        "receipt_schema_declared",
+        "minimal_authority_functions_declared",
+        "generated_surface_handoff_declared",
+        "no_forbidden_write_contract_declared"
+      ],
+      "can_claim_l5": false,
+      "can_claim_domain_ready": false
+    },
+    "l5_entry_gate": {
+      "entry_level": "L5_production_operating_maturity",
+      "evidence_required": [
+        "real_user_path",
+        "long_soak_recovery",
+        "release_install_evidence",
+        "owner_acceptance",
+        "direct_and_opl_hosted_parity_at_scale"
+      ],
+      "conformance_pass_counts_as_l5": false,
+      "contract_validation_counts_as_l5": false,
+      "provider_completion_counts_as_l5": false,
+      "app_projection_counts_as_l5": false
     }
   },
   "tool_refs": [
@@ -846,5 +954,132 @@
     "ref_kind": "json_pointer",
     "stage_id": "trajectory-learning-intake",
     "role": "stage_tool_affordance_boundary"
+  },
+  "tool_affordance_boundary": {
+    "catalog_role": "available_affordance_catalog_not_workflow_script",
+    "capability_refs": [
+      {
+        "ref": "target_agent_intent_and_repo_context_reading",
+        "ref_kind": "policy_ref",
+        "role": "capability_boundary"
+      },
+      {
+        "ref": "external_experience_research_and_synthesis",
+        "ref_kind": "policy_ref",
+        "role": "capability_boundary"
+      },
+      {
+        "ref": "stage_decomposition_and_pack_materialization",
+        "ref_kind": "policy_ref",
+        "role": "capability_boundary"
+      },
+      {
+        "ref": "baseline_eval_suite_and_takeover_evidence_runner",
+        "ref_kind": "policy_ref",
+        "role": "capability_boundary"
+      },
+      {
+        "ref": "optimizer_iteration_and_trajectory_learning_review",
+        "ref_kind": "policy_ref",
+        "role": "capability_boundary"
+      }
+    ],
+    "permission_scope_refs": [
+      {
+        "ref": "repo_context_read",
+        "ref_kind": "policy_ref",
+        "role": "permission_scope_boundary"
+      },
+      {
+        "ref": "declared_domain_workspace_read",
+        "ref_kind": "policy_ref",
+        "role": "permission_scope_boundary"
+      },
+      {
+        "ref": "bounded_domain_artifact_write_when_owner_authorized",
+        "ref_kind": "policy_ref",
+        "role": "permission_scope_boundary"
+      },
+      {
+        "ref": "receipt_or_typed_blocker_return",
+        "ref_kind": "policy_ref",
+        "role": "permission_scope_boundary"
+      }
+    ],
+    "credential_boundary_refs": [
+      {
+        "ref": "no_secret_material_in_stage_pack",
+        "ref_kind": "policy_ref",
+        "role": "credential_boundary_boundary"
+      },
+      {
+        "ref": "executor_must_request_human_gate_for_missing_credentials",
+        "ref_kind": "policy_ref",
+        "role": "credential_boundary_boundary"
+      }
+    ],
+    "write_scope_refs": [
+      {
+        "ref": "target_agent_workspace_refs_only_until_user_approved_write",
+        "ref_kind": "policy_ref",
+        "role": "write_scope_boundary"
+      },
+      {
+        "ref": "generated_agent_contract_artifact_refs_only_until_owner_closeout",
+        "ref_kind": "policy_ref",
+        "role": "write_scope_boundary"
+      }
+    ],
+    "side_effect_risk_refs": [
+      {
+        "ref": "external_network_or_portal_side_effect_requires_explicit_stage_permission",
+        "ref_kind": "policy_ref",
+        "role": "side_effect_risk_boundary"
+      },
+      {
+        "ref": "artifact_or_package_mutation_requires_domain_owner_receipt",
+        "ref_kind": "policy_ref",
+        "role": "side_effect_risk_boundary"
+      }
+    ],
+    "forbidden_authority_refs": [
+      {
+        "ref": "target_domain_truth_write_by_oma",
+        "ref_kind": "policy_ref",
+        "role": "forbidden_authority_boundary"
+      },
+      {
+        "ref": "default_agent_promotion_without_gate",
+        "ref_kind": "policy_ref",
+        "role": "forbidden_authority_boundary"
+      },
+      {
+        "ref": "model_weight_training_or_deployment",
+        "ref_kind": "policy_ref",
+        "role": "forbidden_authority_boundary"
+      },
+      {
+        "ref": "quality_verdict_without_independent_reviewer_receipt",
+        "ref_kind": "policy_ref",
+        "role": "forbidden_authority_boundary"
+      },
+      {
+        "ref": "opl_framework_runtime_write_by_domain_repo",
+        "ref_kind": "policy_ref",
+        "role": "forbidden_authority_boundary"
+      }
+    ],
+    "executor_autonomy": {
+      "executor_can_choose_tools": true,
+      "executor_can_skip_tools": true,
+      "executor_can_substitute_tools_within_boundary": true,
+      "executor_can_choose_order_and_parallelism": true,
+      "executor_can_request_missing_context_or_human_gate": true,
+      "tool_catalog_can_prescribe_tool_sequence": false,
+      "tool_catalog_can_define_cognitive_strategy": false,
+      "tool_catalog_can_override_stage_goal": false,
+      "tool_catalog_can_authorize_forbidden_write": false
+    },
+    "policy": "opl-meta-agent tool refs declare available affordances and safety boundaries only; they do not prescribe executor order, stage strategy, stage goal, or forbidden writes."
   }
 }

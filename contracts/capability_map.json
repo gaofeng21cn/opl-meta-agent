@@ -108,6 +108,47 @@
         "can_authorize_quality_or_export": false,
         "can_claim_domain_ready": false,
         "can_claim_production_ready": false
+      },
+      "improvement_tokens": [
+        "opl",
+        "meta",
+        "agent",
+        "intent",
+        "intake",
+        "stage",
+        "prompt"
+      ],
+      "canonical_target_paths": [
+        "agent/prompts/intent-intake.md"
+      ],
+      "verification_refs": [
+        "git diff --check",
+        "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
+        "scripts/verify.sh",
+        "opl:agents-scaffold-validate"
+      ],
+      "forbidden_surfaces": [
+        "target domain truth",
+        "target memory body",
+        "target artifact body",
+        "target owner receipt body",
+        "target typed blocker body",
+        "quality/export verdict",
+        "promotion gate state",
+        "runtime queue or provider attempt",
+        "domain ready claim",
+        "production ready claim"
+      ],
+      "owner_closeout_boundary": {
+        "owner": "opl-meta-agent",
+        "required_return_shapes": [
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "route_back_ref"
+        ],
+        "can_write_owner_receipt_body": false,
+        "can_create_typed_blocker": false
       }
     },
     {
@@ -130,7 +171,7 @@
         "diagnosis router",
         "mechanism learning"
       ],
-      "failure_token_registry_ref": "failure-token-registry:opl-meta-agent/agent-design-evolution",
+      "failure_token_registry_ref": "contracts/opl-framework/agent-lab-failure-token-registry.json",
       "verification_refs": [
         "git diff --check",
         "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
@@ -184,7 +225,18 @@
       "canonical_target_paths": [
         "agent/professional_skills/oma-agent-design-evolution/SKILL.md"
       ],
-      "owner_closeout_boundary_ref": "contracts/capability_map.json#/authority_boundary"
+      "owner_closeout_boundary_ref": "contracts/capability_map.json#/authority_boundary",
+      "owner_closeout_boundary": {
+        "owner": "opl-meta-agent",
+        "required_return_shapes": [
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "route_back_ref"
+        ],
+        "can_write_owner_receipt_body": false,
+        "can_create_typed_blocker": false
+      }
     },
     {
       "capability_id": "opl-meta-agent.stage-pack-intent-architecture.professional_skill",
@@ -206,7 +258,7 @@
         "artifact morphology",
         "acceptance criteria"
       ],
-      "failure_token_registry_ref": "failure-token-registry:opl-meta-agent/stage-pack-intent-architecture",
+      "failure_token_registry_ref": "contracts/opl-framework/agent-lab-failure-token-registry.json",
       "verification_refs": [
         "git diff --check",
         "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
@@ -250,7 +302,18 @@
       "canonical_target_paths": [
         "agent/professional_skills/oma-stage-pack-intent-architecture/SKILL.md"
       ],
-      "owner_closeout_boundary_ref": "contracts/capability_map.json#/authority_boundary"
+      "owner_closeout_boundary_ref": "contracts/capability_map.json#/authority_boundary",
+      "owner_closeout_boundary": {
+        "owner": "opl-meta-agent",
+        "required_return_shapes": [
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "route_back_ref"
+        ],
+        "can_write_owner_receipt_body": false,
+        "can_create_typed_blocker": false
+      }
     },
     {
       "capability_id": "opl-meta-agent.eval-takeover-review.professional_skill",
@@ -272,7 +335,7 @@
         "baseline suite",
         "owner authority review"
       ],
-      "failure_token_registry_ref": "failure-token-registry:opl-meta-agent/eval-takeover-review",
+      "failure_token_registry_ref": "contracts/opl-framework/agent-lab-failure-token-registry.json",
       "verification_refs": [
         "git diff --check",
         "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
@@ -316,7 +379,18 @@
       "canonical_target_paths": [
         "agent/professional_skills/oma-eval-takeover-review/SKILL.md"
       ],
-      "owner_closeout_boundary_ref": "contracts/capability_map.json#/authority_boundary"
+      "owner_closeout_boundary_ref": "contracts/capability_map.json#/authority_boundary",
+      "owner_closeout_boundary": {
+        "owner": "opl-meta-agent",
+        "required_return_shapes": [
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "route_back_ref"
+        ],
+        "can_write_owner_receipt_body": false,
+        "can_create_typed_blocker": false
+      }
     },
     {
       "capability_id": "opl-meta-agent.work-order-hygiene.professional_skill",
@@ -338,7 +412,7 @@
         "source-purity review",
         "developer patch work order"
       ],
-      "failure_token_registry_ref": "failure-token-registry:opl-meta-agent/work-order-hygiene",
+      "failure_token_registry_ref": "contracts/opl-framework/agent-lab-failure-token-registry.json",
       "verification_refs": [
         "git diff --check",
         "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
@@ -376,7 +450,7 @@
           "role": "script_morphology_policy"
         },
         {
-          "ref_kind": "doc_ref",
+          "ref_kind": "repo_path",
           "ref": "docs/active/opl-private-implementation-migration-inventory.md",
           "role": "private_migration_inventory"
         }
@@ -403,7 +477,18 @@
       "canonical_target_paths": [
         "agent/professional_skills/oma-work-order-hygiene/SKILL.md"
       ],
-      "owner_closeout_boundary_ref": "contracts/capability_map.json#/authority_boundary"
+      "owner_closeout_boundary_ref": "contracts/capability_map.json#/authority_boundary",
+      "owner_closeout_boundary": {
+        "owner": "opl-meta-agent",
+        "required_return_shapes": [
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "route_back_ref"
+        ],
+        "can_write_owner_receipt_body": false,
+        "can_create_typed_blocker": false
+      }
     },
     {
       "capability_id": "opl-meta-agent.domain-affordances.tool_connector",
@@ -433,6 +518,47 @@
         "can_authorize_quality_or_export": false,
         "can_claim_domain_ready": false,
         "can_claim_production_ready": false
+      },
+      "improvement_tokens": [
+        "opl",
+        "meta",
+        "agent",
+        "domain",
+        "affordances",
+        "tool",
+        "connector"
+      ],
+      "canonical_target_paths": [
+        "agent/tools/domain_affordances.md"
+      ],
+      "verification_refs": [
+        "git diff --check",
+        "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
+        "scripts/verify.sh",
+        "opl:agents-scaffold-validate"
+      ],
+      "forbidden_surfaces": [
+        "target domain truth",
+        "target memory body",
+        "target artifact body",
+        "target owner receipt body",
+        "target typed blocker body",
+        "quality/export verdict",
+        "promotion gate state",
+        "runtime queue or provider attempt",
+        "domain ready claim",
+        "production ready claim"
+      ],
+      "owner_closeout_boundary": {
+        "owner": "opl-meta-agent",
+        "required_return_shapes": [
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "route_back_ref"
+        ],
+        "can_write_owner_receipt_body": false,
+        "can_create_typed_blocker": false
       }
     },
     {
@@ -463,6 +589,48 @@
         "can_authorize_quality_or_export": false,
         "can_claim_domain_ready": false,
         "can_claim_production_ready": false
+      },
+      "improvement_tokens": [
+        "opl",
+        "meta",
+        "agent",
+        "boundary",
+        "policy",
+        "knowledge",
+        "pack",
+        "reference"
+      ],
+      "canonical_target_paths": [
+        "agent/knowledge/opl-boundary-policy.md"
+      ],
+      "verification_refs": [
+        "git diff --check",
+        "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
+        "scripts/verify.sh",
+        "opl:agents-scaffold-validate"
+      ],
+      "forbidden_surfaces": [
+        "target domain truth",
+        "target memory body",
+        "target artifact body",
+        "target owner receipt body",
+        "target typed blocker body",
+        "quality/export verdict",
+        "promotion gate state",
+        "runtime queue or provider attempt",
+        "domain ready claim",
+        "production ready claim"
+      ],
+      "owner_closeout_boundary": {
+        "owner": "opl-meta-agent",
+        "required_return_shapes": [
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "route_back_ref"
+        ],
+        "can_write_owner_receipt_body": false,
+        "can_create_typed_blocker": false
       }
     },
     {
@@ -493,6 +661,48 @@
         "can_authorize_quality_or_export": false,
         "can_claim_domain_ready": false,
         "can_claim_production_ready": false
+      },
+      "improvement_tokens": [
+        "opl",
+        "meta",
+        "agent",
+        "takeover",
+        "quality",
+        "gate",
+        "reference",
+        "pack"
+      ],
+      "canonical_target_paths": [
+        "agent/quality_gates/takeover.md"
+      ],
+      "verification_refs": [
+        "git diff --check",
+        "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
+        "scripts/verify.sh",
+        "opl:agents-scaffold-validate"
+      ],
+      "forbidden_surfaces": [
+        "target domain truth",
+        "target memory body",
+        "target artifact body",
+        "target owner receipt body",
+        "target typed blocker body",
+        "quality/export verdict",
+        "promotion gate state",
+        "runtime queue or provider attempt",
+        "domain ready claim",
+        "production ready claim"
+      ],
+      "owner_closeout_boundary": {
+        "owner": "opl-meta-agent",
+        "required_return_shapes": [
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "route_back_ref"
+        ],
+        "can_write_owner_receipt_body": false,
+        "can_create_typed_blocker": false
       }
     },
     {
@@ -523,6 +733,48 @@
         "can_authorize_quality_or_export": false,
         "can_claim_domain_ready": false,
         "can_claim_production_ready": false
+      },
+      "improvement_tokens": [
+        "opl",
+        "meta",
+        "agent",
+        "live",
+        "evidence",
+        "eval",
+        "suite",
+        "contract"
+      ],
+      "canonical_target_paths": [
+        "contracts/live_stage_run_progress_evidence.json"
+      ],
+      "verification_refs": [
+        "git diff --check",
+        "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
+        "scripts/verify.sh",
+        "opl:agents-scaffold-validate"
+      ],
+      "forbidden_surfaces": [
+        "target domain truth",
+        "target memory body",
+        "target artifact body",
+        "target owner receipt body",
+        "target typed blocker body",
+        "quality/export verdict",
+        "promotion gate state",
+        "runtime queue or provider attempt",
+        "domain ready claim",
+        "production ready claim"
+      ],
+      "owner_closeout_boundary": {
+        "owner": "opl-meta-agent",
+        "required_return_shapes": [
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "route_back_ref"
+        ],
+        "can_write_owner_receipt_body": false,
+        "can_create_typed_blocker": false
       }
     }
   ],

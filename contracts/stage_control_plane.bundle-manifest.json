@@ -154,7 +154,7 @@
       "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/trajectory-learning-intake.json",
       "contracts/stage_control_plane.parts/stage_native_artifact_contract/contracts/online-learning.json"
     ],
-    "value": "sha256:00559286afa02d2529afe96a3ae283d5b7763cdc33f6a222f8b61b19f0b23f78"
+    "value": "sha256:7a6e2770f22435d96c0050b79c82002b836509e9e37c3fd0069675e17c138ee6"
   },
   "generated_consumer_surface": {
     "ref": "contracts/stage_control_plane.json",

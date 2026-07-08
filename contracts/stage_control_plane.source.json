@@ -14,6 +14,7 @@
   "top_level_key_order": [
     "surface_kind",
     "version",
+    "stage_pack_conformance_version",
     "plane_id",
     "target_domain_id",
     "owner",
