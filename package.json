@@ -32,7 +32,7 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "opl-framework-shared": "git+https://github.com/gaofeng21cn/one-person-lab.git#05fc5aa4425acca0a5c6f3f02eafbc82ec902af4"
+    "opl-framework-shared": "git+https://github.com/gaofeng21cn/one-person-lab.git#e8899af43129a786b74603d6ce3beaf90214bdd0"
   },
   "devDependencies": {
     "@types/node": "^25.9.0",
