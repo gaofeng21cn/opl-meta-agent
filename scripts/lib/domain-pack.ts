@@ -429,6 +429,83 @@ export function buildAgentPackPlan(
   };
 }
 
+export function buildSourceDerivedBuildReceipt(
+  targetAgent: MinimalTargetAgent,
+  options: AgentPackPlanOptions = {},
+): JsonObject | null {
+  const sourceDerivedDesignReceipt = buildSourceDerivedDesignReceipt(targetAgent);
+  const referenceDesignPacket = buildReferenceDesignPacket(targetAgent);
+  const transferMap = buildTransferMap(targetAgent, options);
+  const agentPackPlan = buildAgentPackPlan(targetAgent, options);
+  if (!sourceDerivedDesignReceipt || !referenceDesignPacket || !transferMap || !agentPackPlan) {
+    return null;
+  }
+  const mappings = Array.isArray(transferMap.mappings) ? transferMap.mappings as JsonObject[] : [];
+  const plannedStages = Array.isArray(agentPackPlan.planned_stage_refs)
+    ? agentPackPlan.planned_stage_refs as JsonObject[]
+    : [];
+  const selectedProfileRefs = stringList(targetAgent.selected_opl_profile_refs);
+  return {
+    surface_kind: 'opl_meta_agent_build_receipt',
+    version: 'opl-meta-agent.build-receipt.v1',
+    receipt_id: `build-receipt:opl-meta-agent/${targetAgent.domain_id}`,
+    receipt_ref: `build-receipt-ref:opl-meta-agent/${targetAgent.domain_id}`,
+    target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
+    build_source_kind: 'source_derived_design',
+    profile_selection_mode: buildProfileSelectionMode(targetAgent),
+    selected_profile_refs: selectedProfileRefs,
+    lower_bound_opl_profile_refs: selectedProfileRefs.length > 0
+      ? selectedProfileRefs
+      : [SOURCE_DERIVED_DESIGN_PROFILE_ROUTE_REF],
+    source_derived_design_receipt_ref: sourceDerivedDesignReceipt.receipt_ref,
+    reference_design_packet_ref: referenceDesignPacket.packet_ref,
+    transfer_map_ref: transferMap.transfer_map_ref,
+    agent_pack_plan_ref: agentPackPlan.plan_ref,
+    required_machine_objects: [
+      'ReferenceDesignPacket',
+      'TransferMap',
+      'AgentPackPlan',
+      'BuildReceipt',
+    ],
+    source_derived_stage_refs: plannedStages
+      .filter((stage) => stage.origin === 'source_pattern_ref')
+      .map((stage) => ({
+        stage_id: stage.stage_id,
+        stage_ref: stage.stage_ref,
+        source_pattern_ref: stage.source_pattern_ref,
+      })),
+    target_only_requirement_refs: plannedStages
+      .filter((stage) => stage.origin === 'target_only_requirement')
+      .map((stage) => String(stage.target_only_requirement_ref))
+      .filter((entry) => entry.trim()),
+    rejected_source_pattern_refs: mappings
+      .filter((mapping) => mapping.disposition === 'reject')
+      .map((mapping) => String(mapping.source_pattern_ref))
+      .filter((entry) => entry.trim()),
+    transferable_pattern_requirements: buildTransferablePatternRequirements(targetAgent),
+    capability_plan_requirements: buildCapabilityPlanRequirements(targetAgent),
+    forbidden_claims: [
+      'target_domain_ready',
+      'production_ready',
+      'owner_accepted',
+      'quality_or_export_approved',
+      'runtime_live_promoted',
+    ],
+    authority_boundary: {
+      refs_only: true,
+      oma_role: 'source_derived_build_receipt_author_refs_only',
+      target_domain_owner_keeps_truth_quality_artifact_authority: true,
+      can_copy_external_runtime: false,
+      can_write_target_domain_truth: false,
+      can_write_target_domain_memory_body: false,
+      can_mutate_target_domain_artifact_body: false,
+      can_authorize_target_domain_quality_or_export: false,
+      can_create_target_owner_receipt: false,
+      can_promote_live_or_default_agent: false,
+    },
+  };
+}
+
 function buildReferenceDesignBoundary(targetAgent: MinimalTargetAgent): JsonObject {
   const refs = referenceDesignObjectRefs(targetAgent);
   return {
@@ -516,6 +593,7 @@ export function buildSourceDerivedDesignReceipt(targetAgent: MinimalTargetAgent)
       'ReferenceDesignPacket',
       'TransferMap',
       'AgentPackPlan',
+      'BuildReceipt',
     ],
     profile_requirements: SOURCE_DERIVED_DESIGN_PROFILE_REQUIREMENTS,
     transferable_pattern_requirements: buildTransferablePatternRequirements(targetAgent),
@@ -591,6 +669,7 @@ export function buildProfileSelectionReceipt(targetAgent: MinimalTargetAgent): J
   const referenceDesignPacket = buildReferenceDesignPacket(targetAgent);
   const transferMap = buildTransferMap(targetAgent);
   const agentPackPlan = buildAgentPackPlan(targetAgent);
+  const buildReceipt = buildSourceDerivedBuildReceipt(targetAgent);
   if (selectedProfileRefs.length === 0 && !sourceDerivedDesignReceipt) {
     throw new Error('profile_selection_required:selected_opl_profile_refs_or_source_derived_design_refs_missing');
   }
@@ -620,6 +699,8 @@ export function buildProfileSelectionReceipt(targetAgent: MinimalTargetAgent): J
     transfer_map_ref: transferMap?.transfer_map_ref ?? null,
     agent_pack_plan: agentPackPlan,
     agent_pack_plan_ref: agentPackPlan?.plan_ref ?? null,
+    build_receipt: buildReceipt,
+    build_receipt_ref: buildReceipt?.receipt_ref ?? null,
     reference_design_pattern_packet_refs: stringList(targetAgent.reference_design_pattern_packet_refs),
     transferable_pattern_requirements: buildTransferablePatternRequirements(targetAgent),
     capability_plan_requirements: buildCapabilityPlanRequirements(targetAgent),
@@ -672,7 +753,7 @@ function referenceDesignMarkdown(targetAgent: MinimalTargetAgent): string[] {
     ...sourceRefs.map((ref) => `- Source ref: ${ref}`),
     ...patternNotes.map((note) => `- Transfer pattern: ${note}`),
     ...patternPacketRefs.map((ref) => `- Pattern packet ref: ${ref}`),
-    'Extract transferable architecture, workflow, rubric, handoff, evaluation, and failure-taxonomy patterns into ReferenceDesignPacket -> TransferMap -> AgentPackPlan before choosing or applying an OPL profile.',
+    'Extract transferable architecture, workflow, rubric, handoff, evaluation, and failure-taxonomy patterns into ReferenceDesignPacket -> TransferMap -> AgentPackPlan -> BuildReceipt before choosing or applying an OPL profile.',
     'Do not copy external runtime ownership, private data, domain verdicts, owner receipts, or promotion authority.',
     '',
   ];
@@ -696,6 +777,7 @@ function profileSelectionMarkdown(targetAgent: MinimalTargetAgent): string[] {
     ...(receipt.reference_design_packet_ref ? [`- ReferenceDesignPacket ref: ${receipt.reference_design_packet_ref}`] : []),
     ...(receipt.transfer_map_ref ? [`- TransferMap ref: ${receipt.transfer_map_ref}`] : []),
     ...(receipt.agent_pack_plan_ref ? [`- AgentPackPlan ref: ${receipt.agent_pack_plan_ref}`] : []),
+    ...(receipt.build_receipt_ref ? [`- BuildReceipt ref: ${receipt.build_receipt_ref}`] : []),
     ...((receipt.reference_design_pattern_packet_refs as string[]).map((ref) => `- Pattern packet ref: ${ref}`)),
     ...((receipt.transferable_pattern_requirements as string[]).map((requirement) =>
       `- Transferable pattern requirement: ${requirement}`
@@ -965,6 +1047,7 @@ function buildTargetAgentPrimarySkillCapability(targetAgent: MinimalTargetAgent)
     reference_design_packet_ref: profileSelectionReceipt.reference_design_packet_ref,
     transfer_map_ref: profileSelectionReceipt.transfer_map_ref,
     agent_pack_plan_ref: profileSelectionReceipt.agent_pack_plan_ref,
+    build_receipt_ref: profileSelectionReceipt.build_receipt_ref,
     reference_design_pattern_packet_refs: profileSelectionReceipt.reference_design_pattern_packet_refs,
     transferable_pattern_requirements: profileSelectionReceipt.transferable_pattern_requirements,
     capability_plan_requirements: profileSelectionReceipt.capability_plan_requirements,
@@ -1040,6 +1123,9 @@ export function writeTargetAgentCapabilityMap(targetAgentDir: string, targetAgen
     agent_pack_plan: profileSelectionReceipt.agent_pack_plan,
     agent_pack_plan_ref: profileSelectionReceipt.agent_pack_plan_ref,
     agent_pack_plan_refs: profileSelectionReceipt.agent_pack_plan_ref ? [profileSelectionReceipt.agent_pack_plan_ref] : [],
+    build_receipt: profileSelectionReceipt.build_receipt,
+    build_receipt_ref: profileSelectionReceipt.build_receipt_ref,
+    build_receipt_refs: profileSelectionReceipt.build_receipt_ref ? [profileSelectionReceipt.build_receipt_ref] : [],
     reference_design_source_refs: stringList(targetAgent.reference_design_source_refs),
     reference_design_pattern_packet_refs: profileSelectionReceipt.reference_design_pattern_packet_refs,
     transferable_pattern_requirements: profileSelectionReceipt.transferable_pattern_requirements,
@@ -1059,6 +1145,7 @@ export function writeTargetAgentCapabilityMap(targetAgentDir: string, targetAgen
         : [],
       transfer_map_refs: profileSelectionReceipt.transfer_map_ref ? [profileSelectionReceipt.transfer_map_ref] : [],
       agent_pack_plan_refs: profileSelectionReceipt.agent_pack_plan_ref ? [profileSelectionReceipt.agent_pack_plan_ref] : [],
+      build_receipt_refs: profileSelectionReceipt.build_receipt_ref ? [profileSelectionReceipt.build_receipt_ref] : [],
       reference_design_pattern_packet_refs: profileSelectionReceipt.reference_design_pattern_packet_refs,
       primary_skill_refs: ['contracts/capability_map.json#/primary_skill_capability'],
     },

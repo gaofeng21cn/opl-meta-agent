@@ -111,16 +111,22 @@ test('stage-decomposition validator fails closed on empty source-derived design 
     surface_kind: 'opl_meta_agent_agent_pack_plan',
     plan_ref: stageControl.agent_pack_plan_ref,
   };
+  const emptyBuildReceipt = {
+    surface_kind: 'opl_meta_agent_build_receipt',
+    receipt_ref: stageControl.build_receipt_ref,
+  };
   stageControl.reference_design_packet = emptyPacket;
   stageControl.transfer_map = emptyTransferMap;
   stageControl.agent_pack_plan = emptyAgentPackPlan;
+  stageControl.build_receipt = emptyBuildReceipt;
   stage.reference_design_packet = emptyPacket;
   stage.transfer_map = emptyTransferMap;
   stage.agent_pack_plan = emptyAgentPackPlan;
+  stage.build_receipt = emptyBuildReceipt;
 
   assert.throws(
     () => validateStageDecompositionCloseoutPacket(packet, { targetAgent: sourceDerivedTargetAgent }),
-    /reference_source_refs|transferable_design_patterns|extractable_design_aspects|mappings|planned_stage_refs/i,
+    /reference_source_refs|transferable_design_patterns|extractable_design_aspects|mappings|planned_stage_refs|build_receipt/i,
   );
 });
 

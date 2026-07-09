@@ -870,6 +870,8 @@ export function runBuildAgentBaseline({
     transfer_map_ref: profileSelectionReceipt.transfer_map_ref,
     agent_pack_plan: profileSelectionReceipt.agent_pack_plan,
     agent_pack_plan_ref: profileSelectionReceipt.agent_pack_plan_ref,
+    build_receipt: profileSelectionReceipt.build_receipt,
+    build_receipt_ref: profileSelectionReceipt.build_receipt_ref,
     transferable_pattern_requirements: profileSelectionReceipt.transferable_pattern_requirements,
     capability_plan_requirements: profileSelectionReceipt.capability_plan_requirements,
   });
