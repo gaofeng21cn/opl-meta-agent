@@ -53,8 +53,12 @@ export type MinimalTargetAgent = {
   domain_id: string;
   domain_label?: string | null;
   target_brief?: string | null;
+  selected_opl_profile_refs?: string[] | null;
+  profile_selection_rationale?: string | null;
+  profile_requirement_refs?: string[] | null;
   reference_design_source_refs?: string[] | null;
   reference_design_pattern_notes?: string[] | null;
+  reference_design_pattern_packet_refs?: string[] | null;
 };
 
 const DOMAIN_PACK_SECTIONS: DomainPackSection[] = [
@@ -92,6 +96,9 @@ const DOMAIN_PACK_SECTIONS: DomainPackSection[] = [
 
 const placeholderPattern = new RegExp(`\\b(?:TO${'DO'}|T${'BD'})\\b`, 'i');
 
+const EVIDENCE_GROUNDED_DECISION_AGENT_PROFILE_REF =
+  'contracts/opl-framework/evidence-grounded-decision-agent-profile.json';
+
 function stringList(value: string[] | null | undefined): string[] {
   return Array.isArray(value) ? value.filter((entry) => entry.trim()).map((entry) => entry.trim()) : [];
 }
@@ -100,6 +107,7 @@ function buildReferenceDesignBoundary(targetAgent: MinimalTargetAgent): JsonObje
   return {
     source_refs: stringList(targetAgent.reference_design_source_refs),
     pattern_notes: stringList(targetAgent.reference_design_pattern_notes),
+    pattern_packet_refs: stringList(targetAgent.reference_design_pattern_packet_refs),
     role: 'external_architecture_inspiration_not_target_domain_truth',
     may_inform_stage_graph: true,
     may_inform_quality_gate_design: true,
@@ -110,10 +118,65 @@ function buildReferenceDesignBoundary(targetAgent: MinimalTargetAgent): JsonObje
   };
 }
 
+function defaultProfileRequirementRefs(selectedProfileRefs: string[]): string[] {
+  return selectedProfileRefs.some((ref) => ref.includes('evidence-grounded-decision-agent-profile'))
+    ? [
+        'profile-requirement:evidence_grounded_mode_routing.v1',
+        'profile-requirement:refs_only_evidence_grounding.v1',
+        'profile-requirement:decision_support_human_gate.v1',
+        'profile-mode:risk_or_priority_stratification',
+      ]
+    : [];
+}
+
+function buildProfileSelectionReceipt(targetAgent: MinimalTargetAgent): JsonObject {
+  const selectedProfileRefs = stringList(targetAgent.selected_opl_profile_refs);
+  const rationale = targetAgent.profile_selection_rationale?.trim() ?? '';
+  if (selectedProfileRefs.length === 0) {
+    throw new Error('profile_selection_required:selected_opl_profile_refs_missing');
+  }
+  if (!rationale) {
+    throw new Error('profile_selection_required:profile_selection_rationale_missing');
+  }
+  const profileRequirementRefs = stringList(targetAgent.profile_requirement_refs);
+  return {
+    surface_kind: 'opl_meta_agent_profile_selection_receipt',
+    version: 'opl-meta-agent.profile-selection-receipt.v1',
+    receipt_id: `profile-selection-receipt:opl-meta-agent/${targetAgent.domain_id}`,
+    receipt_ref: `profile-selection-receipt-ref:opl-meta-agent/${targetAgent.domain_id}`,
+    target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
+    selected_profile_refs: selectedProfileRefs,
+    profile_selection_rationale: rationale,
+    profile_requirement_refs: profileRequirementRefs.length > 0
+      ? profileRequirementRefs
+      : defaultProfileRequirementRefs(selectedProfileRefs),
+    profile_catalog_refs: [
+      EVIDENCE_GROUNDED_DECISION_AGENT_PROFILE_REF,
+      'opl foundry evidence-profile inspect --json',
+    ],
+    source_readback_refs: [
+      'contracts/opl-framework/evidence-grounded-decision-agent-profile.json',
+      'src/modules/pack/evidence-grounded-decision-agent-profile.ts',
+    ],
+    refs_only: true,
+    authority_boundary: {
+      opl_profile_owner: 'one-person-lab',
+      oma_role: 'profile_selection_consumer_and_target_pack_author',
+      target_domain_owner_keeps_truth_quality_artifact_authority: true,
+      can_write_target_domain_truth: false,
+      can_write_target_domain_memory_body: false,
+      can_mutate_target_domain_artifact_body: false,
+      can_authorize_target_domain_quality_or_export: false,
+      can_create_target_owner_receipt: false,
+    },
+  };
+}
+
 function referenceDesignMarkdown(targetAgent: MinimalTargetAgent): string[] {
   const sourceRefs = stringList(targetAgent.reference_design_source_refs);
   const patternNotes = stringList(targetAgent.reference_design_pattern_notes);
-  if (sourceRefs.length === 0 && patternNotes.length === 0) {
+  const patternPacketRefs = stringList(targetAgent.reference_design_pattern_packet_refs);
+  if (sourceRefs.length === 0 && patternNotes.length === 0 && patternPacketRefs.length === 0) {
     return [];
   }
   return [
@@ -122,7 +185,21 @@ function referenceDesignMarkdown(targetAgent: MinimalTargetAgent): string[] {
     'OMA recorded these external refs as design inspiration only; they are not target-domain truth, owner acceptance, or runtime dependencies.',
     ...sourceRefs.map((ref) => `- Source ref: ${ref}`),
     ...patternNotes.map((note) => `- Transfer pattern: ${note}`),
+    ...patternPacketRefs.map((ref) => `- Pattern packet ref: ${ref}`),
     'Extract transferable architecture, workflow, rubric, handoff, evaluation, and failure-taxonomy patterns. Do not copy external runtime ownership, private data, or domain verdicts.',
+    '',
+  ];
+}
+
+function profileSelectionMarkdown(targetAgent: MinimalTargetAgent): string[] {
+  const receipt = buildProfileSelectionReceipt(targetAgent);
+  return [
+    '## OPL Profile Selection',
+    '',
+    'OMA must consume the OPL profile catalog/readback before generating this target agent; do not rely on memory for base capability selection.',
+    ...((receipt.selected_profile_refs as string[]).map((ref) => `- Selected profile ref: ${ref}`)),
+    `- Rationale: ${receipt.profile_selection_rationale}`,
+    ...((receipt.profile_requirement_refs as string[]).map((ref) => `- Required capability: ${ref}`)),
     '',
   ];
 }
@@ -341,6 +418,7 @@ function buildTargetAgentPrimarySkillMarkdown(targetAgent: MinimalTargetAgent): 
     '- Return Agent Lab evidence, independent reviewer evidence, no-forbidden-write proof, and owner-facing closeout refs.',
     '- When the target cannot proceed without authority, return typed blocker, human gate, route-back, or owner-gated continuation.',
     '',
+    ...profileSelectionMarkdown(targetAgent),
     ...referenceDesignMarkdown(targetAgent),
     '## Delivery Gate',
     '',
@@ -369,12 +447,15 @@ export function writeTargetAgentPrimarySkill(targetAgentDir: string, targetAgent
 
 function buildTargetAgentPrimarySkillCapability(targetAgent: MinimalTargetAgent): JsonObject {
   const domainId = targetAgent.domain_id;
+  const profileSelectionReceipt = buildProfileSelectionReceipt(targetAgent);
   return {
     capability_id: `${domainId}.primary-skill.codex_entry`,
     surface_role: 'primary_skill',
     capability_kind: 'primary_skill',
     canonical_owner: domainId,
     physical_source_ref: { ref_kind: 'repo_path', ref: targetPrimarySkillRef, role: 'primary_skill_source' },
+    profile_ref: (profileSelectionReceipt.selected_profile_refs as string[])[0],
+    profile_selection_receipt_ref: 'contracts/capability_map.json#/profile_selection_receipt',
     reference_design_boundary: buildReferenceDesignBoundary(targetAgent),
     canonical_paths: [targetPrimarySkillRef],
     improvement_tokens: ['primary skill', 'agent entry', 'owner handoff', 'delivery gate'],
@@ -422,6 +503,7 @@ function buildTargetAgentPrimarySkillCapability(targetAgent: MinimalTargetAgent)
 export function writeTargetAgentCapabilityMap(targetAgentDir: string, targetAgent: MinimalTargetAgent): string {
   const capabilityMapPath = path.join(targetAgentDir, 'contracts', 'capability_map.json');
   const capabilityMap = JSON.parse(fs.readFileSync(capabilityMapPath, 'utf8')) as JsonObject;
+  const profileSelectionReceipt = buildProfileSelectionReceipt(targetAgent);
   const resolverIndex = typeof capabilityMap.resolver_index === 'object'
     && capabilityMap.resolver_index !== null
     && !Array.isArray(capabilityMap.resolver_index)
@@ -429,9 +511,12 @@ export function writeTargetAgentCapabilityMap(targetAgentDir: string, targetAgen
     : {};
   writeJson(capabilityMapPath, {
     ...capabilityMap,
+    profile_selection_receipt: profileSelectionReceipt,
     primary_skill_capability: buildTargetAgentPrimarySkillCapability(targetAgent),
     resolver_index: {
       ...resolverIndex,
+      profile_refs: profileSelectionReceipt.selected_profile_refs,
+      profile_selection_receipt_refs: ['contracts/capability_map.json#/profile_selection_receipt'],
       primary_skill_refs: ['contracts/capability_map.json#/primary_skill_capability'],
     },
   });

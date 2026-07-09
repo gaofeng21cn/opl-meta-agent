@@ -63,6 +63,7 @@ function stringList(value: string[] | null | undefined): string[] {
 function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
   const referenceDesignSourceRefs = stringList(input.targetAgent.reference_design_source_refs);
   const referenceDesignPatternNotes = stringList(input.targetAgent.reference_design_pattern_notes);
+  const referenceDesignPatternPacketRefs = stringList(input.targetAgent.reference_design_pattern_packet_refs);
   return {
     surface_kind: 'opl_meta_agent_stage_decomposition_attempt_input',
     version: 'opl-meta-agent.stage-decomposition-attempt-input.v1',
@@ -73,8 +74,12 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
     reference_design_input_policy: {
       source_refs: referenceDesignSourceRefs,
       pattern_notes: referenceDesignPatternNotes,
+      pattern_packet_refs: referenceDesignPatternPacketRefs,
       role: 'external_architecture_inspiration_not_target_domain_truth',
-      stage_closeout_must_preserve_refs_when_present: referenceDesignSourceRefs.length > 0,
+      stage_closeout_must_preserve_refs_when_present:
+        referenceDesignSourceRefs.length > 0
+        || referenceDesignPatternNotes.length > 0
+        || referenceDesignPatternPacketRefs.length > 0,
       can_copy_external_runtime: false,
       can_copy_external_domain_truth: false,
       can_replace_target_owner_judgment: false,

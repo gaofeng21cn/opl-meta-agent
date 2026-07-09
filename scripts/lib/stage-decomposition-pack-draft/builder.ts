@@ -64,6 +64,7 @@ function buildReferenceDesignBoundary(targetAgent: TargetAgent): JsonObject {
   return {
     source_refs: stringList(targetAgent.reference_design_source_refs),
     pattern_notes: stringList(targetAgent.reference_design_pattern_notes),
+    pattern_packet_refs: stringList(targetAgent.reference_design_pattern_packet_refs),
     role: 'external_architecture_inspiration_not_target_domain_truth',
     may_inform_stage_graph: true,
     may_inform_artifact_morphology: true,
@@ -304,7 +305,20 @@ function buildStageControlPlane({
   const stageCloseoutPacketRef = `stage-closeout-packet-ref:${domainId}/${stageId}/{stage_attempt_id}`;
   const morphologyRefs = artifactMorphologyContract.stage_refs as JsonObject;
   const referenceDesignBoundary = buildReferenceDesignBoundary(targetAgent);
-  const hasReferenceDesignSources = stringList(targetAgent.reference_design_source_refs).length > 0;
+  const referenceDesignSourceRefs = stringList(targetAgent.reference_design_source_refs);
+  const referenceDesignPatternPacketRefs = stringList(targetAgent.reference_design_pattern_packet_refs);
+  const referenceDesignInputRefs = [
+    ...(referenceDesignSourceRefs.length > 0
+      ? [ref('reference_design_source_refs', `reference-design-source-refs:${domainId}`)]
+      : []),
+    ...(referenceDesignPatternPacketRefs.length > 0
+      ? [ref('reference_design_pattern_packet_refs', `reference-design-pattern-packet-refs:${domainId}`)]
+      : []),
+  ];
+  const referenceDesignRequiredRefs = [
+    ...(referenceDesignSourceRefs.length > 0 ? [`reference-design-source-refs:${domainId}`] : []),
+    ...(referenceDesignPatternPacketRefs.length > 0 ? [`reference-design-pattern-packet-refs:${domainId}`] : []),
+  ];
   return {
     surface_kind: 'family_stage_control_plane',
     version: 'family-stage-control-plane.v1',
@@ -337,9 +351,7 @@ function buildStageControlPlane({
         inputs: [
           ref('workspace_scope_ref', `workspace-scope:${stageId}`),
           ref('source_scope_ref', `source-scope:${stageId}`),
-          ...(hasReferenceDesignSources
-            ? [ref('reference_design_source_refs', `reference-design-source-refs:${domainId}`)]
-            : []),
+          ...referenceDesignInputRefs,
         ],
         reference_design_boundary: referenceDesignBoundary,
         knowledge_refs: [ref('domain_knowledge_ref', knowledgePath)],
@@ -400,7 +412,7 @@ function buildStageControlPlane({
             String(morphologyRefs.asset_custody_ref),
             `workspace-scope-ref:${stageId}`,
             `source-scope-ref:${stageId}`,
-            ...(hasReferenceDesignSources ? [`reference-design-source-refs:${domainId}`] : []),
+            ...referenceDesignRequiredRefs,
             'runtime-ref:stage-progress-log-user-stage-log',
           ],
           ensures: [
@@ -603,12 +615,16 @@ function buildFiles({
   const brief = targetBriefFor(targetAgent);
   const referenceDesignSourceRefs = stringList(targetAgent.reference_design_source_refs);
   const referenceDesignPatternNotes = stringList(targetAgent.reference_design_pattern_notes);
-  const referenceDesignLines = referenceDesignSourceRefs.length > 0 || referenceDesignPatternNotes.length > 0
+  const referenceDesignPatternPacketRefs = stringList(targetAgent.reference_design_pattern_packet_refs);
+  const referenceDesignLines = referenceDesignSourceRefs.length > 0
+    || referenceDesignPatternNotes.length > 0
+    || referenceDesignPatternPacketRefs.length > 0
     ? [
         '',
         'Reference design inputs are architecture inspiration only, not target-domain truth or owner acceptance.',
         ...referenceDesignSourceRefs.map((sourceRef) => `Reference design source: ${sourceRef}`),
         ...referenceDesignPatternNotes.map((note) => `Transfer pattern: ${note}`),
+        ...referenceDesignPatternPacketRefs.map((packetRef) => `Pattern packet ref: ${packetRef}`),
         'Extract transferable workflow, grounding, evaluation, handoff, and failure-taxonomy patterns; do not copy external runtime ownership or domain verdicts.',
       ]
     : [];
@@ -718,6 +734,7 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
   const knowledgePath = input.knowledgePath ?? 'agent/knowledge/target-agent-boundary-policy.md';
   const qualityGatePath = input.qualityGatePath ?? 'agent/quality_gates/agent-output-draft-quality-gate.md';
   const referenceDesignSourceRefs = stringList(targetAgent.reference_design_source_refs);
+  const referenceDesignPatternPacketRefs = stringList(targetAgent.reference_design_pattern_packet_refs);
   const spec = {
     targetAgent,
     stageId,
@@ -780,8 +797,8 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
         'Attached a target-domain artifact morphology contract covering native source format, shard units, target extent, asset custody, and realistic task review.',
         'Materialized action catalog, stage control plane, prompt, skill, knowledge, and quality gate draft refs without writing target-domain truth.',
         'Generated Stage-Native Artifact Contract refs for stage folder, manifest, receipt, blocker, current pointer, and canonical artifact refs.',
-        ...(referenceDesignSourceRefs.length > 0
-          ? ['Preserved external reference design source refs as architecture inspiration only.']
+        ...(referenceDesignSourceRefs.length > 0 || referenceDesignPatternPacketRefs.length > 0
+          ? ['Preserved external reference design refs and pattern packet refs as architecture inspiration only.']
           : []),
       ],
       changed_stage_surfaces: [
@@ -804,6 +821,7 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
         `artifact-native-contract-ref:${targetAgent.domain_id}/${stageId}`,
         `stage-folder-contract-ref:${targetAgent.domain_id}/${stageId}`,
         ...referenceDesignSourceRefs,
+        ...referenceDesignPatternPacketRefs,
       ],
     },
     route_impact: {

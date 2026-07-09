@@ -13,7 +13,7 @@ or target owner authority.
 ## 输入
 
 - `intent_brief_ref`、`acceptance_criteria_ref`、`authority_boundary_ref`。
-- `research_brief_ref`、`source_refs`、`pattern_disposition_refs`、`reference_design_source_refs` 和 `reference_design_pattern_notes`。
+- `research_brief_ref`、`source_refs`、`pattern_disposition_refs`、`reference_design_source_refs`、`reference_design_pattern_notes` 和 `reference_design_pattern_packet_refs`。
 - OPL-compatible Foundry Agent 的合同边界：stage-led、refs-only handoff、domain-owned truth。
 - 用户或 source 声明的目标交付物形态、体量、开放式正文范围、外部资产来源和真实目标任务样例；缺失时必须在 closeout 中写成 route-back / blocker，不能静默缩小交付物。
 
@@ -21,7 +21,7 @@ or target owner authority.
 
 1. 列出目标 agent 从 intake 到 delivery 的最小 stage sequence，避免把多个 owner 的责任塞进同一 stage。
 2. 让 Codex 先给出候选 stage graph 与反例：哪些 stage 太机械、哪些 stage 会限制 AI executor、哪些 stage 需要合并/拆分/删除。
-3. 若输入包含论文/PDF/repo/产品参考设计，先抽取可迁移模式：输入结构化、route/mode selection、grounding sources、tool orchestration、rubric、validation design、handoff 和 failure taxonomy；拒绝复制外部 runtime、私有数据、领域事实或 promotion authority。
+3. 若输入包含论文/PDF/repo/产品参考设计，优先消费由 source ingest / Codex extraction 产出的 pattern packet refs；没有 packet 时才记录短 pattern notes。两者都只作为架构灵感：输入结构化、route/mode selection、grounding sources、tool orchestration、rubric、validation design、handoff 和 failure taxonomy；拒绝复制外部 runtime、私有数据、领域事实或 promotion authority。
 4. 为每个 stage 明确 goal、inputs、prompt refs、tools/action refs、knowledge refs、outputs、handoff 和 quality gate。
 5. 对每个 stage 写清 AI executor autonomy：Codex 可在哪些范围内自主规划、调用工具、要求补充 source、route-back、重写策略。
 6. 设计 action catalog，只保留 domain authority function 或 smoke CLI；generic CLI/MCP/Skill/product-entry 交给 OPL generated interface。
@@ -46,7 +46,7 @@ or target owner authority.
 `stage_decomposition_pack_draft` 必须包含：
 
 - `target_agent`：`domain_id`、`domain_label`、`delivery_domain`、`target_brief`。
-- 若请求包含参考设计，`target_agent` 必须保留 `reference_design_source_refs` 和 `reference_design_pattern_notes`；stage pack 必须把它们声明为 architecture inspiration，不作为 target truth、runtime dependency 或 owner verdict。
+- 若请求包含参考设计，`target_agent` 必须保留 `reference_design_source_refs`、`reference_design_pattern_notes` 和 `reference_design_pattern_packet_refs`；stage pack 必须把它们声明为 architecture inspiration，不作为 target truth、runtime dependency 或 owner verdict。
 - `artifact_morphology_brief`：native source format、artifact body owner、creative source refs、assembled/export refs、sharding strategy、extent/scale contract、asset custody/file-path policy、thin assembler/helper boundary 和 realistic target task review refs。
 - `action_catalog`：domain-owned action metadata、supported surfaces 和 no-forbidden-write authority boundary。
 - `stage_control_plane`：完整 stage list，每个 stage 都带 `selected_executor=codex_cli`、prompt/skill/knowledge/quality gate refs、requires/ensures、expected receipt refs、independent gate policy 和 owner boundary。

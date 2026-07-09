@@ -288,6 +288,7 @@ function referenceDesignEvidenceRefs(targetAgent: TargetAgent): string[] {
   return [
     ...(targetAgent.reference_design_source_refs ?? []),
     ...(targetAgent.reference_design_pattern_notes ?? []).map((note) => `reference-design-pattern:${note}`),
+    ...(targetAgent.reference_design_pattern_packet_refs ?? []),
   ];
 }
 
@@ -300,8 +301,12 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
     domainLabel: string | null;
     deliveryDomain: string | null;
     targetBrief: string | null;
+    selectedOplProfileRefs: string[];
+    profileSelectionRationale: string | null;
+    profileRequirementRefs: string[];
     referenceDesignSourceRefs: string[];
     referenceDesignPatternNotes: string[];
+    referenceDesignPatternPacketRefs: string[];
     stageRunner: StageRunnerKind;
     stageCloseoutPacketPath: string | null;
   } = {
@@ -312,8 +317,12 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
     domainLabel: null,
     deliveryDomain: null,
     targetBrief: null,
+    selectedOplProfileRefs: [],
+    profileSelectionRationale: null,
+    profileRequirementRefs: [],
     referenceDesignSourceRefs: [],
     referenceDesignPatternNotes: [],
+    referenceDesignPatternPacketRefs: [],
     stageRunner: 'live',
     stageCloseoutPacketPath: null,
   };
@@ -328,8 +337,12 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
       'domain-label': { type: 'string' },
       'delivery-domain': { type: 'string' },
       'target-brief': { type: 'string' },
+      'selected-opl-profile': { type: 'string', multiple: true },
+      'profile-selection-rationale': { type: 'string' },
+      'profile-requirement': { type: 'string', multiple: true },
       'reference-design-source': { type: 'string', multiple: true },
       'reference-design-pattern': { type: 'string', multiple: true },
+      'reference-design-pattern-packet': { type: 'string', multiple: true },
       'stage-runner': { type: 'string' },
       'stage-closeout-packet': { type: 'string' },
       'stage-decomposition-closeout': { type: 'string' },
@@ -359,6 +372,20 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
   if (typeof values['target-brief'] === 'string') {
     parsed.targetBrief = nonEmptyValue('--target-brief', values['target-brief']);
   }
+  parsed.selectedOplProfileRefs = nonEmptyStringList(
+    '--selected-opl-profile',
+    values['selected-opl-profile'],
+  );
+  if (typeof values['profile-selection-rationale'] === 'string') {
+    parsed.profileSelectionRationale = nonEmptyValue(
+      '--profile-selection-rationale',
+      values['profile-selection-rationale'],
+    );
+  }
+  parsed.profileRequirementRefs = nonEmptyStringList(
+    '--profile-requirement',
+    values['profile-requirement'],
+  );
   parsed.referenceDesignSourceRefs = nonEmptyStringList(
     '--reference-design-source',
     values['reference-design-source'],
@@ -366,6 +393,10 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
   parsed.referenceDesignPatternNotes = nonEmptyStringList(
     '--reference-design-pattern',
     values['reference-design-pattern'],
+  );
+  parsed.referenceDesignPatternPacketRefs = nonEmptyStringList(
+    '--reference-design-pattern-packet',
+    values['reference-design-pattern-packet'],
   );
   if (typeof values['stage-runner'] === 'string') {
     const runner = nonEmptyValue('--stage-runner', values['stage-runner']);
@@ -394,6 +425,16 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
       'Missing required --domain-id <domain_id>; build-agent-baseline requires an explicit target agent.',
     );
   }
+  if (parsed.selectedOplProfileRefs.length === 0) {
+    throw new Error(
+      'Missing required --selected-opl-profile <profile_ref>; target agent generation requires an explicit OPL profile selection.',
+    );
+  }
+  if (!parsed.profileSelectionRationale) {
+    throw new Error(
+      'Missing required --profile-selection-rationale <rationale>; target agent generation requires profile selection rationale.',
+    );
+  }
   if (parsed.stageRunner === 'fixture' && !parsed.stageCloseoutPacketPath) {
     throw new Error(
       'Missing required --stage-decomposition-closeout <path>; fixture runner only consumes an explicit typed closeout packet.',
@@ -407,11 +448,19 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
     delivery_domain: parsed.deliveryDomain ?? 'knowledge_delivery',
     target_brief: parsed.targetBrief
       ?? `Create an owner-gated ${domainLabel} delivery from declared workspace refs.`,
+    selected_opl_profile_refs: parsed.selectedOplProfileRefs,
+    profile_selection_rationale: parsed.profileSelectionRationale,
+    ...(parsed.profileRequirementRefs.length > 0
+      ? { profile_requirement_refs: parsed.profileRequirementRefs }
+      : {}),
     ...(parsed.referenceDesignSourceRefs.length > 0
       ? { reference_design_source_refs: parsed.referenceDesignSourceRefs }
       : {}),
     ...(parsed.referenceDesignPatternNotes.length > 0
       ? { reference_design_pattern_notes: parsed.referenceDesignPatternNotes }
+      : {}),
+    ...(parsed.referenceDesignPatternPacketRefs.length > 0
+      ? { reference_design_pattern_packet_refs: parsed.referenceDesignPatternPacketRefs }
       : {}),
   };
   return {
@@ -600,6 +649,7 @@ function buildBaselineReceipt(
     reference_design: {
       source_refs: targetAgent.reference_design_source_refs ?? [],
       pattern_notes: targetAgent.reference_design_pattern_notes ?? [],
+      pattern_packet_refs: targetAgent.reference_design_pattern_packet_refs ?? [],
       role: 'external_architecture_inspiration_not_target_domain_truth',
       can_write_target_domain_truth: false,
       can_replace_target_owner_judgment: false,
@@ -772,11 +822,23 @@ export function runBuildAgentBaseline({
     ...descriptor,
     delivery_domain: targetAgent.delivery_domain,
     target_brief: targetAgent.target_brief,
-    ...(targetAgent.reference_design_source_refs
+    ...((targetAgent.selected_opl_profile_refs?.length ?? 0) > 0
+      ? { selected_opl_profile_refs: targetAgent.selected_opl_profile_refs }
+      : {}),
+    ...(targetAgent.profile_selection_rationale
+      ? { profile_selection_rationale: targetAgent.profile_selection_rationale }
+      : {}),
+    ...((targetAgent.profile_requirement_refs?.length ?? 0) > 0
+      ? { profile_requirement_refs: targetAgent.profile_requirement_refs }
+      : {}),
+    ...((targetAgent.reference_design_source_refs?.length ?? 0) > 0
       ? { reference_design_source_refs: targetAgent.reference_design_source_refs }
       : {}),
-    ...(targetAgent.reference_design_pattern_notes
+    ...((targetAgent.reference_design_pattern_notes?.length ?? 0) > 0
       ? { reference_design_pattern_notes: targetAgent.reference_design_pattern_notes }
+      : {}),
+    ...((targetAgent.reference_design_pattern_packet_refs?.length ?? 0) > 0
+      ? { reference_design_pattern_packet_refs: targetAgent.reference_design_pattern_packet_refs }
       : {}),
   });
   const targetAgentCapabilityMapPath = writeTargetAgentCapabilityMap(targetAgentDir, targetAgent);

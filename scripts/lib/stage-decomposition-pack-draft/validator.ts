@@ -58,6 +58,44 @@ function assertMatchingOptionalStringArray(
   }
 }
 
+function normalizedStringArray(value: unknown, field: string): string[] {
+  if (value === undefined || value === null) {
+    return [];
+  }
+  return asStringArray(value, field);
+}
+
+function assertMatchingStringArray(actual: unknown, expected: unknown, field: string): void {
+  const actualList = normalizedStringArray(actual, `stage_decomposition_pack_draft.${field}`);
+  const expectedList = normalizedStringArray(expected, `requested_target_agent.${field}`);
+  if (JSON.stringify(actualList) !== JSON.stringify(expectedList)) {
+    throw new Error(`stage-decomposition pack draft ${field} does not match requested target.`);
+  }
+}
+
+function validateReferenceDesignBoundary(
+  boundaryValue: unknown,
+  targetAgent: TargetAgent,
+  field: string,
+): void {
+  const boundary = asRecord(boundaryValue, field);
+  assertMatchingStringArray(boundary.source_refs, targetAgent.reference_design_source_refs, `${field}.source_refs`);
+  assertMatchingStringArray(boundary.pattern_notes, targetAgent.reference_design_pattern_notes, `${field}.pattern_notes`);
+  assertMatchingStringArray(
+    boundary.pattern_packet_refs,
+    targetAgent.reference_design_pattern_packet_refs,
+    `${field}.pattern_packet_refs`,
+  );
+  if (boundary.role !== 'external_architecture_inspiration_not_target_domain_truth') {
+    throw new Error(`stage-decomposition pack draft ${field}.role must mark reference designs as inspiration only.`);
+  }
+  [
+    'can_copy_external_runtime',
+    'can_copy_external_domain_truth',
+    'can_replace_target_owner_judgment',
+  ].forEach((fieldName) => assertBooleanFalse(boundary, fieldName, `${field}.${fieldName}`));
+}
+
 function validateActionCatalog(catalog: JsonObject, targetAgent: TargetAgent): void {
   if (catalog.surface_kind !== 'family_action_catalog') {
     throw new Error('stage-decomposition pack draft action_catalog.surface_kind must be family_action_catalog.');
@@ -256,6 +294,37 @@ function validateStageControlPlane(
   }
   stages.forEach((stage) => {
     const stageId = asString(stage.stage_id, 'stage.stage_id');
+    validateReferenceDesignBoundary(
+      stage.reference_design_boundary,
+      targetAgent,
+      `stage ${stageId}.reference_design_boundary`,
+    );
+    const inputs = asRecordArray(stage.inputs, `stage ${stageId}.inputs`);
+    [
+      ...(
+        normalizedStringArray(
+          targetAgent.reference_design_source_refs,
+          'requested_target_agent.reference_design_source_refs',
+        ).length > 0
+          ? [{ kind: 'reference_design_source_refs', ref: `reference-design-source-refs:${targetAgent.domain_id}` }]
+          : []
+      ),
+      ...(
+        normalizedStringArray(
+          targetAgent.reference_design_pattern_packet_refs,
+          'requested_target_agent.reference_design_pattern_packet_refs',
+        ).length > 0
+          ? [{
+              kind: 'reference_design_pattern_packet_refs',
+              ref: `reference-design-pattern-packet-refs:${targetAgent.domain_id}`,
+            }]
+          : []
+      ),
+    ].forEach((expected) => {
+      if (!inputs.some((entry) => entry.ref_kind === expected.kind && entry.ref === expected.ref)) {
+        throw new Error(`stage-decomposition pack draft stage ${stageId} missing input ${expected.kind}.`);
+      }
+    });
     const executor = asRecord(stage.selected_executor, `stage ${stageId}.selected_executor`);
     if (executor.executor_kind !== 'codex_cli' || executor.default_executor !== true) {
       throw new Error(`stage-decomposition pack draft stage ${stageId} must select codex_cli as default executor.`);
@@ -323,6 +392,24 @@ function validateStageControlPlane(
     if (!requires.includes('runtime-ref:stage-progress-log-user-stage-log')) {
       throw new Error(`stage-decomposition pack draft stage ${stageId} missing user stage log projection requirement.`);
     }
+    [
+      ...(
+        normalizedStringArray(
+          targetAgent.reference_design_source_refs,
+          'requested_target_agent.reference_design_source_refs',
+        ).length > 0 ? [`reference-design-source-refs:${targetAgent.domain_id}`] : []
+      ),
+      ...(
+        normalizedStringArray(
+          targetAgent.reference_design_pattern_packet_refs,
+          'requested_target_agent.reference_design_pattern_packet_refs',
+        ).length > 0 ? [`reference-design-pattern-packet-refs:${targetAgent.domain_id}`] : []
+      ),
+    ].forEach((requiredRef) => {
+      if (!requires.includes(requiredRef)) {
+        throw new Error(`stage-decomposition pack draft stage ${stageId} missing reference design requirement ${requiredRef}.`);
+      }
+    });
     if (!ensures.includes(`stage-user-log-ref:${stageId}`)) {
       throw new Error(`stage-decomposition pack draft stage ${stageId} missing user stage log ensure.`);
     }
@@ -540,6 +627,11 @@ export function validateStageDecompositionCloseoutPacket(
     draftTarget.reference_design_pattern_notes,
     targetAgent.reference_design_pattern_notes,
     'reference_design_pattern_notes',
+  );
+  assertMatchingOptionalStringArray(
+    draftTarget.reference_design_pattern_packet_refs,
+    targetAgent.reference_design_pattern_packet_refs,
+    'reference_design_pattern_packet_refs',
   );
   validateNoForbiddenWritePolicy(asRecord(draft.no_forbidden_write_policy, 'no_forbidden_write_policy'));
   const files = filesByPath(draft.files);

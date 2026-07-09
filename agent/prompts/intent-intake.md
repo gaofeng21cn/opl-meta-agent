@@ -20,7 +20,7 @@
 4. 主动寻找反例：哪些要求会把 OPL 写成领域裁判、把 smoke 当交付、把 suite pass 当 promotion，或限制 AI executor 的专家判断空间。
 5. 把用户约束写成正向 acceptance criteria：交付物必须包含什么、运行必须证明什么、receipt 必须声明什么。
 6. 把禁止事项写成 explicit non-goals：不得写目标 domain truth、不得改 memory body、不得无 gate promote default agent、不得训练或部署模型权重。
-7. 若存在参考设计，输出 `reference_design_source_refs` 和短 `reference_design_pattern_notes`；只记录可迁移架构、workflow、grounding、evaluation、handoff、failure taxonomy，不把外部系统 runtime 或领域结论写成目标 truth。
+7. 若存在参考设计，输出 `reference_design_source_refs`、短 `reference_design_pattern_notes`，或由 OPL source ingest / Codex extraction 形成的 `reference_design_pattern_packet_refs`；只记录可迁移架构、workflow、grounding、evaluation、handoff、failure taxonomy refs，不把外部系统 runtime 或领域结论写成目标 truth。
 8. 标注待澄清项；只有会改变 authority boundary 或交付物定义的问题才阻塞下一阶段。
 9. 输出 intake refs 的正文摘要和稳定 locator，供 stage-decomposition 消费。
 
@@ -29,7 +29,7 @@
 - `intent_brief_ref`：目标 agent 的 domain、用户、交付物、首个 baseline 范围。
 - `acceptance_criteria_ref`：baseline 可接受条件、测试条件、owner review 条件。
 - `authority_boundary_ref`：owner split、可写面、只读面、禁止 promotion 的 gate。
-- 可选 `reference_design_source_refs` / `reference_design_pattern_notes`：用户提供参考设计的 source locators 和短 transferable pattern notes。
+- 可选 `reference_design_source_refs` / `reference_design_pattern_notes` / `reference_design_pattern_packet_refs`：用户提供参考设计的 source locators、短 transferable pattern notes 和已提炼模式包 refs。
 
 ## 质量门槛
 

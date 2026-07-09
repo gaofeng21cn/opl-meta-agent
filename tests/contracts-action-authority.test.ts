@@ -159,16 +159,29 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   assert.ok(baselineAction.workspace_locator_fields.includes('domain_label'));
   assert.ok(baselineAction.workspace_locator_fields.includes('delivery_domain'));
   assert.ok(baselineAction.workspace_locator_fields.includes('target_brief'));
+  assert.ok(baselineAction.workspace_locator_fields.includes('selected_opl_profile_refs'));
+  assert.ok(baselineAction.workspace_locator_fields.includes('profile_selection_rationale'));
+  assert.ok(baselineAction.workspace_locator_fields.includes('profile_requirement_refs'));
   assert.ok(baselineAction.workspace_locator_fields.includes('reference_design_source_refs'));
   assert.ok(baselineAction.workspace_locator_fields.includes('reference_design_pattern_notes'));
+  assert.ok(baselineAction.workspace_locator_fields.includes('reference_design_pattern_packet_refs'));
   assert.match(baselineAction.summary, /natural-language/i);
   assert.match(baselineAction.source_command.command, /--domain-id <domain_id>/);
   assert.match(baselineAction.source_command.command, /--target-brief <target_brief>/);
+  assert.match(baselineAction.source_command.command, /--selected-opl-profile <selected_opl_profile_ref>/);
+  assert.match(
+    baselineAction.source_command.command,
+    /--profile-selection-rationale <profile_selection_rationale>/,
+  );
   assert.match(baselineAction.source_command.command, /--reference-design-source <reference_design_source_ref>/);
+  assert.match(
+    baselineAction.source_command.command,
+    /--reference-design-pattern-packet <reference_design_pattern_packet_ref>/,
+  );
   assert.equal(
     actionCatalog.actions.find((action: JsonObject) => action.action_id === 'build-agent-baseline')
       ?.supported_surfaces.skill.intent_mapping,
-    'Codex extracts domain_id, domain_label, delivery_domain, target_brief, optional reference_design_source_refs, optional reference_design_pattern_notes, output_dir, opl_bin, and ai_reviewer_evaluation from the user natural-language request before invoking this action.',
+    'Codex extracts domain_id, domain_label, delivery_domain, target_brief, selected_opl_profile_refs, profile_selection_rationale, optional profile_requirement_refs, optional reference_design_source_refs, optional reference_design_pattern_notes, optional reference_design_pattern_packet_refs, output_dir, opl_bin, and ai_reviewer_evaluation from the user natural-language request before invoking this action.',
   );
   assert.deepEqual(takeoverAction.new_agent_delivery_gate, baselineAction.new_agent_delivery_gate);
   assert.deepEqual(baselineAction.new_agent_delivery_gate.required_gates, [

@@ -24,6 +24,11 @@ const targetAgent = {
   domain_label: 'Research Workbench Agent',
   delivery_domain: 'research_workbench',
   target_brief: 'Create an owner-gated research workbench agent from declared workspace refs.',
+  selected_opl_profile_refs: [
+    'contracts/opl-framework/evidence-grounded-decision-agent-profile.json',
+  ],
+  profile_selection_rationale:
+    'The target agent needs refs-only grounding, mode routing, and owner-gated decision support.',
   reference_design_source_refs: [
     'paper-ref:Zoller-2026-HemaGuide-case-grounded-agent',
     'repo-ref:https://github.com/Friedrich-Lab/HemaGuide',
@@ -31,6 +36,9 @@ const targetAgent = {
   reference_design_pattern_notes: [
     'structured case extraction plus autonomous mode routing',
     'blinded benchmark, ablation, external validation, and silent-trial gates',
+  ],
+  reference_design_pattern_packet_refs: [
+    'pattern-packet-ref:oma/reference-designs/HemaGuide/distilled-agent-design',
   ],
 };
 
@@ -96,6 +104,10 @@ test('build-agent-baseline materializes an explicit target package and owner-gat
       targetAgent.delivery_domain,
       '--target-brief',
       targetAgent.target_brief,
+      '--selected-opl-profile',
+      targetAgent.selected_opl_profile_refs[0],
+      '--profile-selection-rationale',
+      targetAgent.profile_selection_rationale,
       '--reference-design-source',
       targetAgent.reference_design_source_refs[0],
       '--reference-design-source',
@@ -104,6 +116,8 @@ test('build-agent-baseline materializes an explicit target package and owner-gat
       targetAgent.reference_design_pattern_notes[0],
       '--reference-design-pattern',
       targetAgent.reference_design_pattern_notes[1],
+      '--reference-design-pattern-packet',
+      targetAgent.reference_design_pattern_packet_refs[0],
     ]));
 
     const targetDir = path.join(outputRoot, targetAgent.domain_id);
@@ -117,20 +131,38 @@ test('build-agent-baseline materializes an explicit target package and owner-gat
     assert.equal(descriptor.domain_id, targetAgent.domain_id);
     assert.deepEqual(descriptor.reference_design_source_refs, targetAgent.reference_design_source_refs);
     assert.deepEqual(descriptor.reference_design_pattern_notes, targetAgent.reference_design_pattern_notes);
+    assert.deepEqual(
+      descriptor.reference_design_pattern_packet_refs,
+      targetAgent.reference_design_pattern_packet_refs,
+    );
     assert.equal(stageControl.stages[0].selected_executor.executor_kind, 'codex_cli');
     assert.deepEqual(
       stageControl.stages[0].reference_design_boundary.source_refs,
       targetAgent.reference_design_source_refs,
     );
+    assert.deepEqual(
+      stageControl.stages[0].reference_design_boundary.pattern_packet_refs,
+      targetAgent.reference_design_pattern_packet_refs,
+    );
     assert.ok(
       stageControl.stages[0].inputs.some((entry: JsonObject) => entry.ref_kind === 'reference_design_source_refs'),
     );
+    assert.ok(
+      stageControl.stages[0].inputs.some((entry: JsonObject) =>
+        entry.ref_kind === 'reference_design_pattern_packet_refs'
+      ),
+    );
     assert.ok(evidenceRefs.includes(targetAgent.reference_design_source_refs[0]));
+    assert.ok(evidenceRefs.includes(targetAgent.reference_design_pattern_packet_refs[0]));
     assert.equal(receipt.status, 'baseline_delivered');
     assert.deepEqual(receipt.reference_design.source_refs, targetAgent.reference_design_source_refs);
+    assert.deepEqual(
+      receipt.reference_design.pattern_packet_refs,
+      targetAgent.reference_design_pattern_packet_refs,
+    );
     assert.equal(receipt.authority_boundary.can_write_target_domain_truth, false);
     assert.equal(receipt.authority_boundary.can_authorize_target_domain_quality_or_export, false);
-    assert.match(primarySkill, /Reference Design Inputs/);
+    assert.ok(primarySkill.includes(targetAgent.reference_design_pattern_packet_refs[0]));
     assert.equal(fs.existsSync(path.join(targetDir, 'agent/primary_skill/SKILL.md')), true);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });

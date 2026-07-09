@@ -12,8 +12,12 @@ export type TargetAgent = {
   delivery_domain?: string | null;
   target_kind?: string | null;
   target_brief?: string | null;
+  selected_opl_profile_refs?: string[] | null;
+  profile_selection_rationale?: string | null;
+  profile_requirement_refs?: string[] | null;
   reference_design_source_refs?: string[] | null;
   reference_design_pattern_notes?: string[] | null;
+  reference_design_pattern_packet_refs?: string[] | null;
   descriptor_ref?: string;
   repo_dir?: string;
   descriptor?: JsonObject | null;
@@ -73,7 +77,18 @@ function optionalStringArray(value: unknown, field: string, descriptorPath: stri
   if (!Array.isArray(value) || !value.every((entry) => typeof entry === 'string' && entry.trim())) {
     throw new Error(`Target agent descriptor ${field} must be a non-empty string array when present: ${descriptorPath}`);
   }
-  return value.map((entry) => entry.trim());
+  const entries = value.map((entry) => entry.trim());
+  return entries.length > 0 ? entries : undefined;
+}
+
+function optionalString(value: unknown, field: string, descriptorPath: string): string | undefined {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  if (typeof value !== 'string' || !value.trim()) {
+    throw new Error(`Target agent descriptor ${field} must be a non-empty string when present: ${descriptorPath}`);
+  }
+  return value.trim();
 }
 
 export function readTargetAgent(targetAgentDir: string): TargetAgent {
@@ -97,6 +112,21 @@ export function readTargetAgent(targetAgentDir: string): TargetAgent {
   const referenceDesignPatternNotes = optionalStringArray(
     descriptor.reference_design_pattern_notes,
     'reference_design_pattern_notes',
+    descriptorPath,
+  );
+  const referenceDesignPatternPacketRefs = optionalStringArray(
+    descriptor.reference_design_pattern_packet_refs,
+    'reference_design_pattern_packet_refs',
+    descriptorPath,
+  );
+  const selectedOplProfileRefs = optionalStringArray(
+    descriptor.selected_opl_profile_refs ?? descriptor.selected_profile_refs,
+    'selected_opl_profile_refs',
+    descriptorPath,
+  );
+  const profileRequirementRefs = optionalStringArray(
+    descriptor.profile_requirement_refs,
+    'profile_requirement_refs',
     descriptorPath,
   );
   const domainId = requireString(
@@ -124,8 +154,16 @@ export function readTargetAgent(targetAgentDir: string): TargetAgent {
         : null,
     target_kind: targetKind,
     target_brief: typeof descriptor.target_brief === 'string' ? descriptor.target_brief : null,
+    ...(selectedOplProfileRefs ? { selected_opl_profile_refs: selectedOplProfileRefs } : {}),
+    ...(optionalString(descriptor.profile_selection_rationale, 'profile_selection_rationale', descriptorPath)
+      ? { profile_selection_rationale: optionalString(descriptor.profile_selection_rationale, 'profile_selection_rationale', descriptorPath) }
+      : {}),
+    ...(profileRequirementRefs ? { profile_requirement_refs: profileRequirementRefs } : {}),
     ...(referenceDesignSourceRefs ? { reference_design_source_refs: referenceDesignSourceRefs } : {}),
     ...(referenceDesignPatternNotes ? { reference_design_pattern_notes: referenceDesignPatternNotes } : {}),
+    ...(referenceDesignPatternPacketRefs
+      ? { reference_design_pattern_packet_refs: referenceDesignPatternPacketRefs }
+      : {}),
     descriptor_ref: descriptorPath,
     repo_dir: targetAgentDir,
     descriptor,
