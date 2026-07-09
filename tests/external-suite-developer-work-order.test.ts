@@ -32,10 +32,7 @@ function writeGenericFeedbackTargetImprovementPolicy(targetAgentDir: string): vo
     owner: 'target-agent',
     meta_agent_work_order_contract: {
       default_change_ref_triggers: ['artifact-morphology'],
-      default_change_refs: [
-        'target_agent_contract_ref:target-agent/artifact-morphology',
-        'target_agent_regression_suite_ref:target-agent/artifact-morphology',
-      ],
+      default_change_refs: 'target_agent_contract_ref:target-agent/artifact-morphology target_agent_regression_suite_ref:target-agent/artifact-morphology'.split(' '),
       capability_id: 'target-agent.artifact-morphology',
       canonical_paths: ['contracts/artifact_morphology.json', 'tests/artifact-morphology.test.ts'],
       verification_refs: ['target_repo_test_receipt'],
@@ -44,10 +41,7 @@ function writeGenericFeedbackTargetImprovementPolicy(targetAgentDir: string): vo
       change_ref_mappings: [
         {
           token: 'artifact-morphology',
-          refs: [
-            'target_agent_contract_ref:target-agent/artifact-morphology',
-            'target_agent_regression_suite_ref:target-agent/artifact-morphology',
-          ],
+          refs: 'target_agent_contract_ref:target-agent/artifact-morphology target_agent_regression_suite_ref:target-agent/artifact-morphology'.split(' '),
         },
       ],
       patch_surface_hints: {
@@ -181,10 +175,7 @@ test('generic target-agent feedback external suite is accepted without MAS-only 
       review_attempt_ref: 'attempt:ai-reviewer/target-agent/artifact-morphology-feedback',
       critique: 'The target agent feedback shows an artifact-morphology gap in the generated package.',
       suggestions: ['Patch the artifact-morphology contract and regression suite.'],
-      source_refs: [
-        'feedback-ref:target-agent/artifact-morphology/foundry-review',
-        'rubric-gap:target-agent/artifact-morphology',
-      ],
+      source_refs: 'feedback-ref:target-agent/artifact-morphology/foundry-review rubric-gap:target-agent/artifact-morphology'.split(' '),
       direct_evidence_refs: ['feedback-evidence:target-agent/artifact-morphology/direct-review'],
       predicted_impact: 'The patch should make target-agent artifact morphology auditable without OMA owning target truth.',
       canary_refs: ['canary:target-agent/artifact-morphology-feedback'],
@@ -226,15 +217,8 @@ test('MAS reviewer_revision feedback external suite is accepted as developer wor
       run_ref: 'run:ai-reviewer/mas/002/reviewer_revision-feedback',
       execution_attempt_ref: 'attempt:executor/mas/002/reviewer_revision-feedback',
       review_attempt_ref: 'attempt:ai-reviewer/mas/002/reviewer_revision-feedback',
-      source_refs: [
-        'paper/review/reviewer_revision_ledger.json',
-        'reviewer-evidence:mas/002/reviewer_revision/response-matrix',
-        'rubric-gap:mas/002/internal-quality-language-purge',
-      ],
-      direct_evidence_refs: [
-        'reviewer-evidence:mas/002/reviewer_revision/methods-completeness',
-        'paper/evidence_ledger.json',
-      ],
+      source_refs: 'paper/review/reviewer_revision_ledger.json reviewer-evidence:mas/002/reviewer_revision/response-matrix rubric-gap:mas/002/internal-quality-language-purge'.split(' '),
+      direct_evidence_refs: 'reviewer-evidence:mas/002/reviewer_revision/methods-completeness paper/evidence_ledger.json'.split(' '),
     });
 
     const payload = runImproveFromSuite({
@@ -248,17 +232,11 @@ test('MAS reviewer_revision feedback external suite is accepted as developer wor
     assert.equal(payload.status, 'blocked_with_developer_patch_work_order');
     const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
     assert.equal(workOrder.source_agent_lab_result_ref, workOrder.work_order_currentness.eval_result_ref);
-    assertIncludesAll(workOrder.source_external_suite_intake.accepted_input_profiles as string[], [
-      'mas_feedback_agent_lab_external_suite',
-      'reviewer_revision_feedback',
-    ], 'accepted_input_profiles');
+    assertIncludesAll(workOrder.source_external_suite_intake.accepted_input_profiles as string[], 'mas_feedback_agent_lab_external_suite reviewer_revision_feedback'.split(' '), 'accepted_input_profiles');
     assertIncludesAll(workOrder.source_external_suite_intake.task_families as string[], [
       'reviewer_revision_feedback_self_evolution',
     ], 'task_families');
-    assertIncludesAll(workOrder.reviewer_evidence_refs as string[], [
-      'reviewer-evidence:mas/002/reviewer_revision/response-matrix',
-      'paper/review/reviewer_revision_ledger.json',
-    ], 'reviewer_evidence_refs');
+    assertIncludesAll(workOrder.reviewer_evidence_refs as string[], 'reviewer-evidence:mas/002/reviewer_revision/response-matrix paper/review/reviewer_revision_ledger.json'.split(' '), 'reviewer_evidence_refs');
     assertWorkOrderBoundary(workOrder);
     assert.equal(workOrder.authority_boundary.can_authorize_target_domain_quality_or_export, false);
     assert.equal(workOrder.target_progress_accounting.progress_delta_classification, 'mixed');

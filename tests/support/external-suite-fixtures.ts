@@ -10,26 +10,7 @@ import type { JsonObject } from '../../scripts/lib/domain-pack.ts';
 import { oplBin, writeJsonFile } from './contracts.ts';
 
 export const targetPatchLoopProjectionRequiredFields = [
-  'blocked_suite_result_ref',
-  'developer_patch_work_order_ref',
-  'patch_traceability_matrix_ref',
-  'target_repo_verification_refs',
-  'target_runtime_read_model_consumption_ref',
-  'workspace_environment_proof_ref',
-  'no_forbidden_write_proof_ref',
-  'target_owner_receipt_or_typed_blocker_ref',
-  'patch_absorption_ref',
-  'worktree_cleanup_ref',
-  'agent_lab_re_evaluation_ref',
-  'ai_reviewer_evaluation_ref',
-  'ai_reviewer_evidence.source_refs',
-  'ai_reviewer_evidence.direct_evidence_refs',
-  'ai_reviewer_scorecard.verdict',
-  'ai_reviewer_review.predicted_impact',
-  'ai_reviewer_independence',
-  'review_provenance',
-  'reviewer_pool_refs',
-  'work_order_completeness.reviewer_refs',
+  ...'blocked_suite_result_ref developer_patch_work_order_ref patch_traceability_matrix_ref target_repo_verification_refs target_runtime_read_model_consumption_ref workspace_environment_proof_ref no_forbidden_write_proof_ref target_owner_receipt_or_typed_blocker_ref patch_absorption_ref worktree_cleanup_ref agent_lab_re_evaluation_ref ai_reviewer_evaluation_ref ai_reviewer_evidence.source_refs ai_reviewer_evidence.direct_evidence_refs ai_reviewer_scorecard.verdict ai_reviewer_review.predicted_impact ai_reviewer_independence review_provenance reviewer_pool_refs work_order_completeness.reviewer_refs'.split(' '),
 ];
 
 const refsOnlySuiteAuthorityBoundary = (): JsonObject => ({
@@ -46,10 +27,7 @@ const localRefsOnlyEnvironment = (workspaceLocatorRef: string): JsonObject => ({
   network_policy: 'domain_owner_policy',
 });
 
-const medicalRubricGapRefs = [
-  'rubric-gap:mas/002/hdl-harmonization-and-sensitivity',
-  'rubric-gap:mas/002/internal-quality-language-purge',
-];
+const medicalRubricGapRefs = 'rubric-gap:mas/002/hdl-harmonization-and-sensitivity rubric-gap:mas/002/internal-quality-language-purge'.split(' ');
 
 const efficiencyRefs = {
   qualityFloor: 'quality-floor:target-agent/current-behavior-gate',
@@ -68,7 +46,7 @@ function stageCompletionPolicy(domainId: string, taskFamily: string): JsonObject
     provider_completion_is_domain_completion: false,
     opl_content_judgment_allowed: false,
     next_stage_transition_owner: 'opl_runtime',
-    required_closeout_outcomes: ['completed_and_continue', 'completed_and_wait_owner', 'route_back', 'blocked', 'rejected'],
+    required_closeout_outcomes: 'completed_and_continue completed_and_wait_owner route_back blocked rejected'.split(' '),
     accepted_closeout_ref_fields: ['owner_receipt_ref', 'typed_blocker_ref', 'human_gate_ref', 'route_back_ref'],
     authority_boundary: {
       opl_can_decide_domain_completion: false,
@@ -264,11 +242,7 @@ export function buildReviewerRevisionFeedbackSuite(suitePath: string): JsonObjec
 
 export function writeMedicalTargetImprovementPolicy(targetAgentDir: string): void {
   const metaAgentWorkOrderContract = {
-    default_change_ref_triggers: [
-      'medical-manuscript',
-      'medical_journal_prose_quality',
-      'reviewer_revision',
-    ],
+    default_change_ref_triggers: 'medical-manuscript medical_journal_prose_quality reviewer_revision'.split(' '),
     default_change_refs: ['quality_contract_ref:prediction_model_first_draft_quality'],
     capability_id: 'med-autoscience.medical-manuscript-quality',
     canonical_paths: ['src/med_autoscience/policies/medical_reporting_checklist.py'],
@@ -323,11 +297,7 @@ export function writeEfficiencyTargetImprovementPolicy(targetAgentDir: string): 
     owner: 'target-agent',
     meta_agent_work_order_contract: {
       default_change_ref_triggers: ['efficiency', 'latency', 'usage cost', 'cache reuse'],
-      default_change_refs: [
-        'target_agent_efficiency_policy_ref:target-agent/non-regression-quality-floor',
-        'target_agent_runtime_contract_ref:target-agent/latency-and-cache-reuse',
-        'target_agent_regression_suite_ref:target-agent/efficiency-non-regression',
-      ],
+      default_change_refs: 'target_agent_efficiency_policy_ref:target-agent/non-regression-quality-floor target_agent_runtime_contract_ref:target-agent/latency-and-cache-reuse target_agent_regression_suite_ref:target-agent/efficiency-non-regression'.split(' '),
       capability_id: 'target-agent.efficiency-runtime',
       canonical_paths: ['src/runtime/efficiency-policy.ts'],
       verification_refs: [efficiencyRefs.verification],

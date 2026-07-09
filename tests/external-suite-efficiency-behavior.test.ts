@@ -53,26 +53,11 @@ test('external suite efficiency evidence is projected into developer work order 
     });
     assert.equal(payload.status, 'blocked_with_developer_patch_work_order');
     const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
-    assertIncludesAll(workOrder.efficiency_non_regression_refs.quality_floor_refs as string[], [
-      'quality-floor:target-agent/current-behavior-gate',
-      'workspace-runtime-ref:review-export:run-1',
-    ], 'quality_floor_refs');
-    assertIncludesAll(workOrder.efficiency_non_regression_refs.latency_baseline_refs as string[], [
-      'latency-baseline:target-agent/p50-p95-before',
-      'workspace-runtime-ref:route-summary:run-1#/elapsed_ms',
-    ], 'latency_baseline_refs');
-    assertIncludesAll(workOrder.efficiency_non_regression_refs.usage_cost_refs as string[], [
-      'usage-cost:target-agent/token-cost-before',
-      'workspace-runtime-ref:route-summary:run-1#/cost_summary',
-    ], 'usage_cost_refs');
-    assertIncludesAll(workOrder.efficiency_non_regression_refs.cache_reuse_refs as string[], [
-      'cache-reuse:target-agent/reused-prefix-cache',
-      'workspace-runtime-ref:route-artifact:run-1#/render_execution/reused_slide_ids',
-    ], 'cache_reuse_refs');
-    assertIncludesAll(workOrder.efficiency_non_regression_refs.target_verification_refs as string[], [
-      'target-verification:target-agent/efficiency-redrive',
-      'workspace-runtime-ref:export-result:run-1',
-    ], 'target_verification_refs');
+    assertIncludesAll(workOrder.efficiency_non_regression_refs.quality_floor_refs as string[], 'quality-floor:target-agent/current-behavior-gate workspace-runtime-ref:review-export:run-1'.split(' '), 'quality_floor_refs');
+    assertIncludesAll(workOrder.efficiency_non_regression_refs.latency_baseline_refs as string[], 'latency-baseline:target-agent/p50-p95-before workspace-runtime-ref:route-summary:run-1#/elapsed_ms'.split(' '), 'latency_baseline_refs');
+    assertIncludesAll(workOrder.efficiency_non_regression_refs.usage_cost_refs as string[], 'usage-cost:target-agent/token-cost-before workspace-runtime-ref:route-summary:run-1#/cost_summary'.split(' '), 'usage_cost_refs');
+    assertIncludesAll(workOrder.efficiency_non_regression_refs.cache_reuse_refs as string[], 'cache-reuse:target-agent/reused-prefix-cache workspace-runtime-ref:route-artifact:run-1#/render_execution/reused_slide_ids'.split(' '), 'cache_reuse_refs');
+    assertIncludesAll(workOrder.efficiency_non_regression_refs.target_verification_refs as string[], 'target-verification:target-agent/efficiency-redrive workspace-runtime-ref:export-result:run-1'.split(' '), 'target_verification_refs');
     assert.deepEqual(
       workOrder.work_order_completeness.efficiency_non_regression_refs,
       workOrder.efficiency_non_regression_refs,
@@ -81,10 +66,7 @@ test('external suite efficiency evidence is projected into developer work order 
       workOrder.machine_closeout_refs.efficiency_non_regression_refs,
       workOrder.efficiency_non_regression_refs,
     );
-    assertIncludesAll(workOrder.required_verification_refs as string[], [
-      'target-verification:target-agent/efficiency-redrive',
-      'target-verification:target-agent/capability-map-efficiency-redrive',
-    ], 'required_verification_refs');
+    assertIncludesAll(workOrder.required_verification_refs as string[], 'target-verification:target-agent/efficiency-redrive target-verification:target-agent/capability-map-efficiency-redrive'.split(' '), 'required_verification_refs');
     assert.deepEqual(workOrder.matched_capability_ids, ['target-agent.efficiency-runtime']);
     assert.deepEqual(workOrder.canonical_target_paths, ['src/runtime/efficiency-policy.ts']);
     assert.deepEqual(workOrder.failure_token_registry_refs, ['failure-token-registry:target-agent/efficiency']);
@@ -112,10 +94,7 @@ test('external suite efficiency evidence without quality floor fails closed with
     writeJson(suitePath, suite);
     const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
     writeEfficiencyReviewerEvaluation(reviewerEvaluationPath, {
-      source_refs: [
-        'latency-baseline:target-agent/p50-p95-before',
-        'usage-cost:target-agent/token-cost-before',
-      ],
+      source_refs: 'latency-baseline:target-agent/p50-p95-before usage-cost:target-agent/token-cost-before'.split(' '),
       direct_evidence_refs: ['target-verification:target-agent/efficiency-redrive'],
     });
 

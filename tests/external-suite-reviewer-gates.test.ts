@@ -99,36 +99,11 @@ const failureCases: Array<{
   };
   expected: RegExp;
 }> = [
-  {
-    name: 'AI reviewer evaluation is missing',
-    prefix: 'opl-meta-agent-external-suite-missing-reviewer-',
-    options: { reviewerEvaluation: false },
-    expected: /ai reviewer evaluation/i,
-  },
-  {
-    name: 'target descriptor is missing',
-    prefix: 'opl-meta-agent-external-suite-missing-descriptor-',
-    options: { descriptor: 'none' },
-    expected: /Target descriptor is required: .*contracts\/domain_descriptor\.json.*contracts\/capability_pack_descriptor\.json/,
-  },
-  {
-    name: 'target descriptor domain_id is missing',
-    prefix: 'opl-meta-agent-external-suite-missing-domain-id-',
-    options: { descriptor: 'missing-domain-id' },
-    expected: /Target agent descriptor is missing domain_id or capability_pack_id: .*contracts\/domain_descriptor\.json/,
-  },
-  {
-    name: 'AI reviewer predicted impact is missing',
-    prefix: 'opl-meta-agent-external-suite-missing-impact-',
-    options: { reviewerEvaluation: { predicted_impact: '' } },
-    expected: /predicted_impact must be a non-empty string/,
-  },
-  {
-    name: 'reviewer direct evidence is scaffold-only',
-    prefix: 'opl-meta-agent-external-suite-scaffold-reviewer-',
-    options: { reviewerEvaluation: { direct_evidence_refs: ['suite:mas/002/generated-scaffold'] } },
-    expected: /direct_evidence_refs must include direct evidence beyond suite\/scaffold refs/,
-  },
+  { name: 'AI reviewer evaluation is missing', prefix: 'opl-meta-agent-external-suite-missing-reviewer-', options: { reviewerEvaluation: false }, expected: /ai reviewer evaluation/i },
+  { name: 'target descriptor is missing', prefix: 'opl-meta-agent-external-suite-missing-descriptor-', options: { descriptor: 'none' }, expected: /Target descriptor is required: .*contracts\/domain_descriptor\.json.*contracts\/capability_pack_descriptor\.json/ },
+  { name: 'target descriptor domain_id is missing', prefix: 'opl-meta-agent-external-suite-missing-domain-id-', options: { descriptor: 'missing-domain-id' }, expected: /Target agent descriptor is missing domain_id or capability_pack_id: .*contracts\/domain_descriptor\.json/ },
+  { name: 'AI reviewer predicted impact is missing', prefix: 'opl-meta-agent-external-suite-missing-impact-', options: { reviewerEvaluation: { predicted_impact: '' } }, expected: /predicted_impact must be a non-empty string/ },
+  { name: 'reviewer direct evidence is scaffold-only', prefix: 'opl-meta-agent-external-suite-scaffold-reviewer-', options: { reviewerEvaluation: { direct_evidence_refs: ['suite:mas/002/generated-scaffold'] } }, expected: /direct_evidence_refs must include direct evidence beyond suite\/scaffold refs/ },
 ];
 
 failureCases.forEach((testCase) => {
@@ -266,10 +241,7 @@ test('external blocked suite writes typed blocker when target-owned improvement 
       reviewerEvaluation: {
         critique: 'The owner-receipt package typed-blocker language is generic and has no target-owned patch target.',
         suggestions: ['Do not synthesize a package patch target without a capability_map or target-owned policy.'],
-        source_refs: [
-          'owner-receipt:external-agent/live-acceptance',
-          'typed-blocker:external-agent/package-closeout',
-        ],
+        source_refs: 'owner-receipt:external-agent/live-acceptance typed-blocker:external-agent/package-closeout'.split(' '),
         direct_evidence_refs: ['agent-lab-result:external-agent/generic-owner-boundary'],
       },
     },
