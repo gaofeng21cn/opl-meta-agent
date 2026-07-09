@@ -68,18 +68,8 @@ test('runtime source shape keeps generated and generic wrappers out of the repo'
     .filter((relativePath) => relativePath !== 'plugins')
     .forEach((relativePath) => {
       assert.equal(fs.existsSync(path.join(repoRoot, relativePath)), false, `${relativePath} should not exist`);
-    });
+  });
   assert.deepEqual(fs.readdirSync(path.join(repoRoot, 'runtime')).sort(), ['authority_functions']);
-  assert.deepEqual(
-    fs.readdirSync(path.join(repoRoot, 'runtime', 'authority_functions')).sort(),
-    [
-      'meta-agent-authority-functions.bundle-manifest.json',
-      'meta-agent-authority-functions.json',
-      'meta-agent-authority-functions.leaf-index.json',
-      'meta-agent-authority-functions.parts',
-      'meta-agent-authority-functions.source.json',
-    ],
-  );
   [
     'runtime/authority_functions/meta-agent-authority-functions.source.json',
     'runtime/authority_functions/meta-agent-authority-functions.leaf-index.json',

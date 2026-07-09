@@ -12,15 +12,13 @@ import {
   ACTIVE_CALLER_SCAN_POLICY_ID,
   assertEveryFlagFalse,
   assertFalseFlags,
+  assertIncludesAll,
   assertPolicyObject,
   asBooleanRecord,
   valuesAtDottedPath,
+  listGatedScriptRefs,
   listScriptRefs,
 } from '../support/source-purity.ts';
-
-function assertIncludesAll(actual: string[], expected: string[], label: string): void {
-  expected.forEach((entry) => assert.ok(actual.includes(entry), `${label} should include ${entry}`));
-}
 
 test('script-to-pack gate receipt mirrors source-purity gates without owning retirement authority', () => {
   const gateReceipt = readJson('contracts/script_to_pack_gate_receipt.json');
@@ -40,10 +38,7 @@ test('script-to-pack gate receipt mirrors source-purity gates without owning ret
   );
   const materializerScan = sourceReceipt.generic_script_materializer_scan as JsonObject;
   const scriptRefs = listScriptRefs();
-  const gatedScriptRefs = [...new Set(
-    asObjects(morphologyPolicy.script_to_pack_retirement_gates)
-      .flatMap((gate) => asStrings(gate.tracked_script_refs)),
-  )].sort();
+  const gatedScriptRefs = listGatedScriptRefs(morphologyPolicy);
 
   assert.equal(gateReceipt.surface_kind, 'oma_script_to_pack_gate_receipt');
   assert.equal(gateReceipt.receipt_status, 'current_script_morphology_machine_gate_passed');

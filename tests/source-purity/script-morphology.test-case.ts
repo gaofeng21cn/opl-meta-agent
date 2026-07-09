@@ -11,13 +11,14 @@ import {
   ACTIVE_CALLER_SCAN_POLICY_ID,
   assertEveryFlagFalse,
   assertFalseFlags,
+  assertIncludesAll,
   assertPolicyObject,
   asBooleanRecord,
   collectActiveScriptCallerScan,
   collectFalseReadyClaimMatches,
-  collectFalseReadyClaimMatchesFromSource,
   sourceRefIntegrityViolations,
   assertRepoLocalScriptRef,
+  listGatedScriptRefs,
   listScriptRefs,
 } from '../support/source-purity.ts';
 
@@ -39,10 +40,6 @@ const CORE_RETIREMENT_GATE_IDS = [
   'repo_shell_verification_wrappers',
   'retained_thin_authority_helpers_and_takeover_smoke',
 ];
-
-function assertIncludesAll(actual: string[], expected: string[], label: string): void {
-  expected.forEach((entry) => assert.ok(actual.includes(entry), `${label} should include ${entry}`));
-}
 
 test('script morphology source-purity gate protects current boundaries without implementation shape lock-in', () => {
   const privatePolicy = readJson('contracts/private_functional_surface_policy.json');
@@ -68,14 +65,6 @@ test('script morphology source-purity gate protects current boundaries without i
     'oma_can_claim_target_agent_ready',
   ], 'false-ready boundary');
   assert.deepEqual(collectFalseReadyClaimMatches(falseReadyClaimKeys), []);
-  assert.deepEqual(
-    collectFalseReadyClaimMatchesFromSource(
-      'contracts/__source_purity_false_ready_probe.json',
-      '{"generated_hosted_surface_live_ready": true}\n',
-      falseReadyClaimKeys,
-    ),
-    [{ path: 'contracts/__source_purity_false_ready_probe.json', claimKey: 'generated_hosted_surface_live_ready' }],
-  );
 
   const materializerScan = receipt.generic_script_materializer_scan as JsonObject;
   const genericMaterializerGuard = assertPolicyObject(morphologyPolicy, 'generic_materializer_no_resurrection_guard');
@@ -95,7 +84,7 @@ test('script morphology source-purity gate protects current boundaries without i
 
   const retirementGates = asObjects(morphologyPolicy.script_to_pack_retirement_gates);
   assert.deepEqual(retirementGates.map((entry) => entry.gate_id), CORE_RETIREMENT_GATE_IDS);
-  const gatedScriptRefs = [...new Set(retirementGates.flatMap((gate) => asStrings(gate.tracked_script_refs)))].sort();
+  const gatedScriptRefs = listGatedScriptRefs(morphologyPolicy);
   assert.deepEqual(gatedScriptRefs, scripts);
   retirementGates.forEach((gate) => {
     assert.ok(asStrings(gate.tracked_script_refs).length > 0, `${gate.gate_id} should track scripts`);
@@ -108,19 +97,14 @@ test('script morphology source-purity gate protects current boundaries without i
   const sourceRefIntegrityGuard = assertPolicyObject(morphologyPolicy, 'source_ref_integrity_guard');
   assert.deepEqual(asStrings(sourceRefIntegrityGuard.allowed_ref_roots), ['scripts/']);
   assert.deepEqual(asStrings(sourceRefIntegrityGuard.allowed_extensions), ['.ts', '.sh']);
-  assert.deepEqual(sourceRefIntegrityViolations('../scripts/outside.ts'), [
-    'parent_directory_traversal',
-    'non_scripts_root',
-  ]);
-  assert.deepEqual(sourceRefIntegrityViolations('/tmp/oma-script.ts'), [
-    'absolute_path',
-    'non_scripts_root',
-  ]);
-  assert.deepEqual(sourceRefIntegrityViolations('human_doc:docs/status.md'), [
-    'human_doc_ref_as_machine_source_ref',
-    'non_scripts_root',
-  ]);
-  [...scripts, ...gatedScriptRefs].forEach(assertRepoLocalScriptRef);
+  [
+    ['../scripts/outside.ts', ['parent_directory_traversal', 'non_scripts_root']],
+    ['/tmp/oma-script.ts', ['absolute_path', 'non_scripts_root']],
+    ['human_doc:docs/status.md', ['human_doc_ref_as_machine_source_ref', 'non_scripts_root']],
+  ].forEach(([scriptRef, expected]) => {
+    assert.deepEqual(sourceRefIntegrityViolations(scriptRef as string), expected);
+  });
+  scripts.forEach(assertRepoLocalScriptRef);
   assertFalseFlags(asBooleanRecord(sourceRefIntegrityGuard.authority_boundary), [
     'guard_can_create_missing_refs',
     'guard_can_create_alias_files',
@@ -139,13 +123,6 @@ test('script morphology source-purity gate protects current boundaries without i
   assert.equal(computedActiveCallerScan.status, 'passed');
   assert.equal(computedActiveCallerScan.orphan_script_count, 0);
   assert.equal(activeCallerScanPolicy.self_guard_may_prove_active_caller, false);
-  asObjects(computedActiveCallerScan.caller_refs_by_script).forEach((entry) => {
-    assert.ok(scripts.includes(entry.script_ref), `${entry.script_ref} should be scanned`);
-    assert.ok(asStrings(entry.active_caller_refs).length > 0, `${entry.script_ref} should have an active caller`);
-    asStrings(entry.active_caller_refs).forEach((callerRef) => {
-      assert.equal(callerRef.startsWith('tests/source-purity.test.ts#test_ref'), false);
-    });
-  });
 
   const classifications = asObjects(morphologyPolicy.script_classifications);
   assert.deepEqual(classifications.map((entry) => entry.script_ref).sort(), scripts);

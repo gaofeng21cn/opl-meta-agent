@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
   assertRepoRefExists,
+  asObjects,
+  asStrings,
   repoRoot,
   readJson,
   readText,
@@ -174,6 +176,10 @@ export function assertEveryFlagFalse(
   assertFalseFlags(record, Object.keys(record).filter(predicate), label);
 }
 
+export function assertIncludesAll(actual: string[], expected: string[], label: string): void {
+  expected.forEach((entry) => assert.ok(actual.includes(entry), `${label} should include ${entry}`));
+}
+
 export function listFilesByExtension(relativeDir: string, extension: string): string[] {
   const absoluteDir = path.join(repoRoot, relativeDir);
   return fs.readdirSync(absoluteDir, { withFileTypes: true })
@@ -191,6 +197,13 @@ export function listScriptRefs(): string[] {
   const tsScripts = listFilesByExtension('scripts', '.ts');
   const shellScripts = listFilesByExtension('scripts', '.sh');
   return [...tsScripts, ...shellScripts].sort();
+}
+
+export function listGatedScriptRefs(morphologyPolicy: JsonObject): string[] {
+  return [...new Set(
+    asObjects(morphologyPolicy.script_to_pack_retirement_gates)
+      .flatMap((gate) => asStrings(gate.tracked_script_refs)),
+  )].sort();
 }
 
 function resolveScriptImport(fromFile: string, specifier: string, scriptRefs: string[]): string | null {
