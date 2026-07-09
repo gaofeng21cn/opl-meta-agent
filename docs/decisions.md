@@ -37,6 +37,13 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 - 理由：标准 OPL Agent 需要 contracts/tests 能解析真实 pack path，避免把 prose heading、目录存在性或 README 当成 semantic pack truth。
 - 影响：`contracts/pack_compiler_input.json`、`contracts/stage_control_plane.json` 和 pack tests 必须指向非 README 的真实文件；新增 stage/action/quality gate 先进入 pack/contracts，再同步人读说明。
 
+### Stage 大小由 stage prompt 和 professional skill 的 AI 判断决定
+
+- 决策：OMA stage 设计遵循 AI-first / contract-light。stage 主提示词负责 top-level stage graph、stage 大小和 closeout shape；repo-local professional skill 只在 stage 内需要专家方法判断时介入。一个 top-level stage 应只承载一个主要开放语义判断；确定性生成、校验、文件物化、helper receipt 和 readback 留在该 stage 内。多个独立开放判断需要不同 owner、知识源、quality gate、handoff recipient 或失败路由时才拆成不同 top-level stage。
+- 决策：刻意保留的大 stage 必须暴露 typed subpacket 或 gate boundary，例如 `StageDecompositionSubpacketSet`。这些 subpacket 只证明 stage 内部认知步骤、refs、顺序、物化边界和 fail-closed checks，不升级成 OPL runtime stage，也不替代目标 stage graph 的语义拆分判断。
+- 理由：OMA 的核心价值是 agent-building reasoning。若把 stage 大小交给 schema、validator 或脚本默认图，系统会把开放判断退化成固定流程；若把多个开放判断塞进一个大 stage，又会让某一步指令遵循失败污染整段产出。
+- 影响：contracts、schema、validator 和 tests 只记录已选 stage graph、refs、subpacket chain、authority boundary 和 fail-closed 条件；它们不能作为 stage-size selector。OMA 不新增 generic runtime、scheduler、queue 或 generated surface 来解决 stage 大小问题。
+
 ### Target agent repo 目录标准归 OPL scaffold，OMA 只写领域语义
 
 - 决策：OMA 生成新 target agent 时，目标 repo 的物理目录标准必须来自 OPL Framework `opl agents scaffold`；OMA 不维护并行目录模板、私有 scaffold 标准或 repo-local generated interface owner。

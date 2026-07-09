@@ -12,6 +12,10 @@ Shape a target-agent request into an auditable intent packet, research dispositi
 ## AI-First / Contract-Light Boundary
 
 - Use AI judgment here for user-intent reframing, external-pattern transfer, stage decomposition, acceptance criteria, artifact morphology, non-goals, and owner split.
+- Use AI judgment here for stage sizing. One top-level stage should own one major open semantic judgment; deterministic generation, validation, file materialization, helper receipts, and closeout readbacks stay inside that stage unless they introduce an independent open judgment.
+- Split stages when two decisions need different owners, knowledge sources, quality gates, handoff recipients, or failure routes. Merge or delete stages that are only mechanical wrappers around the same judgment.
+- When a large stage is intentionally kept, expose typed subpacket or gate boundaries inside the stage, such as `StageDecompositionSubpacketSet`, instead of hiding a private sub-workflow or promoting those subpackets into runtime stages.
+- Let the stage main prompt own top-level decomposition and closeout shape; call professional skills only for stage-internal specialist method judgments. Contracts and schemas record selected stage graphs, refs, subpackets, gates, and forbidden authority, but they do not decide stage size.
 - Use AI judgment here to name the target-agent handoff vocabulary: baseline packet, suite seed, owner route, work-order candidate, typed blocker, route-back, no-patch coordination, or human gate. Contracts may store the selected labels; they do not decide which label fits the intent.
 - Use AI judgment here to keep modularity at the operational layer: stage-route, specialist-skill, tool-connector, quality-gate, read-model/currentness, and authority-boundary are routing surfaces for later work orders, while the Skill layer keeps flexible professional judgment.
 - Treat `contracts/capability_map.json`, stage control contracts, and generated-interface refs as a compact index and safety boundary; they record the selected architecture, but they do not discover it.
