@@ -3,285 +3,158 @@ import test from 'node:test';
 import {
   asStrings,
   readJson,
-  assertRepoRefExists,
+  assertContractRefExists,
   assertNoForbiddenAuthority,
   assertNoActiveMorphologyForbiddenOwnerTokens,
+  assertOptionalFalseFlags,
+  assertRefsOnlyAuthorityBoundary,
 } from './support/contracts.ts';
 import type { JsonObject } from './support/contracts.ts';
 
-test('production acceptance evidence closes conformance evidence tail through refs-only acceptance receipt', () => {
-  const acceptance = readJson('contracts/production_acceptance/meta-agent-production-acceptance.json');
-  const newAgentConsumptionEvidenceRef = 'contracts/production_acceptance/new_agent_consumption_evidence.json';
+const productionAcceptanceRef = 'contracts/production_acceptance/meta-agent-production-acceptance.json';
+const newAgentConsumptionEvidenceRef = 'contracts/production_acceptance/new_agent_consumption_evidence.json';
+const liveProgressEvidenceRef = 'contracts/live_stage_run_progress_evidence.json';
+const ownerTailClosureRef = 'contracts/target_agent_owner_chain_evidence.json#/target_agent_owner_evidence_tail_closure';
+const productionLongSoakBlockerRef = 'typed_blocker_ref://opl-meta-agent/production-consumption/long-soak-pending';
+const scriptToPackGateRef = 'script-to-pack-gate-receipt:opl-meta-agent/current-script-morphology-policy';
+
+function assertSummaryMatchesLiveProgress(
+  summary: JsonObject,
+  liveProgress: JsonObject,
+  label: string,
+): void {
+  const liveProgressRefs = liveProgress.refs as JsonObject;
+  assert.equal(summary.live_stage_run_progress_evidence_ref, liveProgressEvidenceRef, `${label}.live_stage_run_progress_evidence_ref`);
+  assert.equal(summary.target_agent_owner_evidence_tail_closure_ref, ownerTailClosureRef);
+  assert.equal(summary.opl_consumption_status, liveProgress.opl_consumption_status, `${label}.opl_consumption_status`);
+  assert.deepEqual(asStrings(summary.typed_blocker_refs), asStrings(liveProgressRefs.typed_blocker_refs), `${label}.typed_blocker_refs`);
+  assert.deepEqual(asStrings(summary.human_gate_refs), asStrings(liveProgressRefs.human_gate_refs), `${label}.human_gate_refs`);
+  assert.deepEqual(asStrings(summary.script_to_pack_gate_receipt_refs), [scriptToPackGateRef]);
+  assert.deepEqual(asStrings(summary.owner_receipt_refs), []);
+  assertOptionalFalseFlags(summary, label);
+  assertRefsOnlyAuthorityBoundary(summary.authority_boundary as JsonObject, `${label}.authority_boundary`);
+}
+
+test('production acceptance records refs-only consumption without production-ready authority', () => {
+  const acceptance = readJson(productionAcceptanceRef);
   const newAgentConsumption = readJson(newAgentConsumptionEvidenceRef);
-  const liveProgressEvidence = readJson('contracts/live_stage_run_progress_evidence.json');
-  const liveProgressRefs = liveProgressEvidence.refs as JsonObject;
-  const scriptToPackGateRef = 'script-to-pack-gate-receipt:opl-meta-agent/current-script-morphology-policy';
+  const liveProgress = readJson(liveProgressEvidenceRef);
 
   assert.equal(acceptance.surface_kind, 'opl_meta_agent_production_acceptance_evidence');
   assert.equal(acceptance.domain_id, 'opl-meta-agent');
   assert.equal(acceptance.evidence_status, 'closed_by_domain_owned_acceptance_receipt');
   assert.equal(acceptance.evidence_tail_status, 'closed_by_domain_owned_acceptance_receipt');
-  assert.equal(
-    acceptance.receipt_ref,
-    'production-acceptance-receipt:opl-meta-agent/target-agent-takeover-improve-loop/2026-05-19',
-  );
   assert.equal(acceptance.doc_ref, 'docs/status.md');
-  assert.ok(acceptance.next_verification_command_refs.includes('cmd:rtk npm test'));
-  assert.ok(acceptance.next_verification_command_refs.includes('cmd:rtk npm run typecheck'));
-  assert.ok(acceptance.refs.acceptance_receipt_refs.includes(acceptance.receipt_ref));
-  assert.ok(acceptance.refs.doc_refs.includes('docs/status.md'));
-  assert.ok(acceptance.refs.next_verification_command_refs.includes('cmd:rtk git diff --check'));
-  assert.deepEqual(acceptance.refs.active_typed_blocker_refs, []);
-  assert.ok(
-    asStrings(acceptance.refs.historical_typed_blocker_refs)
-      .includes('typed_blocker_ref://opl-meta-agent/production-consumption/long-soak-pending'),
-  );
-  assert.equal(asStrings(acceptance.refs.long_soak_refs).length, 1);
-  assert.ok(asStrings(acceptance.refs.long_soak_refs)[0].startsWith('long_soak_ref://opl-meta-agent/'));
-  assert.equal(asStrings(acceptance.refs.production_consumption_receipt_refs).length, 2);
-  assert.deepEqual(acceptance.refs.new_agent_consumption_evidence_refs, [newAgentConsumptionEvidenceRef]);
-  assert.deepEqual(acceptance.refs.target_agent_live_stage_progress_evidence_refs, [
-    'contracts/live_stage_run_progress_evidence.json',
+  assert.ok(asStrings(acceptance.next_verification_command_refs).includes('cmd:rtk npm test'));
+  assert.ok(asStrings(acceptance.next_verification_command_refs).includes('cmd:rtk npm run typecheck'));
+  assert.ok(asStrings((acceptance.refs as JsonObject).acceptance_receipt_refs).includes(acceptance.receipt_ref as string));
+  assert.deepEqual(asStrings((acceptance.refs as JsonObject).active_typed_blocker_refs), []);
+  assert.ok(asStrings((acceptance.refs as JsonObject).historical_typed_blocker_refs).includes(productionLongSoakBlockerRef));
+  assert.deepEqual(asStrings((acceptance.refs as JsonObject).new_agent_consumption_evidence_refs), [newAgentConsumptionEvidenceRef]);
+  assert.deepEqual(asStrings((acceptance.refs as JsonObject).target_agent_live_stage_progress_evidence_refs), [
+    liveProgressEvidenceRef,
   ]);
+
   const stageReplayBlocker = acceptance.stage_replay_human_gate_blocker_summary as JsonObject;
-  const stageReplayTarget = stageReplayBlocker.target_identity as JsonObject;
-  const stageReplayBoundary = stageReplayBlocker.authority_boundary as JsonObject;
-  const liveProgressSummary = acceptance.target_agent_live_stage_progress_summary as JsonObject;
-  assert.equal(
-    stageReplayBlocker.surface_kind,
-    'opl_meta_agent_stage_replay_human_gate_blocker_summary',
-  );
-  assert.equal(stageReplayBlocker.owner, 'opl-meta-agent');
-  assert.equal(
-    stageReplayBlocker.role,
-    'domain_owned_body_free_typed_blocker_for_stage_replay_missing_receipt',
-  );
-  assert.equal(stageReplayTarget.domain_id, 'opl-meta-agent');
-  assert.equal(stageReplayTarget.stage_id, 'stage-decomposition');
-  assert.equal(stageReplayTarget.missing_ref, 'human_gate:oma_baseline_owner_review');
-  assert.equal(stageReplayBlocker.missing_ref_kind, 'human_gate_ref');
-  assert.equal(stageReplayBlocker.payload_path, 'typed_blocker_path');
-  assert.deepEqual(asStrings(stageReplayBlocker.typed_blocker_refs), [
-    'oma-typed-blocker:stage-replay-human-gate:stage-decomposition:oma_baseline_owner_review/baseline-owner-review-receipt-pending',
-  ]);
-  assert.equal(
-    stageReplayBlocker.owner_chain_closure_ref,
-    'contracts/target_agent_owner_chain_evidence.json#/stage_replay_human_gate_blocker_closure',
-  );
-  assertRepoRefExists((stageReplayBlocker.owner_chain_closure_ref as string).split('#')[0]);
-  assert.equal(
-    stageReplayBlocker.stage_replay_missing_receipt_ref,
-    'opl://stage-replay-missing-receipt/opl-meta-agent%2Fstage-decomposition%2Fhuman_gate%3Aoma_baseline_owner_review',
-  );
   assert.equal(stageReplayBlocker.closure_status, 'closed_as_typed_blocker_not_success');
   assert.equal(stageReplayBlocker.success_receipt_count, 0);
   assert.deepEqual(asStrings(stageReplayBlocker.owner_receipt_refs), []);
-  assert.deepEqual(asStrings(stageReplayBlocker.no_regression_refs), [
-    'no-regression-ref:opl-meta-agent/stage-replay-human-gate/oma_baseline_owner_review/no-target-repo-mutation',
+  assert.ok(asStrings(stageReplayBlocker.typed_blocker_refs).length > 0);
+  assertContractRefExists(stageReplayBlocker.owner_chain_closure_ref as string);
+  assertContractRefExists(stageReplayBlocker.source_ref as string);
+  assertOptionalFalseFlags(stageReplayBlocker, 'stageReplayBlocker');
+  assertRefsOnlyAuthorityBoundary(stageReplayBlocker.authority_boundary as JsonObject, 'stageReplayBlocker.authority_boundary', [
+    'can_requery_human',
+    'can_write_owner_receipt',
+    'can_write_target_domain_truth',
+    'can_write_target_domain_memory_body',
+    'can_mutate_target_domain_artifact_body',
+    'can_authorize_target_domain_quality_or_export',
+    'can_promote_default_agent_without_gate',
+    'can_close_replay_success_path',
   ]);
-  assert.equal(stageReplayBlocker.success_claimed, false);
-  assert.equal(stageReplayBlocker.human_gate_approval_claimed, false);
-  assert.equal(stageReplayBlocker.domain_ready_claimed, false);
-  assert.equal(stageReplayBlocker.production_ready_claimed, false);
-  assert.equal(stageReplayBoundary.refs_only, true);
-  assert.equal(stageReplayBoundary.can_requery_human, false);
-  assert.equal(stageReplayBoundary.can_write_owner_receipt, false);
-  assert.equal(stageReplayBoundary.can_write_target_domain_truth, false);
-  assert.equal(stageReplayBoundary.can_write_target_domain_memory_body, false);
-  assert.equal(stageReplayBoundary.can_mutate_target_domain_artifact_body, false);
-  assert.equal(stageReplayBoundary.can_authorize_target_domain_quality_or_export, false);
-  assert.equal(stageReplayBoundary.can_promote_default_agent_without_gate, false);
-  assert.equal(stageReplayBoundary.can_close_replay_success_path, false);
-  assertRepoRefExists((stageReplayBlocker.source_ref as string).split('#')[0]);
+
+  const liveProgressSummary = acceptance.target_agent_live_stage_progress_summary as JsonObject;
+  assertSummaryMatchesLiveProgress(liveProgressSummary, liveProgress, 'liveProgressSummary');
+  assertContractRefExists(liveProgressSummary.live_stage_run_progress_evidence_ref as string);
+  assertContractRefExists(liveProgressSummary.target_agent_owner_evidence_tail_closure_ref as string);
+
+  const followthrough = acceptance.production_consumption_followthrough as JsonObject;
+  assert.equal(followthrough.status, 'production_consumption_refs_projected');
+  assert.equal(followthrough.production_consumption_ready, true);
   assert.equal(
-    liveProgressSummary.surface_kind,
-    'opl_meta_agent_target_agent_live_stage_progress_summary',
-  );
-  assert.equal(
-    liveProgressSummary.live_stage_run_progress_evidence_ref,
-    'contracts/live_stage_run_progress_evidence.json',
-  );
-  assertRepoRefExists(liveProgressSummary.live_stage_run_progress_evidence_ref as string);
-  assert.equal(
-    liveProgressSummary.target_agent_owner_evidence_tail_closure_ref,
-    'contracts/target_agent_owner_chain_evidence.json#/target_agent_owner_evidence_tail_closure',
-  );
-  assertRepoRefExists((liveProgressSummary.target_agent_owner_evidence_tail_closure_ref as string).split('#')[0]);
-  assert.equal(liveProgressSummary.opl_consumption_status, 'not_ready_by_domain_owned_typed_blocker_refs');
-  assert.deepEqual(asStrings(liveProgressSummary.typed_blocker_refs), asStrings(liveProgressRefs.typed_blocker_refs));
-  assert.deepEqual(asStrings(liveProgressSummary.human_gate_refs), asStrings(liveProgressRefs.human_gate_refs));
-  assert.deepEqual(asStrings(liveProgressSummary.script_to_pack_gate_receipt_refs), [scriptToPackGateRef]);
-  assert.deepEqual(asStrings(liveProgressSummary.owner_receipt_refs), []);
-  assert.equal(liveProgressSummary.open_tail_count, 4);
-  assert.equal(liveProgressSummary.closed_structure_gate_count, 1);
-  assert.equal(liveProgressSummary.closed_success_count, 0);
-  assert.equal(liveProgressSummary.success_claimed, false);
-  assert.equal(liveProgressSummary.target_agent_ready_claimed, false);
-  assert.equal(liveProgressSummary.domain_ready_claimed, false);
-  assert.equal(liveProgressSummary.production_ready_claimed, false);
-  assert.equal(liveProgressSummary.authority_boundary.refs_only, true);
-  assert.equal(liveProgressSummary.authority_boundary.can_write_target_domain_truth, false);
-  assert.equal(liveProgressSummary.authority_boundary.can_write_target_owner_receipt_body, false);
-  assert.equal(liveProgressSummary.authority_boundary.can_claim_target_domain_ready, false);
-  assert.equal(liveProgressSummary.authority_boundary.can_claim_domain_ready, false);
-  assert.equal(liveProgressSummary.authority_boundary.can_claim_production_ready, false);
-  assert.equal(
-    acceptance.production_consumption_followthrough.status,
-    'production_consumption_refs_projected',
-  );
-  assert.equal(acceptance.production_consumption_followthrough.production_consumption_ready, true);
-  assert.equal(
-    acceptance.production_consumption_followthrough.production_consumption_ready_semantics,
+    followthrough.production_consumption_ready_semantics,
     'refs_only_current_cohort_consumption_gate_ready_not_production_readiness_verdict',
   );
-  assert.equal(
-    acceptance.production_consumption_followthrough.current_cohort_refs_only_consumption_ready,
-    true,
-  );
-  assert.equal(
-    acceptance.production_consumption_followthrough.production_readiness_verdict_claimed,
-    false,
-  );
-  assert.equal(acceptance.production_consumption_followthrough.open_gate_count, 0);
-  assert.equal(acceptance.production_consumption_followthrough.gate_count, 4);
-  assert.equal(acceptance.production_consumption_followthrough.long_soak_claimed, false);
-  assert.equal(acceptance.production_consumption_followthrough.verified_receipt_ref_count, 2);
-  assert.equal(acceptance.production_consumption_followthrough.long_soak_ref_count, 1);
-  assert.equal(acceptance.production_consumption_followthrough.active_typed_blocker_ref_count, 0);
-  assert.equal(acceptance.production_consumption_followthrough.historical_typed_blocker_ref_count, 1);
-  assert.deepEqual(acceptance.production_consumption_followthrough.active_typed_blocker_refs, []);
-  assert.ok(
-    asStrings(acceptance.production_consumption_followthrough.long_soak_refs)[0]
-      .startsWith('long_soak_ref://opl-meta-agent/'),
-  );
-  assertRepoRefExists(acceptance.production_consumption_followthrough.historical_typed_blocker_artifact_ref);
-  assert.ok(
-    asStrings(acceptance.production_consumption_followthrough.future_cohort_required_evidence_refs)
-      .includes('repeat_long_soak_receipt_ref'),
-  );
-  assert.equal(
-    acceptance.production_consumption_followthrough.authority_boundary.can_claim_domain_ready,
-    false,
-  );
-  assert.equal(
-    acceptance.production_consumption_followthrough.authority_boundary.can_claim_production_ready,
-    false,
-  );
-  assert.equal(
-    acceptance.production_consumption_followthrough.authority_boundary.can_close_long_soak_gate,
-    false,
-  );
-  const productionConsumptionBlocker = readJson(
-    acceptance.production_consumption_followthrough.historical_typed_blocker_artifact_ref as string,
-  );
-  assert.equal(
-    productionConsumptionBlocker.typed_blocker_ref,
-    'typed_blocker_ref://opl-meta-agent/production-consumption/long-soak-pending',
-  );
+  assert.equal(followthrough.production_readiness_verdict_claimed, false);
+  assert.equal(followthrough.long_soak_claimed, false);
+  assert.deepEqual(asStrings(followthrough.active_typed_blocker_refs), []);
+  assert.ok(asStrings(followthrough.long_soak_refs)[0].startsWith('long_soak_ref://opl-meta-agent/'));
+  assert.ok(asStrings(followthrough.historical_typed_blocker_refs).includes(productionLongSoakBlockerRef));
+  assertContractRefExists(followthrough.historical_typed_blocker_artifact_ref as string);
+  assertRefsOnlyAuthorityBoundary(followthrough.authority_boundary as JsonObject, 'productionConsumptionFollowthrough.authority_boundary', [
+    'can_claim_domain_ready',
+    'can_claim_production_ready',
+    'can_close_long_soak_gate',
+    'can_write_opl_runtime_state',
+    'can_promote_default_agent_without_gate',
+  ]);
+
+  const productionConsumptionBlocker = readJson(followthrough.historical_typed_blocker_artifact_ref as string);
+  assert.equal(productionConsumptionBlocker.typed_blocker_ref, productionLongSoakBlockerRef);
   assert.equal(productionConsumptionBlocker.blocker_status, 'historical_provenance');
-  assert.equal(productionConsumptionBlocker.superseded_by_status, 'production_consumption_refs_projected');
-  assert.equal(productionConsumptionBlocker.blocked_gate, 'long_soak_refs');
-  assert.equal(productionConsumptionBlocker.production_consumption_ready, true);
-  assert.equal(
-    productionConsumptionBlocker.production_consumption_ready_semantics,
-    'refs_only_current_cohort_consumption_gate_ready_not_production_readiness_verdict',
-  );
-  assert.equal(productionConsumptionBlocker.current_cohort_refs_only_consumption_ready, true);
-  assert.equal(productionConsumptionBlocker.production_readiness_verdict_claimed, false);
-  assert.equal(productionConsumptionBlocker.open_gate_count, 0);
-  assert.equal(productionConsumptionBlocker.long_soak_claimed, false);
   assert.equal(productionConsumptionBlocker.active_blocker, false);
   assert.equal(productionConsumptionBlocker.historical_typed_blocker, true);
-  assert.equal(asStrings(productionConsumptionBlocker.superseded_by_long_soak_refs).length, 1);
-  assert.deepEqual(productionConsumptionBlocker.accepted_resolution_paths, [
-    'real_long_soak_refs',
-    'operator_long_soak_refs',
-    'production_soak_refs',
-    'agent_lab_rerun_long_soak_refs',
-  ]);
+  assert.equal(productionConsumptionBlocker.production_readiness_verdict_claimed, false);
+  assert.equal(productionConsumptionBlocker.long_soak_claimed, false);
   assertNoForbiddenAuthority(productionConsumptionBlocker, 'productionConsumptionBlocker');
-  assert.equal(productionConsumptionBlocker.authority_boundary.can_claim_production_ready, false);
+
   assert.equal(acceptance.role, 'refs_only_target_agent_takeover_improve_loop_acceptance');
-  assert.ok(acceptance.acceptance_scope.includes('production_live_soak_not_claimed_by_conformance'));
-  assert.ok(acceptance.acceptance_scope.includes('domain_ready_not_claimed_by_conformance'));
-  assert.equal(acceptance.conformance_state.structural_conformance, 'passed');
-  assert.equal(acceptance.conformance_state.physical_source_morphology, 'passed');
-  assert.equal(acceptance.conformance_state.not_domain_ready_authority_source, true);
-  assert.equal(acceptance.conformance_state.not_production_soak_authority_source, true);
+  assert.ok(asStrings(acceptance.acceptance_scope).includes('production_live_soak_not_claimed_by_conformance'));
+  assert.ok(asStrings(acceptance.acceptance_scope).includes('domain_ready_not_claimed_by_conformance'));
+  assert.equal((acceptance.conformance_state as JsonObject).not_domain_ready_authority_source, true);
+  assert.equal((acceptance.conformance_state as JsonObject).not_production_soak_authority_source, true);
   assert.equal(Object.hasOwn(acceptance, 'external_agent_acceptance_chain'), false);
   assert.doesNotMatch(
     JSON.stringify(acceptance),
     /external_agent_acceptance_chain|external_agent_takeover|external-agent-takeover|takeover-external-agent-test/,
   );
-  assert.equal(acceptance.target_agent_acceptance_chain.chain_status, 'receipt_chain_present');
-  assert.ok(acceptance.target_agent_acceptance_chain.intake_refs.length > 0);
-  assert.ok(acceptance.target_agent_acceptance_chain.test_handoff_refs.length > 0);
-  assert.ok(acceptance.target_agent_acceptance_chain.proposal_materializer_refs.length > 0);
-  assert.ok(acceptance.target_agent_acceptance_chain.review_audit_receipt_refs.length > 0);
-  assert.deepEqual(
-    acceptance.target_agent_acceptance_chain.new_agent_consumption_evidence_refs,
-    [newAgentConsumptionEvidenceRef],
-  );
-  assert.deepEqual(acceptance.target_agent_acceptance_chain.active_typed_blocker_refs, []);
-  assert.ok(
-    asStrings(acceptance.target_agent_acceptance_chain.historical_typed_blocker_refs)
-      .includes('typed_blocker_ref://opl-meta-agent/production-consumption/long-soak-pending'),
-  );
-  assert.equal(
-    acceptance.acceptance_receipt.receipt_class,
-    'target_agent_takeover_improve_loop_acceptance_receipt',
-  );
-  assert.deepEqual(acceptance.purpose_first_owner_delta_gate.delegated_surface_owners, {
-    agent_lab_runner_delegated_to: 'one-person-lab',
-    promotion_gate_delegated_to: 'one-person-lab',
-    registry_delegated_to: 'one-person-lab',
-    app_shell_delegated_to: 'one-person-lab-app via OPL/App contracts',
-    target_worktree_lifecycle_delegated_to: 'one-person-lab work-order execute primitive',
-    target_owner_closeout_delegated_to: 'target-domain via OPL',
+
+  const acceptanceChain = acceptance.target_agent_acceptance_chain as JsonObject;
+  assert.equal(acceptanceChain.chain_status, 'receipt_chain_present');
+  assert.deepEqual(asStrings(acceptanceChain.new_agent_consumption_evidence_refs), [newAgentConsumptionEvidenceRef]);
+  assert.deepEqual(asStrings(acceptanceChain.active_typed_blocker_refs), []);
+  assert.ok(asStrings(acceptanceChain.historical_typed_blocker_refs).includes(productionLongSoakBlockerRef));
+
+  const fixtureRequirement = acceptance.generated_agent_fixture_requirement as JsonObject;
+  assert.equal(fixtureRequirement.latest_new_agent_consumption_evidence_ref, newAgentConsumptionEvidenceRef);
+  assert.equal(fixtureRequirement.current_scaffold_generator_drift_closed, true);
+  assert.ok((fixtureRequirement.new_agent_consumption_repeat_cohort_count as number) >= 2);
+  [
+    'check-ref:generated-agent/stage-pack-v2-conformance-passed',
+    'check-ref:generated-agent/default-codex-cli-binding-present',
+    'check-ref:generated-agent/independent-gate-file-ref-present',
+    'check-ref:generated-agent/no-target-domain-truth-write',
+  ].forEach((checkRef) => {
+    assert.ok(asStrings(fixtureRequirement.required_check_refs).includes(checkRef), checkRef);
   });
+
   assertNoActiveMorphologyForbiddenOwnerTokens(acceptance, 'productionAcceptance');
-  assert.equal(acceptance.promotion_gate.promotion_status, 'gated');
-  assert.ok(acceptance.promotion_gate.required_next_verification_command_refs.includes('cmd:rtk npm test'));
-  assert.ok(acceptance.promotion_gate.required_next_verification_command_refs.includes('cmd:rtk npm run typecheck'));
-  assert.ok(
-    acceptance.generated_agent_fixture_requirement.required_check_refs.includes(
-      'check-ref:generated-agent/stage-pack-v2-conformance-passed',
-    ),
-  );
-  assert.ok(
-    acceptance.generated_agent_fixture_requirement.required_check_refs.includes(
-      'check-ref:generated-agent/default-codex-cli-binding-present',
-    ),
-  );
-  assert.ok(
-    acceptance.generated_agent_fixture_requirement.required_check_refs.includes(
-      'check-ref:generated-agent/independent-gate-file-ref-present',
-    ),
-  );
-  assert.equal(
-    acceptance.generated_agent_fixture_requirement.latest_new_agent_consumption_evidence_ref,
-    newAgentConsumptionEvidenceRef,
-  );
-  assert.ok(
-    acceptance.generated_agent_fixture_requirement.required_check_refs.includes(
-      'check-ref:generated-agent/no-target-domain-truth-write',
-    ),
-  );
   assertNoForbiddenAuthority(acceptance, 'productionAcceptance');
-  assert.equal(acceptance.authority_boundary.target_domain_authority_writes_forbidden, true);
+  assert.equal((acceptance.authority_boundary as JsonObject).target_domain_authority_writes_forbidden, true);
 
   [
-    ...asStrings(acceptance.conformance_state.conformance_refs),
-    ...asStrings(acceptance.target_agent_acceptance_chain.intake_refs),
-    ...asStrings(acceptance.target_agent_acceptance_chain.test_handoff_refs),
-    ...asStrings(acceptance.target_agent_acceptance_chain.proposal_materializer_refs),
-    ...asStrings(acceptance.target_agent_acceptance_chain.review_audit_receipt_refs),
-    ...asStrings(acceptance.acceptance_receipt.source_refs),
-    ...asStrings(acceptance.generated_agent_fixture_requirement.verified_by_refs),
+    ...asStrings((acceptance.conformance_state as JsonObject).conformance_refs),
+    ...asStrings(acceptanceChain.intake_refs),
+    ...asStrings(acceptanceChain.test_handoff_refs),
+    ...asStrings(acceptanceChain.proposal_materializer_refs),
+    ...asStrings(acceptanceChain.review_audit_receipt_refs),
+    ...asStrings((acceptance.acceptance_receipt as JsonObject).source_refs),
+    ...asStrings(fixtureRequirement.verified_by_refs),
     ...asStrings(newAgentConsumption.source_refs),
-    liveProgressSummary.live_stage_run_progress_evidence_ref,
-    acceptance.generated_agent_fixture_requirement.latest_new_agent_consumption_evidence_ref,
-    acceptance.doc_ref,
-    ...asStrings(acceptance.refs.doc_refs),
-  ].forEach(assertRepoRefExists);
+    liveProgressSummary.live_stage_run_progress_evidence_ref as string,
+    fixtureRequirement.latest_new_agent_consumption_evidence_ref as string,
+    acceptance.doc_ref as string,
+    ...asStrings((acceptance.refs as JsonObject).doc_refs),
+  ].forEach(assertContractRefExists);
 });

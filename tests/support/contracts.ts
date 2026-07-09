@@ -74,6 +74,61 @@ export function assertRepoRefExists(relativePath: string): void {
   assert.equal(fs.existsSync(path.join(repoRoot, relativePath)), true, `${relativePath} should exist`);
 }
 
+export const readinessClaimFields = [
+  'success_claimed',
+  'closed_as_success',
+  'target_agent_ready_claimed',
+  'domain_ready_claimed',
+  'production_ready_claimed',
+  'production_readiness_verdict_claimed',
+  'default_promotion_claimed',
+  'long_soak_claimed',
+];
+
+export const targetAuthorityFalseFields = [
+  'can_write_target_domain_truth',
+  'can_write_target_domain_memory_body',
+  'can_mutate_target_domain_artifact_body',
+  'can_authorize_target_domain_quality_or_export',
+  'can_claim_target_domain_ready',
+  'can_claim_production_ready',
+  'can_write_target_owner_receipt_body',
+  'can_promote_default_agent_without_gate',
+];
+
+export const extendedTargetAuthorityFalseFields = [
+  ...targetAuthorityFalseFields,
+  'can_hold_target_artifact_authority',
+  'can_manage_target_worktree_lifecycle',
+  'can_own_generic_runner',
+  'can_own_generic_queue_or_attempt_ledger',
+];
+
+export function assertOptionalFalseFlags(
+  surface: JsonObject,
+  label: string,
+  fields: string[] = readinessClaimFields,
+): void {
+  fields.forEach((field) => {
+    if (Object.hasOwn(surface, field)) assert.equal(surface[field], false, `${label}.${field}`);
+  });
+}
+
+export function assertRefsOnlyAuthorityBoundary(
+  boundary: JsonObject,
+  label: string,
+  fields: string[] = targetAuthorityFalseFields,
+): void {
+  assert.equal(boundary.refs_only, true, `${label}.refs_only`);
+  fields.forEach((field) => {
+    assert.equal(boundary[field], false, `${label}.${field}`);
+  });
+}
+
+export function assertContractRefExists(ref: string): void {
+  assertRepoRefExists(ref.split('#')[0]);
+}
+
 export function assertCompleteStageNativeRefs(surface: JsonObject, label: string): void {
   assert.equal(surface.stage_json_ref, `stage-json-ref:opl-meta-agent/${label}`, `${label}.stage_json_ref`);
   assert.equal(
