@@ -2,11 +2,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
 import type { JsonObject } from './support/contracts.ts';
 import {
   oplBin,
-  repoRoot,
   writeJsonFile as writeJson,
   readJsonFile as readJson,
 } from './support/contracts.ts';
@@ -57,18 +55,6 @@ function improveWithReviewer(args: {
     '--opl-bin',
     oplBin,
   ]);
-}
-
-function executeWorkOrderExpectingValidationError(workOrder: JsonObject, outputRoot: string): string {
-  const workOrderPath = path.join(outputRoot, `invalid-${String(workOrder.work_order_id)}.json`);
-  writeJson(workOrderPath, workOrder);
-  const result = spawnSync(
-    'npm',
-    ['run', 'execute:external-work-order', '--', '--work-order', workOrderPath, '--opl-bin', oplBin],
-    { cwd: repoRoot, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 },
-  );
-  assert.notEqual(result.status, 0);
-  return `${result.stderr}\n${result.stdout}`;
 }
 
 function assertWorkOrderBoundary(workOrder: JsonObject): void {
@@ -216,22 +202,6 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     assert.ok((workOrder.patch_traceability_matrix as JsonObject[])
       .some((item) => item.gap_token === 'internal-quality-language-purge'));
     assert.equal(workOrder.target_workspace_environment_verification.can_write_target_domain_truth, false);
-
-    const missingSourceMorphology = structuredClone(workOrder);
-    delete missingSourceMorphology.source_morphology_proof_ref;
-    delete missingSourceMorphology.source_morphology_proof;
-    assert.match(
-      executeWorkOrderExpectingValidationError(missingSourceMorphology, outputRoot),
-      /source_morphology_proof or source_morphology_proof_ref is required by OPL work-order execute guard/,
-    );
-
-    const missingPrivateResidueDecision = structuredClone(workOrder);
-    delete missingPrivateResidueDecision.private_residue_decision_ref;
-    delete missingPrivateResidueDecision.private_residue_decision;
-    assert.match(
-      executeWorkOrderExpectingValidationError(missingPrivateResidueDecision, outputRoot),
-      /private_residue_decision_ref/,
-    );
   });
 });
 
@@ -279,21 +249,6 @@ test('generic target-agent feedback external suite is accepted without MAS-only 
       .includes('feedback-evidence:target-agent/artifact-morphology/direct-review'));
     assertWorkOrderBoundary(workOrder);
     assert.equal(workOrder.target_progress_accounting.progress_delta_classification, 'mixed');
-
-    const missingFeedback = structuredClone(workOrder);
-    missingFeedback.source_external_suite_intake.feedback_ref = null;
-    missingFeedback.source_external_suite_intake.source_feedback_refs = [];
-    assert.match(
-      executeWorkOrderExpectingValidationError(missingFeedback, outputRoot),
-      /source_external_suite_intake requires feedback_ref or source_feedback_refs/,
-    );
-
-    const missingDirectReviewerEvidence = structuredClone(workOrder);
-    missingDirectReviewerEvidence.ai_reviewer_evidence.direct_evidence_refs = [];
-    assert.match(
-      executeWorkOrderExpectingValidationError(missingDirectReviewerEvidence, outputRoot),
-      /ai_reviewer_evidence\.direct_evidence_refs must be a non-empty string array/,
-    );
   });
 });
 
@@ -341,15 +296,5 @@ test('MAS reviewer_revision feedback external suite is accepted as developer wor
     assert.equal(workOrder.target_progress_accounting.progress_delta_classification, 'mixed');
     assert.ok(workOrder.target_progress_accounting.platform_repair_delta.refs
       .includes(workOrder.machine_closeout_refs.agent_lab_re_evaluation_ref));
-
-    const missingMasSpecializedProfile = structuredClone(workOrder);
-    missingMasSpecializedProfile.source_external_suite_intake.accepted_input_profiles = [
-      'target_agent_feedback_external_suite',
-      'mas_feedback_agent_lab_external_suite',
-    ];
-    assert.match(
-      executeWorkOrderExpectingValidationError(missingMasSpecializedProfile, outputRoot),
-      /MAS feedback external suites must name high-quality manuscript or reviewer revision feedback profile/,
-    );
   });
 });

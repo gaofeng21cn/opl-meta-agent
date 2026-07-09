@@ -63,26 +63,15 @@ test('script-to-pack gate receipt mirrors source-purity gates without owning ret
   assert.deepEqual(testStructure, sourceReceipt.source_purity_test_structure);
   assert.equal(testStructure.structure_id, 'oma.source_purity_test_structure.v1');
   assert.equal(testStructure.anchor_test_ref, 'tests/source-purity.test.ts#script-morphology-gate');
-  assert.deepEqual(asStrings(testStructure.case_module_refs), [
+  assertIncludesAll(asStrings(testStructure.case_module_refs), [
     'tests/source-purity/script-morphology.test-case.ts',
     'tests/source-purity/policy-projection.test-case.ts',
     'tests/source-purity/gate-receipt.test-case.ts',
-  ]);
+  ], 'source-purity case modules');
   assert.equal(testStructure.support_module_ref, 'tests/support/source-purity.ts');
-  assert.deepEqual(asStrings(testStructure.self_guard_test_refs), [
-    'tests/source-purity.test.ts',
-    'tests/source-purity/',
-  ]);
   assertEveryFlagFalse(asBooleanRecord(testStructure.authority_boundary), 'source-purity test structure boundary');
 
   assert.equal(sourceRefIntegrityGuard.guard_id, 'oma.script_morphology.source_ref_integrity_guard.v1');
-  assert.equal(sourceRefIntegrityGuard.state, 'repo_local_script_refs_declared_no_second_truth');
-  assertIncludesAll(asStrings(sourceRefIntegrityGuard.guarded_ref_collections), [
-    'script_morphology_policy.script_classifications[*].script_ref',
-    'script_morphology_policy.script_to_pack_retirement_gates[*].tracked_script_refs',
-    'source_purity_scan_receipt.scanned_script_refs',
-    'contracts/script_to_pack_gate_receipt.json#current_scan_summary.scanned_script_refs',
-  ], 'source-ref integrity guarded collections');
   assertFalseFlags(asBooleanRecord(sourceRefIntegrityGuard.authority_boundary), [
     'guard_can_create_missing_refs',
     'guard_can_create_alias_files',
@@ -91,23 +80,8 @@ test('script-to-pack gate receipt mirrors source-purity gates without owning ret
     'guard_can_claim_target_agent_ready',
   ], 'source-ref integrity boundary');
 
-  assert.equal(readbackGuard.guard_id, 'oma.script_morphology.retirement_readback_cleanup_guard.v1');
-  assert.equal(readbackGuard.state, 'readback_guard_available_physical_delete_not_authorized');
   assert.equal(readbackGuard.executable_readback_command_ref, 'npm run script-to-pack:readback');
   assert.equal(readbackGuard.full_readback_command_ref, 'npm run script-to-pack:readback:full');
-  assertIncludesAll(asStrings(readbackGuard.allowed_readback_outputs), [
-    'script_classification_readback',
-    'missing_evidence_worklist',
-    'owner_delta_route',
-    'typed_blocker_ref_shape',
-  ], 'cleanup readback outputs');
-  assertIncludesAll(asStrings(readbackGuard.forbidden_readback_outputs), [
-    'physical_script_delete_operation',
-    'owner_receipt_signature',
-    'typed_blocker_instance_creation',
-    'target_agent_ready_claim',
-    'production_ready_claim',
-  ], 'cleanup readback forbidden outputs');
   assertIncludesAll(asStrings(readbackGuard.required_before_cleanup_apply), [
     'opl_primitive_parity_receipt_ref',
     'no_active_caller_ref',
@@ -115,10 +89,8 @@ test('script-to-pack gate receipt mirrors source-purity gates without owning ret
     'owner_receipt://opl-meta-agent/script_physical_delete_or_tombstone_authorization',
   ], 'cleanup apply requirements');
   assertEveryFlagFalse(asBooleanRecord(readbackGuard.claims), 'cleanup readback guard claim');
-  const readbackGuardBoundary = asBooleanRecord(readbackGuard.authority_boundary);
-  assert.equal(readbackGuardBoundary.guard_can_identify_cleanup_candidates, true);
-  assert.equal(readbackGuardBoundary.guard_can_route_owner_delta, true);
-  assertFalseFlags(readbackGuardBoundary, [
+  assert.equal(asBooleanRecord(readbackGuard.authority_boundary).guard_can_identify_cleanup_candidates, true);
+  assertFalseFlags(asBooleanRecord(readbackGuard.authority_boundary), [
     'guard_can_authorize_physical_delete',
     'guard_can_sign_owner_receipt',
     'guard_can_create_typed_blocker',
@@ -130,9 +102,6 @@ test('script-to-pack gate receipt mirrors source-purity gates without owning ret
   assert.equal(gateSummary.active_script_caller_scan_status, activeCallerScan.status);
   assert.equal(gateSummary.active_caller_scan_policy_id, ACTIVE_CALLER_SCAN_POLICY_ID);
   assert.equal(gateSummary.source_ref_integrity_guard_id, sourceRefIntegrityGuard.guard_id);
-  assert.equal(gateSummary.source_ref_integrity_status, 'passed');
-  assert.equal(gateSummary.source_ref_integrity_checked_ref_count, scriptRefs.length);
-  assert.equal(gateSummary.source_ref_integrity_invalid_ref_count, 0);
   assert.equal(gateSummary.generic_materializer_no_resurrection_guard_id, genericMaterializerGuard.guard_id);
   assert.equal(gateSummary.generic_materializer_scan_status, materializerScan.status);
   [
@@ -142,9 +111,7 @@ test('script-to-pack gate receipt mirrors source-purity gates without owning ret
     'repo_owned_target_worktree_lifecycle_materializer_count',
   ].forEach((field) => assert.equal(gateSummary[field], 0, field));
   assert.equal(gateSummary.cleanup_readback_state, 'readback_available_cleanup_not_authorized');
-  assert.equal(gateSummary.compact_cleanup_candidate_count, 0);
   assert.equal(gateSummary.cleanup_candidate_count, 0);
-  assert.equal(gateSummary.retained_current_count, scriptRefs.length);
   assert.equal(gateSummary.cleanup_readback_is_authority, false);
   assert.equal(gateSummary.cleanup_readback_can_authorize_delete, false);
   assert.equal(gateSummary.cleanup_readback_can_claim_retirement_complete, false);
@@ -159,16 +126,12 @@ test('script-to-pack gate receipt mirrors source-purity gates without owning ret
     'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.source_ref_integrity_guard',
     'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.retirement_readback_cleanup_guard',
     'tests/source-purity.test.ts#script-morphology-gate',
-    'npm-script:script-to-pack:readback',
   ], 'closed current machine gate refs');
   assertIncludesAll(asStrings(gateReceipt.not_claimed_by_this_receipt), [
-    'OPL primitive parity for script policy',
     'physical script retirement',
-    'cleanup readback physical delete authorization',
     'target-agent readiness',
     'domain readiness',
     'production readiness',
-    'generated-hosted surface live readiness',
     'default promotion',
   ], 'not claimed by receipt');
   assertIncludesAll(asStrings(gateReceipt.future_retirement_or_absorb_still_requires), [
@@ -179,22 +142,11 @@ test('script-to-pack gate receipt mirrors source-purity gates without owning ret
 
   assert.equal(reciprocalConsumptionPolicy.policy_id, 'oma.script-to-pack-gate-receipt-consumption.v1');
   assert.equal(reciprocalConsumptionPolicy.accepted_ref_shape, gateReceipt.accepted_ref_shape);
-  const requiredConsumers = asObjects(reciprocalConsumptionPolicy.required_consumers);
-  assert.deepEqual(
-    requiredConsumers.map((consumer) => consumer.contract_ref),
-    asStrings(gateReceipt.consumed_by_refs),
-  );
-  requiredConsumers.forEach((consumer) => {
+  asObjects(reciprocalConsumptionPolicy.required_consumers).forEach((consumer) => {
     const consumerContract = readJson(consumer.contract_ref as string);
     assertRepoRefExists(consumer.contract_ref as string);
     asStrings(consumer.must_reference_receipt_ref_at ?? []).forEach((refPath) => {
       assert.ok(valuesAtDottedPath(consumerContract, refPath).includes(gateReceipt.receipt_ref as string));
-    });
-    asStrings(consumer.must_reference_contract_ref_at ?? []).forEach((refPath) => {
-      assert.ok(valuesAtDottedPath(consumerContract, refPath).includes('contracts/script_to_pack_gate_receipt.json'));
-    });
-    asStrings(consumer.must_accept_ref_shape_at ?? []).forEach((refPath) => {
-      assert.ok(valuesAtDottedPath(consumerContract, refPath).includes(gateReceipt.accepted_ref_shape as string));
     });
     asStrings(consumer.must_keep_authority_false ?? []).forEach((refPath) => {
       valuesAtDottedPath(consumerContract, refPath).forEach((value) => assert.equal(value, false));

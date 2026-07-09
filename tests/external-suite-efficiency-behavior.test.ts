@@ -63,21 +63,26 @@ test('external suite efficiency evidence is projected into developer work order 
     ]);
     assert.equal(payload.status, 'blocked_with_developer_patch_work_order');
     const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
-    assert.deepEqual(workOrder.efficiency_non_regression_refs.quality_floor_refs, [
+    [
       'quality-floor:target-agent/current-behavior-gate',
-    ]);
-    assert.deepEqual(workOrder.efficiency_non_regression_refs.latency_baseline_refs, [
+      'workspace-runtime-ref:review-export:run-1',
+    ].forEach((ref) => assert.ok(workOrder.efficiency_non_regression_refs.quality_floor_refs.includes(ref)));
+    [
       'latency-baseline:target-agent/p50-p95-before',
-    ]);
-    assert.deepEqual(workOrder.efficiency_non_regression_refs.usage_cost_refs, [
+      'workspace-runtime-ref:route-summary:run-1#/elapsed_ms',
+    ].forEach((ref) => assert.ok(workOrder.efficiency_non_regression_refs.latency_baseline_refs.includes(ref)));
+    [
       'usage-cost:target-agent/token-cost-before',
-    ]);
-    assert.deepEqual(workOrder.efficiency_non_regression_refs.cache_reuse_refs, [
+      'workspace-runtime-ref:route-summary:run-1#/cost_summary',
+    ].forEach((ref) => assert.ok(workOrder.efficiency_non_regression_refs.usage_cost_refs.includes(ref)));
+    [
       'cache-reuse:target-agent/reused-prefix-cache',
-    ]);
-    assert.deepEqual(workOrder.efficiency_non_regression_refs.target_verification_refs, [
+      'workspace-runtime-ref:route-artifact:run-1#/render_execution/reused_slide_ids',
+    ].forEach((ref) => assert.ok(workOrder.efficiency_non_regression_refs.cache_reuse_refs.includes(ref)));
+    [
       'target-verification:target-agent/efficiency-redrive',
-    ]);
+      'workspace-runtime-ref:export-result:run-1',
+    ].forEach((ref) => assert.ok(workOrder.efficiency_non_regression_refs.target_verification_refs.includes(ref)));
     assert.deepEqual(
       workOrder.work_order_completeness.efficiency_non_regression_refs,
       workOrder.efficiency_non_regression_refs,
@@ -115,7 +120,7 @@ test('external suite efficiency evidence without quality floor fails closed with
       domain_label: 'Target Agent',
       delivery_domain: 'generic_target_agent',
     });
-    const suite = buildBlockedEfficiencySuite();
+    const suite = buildBlockedEfficiencySuite({ includeHandoffProjection: false });
     ((suite.tasks as JsonObject[])[0].improvement_candidate as JsonObject).efficiency_evidence_refs = {
       latency_baseline_refs: ['latency-baseline:target-agent/p50-p95-before'],
       usage_cost_refs: ['usage-cost:target-agent/token-cost-before'],

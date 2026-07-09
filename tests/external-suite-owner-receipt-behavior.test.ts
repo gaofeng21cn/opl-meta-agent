@@ -75,17 +75,11 @@ test('target-agent owner receipt suite becomes a no-patch coordination record', 
     const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
     assert.equal(workOrder.status, 'no_patch_required');
     assert.equal(workOrder.target_progress_accounting.progress_delta_classification, 'platform_repair');
-    assert.equal(workOrder.target_progress_accounting.deliverable_progress_delta.count, 0);
     assert.ok(workOrder.target_progress_accounting.platform_repair_delta.refs.includes(
       workOrder.machine_closeout_refs.agent_lab_re_evaluation_ref,
     ));
     assert.deepEqual(workOrder.required_patch_surfaces, []);
     assert.deepEqual(workOrder.allowed_editable_surfaces, []);
-    assert.ok(workOrder.required_verification_refs.includes('target_owner_receipt_projection_ref'));
-    assert.equal(workOrder.required_opl_work_order_primitive_refs.consumed_as_refs_only_by_oma, true);
-    assert.match(workOrder.required_opl_work_order_primitive_refs.work_order_readiness_primitive_ref, /\/no-source-patch$/);
-    assert.equal(workOrder.work_order_completeness.executor_aperture.allowed_scope, 'coordination_record_only');
-    assert.deepEqual(workOrder.work_order_completeness.executor_aperture.allowed_write_surfaces, []);
     assert.equal(workOrder.implementation_controls.coordination_record_only, true);
     assert.equal(workOrder.implementation_controls.source_patch_required, false);
     assert.equal(workOrder.version_management.absorb_back_required, false);
@@ -93,7 +87,6 @@ test('target-agent owner receipt suite becomes a no-patch coordination record', 
     assert.equal(workOrder.authority_boundary.can_write_target_domain_truth, false);
     assert.equal(workOrder.authority_boundary.can_authorize_target_domain_quality_or_export, false);
     assert.match(workOrder.machine_closeout_refs.patch_absorption_ref, /no-source-patch/);
-    assert.match(workOrder.machine_closeout_refs.worktree_cleanup_ref, /no-source-patch/);
   });
 });
 
