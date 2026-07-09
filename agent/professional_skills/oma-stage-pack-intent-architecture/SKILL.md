@@ -20,6 +20,7 @@ Shape a target-agent request into an auditable intent packet, research dispositi
 ## Inputs
 
 - User request, target audience, delivery domain, target artifact, quality bar, non-goals, tools, data custody, and owner routes.
+- OPL profile selector / inspect receipts for the target-agent intent; selected profile refs and requirements are framework capability inputs, not OMA guesses.
 - Public docs, papers, PDFs, repos, products, demos, or user-supplied references, recorded as reference design source refs, short transfer-pattern notes, or refs-only pattern packets distilled by source ingest / Codex extraction.
 - Existing agent repo/package refs, acceptance criteria, source refs, and authority boundary refs.
 
@@ -27,12 +28,13 @@ Shape a target-agent request into an auditable intent packet, research dispositi
 
 1. Start from the user-visible job: who needs what verified result.
 2. Separate OMA, OPL Framework, and target-domain owner responsibilities before naming stages.
-3. Convert constraints into baseline acceptance criteria, gate interpretation notes, and explicit non-goals. State what a passing gate can prove and which owner receipt or target-domain verdict it cannot prove.
-4. Extract transferable external patterns as stage design, inputs/outputs, grounding source shape, route/mode selection, rubric, validation design, handoff, recovery, receipts, or failure taxonomy; prefer pattern packet refs when present and reject runtime, private data, target truth, domain verdict, or promotion authority imports.
-5. Build the smallest stage sequence that preserves distinct owners and handoffs; every stage output should map to one next owner action, not to a private OMA runtime obligation.
-6. Name where future Agent Lab / FeedbackOps evidence should route: stage-route, specialist-skill, tool-connector, quality-gate, read-model/currentness, authority-boundary, or target-owner route-back. Do this as handoff vocabulary, not as new runtime machinery.
-7. Define artifact morphology from realistic target tasks: native source format, sharding, extent/scale contract, asset custody, assembler boundary, and export refs.
-8. Delete orphan outputs and compatibility aliases unless a contract explicitly needs a migration bridge.
+3. Preserve selected OPL profile refs, profile selection rationale, and profile requirements in the target descriptor, capability map, stage control plane, generated stage prompt, knowledge policy, and quality gate.
+4. Convert constraints into baseline acceptance criteria, gate interpretation notes, and explicit non-goals. State what a passing gate can prove and which owner receipt or target-domain verdict it cannot prove.
+5. Extract transferable external patterns as stage design, inputs/outputs, grounding source shape, route/mode selection, rubric, validation design, handoff, recovery, receipts, or failure taxonomy; prefer pattern packet refs when present and reject runtime, private data, target truth, domain verdict, or promotion authority imports.
+6. Build the smallest stage sequence that preserves distinct owners and handoffs; every stage output should map to one next owner action, not to a private OMA runtime obligation.
+7. Name where future Agent Lab / FeedbackOps evidence should route: stage-route, specialist-skill, tool-connector, quality-gate, read-model/currentness, authority-boundary, or target-owner route-back. Do this as handoff vocabulary, not as new runtime machinery.
+8. Define artifact morphology from realistic target tasks: native source format, sharding, extent/scale contract, asset custody, assembler boundary, and export refs.
+9. Delete orphan outputs and compatibility aliases unless a contract explicitly needs a migration bridge.
 
 ## Forbidden Authority
 
