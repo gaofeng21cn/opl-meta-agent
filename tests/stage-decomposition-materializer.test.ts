@@ -20,6 +20,11 @@ const targetAgent = {
   domain_label: 'Research Workbench Agent',
   delivery_domain: 'research_workbench',
   target_brief: 'Create an owner-gated research workbench agent from declared workspace refs.',
+  selected_opl_profile_refs: [
+    'opl-profile:evidence_grounded_decision_agent_profile.v1',
+  ],
+  profile_selection_rationale:
+    'The target agent needs refs-only grounding, mode routing, and owner-gated decision support.',
 };
 
 test('stage-decomposition materializer writes refs-only stage pack surfaces', () => {

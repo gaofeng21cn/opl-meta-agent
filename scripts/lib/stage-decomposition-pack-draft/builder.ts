@@ -1,4 +1,8 @@
-import type { JsonObject } from '../domain-pack.ts';
+import {
+  buildProfileRequirements,
+  buildProfileSelectionReceipt,
+  type JsonObject,
+} from '../domain-pack.ts';
 import type { TargetAgent } from '../meta-agent-loop-io.ts';
 import {
   buildStageNativeArtifactContract,
@@ -305,6 +309,10 @@ function buildStageControlPlane({
   const stageCloseoutPacketRef = `stage-closeout-packet-ref:${domainId}/${stageId}/{stage_attempt_id}`;
   const morphologyRefs = artifactMorphologyContract.stage_refs as JsonObject;
   const referenceDesignBoundary = buildReferenceDesignBoundary(targetAgent);
+  const profileSelectionReceipt = buildProfileSelectionReceipt(targetAgent);
+  const selectedProfileRefs = stringList(targetAgent.selected_opl_profile_refs);
+  const profileRequirementRefs = stringList(targetAgent.profile_requirement_refs);
+  const profileRequirements = buildProfileRequirements(targetAgent);
   const referenceDesignSourceRefs = stringList(targetAgent.reference_design_source_refs);
   const referenceDesignPatternPacketRefs = stringList(targetAgent.reference_design_pattern_packet_refs);
   const referenceDesignInputRefs = [
@@ -325,6 +333,12 @@ function buildStageControlPlane({
     plane_id: `${snakeId(domainId)}_stage_plane`,
     target_domain_id: domainId,
     owner,
+    selected_profile_refs: selectedProfileRefs,
+    profile_selection_receipt_ref: 'contracts/capability_map.json#/profile_selection_receipt',
+    profile_requirement_refs: profileRequirementRefs.length > 0
+      ? profileRequirementRefs
+      : profileSelectionReceipt.profile_requirement_refs,
+    profile_requirements: profileRequirements,
     stage_pack_conformance_version: STANDARD_STAGE_PACK_CONFORMANCE_VERSION,
     authority_boundary: {
       domain_truth_owner: owner,
@@ -342,6 +356,9 @@ function buildStageControlPlane({
         goal: targetBriefFor(targetAgent),
         owner,
         stage_pack_conformance_version: STANDARD_STAGE_PACK_CONFORMANCE_VERSION,
+        selected_profile_refs: selectedProfileRefs,
+        profile_selection_receipt_ref: 'contracts/capability_map.json#/profile_selection_receipt',
+        profile_requirements: profileRequirements,
         selected_executor: {
           executor_kind: 'codex_cli',
           default_executor: true,
@@ -351,6 +368,7 @@ function buildStageControlPlane({
         inputs: [
           ref('workspace_scope_ref', `workspace-scope:${stageId}`),
           ref('source_scope_ref', `source-scope:${stageId}`),
+          ref('profile_selection_receipt_ref', 'contracts/capability_map.json#/profile_selection_receipt'),
           ...referenceDesignInputRefs,
         ],
         reference_design_boundary: referenceDesignBoundary,
@@ -412,6 +430,7 @@ function buildStageControlPlane({
             String(morphologyRefs.asset_custody_ref),
             `workspace-scope-ref:${stageId}`,
             `source-scope-ref:${stageId}`,
+            'profile-selection-receipt-ref:contracts/capability_map.json#/profile_selection_receipt',
             ...referenceDesignRequiredRefs,
             'runtime-ref:stage-progress-log-user-stage-log',
           ],

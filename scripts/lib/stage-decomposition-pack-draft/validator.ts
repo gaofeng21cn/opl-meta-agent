@@ -1,4 +1,7 @@
-import type { JsonObject } from '../domain-pack.ts';
+import {
+  buildProfileRequirements,
+  type JsonObject,
+} from '../domain-pack.ts';
 import type { TargetAgent } from '../meta-agent-loop-io.ts';
 import type { StageDecompositionPackDraft } from './shared.ts';
 import { validateArtifactMorphologyContract } from './artifact-morphology-validator.ts';
@@ -70,6 +73,13 @@ function assertMatchingStringArray(actual: unknown, expected: unknown, field: st
   const expectedList = normalizedStringArray(expected, `requested_target_agent.${field}`);
   if (JSON.stringify(actualList) !== JSON.stringify(expectedList)) {
     throw new Error(`stage-decomposition pack draft ${field} does not match requested target.`);
+  }
+}
+
+function assertMatchingObject(actual: unknown, expected: unknown, field: string): void {
+  const actualObject = asRecord(actual, `stage_decomposition_pack_draft.${field}`);
+  if (JSON.stringify(actualObject) !== JSON.stringify(expected)) {
+    throw new Error(`stage-decomposition pack draft ${field} does not match requested profile requirements.`);
   }
 }
 
@@ -276,6 +286,16 @@ function validateStageControlPlane(
   if (stageControl.stage_pack_conformance_version !== STANDARD_STAGE_PACK_CONFORMANCE_VERSION) {
     throw new Error(`stage-decomposition pack draft stage_control_plane.stage_pack_conformance_version must be ${STANDARD_STAGE_PACK_CONFORMANCE_VERSION}.`);
   }
+  assertMatchingStringArray(
+    stageControl.selected_profile_refs,
+    targetAgent.selected_opl_profile_refs,
+    'stage_control_plane.selected_profile_refs',
+  );
+  if (stageControl.profile_selection_receipt_ref !== 'contracts/capability_map.json#/profile_selection_receipt') {
+    throw new Error('stage-decomposition pack draft stage_control_plane missing profile_selection_receipt_ref.');
+  }
+  const expectedProfileRequirements = buildProfileRequirements(targetAgent);
+  assertMatchingObject(stageControl.profile_requirements, expectedProfileRequirements, 'stage_control_plane.profile_requirements');
   const actionIds = new Set(asRecordArray(actionCatalog.actions, 'action_catalog.actions').map((action) => (
     asString(action.action_id, 'action.action_id')
   )));
@@ -294,6 +314,15 @@ function validateStageControlPlane(
   }
   stages.forEach((stage) => {
     const stageId = asString(stage.stage_id, 'stage.stage_id');
+    assertMatchingStringArray(
+      stage.selected_profile_refs,
+      targetAgent.selected_opl_profile_refs,
+      `stage ${stageId}.selected_profile_refs`,
+    );
+    if (stage.profile_selection_receipt_ref !== 'contracts/capability_map.json#/profile_selection_receipt') {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} missing profile_selection_receipt_ref.`);
+    }
+    assertMatchingObject(stage.profile_requirements, expectedProfileRequirements, `stage ${stageId}.profile_requirements`);
     validateReferenceDesignBoundary(
       stage.reference_design_boundary,
       targetAgent,
@@ -325,6 +354,12 @@ function validateStageControlPlane(
         throw new Error(`stage-decomposition pack draft stage ${stageId} missing input ${expected.kind}.`);
       }
     });
+    if (!inputs.some((entry) =>
+      entry.ref_kind === 'profile_selection_receipt_ref'
+      && entry.ref === 'contracts/capability_map.json#/profile_selection_receipt'
+    )) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} missing profile selection receipt input.`);
+    }
     const executor = asRecord(stage.selected_executor, `stage ${stageId}.selected_executor`);
     if (executor.executor_kind !== 'codex_cli' || executor.default_executor !== true) {
       throw new Error(`stage-decomposition pack draft stage ${stageId} must select codex_cli as default executor.`);
@@ -391,6 +426,9 @@ function validateStageControlPlane(
     }
     if (!requires.includes('runtime-ref:stage-progress-log-user-stage-log')) {
       throw new Error(`stage-decomposition pack draft stage ${stageId} missing user stage log projection requirement.`);
+    }
+    if (!requires.includes('profile-selection-receipt-ref:contracts/capability_map.json#/profile_selection_receipt')) {
+      throw new Error(`stage-decomposition pack draft stage ${stageId} missing profile selection receipt requirement.`);
     }
     [
       ...(

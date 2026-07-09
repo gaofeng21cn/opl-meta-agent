@@ -1,6 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { JsonObject } from './domain-pack.ts';
+import {
+  buildProfileRequirements,
+  buildProfileSelectionReceipt,
+  type JsonObject,
+} from './domain-pack.ts';
 import { runOpl, type TargetAgent, writeJson } from './meta-agent-loop-io.ts';
 import {
   type StageDecompositionCloseoutPacket,
@@ -61,6 +65,7 @@ function stringList(value: string[] | null | undefined): string[] {
 }
 
 function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
+  const profileSelectionReceipt = buildProfileSelectionReceipt(input.targetAgent);
   const referenceDesignSourceRefs = stringList(input.targetAgent.reference_design_source_refs);
   const referenceDesignPatternNotes = stringList(input.targetAgent.reference_design_pattern_notes);
   const referenceDesignPatternPacketRefs = stringList(input.targetAgent.reference_design_pattern_packet_refs);
@@ -71,6 +76,17 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
     target_agent: input.targetAgent,
     target_agent_dir: input.targetAgentDir,
     output_dir: input.outputDir,
+    profile_selection_input_policy: {
+      selected_profile_refs: profileSelectionReceipt.selected_profile_refs,
+      profile_selection_rationale: profileSelectionReceipt.profile_selection_rationale,
+      profile_requirement_refs: profileSelectionReceipt.profile_requirement_refs,
+      profile_requirements: buildProfileRequirements(input.targetAgent),
+      stage_closeout_must_preserve_selected_profile: true,
+      source_readback_refs: profileSelectionReceipt.source_readback_refs,
+      refs_only: true,
+      can_claim_target_domain_ready: false,
+      can_claim_target_production_ready: false,
+    },
     reference_design_input_policy: {
       source_refs: referenceDesignSourceRefs,
       pattern_notes: referenceDesignPatternNotes,

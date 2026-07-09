@@ -96,8 +96,55 @@ const DOMAIN_PACK_SECTIONS: DomainPackSection[] = [
 
 const placeholderPattern = new RegExp(`\\b(?:TO${'DO'}|T${'BD'})\\b`, 'i');
 
-const EVIDENCE_GROUNDED_DECISION_AGENT_PROFILE_REF =
+export const EVIDENCE_GROUNDED_DECISION_AGENT_PROFILE_REF =
+  'opl-profile:evidence_grounded_decision_agent_profile.v1';
+
+const LEGACY_EVIDENCE_GROUNDED_DECISION_AGENT_PROFILE_REF =
   'contracts/opl-framework/evidence-grounded-decision-agent-profile.json';
+
+const EVIDENCE_GROUNDED_PROFILE_REQUIREMENTS = {
+  required_stage_archetypes: [
+    'material_or_case_intake',
+    'structured_extraction',
+    'enrichment',
+    'mode_routing',
+    'evidence_and_tool_execution',
+    'synthesis',
+    'independent_review_or_human_gate',
+    'decision_support_artifact_with_evidence_trace',
+  ],
+  required_capability_kinds: [
+    'stage_prompt',
+    'tool_connector',
+    'reference_pack',
+    'contract_module',
+  ],
+  required_surface_roles: [
+    'stage_prompt',
+    'tool_connector',
+    'knowledge_pack',
+    'quality_gate',
+    'eval_suite',
+  ],
+  required_evidence_objects: [
+    'WorkItem',
+    'StructuredInput',
+    'ModeRoutingReceipt',
+    'RetrievalPacket',
+    'ToolResultEnvelope',
+    'EvidencePacket',
+    'SynthesisPacket',
+    'IndependentReviewReceipt',
+    'DecisionSupportArtifact',
+    'HumanGateDecision',
+    'UnsupportedEvidenceBlocker',
+  ],
+  required_reference_pack_roles: [
+    'guideline_or_reference_pack',
+    'evidence_source_freshness_policy',
+    'provenance_and_scope_policy',
+  ],
+};
 
 function stringList(value: string[] | null | undefined): string[] {
   return Array.isArray(value) ? value.filter((entry) => entry.trim()).map((entry) => entry.trim()) : [];
@@ -118,8 +165,15 @@ function buildReferenceDesignBoundary(targetAgent: MinimalTargetAgent): JsonObje
   };
 }
 
+function isEvidenceGroundedDecisionProfileRef(ref: string): boolean {
+  return ref === EVIDENCE_GROUNDED_DECISION_AGENT_PROFILE_REF
+    || ref === 'evidence_grounded_decision_agent_profile.v1'
+    || ref === LEGACY_EVIDENCE_GROUNDED_DECISION_AGENT_PROFILE_REF
+    || ref.includes('evidence-grounded-decision-agent-profile');
+}
+
 function defaultProfileRequirementRefs(selectedProfileRefs: string[]): string[] {
-  return selectedProfileRefs.some((ref) => ref.includes('evidence-grounded-decision-agent-profile'))
+  return selectedProfileRefs.some(isEvidenceGroundedDecisionProfileRef)
     ? [
         'profile-requirement:evidence_grounded_mode_routing.v1',
         'profile-requirement:refs_only_evidence_grounding.v1',
@@ -129,7 +183,14 @@ function defaultProfileRequirementRefs(selectedProfileRefs: string[]): string[] 
     : [];
 }
 
-function buildProfileSelectionReceipt(targetAgent: MinimalTargetAgent): JsonObject {
+export function buildProfileRequirements(targetAgent: MinimalTargetAgent): JsonObject {
+  const selectedProfileRefs = stringList(targetAgent.selected_opl_profile_refs);
+  return selectedProfileRefs.some(isEvidenceGroundedDecisionProfileRef)
+    ? EVIDENCE_GROUNDED_PROFILE_REQUIREMENTS
+    : {};
+}
+
+export function buildProfileSelectionReceipt(targetAgent: MinimalTargetAgent): JsonObject {
   const selectedProfileRefs = stringList(targetAgent.selected_opl_profile_refs);
   const rationale = targetAgent.profile_selection_rationale?.trim() ?? '';
   if (selectedProfileRefs.length === 0) {
@@ -150,13 +211,16 @@ function buildProfileSelectionReceipt(targetAgent: MinimalTargetAgent): JsonObje
     profile_requirement_refs: profileRequirementRefs.length > 0
       ? profileRequirementRefs
       : defaultProfileRequirementRefs(selectedProfileRefs),
+    profile_requirements: buildProfileRequirements(targetAgent),
     profile_catalog_refs: [
       EVIDENCE_GROUNDED_DECISION_AGENT_PROFILE_REF,
+      LEGACY_EVIDENCE_GROUNDED_DECISION_AGENT_PROFILE_REF,
       'opl foundry evidence-profile inspect --json',
     ],
     source_readback_refs: [
-      'contracts/opl-framework/evidence-grounded-decision-agent-profile.json',
+      LEGACY_EVIDENCE_GROUNDED_DECISION_AGENT_PROFILE_REF,
       'src/modules/pack/evidence-grounded-decision-agent-profile.ts',
+      'opl foundry evidence-profile inspect --json',
     ],
     refs_only: true,
     authority_boundary: {
@@ -504,6 +568,7 @@ export function writeTargetAgentCapabilityMap(targetAgentDir: string, targetAgen
   const capabilityMapPath = path.join(targetAgentDir, 'contracts', 'capability_map.json');
   const capabilityMap = JSON.parse(fs.readFileSync(capabilityMapPath, 'utf8')) as JsonObject;
   const profileSelectionReceipt = buildProfileSelectionReceipt(targetAgent);
+  const selectedProfileRefs = profileSelectionReceipt.selected_profile_refs as string[];
   const resolverIndex = typeof capabilityMap.resolver_index === 'object'
     && capabilityMap.resolver_index !== null
     && !Array.isArray(capabilityMap.resolver_index)
@@ -511,11 +576,14 @@ export function writeTargetAgentCapabilityMap(targetAgentDir: string, targetAgen
     : {};
   writeJson(capabilityMapPath, {
     ...capabilityMap,
+    selected_profile_refs: selectedProfileRefs,
+    profile_requirements: profileSelectionReceipt.profile_requirements,
     profile_selection_receipt: profileSelectionReceipt,
     primary_skill_capability: buildTargetAgentPrimarySkillCapability(targetAgent),
     resolver_index: {
       ...resolverIndex,
-      profile_refs: profileSelectionReceipt.selected_profile_refs,
+      profile_refs: selectedProfileRefs,
+      profile_requirement_refs: profileSelectionReceipt.profile_requirement_refs,
       profile_selection_receipt_refs: ['contracts/capability_map.json#/profile_selection_receipt'],
       primary_skill_refs: ['contracts/capability_map.json#/primary_skill_capability'],
     },

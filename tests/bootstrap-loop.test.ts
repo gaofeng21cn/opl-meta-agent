@@ -25,7 +25,7 @@ const targetAgent = {
   delivery_domain: 'research_workbench',
   target_brief: 'Create an owner-gated research workbench agent from declared workspace refs.',
   selected_opl_profile_refs: [
-    'contracts/opl-framework/evidence-grounded-decision-agent-profile.json',
+    'opl-profile:evidence_grounded_decision_agent_profile.v1',
   ],
   profile_selection_rationale:
     'The target agent needs refs-only grounding, mode routing, and owner-gated decision support.',
@@ -124,18 +124,48 @@ test('build-agent-baseline materializes an explicit target package and owner-gat
     const receipt = readJson(path.join(outputRoot, 'baseline-delivery-receipt.json'));
     const suite = readJson(path.join(outputRoot, 'agent-lab-suite.json'));
     const descriptor = readJson(path.join(targetDir, 'contracts/domain_descriptor.json'));
+    const capabilityMap = readJson(path.join(targetDir, 'contracts/capability_map.json'));
     const stageControl = readJson(path.join(targetDir, 'contracts/stage_control_plane.json'));
     const primarySkill = fs.readFileSync(path.join(targetDir, 'agent/primary_skill/SKILL.md'), 'utf8');
     const evidenceRefs = suite.tasks[0].scorecard.evidence_refs as string[];
     assert.equal(payload.status, 'passed');
     assert.equal(descriptor.domain_id, targetAgent.domain_id);
+    assert.deepEqual(descriptor.selected_opl_profile_refs, targetAgent.selected_opl_profile_refs);
+    assert.equal(descriptor.profile_selection_rationale, targetAgent.profile_selection_rationale);
     assert.deepEqual(descriptor.reference_design_source_refs, targetAgent.reference_design_source_refs);
     assert.deepEqual(descriptor.reference_design_pattern_notes, targetAgent.reference_design_pattern_notes);
     assert.deepEqual(
       descriptor.reference_design_pattern_packet_refs,
       targetAgent.reference_design_pattern_packet_refs,
     );
+    assert.deepEqual(capabilityMap.selected_profile_refs, targetAgent.selected_opl_profile_refs);
+    assert.deepEqual(
+      capabilityMap.profile_selection_receipt.selected_profile_refs,
+      targetAgent.selected_opl_profile_refs,
+    );
+    assert.ok(
+      capabilityMap.profile_selection_receipt.profile_catalog_refs.includes(
+        'opl profiles inspect evidence_grounded_decision_agent_profile.v1 --json',
+      ),
+    );
+    assert.equal(
+      JSON.stringify(capabilityMap.profile_selection_receipt).includes('opl foundry evidence-profile'),
+      false,
+    );
+    assert.ok(
+      capabilityMap.profile_requirements.required_stage_archetypes.includes('mode_routing'),
+    );
+    assert.deepEqual(stageControl.selected_profile_refs, targetAgent.selected_opl_profile_refs);
+    assert.ok(
+      stageControl.profile_requirements.required_evidence_objects.includes('EvidencePacket'),
+    );
     assert.equal(stageControl.stages[0].selected_executor.executor_kind, 'codex_cli');
+    assert.deepEqual(stageControl.stages[0].selected_profile_refs, targetAgent.selected_opl_profile_refs);
+    assert.ok(
+      stageControl.stages[0].inputs.some((entry: JsonObject) =>
+        entry.ref_kind === 'profile_selection_receipt_ref'
+      ),
+    );
     assert.deepEqual(
       stageControl.stages[0].reference_design_boundary.source_refs,
       targetAgent.reference_design_source_refs,
