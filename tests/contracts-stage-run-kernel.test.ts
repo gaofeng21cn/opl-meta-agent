@@ -6,6 +6,7 @@ import {
   readJson,
 } from './support/contracts.ts';
 import type { JsonObject } from './support/contracts.ts';
+import { assertFalseFlags } from './support/source-purity.ts';
 
 test('StageRun Kernel profile keeps legacy wrappers retired and canaries tool refs as affordances', () => {
   const profile = readJson('contracts/stage_run_kernel_profile.json');
@@ -26,9 +27,7 @@ test('StageRun Kernel profile keeps legacy wrappers retired and canaries tool re
   assert.equal(profile.surface_kind, 'opl_stage_run_kernel_profile');
   assert.equal(profile.owner, 'opl-meta-agent');
   assert.equal(profile.kernel_role, 'minimal_state_shell_not_domain_controller_system');
-  assert.equal(profile.stage_run_state_machine.provider_completion_counts_as_domain_accepted, false);
-  assert.equal(profile.stage_run_state_machine.file_presence_counts_as_stage_complete, false);
-  assert.equal(profile.stage_run_state_machine.read_model_counts_as_transition_authority, false);
+  assertFalseFlags(profile.stage_run_state_machine, 'provider_completion_counts_as_domain_accepted file_presence_counts_as_stage_complete read_model_counts_as_transition_authority'.split(' '), 'profile.stage_run_state_machine');
 
   assert.equal(oplRefs.owner, 'one-person-lab');
   assert.equal(oplRefs.domain_repo_role, 'consumer_profile_ref_only');
@@ -66,13 +65,7 @@ test('StageRun Kernel profile keeps legacy wrappers retired and canaries tool re
   ].forEach((role) => {
     assert.ok(asStrings(retirementPolicy.allowed_retained_roles).includes(role));
   });
-  assert.equal(retirementPolicy.authority_boundary.legacy_surfaces_can_be_active_workflow, false);
-  assert.equal(retirementPolicy.authority_boundary.legacy_surfaces_can_be_default_caller, false);
-  assert.equal(retirementPolicy.authority_boundary.legacy_surfaces_can_write_runtime_state, false);
-  assert.equal(retirementPolicy.authority_boundary.legacy_surfaces_can_write_read_model, false);
-  assert.equal(retirementPolicy.authority_boundary.legacy_surfaces_can_authorize_owner_receipt, false);
-  assert.equal(retirementPolicy.authority_boundary.legacy_surfaces_can_restore_repo_owned_wrapper, false);
-  assert.equal(retirementPolicy.authority_boundary.legacy_surfaces_can_create_fallback_or_compatibility_route, false);
+  assertFalseFlags(retirementPolicy.authority_boundary, 'legacy_surfaces_can_be_active_workflow legacy_surfaces_can_be_default_caller legacy_surfaces_can_write_runtime_state legacy_surfaces_can_write_read_model legacy_surfaces_can_authorize_owner_receipt legacy_surfaces_can_restore_repo_owned_wrapper legacy_surfaces_can_create_fallback_or_compatibility_route'.split(' '), 'retirementPolicy.authority_boundary');
 
   assert.equal(canary.canary_id, 'oma-agent-building-stage-run-canary.v1');
   assert.equal(canary.controlled_canary_evidence_ref, 'contracts/stage_run_canary_evidence.json');
@@ -105,10 +98,7 @@ test('StageRun Kernel profile keeps legacy wrappers retired and canaries tool re
   ]);
 
   assert.equal(toolPolicy.tool_refs_role, 'advisory_affordance_refs_only');
-  assert.equal(toolPolicy.tool_refs_can_define_fixed_workflow_order, false);
-  assert.equal(toolPolicy.tool_refs_can_replace_stage_reasoning, false);
-  assert.equal(toolPolicy.tool_refs_can_authorize_domain_verdict, false);
-  assert.equal(toolPolicy.tool_refs_can_bypass_owner_approval_or_typed_blocker, false);
+  assertFalseFlags(toolPolicy, 'tool_refs_can_define_fixed_workflow_order tool_refs_can_replace_stage_reasoning tool_refs_can_authorize_domain_verdict tool_refs_can_bypass_owner_approval_or_typed_blocker'.split(' '), 'toolPolicy');
   assert.deepEqual(asStrings(toolPolicy.allowed_tool_ref_classes), [
     'research_affordance_ref',
     'scaffold_affordance_ref',
@@ -121,9 +111,7 @@ test('StageRun Kernel profile keeps legacy wrappers retired and canaries tool re
   assert.equal(passCondition.requires_owner_delta, true);
   assert.equal(passCondition.requires_no_forbidden_legacy_surface, true);
   assert.equal(passCondition.requires_tool_refs_as_affordances_only, true);
-  assert.equal(passCondition.provider_completion_counts_as_pass, false);
-  assert.equal(passCondition.file_presence_counts_as_pass, false);
-  assert.equal(passCondition.read_model_counts_as_pass, false);
+  assertFalseFlags(passCondition, 'provider_completion_counts_as_pass file_presence_counts_as_pass read_model_counts_as_pass'.split(' '), 'passCondition');
 
   assert.equal(overclaimBoundary.boundary_kind, 'controlled_canary_overclaim_boundary');
   assert.equal(overclaimBoundary.canary_evidence_ref, 'contracts/stage_run_canary_evidence.json');
@@ -148,10 +136,7 @@ test('StageRun Kernel profile keeps legacy wrappers retired and canaries tool re
     'owner_receipt_body_materialized_by_opl',
   ]);
   assert.equal(overclaimBoundary.evidence_scope_must_equal, 'controlled_fixture_not_live_domain_progress');
-  assert.equal(overclaimBoundary.authority_boundary.allowed_claims_can_authorize_closeout, false);
-  assert.equal(overclaimBoundary.authority_boundary.controlled_canary_can_claim_live_domain_progress, false);
-  assert.equal(overclaimBoundary.authority_boundary.operator_summary_can_upgrade_readiness, false);
-  assert.equal(overclaimBoundary.authority_boundary.contract_completeness_can_claim_quality_or_export, false);
+  assertFalseFlags(overclaimBoundary.authority_boundary, 'allowed_claims_can_authorize_closeout controlled_canary_can_claim_live_domain_progress operator_summary_can_upgrade_readiness contract_completeness_can_claim_quality_or_export'.split(' '), 'overclaimBoundary.authority_boundary');
 
   assert.equal(legacyResidueGuard.guard_kind, 'legacy_runtime_residue_guard');
   assert.equal(legacyResidueGuard.scan_scope, 'repo_tracked_source_contracts_docs_only');
@@ -171,11 +156,7 @@ test('StageRun Kernel profile keeps legacy wrappers retired and canaries tool re
     'runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt',
     'tests/source-purity.test.ts',
   ]);
-  assert.equal(legacyResidueGuard.authority_boundary.legacy_residue_can_be_active_runtime, false);
-  assert.equal(legacyResidueGuard.authority_boundary.legacy_residue_can_write_runtime_state, false);
-  assert.equal(legacyResidueGuard.authority_boundary.legacy_residue_can_write_read_model, false);
-  assert.equal(legacyResidueGuard.authority_boundary.legacy_residue_can_authorize_closeout, false);
-  assert.equal(legacyResidueGuard.authority_boundary.guard_can_physically_delete_files, false);
+  assertFalseFlags(legacyResidueGuard.authority_boundary, 'legacy_residue_can_be_active_runtime legacy_residue_can_write_runtime_state legacy_residue_can_write_read_model legacy_residue_can_authorize_closeout guard_can_physically_delete_files'.split(' '), 'legacyResidueGuard.authority_boundary');
 
   assert.equal(canaryEvidence.surface_kind, 'opl_stage_run_controlled_canary_evidence');
   assert.equal(canaryEvidence.version, 'stage-run-controlled-canary.v1');
@@ -202,10 +183,7 @@ test('StageRun Kernel profile keeps legacy wrappers retired and canaries tool re
   assert.equal(operatorSummary.terminal_outcome, closeout.terminal_outcome);
   assert.equal(operatorSummary.owner_receipt_ref_or_typed_blocker_ref, closeout.owner_receipt_ref);
   assert.equal(operatorSummary.operator_next_delta_ref, 'next-owner-delta-ref:opl-meta-agent/stage-run-canary/controlled-fixture');
-  assert.equal(operatorSummary.summary_can_claim_live_domain_progress, false);
-  assert.equal(operatorSummary.summary_can_claim_target_agent_readiness, false);
-  assert.equal(operatorSummary.summary_can_claim_production_readiness, false);
-  assert.equal(operatorSummary.summary_can_authorize_default_promotion, false);
+  assertFalseFlags(operatorSummary, 'summary_can_claim_live_domain_progress summary_can_claim_target_agent_readiness summary_can_claim_production_readiness summary_can_authorize_default_promotion'.split(' '), 'operatorSummary');
 
   assert.deepEqual(evidenceOverclaimBoundary, {
     boundary_kind: overclaimBoundary.boundary_kind,
@@ -268,10 +246,7 @@ test('StageRun Kernel profile keeps legacy wrappers retired and canaries tool re
   });
 
   assert.equal(canaryToolPolicy.tool_refs_role, toolPolicy.tool_refs_role);
-  assert.equal(canaryToolPolicy.tool_refs_can_define_fixed_workflow_order, false);
-  assert.equal(canaryToolPolicy.tool_refs_can_replace_stage_reasoning, false);
-  assert.equal(canaryToolPolicy.tool_refs_can_authorize_domain_verdict, false);
-  assert.equal(canaryToolPolicy.tool_refs_can_bypass_owner_approval_or_typed_blocker, false);
+  assertFalseFlags(canaryToolPolicy, 'tool_refs_can_define_fixed_workflow_order tool_refs_can_replace_stage_reasoning tool_refs_can_authorize_domain_verdict tool_refs_can_bypass_owner_approval_or_typed_blocker'.split(' '), 'canaryToolPolicy');
   assert.deepEqual(
     asObjects(canaryToolPolicy.tool_refs).map((entry) => entry.ref_kind),
     asStrings(toolPolicy.allowed_tool_ref_classes),

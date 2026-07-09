@@ -12,6 +12,7 @@ import {
   readJsonFile as readJson,
   writeJsonFile as writeJson,
 } from './support/contracts.ts';
+import { assertFalseFlags } from './support/source-purity.ts';
 
 function assertStageFolderContractRefs(
   contract: JsonObject,
@@ -93,20 +94,32 @@ function writeAiReviewerEvaluation(filePath: string): JsonObject {
   return evaluation;
 }
 
-test('opl-meta-agent takes over testing for an existing external agent without authority writes or default promotion', () => {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-takeover-'));
-  const targetDir = path.join(outputRoot, 'target-agent');
-  const takeoverRoot = path.join(outputRoot, 'takeover');
-  const fakeOplBin = path.join(outputRoot, 'fake-opl.mjs');
-  const aiReviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
-  const targetAgent = {
-    domain_id: 'takeover-fixture-agent',
-    domain_label: 'Takeover Fixture Agent',
-    delivery_domain: 'takeover_fixture',
-    target_brief: 'Create an OPL-compatible takeover fixture agent for external testing takeover verification.',
-  };
+function assertTakeoverStageFolderContractRefs(contract: JsonObject): void {
+  assertStageFolderContractRefs(contract, 'takeover-fixture-agent', 'target-agent-takeover', 'testing-takeover');
+}
 
+function withOutputRoot(prefix: string, run: (outputRoot: string) => void): void {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
   try {
+    run(outputRoot);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+}
+
+test('opl-meta-agent takes over testing for an existing external agent without authority writes or default promotion', () => {
+  withOutputRoot('opl-meta-agent-takeover-', (outputRoot) => {
+    const targetDir = path.join(outputRoot, 'target-agent');
+    const takeoverRoot = path.join(outputRoot, 'takeover');
+    const fakeOplBin = path.join(outputRoot, 'fake-opl.mjs');
+    const aiReviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
+    const targetAgent = {
+      domain_id: 'takeover-fixture-agent',
+      domain_label: 'Takeover Fixture Agent',
+      delivery_domain: 'takeover_fixture',
+      target_brief: 'Create an OPL-compatible takeover fixture agent for external testing takeover verification.',
+    };
+
     writeFakeOplBin(fakeOplBin);
     writeAiReviewerEvaluation(aiReviewerEvaluationPath);
     writeJson(path.join(targetDir, 'contracts/domain_descriptor.json'), targetAgent);
@@ -125,9 +138,7 @@ test('opl-meta-agent takes over testing for an existing external agent without a
     assert.equal(payload.status, 'passed');
     assert.equal(payload.takeover_policy.target_opl_compatible_agents_allowed, true);
     assert.equal(Object.hasOwn(payload.takeover_policy, 'external_opl_compatible_agents_allowed'), false);
-    assert.equal(payload.takeover_policy.can_write_target_domain_truth, false);
-    assert.equal(payload.takeover_policy.can_write_target_memory_body, false);
-    assert.equal(payload.takeover_policy.can_promote_default_agent_without_gate, false);
+    assertFalseFlags(payload.takeover_policy, 'can_write_target_domain_truth can_write_target_memory_body can_promote_default_agent_without_gate'.split(' '), 'payload.takeover_policy');
     assert.equal(payload.artifacts.new_agent_delivery_gate_path, path.join(takeoverRoot, 'new-agent-delivery-gate.json'));
     assert.equal(payload.new_agent_delivery_gate.surface_kind, 'opl_meta_agent_new_agent_delivery_gate');
     assert.equal(payload.new_agent_delivery_gate.policy_id, 'opl-meta-agent.new-agent-delivery-gate.v1');
@@ -176,10 +187,7 @@ test('opl-meta-agent takes over testing for an existing external agent without a
     assert.equal(payload.learning_loop.mechanism_patch_proposal.observe.segment_run_ref, payload.opl_agent_lab.suite_result.result_id);
     assert.equal(payload.learning_loop.mechanism_patch_proposal.diagnose.evidence_delta_ref, 'evidence-delta:opl-meta-agent/takeover-fixture-agent/takeover');
     assert.equal(payload.learning_loop.mechanism_patch_proposal.edit.next_mechanism_candidate_ref, payload.learning_loop.online_learning_candidate.candidate_id);
-    assert.equal(payload.learning_loop.mechanism_patch_proposal.authority_boundary.can_write_target_domain_truth, false);
-    assert.equal(payload.learning_loop.mechanism_patch_proposal.authority_boundary.can_write_target_domain_memory_body, false);
-    assert.equal(payload.learning_loop.mechanism_patch_proposal.authority_boundary.can_mutate_target_domain_artifact_body, false);
-    assert.equal(payload.learning_loop.mechanism_patch_proposal.authority_boundary.can_promote_default_agent_without_gate, false);
+    assertFalseFlags(payload.learning_loop.mechanism_patch_proposal.authority_boundary, 'can_write_target_domain_truth can_write_target_domain_memory_body can_mutate_target_domain_artifact_body can_promote_default_agent_without_gate'.split(' '), 'payload.learning_loop.mechanism_patch_proposal.authority_boundary');
 
     const suite = readJson(path.join(takeoverRoot, 'agent-lab-takeover-suite.json'));
     assert.equal(suite.suite_kind, 'agent_lab_external_suite');
@@ -191,27 +199,14 @@ test('opl-meta-agent takes over testing for an existing external agent without a
       suite.stage_native_artifact_refs.attempt_json_ref,
       'stage-attempt-json-ref:takeover-fixture-agent/target-agent-takeover/testing-takeover',
     );
-    assertStageFolderContractRefs(
-      suite.stage_native_artifact_refs.stage_folder_contract,
-      'takeover-fixture-agent',
-      'target-agent-takeover',
-      'testing-takeover',
-    );
-    assert.equal(suite.authority_boundary.can_generate_target_domain_owner_receipt, false);
-    assert.equal(suite.authority_boundary.can_write_target_artifact_body, false);
-    assert.equal(suite.authority_boundary.can_write_memory_body, false);
-    assert.equal(suite.authority_boundary.can_promote_default_agent_without_gate, false);
+    assertTakeoverStageFolderContractRefs(suite.stage_native_artifact_refs.stage_folder_contract);
+    assertFalseFlags(suite.authority_boundary, 'can_generate_target_domain_owner_receipt can_write_target_artifact_body can_write_memory_body can_promote_default_agent_without_gate'.split(' '), 'suite.authority_boundary');
     assert.equal(suite.tasks[0].task_family, 'agent_testing_takeover');
     assert.equal(
       suite.tasks[0].stage_folder_contract.manifest_ref,
       'stage-manifest-ref:takeover-fixture-agent/target-agent-takeover/testing-takeover',
     );
-    assertStageFolderContractRefs(
-      suite.tasks[0].stage_folder_contract,
-      'takeover-fixture-agent',
-      'target-agent-takeover',
-      'testing-takeover',
-    );
+    assertTakeoverStageFolderContractRefs(suite.tasks[0].stage_folder_contract);
     assert.equal(
       suite.tasks[0].stage_folder_contract.canonical_artifact_ref,
       'canonical-artifact-ref:takeover-fixture-agent/target-agent-takeover',
@@ -229,16 +224,10 @@ test('opl-meta-agent takes over testing for an existing external agent without a
       receipt.artifact_native_contract_ref,
       'artifact-native-contract-ref:takeover-fixture-agent/target-agent-takeover',
     );
-    assertStageFolderContractRefs(
-      receipt.stage_folder_contract,
-      'takeover-fixture-agent',
-      'target-agent-takeover',
-      'testing-takeover',
-    );
+    assertTakeoverStageFolderContractRefs(receipt.stage_folder_contract);
     assert.equal(receipt.stage_folder_contract.blocker_ref, 'stage-typed-blocker-ref:takeover-fixture-agent/target-agent-takeover/testing-takeover');
     assert.equal(receipt.can_generate_target_domain_owner_receipt, false);
-    assert.equal(receipt.authority_boundary.can_write_target_domain_memory_body, false);
-    assert.equal(receipt.authority_boundary.can_promote_default_agent_without_gate, false);
+    assertFalseFlags(receipt.authority_boundary, 'can_write_target_domain_memory_body can_promote_default_agent_without_gate'.split(' '), 'receipt.authority_boundary');
 
     const gate = readJson(path.join(takeoverRoot, 'new-agent-delivery-gate.json'));
     assert.deepEqual(gate, payload.new_agent_delivery_gate);
@@ -246,9 +235,7 @@ test('opl-meta-agent takes over testing for an existing external agent without a
     const learning = readJson(path.join(takeoverRoot, 'takeover-online-learning-candidate.json'));
     assert.equal(learning.candidate_kind, 'gated_self_evolution');
     assert.equal(learning.status, 'candidate_recorded_requires_explicit_gate');
-    assert.equal(learning.online_learning_policy.can_promote_without_gate, false);
-    assert.equal(learning.online_learning_policy.can_write_domain_memory_body, false);
-    assert.equal(learning.online_learning_policy.can_train_or_deploy_model_weights, false);
+    assertFalseFlags(learning.online_learning_policy, 'can_promote_without_gate can_write_domain_memory_body can_train_or_deploy_model_weights'.split(' '), 'learning.online_learning_policy');
     assert.deepEqual(learning.source_refs, [
       payload.opl_agent_lab.suite_result.result_id,
       receipt.receipt_id,
@@ -263,9 +250,7 @@ test('opl-meta-agent takes over testing for an existing external agent without a
     assert.equal(mechanism.segment_run_ref, payload.opl_agent_lab.suite_result.result_id);
     assert.equal(mechanism.evidence_delta_ref, 'evidence-delta:opl-meta-agent/takeover-fixture-agent/takeover');
     assert.equal(mechanism.next_mechanism_candidate_ref, learning.candidate_id);
-  } finally {
-    fs.rmSync(outputRoot, { recursive: true, force: true });
-  }
+  });
 });
 
 test('takeover parser has no fixture alias branch', () => {
@@ -276,9 +261,7 @@ test('takeover parser has no fixture alias branch', () => {
 });
 
 test('takeover parser requires AI reviewer evidence for delivery gate closure', () => {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-takeover-missing-reviewer-'));
-
-  try {
+  withOutputRoot('opl-meta-agent-takeover-missing-reviewer-', (outputRoot) => {
     assert.throws(
       () => parseTakeoverAgentArgs([
         '--agent-dir',
@@ -288,19 +271,16 @@ test('takeover parser requires AI reviewer evidence for delivery gate closure', 
       ]),
       /Missing required --ai-reviewer-evaluation <path>\./,
     );
-  } finally {
-    fs.rmSync(outputRoot, { recursive: true, force: true });
-  }
+  });
 });
 
 test('takeover fails closed when target agent descriptor is missing', () => {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-takeover-missing-descriptor-'));
-  const targetAgentDir = path.join(outputRoot, 'target-agent');
-  const takeoverRoot = path.join(outputRoot, 'takeover');
-  const oplBin = process.env.OPL_BIN
-    ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
+  withOutputRoot('opl-meta-agent-takeover-missing-descriptor-', (outputRoot) => {
+    const targetAgentDir = path.join(outputRoot, 'target-agent');
+    const takeoverRoot = path.join(outputRoot, 'takeover');
+    const oplBin = process.env.OPL_BIN
+      ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
 
-  try {
     fs.mkdirSync(targetAgentDir, { recursive: true });
 
     assert.throws(
@@ -314,19 +294,16 @@ test('takeover fails closed when target agent descriptor is missing', () => {
     );
     assert.equal(fs.existsSync(path.join(takeoverRoot, 'agent-lab-takeover-suite.json')), false);
     assert.equal(fs.existsSync(path.join(takeoverRoot, 'takeover-receipt.json')), false);
-  } finally {
-    fs.rmSync(outputRoot, { recursive: true, force: true });
-  }
+  });
 });
 
 test('takeover fails closed when target agent descriptor domain_id is missing', () => {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-takeover-missing-domain-id-'));
-  const targetAgentDir = path.join(outputRoot, 'target-agent');
-  const takeoverRoot = path.join(outputRoot, 'takeover');
-  const oplBin = process.env.OPL_BIN
-    ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
+  withOutputRoot('opl-meta-agent-takeover-missing-domain-id-', (outputRoot) => {
+    const targetAgentDir = path.join(outputRoot, 'target-agent');
+    const takeoverRoot = path.join(outputRoot, 'takeover');
+    const oplBin = process.env.OPL_BIN
+      ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
 
-  try {
     writeJson(path.join(targetAgentDir, 'contracts/domain_descriptor.json'), {
       domain_label: 'Target Agent',
       delivery_domain: 'agent_building',
@@ -343,7 +320,5 @@ test('takeover fails closed when target agent descriptor domain_id is missing', 
     );
     assert.equal(fs.existsSync(path.join(takeoverRoot, 'agent-lab-takeover-suite.json')), false);
     assert.equal(fs.existsSync(path.join(takeoverRoot, 'takeover-receipt.json')), false);
-  } finally {
-    fs.rmSync(outputRoot, { recursive: true, force: true });
-  }
+  });
 });
