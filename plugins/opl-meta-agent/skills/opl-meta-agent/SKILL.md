@@ -1,0 +1,72 @@
+---
+name: opl-meta-agent
+description: Use when Codex should operate OPL Meta Agent to design, baseline, take over, or improve OPL-compatible Foundry Agents.
+---
+
+# OPL Meta Agent
+
+## 用途
+
+使用 OPL Meta Agent 创建、接管测试、修复或持续改进 OPL-compatible Foundry Agent。OMA 读取用户自然语言、目标领域材料、已有 agent repo、Agent Lab evidence 和 reviewer evidence，产出 target-agent brief、stage pack、quality gates、Agent Lab suite seed、baseline receipt、developer patch work order、mechanism proposal、target capability candidate 或 typed blocker。
+
+OMA 是 agent-building domain owner，不是 OPL Framework、Agent Lab、App registry、workbench、queue、attempt ledger、generic runtime 或 target domain owner。
+
+## 普通入口
+
+- 用户说“帮我做一个能交付 X 的智能体”“把这个流程做成 OPL Agent”“为这个 agent 补 baseline / suite / takeover / improvement loop”时，先用 OMA。
+- 先把自然语言收敛成 target agent 的 `domain_id`、`domain_label`、`delivery_domain`、`target_brief`、acceptance criteria、non-goals 和 owner boundary。
+- 若问题只是在某个已存在 target domain 的 truth、artifact body、quality verdict 或 owner receipt 内部，转回对应 target domain owner，不用 OMA 接管。
+
+## Agent Lab And Target-Agent Handoff
+
+OMA 输出 target-agent semantics 和 refs-only handoff；OPL Framework / Agent Lab 执行 scaffold、generated interface、suite run、promotion gate、work-order execute / absorb / cleanup 和 App / registry projection。
+
+Target agent handoff 必须保留：
+
+- target agent descriptor、stage control plane、action catalog、quality gates 和 capability map refs；
+- Agent Lab baseline / takeover / external-suite evidence refs；
+- independent AI reviewer critique、suggestions、direct evidence refs 和 provenance；
+- no-forbidden-write proof、owner route、source morphology refs 和 generated surface consumption refs；
+- target owner receipt、typed blocker、human gate、route-back 或 owner-gated continuation shape。
+
+## New-Agent Delivery Gate
+
+创建新 target agent 时，不能把 scaffold、interface projection、contract validation、suite pass 或 provider completion 当成完成。完整 baseline handoff 至少需要：
+
+1. target repo scaffold validation 和 OPL generated interface projection；
+2. Agent Lab baseline、takeover 或 external-suite result；
+3. structured independent AI reviewer evaluation，包含非空 critique、suggestions、direct evidence refs、run provenance 和独立 attempt refs；
+4. OMA self-evolution pass，消费 Agent Lab result 与 reviewer evidence；
+5. delivery receipt、no-patch coordination receipt / work order、developer patch work order 或 typed blocker 四者之一；
+6. owner route、no-forbidden-write proof、source morphology、generated surface consumption、private residue decision 和 accepted owner-answer shape。
+
+缺任一项时返回 typed blocker 或 owner-gated next step，不声明 target agent delivered、domain ready、production ready、quality verdict、App live ready 或 default promotion。
+
+## Authority Boundary
+
+- OMA 可以写 agent-building semantics、declarative pack、suite seed、developer work-order policy、target capability candidate、mechanism proposal 和 typed blocker shape。
+- OMA 不写 target domain truth、memory body、artifact body、quality/export verdict、owner receipt body、runtime queue、provider attempt、App state 或 default promotion state。
+- OPL owns standard runtime, generated / hosted surfaces, Agent Lab execution, package validation, registry / App projection and work-order lifecycle.
+- Target domain owner owns final truth, artifact body, memory body, quality/export verdict, owner receipt, human gate and default promotion authority.
+
+## Professional Skills
+
+默认先用本 primary skill 收敛任务和边界；只有 stage 内需要专门判断时再调用 repo-local professional skills：
+
+- `agent/professional_skills/oma-stage-pack-intent-architecture/SKILL.md`：intent、external pattern research、stage pack、action catalog、artifact morphology 和 no-forbidden-write policy。
+- `agent/professional_skills/oma-eval-takeover-review/SKILL.md`：Agent Lab baseline / external suite design、existing target-agent takeover review 和 evaluation boundary。
+- `agent/professional_skills/oma-work-order-hygiene/SKILL.md`：refs-only developer patch work order、typed blocker shape、script-to-pack/source-purity hygiene 和 route-back recommendation。
+- `agent/professional_skills/oma-agent-design-evolution/SKILL.md`：Agent Lab / FeedbackOps / work-order / App projection / trajectory evidence diagnosis、mechanism learning 和 owner-gated repair route。
+
+这些 active workflow-level professional skills 不是默认全局 Codex entry；旧 9 个细粒度入口仅作 redirect/tombstone，由 OMA stage prompt 或本 primary skill 按需路由到 canonical workflow skill。
+
+## Completion Rules
+
+- Scaffold created is not completion.
+- Interface generated is not completion.
+- Contract or manifest validation is not completion.
+- Suite pass is not completion.
+- Provider completion is not completion.
+- Candidate package is not owner acceptance.
+
+完成声明必须绑定到 target-agent handoff evidence、Agent Lab / reviewer evidence、self-evolution closeout、owner route 和明确 closeout outcome。缺 owner authority 时输出 typed blocker、human gate、route-back 或 owner-gated continuation。

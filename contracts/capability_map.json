@@ -49,22 +49,30 @@
         "role": "codex_default_entry_ref"
       },
       {
-        "ref_kind": "opl_generated_surface_ref",
-        "ref": "one-person-lab/src/modules/connect/opl-skills-parts/generated-plugin.ts#OPL Meta Agent",
-        "role": "generated_carrier_projection_context"
+        "ref_kind": "repo_path",
+        "ref": "plugins/opl-meta-agent/skills/opl-meta-agent/SKILL.md",
+        "role": "codex_plugin_carrier_compat_mirror"
+      },
+      {
+        "ref_kind": "contract_ref",
+        "ref": "plugins/opl-meta-agent/.codex-plugin/plugin.json",
+        "role": "plugin_carrier_boundary"
       }
     ],
-    "projection_contract": {
+    "carrier_projection_contract": {
       "canonical_source": "agent/primary_skill/SKILL.md",
-      "carrier_materialization": "opl_generated_full_skill_copy",
-      "materializer": "opl_standard_codex_plugin_materializer",
+      "carrier_skill_ref": "plugins/opl-meta-agent/skills/opl-meta-agent/SKILL.md",
+      "carrier_materialization": "materialized_full_skill_copy",
       "codex_install_requires_real_skill_md": true,
-      "plugin_transport_is_membership_axis": false,
-      "plugin_transport_is_status_axis": false,
-      "generated_surface_can_claim_domain_ready": false
+      "plugin_skill_must_remain_real_file": true,
+      "carrier_role": "transport_install_detail_not_agent_membership_or_status",
+      "authority": false,
+      "carrier_can_override_canonical_source": false,
+      "carrier_can_claim_agent_membership_or_status": false,
+      "carrier_is_domain_truth_source": false
     },
-    "sync_policy": "repo_owned_primary_skill_projected_by_opl_generated_carrier",
-    "externalization_reason": "rich repo-owned primary Codex entry for OMA; OPL owns generated carrier projection and package validation, while professional skills remain non-default stage-routed methods",
+    "sync_policy": "repo_local_standard_primary_skill_with_plugin_carrier_compat",
+    "externalization_reason": "rich repo-owned primary Codex entry for OMA; the repo-local plugin skill is a materialized full-copy Codex carrier, while professional skills remain non-default stage-routed methods",
     "authority_boundary": {
       "can_write_domain_truth": false,
       "can_write_memory_body": false,
@@ -79,7 +87,7 @@
     "codex_default_exposure": true,
     "allowed_exposure_scopes": [
       "codex_default_entry",
-      "opl_generated_plugin_carrier"
+      "repo_local_codex_plugin_carrier"
     ],
     "codex_visibility_policy": "registered_as_primary_codex_skill_entry",
     "exposure_owner": "opl-meta-agent",

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="OPL Meta Agent icon">
+  <rect width="64" height="64" rx="14" fill="#4F5D95"/>
+  <path d="M12 44V20L22 34L32 20V44" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M38 44L48 20L58 44" fill="none" stroke="#DDE4FF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M42 35H54" stroke="#DDE4FF" stroke-width="4" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,38 @@
+{
+  "name": "opl-meta-agent",
+  "version": "0.1.0",
+  "description": "Codex plugin carrier for the OPL Meta Agent domain app.",
+  "author": {
+    "name": "Gao Feng",
+    "url": "https://github.com/gaofeng21cn"
+  },
+  "homepage": "https://github.com/gaofeng21cn/opl-meta-agent",
+  "repository": "https://github.com/gaofeng21cn/opl-meta-agent",
+  "license": "UNLICENSED",
+  "keywords": [
+    "opl",
+    "meta-agent",
+    "codex",
+    "foundry-agent"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "OPL Meta Agent",
+    "shortDescription": "Agent-building domain app for Codex.",
+    "longDescription": "Adds a Codex plugin carrier for OPL Meta Agent while preserving agent-building semantics, target-agent handoff, and owner-gated delivery authority in the domain repo.",
+    "developerName": "Gao Feng",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/gaofeng21cn/opl-meta-agent",
+    "composerIcon": "./assets/icon.svg",
+    "logo": "./assets/icon.svg",
+    "defaultPrompt": [
+      "Use OPL Meta Agent to design or improve an OPL-compatible Foundry Agent.",
+      "Use OPL Meta Agent to inspect target-agent handoff, baseline, or delivery gate evidence."
+    ],
+    "brandColor": "#4F5D95"
+  }
+}

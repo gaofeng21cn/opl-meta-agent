@@ -170,18 +170,30 @@ test('domain skill declarations and professional skills stay separate', () => {
   assert.equal(primaryCapability.physical_source_ref.ref, 'agent/primary_skill/SKILL.md');
   assert.equal(primaryCapability.physical_source_ref.role, 'primary_skill_source');
   assert.deepEqual(asStrings(primaryCapability.canonical_paths), expectedPrimarySkillPaths);
-  assert.deepEqual(primaryCapability.projection_contract, {
+  assert.deepEqual(primaryCapability.carrier_projection_contract, {
     canonical_source: 'agent/primary_skill/SKILL.md',
-    carrier_materialization: 'opl_generated_full_skill_copy',
-    materializer: 'opl_standard_codex_plugin_materializer',
+    carrier_skill_ref: 'plugins/opl-meta-agent/skills/opl-meta-agent/SKILL.md',
+    carrier_materialization: 'materialized_full_skill_copy',
     codex_install_requires_real_skill_md: true,
-    plugin_transport_is_membership_axis: false,
-    plugin_transport_is_status_axis: false,
-    generated_surface_can_claim_domain_ready: false,
+    plugin_skill_must_remain_real_file: true,
+    carrier_role: 'transport_install_detail_not_agent_membership_or_status',
+    authority: false,
+    carrier_can_override_canonical_source: false,
+    carrier_can_claim_agent_membership_or_status: false,
+    carrier_is_domain_truth_source: false,
   });
+  assert.equal(
+    readText('plugins/opl-meta-agent/skills/opl-meta-agent/SKILL.md'),
+    readText('agent/primary_skill/SKILL.md'),
+  );
+  const pluginManifest = readJson('plugins/opl-meta-agent/.codex-plugin/plugin.json');
+  assert.equal(pluginManifest.name, 'opl-meta-agent');
   assert.equal(primaryCapability.codex_default_exposure, true);
   assert.equal(primaryCapability.exposure_layer, 'codex_default_primary_skill');
-  assert.ok(asStrings(primaryCapability.allowed_exposure_scopes).includes('codex_default_entry'));
+  assert.deepEqual(asStrings(primaryCapability.allowed_exposure_scopes), [
+    'codex_default_entry',
+    'repo_local_codex_plugin_carrier',
+  ]);
   assert.equal(
     capabilityMap.resolver_index.primary_skill_refs[0],
     'contracts/capability_map.json#/primary_skill_capability',
