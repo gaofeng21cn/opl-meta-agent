@@ -6,15 +6,19 @@ import {
   asStrings,
   readJson,
 } from './support/contracts.ts';
+import { assertFalseFlags } from './support/source-purity.ts';
 
 test('opl-meta-agent stage plan covers research, build, eval, optimization, delivery, and learning', () => {
   const stageControl = readJson('contracts/stage_control_plane.json');
+  const stages = asObjects(stageControl.stages);
+  const stageIds = stages.map((stage) => stage.stage_id);
   const stageArtifactKernelAdoption = readJson('contracts/stage_artifact_kernel_adoption.json');
   const stateIndexKernelAdoption = stageArtifactKernelAdoption.state_index_kernel_adoption;
+  const stageNativeContract = stageControl.stage_native_artifact_contract;
 
   assert.equal(stageControl.surface_kind, 'family_stage_control_plane');
   assert.equal(stageControl.version, 'family-stage-control-plane.v1');
-  assert.deepEqual(asObjects(stageControl.stages).map((stage) => stage.stage_id), [
+  assert.deepEqual(stageIds, [
     'intent-intake',
     'web-experience-research',
     'stage-decomposition',
@@ -27,18 +31,18 @@ test('opl-meta-agent stage plan covers research, build, eval, optimization, deli
     'trajectory-learning-intake',
     'online-learning',
   ]);
-  assert.equal(asObjects(stageControl.stages).some((stage) => stage.stage_id === 'external-agent-takeover'), false);
+  assert.equal(stages.some((stage) => stage.stage_id === 'external-agent-takeover'), false);
   assert.doesNotMatch(JSON.stringify(stageControl), /external-agent-takeover|takeover-external-agent-test/);
   assert.deepEqual(
-    asObjects(stageControl.stages).find((stage) => stage.stage_id === 'agent-skeleton-build')?.allowed_action_refs,
+    stages.find((stage) => stage.stage_id === 'agent-skeleton-build')?.allowed_action_refs,
     ['build-agent-baseline'],
   );
   assert.deepEqual(
-    asObjects(stageControl.stages).find((stage) => stage.stage_id === 'target-agent-takeover')?.allowed_action_refs,
+    stages.find((stage) => stage.stage_id === 'target-agent-takeover')?.allowed_action_refs,
     ['takeover-target-agent-test'],
   );
   assert.deepEqual(
-    asObjects(stageControl.stages).find((stage) => stage.stage_id === 'optimizer-iteration')?.allowed_action_refs,
+    stages.find((stage) => stage.stage_id === 'optimizer-iteration')?.allowed_action_refs,
     ['improve-from-external-agent-lab-suite'],
   );
   assert.equal(stageControl.opl_runtime_dependency.agent_lab_complete_control_plane, true);
@@ -80,84 +84,28 @@ test('opl-meta-agent stage plan covers research, build, eval, optimization, deli
     'attempt_ledger_body',
     'promotion_gate_verdict',
   ]);
-  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_own_state_index_kernel, false);
-  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_own_sqlite_sidecar_index, false);
-  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_manage_queue, false);
-  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_manage_attempt_ledger, false);
-  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_manage_target_runtime, false);
-  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_manage_target_worktree_lifecycle, false);
-  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_manage_promotion_gate, false);
-  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_write_target_truth, false);
-  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_write_target_artifact_body, false);
-  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_write_target_memory_body, false);
-  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_write_target_quality_or_export_verdict, false);
-  assert.equal(stateIndexKernelAdoption.authority_boundary.oma_can_write_target_owner_receipt_body, false);
-  assert.equal(stageControl.authority_boundary.oma_can_own_state_index_kernel, false);
-  assert.equal(stageControl.authority_boundary.oma_can_own_sqlite_sidecar_index, false);
-  assert.equal(stageControl.authority_boundary.oma_can_manage_target_runtime, false);
-  assert.equal(stageControl.authority_boundary.oma_can_manage_queue, false);
-  assert.equal(stageControl.authority_boundary.oma_can_manage_attempt_ledger, false);
-  assert.equal(stageControl.authority_boundary.oma_can_manage_promotion_gate, false);
-  assert.equal(stageControl.authority_boundary.oma_can_manage_target_worktree_lifecycle, false);
-  assert.equal(stageControl.authority_boundary.oma_can_write_target_owner_receipt_body, false);
-  assert.equal(stageControl.stage_native_artifact_contract.surface_kind, 'opl_stage_native_artifact_contract_bundle');
-  assert.equal(stageControl.stage_native_artifact_contract.target_domain_id, 'opl-meta-agent');
-  assert.equal(stageControl.stage_native_artifact_contract.authority_boundary.oma_can_generate_target_domain_owner_receipt, false);
-  assert.equal(stageControl.stage_native_artifact_contract.authority_boundary.oma_can_write_target_domain_truth, false);
-  assert.deepEqual(
-    asStrings(stageControl.stage_native_artifact_contract.artifact_native_contract_refs),
-    asObjects(stageControl.stages).map((stage) => `artifact-native-contract-ref:opl-meta-agent/${stage.stage_id}`),
-  );
-  assert.deepEqual(
-    asStrings(stageControl.stage_native_artifact_contract.stage_folder_contract_refs),
-    asObjects(stageControl.stages).map((stage) => `stage-folder-contract-ref:opl-meta-agent/${stage.stage_id}`),
-  );
-  assert.deepEqual(
-    asStrings(stageControl.stage_native_artifact_contract.stage_json_refs),
-    asObjects(stageControl.stages).map((stage) => `stage-json-ref:opl-meta-agent/${stage.stage_id}`),
-  );
-  assert.deepEqual(
-    asStrings(stageControl.stage_native_artifact_contract.attempt_json_ref_templates),
-    asObjects(stageControl.stages).map((stage) => `stage-attempt-json-ref:opl-meta-agent/${stage.stage_id}/{stage_attempt_id}`),
-  );
-  assert.deepEqual(
-    asStrings(stageControl.stage_native_artifact_contract.export_ref_templates),
-    asObjects(stageControl.stages).map((stage) => `stage-export-ref:opl-meta-agent/${stage.stage_id}/{stage_attempt_id}`),
-  );
-  assert.deepEqual(
-    asStrings(stageControl.stage_native_artifact_contract.lineage_ref_templates),
-    asObjects(stageControl.stages).map((stage) => `stage-lineage-ref:opl-meta-agent/${stage.stage_id}/{stage_attempt_id}`),
-  );
-  assert.deepEqual(
-    asStrings(stageControl.stage_native_artifact_contract.retention_ref_templates),
-    asObjects(stageControl.stages).map((stage) => `stage-retention-ref:opl-meta-agent/${stage.stage_id}/{stage_attempt_id}`),
-  );
-  assert.deepEqual(
-    asStrings(stageControl.stage_native_artifact_contract.physical_kernel_locator_refs),
-    asObjects(stageControl.stages).map((stage) => `opl-physical-kernel-locator-ref:opl-meta-agent/${stage.stage_id}`),
-  );
-  assert.deepEqual(
-    asStrings(stageControl.stage_native_artifact_contract.conformance_refs),
-    asObjects(stageControl.stages).map((stage) => `stage-artifact-conformance-ref:opl-meta-agent/${stage.stage_id}`),
-  );
-  assert.deepEqual(
-    asStrings(stageControl.stage_native_artifact_contract.workbench_consumption_refs),
-    asObjects(stageControl.stages).map((stage) => `stage-artifact-workbench-consumption-ref:opl-meta-agent/${stage.stage_id}`),
-  );
-  assert.equal(stageControl.stage_native_artifact_contract.authority_boundary.oma_can_own_agent_lab_runner, false);
-  assert.equal(stageControl.stage_native_artifact_contract.authority_boundary.oma_can_own_queue, false);
-  assert.equal(stageControl.stage_native_artifact_contract.authority_boundary.oma_can_own_attempt_ledger, false);
-  assert.equal(stageControl.stage_native_artifact_contract.authority_boundary.oma_can_own_worktree_lifecycle, false);
-  assert.equal(stageControl.stage_native_artifact_contract.authority_boundary.oma_can_own_promotion_gate, false);
-  assert.equal(stageControl.stage_native_artifact_contract.authority_boundary.oma_can_own_app_shell, false);
-  assert.equal(stageControl.stage_native_artifact_contract.authority_boundary.oma_can_write_target_owner_closeout, false);
-  assert.equal(stageControl.stage_native_artifact_contract.authority_boundary.oma_can_create_stage_folder_runtime_state, false);
-  assert.equal(stageControl.stage_native_artifact_contract.authority_boundary.oma_can_write_target_owner_receipt_body, false);
-  assert.equal(stageControl.stage_native_artifact_contract.authority_boundary.oma_can_owner_promote_target_agent, false);
-  assert.equal(stageControl.stage_native_artifact_contract.authority_boundary.oma_can_manage_target_worktree_lifecycle, false);
-  assert.equal(stageControl.authority_boundary.opl_can_write_domain_truth, false);
-  assert.equal(stageControl.authority_boundary.opl_can_write_memory_body, false);
-  assert.equal(stageControl.authority_boundary.opl_can_authorize_quality_or_export, false);
+  assertFalseFlags(stateIndexKernelAdoption.authority_boundary, 'oma_can_own_state_index_kernel oma_can_own_sqlite_sidecar_index oma_can_manage_queue oma_can_manage_attempt_ledger oma_can_manage_target_runtime oma_can_manage_target_worktree_lifecycle oma_can_manage_promotion_gate oma_can_write_target_truth oma_can_write_target_artifact_body oma_can_write_target_memory_body oma_can_write_target_quality_or_export_verdict oma_can_write_target_owner_receipt_body'.split(' '), 'stateIndexKernelAdoption.authority_boundary');
+  assertFalseFlags(stageControl.authority_boundary, 'oma_can_own_state_index_kernel oma_can_own_sqlite_sidecar_index oma_can_manage_target_runtime oma_can_manage_queue oma_can_manage_attempt_ledger oma_can_manage_promotion_gate oma_can_manage_target_worktree_lifecycle oma_can_write_target_owner_receipt_body opl_can_write_domain_truth opl_can_write_memory_body opl_can_authorize_quality_or_export'.split(' '), 'stageControl.authority_boundary');
+  assert.equal(stageNativeContract.surface_kind, 'opl_stage_native_artifact_contract_bundle');
+  assert.equal(stageNativeContract.target_domain_id, 'opl-meta-agent');
+  assertFalseFlags(stageNativeContract.authority_boundary, 'oma_can_generate_target_domain_owner_receipt oma_can_write_target_domain_truth oma_can_own_agent_lab_runner oma_can_own_queue oma_can_own_attempt_ledger oma_can_own_worktree_lifecycle oma_can_own_promotion_gate oma_can_own_app_shell oma_can_write_target_owner_closeout oma_can_create_stage_folder_runtime_state oma_can_write_target_owner_receipt_body oma_can_owner_promote_target_agent oma_can_manage_target_worktree_lifecycle'.split(' '), 'stageNativeContract.authority_boundary');
+  [
+    ['artifact_native_contract_refs', 'artifact-native-contract-ref', ''],
+    ['stage_folder_contract_refs', 'stage-folder-contract-ref', ''],
+    ['stage_json_refs', 'stage-json-ref', ''],
+    ['attempt_json_ref_templates', 'stage-attempt-json-ref', '/{stage_attempt_id}'],
+    ['export_ref_templates', 'stage-export-ref', '/{stage_attempt_id}'],
+    ['lineage_ref_templates', 'stage-lineage-ref', '/{stage_attempt_id}'],
+    ['retention_ref_templates', 'stage-retention-ref', '/{stage_attempt_id}'],
+    ['physical_kernel_locator_refs', 'opl-physical-kernel-locator-ref', ''],
+    ['conformance_refs', 'stage-artifact-conformance-ref', ''],
+    ['workbench_consumption_refs', 'stage-artifact-workbench-consumption-ref', ''],
+  ].forEach(([field, prefix, suffix]) => {
+    assert.deepEqual(
+      asStrings(stageNativeContract[field]),
+      stageIds.map((stageId) => `${prefix}:opl-meta-agent/${stageId}${suffix}`),
+    );
+  });
 });
 
 test('stage executor policy candidates stay gated, refs-only, and non-default explicit', () => {
@@ -169,6 +117,7 @@ test('stage executor policy candidates stay gated, refs-only, and non-default ex
 
   asObjects(stageControl.stages).forEach((stage) => {
     const label = String(stage.stage_id);
+    const executorPolicy = stage.executor_policy_capability;
     assert.equal(
       stage.selected_executor.executor_kind,
       'codex_cli',
@@ -188,28 +137,15 @@ test('stage executor policy candidates stay gated, refs-only, and non-default ex
       `${label}.hard_blocker_refs missing non-default binding blocker`,
     );
 
-    assert.equal(
-      stage.executor_policy_capability.supports_stage_level_executor_policy,
-      true,
-      `${label}.supports_stage_level_executor_policy`,
-    );
-    assert.equal(stage.executor_policy_capability.default_executor_kind, 'codex_cli', `${label}.default_executor_kind`);
-    assert.equal(
-      stage.executor_policy_capability.non_default_executor_policy_allowed,
-      true,
-      `${label}.non_default_executor_policy_allowed`,
-    );
-    assert.equal(
-      stage.executor_policy_capability.non_default_executor_requires_explicit_adapter,
-      true,
-      `${label}.non_default_executor_requires_explicit_adapter`,
-    );
-    assert.equal(
-      stage.executor_policy_capability.non_default_executor_requires_executor_binding_ref,
-      true,
-      `${label}.non_default_executor_requires_executor_binding_ref`,
-    );
-    assert.deepEqual(stage.executor_policy_capability.policy_fields, [
+    assert.equal(executorPolicy.default_executor_kind, 'codex_cli', `${label}.default_executor_kind`);
+    [
+      'supports_stage_level_executor_policy',
+      'non_default_executor_policy_allowed',
+      'non_default_executor_requires_explicit_adapter',
+      'non_default_executor_requires_executor_binding_ref',
+      'agent_lab_trial_required_before_default_promotion',
+    ].forEach((field) => assert.equal(executorPolicy[field], true, `${label}.${field}`));
+    assert.deepEqual(executorPolicy.policy_fields, [
       'executor_kind',
       'model',
       'reasoning_effort',
@@ -219,21 +155,7 @@ test('stage executor policy candidates stay gated, refs-only, and non-default ex
       'required_capabilities',
       'receipt_requirements',
     ]);
-    assert.equal(
-      stage.executor_policy_capability.agent_lab_trial_required_before_default_promotion,
-      true,
-      `${label}.agent_lab_trial_required_before_default_promotion`,
-    );
-    assert.equal(
-      stage.executor_policy_capability.quality_equivalence_claim_allowed,
-      false,
-      `${label}.quality_equivalence_claim_allowed`,
-    );
-    assert.equal(
-      stage.executor_policy_capability.default_executor_switch_allowed_by_oma,
-      false,
-      `${label}.default_executor_switch_allowed_by_oma`,
-    );
+    assertFalseFlags(executorPolicy, 'quality_equivalence_claim_allowed default_executor_switch_allowed_by_oma'.split(' '), `${label}.executor_policy_capability`);
 
     const candidates = asObjects(stage.stage_executor_policy_candidates);
     assert.ok(candidates.length > 0, `${label}.stage_executor_policy_candidates should not be empty`);
