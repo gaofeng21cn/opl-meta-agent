@@ -292,6 +292,7 @@ test('build-agent-baseline materializes a source-derived target package without 
     const descriptor = readJson(path.join(targetDir, 'contracts/domain_descriptor.json'));
     const capabilityMap = readJson(path.join(targetDir, 'contracts/capability_map.json'));
     const stageControl = readJson(path.join(targetDir, 'contracts/stage_control_plane.json'));
+    const stageAttemptInput = readJson(path.join(outputRoot, 'stage-decomposition-attempt-input.json'));
     const primarySkill = fs.readFileSync(path.join(targetDir, 'agent/primary_skill/SKILL.md'), 'utf8');
     const generatedPrompt = fs.readFileSync(path.join(targetDir, 'agent/prompts/agent-output-draft.md'), 'utf8');
 
@@ -420,6 +421,18 @@ test('build-agent-baseline materializes a source-derived target package without 
       stageControl.stages[0].stage_contract.expected_receipt_refs.some((entry: JsonObject) =>
         entry.ref === sourceDerivedObjectRefs.buildReceiptRef
       ),
+    );
+    assert.deepEqual(
+      stageAttemptInput.profile_selection_input_policy.required_machine_objects,
+      ['ReferenceDesignPacket', 'TransferMap', 'AgentPackPlan', 'BuildReceipt'],
+    );
+    assert.equal(
+      stageAttemptInput.profile_selection_input_policy.build_receipt_ref,
+      sourceDerivedObjectRefs.buildReceiptRef,
+    );
+    assert.equal(
+      stageAttemptInput.reference_design_input_policy.build_receipt_ref,
+      sourceDerivedObjectRefs.buildReceiptRef,
     );
     assert.ok(
       stageControl.capability_plan_requirements.includes(

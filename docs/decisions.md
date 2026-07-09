@@ -40,9 +40,9 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 ### Target agent repo 目录标准归 OPL scaffold，OMA 只写领域语义
 
 - 决策：OMA 生成新 target agent 时，目标 repo 的物理目录标准必须来自 OPL Framework `opl agents scaffold`；OMA 不维护并行目录模板、私有 scaffold 标准或 repo-local generated interface owner。
-- 决策：`build-agent-baseline` 的正确顺序是 OPL scaffold -> OMA stage-decomposition / domain pack refs -> OPL scaffold validation -> OPL generated interfaces -> Agent Lab / reviewer / delivery gate -> owner receipt、typed blocker、developer work order 或 no-patch coordination。
+- 决策：`build-agent-baseline` 的语义设计顺序是 OMA stage-decomposition / domain pack refs -> OPL scaffold materialization / validation -> OPL generated interfaces -> Agent Lab / reviewer / delivery gate -> owner receipt、typed blocker、developer work order 或 no-patch coordination。若输入包含论文/PDF/repo/产品案例等 `reference_design_source`，stage-decomposition 必须先把参考来源提炼为 `ReferenceDesignPacket -> TransferMap -> AgentPackPlan -> BuildReceipt`，再迁移到 target agent stage pack；每个 source-derived stage requirement 必须引用 `source_pattern_ref`/`stage_pattern_source_refs` 或明确标为 `target_only_requirement`。
 - 理由：标准目录属于 OPL family 统一 scaffold / conformance；OMA 的核心价值是 agent-building reasoning、stage decomposition、artifact morphology、candidate package、developer work order 和 mechanism proposal，而不是复制 OPL Pack / Stagecraft / Connect / generated surface。
-- 影响：README、目录存在、suite pass、generated interface readiness 或 scaffold validation 都不能单独声明新 target agent 完成；可消费语义必须来自非 README pack files、`contracts/stage_control_plane.json`、typed closeout refs、owner route refs 和 delivery gate refs。后续 Stage Pack v2 字段稳定后，OMA 应把 target agent v2 缺口从 advisory 收紧为 delivery gate blocker。
+- 影响：README、目录存在、suite pass、generated interface readiness 或 scaffold validation 都不能单独声明新 target agent 完成；profile/catalog/template 只提供 OPL conformance 下限和 route/readback refs，scaffold 只提供物理骨架，不能替代参考设计提炼或 target agent 语义设计。可消费语义必须来自非 README pack files、`contracts/stage_control_plane.json`、typed closeout refs、owner route refs 和 delivery gate refs。后续 Stage Pack v2 字段稳定后，OMA 应把 target agent v2 缺口从 advisory 收紧为 delivery gate blocker。
 
 ### OPL 持有 generated surfaces，OMA 只提供 refs-only inputs
 

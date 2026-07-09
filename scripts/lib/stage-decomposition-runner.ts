@@ -6,6 +6,7 @@ import {
   buildProfileRequirements,
   buildProfileSelectionReceipt,
   buildReferenceDesignPacket,
+  buildSourceDerivedBuildReceipt,
   buildSourceDerivedDesignReceipt,
   buildTransferMap,
   buildTransferablePatternRequirements,
@@ -78,6 +79,7 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
   const referenceDesignPacket = buildReferenceDesignPacket(input.targetAgent);
   const transferMap = buildTransferMap(input.targetAgent);
   const agentPackPlan = buildAgentPackPlan(input.targetAgent);
+  const buildReceipt = buildSourceDerivedBuildReceipt(input.targetAgent);
   return {
     surface_kind: 'opl_meta_agent_stage_decomposition_attempt_input',
     version: 'opl-meta-agent.stage-decomposition-attempt-input.v1',
@@ -99,11 +101,13 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
       transfer_map_ref: transferMap?.transfer_map_ref ?? null,
       agent_pack_plan: agentPackPlan,
       agent_pack_plan_ref: agentPackPlan?.plan_ref ?? null,
+      build_receipt: buildReceipt,
+      build_receipt_ref: buildReceipt?.receipt_ref ?? null,
       reference_design_pattern_packet_refs: profileSelectionReceipt.reference_design_pattern_packet_refs,
       transferable_pattern_requirements: profileSelectionReceipt.transferable_pattern_requirements,
       capability_plan_requirements: profileSelectionReceipt.capability_plan_requirements,
       required_machine_objects: profileSelectionReceipt.source_derived_design_receipt
-        ? ['ReferenceDesignPacket', 'TransferMap', 'AgentPackPlan']
+        ? ['ReferenceDesignPacket', 'TransferMap', 'AgentPackPlan', 'BuildReceipt']
         : [],
       stage_closeout_must_preserve_selected_profile:
         stringList(input.targetAgent.selected_opl_profile_refs).length > 0,
@@ -125,6 +129,8 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
       transfer_map_ref: transferMap?.transfer_map_ref ?? null,
       agent_pack_plan: agentPackPlan,
       agent_pack_plan_ref: agentPackPlan?.plan_ref ?? null,
+      build_receipt: buildReceipt,
+      build_receipt_ref: buildReceipt?.receipt_ref ?? null,
       transferable_pattern_requirements: buildTransferablePatternRequirements(input.targetAgent),
       capability_plan_requirements: buildCapabilityPlanRequirements(input.targetAgent),
       role: 'external_architecture_inspiration_not_target_domain_truth',
