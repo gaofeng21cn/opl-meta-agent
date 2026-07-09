@@ -71,6 +71,8 @@ const sourceDerivedObjectRefs = {
   agentPackPlanRef: 'agent-pack-plan:opl-meta-agent/surgery-risk-from-paper-agent',
   designAdmissionReceiptRef: 'design-admission-receipt-ref:opl-meta-agent/surgery-risk-from-paper-agent',
   buildReceiptRef: 'build-receipt-ref:opl-meta-agent/surgery-risk-from-paper-agent',
+  stageDecompositionSubpacketSetRef:
+    'stage-decomposition-subpacket-set:opl-meta-agent/surgery-risk-from-paper-agent',
   patternNoteRef: 'reference-design-pattern-note:surgery-risk-from-paper-agent/1',
 };
 
@@ -96,6 +98,8 @@ const researchDrivenObjectRefs = {
   agentPackPlanRef: 'agent-pack-plan:opl-meta-agent/vague-idea-researched-agent',
   designAdmissionReceiptRef: 'design-admission-receipt-ref:opl-meta-agent/vague-idea-researched-agent',
   buildReceiptRef: 'build-receipt-ref:opl-meta-agent/vague-idea-researched-agent',
+  stageDecompositionSubpacketSetRef:
+    'stage-decomposition-subpacket-set:opl-meta-agent/vague-idea-researched-agent',
   expertPracticeNoteRef: 'expert-practice-note:vague-idea-researched-agent/1',
   researchSourcePatternRef: 'research-source-ref:vague-idea-researched-agent/1',
 };
@@ -109,6 +113,7 @@ const sourceDerivedCoreRefs = {
   agent_pack_plan_ref: sourceDerivedObjectRefs.agentPackPlanRef,
   design_admission_receipt_ref: sourceDerivedObjectRefs.designAdmissionReceiptRef,
   build_receipt_ref: sourceDerivedObjectRefs.buildReceiptRef,
+  stage_decomposition_subpacket_set_ref: sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef,
 };
 
 const researchDrivenCoreRefs = {
@@ -117,6 +122,7 @@ const researchDrivenCoreRefs = {
   agent_pack_plan_ref: researchDrivenObjectRefs.agentPackPlanRef,
   design_admission_receipt_ref: researchDrivenObjectRefs.designAdmissionReceiptRef,
   build_receipt_ref: researchDrivenObjectRefs.buildReceiptRef,
+  stage_decomposition_subpacket_set_ref: researchDrivenObjectRefs.stageDecompositionSubpacketSetRef,
 };
 
 function morphologyRefs(domainId: string, stageId = 'agent-output-draft'): string[] {
@@ -362,6 +368,15 @@ test('build-agent-baseline materializes a source-derived target package without 
     assert.equal(descriptor.build_receipt.design_admission_receipt_ref, sourceDerivedObjectRefs.designAdmissionReceiptRef);
     assert.ok(descriptor.build_receipt.forbidden_claims.includes('runtime_live_promoted'));
     assert.deepEqual(
+      descriptor.stage_decomposition_subpacket_set.cognitive_step_packets.map((entry: JsonObject) => entry.step_id),
+      ['design-basis', 'transfer-planning', 'agent-pack-planning', 'design-admission', 'build-verification'],
+    );
+    assert.equal(
+      descriptor.stage_decomposition_subpacket_set.materialization_boundary
+        .ai_freeform_file_bodies_are_design_source_of_truth,
+      false,
+    );
+    assert.deepEqual(
       descriptor.source_derived_design_receipt.reference_design_pattern_packet_refs,
       sourceDerivedTargetAgent.reference_design_pattern_packet_refs,
     );
@@ -389,6 +404,7 @@ test('build-agent-baseline materializes a source-derived target package without 
       agent_pack_plan_refs: sourceDerivedObjectRefs.agentPackPlanRef,
       design_admission_receipt_refs: sourceDerivedObjectRefs.designAdmissionReceiptRef,
       build_receipt_refs: sourceDerivedObjectRefs.buildReceiptRef,
+      stage_decomposition_subpacket_set_refs: sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef,
     });
     assertRefFields(capabilityMap.profile_selection_receipt as JsonObject, sourceDerivedCoreRefs);
     assert.deepEqual(
@@ -441,6 +457,10 @@ test('build-agent-baseline materializes a source-derived target package without 
       entry.ref_kind === 'design_admission_receipt_ref'
       && entry.ref === sourceDerivedObjectRefs.designAdmissionReceiptRef
     ));
+    assert.ok(stageControl.stages[0].inputs.some((entry: JsonObject) =>
+      entry.ref_kind === 'stage_decomposition_subpacket_set_ref'
+      && entry.ref === sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef
+    ));
     assert.equal(stageControl.stages[0].inputs.some((entry: JsonObject) =>
       entry.ref_kind === 'build_receipt_ref'
       && entry.ref === sourceDerivedObjectRefs.buildReceiptRef
@@ -466,6 +486,11 @@ test('build-agent-baseline materializes a source-derived target package without 
       ),
     );
     assert.ok(
+      stageControl.stages[0].stage_contract.requires.includes(
+        `stage-decomposition-subpacket-set-ref:${sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef}`,
+      ),
+    );
+    assert.ok(
       stageControl.stages[0].stage_contract.expected_receipt_refs.some((entry: JsonObject) =>
         entry.ref === sourceDerivedObjectRefs.buildReceiptRef
       ),
@@ -481,10 +506,12 @@ test('build-agent-baseline materializes a source-derived target package without 
     assertRefFields(stageAttemptInput.profile_selection_input_policy as JsonObject, {
       design_admission_receipt_ref: sourceDerivedObjectRefs.designAdmissionReceiptRef,
       build_receipt_ref: sourceDerivedObjectRefs.buildReceiptRef,
+      stage_decomposition_subpacket_set_ref: sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef,
     });
     assertRefFields(stageAttemptInput.reference_design_input_policy as JsonObject, {
       design_admission_receipt_ref: sourceDerivedObjectRefs.designAdmissionReceiptRef,
       build_receipt_ref: sourceDerivedObjectRefs.buildReceiptRef,
+      stage_decomposition_subpacket_set_ref: sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef,
     });
     assert.ok(
       stageControl.capability_plan_requirements.includes(
@@ -496,6 +523,7 @@ test('build-agent-baseline materializes a source-derived target package without 
     assert.ok(primarySkill.includes(sourceDerivedObjectRefs.referenceDesignPacketRef));
     assert.ok(primarySkill.includes(sourceDerivedObjectRefs.transferMapRef));
     assert.ok(primarySkill.includes(sourceDerivedObjectRefs.agentPackPlanRef));
+    assert.ok(primarySkill.includes(sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef));
     assert.ok(generatedPrompt.includes('ReferenceDesignPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt'));
     assert.ok(generatedPrompt.includes(sourceDerivedTargetAgent.reference_design_pattern_packet_refs[0]));
     assert.equal(payload.target_agent.selected_opl_profile_refs, undefined);
@@ -544,6 +572,10 @@ test('build-agent-baseline materializes a research-driven target package from va
     assert.deepEqual(descriptor.build_receipt.required_design_objects, researchDrivenRequiredDesignObjects);
     assert.equal(descriptor.build_receipt.build_source_kind, 'research_driven_design');
     assert.equal(descriptor.build_receipt.design_admission_receipt_ref, researchDrivenObjectRefs.designAdmissionReceiptRef);
+    assert.equal(
+      descriptor.stage_decomposition_subpacket_set.design_basis_object,
+      'ResearchSynthesisPacket',
+    );
     assert.equal(capabilityMap.profile_selection_mode, 'research_driven_design');
     assert.deepEqual(capabilityMap.selected_profile_refs, []);
     assert.equal(
@@ -556,6 +588,7 @@ test('build-agent-baseline materializes a research-driven target package from va
     assertRefFields(capabilityMap, researchDrivenCoreRefs);
     assertSingleRefArrays(capabilityMap, {
       research_synthesis_packet_refs: researchDrivenObjectRefs.researchSynthesisPacketRef,
+      stage_decomposition_subpacket_set_refs: researchDrivenObjectRefs.stageDecompositionSubpacketSetRef,
     });
     assert.equal(stageControl.profile_selection_mode, 'research_driven_design');
     assert.equal(
@@ -565,6 +598,7 @@ test('build-agent-baseline materializes a research-driven target package from va
     assertRefFields(stageControl, {
       research_synthesis_packet_ref: researchDrivenObjectRefs.researchSynthesisPacketRef,
       design_admission_receipt_ref: researchDrivenObjectRefs.designAdmissionReceiptRef,
+      stage_decomposition_subpacket_set_ref: researchDrivenObjectRefs.stageDecompositionSubpacketSetRef,
     });
     assert.deepEqual(stageControl.design_admission_receipt.required_design_objects, researchDrivenRequiredDesignObjects);
     assert.deepEqual(stageControl.build_receipt.required_design_objects, researchDrivenRequiredDesignObjects);
@@ -597,6 +631,11 @@ test('build-agent-baseline materializes a research-driven target package from va
       ),
     );
     assert.ok(
+      stageControl.stages[0].stage_contract.requires.includes(
+        `stage-decomposition-subpacket-set-ref:${researchDrivenObjectRefs.stageDecompositionSubpacketSetRef}`,
+      ),
+    );
+    assert.ok(
       stageControl.capability_plan_requirements.includes(
         'map_researched_expert_practice_into_stage_control_plane_prompt_knowledge_quality_gate_and_agent_lab_suite_seed',
       ),
@@ -614,6 +653,7 @@ test('build-agent-baseline materializes a research-driven target package from va
     assert.ok(primarySkill.includes('Profile selection mode: research_driven_design'));
     assert.ok(primarySkill.includes('Selected profile ref: none; research-driven design refs are the active design input.'));
     assert.ok(primarySkill.includes(researchDrivenObjectRefs.researchSynthesisPacketRef));
+    assert.ok(primarySkill.includes(researchDrivenObjectRefs.stageDecompositionSubpacketSetRef));
     assert.ok(generatedPrompt.includes('ResearchSynthesisPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt'));
     assert.ok(generatedPrompt.includes(researchDrivenTargetAgent.research_synthesis_refs[0]));
     assert.equal(payload.target_agent.selected_opl_profile_refs, undefined);

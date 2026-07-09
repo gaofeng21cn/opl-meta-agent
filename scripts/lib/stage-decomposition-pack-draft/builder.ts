@@ -7,6 +7,7 @@ import {
   buildProfileSelectionReceipt,
   buildReferenceDesignPacket,
   buildResearchSynthesisPacket,
+  buildStageDecompositionSubpacketSet,
   buildTransferMap,
   buildTransferablePatternRequirements,
   type AgentPackPlanOptions,
@@ -156,8 +157,9 @@ function profileRequirementLines(targetAgent: TargetAgent): string[] {
     ),
     ...transferablePatternRequirements.map((requirement) => `Transferable pattern requirement: ${requirement}`),
     ...capabilityPlanRequirements.map((requirement) => `Capability plan requirement: ${requirement}`),
-    'For source-derived design, materialize ReferenceDesignPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before target pack materialization, then preserve AgentBuildReceipt as build proof.',
-    'For research-driven design, materialize ResearchSynthesisPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before target pack materialization, then preserve AgentBuildReceipt as build proof.',
+    'Preserve StageDecompositionSubpacketSet as the ordered internal cognitive packet chain and treat generated files as materializer projections, not as the design source of truth.',
+    'For source-derived design, materialize ReferenceDesignPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before target pack materialization, preserve StageDecompositionSubpacketSet, then preserve AgentBuildReceipt as build proof.',
+    'For research-driven design, materialize ResearchSynthesisPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before target pack materialization, preserve StageDecompositionSubpacketSet, then preserve AgentBuildReceipt as build proof.',
     'Map builtin profile, source-derived design, and research-driven design requirements into knowledge/tool/evaluation refs before owner handoff.',
   ];
 }
@@ -449,12 +451,14 @@ function buildStageControlPlane({
   const agentPackPlan = buildAgentPackPlan(targetAgent, agentPackPlanOptions);
   const designAdmissionReceipt = buildDesignAdmissionReceipt(targetAgent, agentPackPlanOptions);
   const buildReceipt = buildAgentBuildReceipt(targetAgent, agentPackPlanOptions);
+  const stageDecompositionSubpacketSet = buildStageDecompositionSubpacketSet(targetAgent, agentPackPlanOptions);
   const referenceDesignPacketRef = optionalString(referenceDesignPacket?.packet_ref);
   const researchSynthesisPacketRef = optionalString(researchSynthesisPacket?.packet_ref);
   const transferMapRef = optionalString(transferMap?.transfer_map_ref);
   const agentPackPlanRef = optionalString(agentPackPlan?.plan_ref);
   const designAdmissionReceiptRef = optionalString(designAdmissionReceipt?.receipt_ref);
   const buildReceiptRef = optionalString(buildReceipt?.receipt_ref);
+  const stageDecompositionSubpacketSetRef = optionalString(stageDecompositionSubpacketSet?.packet_set_ref);
   const stagePatternSourceRefs = plannedSourcePatternRefs(agentPackPlan);
   const referenceDesignSourceRefs = stringList(targetAgent.reference_design_source_refs);
   const referenceDesignPatternPacketRefs = stringList(targetAgent.reference_design_pattern_packet_refs);
@@ -482,6 +486,9 @@ function buildStageControlPlane({
     ...(transferMapRef ? [ref('transfer_map_ref', transferMapRef)] : []),
     ...(agentPackPlanRef ? [ref('agent_pack_plan_ref', agentPackPlanRef)] : []),
     ...(designAdmissionReceiptRef ? [ref('design_admission_receipt_ref', designAdmissionReceiptRef)] : []),
+    ...(stageDecompositionSubpacketSetRef
+      ? [ref('stage_decomposition_subpacket_set_ref', stageDecompositionSubpacketSetRef)]
+      : []),
   ];
   const referenceDesignRequiredRefs = [
     ...(referenceDesignSourceRefs.length > 0 ? [`reference-design-source-refs:${domainId}`] : []),
@@ -494,6 +501,9 @@ function buildStageControlPlane({
     ...(transferMapRef ? [`transfer-map-ref:${transferMapRef}`] : []),
     ...(agentPackPlanRef ? [`agent-pack-plan-ref:${agentPackPlanRef}`] : []),
     ...(designAdmissionReceiptRef ? [`design-admission-receipt-ref:${designAdmissionReceiptRef}`] : []),
+    ...(stageDecompositionSubpacketSetRef
+      ? [`stage-decomposition-subpacket-set-ref:${stageDecompositionSubpacketSetRef}`]
+      : []),
   ];
   return {
     surface_kind: 'family_stage_control_plane',
@@ -528,6 +538,11 @@ function buildStageControlPlane({
     build_receipt: buildReceipt,
     build_receipt_ref: buildReceiptRef,
     build_receipt_refs: buildReceiptRef ? [buildReceiptRef] : [],
+    stage_decomposition_subpacket_set: stageDecompositionSubpacketSet,
+    stage_decomposition_subpacket_set_ref: stageDecompositionSubpacketSetRef,
+    stage_decomposition_subpacket_set_refs: stageDecompositionSubpacketSetRef
+      ? [stageDecompositionSubpacketSetRef]
+      : [],
     reference_design_source_refs: referenceDesignSourceRefs,
     reference_design_pattern_packet_refs: referenceDesignPatternPacketRefs,
     research_source_refs: researchSourceRefs,
@@ -576,6 +591,11 @@ function buildStageControlPlane({
         build_receipt: buildReceipt,
         build_receipt_ref: buildReceiptRef,
         build_receipt_refs: buildReceiptRef ? [buildReceiptRef] : [],
+        stage_decomposition_subpacket_set: stageDecompositionSubpacketSet,
+        stage_decomposition_subpacket_set_ref: stageDecompositionSubpacketSetRef,
+        stage_decomposition_subpacket_set_refs: stageDecompositionSubpacketSetRef
+          ? [stageDecompositionSubpacketSetRef]
+          : [],
         stage_pattern_source_refs: stagePatternSourceRefs,
         reference_design_pattern_packet_refs: referenceDesignPatternPacketRefs,
         research_source_refs: researchSourceRefs,
@@ -687,6 +707,9 @@ function buildStageControlPlane({
             ref('executor_receipt_ref', `executor-receipt-ref:${stageId}/codex-cli`),
             ref('boundary_receipt_ref', `boundary-receipt-ref:${stageId}/refs-only`),
             ...(designAdmissionReceiptRef ? [ref('design_admission_receipt_ref', designAdmissionReceiptRef)] : []),
+            ...(stageDecompositionSubpacketSetRef
+              ? [ref('stage_decomposition_subpacket_set_ref', stageDecompositionSubpacketSetRef)]
+              : []),
             ...(buildReceiptRef ? [ref('agent_build_receipt_ref', buildReceiptRef)] : []),
             ref('independent_gate_receipt_ref', `independent-gate-receipt-ref:${stageId}`),
             ref('user_stage_log_ref', `stage-user-log-ref:${stageId}`),
@@ -882,7 +905,7 @@ function buildFiles({
         ...referenceDesignSourceRefs.map((sourceRef) => `Reference design source: ${sourceRef}`),
         ...referenceDesignPatternNotes.map((note) => `Transfer pattern: ${note}`),
         ...referenceDesignPatternPacketRefs.map((packetRef) => `Pattern packet ref: ${packetRef}`),
-        'Extract transferable workflow, grounding, evaluation, handoff, and failure-taxonomy patterns into ReferenceDesignPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before materialization, then preserve AgentBuildReceipt; do not copy external runtime ownership or domain verdicts.',
+        'Extract transferable workflow, grounding, evaluation, handoff, and failure-taxonomy patterns into ReferenceDesignPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before materialization, preserve StageDecompositionSubpacketSet, then preserve AgentBuildReceipt; do not copy external runtime ownership or domain verdicts.',
       ]
     : [];
   const researchDesignLines = researchSourceRefs.length > 0
@@ -897,7 +920,7 @@ function buildFiles({
         ...researchSourceRefs.map((sourceRef) => `Research source: ${sourceRef}`),
         ...expertPracticeNotes.map((note) => `Expert practice: ${note}`),
         ...researchSynthesisRefs.map((synthesisRef) => `Research synthesis ref: ${synthesisRef}`),
-        'Synthesize expert practice into ResearchSynthesisPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before materialization, then preserve AgentBuildReceipt; do not treat public research as target truth or owner verdicts.',
+        'Synthesize expert practice into ResearchSynthesisPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before materialization, preserve StageDecompositionSubpacketSet, then preserve AgentBuildReceipt; do not treat public research as target truth or owner verdicts.',
       ]
     : [];
   return [
@@ -1056,6 +1079,9 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
     stage_control_plane: stageControlPlane,
     stage_native_artifact_contract: stageNativeArtifactContract,
     foundry_agent_series: buildFoundryAgentSeriesContract(targetAgent, stageControlPlane, owner),
+    stage_decomposition_subpacket_set: stageControlPlane.stage_decomposition_subpacket_set,
+    stage_decomposition_subpacket_set_ref: stageControlPlane.stage_decomposition_subpacket_set_ref,
+    stage_decomposition_subpacket_set_refs: stageControlPlane.stage_decomposition_subpacket_set_refs,
     files: buildFiles(spec),
   };
   return {
@@ -1085,13 +1111,13 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
         ...(referenceDesignSourceRefs.length > 0 || referenceDesignPatternPacketRefs.length > 0
           ? [
               'Preserved external reference design refs and pattern packet refs as architecture inspiration only.',
-              'Materialized ReferenceDesignPacket, TransferMap, and AgentPackPlan refs before target stage pack handoff.',
+              'Materialized ReferenceDesignPacket, TransferMap, AgentPackPlan, and StageDecompositionSubpacketSet refs before target stage pack handoff.',
             ]
           : []),
         ...(researchSourceRefs.length > 0 || researchSynthesisRefs.length > 0
           ? [
               'Preserved expert-practice research refs and synthesis refs as design inspiration only.',
-              'Materialized ResearchSynthesisPacket, TransferMap, and AgentPackPlan refs before target stage pack handoff.',
+              'Materialized ResearchSynthesisPacket, TransferMap, AgentPackPlan, and StageDecompositionSubpacketSet refs before target stage pack handoff.',
             ]
           : []),
       ],
@@ -1122,6 +1148,9 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
         ...(stageControlPlane.research_synthesis_packet_ref ? [String(stageControlPlane.research_synthesis_packet_ref)] : []),
         ...(stageControlPlane.transfer_map_ref ? [String(stageControlPlane.transfer_map_ref)] : []),
         ...(stageControlPlane.agent_pack_plan_ref ? [String(stageControlPlane.agent_pack_plan_ref)] : []),
+        ...(stageControlPlane.stage_decomposition_subpacket_set_ref
+          ? [String(stageControlPlane.stage_decomposition_subpacket_set_ref)]
+          : []),
       ],
     },
     route_impact: {

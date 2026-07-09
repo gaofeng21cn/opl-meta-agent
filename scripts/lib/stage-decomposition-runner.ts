@@ -10,6 +10,7 @@ import {
   buildReferenceDesignPacket,
   buildResearchDrivenDesignReceipt,
   buildResearchSynthesisPacket,
+  buildStageDecompositionSubpacketSet,
   buildSourceDerivedDesignReceipt,
   buildTransferMap,
   buildTransferablePatternRequirements,
@@ -88,6 +89,7 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
   const agentPackPlan = buildAgentPackPlan(input.targetAgent);
   const designAdmissionReceipt = buildDesignAdmissionReceipt(input.targetAgent);
   const buildReceipt = buildAgentBuildReceipt(input.targetAgent);
+  const stageDecompositionSubpacketSet = buildStageDecompositionSubpacketSet(input.targetAgent);
   return {
     surface_kind: 'opl_meta_agent_stage_decomposition_attempt_input',
     version: 'opl-meta-agent.stage-decomposition-attempt-input.v1',
@@ -117,6 +119,11 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
       design_admission_receipt_ref: designAdmissionReceipt?.receipt_ref ?? null,
       build_receipt: buildReceipt,
       build_receipt_ref: buildReceipt?.receipt_ref ?? null,
+      stage_decomposition_subpacket_set: stageDecompositionSubpacketSet,
+      stage_decomposition_subpacket_set_ref: stageDecompositionSubpacketSet?.packet_set_ref ?? null,
+      stage_decomposition_subpacket_set_refs: stageDecompositionSubpacketSet?.packet_set_ref
+        ? [stageDecompositionSubpacketSet.packet_set_ref]
+        : [],
       reference_design_pattern_packet_refs: profileSelectionReceipt.reference_design_pattern_packet_refs,
       research_source_refs: profileSelectionReceipt.research_source_refs,
       expert_practice_notes: profileSelectionReceipt.expert_practice_notes,
@@ -164,6 +171,11 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
       design_admission_receipt_ref: designAdmissionReceipt?.receipt_ref ?? null,
       build_receipt: buildReceipt,
       build_receipt_ref: buildReceipt?.receipt_ref ?? null,
+      stage_decomposition_subpacket_set: stageDecompositionSubpacketSet,
+      stage_decomposition_subpacket_set_ref: stageDecompositionSubpacketSet?.packet_set_ref ?? null,
+      stage_decomposition_subpacket_set_refs: stageDecompositionSubpacketSet?.packet_set_ref
+        ? [stageDecompositionSubpacketSet.packet_set_ref]
+        : [],
       transferable_pattern_requirements: buildTransferablePatternRequirements(input.targetAgent),
       capability_plan_requirements: buildCapabilityPlanRequirements(input.targetAgent),
       role: 'external_architecture_or_research_inspiration_not_target_domain_truth',

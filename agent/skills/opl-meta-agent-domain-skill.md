@@ -15,7 +15,7 @@
 
 1. 执行 `intent-intake`，冻结目标、边界和 acceptance criteria，并把自然语言需求归一为 target-agent descriptor 字段。
 2. 执行 `web-experience-research`、用户提供参考设计读取，或消费 OPL source ingest / Codex extraction 形成的 pattern packet refs；只吸收可迁移模式，不复制外部 runtime、私有数据或领域 truth。若用户提供论文/PDF/repo/案例系统，参考来源是设计来源，profile/catalog/template 只作为 OPL conformance 下限或 route readback。
-3. 执行 `stage-decomposition` Codex stage attempt，产出 typed closeout packet；stage/action/pack files/gate policy 必须从该 closeout 来。source-derived 路线必须先生成 `ReferenceDesignPacket -> TransferMap -> AgentPackPlan` 并通过 `DesignAdmissionReceipt`，且每个 source-derived stage requirement 引用 `source_pattern_ref`/`stage_pattern_source_refs` 或 `target_only_requirement`；`AgentBuildReceipt` / `build_receipt` 只作为物化后的构建证明。
+3. 执行 `stage-decomposition` Codex stage attempt，产出 typed closeout packet；stage/action/pack files/gate policy 必须从该 closeout 来。source-derived 路线必须先生成 `ReferenceDesignPacket -> TransferMap -> AgentPackPlan` 并通过 `DesignAdmissionReceipt`；research-driven 路线必须先生成 `ResearchSynthesisPacket -> TransferMap -> AgentPackPlan -> DesignAdmissionReceipt`；两条路线都必须保留 `StageDecompositionSubpacketSet` 作为 stage 内部有序 subpacket 链，且每个 design-derived stage requirement 引用 `source_pattern_ref`/`stage_pattern_source_refs` 或 `target_only_requirement`；`AgentBuildReceipt` / `build_receipt` 只作为物化后的构建证明。
 4. 执行 `agent-skeleton-build`，只校验并物化 closeout 中的 candidate package，再跑 scaffold/interface validation；scaffold 只是物理骨架，不是目标 agent 设计来源。
 5. 执行 `eval-suite-build` 和 `baseline-run`，获得 Agent Lab evidence。
 6. 对生成后的 target agent repo 执行 takeover / Agent Lab external suite，获得 takeover receipt、online-learning candidate 和 mechanism proposal。
@@ -37,7 +37,7 @@
 ## 质量门槛
 
 - 用户自然语言能追溯到 `target_brief`；字段缺失时只回问会改变交付物或 owner boundary 的问题。
-- 用户提供论文、PDF、repo 或案例系统作为参考时，必须保留 reference design refs / pattern packet refs，并先形成 `ReferenceDesignPacket -> TransferMap -> AgentPackPlan -> DesignAdmissionReceipt`；这些 refs 只作为架构/评估/工作流模式来源，不写成 target truth、runtime dependency、owner receipt 或 quality verdict。物化后再保留 `AgentBuildReceipt` / `build_receipt`。
+- 用户提供论文、PDF、repo 或案例系统作为参考时，必须保留 reference design refs / pattern packet refs，并先形成 `ReferenceDesignPacket -> TransferMap -> AgentPackPlan -> DesignAdmissionReceipt`；用户只有模糊想法时必须先形成 `ResearchSynthesisPacket -> TransferMap -> AgentPackPlan -> DesignAdmissionReceipt`；两条路线都必须保留 `StageDecompositionSubpacketSet`，证明没有跳过设计依据提炼、迁移和准入。上述 refs 只作为架构/评估/工作流模式来源，不写成 target truth、runtime dependency、owner receipt 或 quality verdict。物化后再保留 `AgentBuildReceipt` / `build_receipt`。
 - 所有 stage 都有 prompt、tools/action、knowledge、handoff、quality gate declaration 和 independent gate policy。
 - free text closeout、partial refs、缺 independent gate policy、缺 quality gate declaration 或 self-review 必须 fail closed。
 - generated interfaces 从 contracts 派生，不新增私有 wrapper。

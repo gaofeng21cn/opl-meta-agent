@@ -7,6 +7,7 @@ import {
   buildProfileSelectionReceipt,
   buildReferenceDesignPacket,
   buildResearchSynthesisPacket,
+  buildStageDecompositionSubpacketSet,
   buildTransferMap,
   buildTransferablePatternRequirements,
   type JsonObject,
@@ -599,6 +600,91 @@ function validateBuildReceiptObject(
   ].forEach((fieldName) => assertBooleanFalse(boundary, fieldName, `${field}.build_receipt.authority_boundary.${fieldName}`));
 }
 
+function validateStageDecompositionSubpacketSetObject(
+  actualSubpacketSet: JsonObject,
+  targetAgent: TargetAgent,
+  packetRef: string,
+  transferMapRef: string,
+  agentPackPlanRef: string,
+  designAdmissionReceiptRef: string,
+  buildReceiptRef: string,
+  subpacketSetRef: string,
+  field: string,
+): void {
+  const expectedSet = buildStageDecompositionSubpacketSet(targetAgent);
+  if (!expectedSet) {
+    throw new Error(`stage-decomposition pack draft ${field}.stage_decomposition_subpacket_set is not expected.`);
+  }
+  if (
+    actualSubpacketSet.surface_kind !== 'opl_meta_agent_stage_decomposition_subpacket_set'
+    || actualSubpacketSet.packet_set_ref !== subpacketSetRef
+    || actualSubpacketSet.stage_id !== 'stage-decomposition'
+  ) {
+    throw new Error(`stage-decomposition pack draft ${field}.stage_decomposition_subpacket_set identity is invalid.`);
+  }
+  if (
+    actualSubpacketSet.design_basis_packet_ref !== packetRef
+    || actualSubpacketSet.transfer_map_ref !== transferMapRef
+    || actualSubpacketSet.agent_pack_plan_ref !== agentPackPlanRef
+    || actualSubpacketSet.design_admission_receipt_ref !== designAdmissionReceiptRef
+    || actualSubpacketSet.build_receipt_ref !== buildReceiptRef
+  ) {
+    throw new Error(`stage-decomposition pack draft ${field}.stage_decomposition_subpacket_set refs are invalid.`);
+  }
+  const actualSteps = asRecordArray(
+    actualSubpacketSet.cognitive_step_packets,
+    `${field}.stage_decomposition_subpacket_set.cognitive_step_packets`,
+  );
+  const expectedSteps = asRecordArray(
+    expectedSet.cognitive_step_packets,
+    `${field}.expected_stage_decomposition_subpacket_set.cognitive_step_packets`,
+  );
+  if (actualSteps.length !== expectedSteps.length) {
+    throw new Error(`stage-decomposition pack draft ${field}.stage_decomposition_subpacket_set cognitive step count is invalid.`);
+  }
+  expectedSteps.forEach((expectedStep, index) => {
+    const actualStep = actualSteps[index];
+    ['step_id', 'packet_kind', 'packet_ref'].forEach((stepField) => {
+      if (actualStep[stepField] !== expectedStep[stepField]) {
+        throw new Error(
+          `stage-decomposition pack draft ${field}.stage_decomposition_subpacket_set step ${index} ${stepField} is invalid.`,
+        );
+      }
+    });
+  });
+  const boundary = asRecord(
+    actualSubpacketSet.materialization_boundary,
+    `${field}.stage_decomposition_subpacket_set.materialization_boundary`,
+  );
+  [
+    'packet_set_is_materialization_source_of_truth',
+    'generated_files_are_projection_surface',
+    'final_files_must_trace_to_agent_pack_plan',
+    'build_receipt_is_post_materialization_proof',
+  ].forEach((fieldName) => {
+    if (boundary[fieldName] !== true) {
+      throw new Error(`stage-decomposition pack draft ${field}.stage_decomposition_subpacket_set.materialization_boundary.${fieldName} must be true.`);
+    }
+  });
+  if (boundary.ai_freeform_file_bodies_are_design_source_of_truth !== false) {
+    throw new Error(
+      `stage-decomposition pack draft ${field}.stage_decomposition_subpacket_set must not treat AI freeform file bodies as source of truth.`,
+    );
+  }
+  [
+    'design_basis_packet_present',
+    'transfer_map_present',
+    'agent_pack_plan_present',
+    'design_admission_receipt_present_before_materialization',
+    'agent_build_receipt_present_after_materialization',
+    'generated_files_trace_to_agent_pack_plan',
+  ].forEach((check) => assertHasStringRef(
+    actualSubpacketSet.fail_closed_checks,
+    check,
+    `${field}.stage_decomposition_subpacket_set.fail_closed_checks`,
+  ));
+}
+
 function assertReferenceDesignObjectRefs(value: JsonObject, targetAgent: TargetAgent, field: string): void {
   const packet = buildReferenceDesignPacket(targetAgent);
   const researchPacket = buildResearchSynthesisPacket(targetAgent);
@@ -606,6 +692,7 @@ function assertReferenceDesignObjectRefs(value: JsonObject, targetAgent: TargetA
   const agentPackPlan = buildAgentPackPlan(targetAgent);
   const designAdmissionReceipt = buildDesignAdmissionReceipt(targetAgent);
   const buildReceipt = buildAgentBuildReceipt(targetAgent);
+  const stageDecompositionSubpacketSet = buildStageDecompositionSubpacketSet(targetAgent);
   const packetRef = optionalString(packet?.packet_ref ?? researchPacket?.packet_ref);
   const referencePacketRef = optionalString(packet?.packet_ref);
   const researchPacketRef = optionalString(researchPacket?.packet_ref);
@@ -613,12 +700,18 @@ function assertReferenceDesignObjectRefs(value: JsonObject, targetAgent: TargetA
   const agentPackPlanRef = optionalString(agentPackPlan?.plan_ref);
   const designAdmissionReceiptRef = optionalString(designAdmissionReceipt?.receipt_ref);
   const buildReceiptRef = optionalString(buildReceipt?.receipt_ref);
+  const stageDecompositionSubpacketSetRef = optionalString(stageDecompositionSubpacketSet?.packet_set_ref);
   assertOptionalRefField(value.reference_design_packet_ref, referencePacketRef, `${field}.reference_design_packet_ref`);
   assertOptionalRefField(value.research_synthesis_packet_ref, researchPacketRef, `${field}.research_synthesis_packet_ref`);
   assertOptionalRefField(value.transfer_map_ref, transferMapRef, `${field}.transfer_map_ref`);
   assertOptionalRefField(value.agent_pack_plan_ref, agentPackPlanRef, `${field}.agent_pack_plan_ref`);
   assertOptionalRefField(value.design_admission_receipt_ref, designAdmissionReceiptRef, `${field}.design_admission_receipt_ref`);
   assertOptionalRefField(value.build_receipt_ref, buildReceiptRef, `${field}.build_receipt_ref`);
+  assertOptionalRefField(
+    value.stage_decomposition_subpacket_set_ref,
+    stageDecompositionSubpacketSetRef,
+    `${field}.stage_decomposition_subpacket_set_ref`,
+  );
   assertOptionalRefArrayIncludes(
     value.reference_design_packet_refs,
     referencePacketRef,
@@ -637,8 +730,20 @@ function assertReferenceDesignObjectRefs(value: JsonObject, targetAgent: TargetA
     `${field}.design_admission_receipt_refs`,
   );
   assertOptionalRefArrayIncludes(value.build_receipt_refs, buildReceiptRef, `${field}.build_receipt_refs`);
+  assertOptionalRefArrayIncludes(
+    value.stage_decomposition_subpacket_set_refs,
+    stageDecompositionSubpacketSetRef,
+    `${field}.stage_decomposition_subpacket_set_refs`,
+  );
 
-  if (packetRef && transferMapRef && agentPackPlanRef && designAdmissionReceiptRef && buildReceiptRef) {
+  if (
+    packetRef
+    && transferMapRef
+    && agentPackPlanRef
+    && designAdmissionReceiptRef
+    && buildReceiptRef
+    && stageDecompositionSubpacketSetRef
+  ) {
     const actualReferencePacket = referencePacketRef
       ? asRecord(value.reference_design_packet, `${field}.reference_design_packet`)
       : null;
@@ -649,6 +754,10 @@ function assertReferenceDesignObjectRefs(value: JsonObject, targetAgent: TargetA
     const actualAgentPackPlan = asRecord(value.agent_pack_plan, `${field}.agent_pack_plan`);
     const actualDesignAdmissionReceipt = asRecord(value.design_admission_receipt, `${field}.design_admission_receipt`);
     const actualBuildReceipt = asRecord(value.build_receipt, `${field}.build_receipt`);
+    const actualSubpacketSet = asRecord(
+      value.stage_decomposition_subpacket_set,
+      `${field}.stage_decomposition_subpacket_set`,
+    );
     if (actualReferencePacket && referencePacketRef) {
       validateReferenceDesignPacketObject(actualReferencePacket, targetAgent, referencePacketRef, transferMapRef, agentPackPlanRef, field);
     }
@@ -676,6 +785,17 @@ function assertReferenceDesignObjectRefs(value: JsonObject, targetAgent: TargetA
       buildReceiptRef,
       field,
     );
+    validateStageDecompositionSubpacketSetObject(
+      actualSubpacketSet,
+      targetAgent,
+      packetRef,
+      transferMapRef,
+      agentPackPlanRef,
+      designAdmissionReceiptRef,
+      buildReceiptRef,
+      stageDecompositionSubpacketSetRef,
+      field,
+    );
   }
 }
 
@@ -685,6 +805,7 @@ function sourceDerivedObjectRequirementRefs(targetAgent: TargetAgent): string[] 
   const transferMap = buildTransferMap(targetAgent);
   const agentPackPlan = buildAgentPackPlan(targetAgent);
   const designAdmissionReceipt = buildDesignAdmissionReceipt(targetAgent);
+  const stageDecompositionSubpacketSet = buildStageDecompositionSubpacketSet(targetAgent);
   return [
     optionalString(packet?.packet_ref) ? `reference-design-packet-ref:${String(packet?.packet_ref)}` : null,
     optionalString(researchPacket?.packet_ref) ? `research-synthesis-packet-ref:${String(researchPacket?.packet_ref)}` : null,
@@ -692,6 +813,9 @@ function sourceDerivedObjectRequirementRefs(targetAgent: TargetAgent): string[] 
     optionalString(agentPackPlan?.plan_ref) ? `agent-pack-plan-ref:${String(agentPackPlan?.plan_ref)}` : null,
     optionalString(designAdmissionReceipt?.receipt_ref)
       ? `design-admission-receipt-ref:${String(designAdmissionReceipt?.receipt_ref)}`
+      : null,
+    optionalString(stageDecompositionSubpacketSet?.packet_set_ref)
+      ? `stage-decomposition-subpacket-set-ref:${String(stageDecompositionSubpacketSet?.packet_set_ref)}`
       : null,
   ].filter((entry): entry is string => Boolean(entry));
 }
@@ -1136,9 +1260,11 @@ function validateStageControlPlane(
           ? 'transfer_map_ref'
           : expectedRef.startsWith('agent-pack-plan-ref:')
             ? 'agent_pack_plan_ref'
-            : 'design_admission_receipt_ref';
+            : expectedRef.startsWith('design-admission-receipt-ref:')
+              ? 'design_admission_receipt_ref'
+              : 'stage_decomposition_subpacket_set_ref';
       const rawRef = expectedRef.replace(
-        /^reference-design-packet-ref:|^research-synthesis-packet-ref:|^transfer-map-ref:|^agent-pack-plan-ref:|^design-admission-receipt-ref:/,
+        /^reference-design-packet-ref:|^research-synthesis-packet-ref:|^transfer-map-ref:|^agent-pack-plan-ref:|^design-admission-receipt-ref:|^stage-decomposition-subpacket-set-ref:/,
         '',
       );
       if (!inputs.some((entry) => entry.ref_kind === refKind && entry.ref === rawRef)) {
@@ -1509,6 +1635,45 @@ export function validateStageDecompositionCloseoutPacket(
     'research_synthesis_refs',
   );
   validateNoForbiddenWritePolicy(asRecord(draft.no_forbidden_write_policy, 'no_forbidden_write_policy'));
+  const expectedSubpacketSet = buildStageDecompositionSubpacketSet(targetAgent);
+  if (expectedSubpacketSet) {
+    const packet = buildReferenceDesignPacket(targetAgent);
+    const researchPacket = buildResearchSynthesisPacket(targetAgent);
+    const transferMap = buildTransferMap(targetAgent);
+    const agentPackPlan = buildAgentPackPlan(targetAgent);
+    const designAdmissionReceipt = buildDesignAdmissionReceipt(targetAgent);
+    const buildReceipt = buildAgentBuildReceipt(targetAgent);
+    const packetRef = optionalString(packet?.packet_ref ?? researchPacket?.packet_ref);
+    const transferMapRef = optionalString(transferMap?.transfer_map_ref);
+    const agentPackPlanRef = optionalString(agentPackPlan?.plan_ref);
+    const designAdmissionReceiptRef = optionalString(designAdmissionReceipt?.receipt_ref);
+    const buildReceiptRef = optionalString(buildReceipt?.receipt_ref);
+    const subpacketSetRef = optionalString(expectedSubpacketSet.packet_set_ref);
+    if (!packetRef || !transferMapRef || !agentPackPlanRef || !designAdmissionReceiptRef || !buildReceiptRef || !subpacketSetRef) {
+      throw new Error('stage-decomposition pack draft expected subpacket refs are incomplete.');
+    }
+    assertOptionalRefField(
+      draft.stage_decomposition_subpacket_set_ref,
+      subpacketSetRef,
+      'stage_decomposition_pack_draft.stage_decomposition_subpacket_set_ref',
+    );
+    assertOptionalRefArrayIncludes(
+      draft.stage_decomposition_subpacket_set_refs,
+      subpacketSetRef,
+      'stage_decomposition_pack_draft.stage_decomposition_subpacket_set_refs',
+    );
+    validateStageDecompositionSubpacketSetObject(
+      asRecord(draft.stage_decomposition_subpacket_set, 'stage_decomposition_pack_draft.stage_decomposition_subpacket_set'),
+      targetAgent,
+      packetRef,
+      transferMapRef,
+      agentPackPlanRef,
+      designAdmissionReceiptRef,
+      buildReceiptRef,
+      subpacketSetRef,
+      'stage_decomposition_pack_draft',
+    );
+  }
   const files = filesByPath(draft.files);
   const artifactMorphologyContract = asRecord(
     draft.artifact_morphology_contract,

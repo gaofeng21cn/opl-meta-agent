@@ -173,6 +173,9 @@ export type StageDecompositionPackDraft = {
   stage_control_plane: JsonObject;
   stage_native_artifact_contract: JsonObject;
   foundry_agent_series: JsonObject;
+  stage_decomposition_subpacket_set?: JsonObject | null;
+  stage_decomposition_subpacket_set_ref?: string | null;
+  stage_decomposition_subpacket_set_refs?: string[];
   files: StageDecompositionFileDraft[];
 };
 

@@ -68,6 +68,7 @@ test('stage-decomposition materializer writes refs-only stage pack surfaces', ()
     assert.equal(stage.authority_boundary.can_write_target_domain_truth, false);
     assert.equal(stage.stage_contract.stage_completion_policy.provider_completion_is_domain_completion, false);
     assert.equal(artifactMorphology.native_source_policy.creative_source_must_not_be_generator_code, true);
+    assert.equal(stageControl.stage_decomposition_subpacket_set, null);
     assert.equal(
       fs.existsSync(path.join(targetAgentDir, 'contracts/stage_native_artifacts/evidence-synthesis-plan/attempt.json')),
       true,
@@ -107,34 +108,57 @@ test('stage-decomposition validator fails closed on empty source-derived design 
     surface_kind: 'opl_meta_agent_transfer_map',
     transfer_map_ref: stageControl.transfer_map_ref,
   };
-	  const emptyAgentPackPlan = {
-	    surface_kind: 'opl_meta_agent_agent_pack_plan',
-	    plan_ref: stageControl.agent_pack_plan_ref,
-	  };
-	  const emptyDesignAdmissionReceipt = {
-	    surface_kind: 'opl_meta_agent_design_admission_receipt',
-	    receipt_ref: stageControl.design_admission_receipt_ref,
-	  };
-	  const emptyBuildReceipt = {
-	    surface_kind: 'opl_meta_agent_build_receipt',
-	    receipt_ref: stageControl.build_receipt_ref,
-	  };
-	  stageControl.reference_design_packet = emptyPacket;
-	  stageControl.transfer_map = emptyTransferMap;
-	  stageControl.agent_pack_plan = emptyAgentPackPlan;
-	  stageControl.design_admission_receipt = emptyDesignAdmissionReceipt;
-	  stageControl.build_receipt = emptyBuildReceipt;
-	  stage.reference_design_packet = emptyPacket;
-	  stage.transfer_map = emptyTransferMap;
-	  stage.agent_pack_plan = emptyAgentPackPlan;
-	  stage.design_admission_receipt = emptyDesignAdmissionReceipt;
-	  stage.build_receipt = emptyBuildReceipt;
+  const emptyAgentPackPlan = {
+    surface_kind: 'opl_meta_agent_agent_pack_plan',
+    plan_ref: stageControl.agent_pack_plan_ref,
+  };
+  const emptyDesignAdmissionReceipt = {
+    surface_kind: 'opl_meta_agent_design_admission_receipt',
+    receipt_ref: stageControl.design_admission_receipt_ref,
+  };
+  const emptyBuildReceipt = {
+    surface_kind: 'opl_meta_agent_build_receipt',
+    receipt_ref: stageControl.build_receipt_ref,
+  };
+  stageControl.reference_design_packet = emptyPacket;
+  stageControl.transfer_map = emptyTransferMap;
+  stageControl.agent_pack_plan = emptyAgentPackPlan;
+  stageControl.design_admission_receipt = emptyDesignAdmissionReceipt;
+  stageControl.build_receipt = emptyBuildReceipt;
+  stage.reference_design_packet = emptyPacket;
+  stage.transfer_map = emptyTransferMap;
+  stage.agent_pack_plan = emptyAgentPackPlan;
+  stage.design_admission_receipt = emptyDesignAdmissionReceipt;
+  stage.build_receipt = emptyBuildReceipt;
 
   assert.throws(
     () => validateStageDecompositionCloseoutPacket(packet, { targetAgent: sourceDerivedTargetAgent }),
-	    /reference_source_refs|transferable_design_patterns|extractable_design_aspects|mappings|planned_stage_refs|design_admission_receipt|build_receipt/i,
-	  );
-	});
+    /reference_source_refs|transferable_design_patterns|extractable_design_aspects|mappings|planned_stage_refs|design_admission_receipt|build_receipt/i,
+  );
+});
+
+test('stage-decomposition validator fails closed when subpacket chain is missing or reordered', () => {
+  const packet = buildFixtureStageDecompositionCloseout({ targetAgent: sourceDerivedTargetAgent });
+  const draft = packet.stage_decomposition_pack_draft as JsonObject;
+  const stageControl = draft.stage_control_plane as JsonObject;
+  const stage = (stageControl.stages as JsonObject[])[0];
+
+  delete stageControl.stage_decomposition_subpacket_set;
+
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(packet, { targetAgent: sourceDerivedTargetAgent }),
+    /stage_decomposition_subpacket_set/i,
+  );
+
+  stageControl.stage_decomposition_subpacket_set = stage.stage_decomposition_subpacket_set;
+  const steps = stageControl.stage_decomposition_subpacket_set.cognitive_step_packets as JsonObject[];
+  [steps[0], steps[1]] = [steps[1], steps[0]];
+
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(packet, { targetAgent: sourceDerivedTargetAgent }),
+    /stage_decomposition_subpacket_set step 0/i,
+  );
+});
 
 test('stage-decomposition validator fails closed when source-derived stage lacks source pattern refs', () => {
   const packet = buildFixtureStageDecompositionCloseout({ targetAgent: sourceDerivedTargetAgent });

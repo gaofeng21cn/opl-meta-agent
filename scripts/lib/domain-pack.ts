@@ -750,6 +750,98 @@ export function buildSourceDerivedBuildReceipt(
   return buildAgentBuildReceipt(targetAgent, options);
 }
 
+export function buildStageDecompositionSubpacketSet(
+  targetAgent: MinimalTargetAgent,
+  options: AgentPackPlanOptions = {},
+): JsonObject | null {
+  const referenceDesignPacket = buildReferenceDesignPacket(targetAgent);
+  const researchSynthesisPacket = buildResearchSynthesisPacket(targetAgent);
+  const transferMap = buildTransferMap(targetAgent, options);
+  const agentPackPlan = buildAgentPackPlan(targetAgent, options);
+  const designAdmissionReceipt = buildDesignAdmissionReceipt(targetAgent, options);
+  const buildReceipt = buildAgentBuildReceipt(targetAgent, options);
+  const designBasisPacket = referenceDesignPacket ?? researchSynthesisPacket;
+  if (!designBasisPacket || !transferMap || !agentPackPlan || !designAdmissionReceipt || !buildReceipt) {
+    return null;
+  }
+  const designBasisKind = referenceDesignPacket ? 'source_derived_design' : 'research_driven_design';
+  const designBasisObject = referenceDesignPacket ? 'ReferenceDesignPacket' : 'ResearchSynthesisPacket';
+  const designBasisPacketRef = String(designBasisPacket.packet_ref);
+  const transferMapRef = String(transferMap.transfer_map_ref);
+  const agentPackPlanRef = String(agentPackPlan.plan_ref);
+  const designAdmissionReceiptRef = String(designAdmissionReceipt.receipt_ref);
+  const buildReceiptRef = String(buildReceipt.receipt_ref);
+  return {
+    surface_kind: 'opl_meta_agent_stage_decomposition_subpacket_set',
+    version: 'opl-meta-agent.stage-decomposition-subpacket-set.v1',
+    packet_set_ref: `stage-decomposition-subpacket-set:opl-meta-agent/${targetAgent.domain_id}`,
+    stage_id: 'stage-decomposition',
+    target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
+    profile_selection_mode: buildProfileSelectionMode(targetAgent),
+    design_basis_kind: designBasisKind,
+    design_basis_object: designBasisObject,
+    design_basis_packet_ref: designBasisPacketRef,
+    reference_design_packet_ref: referenceDesignPacket?.packet_ref ?? null,
+    research_synthesis_packet_ref: researchSynthesisPacket?.packet_ref ?? null,
+    transfer_map_ref: transferMapRef,
+    agent_pack_plan_ref: agentPackPlanRef,
+    design_admission_receipt_ref: designAdmissionReceiptRef,
+    build_receipt_ref: buildReceiptRef,
+    cognitive_step_packets: [
+      {
+        step_id: 'design-basis',
+        packet_kind: designBasisObject,
+        packet_ref: designBasisPacketRef,
+        open_judgment_owned_by: 'codex_cli',
+        machine_validation: 'non_empty_transferable_patterns_and_extractable_design_aspects',
+      },
+      {
+        step_id: 'transfer-planning',
+        packet_kind: 'TransferMap',
+        packet_ref: transferMapRef,
+        open_judgment_owned_by: 'codex_cli',
+        machine_validation: 'non_empty_adopt_adapt_reject_mappings',
+      },
+      {
+        step_id: 'agent-pack-planning',
+        packet_kind: 'AgentPackPlan',
+        packet_ref: agentPackPlanRef,
+        open_judgment_owned_by: 'codex_cli',
+        machine_validation: 'planned_stage_refs_and_capability_refs_present',
+      },
+      {
+        step_id: 'design-admission',
+        packet_kind: 'DesignAdmissionReceipt',
+        packet_ref: designAdmissionReceiptRef,
+        open_judgment_owned_by: 'validator',
+        machine_validation: 'design_refs_stage_refs_rejected_patterns_forbidden_claims_boundary',
+      },
+      {
+        step_id: 'build-verification',
+        packet_kind: 'AgentBuildReceipt',
+        packet_ref: buildReceiptRef,
+        open_judgment_owned_by: 'validator',
+        machine_validation: 'post_materialization_trace_to_design_admission',
+      },
+    ],
+    materialization_boundary: {
+      packet_set_is_materialization_source_of_truth: true,
+      generated_files_are_projection_surface: true,
+      ai_freeform_file_bodies_are_design_source_of_truth: false,
+      final_files_must_trace_to_agent_pack_plan: true,
+      build_receipt_is_post_materialization_proof: true,
+    },
+    fail_closed_checks: [
+      'design_basis_packet_present',
+      'transfer_map_present',
+      'agent_pack_plan_present',
+      'design_admission_receipt_present_before_materialization',
+      'agent_build_receipt_present_after_materialization',
+      'generated_files_trace_to_agent_pack_plan',
+    ],
+  };
+}
+
 function buildReferenceDesignBoundary(targetAgent: MinimalTargetAgent): JsonObject {
   const refs = designObjectRefs(targetAgent);
   return {
@@ -1011,6 +1103,7 @@ export function buildProfileSelectionReceipt(targetAgent: MinimalTargetAgent): J
   const agentPackPlan = buildAgentPackPlan(targetAgent);
   const designAdmissionReceipt = buildDesignAdmissionReceipt(targetAgent);
   const buildReceipt = buildAgentBuildReceipt(targetAgent);
+  const stageDecompositionSubpacketSet = buildStageDecompositionSubpacketSet(targetAgent);
   if (selectedProfileRefs.length === 0 && !sourceDerivedDesignReceipt && !researchDrivenDesignReceipt) {
     throw new Error('profile_selection_required:selected_opl_profile_refs_or_design_basis_refs_missing');
   }
@@ -1051,6 +1144,11 @@ export function buildProfileSelectionReceipt(targetAgent: MinimalTargetAgent): J
     design_admission_receipt_ref: designAdmissionReceipt?.receipt_ref ?? null,
     build_receipt: buildReceipt,
     build_receipt_ref: buildReceipt?.receipt_ref ?? null,
+    stage_decomposition_subpacket_set: stageDecompositionSubpacketSet,
+    stage_decomposition_subpacket_set_ref: stageDecompositionSubpacketSet?.packet_set_ref ?? null,
+    stage_decomposition_subpacket_set_refs: stageDecompositionSubpacketSet?.packet_set_ref
+      ? [stageDecompositionSubpacketSet.packet_set_ref]
+      : [],
     reference_design_pattern_packet_refs: stringList(targetAgent.reference_design_pattern_packet_refs),
     research_source_refs: stringList(targetAgent.research_source_refs),
     expert_practice_notes: stringList(targetAgent.expert_practice_notes),
@@ -1108,7 +1206,7 @@ function referenceDesignMarkdown(targetAgent: MinimalTargetAgent): string[] {
     ...sourceRefs.map((ref) => `- Source ref: ${ref}`),
     ...patternNotes.map((note) => `- Transfer pattern: ${note}`),
     ...patternPacketRefs.map((ref) => `- Pattern packet ref: ${ref}`),
-    'Extract transferable architecture, workflow, rubric, handoff, evaluation, and failure-taxonomy patterns into ReferenceDesignPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before materialization, then preserve AgentBuildReceipt after materialization.',
+    'Extract transferable architecture, workflow, rubric, handoff, evaluation, and failure-taxonomy patterns into ReferenceDesignPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before materialization, preserve StageDecompositionSubpacketSet, then preserve AgentBuildReceipt after materialization.',
     'Do not copy external runtime ownership, private data, domain verdicts, owner receipts, or promotion authority.',
     '',
   ];
@@ -1136,7 +1234,7 @@ function researchSynthesisMarkdown(targetAgent: MinimalTargetAgent): string[] {
     ...sourceRefs.map((ref) => `- Research source ref: ${ref}`),
     ...expertPracticeNotes.map((note) => `- Expert practice note: ${note}`),
     ...synthesisRefs.map((ref) => `- Research synthesis ref: ${ref}`),
-    'Synthesize expert practice into ResearchSynthesisPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before materialization, then preserve AgentBuildReceipt after materialization.',
+    'Synthesize expert practice into ResearchSynthesisPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before materialization, preserve StageDecompositionSubpacketSet, then preserve AgentBuildReceipt after materialization.',
     'Do not treat public research, examples, external runtime ownership, domain verdicts, owner receipts, or promotion authority as target truth.',
     '',
   ];
@@ -1165,6 +1263,9 @@ function profileSelectionMarkdown(targetAgent: MinimalTargetAgent): string[] {
     ...(receipt.agent_pack_plan_ref ? [`- AgentPackPlan ref: ${receipt.agent_pack_plan_ref}`] : []),
     ...(receipt.design_admission_receipt_ref ? [`- DesignAdmissionReceipt ref: ${receipt.design_admission_receipt_ref}`] : []),
     ...(receipt.build_receipt_ref ? [`- AgentBuildReceipt ref: ${receipt.build_receipt_ref}`] : []),
+    ...(receipt.stage_decomposition_subpacket_set_ref
+      ? [`- StageDecompositionSubpacketSet ref: ${receipt.stage_decomposition_subpacket_set_ref}`]
+      : []),
     ...((receipt.reference_design_pattern_packet_refs as string[]).map((ref) => `- Pattern packet ref: ${ref}`)),
     ...((receipt.research_source_refs as string[]).map((ref) => `- Research source ref: ${ref}`)),
     ...((receipt.research_synthesis_refs as string[]).map((ref) => `- Research synthesis ref: ${ref}`)),
@@ -1441,6 +1542,7 @@ function buildTargetAgentPrimarySkillCapability(targetAgent: MinimalTargetAgent)
     agent_pack_plan_ref: profileSelectionReceipt.agent_pack_plan_ref,
     design_admission_receipt_ref: profileSelectionReceipt.design_admission_receipt_ref,
     build_receipt_ref: profileSelectionReceipt.build_receipt_ref,
+    stage_decomposition_subpacket_set_ref: profileSelectionReceipt.stage_decomposition_subpacket_set_ref,
     reference_design_pattern_packet_refs: profileSelectionReceipt.reference_design_pattern_packet_refs,
     research_source_refs: profileSelectionReceipt.research_source_refs,
     research_synthesis_refs: profileSelectionReceipt.research_synthesis_refs,
@@ -1532,6 +1634,11 @@ export function writeTargetAgentCapabilityMap(targetAgentDir: string, targetAgen
     build_receipt: profileSelectionReceipt.build_receipt,
     build_receipt_ref: profileSelectionReceipt.build_receipt_ref,
     build_receipt_refs: profileSelectionReceipt.build_receipt_ref ? [profileSelectionReceipt.build_receipt_ref] : [],
+    stage_decomposition_subpacket_set: profileSelectionReceipt.stage_decomposition_subpacket_set,
+    stage_decomposition_subpacket_set_ref: profileSelectionReceipt.stage_decomposition_subpacket_set_ref,
+    stage_decomposition_subpacket_set_refs: profileSelectionReceipt.stage_decomposition_subpacket_set_ref
+      ? [profileSelectionReceipt.stage_decomposition_subpacket_set_ref]
+      : [],
     reference_design_source_refs: stringList(targetAgent.reference_design_source_refs),
     reference_design_pattern_packet_refs: profileSelectionReceipt.reference_design_pattern_packet_refs,
     research_source_refs: profileSelectionReceipt.research_source_refs,
@@ -1564,6 +1671,9 @@ export function writeTargetAgentCapabilityMap(targetAgentDir: string, targetAgen
         ? [profileSelectionReceipt.design_admission_receipt_ref]
         : [],
       build_receipt_refs: profileSelectionReceipt.build_receipt_ref ? [profileSelectionReceipt.build_receipt_ref] : [],
+      stage_decomposition_subpacket_set_refs: profileSelectionReceipt.stage_decomposition_subpacket_set_ref
+        ? [profileSelectionReceipt.stage_decomposition_subpacket_set_ref]
+        : [],
       reference_design_pattern_packet_refs: profileSelectionReceipt.reference_design_pattern_packet_refs,
       research_source_refs: profileSelectionReceipt.research_source_refs,
       research_synthesis_refs: profileSelectionReceipt.research_synthesis_refs,

@@ -721,6 +721,8 @@ function buildBaselineReceipt(
       agent_pack_plan: profileSelectionReceipt.agent_pack_plan,
       design_admission_receipt_ref: profileSelectionReceipt.design_admission_receipt_ref,
       design_admission_receipt: profileSelectionReceipt.design_admission_receipt,
+      stage_decomposition_subpacket_set_ref: profileSelectionReceipt.stage_decomposition_subpacket_set_ref,
+      stage_decomposition_subpacket_set: profileSelectionReceipt.stage_decomposition_subpacket_set,
       role: 'external_architecture_inspiration_not_target_domain_truth',
       can_write_target_domain_truth: false,
       can_replace_target_owner_judgment: false,
@@ -737,6 +739,8 @@ function buildBaselineReceipt(
       agent_pack_plan_ref: profileSelectionReceipt.agent_pack_plan_ref,
       design_admission_receipt_ref: profileSelectionReceipt.design_admission_receipt_ref,
       design_admission_receipt: profileSelectionReceipt.design_admission_receipt,
+      stage_decomposition_subpacket_set_ref: profileSelectionReceipt.stage_decomposition_subpacket_set_ref,
+      stage_decomposition_subpacket_set: profileSelectionReceipt.stage_decomposition_subpacket_set,
       role: 'expert_practice_research_inspiration_not_target_domain_truth',
       can_write_target_domain_truth: false,
       can_replace_target_owner_judgment: false,
@@ -954,6 +958,11 @@ export function runBuildAgentBaseline({
     design_admission_receipt_ref: profileSelectionReceipt.design_admission_receipt_ref,
     build_receipt: profileSelectionReceipt.build_receipt,
     build_receipt_ref: profileSelectionReceipt.build_receipt_ref,
+    stage_decomposition_subpacket_set: profileSelectionReceipt.stage_decomposition_subpacket_set,
+    stage_decomposition_subpacket_set_ref: profileSelectionReceipt.stage_decomposition_subpacket_set_ref,
+    stage_decomposition_subpacket_set_refs: profileSelectionReceipt.stage_decomposition_subpacket_set_ref
+      ? [profileSelectionReceipt.stage_decomposition_subpacket_set_ref]
+      : [],
     transferable_pattern_requirements: profileSelectionReceipt.transferable_pattern_requirements,
     capability_plan_requirements: profileSelectionReceipt.capability_plan_requirements,
   });
