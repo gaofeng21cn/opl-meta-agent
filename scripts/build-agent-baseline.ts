@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs as parseNodeArgs } from 'node:util';
 import {
+  buildProfileSelectionReceipt,
   type DomainPackSummary,
   type JsonObject,
   domainPackReceiptFields,
@@ -292,6 +293,14 @@ function referenceDesignEvidenceRefs(targetAgent: TargetAgent): string[] {
   ];
 }
 
+function hasSourceDerivedDesignInput(parsed: {
+  referenceDesignSourceRefs: string[];
+  referenceDesignPatternPacketRefs: string[];
+}): boolean {
+  return parsed.referenceDesignSourceRefs.length > 0
+    || parsed.referenceDesignPatternPacketRefs.length > 0;
+}
+
 export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineArgs {
   const parsed: {
     outputDir: string | null;
@@ -425,12 +434,12 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
       'Missing required --domain-id <domain_id>; build-agent-baseline requires an explicit target agent.',
     );
   }
-  if (parsed.selectedOplProfileRefs.length === 0) {
+  if (parsed.selectedOplProfileRefs.length === 0 && !hasSourceDerivedDesignInput(parsed)) {
     throw new Error(
-      'Missing required --selected-opl-profile <profile_ref>; target agent generation requires an explicit OPL profile selection.',
+      'Missing required profile input; target agent generation requires --selected-opl-profile <profile_ref> or source-derived design refs via --reference-design-source / --reference-design-pattern-packet.',
     );
   }
-  if (!parsed.profileSelectionRationale) {
+  if (parsed.selectedOplProfileRefs.length > 0 && !parsed.profileSelectionRationale) {
     throw new Error(
       'Missing required --profile-selection-rationale <rationale>; target agent generation requires profile selection rationale.',
     );
@@ -448,8 +457,12 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
     delivery_domain: parsed.deliveryDomain ?? 'knowledge_delivery',
     target_brief: parsed.targetBrief
       ?? `Create an owner-gated ${domainLabel} delivery from declared workspace refs.`,
-    selected_opl_profile_refs: parsed.selectedOplProfileRefs,
-    profile_selection_rationale: parsed.profileSelectionRationale,
+    ...(parsed.selectedOplProfileRefs.length > 0
+      ? { selected_opl_profile_refs: parsed.selectedOplProfileRefs }
+      : {}),
+    ...(parsed.profileSelectionRationale
+      ? { profile_selection_rationale: parsed.profileSelectionRationale }
+      : {}),
     ...(parsed.profileRequirementRefs.length > 0
       ? { profile_requirement_refs: parsed.profileRequirementRefs }
       : {}),
@@ -818,10 +831,12 @@ export function runBuildAgentBaseline({
   }
   const descriptorPath = path.join(targetAgentDir, 'contracts', 'domain_descriptor.json');
   const descriptor = JSON.parse(fs.readFileSync(descriptorPath, 'utf8'));
+  const profileSelectionReceipt = buildProfileSelectionReceipt(targetAgent);
   writeJson(descriptorPath, {
     ...descriptor,
     delivery_domain: targetAgent.delivery_domain,
     target_brief: targetAgent.target_brief,
+    profile_selection_mode: profileSelectionReceipt.profile_selection_mode,
     ...((targetAgent.selected_opl_profile_refs?.length ?? 0) > 0
       ? { selected_opl_profile_refs: targetAgent.selected_opl_profile_refs }
       : {}),
@@ -840,6 +855,10 @@ export function runBuildAgentBaseline({
     ...((targetAgent.reference_design_pattern_packet_refs?.length ?? 0) > 0
       ? { reference_design_pattern_packet_refs: targetAgent.reference_design_pattern_packet_refs }
       : {}),
+    source_derived_design_receipt: profileSelectionReceipt.source_derived_design_receipt,
+    source_derived_design_receipt_ref: profileSelectionReceipt.source_derived_design_receipt_ref,
+    transferable_pattern_requirements: profileSelectionReceipt.transferable_pattern_requirements,
+    capability_plan_requirements: profileSelectionReceipt.capability_plan_requirements,
   });
   const targetAgentCapabilityMapPath = writeTargetAgentCapabilityMap(targetAgentDir, targetAgent);
   const targetDomainPackSummary = readDomainPackSummary(targetAgentDir, {

@@ -1,5 +1,8 @@
 import {
+  buildCapabilityPlanRequirements,
   buildProfileRequirements,
+  buildProfileSelectionReceipt,
+  buildTransferablePatternRequirements,
   type JsonObject,
 } from '../domain-pack.ts';
 import type { TargetAgent } from '../meta-agent-loop-io.ts';
@@ -104,6 +107,48 @@ function validateReferenceDesignBoundary(
     'can_copy_external_domain_truth',
     'can_replace_target_owner_judgment',
   ].forEach((fieldName) => assertBooleanFalse(boundary, fieldName, `${field}.${fieldName}`));
+}
+
+function assertMatchingProfileSelectionFields(value: JsonObject, targetAgent: TargetAgent, field: string): void {
+  const receipt = buildProfileSelectionReceipt(targetAgent);
+  if (value.profile_selection_mode !== receipt.profile_selection_mode) {
+    throw new Error(`stage-decomposition pack draft ${field}.profile_selection_mode does not match requested target.`);
+  }
+  assertMatchingStringArray(
+    value.selected_profile_refs,
+    targetAgent.selected_opl_profile_refs,
+    `${field}.selected_profile_refs`,
+  );
+  assertMatchingObject(
+    value.profile_requirements,
+    buildProfileRequirements(targetAgent),
+    `${field}.profile_requirements`,
+  );
+  assertMatchingStringArray(
+    value.reference_design_pattern_packet_refs,
+    targetAgent.reference_design_pattern_packet_refs,
+    `${field}.reference_design_pattern_packet_refs`,
+  );
+  const expectedTransferablePatternRequirements = buildTransferablePatternRequirements(targetAgent);
+  const actualTransferablePatternRequirements = normalizedStringArray(
+    value.transferable_pattern_requirements,
+    `${field}.transferable_pattern_requirements`,
+  );
+  if (JSON.stringify(actualTransferablePatternRequirements) !== JSON.stringify(expectedTransferablePatternRequirements)) {
+    throw new Error(`stage-decomposition pack draft ${field}.transferable_pattern_requirements does not match requested target.`);
+  }
+  const expectedCapabilityPlanRequirements = buildCapabilityPlanRequirements(targetAgent);
+  const actualCapabilityPlanRequirements = normalizedStringArray(
+    value.capability_plan_requirements,
+    `${field}.capability_plan_requirements`,
+  );
+  if (JSON.stringify(actualCapabilityPlanRequirements) !== JSON.stringify(expectedCapabilityPlanRequirements)) {
+    throw new Error(`stage-decomposition pack draft ${field}.capability_plan_requirements does not match requested target.`);
+  }
+  const expectedSourceReceipt = receipt.source_derived_design_receipt;
+  if (JSON.stringify(value.source_derived_design_receipt ?? null) !== JSON.stringify(expectedSourceReceipt ?? null)) {
+    throw new Error(`stage-decomposition pack draft ${field}.source_derived_design_receipt does not match requested target.`);
+  }
 }
 
 function validateProfileRequirementBody(
@@ -314,16 +359,10 @@ function validateStageControlPlane(
   if (stageControl.stage_pack_conformance_version !== STANDARD_STAGE_PACK_CONFORMANCE_VERSION) {
     throw new Error(`stage-decomposition pack draft stage_control_plane.stage_pack_conformance_version must be ${STANDARD_STAGE_PACK_CONFORMANCE_VERSION}.`);
   }
-  assertMatchingStringArray(
-    stageControl.selected_profile_refs,
-    targetAgent.selected_opl_profile_refs,
-    'stage_control_plane.selected_profile_refs',
-  );
+  assertMatchingProfileSelectionFields(stageControl, targetAgent, 'stage_control_plane');
   if (stageControl.profile_selection_receipt_ref !== 'contracts/capability_map.json#/profile_selection_receipt') {
     throw new Error('stage-decomposition pack draft stage_control_plane missing profile_selection_receipt_ref.');
   }
-  const expectedProfileRequirements = buildProfileRequirements(targetAgent);
-  assertMatchingObject(stageControl.profile_requirements, expectedProfileRequirements, 'stage_control_plane.profile_requirements');
   const actionIds = new Set(asRecordArray(actionCatalog.actions, 'action_catalog.actions').map((action) => (
     asString(action.action_id, 'action.action_id')
   )));
@@ -342,15 +381,10 @@ function validateStageControlPlane(
   }
   stages.forEach((stage) => {
     const stageId = asString(stage.stage_id, 'stage.stage_id');
-    assertMatchingStringArray(
-      stage.selected_profile_refs,
-      targetAgent.selected_opl_profile_refs,
-      `stage ${stageId}.selected_profile_refs`,
-    );
+    assertMatchingProfileSelectionFields(stage, targetAgent, `stage ${stageId}`);
     if (stage.profile_selection_receipt_ref !== 'contracts/capability_map.json#/profile_selection_receipt') {
       throw new Error(`stage-decomposition pack draft stage ${stageId} missing profile_selection_receipt_ref.`);
     }
-    assertMatchingObject(stage.profile_requirements, expectedProfileRequirements, `stage ${stageId}.profile_requirements`);
     validateReferenceDesignBoundary(
       stage.reference_design_boundary,
       targetAgent,
@@ -687,6 +721,11 @@ export function validateStageDecompositionCloseoutPacket(
   if ((draftTarget.target_brief ?? null) !== (targetAgent.target_brief ?? null)) {
     throw new Error('stage-decomposition pack draft target_agent.target_brief does not match requested target.');
   }
+  assertMatchingOptionalStringArray(
+    draftTarget.selected_opl_profile_refs,
+    targetAgent.selected_opl_profile_refs,
+    'selected_opl_profile_refs',
+  );
   assertMatchingOptionalStringArray(
     draftTarget.reference_design_source_refs,
     targetAgent.reference_design_source_refs,

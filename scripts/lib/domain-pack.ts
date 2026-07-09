@@ -61,6 +61,8 @@ export type MinimalTargetAgent = {
   reference_design_pattern_packet_refs?: string[] | null;
 };
 
+export type ProfileSelectionMode = 'builtin_profile' | 'source_derived_design' | 'hybrid';
+
 const DOMAIN_PACK_SECTIONS: DomainPackSection[] = [
   {
     section: 'prompts',
@@ -101,6 +103,12 @@ export const EVIDENCE_GROUNDED_DECISION_AGENT_PROFILE_REF =
 
 const LEGACY_EVIDENCE_GROUNDED_DECISION_AGENT_PROFILE_REF =
   'contracts/opl-framework/evidence-grounded-decision-agent-profile.json';
+
+export const SOURCE_DERIVED_DESIGN_PROFILE_ROUTE_REF =
+  'opl-profile-route:source_derived_design_profile_route.v1';
+
+const SOURCE_DERIVED_DESIGN_PROFILE_ROUTE_ID =
+  'source_derived_design_profile_route.v1';
 
 const EVIDENCE_GROUNDED_PROFILE_REQUIREMENTS = {
   required_stage_archetypes: [
@@ -146,6 +154,34 @@ const EVIDENCE_GROUNDED_PROFILE_REQUIREMENTS = {
   ],
 };
 
+const SOURCE_DERIVED_DESIGN_PROFILE_REQUIREMENTS = {
+  required_stage_archetypes: [
+    'source_material_intake',
+    'reference_design_pattern_extraction',
+    'transferable_pattern_mapping',
+    'capability_plan_synthesis',
+    'authority_boundary_review',
+  ],
+  required_capability_kinds: [
+    'stage_prompt',
+    'tool_connector',
+    'reference_pack',
+    'contract_module',
+  ],
+  required_surface_roles: [
+    'stage_prompt',
+    'tool_connector',
+    'knowledge_pack',
+    'quality_gate',
+    'eval_suite',
+  ],
+  required_reference_pack_roles: [
+    'reference_design_source',
+    'reference_design_pattern_packet',
+    'transferable_pattern_map',
+  ],
+};
+
 function stringList(value: string[] | null | undefined): string[] {
   return Array.isArray(value) ? value.filter((entry) => entry.trim()).map((entry) => entry.trim()) : [];
 }
@@ -162,6 +198,84 @@ function buildReferenceDesignBoundary(targetAgent: MinimalTargetAgent): JsonObje
     can_copy_external_runtime: false,
     can_write_target_domain_truth: false,
     can_replace_target_owner_judgment: false,
+  };
+}
+
+function sourceDerivedDesignRefs(targetAgent: MinimalTargetAgent): string[] {
+  return [
+    ...stringList(targetAgent.reference_design_source_refs),
+    ...stringList(targetAgent.reference_design_pattern_packet_refs),
+  ];
+}
+
+function hasSourceDerivedDesign(targetAgent: MinimalTargetAgent): boolean {
+  return sourceDerivedDesignRefs(targetAgent).length > 0;
+}
+
+export function buildProfileSelectionMode(targetAgent: MinimalTargetAgent): ProfileSelectionMode {
+  const hasBuiltinProfile = stringList(targetAgent.selected_opl_profile_refs).length > 0;
+  const hasSourceDesign = hasSourceDerivedDesign(targetAgent);
+  if (hasBuiltinProfile && hasSourceDesign) {
+    return 'hybrid';
+  }
+  if (hasSourceDesign) {
+    return 'source_derived_design';
+  }
+  return 'builtin_profile';
+}
+
+export function buildTransferablePatternRequirements(targetAgent: MinimalTargetAgent): string[] {
+  return hasSourceDerivedDesign(targetAgent)
+    ? [
+        'preserve_reference_design_source_or_pattern_packet_refs',
+        'extract_transferable_stage_graph_inputs_outputs_grounding_evaluation_handoff_failure_taxonomy',
+        'reject_external_runtime_private_data_domain_truth_verdict_or_promotion_authority_imports',
+      ]
+    : [];
+}
+
+export function buildCapabilityPlanRequirements(targetAgent: MinimalTargetAgent): string[] {
+  return hasSourceDerivedDesign(targetAgent)
+    ? [
+        'map_transferable_patterns_into_stage_control_plane_prompt_knowledge_quality_gate_and_agent_lab_suite_seed',
+        'preserve_owner_boundary_and_refs_only_source_design_receipt',
+        'route_back_when_reference_design_packet_is_insufficient_for_target_agent_design',
+      ]
+    : [];
+}
+
+export function buildSourceDerivedDesignReceipt(targetAgent: MinimalTargetAgent): JsonObject | null {
+  if (!hasSourceDerivedDesign(targetAgent)) {
+    return null;
+  }
+  return {
+    surface_kind: 'opl_meta_agent_source_derived_design_receipt',
+    version: 'opl-meta-agent.source-derived-design-receipt.v1',
+    route_id: SOURCE_DERIVED_DESIGN_PROFILE_ROUTE_ID,
+    route_ref: SOURCE_DERIVED_DESIGN_PROFILE_ROUTE_REF,
+    receipt_id: `source-derived-design-receipt:opl-meta-agent/${targetAgent.domain_id}`,
+    receipt_ref: `source-derived-design-receipt-ref:opl-meta-agent/${targetAgent.domain_id}`,
+    target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
+    source_refs: stringList(targetAgent.reference_design_source_refs),
+    pattern_notes: stringList(targetAgent.reference_design_pattern_notes),
+    reference_design_pattern_packet_refs: stringList(targetAgent.reference_design_pattern_packet_refs),
+    profile_requirements: SOURCE_DERIVED_DESIGN_PROFILE_REQUIREMENTS,
+    transferable_pattern_requirements: buildTransferablePatternRequirements(targetAgent),
+    capability_plan_requirements: buildCapabilityPlanRequirements(targetAgent),
+    source_readback_refs: [
+      'opl profiles select --intent <target-agent-intent> --reference-source <source-ref> --json',
+    ],
+    refs_only: true,
+    authority_boundary: {
+      oma_role: 'source_design_pattern_consumer_and_target_pack_author',
+      target_domain_owner_keeps_truth_quality_artifact_authority: true,
+      can_copy_external_runtime: false,
+      can_write_target_domain_truth: false,
+      can_write_target_domain_memory_body: false,
+      can_mutate_target_domain_artifact_body: false,
+      can_authorize_target_domain_quality_or_export: false,
+      can_replace_target_owner_judgment: false,
+    },
   };
 }
 
@@ -183,39 +297,71 @@ function defaultProfileRequirementRefs(selectedProfileRefs: string[]): string[] 
     : [];
 }
 
+function mergeRequirementRecords(...records: JsonObject[]): JsonObject {
+  const merged: JsonObject = {};
+  for (const record of records) {
+    Object.entries(record).forEach(([key, value]) => {
+      merged[key] = Array.isArray(value)
+        ? [
+            ...new Set([
+              ...stringList(merged[key] as string[] | null | undefined),
+              ...stringList(value as string[] | null | undefined),
+            ]),
+          ]
+        : value;
+    });
+  }
+  return merged;
+}
+
 export function buildProfileRequirements(targetAgent: MinimalTargetAgent): JsonObject {
   const selectedProfileRefs = stringList(targetAgent.selected_opl_profile_refs);
-  return selectedProfileRefs.some(isEvidenceGroundedDecisionProfileRef)
-    ? EVIDENCE_GROUNDED_PROFILE_REQUIREMENTS
-    : {};
+  return mergeRequirementRecords(
+    selectedProfileRefs.some(isEvidenceGroundedDecisionProfileRef)
+      ? EVIDENCE_GROUNDED_PROFILE_REQUIREMENTS
+      : {},
+    hasSourceDerivedDesign(targetAgent)
+      ? SOURCE_DERIVED_DESIGN_PROFILE_REQUIREMENTS
+      : {},
+  );
 }
 
 export function buildProfileSelectionReceipt(targetAgent: MinimalTargetAgent): JsonObject {
   const selectedProfileRefs = stringList(targetAgent.selected_opl_profile_refs);
   const rationale = targetAgent.profile_selection_rationale?.trim() ?? '';
-  if (selectedProfileRefs.length === 0) {
-    throw new Error('profile_selection_required:selected_opl_profile_refs_missing');
+  const sourceDerivedDesignReceipt = buildSourceDerivedDesignReceipt(targetAgent);
+  if (selectedProfileRefs.length === 0 && !sourceDerivedDesignReceipt) {
+    throw new Error('profile_selection_required:selected_opl_profile_refs_or_source_derived_design_refs_missing');
   }
-  if (!rationale) {
+  if (selectedProfileRefs.length > 0 && !rationale) {
     throw new Error('profile_selection_required:profile_selection_rationale_missing');
   }
   const profileRequirementRefs = stringList(targetAgent.profile_requirement_refs);
+  const profileSelectionMode = buildProfileSelectionMode(targetAgent);
   return {
     surface_kind: 'opl_meta_agent_profile_selection_receipt',
     version: 'opl-meta-agent.profile-selection-receipt.v1',
     receipt_id: `profile-selection-receipt:opl-meta-agent/${targetAgent.domain_id}`,
     receipt_ref: `profile-selection-receipt-ref:opl-meta-agent/${targetAgent.domain_id}`,
     target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
+    profile_selection_mode: profileSelectionMode,
     selected_profile_refs: selectedProfileRefs,
-    profile_selection_rationale: rationale,
+    profile_selection_rationale: rationale || 'No builtin OPL profile matched; OMA must derive the target pack from supplied source-derived design refs.',
     profile_requirement_refs: profileRequirementRefs.length > 0
       ? profileRequirementRefs
       : defaultProfileRequirementRefs(selectedProfileRefs),
     profile_requirements: buildProfileRequirements(targetAgent),
+    source_derived_design_receipt: sourceDerivedDesignReceipt,
+    source_derived_design_receipt_ref: sourceDerivedDesignReceipt?.receipt_ref ?? null,
+    reference_design_pattern_packet_refs: stringList(targetAgent.reference_design_pattern_packet_refs),
+    transferable_pattern_requirements: buildTransferablePatternRequirements(targetAgent),
+    capability_plan_requirements: buildCapabilityPlanRequirements(targetAgent),
     profile_catalog_refs: [
       EVIDENCE_GROUNDED_DECISION_AGENT_PROFILE_REF,
       LEGACY_EVIDENCE_GROUNDED_DECISION_AGENT_PROFILE_REF,
+      SOURCE_DERIVED_DESIGN_PROFILE_ROUTE_REF,
       'opl profiles select --intent <target-agent-intent> --json',
+      'opl profiles select --intent <target-agent-intent> --reference-source <source-ref> --json',
       'opl profiles inspect evidence_grounded_decision_agent_profile.v1 --json',
     ],
     source_readback_refs: [
@@ -258,13 +404,26 @@ function referenceDesignMarkdown(targetAgent: MinimalTargetAgent): string[] {
 
 function profileSelectionMarkdown(targetAgent: MinimalTargetAgent): string[] {
   const receipt = buildProfileSelectionReceipt(targetAgent);
+  const selectedProfileRefs = receipt.selected_profile_refs as string[];
+  const sourceReceipt = receipt.source_derived_design_receipt as JsonObject | null;
   return [
     '## OPL Profile Selection',
     '',
-    'OMA must consume the OPL profile catalog/readback before generating this target agent; do not rely on memory for base capability selection.',
-    ...((receipt.selected_profile_refs as string[]).map((ref) => `- Selected profile ref: ${ref}`)),
+    'OMA must consume the OPL profile catalog/readback before generating this target agent. If no builtin profile matches and reference design refs are supplied, derive the target pack from the source-derived pattern packet instead of forcing an existing template.',
+    `- Profile selection mode: ${receipt.profile_selection_mode}`,
+    ...(selectedProfileRefs.length > 0
+      ? selectedProfileRefs.map((ref) => `- Selected profile ref: ${ref}`)
+      : ['- Selected profile ref: none; source-derived design refs are the active design input.']),
     `- Rationale: ${receipt.profile_selection_rationale}`,
     ...((receipt.profile_requirement_refs as string[]).map((ref) => `- Required capability: ${ref}`)),
+    ...(sourceReceipt ? [`- Source-derived design receipt: ${sourceReceipt.receipt_ref}`] : []),
+    ...((receipt.reference_design_pattern_packet_refs as string[]).map((ref) => `- Pattern packet ref: ${ref}`)),
+    ...((receipt.transferable_pattern_requirements as string[]).map((requirement) =>
+      `- Transferable pattern requirement: ${requirement}`
+    )),
+    ...((receipt.capability_plan_requirements as string[]).map((requirement) =>
+      `- Capability plan requirement: ${requirement}`
+    )),
     '',
   ];
 }
@@ -513,14 +672,20 @@ export function writeTargetAgentPrimarySkill(targetAgentDir: string, targetAgent
 function buildTargetAgentPrimarySkillCapability(targetAgent: MinimalTargetAgent): JsonObject {
   const domainId = targetAgent.domain_id;
   const profileSelectionReceipt = buildProfileSelectionReceipt(targetAgent);
+  const selectedProfileRefs = profileSelectionReceipt.selected_profile_refs as string[];
   return {
     capability_id: `${domainId}.primary-skill.codex_entry`,
     surface_role: 'primary_skill',
     capability_kind: 'primary_skill',
     canonical_owner: domainId,
     physical_source_ref: { ref_kind: 'repo_path', ref: targetPrimarySkillRef, role: 'primary_skill_source' },
-    profile_ref: (profileSelectionReceipt.selected_profile_refs as string[])[0],
+    profile_selection_mode: profileSelectionReceipt.profile_selection_mode,
+    ...(selectedProfileRefs[0] ? { profile_ref: selectedProfileRefs[0] } : {}),
     profile_selection_receipt_ref: 'contracts/capability_map.json#/profile_selection_receipt',
+    source_derived_design_receipt_ref: profileSelectionReceipt.source_derived_design_receipt_ref,
+    reference_design_pattern_packet_refs: profileSelectionReceipt.reference_design_pattern_packet_refs,
+    transferable_pattern_requirements: profileSelectionReceipt.transferable_pattern_requirements,
+    capability_plan_requirements: profileSelectionReceipt.capability_plan_requirements,
     reference_design_boundary: buildReferenceDesignBoundary(targetAgent),
     canonical_paths: [targetPrimarySkillRef],
     improvement_tokens: ['primary skill', 'agent entry', 'owner handoff', 'delivery gate'],
@@ -577,15 +742,25 @@ export function writeTargetAgentCapabilityMap(targetAgentDir: string, targetAgen
     : {};
   writeJson(capabilityMapPath, {
     ...capabilityMap,
+    profile_selection_mode: profileSelectionReceipt.profile_selection_mode,
     selected_profile_refs: selectedProfileRefs,
     profile_requirements: profileSelectionReceipt.profile_requirements,
     profile_selection_receipt: profileSelectionReceipt,
+    source_derived_design_receipt: profileSelectionReceipt.source_derived_design_receipt,
+    reference_design_pattern_packet_refs: profileSelectionReceipt.reference_design_pattern_packet_refs,
+    transferable_pattern_requirements: profileSelectionReceipt.transferable_pattern_requirements,
+    capability_plan_requirements: profileSelectionReceipt.capability_plan_requirements,
     primary_skill_capability: buildTargetAgentPrimarySkillCapability(targetAgent),
     resolver_index: {
       ...resolverIndex,
+      profile_selection_mode: profileSelectionReceipt.profile_selection_mode,
       profile_refs: selectedProfileRefs,
       profile_requirement_refs: profileSelectionReceipt.profile_requirement_refs,
       profile_selection_receipt_refs: ['contracts/capability_map.json#/profile_selection_receipt'],
+      source_derived_design_receipt_refs: profileSelectionReceipt.source_derived_design_receipt_ref
+        ? [profileSelectionReceipt.source_derived_design_receipt_ref]
+        : [],
+      reference_design_pattern_packet_refs: profileSelectionReceipt.reference_design_pattern_packet_refs,
       primary_skill_refs: ['contracts/capability_map.json#/primary_skill_capability'],
     },
   });

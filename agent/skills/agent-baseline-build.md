@@ -13,8 +13,9 @@
 - `domain_label`
 - `delivery_domain`
 - `target_brief`
-- `selected_opl_profile_refs`：先消费 OPL profile selector / readback（`opl profiles select --intent ... --json` 与 `opl profiles inspect ... --json`），再由 OMA/Codex 明确选择适配目标 agent 的 profile ref。
-- `profile_selection_rationale`：来自 OMA profile selection receipt，说明为什么该 OPL 基座 profile 覆盖目标 agent。
+- `profile_selection_mode`：先消费 OPL profile selector（`opl profiles select --intent ... --json`）；命中内置 profile 时为 `builtin_profile`，命中内置 profile 且同时有参考设计时为 `hybrid`，未命中内置 profile 但有 reference design source / pattern packet refs 时为 `source_derived_design`。
+- 可选 `selected_opl_profile_refs`：内置 profile / hybrid 路线消费 OPL profile selector / readback（`opl profiles select --intent ... --json` 与 `opl profiles inspect ... --json`）后写入；source-derived 路线可以为空。
+- 可选 `profile_selection_rationale`：内置 profile / hybrid 路线来自 OMA profile selection receipt，说明为什么该 OPL 基座 profile 覆盖目标 agent；source-derived 路线由 source-derived design receipt 和 pattern packet refs 提供 rationale。
 - 可选 `profile_requirement_refs`：来自 OPL profile readback 与 OMA profile selection receipt 的 requirement refs。
 - 可选 `reference_design_source_refs`：用户提供的论文/PDF/repo/产品文档/案例系统等设计参考。
 - 可选 `reference_design_pattern_notes`：从参考设计抽取的短模式说明，例如 grounding、mode routing、rubric、validation 或 failure taxonomy。
@@ -23,15 +24,15 @@
 - intent、stage、action、memory、artifact 和 quality gate refs。
 - artifact morphology brief refs：native source format、artifact body owner、creative source/export refs、sharding strategy、extent/scale contract、asset custody/file-path policy、thin assembler/helper boundary 和 realistic target task review refs。
 
-`domain_id`、`domain_label`、`delivery_domain` 和 `target_brief` 来自用户自然语言需求；`selected_opl_profile_refs` 和 `profile_selection_rationale` 来自 OPL profile catalog / selector，不靠 OMA 记忆猜测。只有目标 agent 的交付物、authority boundary 或质量门槛不清时才回问；不要要求用户理解底层脚本参数。
+`domain_id`、`domain_label`、`delivery_domain` 和 `target_brief` 来自用户自然语言需求；builtin / hybrid 路线的 `selected_opl_profile_refs` 和 `profile_selection_rationale` 来自 OPL profile catalog / selector，不靠 OMA 记忆猜测。source-derived 路线必须有用户提供或 Codex/source ingest 形成的 reference design source refs / pattern packet refs，并由 OMA 提炼可迁移设计思路。只有目标 agent 的交付物、authority boundary 或质量门槛不清时才回问；不要要求用户理解底层脚本参数。
 `stage_decomposition_closeout` 必须是 Codex `stage-decomposition` typed closeout；如果未显式提供，默认 runner 仍必须产出 typed closeout，不能从自由文本摘要推断 stage graph。
 
 ## 流程
 
 1. 准备 output workspace，确认不会写入 source checkout 的 runtime artifact。
 2. 从自然语言目标生成稳定的 target-agent descriptor 字段和 candidate agent package 路径。
-3. 调用或消费 OPL profile selector / readback（`opl profiles select --intent ... --json` 与 `opl profiles inspect ... --json`），把 selected profile、rationale 和 requirements 写入 target descriptor、capability map 和 stage control plane。
-4. 启动或读取 `stage-decomposition` typed closeout，从其中的 stage graph、action refs、artifact morphology brief、pack file bodies、selected profile refs / profile requirements、independent gate policy、reference design refs / pattern packet refs 和 quality gate declaration 生成 candidate agent package 的标准目录和 contracts。
+3. 调用或消费 OPL profile selector / readback：builtin / hybrid 路线把 selected profile、rationale 和 requirements 写入 target descriptor、capability map 和 stage control plane；source-derived 路线把 `source_derived_design_receipt`、pattern packet refs、transferable pattern requirements 和 capability plan requirements 写入同一组 surface。
+4. 启动或读取 `stage-decomposition` typed closeout，从其中的 stage graph、action refs、artifact morphology brief、pack file bodies、profile selection mode、selected profile refs / source-derived design refs、profile requirements、independent gate policy、reference design refs / pattern packet refs 和 quality gate declaration 生成 candidate agent package 的标准目录和 contracts。
 5. 写入 prompts、skills、stages、quality gates、knowledge policy，并保留 generated-from-closeout proof。
 6. 确认 target artifact locator 引用 morphology refs，且长书、长 deck、长文、素材型交付或数据型交付的 creative source 是可分片 native source，不是脚本字符串或单一导出物。
 7. 调用 OPL scaffold validation。
@@ -48,7 +49,7 @@
 - `opl_agent_package_manifest_ref`，指向目标 agent repo 的 `contracts/opl_agent_package_manifest.json`
 - scaffold validation ref
 - generated interface bundle ref
-- selected OPL profile refs / profile selection receipt ref / profile requirements
+- profile selection mode / selected OPL profile refs or source-derived design receipt / profile selection receipt ref / profile requirements
 - reference design source refs / pattern notes / pattern packet refs
 - artifact morphology brief ref
 - artifact morphology review / realistic target task evidence ref

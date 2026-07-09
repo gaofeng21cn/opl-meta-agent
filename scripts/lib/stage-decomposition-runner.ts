@@ -1,8 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {
+  buildCapabilityPlanRequirements,
   buildProfileRequirements,
   buildProfileSelectionReceipt,
+  buildSourceDerivedDesignReceipt,
+  buildTransferablePatternRequirements,
   type JsonObject,
 } from './domain-pack.ts';
 import { runOpl, type TargetAgent, writeJson } from './meta-agent-loop-io.ts';
@@ -77,11 +80,20 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
     target_agent_dir: input.targetAgentDir,
     output_dir: input.outputDir,
     profile_selection_input_policy: {
+      profile_selection_mode: profileSelectionReceipt.profile_selection_mode,
       selected_profile_refs: profileSelectionReceipt.selected_profile_refs,
       profile_selection_rationale: profileSelectionReceipt.profile_selection_rationale,
       profile_requirement_refs: profileSelectionReceipt.profile_requirement_refs,
       profile_requirements: buildProfileRequirements(input.targetAgent),
-      stage_closeout_must_preserve_selected_profile: true,
+      source_derived_design_receipt: profileSelectionReceipt.source_derived_design_receipt,
+      source_derived_design_receipt_ref: profileSelectionReceipt.source_derived_design_receipt_ref,
+      reference_design_pattern_packet_refs: profileSelectionReceipt.reference_design_pattern_packet_refs,
+      transferable_pattern_requirements: profileSelectionReceipt.transferable_pattern_requirements,
+      capability_plan_requirements: profileSelectionReceipt.capability_plan_requirements,
+      stage_closeout_must_preserve_selected_profile:
+        stringList(input.targetAgent.selected_opl_profile_refs).length > 0,
+      stage_closeout_must_preserve_source_derived_design:
+        profileSelectionReceipt.source_derived_design_receipt !== null,
       source_readback_refs: profileSelectionReceipt.source_readback_refs,
       refs_only: true,
       can_claim_target_domain_ready: false,
@@ -91,6 +103,9 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
       source_refs: referenceDesignSourceRefs,
       pattern_notes: referenceDesignPatternNotes,
       pattern_packet_refs: referenceDesignPatternPacketRefs,
+      source_derived_design_receipt: buildSourceDerivedDesignReceipt(input.targetAgent),
+      transferable_pattern_requirements: buildTransferablePatternRequirements(input.targetAgent),
+      capability_plan_requirements: buildCapabilityPlanRequirements(input.targetAgent),
       role: 'external_architecture_inspiration_not_target_domain_truth',
       stage_closeout_must_preserve_refs_when_present:
         referenceDesignSourceRefs.length > 0

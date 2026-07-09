@@ -1,6 +1,8 @@
 import {
+  buildCapabilityPlanRequirements,
   buildProfileRequirements,
   buildProfileSelectionReceipt,
+  buildTransferablePatternRequirements,
   type JsonObject,
 } from '../domain-pack.ts';
 import type { TargetAgent } from '../meta-agent-loop-io.ts';
@@ -82,8 +84,15 @@ function buildReferenceDesignBoundary(targetAgent: TargetAgent): JsonObject {
 
 function profileRequirementLines(targetAgent: TargetAgent): string[] {
   const selectedProfileRefs = stringList(targetAgent.selected_opl_profile_refs);
+  const profileSelectionReceipt = buildProfileSelectionReceipt(targetAgent);
   const profileRequirements = buildProfileRequirements(targetAgent);
-  if (selectedProfileRefs.length === 0) {
+  const transferablePatternRequirements = buildTransferablePatternRequirements(targetAgent);
+  const capabilityPlanRequirements = buildCapabilityPlanRequirements(targetAgent);
+  if (
+    selectedProfileRefs.length === 0
+    && transferablePatternRequirements.length === 0
+    && capabilityPlanRequirements.length === 0
+  ) {
     return [];
   }
   const requirementLines = Object.entries(profileRequirements)
@@ -92,13 +101,21 @@ function profileRequirementLines(targetAgent: TargetAgent): string[] {
       : []);
   return [
     '',
-    'OPL profile selection requirements are framework capability inputs and must be preserved in stage execution.',
-    ...selectedProfileRefs.map((profileRef) => `Selected OPL profile: ${profileRef}`),
+    'OPL builtin profiles are lower-bound guardrails. If no builtin profile matches and reference design refs are supplied, source-derived design requirements become the active design input.',
+    `Profile selection mode: ${profileSelectionReceipt.profile_selection_mode}`,
+    ...(selectedProfileRefs.length > 0
+      ? selectedProfileRefs.map((profileRef) => `Selected OPL profile: ${profileRef}`)
+      : ['Selected OPL profile: none; consume source-derived design receipt and pattern packet refs.']),
     ...stringList(targetAgent.profile_requirement_refs).map((profileRequirementRef) =>
       `Profile requirement ref: ${profileRequirementRef}`
     ),
     ...requirementLines,
-    'Map reference pack, source freshness, provenance, tool connector, and evaluation requirements into knowledge/tool/evaluation refs before owner handoff.',
+    ...stringList(targetAgent.reference_design_pattern_packet_refs).map((packetRef) =>
+      `Reference design pattern packet ref: ${packetRef}`
+    ),
+    ...transferablePatternRequirements.map((requirement) => `Transferable pattern requirement: ${requirement}`),
+    ...capabilityPlanRequirements.map((requirement) => `Capability plan requirement: ${requirement}`),
+    'Map builtin profile and source-derived design requirements into knowledge/tool/evaluation refs before owner handoff.',
   ];
 }
 
@@ -335,6 +352,9 @@ function buildStageControlPlane({
   const selectedProfileRefs = stringList(targetAgent.selected_opl_profile_refs);
   const profileRequirementRefs = stringList(targetAgent.profile_requirement_refs);
   const profileRequirements = buildProfileRequirements(targetAgent);
+  const sourceDerivedDesignReceipt = profileSelectionReceipt.source_derived_design_receipt;
+  const transferablePatternRequirements = buildTransferablePatternRequirements(targetAgent);
+  const capabilityPlanRequirements = buildCapabilityPlanRequirements(targetAgent);
   const referenceDesignSourceRefs = stringList(targetAgent.reference_design_source_refs);
   const referenceDesignPatternPacketRefs = stringList(targetAgent.reference_design_pattern_packet_refs);
   const referenceDesignInputRefs = [
@@ -355,12 +375,17 @@ function buildStageControlPlane({
     plane_id: `${snakeId(domainId)}_stage_plane`,
     target_domain_id: domainId,
     owner,
+    profile_selection_mode: profileSelectionReceipt.profile_selection_mode,
     selected_profile_refs: selectedProfileRefs,
     profile_selection_receipt_ref: 'contracts/capability_map.json#/profile_selection_receipt',
     profile_requirement_refs: profileRequirementRefs.length > 0
       ? profileRequirementRefs
       : profileSelectionReceipt.profile_requirement_refs,
     profile_requirements: profileRequirements,
+    source_derived_design_receipt: sourceDerivedDesignReceipt,
+    reference_design_pattern_packet_refs: referenceDesignPatternPacketRefs,
+    transferable_pattern_requirements: transferablePatternRequirements,
+    capability_plan_requirements: capabilityPlanRequirements,
     stage_pack_conformance_version: STANDARD_STAGE_PACK_CONFORMANCE_VERSION,
     authority_boundary: {
       domain_truth_owner: owner,
@@ -378,9 +403,14 @@ function buildStageControlPlane({
         goal: targetBriefFor(targetAgent),
         owner,
         stage_pack_conformance_version: STANDARD_STAGE_PACK_CONFORMANCE_VERSION,
+        profile_selection_mode: profileSelectionReceipt.profile_selection_mode,
         selected_profile_refs: selectedProfileRefs,
         profile_selection_receipt_ref: 'contracts/capability_map.json#/profile_selection_receipt',
         profile_requirements: profileRequirements,
+        source_derived_design_receipt: sourceDerivedDesignReceipt,
+        reference_design_pattern_packet_refs: referenceDesignPatternPacketRefs,
+        transferable_pattern_requirements: transferablePatternRequirements,
+        capability_plan_requirements: capabilityPlanRequirements,
         selected_executor: {
           executor_kind: 'codex_cli',
           default_executor: true,
@@ -760,7 +790,8 @@ function buildFiles({
         'Fail-closed conditions:',
         '',
         '- Missing prompt, skill/tool, knowledge, source, artifact, workspace, or quality gate refs.',
-        '- Missing selected OPL profile refs, profile requirements, reference pack policy, source freshness policy, provenance policy, tool connector boundary, or evidence object trace.',
+        '- Missing both builtin OPL profile refs and source-derived design refs/pattern packet refs.',
+        '- Missing builtin profile requirements or source-derived transferable pattern requirements required by the active profile selection mode.',
         '- Missing independent review path for high-risk outputs.',
         '- Attempt self-review, shared-context review, stale evidence, or missing owner receipt.',
         '- Any request to write target truth, memory body, artifact body, quality/export verdict, or default promotion state from OPL generated surfaces.',
