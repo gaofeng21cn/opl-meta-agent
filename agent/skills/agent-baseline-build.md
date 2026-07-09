@@ -13,27 +13,29 @@
 - `domain_label`
 - `delivery_domain`
 - `target_brief`
-- `profile_selection_mode`：先消费 OPL profile selector（`opl profiles select --intent ... --json`）；命中内置 profile 时为 `builtin_profile`，命中内置 profile 且同时有参考设计时为 `hybrid`，未命中内置 profile 但有 reference design source / pattern packet refs 时为 `source_derived_design`。
-- 可选 `selected_opl_profile_refs`：内置 profile / hybrid 路线消费 OPL profile selector / readback（`opl profiles select --intent ... --json` 与 `opl profiles inspect ... --json`）后写入；source-derived 路线可以为空。
-- 可选 `profile_selection_rationale`：内置 profile / hybrid 路线来自 OMA profile selection receipt，说明为什么该 OPL 基座 profile 覆盖目标 agent；source-derived 路线由 source-derived design receipt 和 pattern packet refs 提供 rationale。
+- `profile_selection_mode`：先消费 OPL profile selector（`opl profiles select --intent ... --json`）；命中内置 profile 时为 `builtin_profile`，命中内置 profile 且同时有参考设计或调研设计依据时为 `hybrid`，未命中内置 profile 但有 reference design source / pattern packet refs 时为 `source_derived_design`，只有模糊想法且需先调研专家实践时为 `research_driven_design`。
+- 可选 `selected_opl_profile_refs`：内置 profile / hybrid 路线消费 OPL profile selector / readback（`opl profiles select --intent ... --json` 与 `opl profiles inspect ... --json`）后写入；source-derived / research-driven 路线可以为空。
+- 可选 `profile_selection_rationale`：内置 profile / hybrid 路线来自 OMA profile selection receipt，说明为什么该 OPL 基座 profile 覆盖目标 agent；source-derived 路线由 source-derived design receipt 和 pattern packet refs 提供 rationale；research-driven 路线由 research-driven design receipt 和 research synthesis refs 提供 rationale。
 - 可选 `profile_requirement_refs`：来自 OPL profile readback 与 OMA profile selection receipt 的 requirement refs。
 - 可选 `reference_design_source_refs`：用户提供的论文/PDF/repo/产品文档/案例系统等设计参考。
 - 可选 `reference_design_pattern_notes`：从参考设计抽取的短模式说明，例如 grounding、mode routing、rubric、validation 或 failure taxonomy。
 - 可选 `reference_design_pattern_packet_refs`：由 OPL source ingest / Codex extraction 从 PDF/论文/外部案例提炼出的 refs-only 模式包。
-- source-derived design machine objects：`ReferenceDesignPacket`、`TransferMap`、`AgentPackPlan`、`BuildReceipt`，当用户提供论文/PDF/repo/案例系统作为参考设计时必须按 `ReferenceDesignPacket -> TransferMap -> AgentPackPlan -> BuildReceipt` 先生成并保留，再迁移到 target agent stage pack；四对象必须来自 pattern packet 或 pattern note，不能只是 raw source ref 或 identity shell。`BuildReceipt` 必须证明 source-derived stage refs、target-only requirements、rejected source patterns、forbidden claims 和 refs-only authority boundary。
+- source-derived design machine objects：`ReferenceDesignPacket`、`TransferMap`、`AgentPackPlan`、`BuildReceipt`，当用户提供论文/PDF/repo/案例系统作为参考设计时必须生成并保留；四对象必须来自 pattern packet 或 pattern note，不能只是 raw source ref 或 identity shell。`BuildReceipt` 必须证明 source-derived stage refs、target-only requirements、rejected source patterns、forbidden claims 和 refs-only authority boundary。
+- 可选 `research_source_refs` / `expert_practice_notes` / `research_synthesis_refs`：用户只有模糊想法时，由 OMA/Codex 调研专家实践后形成。
+- research-driven design machine objects：`ResearchSynthesisPacket`、`TransferMap`、`AgentPackPlan`、`BuildReceipt`，当没有参考设计但需要从外部成熟经验提炼 agent 设计时必须生成并保留；四对象必须来自 research synthesis ref、expert practice note 或 research source ref，不能只是目标需求复述。
 - stage-decomposition runner settings or explicit `stage_decomposition_closeout`
 - intent、stage、action、memory、artifact 和 quality gate refs。
 - artifact morphology brief refs：native source format、artifact body owner、creative source/export refs、sharding strategy、extent/scale contract、asset custody/file-path policy、thin assembler/helper boundary 和 realistic target task review refs。
 
-`domain_id`、`domain_label`、`delivery_domain` 和 `target_brief` 来自用户自然语言需求；builtin / hybrid 路线的 `selected_opl_profile_refs` 和 `profile_selection_rationale` 来自 OPL profile catalog / selector，不靠 OMA 记忆猜测。profile/catalog/template 只提供 OPL conformance 下限或 route/readback refs。source-derived 路线必须有用户提供或 Codex/source ingest 形成的 reference design source refs / pattern packet refs，并由 OMA 提炼可迁移设计思路；不能因为 catalog 缺内置模板而停止，也不能用 scaffold/profile/template 代替设计链。只有目标 agent 的交付物、authority boundary 或质量门槛不清时才回问；不要要求用户理解底层脚本参数。
+`domain_id`、`domain_label`、`delivery_domain` 和 `target_brief` 来自用户自然语言需求；builtin / hybrid 路线的 `selected_opl_profile_refs` 和 `profile_selection_rationale` 来自 OPL profile catalog / selector，不靠 OMA 记忆猜测。source-derived 路线必须有用户提供或 Codex/source ingest 形成的 reference design source refs / pattern packet refs，并由 OMA 提炼可迁移设计思路。research-driven 路线必须有 research source refs、expert practice notes 或 research synthesis refs，并由 OMA 先调研“专家会怎么做”再迁移成目标 stage pack。只有目标 agent 的交付物、authority boundary 或质量门槛不清时才回问；不要要求用户理解底层脚本参数。
 `stage_decomposition_closeout` 必须是 Codex `stage-decomposition` typed closeout；如果未显式提供，默认 runner 仍必须产出 typed closeout，不能从自由文本摘要推断 stage graph。
 
 ## 流程
 
 1. 准备 output workspace，确认不会写入 source checkout 的 runtime artifact。
 2. 从自然语言目标生成稳定的 target-agent descriptor 字段和 candidate agent package 路径。
-3. 调用或消费 OPL profile selector / readback：builtin / hybrid 路线把 selected profile、rationale 和 requirements 写入 target descriptor、capability map 和 stage control plane；source-derived 路线先把论文/外部系统参考设计提炼成非空 `ReferenceDesignPacket`，再映射成非空 `TransferMap`，落成非空 `AgentPackPlan`，最后生成非空 `BuildReceipt`，并把 `source_derived_design_receipt`、pattern packet refs、transferable pattern requirements、capability plan requirements 和 build receipt refs 写入同一组 surface。只有 source ref 但没有 pattern packet / pattern note 时必须 route back 或 typed blocker。
-4. 启动或读取 `stage-decomposition` typed closeout，从其中的 stage graph、action refs、artifact morphology brief、pack file bodies、profile selection mode、selected profile refs / source-derived design refs、四类设计对象、profile requirements、independent gate policy、reference design refs / pattern packet refs 和 quality gate declaration 生成 candidate agent package 的标准目录和 contracts。每个 source-derived stage requirement 必须引用 `source_pattern_ref`/`stage_pattern_source_refs` 或 `target_only_requirement`；OPL scaffold 只承载物理骨架。
+3. 调用或消费 OPL profile selector / readback：builtin / hybrid 路线把 selected profile、rationale 和 requirements 写入 target descriptor、capability map 和 stage control plane；source-derived 路线先把论文/外部系统参考设计提炼成非空 `ReferenceDesignPacket`，再映射成非空 `TransferMap`，落成非空 `AgentPackPlan`，最后生成非空 `BuildReceipt`；research-driven 路线先把外部调研和专家实践提炼成非空 `ResearchSynthesisPacket`，再映射成非空 `TransferMap`，落成非空 `AgentPackPlan`，最后生成非空 `BuildReceipt`。两条设计依据路线都必须把 receipt、pattern refs、transferable pattern requirements、capability plan requirements 和 build receipt refs 写入同一组 surface。
+4. 启动或读取 `stage-decomposition` typed closeout，从其中的 stage graph、action refs、artifact morphology brief、pack file bodies、profile selection mode、selected profile refs / source-derived design refs / research-driven design refs、四类设计对象、profile requirements、independent gate policy、reference design refs / pattern packet refs / research synthesis refs 和 quality gate declaration 生成 candidate agent package 的标准目录和 contracts。
 5. 写入 prompts、skills、stages、quality gates、knowledge policy，并保留 generated-from-closeout proof。
 6. 确认 target artifact locator 引用 morphology refs，且长书、长 deck、长文、素材型交付或数据型交付的 creative source 是可分片 native source，不是脚本字符串或单一导出物。
 7. 调用 OPL scaffold validation。
@@ -50,9 +52,10 @@
 - `opl_agent_package_manifest_ref`，指向目标 agent repo 的 `contracts/opl_agent_package_manifest.json`
 - scaffold validation ref
 - generated interface bundle ref
-- profile selection mode / selected OPL profile refs or source-derived design receipt / profile selection receipt ref / profile requirements
-- `ReferenceDesignPacket` / `TransferMap` / `AgentPackPlan` / `BuildReceipt` refs 与非空对象；每个 source-derived stage requirement 的 `source_pattern_ref`/`stage_pattern_source_refs` 或 `target_only_requirement`
+- profile selection mode / selected OPL profile refs / source-derived design receipt / research-driven design receipt / profile selection receipt ref / profile requirements
+- `ReferenceDesignPacket` 或 `ResearchSynthesisPacket` / `TransferMap` / `AgentPackPlan` / `BuildReceipt` refs 与非空对象；每个 design-derived stage 的 `stage_pattern_source_refs`
 - reference design source refs / pattern notes / pattern packet refs
+- research source refs / expert practice notes / research synthesis refs
 - artifact morphology brief ref
 - artifact morphology review / realistic target task evidence ref
 - baseline suite result ref

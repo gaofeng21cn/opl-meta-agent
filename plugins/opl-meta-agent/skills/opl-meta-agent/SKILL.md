@@ -15,17 +15,18 @@ OMA 是 agent-building domain owner，不是 OPL Framework、Agent Lab、App reg
 
 - 用户说“帮我做一个能交付 X 的智能体”“把这个流程做成 OPL Agent”“为这个 agent 补 baseline / suite / takeover / improvement loop”时，先用 OMA。
 - 先把自然语言收敛成 target agent 的 `domain_id`、`domain_label`、`delivery_domain`、`target_brief`、acceptance criteria、non-goals 和 owner boundary。
-- 新建 target agent 时，必须先消费 OPL Framework 的 profile selector / readback（`opl profiles select --intent ... --json`，命中内置 profile 时再 `opl profiles inspect ... --json`）。命中内置 profile 时由 OMA/Codex 明确选择 profile ref 并补齐 stage、capability、knowledge、tool 和 evaluation requirements；没有内置匹配但用户提供论文/PDF/repo/产品案例等参考设计时，消费 `profile_selection_mode=source_derived_design` receipt，先形成 `ReferenceDesignPacket -> TransferMap -> AgentPackPlan -> BuildReceipt`，再把 source refs / pattern packet refs 提炼成 stage graph、grounding、tool orchestration、rubric、validation、handoff 和 failure taxonomy。不要靠 OMA 记忆猜测 OPL 基座能力，也不要强行套用现有模板。
+- 新建 target agent 时，必须先做 intake route：`builtin_profile/hybrid`、`source_derived_design`、`research_driven_design` 或既有 agent takeover/improvement。命中内置 profile 时消费 OPL Framework profile selector / readback（`opl profiles select --intent ... --json`，再 `opl profiles inspect ... --json`）；没有内置匹配但用户提供论文/PDF/repo/产品案例等参考设计时，消费 `profile_selection_mode=source_derived_design` receipt，先形成 `ReferenceDesignPacket -> TransferMap -> AgentPackPlan -> BuildReceipt`；用户只有模糊想法且没有参考设计时，先上网/外部 source 调研专家实践，形成 `ResearchSynthesisPacket -> TransferMap -> AgentPackPlan -> BuildReceipt`。不要靠 OMA 记忆猜测 OPL 基座能力，也不要强行套用现有模板。
 - 若用户提供论文、PDF、GitHub repo、产品文档或案例系统作为参考，记录为 `reference_design_source_refs`、`reference_design_pattern_notes` 或由 OPL source ingest / Codex extraction 形成的 `reference_design_pattern_packet_refs`；只消费 refs 和可迁移的架构、工作流、grounding、评估、handoff、failure taxonomy 模式，不读取 packet body，不把外部系统 runtime、私有数据或领域结论复制成目标 agent truth。source-derived stage pack 必须暴露非空四类设计对象 refs，并为每个 source-derived stage 标注来自参考设计的 `stage_pattern_source_refs`；`BuildReceipt` 必须证明 source-derived stage refs、target-only requirements、rejected source patterns、forbidden claims 和 refs-only authority boundary。只有 raw source ref 或 target-only owner gate 都不能替代参考设计消费证明。
+- 若用户只有模糊想法，记录 `research_source_refs`、`expert_practice_notes` 和 `research_synthesis_refs`；这些只作为专家实践设计依据，不是 target truth。research-driven stage pack 必须暴露非空 `ResearchSynthesisPacket`、`TransferMap`、`AgentPackPlan`、`BuildReceipt` refs，并为 stage 标注来自调研综合的 `stage_pattern_source_refs`。
 - 若问题只是在某个已存在 target domain 的 truth、artifact body、quality verdict 或 owner receipt 内部，转回对应 target domain owner，不用 OMA 接管。
 
 ## Agent Lab And Target-Agent Handoff
 
-OMA 输出 target-agent semantics、profile selection mode、selected OPL profile receipt 或 source-derived design receipt、ReferenceDesignPacket、TransferMap、AgentPackPlan、BuildReceipt，以及 refs-only handoff；OPL Framework / Agent Lab 执行 scaffold、generated interface、profile conformance、suite run、promotion gate、work-order execute / absorb / cleanup 和 App / registry projection。
+OMA 输出 target-agent semantics、profile selection mode、selected OPL profile receipt、source-derived design receipt 或 research-driven design receipt、ReferenceDesignPacket 或 ResearchSynthesisPacket、TransferMap、AgentPackPlan、BuildReceipt，以及 refs-only handoff；OPL Framework / Agent Lab 执行 scaffold、generated interface、profile conformance、suite run、promotion gate、work-order execute / absorb / cleanup 和 App / registry projection。
 
 Target agent handoff 必须保留：
 
-- target agent descriptor、profile selection mode、selected OPL profile refs 或 source-derived design receipt、ReferenceDesignPacket、TransferMap、AgentPackPlan、BuildReceipt、profile requirements、stage control plane、action catalog、quality gates 和 capability map refs；
+- target agent descriptor、profile selection mode、selected OPL profile refs、source-derived design receipt 或 research-driven design receipt、ReferenceDesignPacket 或 ResearchSynthesisPacket、TransferMap、AgentPackPlan、BuildReceipt、profile requirements、stage control plane、action catalog、quality gates 和 capability map refs；
 - reference design source refs、pattern notes、pattern packet refs 和 external-learning provenance；
 - Agent Lab baseline / takeover / external-suite evidence refs；
 - independent AI reviewer critique、suggestions、direct evidence refs 和 provenance；

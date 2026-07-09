@@ -4,6 +4,7 @@ import {
   buildProfileRequirements,
   buildProfileSelectionReceipt,
   buildReferenceDesignPacket,
+  buildResearchSynthesisPacket,
   buildSourceDerivedBuildReceipt,
   buildTransferMap,
   buildTransferablePatternRequirements,
@@ -140,6 +141,18 @@ function expectedSourcePatternRefs(targetAgent: TargetAgent): string[] {
       targetAgent.reference_design_pattern_notes,
       'requested_target_agent.reference_design_pattern_notes',
     ).map((_, index) => `reference-design-pattern-note:${targetAgent.domain_id}/${index + 1}`),
+    ...normalizedStringArray(
+      targetAgent.research_synthesis_refs,
+      'requested_target_agent.research_synthesis_refs',
+    ),
+    ...normalizedStringArray(
+      targetAgent.expert_practice_notes,
+      'requested_target_agent.expert_practice_notes',
+    ).map((_, index) => `expert-practice-note:${targetAgent.domain_id}/${index + 1}`),
+    ...normalizedStringArray(
+      targetAgent.research_source_refs,
+      'requested_target_agent.research_source_refs',
+    ).map((_, index) => `research-source-ref:${targetAgent.domain_id}/${index + 1}`),
   ];
 }
 
@@ -222,6 +235,79 @@ function validateReferenceDesignPacketObject(
   }
 }
 
+function validateResearchSynthesisPacketObject(
+  actualPacket: JsonObject,
+  targetAgent: TargetAgent,
+  packetRef: string,
+  transferMapRef: string,
+  agentPackPlanRef: string,
+  field: string,
+): void {
+  if (actualPacket.surface_kind !== 'opl_meta_agent_research_synthesis_packet' || actualPacket.packet_ref !== packetRef) {
+    throw new Error(`stage-decomposition pack draft ${field}.research_synthesis_packet identity is invalid.`);
+  }
+  assertMatchingStringArray(
+    actualPacket.research_source_refs,
+    targetAgent.research_source_refs,
+    `${field}.research_synthesis_packet.research_source_refs`,
+  );
+  assertMatchingStringArray(
+    actualPacket.expert_practice_notes,
+    targetAgent.expert_practice_notes,
+    `${field}.research_synthesis_packet.expert_practice_notes`,
+  );
+  assertMatchingStringArray(
+    actualPacket.research_synthesis_refs,
+    targetAgent.research_synthesis_refs,
+    `${field}.research_synthesis_packet.research_synthesis_refs`,
+  );
+  const expectedPatternRefs = expectedSourcePatternRefs(targetAgent);
+  if (expectedPatternRefs.length === 0) {
+    throw new Error(`stage-decomposition pack draft ${field}.research_synthesis_packet requires extracted pattern refs.`);
+  }
+  const patterns = asRecordArray(
+    actualPacket.transferable_design_patterns,
+    `${field}.research_synthesis_packet.transferable_design_patterns`,
+  );
+  expectedPatternRefs.forEach((expectedRef) => {
+    if (!patterns.some((pattern) => pattern.source_pattern_ref === expectedRef)) {
+      throw new Error(`stage-decomposition pack draft ${field}.research_synthesis_packet missing transferable pattern ${expectedRef}.`);
+    }
+  });
+  const aspects = asRecordArray(
+    actualPacket.extractable_design_aspects,
+    `${field}.research_synthesis_packet.extractable_design_aspects`,
+  );
+  const requiredSlots = [
+    'stage_control_plane',
+    'knowledge_tool_quality_gate_refs',
+    'typed_blocker_and_owner_handoff_policy',
+  ];
+  expectedPatternRefs.forEach((expectedRef) => {
+    requiredSlots.forEach((slot) => {
+      if (!aspects.some((aspect) =>
+        aspect.source_pattern_ref === expectedRef
+        && aspect.target_design_slot === slot
+        && (
+          aspect.required_output_ref === transferMapRef
+          || aspect.required_output_ref === agentPackPlanRef
+        )
+        && typeof aspect.extracted_design_claim === 'string'
+        && aspect.extracted_design_claim.trim().length > 0
+      )) {
+        throw new Error(`stage-decomposition pack draft ${field}.research_synthesis_packet missing extracted aspect ${slot} for ${expectedRef}.`);
+      }
+    });
+  });
+  const policy = asRecord(
+    actualPacket.source_body_policy,
+    `${field}.research_synthesis_packet.source_body_policy`,
+  );
+  if (policy.refs_only !== true || policy.extracted_pattern_refs_required !== true) {
+    throw new Error(`stage-decomposition pack draft ${field}.research_synthesis_packet source body policy is invalid.`);
+  }
+}
+
 function validateTransferMapObject(
   actualTransferMap: JsonObject,
   targetAgent: TargetAgent,
@@ -232,8 +318,12 @@ function validateTransferMapObject(
   if (actualTransferMap.surface_kind !== 'opl_meta_agent_transfer_map' || actualTransferMap.transfer_map_ref !== transferMapRef) {
     throw new Error(`stage-decomposition pack draft ${field}.transfer_map identity is invalid.`);
   }
-  if (actualTransferMap.reference_design_packet_ref !== packetRef) {
-    throw new Error(`stage-decomposition pack draft ${field}.transfer_map reference_design_packet_ref is invalid.`);
+  if (
+    actualTransferMap.reference_design_packet_ref !== packetRef
+    && actualTransferMap.research_synthesis_packet_ref !== packetRef
+    && actualTransferMap.design_basis_ref !== packetRef
+  ) {
+    throw new Error(`stage-decomposition pack draft ${field}.transfer_map design basis ref is invalid.`);
   }
   const expectedPatternRefs = expectedSourcePatternRefs(targetAgent);
   const mappings = asRecordArray(actualTransferMap.mappings, `${field}.transfer_map.mappings`);
@@ -272,7 +362,14 @@ function validateAgentPackPlanObject(
   if (actualAgentPackPlan.surface_kind !== 'opl_meta_agent_agent_pack_plan' || actualAgentPackPlan.plan_ref !== agentPackPlanRef) {
     throw new Error(`stage-decomposition pack draft ${field}.agent_pack_plan identity is invalid.`);
   }
-  if (actualAgentPackPlan.reference_design_packet_ref !== packetRef || actualAgentPackPlan.transfer_map_ref !== transferMapRef) {
+  if (
+    (
+      actualAgentPackPlan.reference_design_packet_ref !== packetRef
+      && actualAgentPackPlan.research_synthesis_packet_ref !== packetRef
+      && actualAgentPackPlan.design_basis_ref !== packetRef
+    )
+    || actualAgentPackPlan.transfer_map_ref !== transferMapRef
+  ) {
     throw new Error(`stage-decomposition pack draft ${field}.agent_pack_plan source refs are invalid.`);
   }
   const expectedPatternRefs = expectedSourcePatternRefs(targetAgent);
@@ -331,14 +428,18 @@ function validateBuildReceiptObject(
     throw new Error(`stage-decomposition pack draft ${field}.build_receipt identity is invalid.`);
   }
   if (
-    actualBuildReceipt.reference_design_packet_ref !== packetRef
+    (
+      actualBuildReceipt.reference_design_packet_ref !== packetRef
+      && actualBuildReceipt.research_synthesis_packet_ref !== packetRef
+      && actualBuildReceipt.design_basis_ref !== packetRef
+    )
     || actualBuildReceipt.transfer_map_ref !== transferMapRef
     || actualBuildReceipt.agent_pack_plan_ref !== agentPackPlanRef
   ) {
     throw new Error(`stage-decomposition pack draft ${field}.build_receipt source object refs are invalid.`);
   }
   [
-    'ReferenceDesignPacket',
+    buildResearchSynthesisPacket(targetAgent) ? 'ResearchSynthesisPacket' : 'ReferenceDesignPacket',
     'TransferMap',
     'AgentPackPlan',
     'BuildReceipt',
@@ -396,32 +497,51 @@ function validateBuildReceiptObject(
 
 function assertReferenceDesignObjectRefs(value: JsonObject, targetAgent: TargetAgent, field: string): void {
   const packet = buildReferenceDesignPacket(targetAgent);
+  const researchPacket = buildResearchSynthesisPacket(targetAgent);
   const transferMap = buildTransferMap(targetAgent);
   const agentPackPlan = buildAgentPackPlan(targetAgent);
   const buildReceipt = buildSourceDerivedBuildReceipt(targetAgent);
-  const packetRef = optionalString(packet?.packet_ref);
+  const packetRef = optionalString(packet?.packet_ref ?? researchPacket?.packet_ref);
+  const referencePacketRef = optionalString(packet?.packet_ref);
+  const researchPacketRef = optionalString(researchPacket?.packet_ref);
   const transferMapRef = optionalString(transferMap?.transfer_map_ref);
   const agentPackPlanRef = optionalString(agentPackPlan?.plan_ref);
   const buildReceiptRef = optionalString(buildReceipt?.receipt_ref);
-  assertOptionalRefField(value.reference_design_packet_ref, packetRef, `${field}.reference_design_packet_ref`);
+  assertOptionalRefField(value.reference_design_packet_ref, referencePacketRef, `${field}.reference_design_packet_ref`);
+  assertOptionalRefField(value.research_synthesis_packet_ref, researchPacketRef, `${field}.research_synthesis_packet_ref`);
   assertOptionalRefField(value.transfer_map_ref, transferMapRef, `${field}.transfer_map_ref`);
   assertOptionalRefField(value.agent_pack_plan_ref, agentPackPlanRef, `${field}.agent_pack_plan_ref`);
   assertOptionalRefField(value.build_receipt_ref, buildReceiptRef, `${field}.build_receipt_ref`);
   assertOptionalRefArrayIncludes(
     value.reference_design_packet_refs,
-    packetRef,
+    referencePacketRef,
     `${field}.reference_design_packet_refs`,
+  );
+  assertOptionalRefArrayIncludes(
+    value.research_synthesis_packet_refs,
+    researchPacketRef,
+    `${field}.research_synthesis_packet_refs`,
   );
   assertOptionalRefArrayIncludes(value.transfer_map_refs, transferMapRef, `${field}.transfer_map_refs`);
   assertOptionalRefArrayIncludes(value.agent_pack_plan_refs, agentPackPlanRef, `${field}.agent_pack_plan_refs`);
   assertOptionalRefArrayIncludes(value.build_receipt_refs, buildReceiptRef, `${field}.build_receipt_refs`);
 
   if (packetRef && transferMapRef && agentPackPlanRef && buildReceiptRef) {
-    const actualPacket = asRecord(value.reference_design_packet, `${field}.reference_design_packet`);
+    const actualReferencePacket = referencePacketRef
+      ? asRecord(value.reference_design_packet, `${field}.reference_design_packet`)
+      : null;
+    const actualResearchPacket = researchPacketRef
+      ? asRecord(value.research_synthesis_packet, `${field}.research_synthesis_packet`)
+      : null;
     const actualTransferMap = asRecord(value.transfer_map, `${field}.transfer_map`);
     const actualAgentPackPlan = asRecord(value.agent_pack_plan, `${field}.agent_pack_plan`);
     const actualBuildReceipt = asRecord(value.build_receipt, `${field}.build_receipt`);
-    validateReferenceDesignPacketObject(actualPacket, targetAgent, packetRef, transferMapRef, agentPackPlanRef, field);
+    if (actualReferencePacket && referencePacketRef) {
+      validateReferenceDesignPacketObject(actualReferencePacket, targetAgent, referencePacketRef, transferMapRef, agentPackPlanRef, field);
+    }
+    if (actualResearchPacket && researchPacketRef) {
+      validateResearchSynthesisPacketObject(actualResearchPacket, targetAgent, researchPacketRef, transferMapRef, agentPackPlanRef, field);
+    }
     validateTransferMapObject(actualTransferMap, targetAgent, packetRef, transferMapRef, field);
     validateAgentPackPlanObject(actualAgentPackPlan, targetAgent, packetRef, transferMapRef, agentPackPlanRef, field);
     validateBuildReceiptObject(
@@ -438,11 +558,13 @@ function assertReferenceDesignObjectRefs(value: JsonObject, targetAgent: TargetA
 
 function sourceDerivedObjectRequirementRefs(targetAgent: TargetAgent): string[] {
   const packet = buildReferenceDesignPacket(targetAgent);
+  const researchPacket = buildResearchSynthesisPacket(targetAgent);
   const transferMap = buildTransferMap(targetAgent);
   const agentPackPlan = buildAgentPackPlan(targetAgent);
   const buildReceipt = buildSourceDerivedBuildReceipt(targetAgent);
   return [
     optionalString(packet?.packet_ref) ? `reference-design-packet-ref:${String(packet?.packet_ref)}` : null,
+    optionalString(researchPacket?.packet_ref) ? `research-synthesis-packet-ref:${String(researchPacket?.packet_ref)}` : null,
     optionalString(transferMap?.transfer_map_ref) ? `transfer-map-ref:${String(transferMap?.transfer_map_ref)}` : null,
     optionalString(agentPackPlan?.plan_ref) ? `agent-pack-plan-ref:${String(agentPackPlan?.plan_ref)}` : null,
     optionalString(buildReceipt?.receipt_ref) ? `build-receipt-ref:${String(buildReceipt?.receipt_ref)}` : null,
@@ -462,13 +584,33 @@ function validateReferenceDesignBoundary(
     targetAgent.reference_design_pattern_packet_refs,
     `${field}.pattern_packet_refs`,
   );
-  if (boundary.role !== 'external_architecture_inspiration_not_target_domain_truth') {
-    throw new Error(`stage-decomposition pack draft ${field}.role must mark reference designs as inspiration only.`);
+  assertMatchingStringArray(
+    boundary.research_source_refs,
+    targetAgent.research_source_refs,
+    `${field}.research_source_refs`,
+  );
+  assertMatchingStringArray(
+    boundary.expert_practice_notes,
+    targetAgent.expert_practice_notes,
+    `${field}.expert_practice_notes`,
+  );
+  assertMatchingStringArray(
+    boundary.research_synthesis_refs,
+    targetAgent.research_synthesis_refs,
+    `${field}.research_synthesis_refs`,
+  );
+  if (boundary.role !== 'external_architecture_or_research_inspiration_not_target_domain_truth') {
+    throw new Error(`stage-decomposition pack draft ${field}.role must mark reference/research designs as inspiration only.`);
   }
   assertOptionalRefField(
     boundary.reference_design_packet_ref,
     optionalString(buildReferenceDesignPacket(targetAgent)?.packet_ref),
     `${field}.reference_design_packet_ref`,
+  );
+  assertOptionalRefField(
+    boundary.research_synthesis_packet_ref,
+    optionalString(buildResearchSynthesisPacket(targetAgent)?.packet_ref),
+    `${field}.research_synthesis_packet_ref`,
   );
   assertOptionalRefField(
     boundary.transfer_map_ref,
@@ -507,6 +649,21 @@ function assertMatchingProfileSelectionFields(value: JsonObject, targetAgent: Ta
     targetAgent.reference_design_pattern_packet_refs,
     `${field}.reference_design_pattern_packet_refs`,
   );
+  assertMatchingStringArray(
+    value.research_source_refs,
+    targetAgent.research_source_refs,
+    `${field}.research_source_refs`,
+  );
+  assertMatchingStringArray(
+    value.expert_practice_notes,
+    targetAgent.expert_practice_notes,
+    `${field}.expert_practice_notes`,
+  );
+  assertMatchingStringArray(
+    value.research_synthesis_refs,
+    targetAgent.research_synthesis_refs,
+    `${field}.research_synthesis_refs`,
+  );
   const expectedTransferablePatternRequirements = buildTransferablePatternRequirements(targetAgent);
   const actualTransferablePatternRequirements = normalizedStringArray(
     value.transferable_pattern_requirements,
@@ -526,6 +683,10 @@ function assertMatchingProfileSelectionFields(value: JsonObject, targetAgent: Ta
   const expectedSourceReceipt = receipt.source_derived_design_receipt;
   if (JSON.stringify(value.source_derived_design_receipt ?? null) !== JSON.stringify(expectedSourceReceipt ?? null)) {
     throw new Error(`stage-decomposition pack draft ${field}.source_derived_design_receipt does not match requested target.`);
+  }
+  const expectedResearchReceipt = receipt.research_driven_design_receipt;
+  if (JSON.stringify(value.research_driven_design_receipt ?? null) !== JSON.stringify(expectedResearchReceipt ?? null)) {
+    throw new Error(`stage-decomposition pack draft ${field}.research_driven_design_receipt does not match requested target.`);
   }
   assertReferenceDesignObjectRefs(value, targetAgent, field);
 }
@@ -746,7 +907,7 @@ function validateStageControlPlane(
     asString(action.action_id, 'action.action_id')
   )));
   const stages = asRecordArray(stageControl.stages, 'stage_control_plane.stages');
-  const sourceDerivedDesignActive = buildProfileSelectionReceipt(targetAgent).source_derived_design_receipt !== null;
+  const designBasisActive = buildSourceDerivedBuildReceipt(targetAgent) !== null;
   const morphologyRefs = asRecord(artifactMorphologyContract.stage_refs, 'artifact_morphology_contract.stage_refs');
   const requiredMorphologyRefs = [
     asString(morphologyRefs.artifact_morphology_ref, 'artifact_morphology_contract.stage_refs.artifact_morphology_ref'),
@@ -765,7 +926,7 @@ function validateStageControlPlane(
     if (stage.profile_selection_receipt_ref !== 'contracts/capability_map.json#/profile_selection_receipt') {
       throw new Error(`stage-decomposition pack draft stage ${stageId} missing profile_selection_receipt_ref.`);
     }
-    if (sourceDerivedDesignActive) {
+    if (designBasisActive) {
       const stagePatternSourceRefs = optionalStringArray(
         stage.stage_pattern_source_refs,
         `stage ${stageId}.stage_pattern_source_refs`,
@@ -805,6 +966,30 @@ function validateStageControlPlane(
             }]
           : []
       ),
+      ...(
+        normalizedStringArray(
+          targetAgent.research_source_refs,
+          'requested_target_agent.research_source_refs',
+        ).length > 0
+          ? [{ kind: 'research_source_refs', ref: `research-source-refs:${targetAgent.domain_id}` }]
+          : []
+      ),
+      ...(
+        normalizedStringArray(
+          targetAgent.expert_practice_notes,
+          'requested_target_agent.expert_practice_notes',
+        ).length > 0
+          ? [{ kind: 'expert_practice_notes', ref: `expert-practice-notes:${targetAgent.domain_id}` }]
+          : []
+      ),
+      ...(
+        normalizedStringArray(
+          targetAgent.research_synthesis_refs,
+          'requested_target_agent.research_synthesis_refs',
+        ).length > 0
+          ? [{ kind: 'research_synthesis_refs', ref: `research-synthesis-refs:${targetAgent.domain_id}` }]
+          : []
+      ),
     ].forEach((expected) => {
       if (!inputs.some((entry) => entry.ref_kind === expected.kind && entry.ref === expected.ref)) {
         throw new Error(`stage-decomposition pack draft stage ${stageId} missing input ${expected.kind}.`);
@@ -815,13 +1000,15 @@ function validateStageControlPlane(
     ].forEach((expectedRef) => {
       const refKind = expectedRef.startsWith('reference-design-packet-ref:')
         ? 'reference_design_packet_ref'
-        : expectedRef.startsWith('transfer-map-ref:')
+        : expectedRef.startsWith('research-synthesis-packet-ref:')
+          ? 'research_synthesis_packet_ref'
+          : expectedRef.startsWith('transfer-map-ref:')
           ? 'transfer_map_ref'
           : expectedRef.startsWith('agent-pack-plan-ref:')
             ? 'agent_pack_plan_ref'
             : 'build_receipt_ref';
       const rawRef = expectedRef.replace(
-        /^reference-design-packet-ref:|^transfer-map-ref:|^agent-pack-plan-ref:|^build-receipt-ref:/,
+        /^reference-design-packet-ref:|^research-synthesis-packet-ref:|^transfer-map-ref:|^agent-pack-plan-ref:|^build-receipt-ref:/,
         '',
       );
       if (!inputs.some((entry) => entry.ref_kind === refKind && entry.ref === rawRef)) {
@@ -919,6 +1106,24 @@ function validateStageControlPlane(
           targetAgent.reference_design_pattern_packet_refs,
           'requested_target_agent.reference_design_pattern_packet_refs',
         ).length > 0 ? [`reference-design-pattern-packet-refs:${targetAgent.domain_id}`] : []
+      ),
+      ...(
+        normalizedStringArray(
+          targetAgent.research_source_refs,
+          'requested_target_agent.research_source_refs',
+        ).length > 0 ? [`research-source-refs:${targetAgent.domain_id}`] : []
+      ),
+      ...(
+        normalizedStringArray(
+          targetAgent.expert_practice_notes,
+          'requested_target_agent.expert_practice_notes',
+        ).length > 0 ? [`expert-practice-notes:${targetAgent.domain_id}`] : []
+      ),
+      ...(
+        normalizedStringArray(
+          targetAgent.research_synthesis_refs,
+          'requested_target_agent.research_synthesis_refs',
+        ).length > 0 ? [`research-synthesis-refs:${targetAgent.domain_id}`] : []
       ),
       ...sourceDerivedObjectRequirementRefs(targetAgent),
     ].forEach((requiredRef) => {
@@ -1157,6 +1362,21 @@ export function validateStageDecompositionCloseoutPacket(
     draftTarget.reference_design_pattern_packet_refs,
     targetAgent.reference_design_pattern_packet_refs,
     'reference_design_pattern_packet_refs',
+  );
+  assertMatchingOptionalStringArray(
+    draftTarget.research_source_refs,
+    targetAgent.research_source_refs,
+    'research_source_refs',
+  );
+  assertMatchingOptionalStringArray(
+    draftTarget.expert_practice_notes,
+    targetAgent.expert_practice_notes,
+    'expert_practice_notes',
+  );
+  assertMatchingOptionalStringArray(
+    draftTarget.research_synthesis_refs,
+    targetAgent.research_synthesis_refs,
+    'research_synthesis_refs',
   );
   validateNoForbiddenWritePolicy(asRecord(draft.no_forbidden_write_policy, 'no_forbidden_write_policy'));
   const files = filesByPath(draft.files);

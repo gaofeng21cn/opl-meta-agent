@@ -6,6 +6,8 @@ import {
   buildProfileRequirements,
   buildProfileSelectionReceipt,
   buildReferenceDesignPacket,
+  buildResearchDrivenDesignReceipt,
+  buildResearchSynthesisPacket,
   buildSourceDerivedBuildReceipt,
   buildSourceDerivedDesignReceipt,
   buildTransferMap,
@@ -76,7 +78,11 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
   const referenceDesignSourceRefs = stringList(input.targetAgent.reference_design_source_refs);
   const referenceDesignPatternNotes = stringList(input.targetAgent.reference_design_pattern_notes);
   const referenceDesignPatternPacketRefs = stringList(input.targetAgent.reference_design_pattern_packet_refs);
+  const researchSourceRefs = stringList(input.targetAgent.research_source_refs);
+  const expertPracticeNotes = stringList(input.targetAgent.expert_practice_notes);
+  const researchSynthesisRefs = stringList(input.targetAgent.research_synthesis_refs);
   const referenceDesignPacket = buildReferenceDesignPacket(input.targetAgent);
+  const researchSynthesisPacket = buildResearchSynthesisPacket(input.targetAgent);
   const transferMap = buildTransferMap(input.targetAgent);
   const agentPackPlan = buildAgentPackPlan(input.targetAgent);
   const buildReceipt = buildSourceDerivedBuildReceipt(input.targetAgent);
@@ -95,8 +101,12 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
       profile_requirements: buildProfileRequirements(input.targetAgent),
       source_derived_design_receipt: profileSelectionReceipt.source_derived_design_receipt,
       source_derived_design_receipt_ref: profileSelectionReceipt.source_derived_design_receipt_ref,
+      research_driven_design_receipt: profileSelectionReceipt.research_driven_design_receipt,
+      research_driven_design_receipt_ref: profileSelectionReceipt.research_driven_design_receipt_ref,
       reference_design_packet: referenceDesignPacket,
       reference_design_packet_ref: referenceDesignPacket?.packet_ref ?? null,
+      research_synthesis_packet: researchSynthesisPacket,
+      research_synthesis_packet_ref: researchSynthesisPacket?.packet_ref ?? null,
       transfer_map: transferMap,
       transfer_map_ref: transferMap?.transfer_map_ref ?? null,
       agent_pack_plan: agentPackPlan,
@@ -104,15 +114,20 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
       build_receipt: buildReceipt,
       build_receipt_ref: buildReceipt?.receipt_ref ?? null,
       reference_design_pattern_packet_refs: profileSelectionReceipt.reference_design_pattern_packet_refs,
+      research_source_refs: profileSelectionReceipt.research_source_refs,
+      expert_practice_notes: profileSelectionReceipt.expert_practice_notes,
+      research_synthesis_refs: profileSelectionReceipt.research_synthesis_refs,
       transferable_pattern_requirements: profileSelectionReceipt.transferable_pattern_requirements,
       capability_plan_requirements: profileSelectionReceipt.capability_plan_requirements,
-      required_machine_objects: profileSelectionReceipt.source_derived_design_receipt
-        ? ['ReferenceDesignPacket', 'TransferMap', 'AgentPackPlan', 'BuildReceipt']
+      required_machine_objects: buildReceipt
+        ? buildReceipt.required_machine_objects
         : [],
       stage_closeout_must_preserve_selected_profile:
         stringList(input.targetAgent.selected_opl_profile_refs).length > 0,
       stage_closeout_must_preserve_source_derived_design:
         profileSelectionReceipt.source_derived_design_receipt !== null,
+      stage_closeout_must_preserve_research_driven_design:
+        profileSelectionReceipt.research_driven_design_receipt !== null,
       source_readback_refs: profileSelectionReceipt.source_readback_refs,
       refs_only: true,
       can_claim_target_domain_ready: false,
@@ -123,8 +138,14 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
       pattern_notes: referenceDesignPatternNotes,
       pattern_packet_refs: referenceDesignPatternPacketRefs,
       source_derived_design_receipt: buildSourceDerivedDesignReceipt(input.targetAgent),
+      research_source_refs: researchSourceRefs,
+      expert_practice_notes: expertPracticeNotes,
+      research_synthesis_refs: researchSynthesisRefs,
+      research_driven_design_receipt: buildResearchDrivenDesignReceipt(input.targetAgent),
       reference_design_packet: referenceDesignPacket,
       reference_design_packet_ref: referenceDesignPacket?.packet_ref ?? null,
+      research_synthesis_packet: researchSynthesisPacket,
+      research_synthesis_packet_ref: researchSynthesisPacket?.packet_ref ?? null,
       transfer_map: transferMap,
       transfer_map_ref: transferMap?.transfer_map_ref ?? null,
       agent_pack_plan: agentPackPlan,
@@ -133,11 +154,14 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
       build_receipt_ref: buildReceipt?.receipt_ref ?? null,
       transferable_pattern_requirements: buildTransferablePatternRequirements(input.targetAgent),
       capability_plan_requirements: buildCapabilityPlanRequirements(input.targetAgent),
-      role: 'external_architecture_inspiration_not_target_domain_truth',
+      role: 'external_architecture_or_research_inspiration_not_target_domain_truth',
       stage_closeout_must_preserve_refs_when_present:
         referenceDesignSourceRefs.length > 0
         || referenceDesignPatternNotes.length > 0
-        || referenceDesignPatternPacketRefs.length > 0,
+        || referenceDesignPatternPacketRefs.length > 0
+        || researchSourceRefs.length > 0
+        || expertPracticeNotes.length > 0
+        || researchSynthesisRefs.length > 0,
       can_copy_external_runtime: false,
       can_copy_external_domain_truth: false,
       can_replace_target_owner_judgment: false,

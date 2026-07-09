@@ -290,15 +290,34 @@ function referenceDesignEvidenceRefs(targetAgent: TargetAgent): string[] {
     ...(targetAgent.reference_design_source_refs ?? []),
     ...(targetAgent.reference_design_pattern_notes ?? []).map((note) => `reference-design-pattern:${note}`),
     ...(targetAgent.reference_design_pattern_packet_refs ?? []),
+    ...(targetAgent.research_source_refs ?? []),
+    ...(targetAgent.expert_practice_notes ?? []).map((note) => `expert-practice:${note}`),
+    ...(targetAgent.research_synthesis_refs ?? []),
   ];
 }
 
 function hasSourceDerivedDesignInput(parsed: {
   referenceDesignSourceRefs: string[];
+  referenceDesignPatternNotes?: string[];
   referenceDesignPatternPacketRefs: string[];
 }): boolean {
   return parsed.referenceDesignSourceRefs.length > 0
+    || (parsed.referenceDesignPatternNotes?.length ?? 0) > 0
     || parsed.referenceDesignPatternPacketRefs.length > 0;
+}
+
+function hasDesignBasisInput(parsed: {
+  referenceDesignSourceRefs: string[];
+  referenceDesignPatternNotes: string[];
+  referenceDesignPatternPacketRefs: string[];
+  researchSourceRefs: string[];
+  expertPracticeNotes: string[];
+  researchSynthesisRefs: string[];
+}): boolean {
+  return hasSourceDerivedDesignInput(parsed)
+    || parsed.researchSourceRefs.length > 0
+    || parsed.expertPracticeNotes.length > 0
+    || parsed.researchSynthesisRefs.length > 0;
 }
 
 export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineArgs {
@@ -316,6 +335,9 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
     referenceDesignSourceRefs: string[];
     referenceDesignPatternNotes: string[];
     referenceDesignPatternPacketRefs: string[];
+    researchSourceRefs: string[];
+    expertPracticeNotes: string[];
+    researchSynthesisRefs: string[];
     stageRunner: StageRunnerKind;
     stageCloseoutPacketPath: string | null;
   } = {
@@ -332,6 +354,9 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
     referenceDesignSourceRefs: [],
     referenceDesignPatternNotes: [],
     referenceDesignPatternPacketRefs: [],
+    researchSourceRefs: [],
+    expertPracticeNotes: [],
+    researchSynthesisRefs: [],
     stageRunner: 'live',
     stageCloseoutPacketPath: null,
   };
@@ -352,6 +377,9 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
       'reference-design-source': { type: 'string', multiple: true },
       'reference-design-pattern': { type: 'string', multiple: true },
       'reference-design-pattern-packet': { type: 'string', multiple: true },
+      'research-source': { type: 'string', multiple: true },
+      'expert-practice': { type: 'string', multiple: true },
+      'research-synthesis': { type: 'string', multiple: true },
       'stage-runner': { type: 'string' },
       'stage-closeout-packet': { type: 'string' },
       'stage-decomposition-closeout': { type: 'string' },
@@ -407,6 +435,18 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
     '--reference-design-pattern-packet',
     values['reference-design-pattern-packet'],
   );
+  parsed.researchSourceRefs = nonEmptyStringList(
+    '--research-source',
+    values['research-source'],
+  );
+  parsed.expertPracticeNotes = nonEmptyStringList(
+    '--expert-practice',
+    values['expert-practice'],
+  );
+  parsed.researchSynthesisRefs = nonEmptyStringList(
+    '--research-synthesis',
+    values['research-synthesis'],
+  );
   if (typeof values['stage-runner'] === 'string') {
     const runner = nonEmptyValue('--stage-runner', values['stage-runner']);
     if (runner !== 'fixture' && runner !== 'live') {
@@ -434,9 +474,9 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
       'Missing required --domain-id <domain_id>; build-agent-baseline requires an explicit target agent.',
     );
   }
-  if (parsed.selectedOplProfileRefs.length === 0 && !hasSourceDerivedDesignInput(parsed)) {
+  if (parsed.selectedOplProfileRefs.length === 0 && !hasDesignBasisInput(parsed)) {
     throw new Error(
-      'Missing required profile input; target agent generation requires --selected-opl-profile <profile_ref> or source-derived design refs via --reference-design-source / --reference-design-pattern-packet.',
+      'Missing required profile input; target agent generation requires --selected-opl-profile <profile_ref>, source-derived design refs via --reference-design-source / --reference-design-pattern / --reference-design-pattern-packet, or research-driven design refs via --research-source / --expert-practice / --research-synthesis.',
     );
   }
   if (parsed.selectedOplProfileRefs.length > 0 && !parsed.profileSelectionRationale) {
@@ -474,6 +514,15 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
       : {}),
     ...(parsed.referenceDesignPatternPacketRefs.length > 0
       ? { reference_design_pattern_packet_refs: parsed.referenceDesignPatternPacketRefs }
+      : {}),
+    ...(parsed.researchSourceRefs.length > 0
+      ? { research_source_refs: parsed.researchSourceRefs }
+      : {}),
+    ...(parsed.expertPracticeNotes.length > 0
+      ? { expert_practice_notes: parsed.expertPracticeNotes }
+      : {}),
+    ...(parsed.researchSynthesisRefs.length > 0
+      ? { research_synthesis_refs: parsed.researchSynthesisRefs }
       : {}),
   };
   return {
@@ -674,6 +723,20 @@ function buildBaselineReceipt(
       can_write_target_domain_truth: false,
       can_replace_target_owner_judgment: false,
     },
+    research_driven_design: {
+      source_refs: targetAgent.research_source_refs ?? [],
+      expert_practice_notes: targetAgent.expert_practice_notes ?? [],
+      synthesis_refs: targetAgent.research_synthesis_refs ?? [],
+      research_driven_design_receipt_ref: profileSelectionReceipt.research_driven_design_receipt_ref,
+      research_driven_design_receipt: profileSelectionReceipt.research_driven_design_receipt,
+      research_synthesis_packet_ref: profileSelectionReceipt.research_synthesis_packet_ref,
+      research_synthesis_packet: profileSelectionReceipt.research_synthesis_packet,
+      transfer_map_ref: profileSelectionReceipt.transfer_map_ref,
+      agent_pack_plan_ref: profileSelectionReceipt.agent_pack_plan_ref,
+      role: 'expert_practice_research_inspiration_not_target_domain_truth',
+      can_write_target_domain_truth: false,
+      can_replace_target_owner_judgment: false,
+    },
     scaffold_validation_status: scaffoldValidation.standard_domain_agent_scaffold.validation.status,
     ...aiReviewerReceiptFields(aiReviewerEvaluation, aiReviewerEvaluationRef),
     ...domainPackReceiptFields(domainPackSummary),
@@ -862,10 +925,23 @@ export function runBuildAgentBaseline({
     ...((targetAgent.reference_design_pattern_packet_refs?.length ?? 0) > 0
       ? { reference_design_pattern_packet_refs: targetAgent.reference_design_pattern_packet_refs }
       : {}),
+    ...((targetAgent.research_source_refs?.length ?? 0) > 0
+      ? { research_source_refs: targetAgent.research_source_refs }
+      : {}),
+    ...((targetAgent.expert_practice_notes?.length ?? 0) > 0
+      ? { expert_practice_notes: targetAgent.expert_practice_notes }
+      : {}),
+    ...((targetAgent.research_synthesis_refs?.length ?? 0) > 0
+      ? { research_synthesis_refs: targetAgent.research_synthesis_refs }
+      : {}),
     source_derived_design_receipt: profileSelectionReceipt.source_derived_design_receipt,
     source_derived_design_receipt_ref: profileSelectionReceipt.source_derived_design_receipt_ref,
+    research_driven_design_receipt: profileSelectionReceipt.research_driven_design_receipt,
+    research_driven_design_receipt_ref: profileSelectionReceipt.research_driven_design_receipt_ref,
     reference_design_packet: profileSelectionReceipt.reference_design_packet,
     reference_design_packet_ref: profileSelectionReceipt.reference_design_packet_ref,
+    research_synthesis_packet: profileSelectionReceipt.research_synthesis_packet,
+    research_synthesis_packet_ref: profileSelectionReceipt.research_synthesis_packet_ref,
     transfer_map: profileSelectionReceipt.transfer_map,
     transfer_map_ref: profileSelectionReceipt.transfer_map_ref,
     agent_pack_plan: profileSelectionReceipt.agent_pack_plan,

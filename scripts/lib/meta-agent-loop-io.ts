@@ -18,6 +18,9 @@ export type TargetAgent = {
   reference_design_source_refs?: string[] | null;
   reference_design_pattern_notes?: string[] | null;
   reference_design_pattern_packet_refs?: string[] | null;
+  research_source_refs?: string[] | null;
+  expert_practice_notes?: string[] | null;
+  research_synthesis_refs?: string[] | null;
   descriptor_ref?: string;
   repo_dir?: string;
   descriptor?: JsonObject | null;
@@ -119,6 +122,21 @@ export function readTargetAgent(targetAgentDir: string): TargetAgent {
     'reference_design_pattern_packet_refs',
     descriptorPath,
   );
+  const researchSourceRefs = optionalStringArray(
+    descriptor.research_source_refs,
+    'research_source_refs',
+    descriptorPath,
+  );
+  const expertPracticeNotes = optionalStringArray(
+    descriptor.expert_practice_notes,
+    'expert_practice_notes',
+    descriptorPath,
+  );
+  const researchSynthesisRefs = optionalStringArray(
+    descriptor.research_synthesis_refs,
+    'research_synthesis_refs',
+    descriptorPath,
+  );
   const selectedOplProfileRefs = optionalStringArray(
     descriptor.selected_opl_profile_refs ?? descriptor.selected_profile_refs,
     'selected_opl_profile_refs',
@@ -164,6 +182,9 @@ export function readTargetAgent(targetAgentDir: string): TargetAgent {
     ...(referenceDesignPatternPacketRefs
       ? { reference_design_pattern_packet_refs: referenceDesignPatternPacketRefs }
       : {}),
+    ...(researchSourceRefs ? { research_source_refs: researchSourceRefs } : {}),
+    ...(expertPracticeNotes ? { expert_practice_notes: expertPracticeNotes } : {}),
+    ...(researchSynthesisRefs ? { research_synthesis_refs: researchSynthesisRefs } : {}),
     descriptor_ref: descriptorPath,
     repo_dir: targetAgentDir,
     descriptor,

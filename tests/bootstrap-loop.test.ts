@@ -67,6 +67,31 @@ const sourceDerivedObjectRefs = {
   patternNoteRef: 'reference-design-pattern-note:surgery-risk-from-paper-agent/1',
 };
 
+const researchDrivenTargetAgent = {
+  domain_id: 'vague-idea-researched-agent',
+  domain_label: 'Vague Idea Researched Agent',
+  delivery_domain: 'knowledge_delivery',
+  target_brief: 'Create an owner-gated target agent from a vague idea after researching expert practice.',
+  research_source_refs: [
+    'research-source-ref:public/expert-workflow-review',
+  ],
+  expert_practice_notes: [
+    'experts first clarify target job, constraints, evidence sources, evaluation rubric, and handoff policy',
+  ],
+  research_synthesis_refs: [
+    'research-synthesis-ref:oma/vague-idea/expert-practice-synthesis',
+  ],
+};
+
+const researchDrivenObjectRefs = {
+  researchSynthesisPacketRef: 'research-synthesis-packet:opl-meta-agent/vague-idea-researched-agent',
+  transferMapRef: 'transfer-map:opl-meta-agent/vague-idea-researched-agent',
+  agentPackPlanRef: 'agent-pack-plan:opl-meta-agent/vague-idea-researched-agent',
+  buildReceiptRef: 'build-receipt-ref:opl-meta-agent/vague-idea-researched-agent',
+  expertPracticeNoteRef: 'expert-practice-note:vague-idea-researched-agent/1',
+  researchSourcePatternRef: 'research-source-ref:vague-idea-researched-agent/1',
+};
+
 function morphologyRefs(domainId: string, stageId = 'agent-output-draft'): string[] {
   return [
     `artifact-morphology-ref:${domainId}`,
@@ -452,6 +477,148 @@ test('build-agent-baseline materializes a source-derived target package without 
   }
 });
 
+test('build-agent-baseline materializes a research-driven target package from vague idea inputs', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-bootstrap-research-driven-'));
+  try {
+    const reviewerPath = path.join(outputRoot, 'reviewer.json');
+    const closeoutPath = path.join(outputRoot, 'stage-closeout.json');
+    writeReviewerEvaluation(reviewerPath, {}, researchDrivenTargetAgent.domain_id);
+    writeStageCloseout(closeoutPath, researchDrivenTargetAgent);
+
+    const payload = runBuildAgentBaseline(parseBuildAgentBaselineArgs([
+      '--output-dir',
+      outputRoot,
+      '--opl-bin',
+      oplBin,
+      '--ai-reviewer-evaluation',
+      reviewerPath,
+      '--stage-runner',
+      'fixture',
+      '--stage-decomposition-closeout',
+      closeoutPath,
+      '--domain-id',
+      researchDrivenTargetAgent.domain_id,
+      '--domain-label',
+      researchDrivenTargetAgent.domain_label,
+      '--delivery-domain',
+      researchDrivenTargetAgent.delivery_domain,
+      '--target-brief',
+      researchDrivenTargetAgent.target_brief,
+      '--research-source',
+      researchDrivenTargetAgent.research_source_refs[0],
+      '--expert-practice',
+      researchDrivenTargetAgent.expert_practice_notes[0],
+      '--research-synthesis',
+      researchDrivenTargetAgent.research_synthesis_refs[0],
+    ]));
+
+    const targetDir = path.join(outputRoot, researchDrivenTargetAgent.domain_id);
+    const descriptor = readJson(path.join(targetDir, 'contracts/domain_descriptor.json'));
+    const capabilityMap = readJson(path.join(targetDir, 'contracts/capability_map.json'));
+    const stageControl = readJson(path.join(targetDir, 'contracts/stage_control_plane.json'));
+    const receipt = readJson(path.join(outputRoot, 'baseline-delivery-receipt.json'));
+    const suite = readJson(path.join(outputRoot, 'agent-lab-suite.json'));
+    const primarySkill = fs.readFileSync(path.join(targetDir, 'agent/primary_skill/SKILL.md'), 'utf8');
+    const generatedPrompt = fs.readFileSync(path.join(targetDir, 'agent/prompts/agent-output-draft.md'), 'utf8');
+
+    assert.equal(payload.status, 'passed');
+    assert.equal(descriptor.profile_selection_mode, 'research_driven_design');
+    assert.equal(descriptor.selected_opl_profile_refs, undefined);
+    assert.equal(
+      descriptor.research_driven_design_receipt.route_ref,
+      'opl-profile-route:research_driven_design_profile_route.v1',
+    );
+    assert.deepEqual(descriptor.research_source_refs, researchDrivenTargetAgent.research_source_refs);
+    assert.deepEqual(descriptor.expert_practice_notes, researchDrivenTargetAgent.expert_practice_notes);
+    assert.deepEqual(descriptor.research_synthesis_refs, researchDrivenTargetAgent.research_synthesis_refs);
+    assert.equal(descriptor.research_synthesis_packet_ref, researchDrivenObjectRefs.researchSynthesisPacketRef);
+    assert.equal(descriptor.transfer_map_ref, researchDrivenObjectRefs.transferMapRef);
+    assert.equal(descriptor.agent_pack_plan_ref, researchDrivenObjectRefs.agentPackPlanRef);
+    assert.equal(descriptor.build_receipt_ref, researchDrivenObjectRefs.buildReceiptRef);
+    assert.deepEqual(
+      descriptor.build_receipt.required_machine_objects,
+      ['ResearchSynthesisPacket', 'TransferMap', 'AgentPackPlan', 'BuildReceipt'],
+    );
+    assert.equal(descriptor.build_receipt.build_source_kind, 'research_driven_design');
+    assert.equal(capabilityMap.profile_selection_mode, 'research_driven_design');
+    assert.deepEqual(capabilityMap.selected_profile_refs, []);
+    assert.equal(
+      capabilityMap.research_driven_design_receipt.route_ref,
+      'opl-profile-route:research_driven_design_profile_route.v1',
+    );
+    assert.ok(
+      capabilityMap.profile_requirements.required_stage_archetypes.includes('expert_practice_research'),
+    );
+    assert.equal(capabilityMap.research_synthesis_packet_ref, researchDrivenObjectRefs.researchSynthesisPacketRef);
+    assert.deepEqual(capabilityMap.research_synthesis_packet_refs, [researchDrivenObjectRefs.researchSynthesisPacketRef]);
+    assert.equal(capabilityMap.transfer_map_ref, researchDrivenObjectRefs.transferMapRef);
+    assert.equal(capabilityMap.agent_pack_plan_ref, researchDrivenObjectRefs.agentPackPlanRef);
+    assert.equal(capabilityMap.build_receipt_ref, researchDrivenObjectRefs.buildReceiptRef);
+    assert.equal(stageControl.profile_selection_mode, 'research_driven_design');
+    assert.equal(
+      stageControl.research_driven_design_receipt.route_ref,
+      'opl-profile-route:research_driven_design_profile_route.v1',
+    );
+    assert.equal(stageControl.research_synthesis_packet_ref, researchDrivenObjectRefs.researchSynthesisPacketRef);
+    assert.deepEqual(stageControl.build_receipt.required_machine_objects, [
+      'ResearchSynthesisPacket',
+      'TransferMap',
+      'AgentPackPlan',
+      'BuildReceipt',
+    ]);
+    assert.deepEqual(stageControl.stages[0].stage_pattern_source_refs, [
+      researchDrivenTargetAgent.research_synthesis_refs[0],
+      researchDrivenObjectRefs.expertPracticeNoteRef,
+      researchDrivenObjectRefs.researchSourcePatternRef,
+    ]);
+    assert.ok(
+      stageControl.research_synthesis_packet.extractable_design_aspects.some((aspect: JsonObject) =>
+        aspect.source_pattern_ref === researchDrivenTargetAgent.research_synthesis_refs[0]
+        && aspect.target_design_slot === 'stage_control_plane'
+      ),
+    );
+    assert.ok(
+      stageControl.stages[0].inputs.some((entry: JsonObject) =>
+        entry.ref_kind === 'research_synthesis_packet_ref'
+        && entry.ref === researchDrivenObjectRefs.researchSynthesisPacketRef
+      ),
+    );
+    assert.ok(
+      stageControl.stages[0].stage_contract.requires.includes(
+        `research-synthesis-packet-ref:${researchDrivenObjectRefs.researchSynthesisPacketRef}`,
+      ),
+    );
+    assert.ok(
+      stageControl.stages[0].stage_contract.requires.includes(
+        `build-receipt-ref:${researchDrivenObjectRefs.buildReceiptRef}`,
+      ),
+    );
+    assert.ok(
+      stageControl.capability_plan_requirements.includes(
+        'map_researched_expert_practice_into_stage_control_plane_prompt_knowledge_quality_gate_and_agent_lab_suite_seed',
+      ),
+    );
+    assert.deepEqual(
+      receipt.research_driven_design.source_refs,
+      researchDrivenTargetAgent.research_source_refs,
+    );
+    assert.equal(
+      receipt.research_driven_design.research_synthesis_packet_ref,
+      researchDrivenObjectRefs.researchSynthesisPacketRef,
+    );
+    assert.ok(suite.tasks[0].scorecard.evidence_refs.includes(researchDrivenTargetAgent.research_source_refs[0]));
+    assert.ok(suite.tasks[0].scorecard.evidence_refs.includes(researchDrivenTargetAgent.research_synthesis_refs[0]));
+    assert.ok(primarySkill.includes('Profile selection mode: research_driven_design'));
+    assert.ok(primarySkill.includes('Selected profile ref: none; research-driven design refs are the active design input.'));
+    assert.ok(primarySkill.includes(researchDrivenObjectRefs.researchSynthesisPacketRef));
+    assert.ok(generatedPrompt.includes('ResearchSynthesisPacket -> TransferMap -> AgentPackPlan -> BuildReceipt'));
+    assert.ok(generatedPrompt.includes(researchDrivenTargetAgent.research_synthesis_refs[0]));
+    assert.equal(payload.target_agent.selected_opl_profile_refs, undefined);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
 test('build-agent-baseline fails closed without independent reviewer evidence', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-bootstrap-missing-reviewer-pass4-'));
   try {
@@ -478,7 +645,7 @@ test('build-agent-baseline fails closed without independent reviewer evidence', 
   }
 });
 
-test('build-agent-baseline fails closed when neither builtin profile nor source-derived design refs exist', () => {
+test('build-agent-baseline fails closed when no builtin profile or design-basis refs exist', () => {
   assert.throws(
     () => parseBuildAgentBaselineArgs([
       '--ai-reviewer-evaluation',
@@ -488,6 +655,6 @@ test('build-agent-baseline fails closed when neither builtin profile nor source-
       '--target-brief',
       'Create an OPL-compatible fixture agent.',
     ]),
-    /selected-opl-profile.*source-derived design refs/i,
+    /selected-opl-profile.*source-derived design refs.*research-driven design refs/i,
   );
 });
