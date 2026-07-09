@@ -17,8 +17,10 @@ import {
 } from './lib/domain-pack.ts';
 import {
   materializeStageDecompositionPackDraft,
+  repairStageDecompositionCloseoutPacket,
 } from './lib/stage-decomposition-pack-draft/materializer.ts';
 import type {
+  StageDecompositionPackDraft,
   StageRunnerKind,
 } from './lib/stage-decomposition-pack-draft/shared.ts';
 import {
@@ -558,13 +560,43 @@ function materializeStageDecompositionAttempt({
     runnerKind: stageRunner,
     closeoutPacketPath: stageCloseoutPacketPath ?? null,
   });
-  const packDraft = validateStageDecompositionCloseoutPacket(attempt.closeoutPacket, { targetAgent });
+  const packDraft = validateOrRepairStageDecompositionCloseoutPacket(attempt.closeoutPacket, { targetAgent });
   materializeStageDecompositionPackDraft(targetAgentDir, packDraft);
   return attempt.receipt;
 }
 
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function validateOrRepairStageDecompositionCloseoutPacket(
+  packet: unknown,
+  { targetAgent }: { targetAgent: TargetAgent },
+): StageDecompositionPackDraft {
+  try {
+    return validateStageDecompositionCloseoutPacket(packet, { targetAgent });
+  } catch (firstError) {
+    const repair = repairStageDecompositionCloseoutPacket(packet, { targetAgent });
+    if (!repair.repaired) {
+      throw firstError;
+    }
+    try {
+      return validateStageDecompositionCloseoutPacket(repair.packet, { targetAgent });
+    } catch (secondError) {
+      throw new Error(
+        [
+          'stage-decomposition closeout failed validation after bounded materialization repair.',
+          `first_validation_error=${errorMessage(firstError)}`,
+          `repair_notes=${repair.repair_notes.join(',')}`,
+          `post_repair_validation_error=${errorMessage(secondError)}`,
+        ].join(' '),
+      );
+    }
+  }
+}
+
 function stageDecompositionBlockerFromError(error: unknown, targetAgent: TargetAgent): JsonObject {
-  const message = error instanceof Error ? error.message : String(error);
+  const message = errorMessage(error);
   try {
     const parsed = JSON.parse(message);
     if (

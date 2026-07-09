@@ -10,6 +10,7 @@ import {
 } from '../scripts/lib/stage-decomposition-pack-draft/builder.ts';
 import {
   materializeStageDecompositionPackDraft,
+  repairStageDecompositionCloseoutPacket,
 } from '../scripts/lib/stage-decomposition-pack-draft/materializer.ts';
 import {
   validateStageDecompositionCloseoutPacket,
@@ -157,6 +158,71 @@ test('stage-decomposition validator fails closed when subpacket chain is missing
   assert.throws(
     () => validateStageDecompositionCloseoutPacket(packet, { targetAgent: sourceDerivedTargetAgent }),
     /stage_decomposition_subpacket_set step 0/i,
+  );
+});
+
+test('stage-decomposition materialization repair restores mechanical subpacket projection', () => {
+  const packet = buildFixtureStageDecompositionCloseout({ targetAgent: sourceDerivedTargetAgent });
+  const draft = packet.stage_decomposition_pack_draft as JsonObject;
+  const stageControl = draft.stage_control_plane as JsonObject;
+  const stage = (stageControl.stages as JsonObject[])[0];
+  const stageContract = stage.stage_contract as JsonObject;
+
+  delete draft.stage_decomposition_subpacket_set;
+  delete draft.stage_decomposition_subpacket_set_ref;
+  delete draft.stage_decomposition_subpacket_set_refs;
+  delete stageControl.stage_decomposition_subpacket_set;
+  delete stageControl.stage_decomposition_subpacket_set_ref;
+  delete stageControl.stage_decomposition_subpacket_set_refs;
+  delete stage.stage_decomposition_subpacket_set;
+  delete stage.stage_decomposition_subpacket_set_ref;
+  delete stage.stage_decomposition_subpacket_set_refs;
+  stage.inputs = (stage.inputs as JsonObject[]).filter((input) =>
+    input.ref_kind !== 'stage_decomposition_subpacket_set_ref'
+  );
+  stageContract.requires = (stageContract.requires as string[]).filter((entry) =>
+    !entry.startsWith('stage-decomposition-subpacket-set-ref:')
+  );
+  stageContract.expected_receipt_refs = (stageContract.expected_receipt_refs as JsonObject[]).filter((entry) =>
+    entry.ref_kind !== 'stage_decomposition_subpacket_set_ref'
+  );
+
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(packet, { targetAgent: sourceDerivedTargetAgent }),
+    /stage_decomposition_subpacket_set/i,
+  );
+
+  const repair = repairStageDecompositionCloseoutPacket(packet, { targetAgent: sourceDerivedTargetAgent });
+  assert.equal(repair.repaired, true);
+  assert.match(repair.repair_notes.join('\n'), /stage_decomposition_pack_draft\.stage_decomposition_subpacket_set/);
+  const draftAfterRepair = validateStageDecompositionCloseoutPacket(repair.packet, {
+    targetAgent: sourceDerivedTargetAgent,
+  });
+  assert.equal(
+    (draftAfterRepair.stage_control_plane.stage_decomposition_subpacket_set as JsonObject).packet_set_ref,
+    draftAfterRepair.stage_decomposition_subpacket_set_ref,
+  );
+});
+
+test('stage-decomposition materialization repair does not hide empty design objects', () => {
+  const packet = buildFixtureStageDecompositionCloseout({ targetAgent: sourceDerivedTargetAgent });
+  const draft = packet.stage_decomposition_pack_draft as JsonObject;
+  const stageControl = draft.stage_control_plane as JsonObject;
+  const stage = (stageControl.stages as JsonObject[])[0];
+  const emptyPacket = {
+    surface_kind: 'opl_meta_agent_reference_design_packet',
+    packet_ref: stageControl.reference_design_packet_ref,
+  };
+
+  stageControl.reference_design_packet = emptyPacket;
+  stage.reference_design_packet = emptyPacket;
+  delete draft.stage_decomposition_subpacket_set;
+
+  const repair = repairStageDecompositionCloseoutPacket(packet, { targetAgent: sourceDerivedTargetAgent });
+  assert.equal(repair.repaired, true);
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(repair.packet, { targetAgent: sourceDerivedTargetAgent }),
+    /reference_source_refs|transferable_design_patterns|extractable_design_aspects/i,
   );
 });
 

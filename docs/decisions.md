@@ -84,8 +84,9 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 
 - 决策：baseline materialization 必须来自 live Codex `stage-decomposition` attempt 或显式 typed closeout packet；旧 direct script-authored graph 没有 compatibility path。`fixture` runner 只能消费显式 proof/test typed closeout，用于 deterministic validation。
 - 决策：source-derived / research-driven typed closeout 必须包含 `StageDecompositionSubpacketSet`；该对象只证明 `stage-decomposition` 内部认知步骤、refs、物化边界和 fail-closed checks，没有把这些 subpackets 升级成独立 OPL runtime stage。
+- 决策：`build-agent-baseline` 对 closeout 先做严格 validator；若只缺少可从已声明设计对象确定生成的 `StageDecompositionSubpacketSet` 投影、ref、stage input / requires / expected receipt ref，则在同一个 `stage-decomposition` materialization 内做一次有界 deterministic repair，再重新严格验证。核心设计对象为空、pattern refs 缺失、authority boundary 破坏、forbidden claim 或无法从 target/design refs 推导的语义问题仍 fail closed。
 - 理由：OMA 的核心价值在 AI-first stage decomposition 和 owner-gated pack generation，固定脚本图会把 domain reasoning 退化为 fallback materializer。
-- 影响：free-text closeout、partial refs、缺 independent gate policy、缺 quality gate declaration、缺 no-forbidden-write policy 或 self-review 都 fail closed；不得恢复 no-`--domain-id` implicit fixture smoke、direct graph compatibility 或 fallback materialization route。
+- 影响：free-text closeout、partial design refs、缺 independent gate policy、缺 quality gate declaration、缺 no-forbidden-write policy 或 self-review 都 fail closed；纯机械 subpacket 投影缺失不再直接 terminal blocker；不得恢复 no-`--domain-id` implicit fixture smoke、direct graph compatibility、默认 stage graph 或 fallback materialization route。
 
 ### 新建 target agent 交付必须包含 Agent Lab 评估和自进化闭环
 

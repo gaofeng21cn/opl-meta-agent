@@ -1,14 +1,161 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { JsonObject } from '../domain-pack.ts';
+import {
+  buildStageDecompositionSubpacketSet,
+  type JsonObject,
+} from '../domain-pack.ts';
+import type { TargetAgent } from '../meta-agent-loop-io.ts';
 import { writeJson } from '../meta-agent-loop-io.ts';
-import type { StageDecompositionPackDraft } from './shared.ts';
+import type {
+  StageDecompositionCloseoutPacket,
+  StageDecompositionPackDraft,
+} from './shared.ts';
 import {
   asRecordArray,
   asString,
+  isRecord,
   validateBody,
   validateRelativeMarkdownPath,
 } from './shared.ts';
+
+export type StageDecompositionCloseoutRepairResult = {
+  packet: unknown;
+  repaired: boolean;
+  repair_notes: string[];
+};
+
+function cloneJson<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
+function stringArray(value: unknown): string[] | null {
+  if (!Array.isArray(value) || value.some((entry) => typeof entry !== 'string')) {
+    return null;
+  }
+  return value;
+}
+
+function canReplaceSubpacketSet(value: unknown, expectedRef: string): boolean {
+  if (value == null) {
+    return true;
+  }
+  if (!isRecord(value)) {
+    return false;
+  }
+  const actualRef = value.packet_set_ref;
+  if (actualRef == null) {
+    return value.surface_kind === 'opl_meta_agent_stage_decomposition_subpacket_set';
+  }
+  return actualRef === expectedRef;
+}
+
+function installSubpacketSetProjection(
+  surface: JsonObject,
+  expectedSet: JsonObject,
+  repairNotes: string[],
+  surfaceName: string,
+): void {
+  const expectedRef = String(expectedSet.packet_set_ref);
+  if (canReplaceSubpacketSet(surface.stage_decomposition_subpacket_set, expectedRef)) {
+    if (JSON.stringify(surface.stage_decomposition_subpacket_set ?? null) !== JSON.stringify(expectedSet)) {
+      surface.stage_decomposition_subpacket_set = cloneJson(expectedSet);
+      repairNotes.push(`${surfaceName}.stage_decomposition_subpacket_set`);
+    }
+  }
+  if (surface.stage_decomposition_subpacket_set_ref == null) {
+    surface.stage_decomposition_subpacket_set_ref = expectedRef;
+    repairNotes.push(`${surfaceName}.stage_decomposition_subpacket_set_ref`);
+  }
+  const refs = stringArray(surface.stage_decomposition_subpacket_set_refs);
+  if (refs === null) {
+    if (surface.stage_decomposition_subpacket_set_refs == null) {
+      surface.stage_decomposition_subpacket_set_refs = [expectedRef];
+      repairNotes.push(`${surfaceName}.stage_decomposition_subpacket_set_refs`);
+    }
+    return;
+  }
+  if (!refs.includes(expectedRef)) {
+    surface.stage_decomposition_subpacket_set_refs = [...refs, expectedRef];
+    repairNotes.push(`${surfaceName}.stage_decomposition_subpacket_set_refs`);
+  }
+}
+
+function addStageSubpacketRefs(stage: JsonObject, expectedRef: string, repairNotes: string[], stageName: string): void {
+  if (Array.isArray(stage.inputs) && !stage.inputs.some((entry) =>
+    isRecord(entry)
+    && entry.ref_kind === 'stage_decomposition_subpacket_set_ref'
+    && entry.ref === expectedRef
+  )) {
+    stage.inputs = [
+      ...stage.inputs,
+      { ref_kind: 'stage_decomposition_subpacket_set_ref', ref: expectedRef },
+    ];
+    repairNotes.push(`${stageName}.inputs.stage_decomposition_subpacket_set_ref`);
+  }
+
+  const stageContract = isRecord(stage.stage_contract) ? stage.stage_contract : null;
+  if (!stageContract) {
+    return;
+  }
+  const requiredRef = `stage-decomposition-subpacket-set-ref:${expectedRef}`;
+  if (Array.isArray(stageContract.requires) && !stageContract.requires.includes(requiredRef)) {
+    stageContract.requires = [...stageContract.requires, requiredRef];
+    repairNotes.push(`${stageName}.stage_contract.requires.stage_decomposition_subpacket_set_ref`);
+  }
+  if (Array.isArray(stageContract.expected_receipt_refs) && !stageContract.expected_receipt_refs.some((entry) =>
+    isRecord(entry)
+    && entry.ref === expectedRef
+  )) {
+    stageContract.expected_receipt_refs = [
+      ...stageContract.expected_receipt_refs,
+      { ref_kind: 'stage_decomposition_subpacket_set_ref', ref: expectedRef },
+    ];
+    repairNotes.push(`${stageName}.stage_contract.expected_receipt_refs.stage_decomposition_subpacket_set_ref`);
+  }
+}
+
+export function repairStageDecompositionCloseoutPacket(
+  packet: unknown,
+  { targetAgent }: { targetAgent: TargetAgent },
+): StageDecompositionCloseoutRepairResult {
+  const expectedSet = buildStageDecompositionSubpacketSet(targetAgent);
+  if (!expectedSet || !isRecord(packet)) {
+    return { packet, repaired: false, repair_notes: [] };
+  }
+  if (
+    packet.surface_kind !== 'stage_attempt_closeout_packet'
+    || packet.stage_id !== 'stage-decomposition'
+    || !isRecord(packet.stage_decomposition_pack_draft)
+  ) {
+    return { packet, repaired: false, repair_notes: [] };
+  }
+
+  const repairedPacket = cloneJson(packet) as StageDecompositionCloseoutPacket;
+  const repairNotes: string[] = [];
+  const draft = repairedPacket.stage_decomposition_pack_draft as unknown as JsonObject;
+  const expectedRef = String(expectedSet.packet_set_ref);
+
+  installSubpacketSetProjection(draft, expectedSet, repairNotes, 'stage_decomposition_pack_draft');
+
+  const stageControl = isRecord(draft.stage_control_plane) ? draft.stage_control_plane : null;
+  if (stageControl) {
+    installSubpacketSetProjection(stageControl, expectedSet, repairNotes, 'stage_control_plane');
+    if (Array.isArray(stageControl.stages)) {
+      stageControl.stages.forEach((stage, index) => {
+        if (!isRecord(stage)) {
+          return;
+        }
+        const stageName = `stage_control_plane.stages[${index}]`;
+        installSubpacketSetProjection(stage, expectedSet, repairNotes, stageName);
+        addStageSubpacketRefs(stage, expectedRef, repairNotes, stageName);
+      });
+    }
+  }
+
+  return repairNotes.length > 0
+    ? { packet: repairedPacket, repaired: true, repair_notes: repairNotes }
+    : { packet, repaired: false, repair_notes: [] };
+}
 
 function refTemplateRecord({
   contract,
