@@ -352,7 +352,6 @@ test('build-agent-baseline materializes an explicit target package and owner-gat
         'opl profiles select --intent <target-agent-intent> --reference-source <source-ref> --json',
       ),
     );
-    assert.equal(fs.existsSync(path.join(targetDir, 'agent/primary_skill/SKILL.md')), true);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }

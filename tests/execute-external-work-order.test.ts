@@ -14,17 +14,10 @@ import {
 import {
   buildBlockedMedicalManuscriptSuite,
   runImproveArgs,
+  writeTargetDescriptor,
   writeAiReviewerEvaluation,
   writeMedicalTargetImprovementPolicy,
 } from './support/external-suite-fixtures.ts';
-
-function writeTargetDescriptor(targetAgentDir: string): void {
-  writeJson(path.join(targetAgentDir, 'contracts/domain_descriptor.json'), {
-    domain_id: 'med-autoscience',
-    domain_label: 'MedAutoScience',
-    delivery_domain: 'medical_research',
-  });
-}
 
 function writeFakeOplBin(filePath: string, logPath: string): void {
   fs.writeFileSync(
