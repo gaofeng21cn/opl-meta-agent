@@ -1,6 +1,3 @@
-import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import {
   parseImproveFromAgentLabSuiteArgs,
@@ -8,6 +5,9 @@ import {
 } from '../../scripts/improve-from-agent-lab-suite.ts';
 import type { JsonObject } from '../../scripts/lib/domain-pack.ts';
 import { oplBin, writeJsonFile } from './contracts.ts';
+
+export { withTempDir as withOutputRoot } from './contracts.ts';
+export { assertIncludesAll } from './source-purity.ts';
 
 export const targetPatchLoopProjectionRequiredFields = [
   ...'blocked_suite_result_ref developer_patch_work_order_ref patch_traceability_matrix_ref target_repo_verification_refs target_runtime_read_model_consumption_ref workspace_environment_proof_ref no_forbidden_write_proof_ref target_owner_receipt_or_typed_blocker_ref patch_absorption_ref worktree_cleanup_ref agent_lab_re_evaluation_ref ai_reviewer_evaluation_ref ai_reviewer_evidence.source_refs ai_reviewer_evidence.direct_evidence_refs ai_reviewer_scorecard.verdict ai_reviewer_review.predicted_impact ai_reviewer_independence review_provenance reviewer_pool_refs work_order_completeness.reviewer_refs'.split(' '),
@@ -59,15 +59,6 @@ export function runImproveArgs(args: string[]): JsonObject {
   return runImproveFromAgentLabSuite(parseImproveFromAgentLabSuiteArgs(args));
 }
 
-export function withOutputRoot(prefix: string, run: (outputRoot: string) => void): void {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
-  try {
-    run(outputRoot);
-  } finally {
-    fs.rmSync(outputRoot, { recursive: true, force: true });
-  }
-}
-
 export function writeTargetDescriptor(
   targetAgentDir: string,
   domainId = 'med-autoscience',
@@ -104,10 +95,6 @@ export function runImproveFromSuite(args: {
     '--opl-bin',
     oplBin,
   ]);
-}
-
-export function assertIncludesAll(actual: string[], expected: string[], label: string): void {
-  expected.forEach((ref) => assert.ok(actual.includes(ref), `${label} missing ${ref}`));
 }
 
 export function writeAiReviewerEvaluation(filePath: string, overrides: JsonObject = {}): JsonObject {

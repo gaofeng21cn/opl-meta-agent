@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import {
@@ -11,6 +10,7 @@ import type { JsonObject } from '../scripts/lib/domain-pack.ts';
 import {
   oplBin,
   readJsonFile as readJson,
+  withTempDir as withOutputRoot,
   writeJsonFile as writeJson,
 } from './support/contracts.ts';
 import { assertFalseFlags } from './support/source-purity.ts';
@@ -103,15 +103,6 @@ function writeAiReviewerEvaluation(filePath: string): JsonObject {
 
 function assertTakeoverStageFolderContractRefs(contract: JsonObject): void {
   assertStageFolderContractRefs(contract, 'takeover-fixture-agent', 'target-agent-takeover', 'testing-takeover');
-}
-
-function withOutputRoot(prefix: string, run: (outputRoot: string) => void): void {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
-  try {
-    run(outputRoot);
-  } finally {
-    fs.rmSync(outputRoot, { recursive: true, force: true });
-  }
 }
 
 test('opl-meta-agent takes over testing for an existing external agent without authority writes or default promotion', () => {

@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
@@ -8,6 +7,7 @@ import {
   oplBin,
   readJsonFile as readJson,
   repoRoot,
+  withTempDir,
   writeJsonFile as writeJson,
 } from './support/contracts.ts';
 import type { JsonObject } from '../scripts/lib/domain-pack.ts';
@@ -230,8 +230,7 @@ function assertSingleRefArrays(surface: JsonObject, expected: Record<string, str
 }
 
 test('build-agent-baseline materializes an explicit target package and owner-gated receipt', () => {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-bootstrap-pass4-'));
-  try {
+  withTempDir('oma-bootstrap-pass4-', (outputRoot) => {
     const reviewerPath = path.join(outputRoot, 'reviewer.json');
     const closeoutPath = path.join(outputRoot, 'stage-closeout.json');
     writeReviewerEvaluation(reviewerPath);
@@ -352,14 +351,11 @@ test('build-agent-baseline materializes an explicit target package and owner-gat
         'opl profiles select --intent <target-agent-intent> --reference-source <source-ref> --json',
       ),
     );
-  } finally {
-    fs.rmSync(outputRoot, { recursive: true, force: true });
-  }
+  });
 });
 
 test('build-agent-baseline repairs mechanical subpacket projection without blocking materialization', () => {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-bootstrap-source-derived-repair-'));
-  try {
+  withTempDir('oma-bootstrap-source-derived-repair-', (outputRoot) => {
     const reviewerPath = path.join(outputRoot, 'reviewer.json');
     const closeoutPath = path.join(outputRoot, 'stage-closeout.json');
     writeReviewerEvaluation(reviewerPath, {}, sourceDerivedTargetAgent.domain_id);
@@ -398,14 +394,11 @@ test('build-agent-baseline repairs mechanical subpacket projection without block
     assert.ok((stageContract.requires as string[]).includes(
       `stage-decomposition-subpacket-set-ref:${sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef}`,
     ));
-  } finally {
-    fs.rmSync(outputRoot, { recursive: true, force: true });
-  }
+  });
 });
 
 test('build-agent-baseline materializes a source-derived target package without a builtin profile', () => {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-bootstrap-source-derived-'));
-  try {
+  withTempDir('oma-bootstrap-source-derived-', (outputRoot) => {
     const reviewerPath = path.join(outputRoot, 'reviewer.json');
     const closeoutPath = path.join(outputRoot, 'stage-closeout.json');
     writeReviewerEvaluation(reviewerPath, {}, sourceDerivedTargetAgent.domain_id);
@@ -599,14 +592,11 @@ test('build-agent-baseline materializes a source-derived target package without 
     assert.ok(generatedPrompt.includes('ReferenceDesignPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt'));
     assert.ok(generatedPrompt.includes(sourceDerivedTargetAgent.reference_design_pattern_packet_refs[0]));
     assert.equal(payload.target_agent.selected_opl_profile_refs, undefined);
-  } finally {
-    fs.rmSync(outputRoot, { recursive: true, force: true });
-  }
+  });
 });
 
 test('build-agent-baseline materializes a research-driven target package from vague idea inputs', () => {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-bootstrap-research-driven-'));
-  try {
+  withTempDir('oma-bootstrap-research-driven-', (outputRoot) => {
     const reviewerPath = path.join(outputRoot, 'reviewer.json');
     const closeoutPath = path.join(outputRoot, 'stage-closeout.json');
     writeReviewerEvaluation(reviewerPath, {}, researchDrivenTargetAgent.domain_id);
@@ -729,14 +719,11 @@ test('build-agent-baseline materializes a research-driven target package from va
     assert.ok(generatedPrompt.includes('ResearchSynthesisPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt'));
     assert.ok(generatedPrompt.includes(researchDrivenTargetAgent.research_synthesis_refs[0]));
     assert.equal(payload.target_agent.selected_opl_profile_refs, undefined);
-  } finally {
-    fs.rmSync(outputRoot, { recursive: true, force: true });
-  }
+  });
 });
 
 test('build-agent-baseline fails closed without independent reviewer evidence', () => {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-bootstrap-missing-reviewer-pass4-'));
-  try {
+  withTempDir('oma-bootstrap-missing-reviewer-pass4-', (outputRoot) => {
     const result = spawnSync(
       process.execPath,
       [
@@ -755,9 +742,7 @@ test('build-agent-baseline fails closed without independent reviewer evidence', 
     assert.notEqual(result.status, 0);
     assert.match(result.stderr, /ai reviewer evaluation/i);
     assert.equal(fs.existsSync(path.join(outputRoot, 'baseline-delivery-receipt.json')), false);
-  } finally {
-    fs.rmSync(outputRoot, { recursive: true, force: true });
-  }
+  });
 });
 
 test('build-agent-baseline fails closed when no builtin profile or design-basis refs exist', () => {

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { JsonObject } from '../../scripts/lib/domain-pack.ts';
@@ -39,6 +40,15 @@ export function parseJsonText(text: string): JsonObject {
 export function writeJsonFile(filePath: string, payload: unknown): void {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`);
+}
+
+export function withTempDir<T>(prefix: string, run: (dir: string) => T): T {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+  try {
+    return run(dir);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 }
 
 export function readText(relativePath: string): string {
