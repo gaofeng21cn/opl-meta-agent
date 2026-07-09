@@ -164,6 +164,33 @@ function writeStageCloseout(filePath: string, agent: TargetAgent = targetAgent):
   writeJson(filePath, buildFixtureStageDecompositionCloseout({ targetAgent: agent }));
 }
 
+function writeStageCloseoutWithoutSubpacketProjection(filePath: string, agent: TargetAgent): void {
+  const packet = buildFixtureStageDecompositionCloseout({ targetAgent: agent });
+  const draft = packet.stage_decomposition_pack_draft as JsonObject;
+  const stageControl = draft.stage_control_plane as JsonObject;
+  const stage = (stageControl.stages as JsonObject[])[0];
+  const stageContract = stage.stage_contract as JsonObject;
+  delete draft.stage_decomposition_subpacket_set;
+  delete draft.stage_decomposition_subpacket_set_ref;
+  delete draft.stage_decomposition_subpacket_set_refs;
+  delete stageControl.stage_decomposition_subpacket_set;
+  delete stageControl.stage_decomposition_subpacket_set_ref;
+  delete stageControl.stage_decomposition_subpacket_set_refs;
+  delete stage.stage_decomposition_subpacket_set;
+  delete stage.stage_decomposition_subpacket_set_ref;
+  delete stage.stage_decomposition_subpacket_set_refs;
+  stage.inputs = (stage.inputs as JsonObject[]).filter((input) =>
+    input.ref_kind !== 'stage_decomposition_subpacket_set_ref'
+  );
+  stageContract.requires = (stageContract.requires as string[]).filter((entry) =>
+    !entry.startsWith('stage-decomposition-subpacket-set-ref:')
+  );
+  stageContract.expected_receipt_refs = (stageContract.expected_receipt_refs as JsonObject[]).filter((entry) =>
+    entry.ref_kind !== 'stage_decomposition_subpacket_set_ref'
+  );
+  writeJson(filePath, packet);
+}
+
 function runBaselineFixture(
   outputRoot: string,
   reviewerPath: string,
@@ -326,6 +353,52 @@ test('build-agent-baseline materializes an explicit target package and owner-gat
       ),
     );
     assert.equal(fs.existsSync(path.join(targetDir, 'agent/primary_skill/SKILL.md')), true);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
+test('build-agent-baseline repairs mechanical subpacket projection without blocking materialization', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-bootstrap-source-derived-repair-'));
+  try {
+    const reviewerPath = path.join(outputRoot, 'reviewer.json');
+    const closeoutPath = path.join(outputRoot, 'stage-closeout.json');
+    writeReviewerEvaluation(reviewerPath, {}, sourceDerivedTargetAgent.domain_id);
+    writeStageCloseoutWithoutSubpacketProjection(closeoutPath, sourceDerivedTargetAgent);
+
+    const payload = runBaselineFixture(outputRoot, reviewerPath, closeoutPath, sourceDerivedTargetAgent, [
+      '--reference-design-source',
+      sourceDerivedTargetAgent.reference_design_source_refs[0],
+      '--reference-design-pattern',
+      sourceDerivedTargetAgent.reference_design_pattern_notes[0],
+      '--reference-design-pattern-packet',
+      sourceDerivedTargetAgent.reference_design_pattern_packet_refs[0],
+    ]);
+
+    const targetDir = path.join(outputRoot, sourceDerivedTargetAgent.domain_id);
+    const stageControl = readJson(path.join(targetDir, 'contracts/stage_control_plane.json'));
+    const stage = stageControl.stages[0] as JsonObject;
+    const stageContract = stage.stage_contract as JsonObject;
+    assert.equal(payload.status, 'passed');
+    assert.equal(
+      fs.existsSync(path.join(outputRoot, `${sourceDerivedTargetAgent.domain_id}-stage-decomposition-blocker.json`)),
+      false,
+    );
+    assert.equal(
+      stageControl.stage_decomposition_subpacket_set_ref,
+      sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef,
+    );
+    assert.equal(
+      stage.stage_decomposition_subpacket_set_ref,
+      sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef,
+    );
+    assert.ok((stage.inputs as JsonObject[]).some((entry) =>
+      entry.ref_kind === 'stage_decomposition_subpacket_set_ref'
+      && entry.ref === sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef
+    ));
+    assert.ok((stageContract.requires as string[]).includes(
+      `stage-decomposition-subpacket-set-ref:${sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef}`,
+    ));
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }
