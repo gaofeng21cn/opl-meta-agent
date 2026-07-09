@@ -127,6 +127,9 @@ test('build-agent-baseline materializes an explicit target package and owner-gat
     const capabilityMap = readJson(path.join(targetDir, 'contracts/capability_map.json'));
     const stageControl = readJson(path.join(targetDir, 'contracts/stage_control_plane.json'));
     const primarySkill = fs.readFileSync(path.join(targetDir, 'agent/primary_skill/SKILL.md'), 'utf8');
+    const generatedPrompt = fs.readFileSync(path.join(targetDir, 'agent/prompts/agent-output-draft.md'), 'utf8');
+    const generatedKnowledge = fs.readFileSync(path.join(targetDir, 'agent/knowledge/target-agent-boundary-policy.md'), 'utf8');
+    const generatedGate = fs.readFileSync(path.join(targetDir, 'agent/quality_gates/agent-output-draft-quality-gate.md'), 'utf8');
     const evidenceRefs = suite.tasks[0].scorecard.evidence_refs as string[];
     assert.equal(payload.status, 'passed');
     assert.equal(descriptor.domain_id, targetAgent.domain_id);
@@ -193,6 +196,9 @@ test('build-agent-baseline materializes an explicit target package and owner-gat
     assert.equal(receipt.authority_boundary.can_write_target_domain_truth, false);
     assert.equal(receipt.authority_boundary.can_authorize_target_domain_quality_or_export, false);
     assert.ok(primarySkill.includes(targetAgent.reference_design_pattern_packet_refs[0]));
+    assert.ok(generatedPrompt.includes(targetAgent.selected_opl_profile_refs[0]));
+    assert.ok(generatedKnowledge.includes('EvidencePacket'));
+    assert.ok(generatedGate.includes('source freshness policy'));
     assert.equal(fs.existsSync(path.join(targetDir, 'agent/primary_skill/SKILL.md')), true);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });

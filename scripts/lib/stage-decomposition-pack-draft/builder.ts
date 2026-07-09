@@ -80,6 +80,28 @@ function buildReferenceDesignBoundary(targetAgent: TargetAgent): JsonObject {
   };
 }
 
+function profileRequirementLines(targetAgent: TargetAgent): string[] {
+  const selectedProfileRefs = stringList(targetAgent.selected_opl_profile_refs);
+  const profileRequirements = buildProfileRequirements(targetAgent);
+  if (selectedProfileRefs.length === 0) {
+    return [];
+  }
+  const requirementLines = Object.entries(profileRequirements)
+    .flatMap(([key, value]) => Array.isArray(value)
+      ? value.map((entry) => `Profile requirement ${key}: ${entry}`)
+      : []);
+  return [
+    '',
+    'OPL profile selection requirements are framework capability inputs and must be preserved in stage execution.',
+    ...selectedProfileRefs.map((profileRef) => `Selected OPL profile: ${profileRef}`),
+    ...stringList(targetAgent.profile_requirement_refs).map((profileRequirementRef) =>
+      `Profile requirement ref: ${profileRequirementRef}`
+    ),
+    ...requirementLines,
+    'Map reference pack, source freshness, provenance, tool connector, and evaluation requirements into knowledge/tool/evaluation refs before owner handoff.',
+  ];
+}
+
 function buildArtifactMorphologyContract({
   targetAgent,
   owner,
@@ -635,6 +657,7 @@ function buildFiles({
   const referenceDesignSourceRefs = stringList(targetAgent.reference_design_source_refs);
   const referenceDesignPatternNotes = stringList(targetAgent.reference_design_pattern_notes);
   const referenceDesignPatternPacketRefs = stringList(targetAgent.reference_design_pattern_packet_refs);
+  const profileLines = profileRequirementLines(targetAgent);
   const referenceDesignLines = referenceDesignSourceRefs.length > 0
     || referenceDesignPatternNotes.length > 0
     || referenceDesignPatternPacketRefs.length > 0
@@ -656,6 +679,7 @@ function buildFiles({
         `Goal: ${brief}`,
         '',
         'Use declared workspace, source, artifact, and owner refs only.',
+        ...profileLines,
         ...referenceDesignLines,
         'Keep the work Codex-first: the executor may plan, inspect evidence, request source refs, route back when inputs are incomplete, and choose the reasoning path.',
         'Do not write target domain truth, memory bodies, artifact bodies, quality verdicts, export verdicts, or promotion state.',
@@ -672,6 +696,7 @@ function buildFiles({
         `Action ref: \`${actionId}\``,
         '',
         'The stage is executed by Codex CLI through OPL stage runtime and remains bounded by refs-only target authority.',
+        ...profileLines,
         'The stage may ask for missing source, workspace, artifact, rubric, or owner-gate refs instead of producing a hollow output.',
         '',
       ].join('\n'),
@@ -682,6 +707,7 @@ function buildFiles({
         `# ${owner} Domain Skill`,
         '',
         `Run the \`${stageId}\` stage through the domain action \`${actionId}\` while preserving OPL generated-interface boundaries.`,
+        ...profileLines,
         'Use OPL-hosted runtime, queue, attempt ledger, generated CLI/MCP/Skill/product-entry surfaces, and owner receipt projection as external framework services.',
         'Return typed blockers when source refs, workspace scope, artifact scope, or owner gate evidence is missing.',
         '',
@@ -707,6 +733,7 @@ function buildFiles({
         '',
         'OPL owns generated interfaces, provider lifecycle, Agent Lab, queue, attempt ledger, and projection.',
         `${owner} owns domain semantics, accepted source refs, artifact authority, quality/export verdicts, memory body decisions, and owner receipts.`,
+        ...profileLines,
         ...referenceDesignLines,
         'Mechanical scaffold validation, suite pass, provider completion, generated surface readiness, or scorecard pass is evidence only.',
         'A domain-ready or quality/export-ready claim requires an owner receipt, independent gate receipt, typed blocker closure, or route-back receipt from the declared owner boundary.',
@@ -724,6 +751,8 @@ function buildFiles({
         'Pass conditions:',
         '',
         `- The \`${stageId}\` execution attempt produced explicit refs or an explicit typed blocker.`,
+        ...profileLines,
+        '- Selected OPL profile requirements are preserved in profile selection receipt, stage inputs, knowledge refs, tool refs, and evaluation refs.',
         '- The reviewer or owner gate reads direct evidence refs rather than shared execution context.',
         '- Mechanical completion, generated surface readiness, provider completion, or suite pass is not treated as a quality/export verdict.',
         '- Handoff is allowed only with an independent gate receipt, owner receipt, typed blocker closure, or route-back receipt.',
@@ -731,6 +760,7 @@ function buildFiles({
         'Fail-closed conditions:',
         '',
         '- Missing prompt, skill/tool, knowledge, source, artifact, workspace, or quality gate refs.',
+        '- Missing selected OPL profile refs, profile requirements, reference pack policy, source freshness policy, provenance policy, tool connector boundary, or evidence object trace.',
         '- Missing independent review path for high-risk outputs.',
         '- Attempt self-review, shared-context review, stale evidence, or missing owner receipt.',
         '- Any request to write target truth, memory body, artifact body, quality/export verdict, or default promotion state from OPL generated surfaces.',

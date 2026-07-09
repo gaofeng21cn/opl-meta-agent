@@ -106,6 +106,34 @@ function validateReferenceDesignBoundary(
   ].forEach((fieldName) => assertBooleanFalse(boundary, fieldName, `${field}.${fieldName}`));
 }
 
+function validateProfileRequirementBody(
+  files: Map<string, string>,
+  relPath: string,
+  targetAgent: TargetAgent,
+  field: string,
+): void {
+  const body = files.get(relPath) ?? '';
+  const selectedProfileRefs = normalizedStringArray(
+    targetAgent.selected_opl_profile_refs,
+    'requested_target_agent.selected_opl_profile_refs',
+  );
+  selectedProfileRefs.forEach((profileRef) => {
+    if (!body.includes(profileRef)) {
+      throw new Error(`stage-decomposition pack draft ${field} missing selected OPL profile ref ${profileRef}.`);
+    }
+  });
+  const profileRequirements = buildProfileRequirements(targetAgent);
+  const requiredEvidenceObjects = normalizedStringArray(
+    profileRequirements.required_evidence_objects,
+    'profile_requirements.required_evidence_objects',
+  );
+  ['EvidencePacket', 'IndependentReviewReceipt'].forEach((objectName) => {
+    if (requiredEvidenceObjects.includes(objectName) && !body.includes(objectName)) {
+      throw new Error(`stage-decomposition pack draft ${field} missing profile evidence object ${objectName}.`);
+    }
+  });
+}
+
 function validateActionCatalog(catalog: JsonObject, targetAgent: TargetAgent): void {
   if (catalog.surface_kind !== 'family_action_catalog') {
     throw new Error('stage-decomposition pack draft action_catalog.surface_kind must be family_action_catalog.');
@@ -372,6 +400,9 @@ function validateStageControlPlane(
     const toolRefs = validateToolAffordanceBoundary(stageId, stage, files);
     const knowledgeRefs = validateStageRefs(stage, 'knowledge_refs', 'domain_knowledge_ref', 'agent/knowledge/', files);
     const qualityGateRefs = validateStageRefs(stage, 'evaluation', 'domain_quality_gate_ref', 'agent/quality_gates/', files);
+    [...promptRefs, ...knowledgeRefs, ...qualityGateRefs].forEach((relPath) =>
+      validateProfileRequirementBody(files, relPath, targetAgent, `${relPath}`)
+    );
     qualityGateRefs.forEach((qualityGatePath) => validateQualityGateBody(files, qualityGatePath));
 
     const allowedActions = asStringArray(stage.allowed_action_refs, `stage ${stageId}.allowed_action_refs`);
