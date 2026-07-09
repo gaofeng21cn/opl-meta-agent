@@ -107,28 +107,34 @@ test('stage-decomposition validator fails closed on empty source-derived design 
     surface_kind: 'opl_meta_agent_transfer_map',
     transfer_map_ref: stageControl.transfer_map_ref,
   };
-  const emptyAgentPackPlan = {
-    surface_kind: 'opl_meta_agent_agent_pack_plan',
-    plan_ref: stageControl.agent_pack_plan_ref,
-  };
-  const emptyBuildReceipt = {
-    surface_kind: 'opl_meta_agent_build_receipt',
-    receipt_ref: stageControl.build_receipt_ref,
-  };
-  stageControl.reference_design_packet = emptyPacket;
-  stageControl.transfer_map = emptyTransferMap;
-  stageControl.agent_pack_plan = emptyAgentPackPlan;
-  stageControl.build_receipt = emptyBuildReceipt;
-  stage.reference_design_packet = emptyPacket;
-  stage.transfer_map = emptyTransferMap;
-  stage.agent_pack_plan = emptyAgentPackPlan;
-  stage.build_receipt = emptyBuildReceipt;
+	  const emptyAgentPackPlan = {
+	    surface_kind: 'opl_meta_agent_agent_pack_plan',
+	    plan_ref: stageControl.agent_pack_plan_ref,
+	  };
+	  const emptyDesignAdmissionReceipt = {
+	    surface_kind: 'opl_meta_agent_design_admission_receipt',
+	    receipt_ref: stageControl.design_admission_receipt_ref,
+	  };
+	  const emptyBuildReceipt = {
+	    surface_kind: 'opl_meta_agent_build_receipt',
+	    receipt_ref: stageControl.build_receipt_ref,
+	  };
+	  stageControl.reference_design_packet = emptyPacket;
+	  stageControl.transfer_map = emptyTransferMap;
+	  stageControl.agent_pack_plan = emptyAgentPackPlan;
+	  stageControl.design_admission_receipt = emptyDesignAdmissionReceipt;
+	  stageControl.build_receipt = emptyBuildReceipt;
+	  stage.reference_design_packet = emptyPacket;
+	  stage.transfer_map = emptyTransferMap;
+	  stage.agent_pack_plan = emptyAgentPackPlan;
+	  stage.design_admission_receipt = emptyDesignAdmissionReceipt;
+	  stage.build_receipt = emptyBuildReceipt;
 
   assert.throws(
     () => validateStageDecompositionCloseoutPacket(packet, { targetAgent: sourceDerivedTargetAgent }),
-    /reference_source_refs|transferable_design_patterns|extractable_design_aspects|mappings|planned_stage_refs|build_receipt/i,
-  );
-});
+	    /reference_source_refs|transferable_design_patterns|extractable_design_aspects|mappings|planned_stage_refs|design_admission_receipt|build_receipt/i,
+	  );
+	});
 
 test('stage-decomposition validator fails closed when source-derived stage lacks source pattern refs', () => {
   const packet = buildFixtureStageDecompositionCloseout({ targetAgent: sourceDerivedTargetAgent });

@@ -1,11 +1,12 @@
 import {
   buildAgentPackPlan,
+  buildAgentBuildReceipt,
   buildCapabilityPlanRequirements,
+  buildDesignAdmissionReceipt,
   buildProfileRequirements,
   buildProfileSelectionReceipt,
   buildReferenceDesignPacket,
   buildResearchSynthesisPacket,
-  buildSourceDerivedBuildReceipt,
   buildTransferMap,
   buildTransferablePatternRequirements,
   type AgentPackPlanOptions,
@@ -86,6 +87,7 @@ function buildReferenceDesignBoundary(targetAgent: TargetAgent): JsonObject {
     design_basis_ref: receipt.reference_design_packet_ref ?? receipt.research_synthesis_packet_ref ?? null,
     transfer_map_ref: receipt.transfer_map_ref ?? null,
     agent_pack_plan_ref: receipt.agent_pack_plan_ref ?? null,
+    design_admission_receipt_ref: receipt.design_admission_receipt_ref ?? null,
     hard_gate_required: receipt.source_derived_design_receipt !== null
       || receipt.research_driven_design_receipt !== null,
     role: 'external_architecture_or_research_inspiration_not_target_domain_truth',
@@ -154,8 +156,8 @@ function profileRequirementLines(targetAgent: TargetAgent): string[] {
     ),
     ...transferablePatternRequirements.map((requirement) => `Transferable pattern requirement: ${requirement}`),
     ...capabilityPlanRequirements.map((requirement) => `Capability plan requirement: ${requirement}`),
-    'For source-derived design, materialize ReferenceDesignPacket -> TransferMap -> AgentPackPlan -> BuildReceipt before applying lower-bound profile requirements.',
-    'For research-driven design, materialize ResearchSynthesisPacket -> TransferMap -> AgentPackPlan -> BuildReceipt before applying lower-bound profile requirements.',
+    'For source-derived design, materialize ReferenceDesignPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before target pack materialization, then preserve AgentBuildReceipt as build proof.',
+    'For research-driven design, materialize ResearchSynthesisPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before target pack materialization, then preserve AgentBuildReceipt as build proof.',
     'Map builtin profile, source-derived design, and research-driven design requirements into knowledge/tool/evaluation refs before owner handoff.',
   ];
 }
@@ -445,11 +447,13 @@ function buildStageControlPlane({
   const researchSynthesisPacket = buildResearchSynthesisPacket(targetAgent);
   const transferMap = buildTransferMap(targetAgent, agentPackPlanOptions);
   const agentPackPlan = buildAgentPackPlan(targetAgent, agentPackPlanOptions);
-  const buildReceipt = buildSourceDerivedBuildReceipt(targetAgent, agentPackPlanOptions);
+  const designAdmissionReceipt = buildDesignAdmissionReceipt(targetAgent, agentPackPlanOptions);
+  const buildReceipt = buildAgentBuildReceipt(targetAgent, agentPackPlanOptions);
   const referenceDesignPacketRef = optionalString(referenceDesignPacket?.packet_ref);
   const researchSynthesisPacketRef = optionalString(researchSynthesisPacket?.packet_ref);
   const transferMapRef = optionalString(transferMap?.transfer_map_ref);
   const agentPackPlanRef = optionalString(agentPackPlan?.plan_ref);
+  const designAdmissionReceiptRef = optionalString(designAdmissionReceipt?.receipt_ref);
   const buildReceiptRef = optionalString(buildReceipt?.receipt_ref);
   const stagePatternSourceRefs = plannedSourcePatternRefs(agentPackPlan);
   const referenceDesignSourceRefs = stringList(targetAgent.reference_design_source_refs);
@@ -477,7 +481,7 @@ function buildStageControlPlane({
     ...(researchSynthesisPacketRef ? [ref('research_synthesis_packet_ref', researchSynthesisPacketRef)] : []),
     ...(transferMapRef ? [ref('transfer_map_ref', transferMapRef)] : []),
     ...(agentPackPlanRef ? [ref('agent_pack_plan_ref', agentPackPlanRef)] : []),
-    ...(buildReceiptRef ? [ref('build_receipt_ref', buildReceiptRef)] : []),
+    ...(designAdmissionReceiptRef ? [ref('design_admission_receipt_ref', designAdmissionReceiptRef)] : []),
   ];
   const referenceDesignRequiredRefs = [
     ...(referenceDesignSourceRefs.length > 0 ? [`reference-design-source-refs:${domainId}`] : []),
@@ -489,7 +493,7 @@ function buildStageControlPlane({
     ...(researchSynthesisPacketRef ? [`research-synthesis-packet-ref:${researchSynthesisPacketRef}`] : []),
     ...(transferMapRef ? [`transfer-map-ref:${transferMapRef}`] : []),
     ...(agentPackPlanRef ? [`agent-pack-plan-ref:${agentPackPlanRef}`] : []),
-    ...(buildReceiptRef ? [`build-receipt-ref:${buildReceiptRef}`] : []),
+    ...(designAdmissionReceiptRef ? [`design-admission-receipt-ref:${designAdmissionReceiptRef}`] : []),
   ];
   return {
     surface_kind: 'family_stage_control_plane',
@@ -518,6 +522,9 @@ function buildStageControlPlane({
     agent_pack_plan: agentPackPlan,
     agent_pack_plan_ref: agentPackPlanRef,
     agent_pack_plan_refs: agentPackPlanRef ? [agentPackPlanRef] : [],
+    design_admission_receipt: designAdmissionReceipt,
+    design_admission_receipt_ref: designAdmissionReceiptRef,
+    design_admission_receipt_refs: designAdmissionReceiptRef ? [designAdmissionReceiptRef] : [],
     build_receipt: buildReceipt,
     build_receipt_ref: buildReceiptRef,
     build_receipt_refs: buildReceiptRef ? [buildReceiptRef] : [],
@@ -563,6 +570,9 @@ function buildStageControlPlane({
         agent_pack_plan: agentPackPlan,
         agent_pack_plan_ref: agentPackPlanRef,
         agent_pack_plan_refs: agentPackPlanRef ? [agentPackPlanRef] : [],
+        design_admission_receipt: designAdmissionReceipt,
+        design_admission_receipt_ref: designAdmissionReceiptRef,
+        design_admission_receipt_refs: designAdmissionReceiptRef ? [designAdmissionReceiptRef] : [],
         build_receipt: buildReceipt,
         build_receipt_ref: buildReceiptRef,
         build_receipt_refs: buildReceiptRef ? [buildReceiptRef] : [],
@@ -676,7 +686,8 @@ function buildStageControlPlane({
             ref('stage_closeout_packet_ref', stageCloseoutPacketRef),
             ref('executor_receipt_ref', `executor-receipt-ref:${stageId}/codex-cli`),
             ref('boundary_receipt_ref', `boundary-receipt-ref:${stageId}/refs-only`),
-            ...(buildReceiptRef ? [ref('source_derived_build_receipt_ref', buildReceiptRef)] : []),
+            ...(designAdmissionReceiptRef ? [ref('design_admission_receipt_ref', designAdmissionReceiptRef)] : []),
+            ...(buildReceiptRef ? [ref('agent_build_receipt_ref', buildReceiptRef)] : []),
             ref('independent_gate_receipt_ref', `independent-gate-receipt-ref:${stageId}`),
             ref('user_stage_log_ref', `stage-user-log-ref:${stageId}`),
             ref('artifact_native_contract_ref', stageNativeRefs.artifactNativeContractRef),
@@ -871,7 +882,7 @@ function buildFiles({
         ...referenceDesignSourceRefs.map((sourceRef) => `Reference design source: ${sourceRef}`),
         ...referenceDesignPatternNotes.map((note) => `Transfer pattern: ${note}`),
         ...referenceDesignPatternPacketRefs.map((packetRef) => `Pattern packet ref: ${packetRef}`),
-        'Extract transferable workflow, grounding, evaluation, handoff, and failure-taxonomy patterns into ReferenceDesignPacket -> TransferMap -> AgentPackPlan -> BuildReceipt; do not copy external runtime ownership or domain verdicts.',
+        'Extract transferable workflow, grounding, evaluation, handoff, and failure-taxonomy patterns into ReferenceDesignPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before materialization, then preserve AgentBuildReceipt; do not copy external runtime ownership or domain verdicts.',
       ]
     : [];
   const researchDesignLines = researchSourceRefs.length > 0
@@ -886,7 +897,7 @@ function buildFiles({
         ...researchSourceRefs.map((sourceRef) => `Research source: ${sourceRef}`),
         ...expertPracticeNotes.map((note) => `Expert practice: ${note}`),
         ...researchSynthesisRefs.map((synthesisRef) => `Research synthesis ref: ${synthesisRef}`),
-        'Synthesize expert practice into ResearchSynthesisPacket -> TransferMap -> AgentPackPlan -> BuildReceipt; do not treat public research as target truth or owner verdicts.',
+        'Synthesize expert practice into ResearchSynthesisPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before materialization, then preserve AgentBuildReceipt; do not treat public research as target truth or owner verdicts.',
       ]
     : [];
   return [

@@ -1,11 +1,12 @@
 import {
   buildAgentPackPlan,
+  buildAgentBuildReceipt,
   buildCapabilityPlanRequirements,
+  buildDesignAdmissionReceipt,
   buildProfileRequirements,
   buildProfileSelectionReceipt,
   buildReferenceDesignPacket,
   buildResearchSynthesisPacket,
-  buildSourceDerivedBuildReceipt,
   buildTransferMap,
   buildTransferablePatternRequirements,
   type JsonObject,
@@ -415,16 +416,108 @@ function validateAgentPackPlanObject(
   );
 }
 
+function validateDesignAdmissionReceiptObject(
+  actualReceipt: JsonObject,
+  targetAgent: TargetAgent,
+  packetRef: string,
+  transferMapRef: string,
+  agentPackPlanRef: string,
+  receiptRef: string,
+  field: string,
+): void {
+  if (
+    actualReceipt.surface_kind !== 'opl_meta_agent_design_admission_receipt'
+    || actualReceipt.receipt_ref !== receiptRef
+  ) {
+    throw new Error(`stage-decomposition pack draft ${field}.design_admission_receipt identity is invalid.`);
+  }
+  if (
+    (
+      actualReceipt.reference_design_packet_ref !== packetRef
+      && actualReceipt.research_synthesis_packet_ref !== packetRef
+      && actualReceipt.design_basis_ref !== packetRef
+    )
+    || actualReceipt.transfer_map_ref !== transferMapRef
+    || actualReceipt.agent_pack_plan_ref !== agentPackPlanRef
+  ) {
+    throw new Error(`stage-decomposition pack draft ${field}.design_admission_receipt source object refs are invalid.`);
+  }
+  [
+    buildResearchSynthesisPacket(targetAgent) ? 'ResearchSynthesisPacket' : 'ReferenceDesignPacket',
+    'TransferMap',
+    'AgentPackPlan',
+  ].forEach((objectName) => assertHasStringRef(
+    actualReceipt.required_design_objects,
+    objectName,
+    `${field}.design_admission_receipt.required_design_objects`,
+  ));
+  assertHasStringRef(
+    actualReceipt.required_admission_receipts,
+    'DesignAdmissionReceipt',
+    `${field}.design_admission_receipt.required_admission_receipts`,
+  );
+  const sourceStageRefs = asRecordArray(
+    actualReceipt.design_derived_stage_refs ?? actualReceipt.source_derived_stage_refs,
+    `${field}.design_admission_receipt.design_derived_stage_refs`,
+  );
+  expectedSourcePatternRefs(targetAgent).forEach((expectedRef) => {
+    if (!sourceStageRefs.some((stageRef) => stageRef.source_pattern_ref === expectedRef)) {
+      throw new Error(`stage-decomposition pack draft ${field}.design_admission_receipt missing design-derived stage ${expectedRef}.`);
+    }
+  });
+  if (asStringArray(
+    actualReceipt.target_only_requirement_refs,
+    `${field}.design_admission_receipt.target_only_requirement_refs`,
+  ).length === 0) {
+    throw new Error(`stage-decomposition pack draft ${field}.design_admission_receipt target-only requirements must not be empty.`);
+  }
+  if (!asStringArray(
+    actualReceipt.rejected_source_pattern_refs,
+    `${field}.design_admission_receipt.rejected_source_pattern_refs`,
+  ).some((entry) => entry.startsWith(`non-transferable:${targetAgent.domain_id}/`))) {
+    throw new Error(`stage-decomposition pack draft ${field}.design_admission_receipt missing rejected source pattern refs.`);
+  }
+  [
+    'target_domain_ready',
+    'production_ready',
+    'owner_accepted',
+    'quality_or_export_approved',
+    'runtime_live_promoted',
+  ].forEach((claim) => assertHasStringRef(
+    actualReceipt.forbidden_claims,
+    claim,
+    `${field}.design_admission_receipt.forbidden_claims`,
+  ));
+  const boundary = asRecord(actualReceipt.authority_boundary, `${field}.design_admission_receipt.authority_boundary`);
+  if (boundary.refs_only !== true) {
+    throw new Error(`stage-decomposition pack draft ${field}.design_admission_receipt.authority_boundary.refs_only must be true.`);
+  }
+  [
+    'can_copy_external_runtime',
+    'can_write_target_domain_truth',
+    'can_write_target_domain_memory_body',
+    'can_mutate_target_domain_artifact_body',
+    'can_authorize_target_domain_quality_or_export',
+    'can_create_target_owner_receipt',
+    'can_promote_live_or_default_agent',
+  ].forEach((fieldName) => assertBooleanFalse(boundary, fieldName, `${field}.design_admission_receipt.authority_boundary.${fieldName}`));
+}
+
 function validateBuildReceiptObject(
   actualBuildReceipt: JsonObject,
   targetAgent: TargetAgent,
   packetRef: string,
   transferMapRef: string,
   agentPackPlanRef: string,
+  designAdmissionReceiptRef: string,
   buildReceiptRef: string,
   field: string,
 ): void {
-  if (actualBuildReceipt.surface_kind !== 'opl_meta_agent_build_receipt' || actualBuildReceipt.receipt_ref !== buildReceiptRef) {
+  if (
+    actualBuildReceipt.surface_kind !== 'opl_meta_agent_build_receipt'
+    || actualBuildReceipt.receipt_ref !== buildReceiptRef
+    || actualBuildReceipt.receipt_kind !== 'AgentBuildReceipt'
+  ) {
     throw new Error(`stage-decomposition pack draft ${field}.build_receipt identity is invalid.`);
   }
   if (
@@ -435,6 +528,7 @@ function validateBuildReceiptObject(
     )
     || actualBuildReceipt.transfer_map_ref !== transferMapRef
     || actualBuildReceipt.agent_pack_plan_ref !== agentPackPlanRef
+    || actualBuildReceipt.design_admission_receipt_ref !== designAdmissionReceiptRef
   ) {
     throw new Error(`stage-decomposition pack draft ${field}.build_receipt source object refs are invalid.`);
   }
@@ -442,15 +536,25 @@ function validateBuildReceiptObject(
     buildResearchSynthesisPacket(targetAgent) ? 'ResearchSynthesisPacket' : 'ReferenceDesignPacket',
     'TransferMap',
     'AgentPackPlan',
-    'BuildReceipt',
   ].forEach((objectName) => assertHasStringRef(
-    actualBuildReceipt.required_machine_objects,
+    actualBuildReceipt.required_design_objects,
     objectName,
-    `${field}.build_receipt.required_machine_objects`,
+    `${field}.build_receipt.required_design_objects`,
   ));
+  if (optionalStringArray(
+    actualBuildReceipt.required_machine_objects,
+    `${field}.build_receipt.required_machine_objects`,
+  ).includes('BuildReceipt')) {
+    throw new Error(`stage-decomposition pack draft ${field}.build_receipt must not list BuildReceipt as a design object.`);
+  }
+  assertHasStringRef(
+    actualBuildReceipt.required_admission_receipts,
+    'DesignAdmissionReceipt',
+    `${field}.build_receipt.required_admission_receipts`,
+  );
   const sourceStageRefs = asRecordArray(
-    actualBuildReceipt.source_derived_stage_refs,
-    `${field}.build_receipt.source_derived_stage_refs`,
+    actualBuildReceipt.design_derived_stage_refs ?? actualBuildReceipt.source_derived_stage_refs,
+    `${field}.build_receipt.design_derived_stage_refs`,
   );
   expectedSourcePatternRefs(targetAgent).forEach((expectedRef) => {
     if (!sourceStageRefs.some((stageRef) => stageRef.source_pattern_ref === expectedRef)) {
@@ -500,17 +604,20 @@ function assertReferenceDesignObjectRefs(value: JsonObject, targetAgent: TargetA
   const researchPacket = buildResearchSynthesisPacket(targetAgent);
   const transferMap = buildTransferMap(targetAgent);
   const agentPackPlan = buildAgentPackPlan(targetAgent);
-  const buildReceipt = buildSourceDerivedBuildReceipt(targetAgent);
+  const designAdmissionReceipt = buildDesignAdmissionReceipt(targetAgent);
+  const buildReceipt = buildAgentBuildReceipt(targetAgent);
   const packetRef = optionalString(packet?.packet_ref ?? researchPacket?.packet_ref);
   const referencePacketRef = optionalString(packet?.packet_ref);
   const researchPacketRef = optionalString(researchPacket?.packet_ref);
   const transferMapRef = optionalString(transferMap?.transfer_map_ref);
   const agentPackPlanRef = optionalString(agentPackPlan?.plan_ref);
+  const designAdmissionReceiptRef = optionalString(designAdmissionReceipt?.receipt_ref);
   const buildReceiptRef = optionalString(buildReceipt?.receipt_ref);
   assertOptionalRefField(value.reference_design_packet_ref, referencePacketRef, `${field}.reference_design_packet_ref`);
   assertOptionalRefField(value.research_synthesis_packet_ref, researchPacketRef, `${field}.research_synthesis_packet_ref`);
   assertOptionalRefField(value.transfer_map_ref, transferMapRef, `${field}.transfer_map_ref`);
   assertOptionalRefField(value.agent_pack_plan_ref, agentPackPlanRef, `${field}.agent_pack_plan_ref`);
+  assertOptionalRefField(value.design_admission_receipt_ref, designAdmissionReceiptRef, `${field}.design_admission_receipt_ref`);
   assertOptionalRefField(value.build_receipt_ref, buildReceiptRef, `${field}.build_receipt_ref`);
   assertOptionalRefArrayIncludes(
     value.reference_design_packet_refs,
@@ -524,9 +631,14 @@ function assertReferenceDesignObjectRefs(value: JsonObject, targetAgent: TargetA
   );
   assertOptionalRefArrayIncludes(value.transfer_map_refs, transferMapRef, `${field}.transfer_map_refs`);
   assertOptionalRefArrayIncludes(value.agent_pack_plan_refs, agentPackPlanRef, `${field}.agent_pack_plan_refs`);
+  assertOptionalRefArrayIncludes(
+    value.design_admission_receipt_refs,
+    designAdmissionReceiptRef,
+    `${field}.design_admission_receipt_refs`,
+  );
   assertOptionalRefArrayIncludes(value.build_receipt_refs, buildReceiptRef, `${field}.build_receipt_refs`);
 
-  if (packetRef && transferMapRef && agentPackPlanRef && buildReceiptRef) {
+  if (packetRef && transferMapRef && agentPackPlanRef && designAdmissionReceiptRef && buildReceiptRef) {
     const actualReferencePacket = referencePacketRef
       ? asRecord(value.reference_design_packet, `${field}.reference_design_packet`)
       : null;
@@ -535,6 +647,7 @@ function assertReferenceDesignObjectRefs(value: JsonObject, targetAgent: TargetA
       : null;
     const actualTransferMap = asRecord(value.transfer_map, `${field}.transfer_map`);
     const actualAgentPackPlan = asRecord(value.agent_pack_plan, `${field}.agent_pack_plan`);
+    const actualDesignAdmissionReceipt = asRecord(value.design_admission_receipt, `${field}.design_admission_receipt`);
     const actualBuildReceipt = asRecord(value.build_receipt, `${field}.build_receipt`);
     if (actualReferencePacket && referencePacketRef) {
       validateReferenceDesignPacketObject(actualReferencePacket, targetAgent, referencePacketRef, transferMapRef, agentPackPlanRef, field);
@@ -544,12 +657,22 @@ function assertReferenceDesignObjectRefs(value: JsonObject, targetAgent: TargetA
     }
     validateTransferMapObject(actualTransferMap, targetAgent, packetRef, transferMapRef, field);
     validateAgentPackPlanObject(actualAgentPackPlan, targetAgent, packetRef, transferMapRef, agentPackPlanRef, field);
+    validateDesignAdmissionReceiptObject(
+      actualDesignAdmissionReceipt,
+      targetAgent,
+      packetRef,
+      transferMapRef,
+      agentPackPlanRef,
+      designAdmissionReceiptRef,
+      field,
+    );
     validateBuildReceiptObject(
       actualBuildReceipt,
       targetAgent,
       packetRef,
       transferMapRef,
       agentPackPlanRef,
+      designAdmissionReceiptRef,
       buildReceiptRef,
       field,
     );
@@ -561,13 +684,15 @@ function sourceDerivedObjectRequirementRefs(targetAgent: TargetAgent): string[] 
   const researchPacket = buildResearchSynthesisPacket(targetAgent);
   const transferMap = buildTransferMap(targetAgent);
   const agentPackPlan = buildAgentPackPlan(targetAgent);
-  const buildReceipt = buildSourceDerivedBuildReceipt(targetAgent);
+  const designAdmissionReceipt = buildDesignAdmissionReceipt(targetAgent);
   return [
     optionalString(packet?.packet_ref) ? `reference-design-packet-ref:${String(packet?.packet_ref)}` : null,
     optionalString(researchPacket?.packet_ref) ? `research-synthesis-packet-ref:${String(researchPacket?.packet_ref)}` : null,
     optionalString(transferMap?.transfer_map_ref) ? `transfer-map-ref:${String(transferMap?.transfer_map_ref)}` : null,
     optionalString(agentPackPlan?.plan_ref) ? `agent-pack-plan-ref:${String(agentPackPlan?.plan_ref)}` : null,
-    optionalString(buildReceipt?.receipt_ref) ? `build-receipt-ref:${String(buildReceipt?.receipt_ref)}` : null,
+    optionalString(designAdmissionReceipt?.receipt_ref)
+      ? `design-admission-receipt-ref:${String(designAdmissionReceipt?.receipt_ref)}`
+      : null,
   ].filter((entry): entry is string => Boolean(entry));
 }
 
@@ -621,6 +746,11 @@ function validateReferenceDesignBoundary(
     boundary.agent_pack_plan_ref,
     optionalString(buildAgentPackPlan(targetAgent)?.plan_ref),
     `${field}.agent_pack_plan_ref`,
+  );
+  assertOptionalRefField(
+    boundary.design_admission_receipt_ref,
+    optionalString(buildDesignAdmissionReceipt(targetAgent)?.receipt_ref),
+    `${field}.design_admission_receipt_ref`,
   );
   [
     'can_copy_external_runtime',
@@ -907,7 +1037,7 @@ function validateStageControlPlane(
     asString(action.action_id, 'action.action_id')
   )));
   const stages = asRecordArray(stageControl.stages, 'stage_control_plane.stages');
-  const designBasisActive = buildSourceDerivedBuildReceipt(targetAgent) !== null;
+  const designBasisActive = buildDesignAdmissionReceipt(targetAgent) !== null;
   const morphologyRefs = asRecord(artifactMorphologyContract.stage_refs, 'artifact_morphology_contract.stage_refs');
   const requiredMorphologyRefs = [
     asString(morphologyRefs.artifact_morphology_ref, 'artifact_morphology_contract.stage_refs.artifact_morphology_ref'),
@@ -1006,9 +1136,9 @@ function validateStageControlPlane(
           ? 'transfer_map_ref'
           : expectedRef.startsWith('agent-pack-plan-ref:')
             ? 'agent_pack_plan_ref'
-            : 'build_receipt_ref';
+            : 'design_admission_receipt_ref';
       const rawRef = expectedRef.replace(
-        /^reference-design-packet-ref:|^research-synthesis-packet-ref:|^transfer-map-ref:|^agent-pack-plan-ref:|^build-receipt-ref:/,
+        /^reference-design-packet-ref:|^research-synthesis-packet-ref:|^transfer-map-ref:|^agent-pack-plan-ref:|^design-admission-receipt-ref:/,
         '',
       );
       if (!inputs.some((entry) => entry.ref_kind === refKind && entry.ref === rawRef)) {
@@ -1166,9 +1296,9 @@ function validateStageControlPlane(
     if (!expectedReceiptRefs.some((entry) => entry.ref === `stage-completion-policy-ref:${targetAgent.domain_id}/${stageId}`)) {
       throw new Error(`stage-decomposition pack draft stage ${stageId} missing expected stage completion policy ref.`);
     }
-    const buildReceiptRef = optionalString(buildSourceDerivedBuildReceipt(targetAgent)?.receipt_ref);
+    const buildReceiptRef = optionalString(buildAgentBuildReceipt(targetAgent)?.receipt_ref);
     if (buildReceiptRef && !expectedReceiptRefs.some((entry) => entry.ref === buildReceiptRef)) {
-      throw new Error(`stage-decomposition pack draft stage ${stageId} missing expected source-derived build receipt ref.`);
+      throw new Error(`stage-decomposition pack draft stage ${stageId} missing expected agent build receipt ref.`);
     }
     if (!expectedReceiptRefs.some((entry) => entry.ref === stageCloseoutPacketRef)) {
       throw new Error(`stage-decomposition pack draft stage ${stageId} missing expected stage closeout packet ref.`);

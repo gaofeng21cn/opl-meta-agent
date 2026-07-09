@@ -587,7 +587,7 @@ export function buildAgentPackPlan(
   };
 }
 
-export function buildSourceDerivedBuildReceipt(
+export function buildDesignAdmissionReceipt(
   targetAgent: MinimalTargetAgent,
   options: AgentPackPlanOptions = {},
 ): JsonObject | null {
@@ -602,18 +602,20 @@ export function buildSourceDerivedBuildReceipt(
   if (!designReceipt || !designPacket || !transferMap || !agentPackPlan) {
     return null;
   }
+  const designBasisKind = sourceDerivedDesignReceipt ? 'source_derived_design' : 'research_driven_design';
+  const designBasisObject = sourceDerivedDesignReceipt ? 'ReferenceDesignPacket' : 'ResearchSynthesisPacket';
   const mappings = Array.isArray(transferMap.mappings) ? transferMap.mappings as JsonObject[] : [];
   const plannedStages = Array.isArray(agentPackPlan.planned_stage_refs)
     ? agentPackPlan.planned_stage_refs as JsonObject[]
     : [];
   const selectedProfileRefs = stringList(targetAgent.selected_opl_profile_refs);
   return {
-    surface_kind: 'opl_meta_agent_build_receipt',
-    version: 'opl-meta-agent.build-receipt.v1',
-    receipt_id: `build-receipt:opl-meta-agent/${targetAgent.domain_id}`,
-    receipt_ref: `build-receipt-ref:opl-meta-agent/${targetAgent.domain_id}`,
+    surface_kind: 'opl_meta_agent_design_admission_receipt',
+    version: 'opl-meta-agent.design-admission-receipt.v1',
+    receipt_id: `design-admission-receipt:opl-meta-agent/${targetAgent.domain_id}`,
+    receipt_ref: `design-admission-receipt-ref:opl-meta-agent/${targetAgent.domain_id}`,
     target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
-    build_source_kind: sourceDerivedDesignReceipt ? 'source_derived_design' : 'research_driven_design',
+    design_basis_kind: designBasisKind,
     profile_selection_mode: buildProfileSelectionMode(targetAgent),
     selected_profile_refs: selectedProfileRefs,
     lower_bound_opl_profile_refs: selectedProfileRefs.length > 0
@@ -626,12 +628,19 @@ export function buildSourceDerivedBuildReceipt(
     design_basis_ref: designPacket.packet_ref,
     transfer_map_ref: transferMap.transfer_map_ref,
     agent_pack_plan_ref: agentPackPlan.plan_ref,
-    required_machine_objects: [
-      sourceDerivedDesignReceipt ? 'ReferenceDesignPacket' : 'ResearchSynthesisPacket',
+    required_design_objects: [
+      designBasisObject,
       'TransferMap',
       'AgentPackPlan',
-      'BuildReceipt',
     ],
+    required_admission_receipts: ['DesignAdmissionReceipt'],
+    design_derived_stage_refs: plannedStages
+      .filter((stage) => stage.origin === 'source_pattern_ref')
+      .map((stage) => ({
+        stage_id: stage.stage_id,
+        stage_ref: stage.stage_ref,
+        source_pattern_ref: stage.source_pattern_ref,
+      })),
     source_derived_stage_refs: plannedStages
       .filter((stage) => stage.origin === 'source_pattern_ref')
       .map((stage) => ({
@@ -658,7 +667,7 @@ export function buildSourceDerivedBuildReceipt(
     ],
     authority_boundary: {
       refs_only: true,
-      oma_role: 'source_derived_build_receipt_author_refs_only',
+      oma_role: 'design_admission_gate_refs_only',
       target_domain_owner_keeps_truth_quality_artifact_authority: true,
       can_copy_external_runtime: false,
       can_write_target_domain_truth: false,
@@ -669,6 +678,76 @@ export function buildSourceDerivedBuildReceipt(
       can_promote_live_or_default_agent: false,
     },
   };
+}
+
+export function buildAgentBuildReceipt(
+  targetAgent: MinimalTargetAgent,
+  options: AgentPackPlanOptions = {},
+): JsonObject | null {
+  const sourceDerivedDesignReceipt = buildSourceDerivedDesignReceipt(targetAgent);
+  const researchDrivenDesignReceipt = buildResearchDrivenDesignReceipt(targetAgent);
+  const referenceDesignPacket = buildReferenceDesignPacket(targetAgent);
+  const researchSynthesisPacket = buildResearchSynthesisPacket(targetAgent);
+  const transferMap = buildTransferMap(targetAgent, options);
+  const agentPackPlan = buildAgentPackPlan(targetAgent, options);
+  const designAdmissionReceipt = buildDesignAdmissionReceipt(targetAgent, options);
+  const designReceipt = sourceDerivedDesignReceipt ?? researchDrivenDesignReceipt;
+  const designPacket = referenceDesignPacket ?? researchSynthesisPacket;
+  if (!designReceipt || !designPacket || !transferMap || !agentPackPlan || !designAdmissionReceipt) {
+    return null;
+  }
+  const selectedProfileRefs = stringList(targetAgent.selected_opl_profile_refs);
+  return {
+    surface_kind: 'opl_meta_agent_build_receipt',
+    receipt_kind: 'AgentBuildReceipt',
+    version: 'opl-meta-agent.agent-build-receipt.v1',
+    receipt_id: `build-receipt:opl-meta-agent/${targetAgent.domain_id}`,
+    receipt_ref: `build-receipt-ref:opl-meta-agent/${targetAgent.domain_id}`,
+    target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
+    build_source_kind: sourceDerivedDesignReceipt ? 'source_derived_design' : 'research_driven_design',
+    build_mode: sourceDerivedDesignReceipt ? 'source_derived_design' : 'research_driven_design',
+    profile_selection_mode: buildProfileSelectionMode(targetAgent),
+    selected_profile_refs: selectedProfileRefs,
+    lower_bound_opl_profile_refs: selectedProfileRefs.length > 0
+      ? selectedProfileRefs
+      : [String(designReceipt.route_ref)],
+    source_derived_design_receipt_ref: sourceDerivedDesignReceipt?.receipt_ref ?? null,
+    research_driven_design_receipt_ref: researchDrivenDesignReceipt?.receipt_ref ?? null,
+    design_admission_receipt_ref: designAdmissionReceipt.receipt_ref,
+    reference_design_packet_ref: referenceDesignPacket?.packet_ref ?? null,
+    research_synthesis_packet_ref: researchSynthesisPacket?.packet_ref ?? null,
+    design_basis_ref: designPacket.packet_ref,
+    transfer_map_ref: transferMap.transfer_map_ref,
+    agent_pack_plan_ref: agentPackPlan.plan_ref,
+    required_design_objects: designAdmissionReceipt.required_design_objects,
+    required_admission_receipts: ['DesignAdmissionReceipt'],
+    design_derived_stage_refs: designAdmissionReceipt.design_derived_stage_refs,
+    source_derived_stage_refs: designAdmissionReceipt.design_derived_stage_refs,
+    target_only_requirement_refs: designAdmissionReceipt.target_only_requirement_refs,
+    rejected_source_pattern_refs: designAdmissionReceipt.rejected_source_pattern_refs,
+    transferable_pattern_requirements: buildTransferablePatternRequirements(targetAgent),
+    capability_plan_requirements: buildCapabilityPlanRequirements(targetAgent),
+    forbidden_claims: designAdmissionReceipt.forbidden_claims,
+    authority_boundary: {
+      refs_only: true,
+      oma_role: 'agent_build_receipt_author_refs_only',
+      target_domain_owner_keeps_truth_quality_artifact_authority: true,
+      can_copy_external_runtime: false,
+      can_write_target_domain_truth: false,
+      can_write_target_domain_memory_body: false,
+      can_mutate_target_domain_artifact_body: false,
+      can_authorize_target_domain_quality_or_export: false,
+      can_create_target_owner_receipt: false,
+      can_promote_live_or_default_agent: false,
+    },
+  };
+}
+
+export function buildSourceDerivedBuildReceipt(
+  targetAgent: MinimalTargetAgent,
+  options: AgentPackPlanOptions = {},
+): JsonObject | null {
+  return buildAgentBuildReceipt(targetAgent, options);
 }
 
 function buildReferenceDesignBoundary(targetAgent: MinimalTargetAgent): JsonObject {
@@ -686,6 +765,9 @@ function buildReferenceDesignBoundary(targetAgent: MinimalTargetAgent): JsonObje
     design_basis_kind: refs?.design_basis_kind ?? null,
     transfer_map_ref: refs?.transfer_map_ref ?? null,
     agent_pack_plan_ref: refs?.agent_pack_plan_ref ?? null,
+    design_admission_receipt_ref: refs
+      ? `design-admission-receipt-ref:opl-meta-agent/${targetAgent.domain_id}`
+      : null,
     hard_gate_required: refs !== null,
     role: 'external_architecture_or_research_inspiration_not_target_domain_truth',
     may_inform_stage_graph: true,
@@ -783,11 +865,17 @@ export function buildSourceDerivedDesignReceipt(targetAgent: MinimalTargetAgent)
     reference_design_packet_ref: refs?.reference_design_packet_ref,
     transfer_map_ref: refs?.transfer_map_ref,
     agent_pack_plan_ref: refs?.agent_pack_plan_ref,
+    design_admission_receipt_ref: `design-admission-receipt-ref:opl-meta-agent/${targetAgent.domain_id}`,
+    required_design_objects: [
+      'ReferenceDesignPacket',
+      'TransferMap',
+      'AgentPackPlan',
+    ],
+    required_admission_receipts: ['DesignAdmissionReceipt'],
     required_machine_objects: [
       'ReferenceDesignPacket',
       'TransferMap',
       'AgentPackPlan',
-      'BuildReceipt',
     ],
     profile_requirements: SOURCE_DERIVED_DESIGN_PROFILE_REQUIREMENTS,
     transferable_pattern_requirements: buildTransferablePatternRequirements(targetAgent),
@@ -828,11 +916,17 @@ export function buildResearchDrivenDesignReceipt(targetAgent: MinimalTargetAgent
     research_synthesis_packet_ref: refs?.research_synthesis_packet_ref,
     transfer_map_ref: refs?.transfer_map_ref,
     agent_pack_plan_ref: refs?.agent_pack_plan_ref,
+    design_admission_receipt_ref: `design-admission-receipt-ref:opl-meta-agent/${targetAgent.domain_id}`,
+    required_design_objects: [
+      'ResearchSynthesisPacket',
+      'TransferMap',
+      'AgentPackPlan',
+    ],
+    required_admission_receipts: ['DesignAdmissionReceipt'],
     required_machine_objects: [
       'ResearchSynthesisPacket',
       'TransferMap',
       'AgentPackPlan',
-      'BuildReceipt',
     ],
     profile_requirements: RESEARCH_DRIVEN_DESIGN_PROFILE_REQUIREMENTS,
     transferable_pattern_requirements: buildTransferablePatternRequirements(targetAgent),
@@ -915,7 +1009,8 @@ export function buildProfileSelectionReceipt(targetAgent: MinimalTargetAgent): J
   const researchSynthesisPacket = buildResearchSynthesisPacket(targetAgent);
   const transferMap = buildTransferMap(targetAgent);
   const agentPackPlan = buildAgentPackPlan(targetAgent);
-  const buildReceipt = buildSourceDerivedBuildReceipt(targetAgent);
+  const designAdmissionReceipt = buildDesignAdmissionReceipt(targetAgent);
+  const buildReceipt = buildAgentBuildReceipt(targetAgent);
   if (selectedProfileRefs.length === 0 && !sourceDerivedDesignReceipt && !researchDrivenDesignReceipt) {
     throw new Error('profile_selection_required:selected_opl_profile_refs_or_design_basis_refs_missing');
   }
@@ -952,6 +1047,8 @@ export function buildProfileSelectionReceipt(targetAgent: MinimalTargetAgent): J
     transfer_map_ref: transferMap?.transfer_map_ref ?? null,
     agent_pack_plan: agentPackPlan,
     agent_pack_plan_ref: agentPackPlan?.plan_ref ?? null,
+    design_admission_receipt: designAdmissionReceipt,
+    design_admission_receipt_ref: designAdmissionReceipt?.receipt_ref ?? null,
     build_receipt: buildReceipt,
     build_receipt_ref: buildReceipt?.receipt_ref ?? null,
     reference_design_pattern_packet_refs: stringList(targetAgent.reference_design_pattern_packet_refs),
@@ -1011,7 +1108,7 @@ function referenceDesignMarkdown(targetAgent: MinimalTargetAgent): string[] {
     ...sourceRefs.map((ref) => `- Source ref: ${ref}`),
     ...patternNotes.map((note) => `- Transfer pattern: ${note}`),
     ...patternPacketRefs.map((ref) => `- Pattern packet ref: ${ref}`),
-    'Extract transferable architecture, workflow, rubric, handoff, evaluation, and failure-taxonomy patterns into ReferenceDesignPacket -> TransferMap -> AgentPackPlan -> BuildReceipt before choosing or applying an OPL profile.',
+    'Extract transferable architecture, workflow, rubric, handoff, evaluation, and failure-taxonomy patterns into ReferenceDesignPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before materialization, then preserve AgentBuildReceipt after materialization.',
     'Do not copy external runtime ownership, private data, domain verdicts, owner receipts, or promotion authority.',
     '',
   ];
@@ -1039,7 +1136,7 @@ function researchSynthesisMarkdown(targetAgent: MinimalTargetAgent): string[] {
     ...sourceRefs.map((ref) => `- Research source ref: ${ref}`),
     ...expertPracticeNotes.map((note) => `- Expert practice note: ${note}`),
     ...synthesisRefs.map((ref) => `- Research synthesis ref: ${ref}`),
-    'Synthesize expert practice into ResearchSynthesisPacket -> TransferMap -> AgentPackPlan -> BuildReceipt before choosing or applying an OPL profile.',
+    'Synthesize expert practice into ResearchSynthesisPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before materialization, then preserve AgentBuildReceipt after materialization.',
     'Do not treat public research, examples, external runtime ownership, domain verdicts, owner receipts, or promotion authority as target truth.',
     '',
   ];
@@ -1066,7 +1163,8 @@ function profileSelectionMarkdown(targetAgent: MinimalTargetAgent): string[] {
     ...(receipt.research_synthesis_packet_ref ? [`- ResearchSynthesisPacket ref: ${receipt.research_synthesis_packet_ref}`] : []),
     ...(receipt.transfer_map_ref ? [`- TransferMap ref: ${receipt.transfer_map_ref}`] : []),
     ...(receipt.agent_pack_plan_ref ? [`- AgentPackPlan ref: ${receipt.agent_pack_plan_ref}`] : []),
-    ...(receipt.build_receipt_ref ? [`- BuildReceipt ref: ${receipt.build_receipt_ref}`] : []),
+    ...(receipt.design_admission_receipt_ref ? [`- DesignAdmissionReceipt ref: ${receipt.design_admission_receipt_ref}`] : []),
+    ...(receipt.build_receipt_ref ? [`- AgentBuildReceipt ref: ${receipt.build_receipt_ref}`] : []),
     ...((receipt.reference_design_pattern_packet_refs as string[]).map((ref) => `- Pattern packet ref: ${ref}`)),
     ...((receipt.research_source_refs as string[]).map((ref) => `- Research source ref: ${ref}`)),
     ...((receipt.research_synthesis_refs as string[]).map((ref) => `- Research synthesis ref: ${ref}`)),
@@ -1341,6 +1439,7 @@ function buildTargetAgentPrimarySkillCapability(targetAgent: MinimalTargetAgent)
     research_synthesis_packet_ref: profileSelectionReceipt.research_synthesis_packet_ref,
     transfer_map_ref: profileSelectionReceipt.transfer_map_ref,
     agent_pack_plan_ref: profileSelectionReceipt.agent_pack_plan_ref,
+    design_admission_receipt_ref: profileSelectionReceipt.design_admission_receipt_ref,
     build_receipt_ref: profileSelectionReceipt.build_receipt_ref,
     reference_design_pattern_packet_refs: profileSelectionReceipt.reference_design_pattern_packet_refs,
     research_source_refs: profileSelectionReceipt.research_source_refs,
@@ -1425,6 +1524,11 @@ export function writeTargetAgentCapabilityMap(targetAgentDir: string, targetAgen
     agent_pack_plan: profileSelectionReceipt.agent_pack_plan,
     agent_pack_plan_ref: profileSelectionReceipt.agent_pack_plan_ref,
     agent_pack_plan_refs: profileSelectionReceipt.agent_pack_plan_ref ? [profileSelectionReceipt.agent_pack_plan_ref] : [],
+    design_admission_receipt: profileSelectionReceipt.design_admission_receipt,
+    design_admission_receipt_ref: profileSelectionReceipt.design_admission_receipt_ref,
+    design_admission_receipt_refs: profileSelectionReceipt.design_admission_receipt_ref
+      ? [profileSelectionReceipt.design_admission_receipt_ref]
+      : [],
     build_receipt: profileSelectionReceipt.build_receipt,
     build_receipt_ref: profileSelectionReceipt.build_receipt_ref,
     build_receipt_refs: profileSelectionReceipt.build_receipt_ref ? [profileSelectionReceipt.build_receipt_ref] : [],
@@ -1456,6 +1560,9 @@ export function writeTargetAgentCapabilityMap(targetAgentDir: string, targetAgen
         : [],
       transfer_map_refs: profileSelectionReceipt.transfer_map_ref ? [profileSelectionReceipt.transfer_map_ref] : [],
       agent_pack_plan_refs: profileSelectionReceipt.agent_pack_plan_ref ? [profileSelectionReceipt.agent_pack_plan_ref] : [],
+      design_admission_receipt_refs: profileSelectionReceipt.design_admission_receipt_ref
+        ? [profileSelectionReceipt.design_admission_receipt_ref]
+        : [],
       build_receipt_refs: profileSelectionReceipt.build_receipt_ref ? [profileSelectionReceipt.build_receipt_ref] : [],
       reference_design_pattern_packet_refs: profileSelectionReceipt.reference_design_pattern_packet_refs,
       research_source_refs: profileSelectionReceipt.research_source_refs,

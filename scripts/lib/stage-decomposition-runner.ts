@@ -2,13 +2,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
   buildAgentPackPlan,
+  buildAgentBuildReceipt,
   buildCapabilityPlanRequirements,
+  buildDesignAdmissionReceipt,
   buildProfileRequirements,
   buildProfileSelectionReceipt,
   buildReferenceDesignPacket,
   buildResearchDrivenDesignReceipt,
   buildResearchSynthesisPacket,
-  buildSourceDerivedBuildReceipt,
   buildSourceDerivedDesignReceipt,
   buildTransferMap,
   buildTransferablePatternRequirements,
@@ -85,7 +86,8 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
   const researchSynthesisPacket = buildResearchSynthesisPacket(input.targetAgent);
   const transferMap = buildTransferMap(input.targetAgent);
   const agentPackPlan = buildAgentPackPlan(input.targetAgent);
-  const buildReceipt = buildSourceDerivedBuildReceipt(input.targetAgent);
+  const designAdmissionReceipt = buildDesignAdmissionReceipt(input.targetAgent);
+  const buildReceipt = buildAgentBuildReceipt(input.targetAgent);
   return {
     surface_kind: 'opl_meta_agent_stage_decomposition_attempt_input',
     version: 'opl-meta-agent.stage-decomposition-attempt-input.v1',
@@ -111,6 +113,8 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
       transfer_map_ref: transferMap?.transfer_map_ref ?? null,
       agent_pack_plan: agentPackPlan,
       agent_pack_plan_ref: agentPackPlan?.plan_ref ?? null,
+      design_admission_receipt: designAdmissionReceipt,
+      design_admission_receipt_ref: designAdmissionReceipt?.receipt_ref ?? null,
       build_receipt: buildReceipt,
       build_receipt_ref: buildReceipt?.receipt_ref ?? null,
       reference_design_pattern_packet_refs: profileSelectionReceipt.reference_design_pattern_packet_refs,
@@ -119,8 +123,14 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
       research_synthesis_refs: profileSelectionReceipt.research_synthesis_refs,
       transferable_pattern_requirements: profileSelectionReceipt.transferable_pattern_requirements,
       capability_plan_requirements: profileSelectionReceipt.capability_plan_requirements,
-      required_machine_objects: buildReceipt
-        ? buildReceipt.required_machine_objects
+      required_design_objects: designAdmissionReceipt
+        ? designAdmissionReceipt.required_design_objects
+        : [],
+      required_admission_receipts: designAdmissionReceipt
+        ? designAdmissionReceipt.required_admission_receipts
+        : [],
+      required_machine_objects: designAdmissionReceipt
+        ? designAdmissionReceipt.required_design_objects
         : [],
       stage_closeout_must_preserve_selected_profile:
         stringList(input.targetAgent.selected_opl_profile_refs).length > 0,
@@ -150,6 +160,8 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
       transfer_map_ref: transferMap?.transfer_map_ref ?? null,
       agent_pack_plan: agentPackPlan,
       agent_pack_plan_ref: agentPackPlan?.plan_ref ?? null,
+      design_admission_receipt: designAdmissionReceipt,
+      design_admission_receipt_ref: designAdmissionReceipt?.receipt_ref ?? null,
       build_receipt: buildReceipt,
       build_receipt_ref: buildReceipt?.receipt_ref ?? null,
       transferable_pattern_requirements: buildTransferablePatternRequirements(input.targetAgent),
