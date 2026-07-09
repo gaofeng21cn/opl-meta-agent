@@ -127,6 +127,25 @@ source-structure line-budget gate，只说明 primary shrink 未完成；cleanup
 
 Fixture/test support boundary: `tests/source-purity/script-morphology.test-case.ts` remains intentionally explicit because it guards machine receipt and policy fields. Test-side standard-library re-export facades and duplicate external-suite JSON/repo helpers should stay retired; `tests/support/external-suite-fixtures.ts` reuses the repo-local JSON helper instead of carrying duplicate mkdir/write/return code. This does not change item `6/7` retention state or authorize any retained script deletion.
 
+2026-07-09 retained deletion gate audit: current deletion result is
+`no_safe_delete_retained_current`. Fresh `npm run source-structure:json` reports
+source-purity/script-to-pack guard passed with 32 scanned/gated scripts, 0 orphan scripts,
+0 cleanup candidates, 0 cleanup apply candidates and 0 cleanup violations. The compact
+`script-to-pack:readback` remains a strict source-structure command and returns
+`failed_source_structure_gate` because of existing line-budget findings, but its cleanup
+readback still reports 0 cleanup candidates and 32 retained current rows. Fresh OPL
+generated/default caller consumption reports generated interface `ready`, default entry
+gate `pass`, `domain_repo_can_own_default_entry=false`, and aligned
+`execute-external-work-order` answer shape. Those are default-caller/no-resurrection
+evidence only; they do not satisfy retained helper deletion because active callers remain:
+`scripts/execute-external-work-order.ts` still has package/test callers,
+`stage-decomposition-pack-draft/**` still has `build-agent-baseline` / stage-decomposition
+test callers, and `work-order-*` helpers still have agent-evidence / external-suite /
+execute-delegation imports. Keep the rows as retained authority/thin adapter until the
+matching machine gate has OPL validator/materializer parity, no-active-caller refresh,
+no-forbidden-write proof where applicable, tombstone/provenance ref and accepted
+owner-answer shape evidence. Do not add alias/facade surfaces to make deletion easier.
+
 ## OPL primitive dependencies
 
 - Agent Lab suite runner and evolution/promotion gate.

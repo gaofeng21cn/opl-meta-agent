@@ -127,6 +127,25 @@ source-structure gate 下；若 source-structure gate 失败，会以
 `failed_source_structure_gate` 暴露原因。这不改变 cleanup candidate 数量，也不授权
 item `6/7` 物理删除；它们已完成 parity re-audit，当前结论是 retained。
 
+2026-07-09 retained helper deletion gate readback：本轮只确认删除门，不做源码删除。
+`npm run source-structure:json` 显示 source-purity/script-to-pack receipt guard
+`violation_count=0`、`orphan_script_count=0`、`cleanup_candidate_count=0`、
+`retained_current_count=32`；`npm run script-to-pack:readback -- --json` 仍因 strict
+source-structure `line_budget` 返回 `failed_source_structure_gate`，但 cleanup 维度同样是
+`cleanup_candidate_count=0`、`cleanup_apply_candidate_count=0`、
+`missing_evidence_item_count=0`。OPL generated/default caller readback
+`opl agents interfaces --repo-dir . --json` 显示 generated interface `status=ready`、
+default-entry no-resurrection gate `pass`、8 个默认入口由 OPL 持有且
+`execute-external-work-order` answer-shape roundtrip `accepted_answer_shape_aligned`；这只证明
+OPL default-caller surface 对齐，不证明 OMA retained validator/materializer 已满足
+no-active-caller、OPL validator/materializer parity、tombstone/provenance 或 owner receipt /
+typed blocker roundtrip 删除门。因此本轮结论继续是 `no_safe_delete_retained_current`：
+`scripts/execute-external-work-order.ts` 保留为 OMA work-order validation aperture；
+`scripts/lib/stage-decomposition-pack-draft/**`、`scripts/lib/work-order-*` 和相邻
+agent-evidence/external-suite materializers 保留为 refs-only helper/materializer；下一次物理删除
+必须先拿到对应 OPL primitive parity、no-active-caller refresh、no-forbidden-write proof where
+applicable、tombstone/provenance ref 和 owner/typed-blocker accepted shape evidence。
+
 同一轮 re-audit 确认 OPL Framework `/Users/gaofeng/workspace/one-person-lab`
 提供 `opl work-order execute` public command、Codex worktree execution、dry-run、absorb、
 cleanup、target owner closeout readback primitive，以及 OMA target-agent guard
