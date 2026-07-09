@@ -13,9 +13,7 @@ import {
 
 export const DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF = 'contracts/developer_work_order_policy.json';
 export const STANDARD_FOUNDRY_POLICIES_CONTRACT_REF = 'contracts/standard_foundry_policies.json';
-export const STAGE_NATIVE_ARTIFACT_VOCABULARY_CONTRACT_REF = 'contracts/stage_native_artifact_vocabulary.json';
 export const ACTIVE_CALLER_SCAN_POLICY_ID = 'oma.script-active-caller-scan.v1';
-export const SOURCE_PURITY_TEST_STRUCTURE_ANCHOR = 'source-purity-test-structure';
 
 export function valuesAtDottedPath(contract: unknown, dottedPath: string): unknown[] {
   const values = dottedPath.split('.').reduce<unknown[]>((currentValues, segment) => (
@@ -24,7 +22,7 @@ export function valuesAtDottedPath(contract: unknown, dottedPath: string): unkno
   return values.flatMap((value) => Array.isArray(value) ? value : [value]);
 }
 
-export function valuesAtSegment(value: unknown, segment: string): unknown[] {
+function valuesAtSegment(value: unknown, segment: string): unknown[] {
   if (Array.isArray(value)) {
     const selected = value.filter((entry) => (
       entry
@@ -48,7 +46,7 @@ export function valuesAtSegment(value: unknown, segment: string): unknown[] {
   return Object.hasOwn(value as JsonObject, segment) ? [(value as JsonObject)[segment]] : [];
 }
 
-export function listFalseReadyScanSourceRefs(relativeRef: string): string[] {
+function listFalseReadyScanSourceRefs(relativeRef: string): string[] {
   if (relativeRef === 'tests/source-purity.test.ts' || relativeRef.startsWith('tests/source-purity/')) {
     return [];
   }
@@ -65,7 +63,7 @@ export function listFalseReadyScanSourceRefs(relativeRef: string): string[] {
     .sort();
 }
 
-export function falseReadyLiteralParts(claimKey: string): string[] {
+function falseReadyLiteralParts(claimKey: string): string[] {
   return [
     `"${claimKey}": true`,
     `"${claimKey}": True`,
@@ -76,7 +74,7 @@ export function falseReadyLiteralParts(claimKey: string): string[] {
   ];
 }
 
-export function collectFalseReadyClaimMatchesFromSource(
+function collectFalseReadyClaimMatchesFromSource(
   sourceRef: string,
   source: string,
   claimKeys: string[],
@@ -121,7 +119,7 @@ export function assertRepoLocalScriptRef(scriptRef: string): void {
   assertRepoRefExists(scriptRef);
 }
 
-export function sourcePuritySelfGuardRefs(policy: JsonObject): string[] {
+function sourcePuritySelfGuardRefs(policy: JsonObject): string[] {
   return [
     ...new Set([
       ...(Array.isArray(policy.self_guard_test_refs) ? policy.self_guard_test_refs as string[] : []),
@@ -130,7 +128,7 @@ export function sourcePuritySelfGuardRefs(policy: JsonObject): string[] {
   ].sort();
 }
 
-export function sourceRefIsSelfGuard(sourceRef: string, selfGuardRefs: string[]): boolean {
+function sourceRefIsSelfGuard(sourceRef: string, selfGuardRefs: string[]): boolean {
   return selfGuardRefs.some((selfGuardRef) => (
     sourceRef === selfGuardRef || sourceRef.startsWith(`${selfGuardRef.replace(/\/?$/, '/')}`)
   ));
@@ -180,7 +178,7 @@ export function assertIncludesAll(actual: string[], expected: string[], label: s
   expected.forEach((entry) => assert.ok(actual.includes(entry), `${label} should include ${entry}`));
 }
 
-export function listFilesByExtension(relativeDir: string, extension: string): string[] {
+function listFilesByExtension(relativeDir: string, extension: string): string[] {
   const absoluteDir = path.join(repoRoot, relativeDir);
   return fs.readdirSync(absoluteDir, { withFileTypes: true })
     .flatMap((entry) => {

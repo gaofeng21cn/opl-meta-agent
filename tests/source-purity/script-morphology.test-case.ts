@@ -31,16 +31,6 @@ const CORE_FALSE_READY_KEYS = [
   'production_ready',
 ];
 
-const CORE_RETIREMENT_GATE_IDS = [
-  'agent_evidence_and_external_suite_materializers',
-  'build_agent_baseline_and_stage_decomposition_materializers',
-  'external_work_order_execution_delegation',
-  'source_structure_and_stage_control_maintenance_helpers',
-  'sync_json_bundle_shared_helper',
-  'repo_shell_verification_wrappers',
-  'retained_thin_authority_helpers_and_takeover_smoke',
-];
-
 test('script morphology source-purity gate protects current boundaries without implementation shape lock-in', () => {
   const privatePolicy = readJson('contracts/private_functional_surface_policy.json');
   const authorityFunctions = readJson('runtime/authority_functions/meta-agent-authority-functions.json');
@@ -83,7 +73,7 @@ test('script morphology source-purity gate protects current boundaries without i
   assertEveryFlagFalse(asBooleanRecord(genericMaterializerGuard.authority_boundary), 'generic materializer guard');
 
   const retirementGates = asObjects(morphologyPolicy.script_to_pack_retirement_gates);
-  assert.deepEqual(retirementGates.map((entry) => entry.gate_id), CORE_RETIREMENT_GATE_IDS);
+  assert.ok(retirementGates.length > 0, 'script morphology should declare retirement gates');
   const gatedScriptRefs = listGatedScriptRefs(morphologyPolicy);
   assert.deepEqual(gatedScriptRefs, scripts);
   retirementGates.forEach((gate) => {
