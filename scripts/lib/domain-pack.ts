@@ -53,6 +53,8 @@ export type MinimalTargetAgent = {
   domain_id: string;
   domain_label?: string | null;
   target_brief?: string | null;
+  reference_design_source_refs?: string[] | null;
+  reference_design_pattern_notes?: string[] | null;
 };
 
 const DOMAIN_PACK_SECTIONS: DomainPackSection[] = [
@@ -89,6 +91,41 @@ const DOMAIN_PACK_SECTIONS: DomainPackSection[] = [
 ];
 
 const placeholderPattern = new RegExp(`\\b(?:TO${'DO'}|T${'BD'})\\b`, 'i');
+
+function stringList(value: string[] | null | undefined): string[] {
+  return Array.isArray(value) ? value.filter((entry) => entry.trim()).map((entry) => entry.trim()) : [];
+}
+
+function buildReferenceDesignBoundary(targetAgent: MinimalTargetAgent): JsonObject {
+  return {
+    source_refs: stringList(targetAgent.reference_design_source_refs),
+    pattern_notes: stringList(targetAgent.reference_design_pattern_notes),
+    role: 'external_architecture_inspiration_not_target_domain_truth',
+    may_inform_stage_graph: true,
+    may_inform_quality_gate_design: true,
+    may_inform_agent_lab_suite_seed: true,
+    can_copy_external_runtime: false,
+    can_write_target_domain_truth: false,
+    can_replace_target_owner_judgment: false,
+  };
+}
+
+function referenceDesignMarkdown(targetAgent: MinimalTargetAgent): string[] {
+  const sourceRefs = stringList(targetAgent.reference_design_source_refs);
+  const patternNotes = stringList(targetAgent.reference_design_pattern_notes);
+  if (sourceRefs.length === 0 && patternNotes.length === 0) {
+    return [];
+  }
+  return [
+    '## Reference Design Inputs',
+    '',
+    'OMA recorded these external refs as design inspiration only; they are not target-domain truth, owner acceptance, or runtime dependencies.',
+    ...sourceRefs.map((ref) => `- Source ref: ${ref}`),
+    ...patternNotes.map((note) => `- Transfer pattern: ${note}`),
+    'Extract transferable architecture, workflow, rubric, handoff, evaluation, and failure-taxonomy patterns. Do not copy external runtime ownership, private data, or domain verdicts.',
+    '',
+  ];
+}
 
 const targetPrimarySkillRef = 'agent/primary_skill/SKILL.md';
 
@@ -304,6 +341,7 @@ function buildTargetAgentPrimarySkillMarkdown(targetAgent: MinimalTargetAgent): 
     '- Return Agent Lab evidence, independent reviewer evidence, no-forbidden-write proof, and owner-facing closeout refs.',
     '- When the target cannot proceed without authority, return typed blocker, human gate, route-back, or owner-gated continuation.',
     '',
+    ...referenceDesignMarkdown(targetAgent),
     '## Delivery Gate',
     '',
     '- Scaffold exists is not completion.',
@@ -337,6 +375,7 @@ function buildTargetAgentPrimarySkillCapability(targetAgent: MinimalTargetAgent)
     capability_kind: 'primary_skill',
     canonical_owner: domainId,
     physical_source_ref: { ref_kind: 'repo_path', ref: targetPrimarySkillRef, role: 'primary_skill_source' },
+    reference_design_boundary: buildReferenceDesignBoundary(targetAgent),
     canonical_paths: [targetPrimarySkillRef],
     improvement_tokens: ['primary skill', 'agent entry', 'owner handoff', 'delivery gate'],
     failure_token_registry_ref: `failure-token-registry:${domainId}/primary-skill`,

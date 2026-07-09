@@ -56,7 +56,13 @@ function asCloseoutPacket(value: JsonObject): StageDecompositionCloseoutPacket {
   return value as StageDecompositionCloseoutPacket;
 }
 
+function stringList(value: string[] | null | undefined): string[] {
+  return Array.isArray(value) ? value.filter((entry) => entry.trim()).map((entry) => entry.trim()) : [];
+}
+
 function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
+  const referenceDesignSourceRefs = stringList(input.targetAgent.reference_design_source_refs);
+  const referenceDesignPatternNotes = stringList(input.targetAgent.reference_design_pattern_notes);
   return {
     surface_kind: 'opl_meta_agent_stage_decomposition_attempt_input',
     version: 'opl-meta-agent.stage-decomposition-attempt-input.v1',
@@ -64,6 +70,15 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
     target_agent: input.targetAgent,
     target_agent_dir: input.targetAgentDir,
     output_dir: input.outputDir,
+    reference_design_input_policy: {
+      source_refs: referenceDesignSourceRefs,
+      pattern_notes: referenceDesignPatternNotes,
+      role: 'external_architecture_inspiration_not_target_domain_truth',
+      stage_closeout_must_preserve_refs_when_present: referenceDesignSourceRefs.length > 0,
+      can_copy_external_runtime: false,
+      can_copy_external_domain_truth: false,
+      can_replace_target_owner_judgment: false,
+    },
     authority_boundary: {
       opl_role: 'stage_attempt_runtime_and_generated_surface_owner',
       oma_role: 'agent_pack_authoring_and_strict_materialization',

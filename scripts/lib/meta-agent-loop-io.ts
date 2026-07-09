@@ -12,6 +12,8 @@ export type TargetAgent = {
   delivery_domain?: string | null;
   target_kind?: string | null;
   target_brief?: string | null;
+  reference_design_source_refs?: string[] | null;
+  reference_design_pattern_notes?: string[] | null;
   descriptor_ref?: string;
   repo_dir?: string;
   descriptor?: JsonObject | null;
@@ -64,6 +66,16 @@ function requireString(value: unknown, field: string, descriptorPath: string): s
   return value.trim();
 }
 
+function optionalStringArray(value: unknown, field: string, descriptorPath: string): string[] | undefined {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  if (!Array.isArray(value) || !value.every((entry) => typeof entry === 'string' && entry.trim())) {
+    throw new Error(`Target agent descriptor ${field} must be a non-empty string array when present: ${descriptorPath}`);
+  }
+  return value.map((entry) => entry.trim());
+}
+
 export function readTargetAgent(targetAgentDir: string): TargetAgent {
   const domainDescriptorPath = path.join(targetAgentDir, 'contracts', 'domain_descriptor.json');
   const capabilityPackDescriptorPath = path.join(targetAgentDir, 'contracts', 'capability_pack_descriptor.json');
@@ -77,6 +89,16 @@ export function readTargetAgent(targetAgentDir: string): TargetAgent {
   }
 
   const descriptor = readJson(descriptorPath);
+  const referenceDesignSourceRefs = optionalStringArray(
+    descriptor.reference_design_source_refs,
+    'reference_design_source_refs',
+    descriptorPath,
+  );
+  const referenceDesignPatternNotes = optionalStringArray(
+    descriptor.reference_design_pattern_notes,
+    'reference_design_pattern_notes',
+    descriptorPath,
+  );
   const domainId = requireString(
     descriptor.domain_id ?? descriptor.capability_pack_id,
     'domain_id or capability_pack_id',
@@ -102,6 +124,8 @@ export function readTargetAgent(targetAgentDir: string): TargetAgent {
         : null,
     target_kind: targetKind,
     target_brief: typeof descriptor.target_brief === 'string' ? descriptor.target_brief : null,
+    ...(referenceDesignSourceRefs ? { reference_design_source_refs: referenceDesignSourceRefs } : {}),
+    ...(referenceDesignPatternNotes ? { reference_design_pattern_notes: referenceDesignPatternNotes } : {}),
     descriptor_ref: descriptorPath,
     repo_dir: targetAgentDir,
     descriptor,

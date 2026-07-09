@@ -24,6 +24,14 @@ const targetAgent = {
   domain_label: 'Research Workbench Agent',
   delivery_domain: 'research_workbench',
   target_brief: 'Create an owner-gated research workbench agent from declared workspace refs.',
+  reference_design_source_refs: [
+    'paper-ref:Zoller-2026-HemaGuide-case-grounded-agent',
+    'repo-ref:https://github.com/Friedrich-Lab/HemaGuide',
+  ],
+  reference_design_pattern_notes: [
+    'structured case extraction plus autonomous mode routing',
+    'blinded benchmark, ablation, external validation, and silent-trial gates',
+  ],
 };
 
 function morphologyRefs(domainId: string, stageId = 'agent-output-draft'): string[] {
@@ -88,18 +96,41 @@ test('build-agent-baseline materializes an explicit target package and owner-gat
       targetAgent.delivery_domain,
       '--target-brief',
       targetAgent.target_brief,
+      '--reference-design-source',
+      targetAgent.reference_design_source_refs[0],
+      '--reference-design-source',
+      targetAgent.reference_design_source_refs[1],
+      '--reference-design-pattern',
+      targetAgent.reference_design_pattern_notes[0],
+      '--reference-design-pattern',
+      targetAgent.reference_design_pattern_notes[1],
     ]));
 
     const targetDir = path.join(outputRoot, targetAgent.domain_id);
     const receipt = readJson(path.join(outputRoot, 'baseline-delivery-receipt.json'));
+    const suite = readJson(path.join(outputRoot, 'agent-lab-suite.json'));
     const descriptor = readJson(path.join(targetDir, 'contracts/domain_descriptor.json'));
     const stageControl = readJson(path.join(targetDir, 'contracts/stage_control_plane.json'));
+    const primarySkill = fs.readFileSync(path.join(targetDir, 'agent/primary_skill/SKILL.md'), 'utf8');
+    const evidenceRefs = suite.tasks[0].scorecard.evidence_refs as string[];
     assert.equal(payload.status, 'passed');
     assert.equal(descriptor.domain_id, targetAgent.domain_id);
+    assert.deepEqual(descriptor.reference_design_source_refs, targetAgent.reference_design_source_refs);
+    assert.deepEqual(descriptor.reference_design_pattern_notes, targetAgent.reference_design_pattern_notes);
     assert.equal(stageControl.stages[0].selected_executor.executor_kind, 'codex_cli');
+    assert.deepEqual(
+      stageControl.stages[0].reference_design_boundary.source_refs,
+      targetAgent.reference_design_source_refs,
+    );
+    assert.ok(
+      stageControl.stages[0].inputs.some((entry: JsonObject) => entry.ref_kind === 'reference_design_source_refs'),
+    );
+    assert.ok(evidenceRefs.includes(targetAgent.reference_design_source_refs[0]));
     assert.equal(receipt.status, 'baseline_delivered');
+    assert.deepEqual(receipt.reference_design.source_refs, targetAgent.reference_design_source_refs);
     assert.equal(receipt.authority_boundary.can_write_target_domain_truth, false);
     assert.equal(receipt.authority_boundary.can_authorize_target_domain_quality_or_export, false);
+    assert.match(primarySkill, /Reference Design Inputs/);
     assert.equal(fs.existsSync(path.join(targetDir, 'agent/primary_skill/SKILL.md')), true);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });

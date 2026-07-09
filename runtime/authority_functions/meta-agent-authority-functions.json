@@ -1407,8 +1407,7 @@
             "tests/bootstrap-loop.test.ts#import",
             "tests/bootstrap-loop.test.ts#test_ref",
             "tests/new-agent-delivery-gate.test.ts#import",
-            "tests/new-agent-delivery-gate.test.ts#test_ref",
-            "tests/stage-decomposition-materializer.test.ts#test_ref"
+            "tests/new-agent-delivery-gate.test.ts#test_ref"
           ]
         },
         {
@@ -1492,12 +1491,8 @@
             "scripts/lib/work-order-refs.ts#import",
             "scripts/lib/work-order-validation.ts#import",
             "scripts/takeover-agent.ts#import",
-            "tests/agent-evidence-materializer.test.ts#import",
-            "tests/agent-evidence-materializer.test.ts#test_ref",
             "tests/bootstrap-loop.test.ts#import",
             "tests/bootstrap-loop.test.ts#test_ref",
-            "tests/execute-external-work-order.test.ts#import",
-            "tests/execute-external-work-order.test.ts#test_ref",
             "tests/external-suite-efficiency-handoff.test.ts#import",
             "tests/external-suite-efficiency-handoff.test.ts#test_ref",
             "tests/new-agent-delivery-gate.test.ts#import",
@@ -1758,7 +1753,6 @@
       "bin",
       "cli",
       "mcp",
-      "plugins",
       "product-entry",
       "product_entry",
       "sidecar",

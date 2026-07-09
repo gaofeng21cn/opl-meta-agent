@@ -79,14 +79,26 @@ function withMedicalFixture(
     const reviewerEvaluationPath = options.reviewerEvaluation === false
       ? undefined
       : path.join(outputRoot, 'ai-reviewer-evaluation.json');
-    if (reviewerEvaluationPath) writeAiReviewerEvaluation(reviewerEvaluationPath, options.reviewerEvaluation ?? {});
+    if (reviewerEvaluationPath) {
+      const reviewerEvaluation = options.reviewerEvaluation === false ? {} : options.reviewerEvaluation ?? {};
+      writeAiReviewerEvaluation(reviewerEvaluationPath, reviewerEvaluation);
+    }
     run({ outputRoot, targetAgentDir, suitePath, reviewerEvaluationPath });
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }
 }
 
-[
+const failureCases: Array<{
+  name: string;
+  prefix: string;
+  options: {
+    descriptor?: 'domain' | 'missing-domain-id' | 'none';
+    targetPolicy?: boolean;
+    reviewerEvaluation?: false | JsonObject;
+  };
+  expected: RegExp;
+}> = [
   {
     name: 'AI reviewer evaluation is missing',
     prefix: 'opl-meta-agent-external-suite-missing-reviewer-',
@@ -117,7 +129,9 @@ function withMedicalFixture(
     options: { reviewerEvaluation: { direct_evidence_refs: ['suite:mas/002/generated-scaffold'] } },
     expected: /direct_evidence_refs must include direct evidence beyond suite\/scaffold refs/,
   },
-].forEach((testCase) => {
+];
+
+failureCases.forEach((testCase) => {
   test(`external suite improvement fails closed when ${testCase.name}`, () => {
     withMedicalFixture(testCase.prefix, testCase.options, (fixture) => {
       const result = spawnImprove(fixture);

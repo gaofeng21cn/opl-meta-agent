@@ -7,7 +7,7 @@ description: Use when Codex should operate OPL Meta Agent to design, baseline, t
 
 ## 用途
 
-使用 OPL Meta Agent 创建、接管测试、修复或持续改进 OPL-compatible Foundry Agent。OMA 读取用户自然语言、目标领域材料、已有 agent repo、Agent Lab evidence 和 reviewer evidence，产出 target-agent brief、stage pack、quality gates、Agent Lab suite seed、baseline receipt、developer patch work order、mechanism proposal、target capability candidate 或 typed blocker。
+使用 OPL Meta Agent 创建、接管测试、修复或持续改进 OPL-compatible Foundry Agent。OMA 读取用户自然语言、目标领域材料、用户提供的论文/资料/外部参考设计、已有 agent repo、Agent Lab evidence 和 reviewer evidence，产出 target-agent brief、stage pack、quality gates、Agent Lab suite seed、baseline receipt、developer patch work order、mechanism proposal、target capability candidate 或 typed blocker。
 
 OMA 是 agent-building domain owner，不是 OPL Framework、Agent Lab、App registry、workbench、queue、attempt ledger、generic runtime 或 target domain owner。
 
@@ -15,6 +15,7 @@ OMA 是 agent-building domain owner，不是 OPL Framework、Agent Lab、App reg
 
 - 用户说“帮我做一个能交付 X 的智能体”“把这个流程做成 OPL Agent”“为这个 agent 补 baseline / suite / takeover / improvement loop”时，先用 OMA。
 - 先把自然语言收敛成 target agent 的 `domain_id`、`domain_label`、`delivery_domain`、`target_brief`、acceptance criteria、non-goals 和 owner boundary。
+- 若用户提供论文、PDF、GitHub repo、产品文档或案例系统作为参考，记录为 `reference_design_source_refs` / `reference_design_pattern_notes`，只提取可迁移的架构、工作流、grounding、评估、handoff 和失败分类模式；不得把外部系统 runtime、私有数据或领域结论复制成目标 agent truth。
 - 若问题只是在某个已存在 target domain 的 truth、artifact body、quality verdict 或 owner receipt 内部，转回对应 target domain owner，不用 OMA 接管。
 
 ## Agent Lab And Target-Agent Handoff
@@ -24,6 +25,7 @@ OMA 输出 target-agent semantics 和 refs-only handoff；OPL Framework / Agent 
 Target agent handoff 必须保留：
 
 - target agent descriptor、stage control plane、action catalog、quality gates 和 capability map refs；
+- reference design source refs、pattern disposition notes 和 external-learning provenance；
 - Agent Lab baseline / takeover / external-suite evidence refs；
 - independent AI reviewer critique、suggestions、direct evidence refs 和 provenance；
 - no-forbidden-write proof、owner route、source morphology refs 和 generated surface consumption refs；

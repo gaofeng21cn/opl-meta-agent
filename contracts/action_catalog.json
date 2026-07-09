@@ -130,7 +130,7 @@
       "owner": "opl-meta-agent",
       "effect": "mutating",
       "source_command": {
-        "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief>",
+        "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief> [--reference-design-source <reference_design_source_ref>] [--reference-design-pattern <reference_design_pattern_note>]",
         "surface_kind": "domain_smoke_cli"
       },
       "input_schema_ref": "contracts/schemas/build-agent-baseline.input.schema.json",
@@ -142,14 +142,16 @@
         "domain_id",
         "domain_label",
         "delivery_domain",
-        "target_brief"
+        "target_brief",
+        "reference_design_source_refs",
+        "reference_design_pattern_notes"
       ],
       "human_gate_ids": [
         "baseline_delivery_owner_review"
       ],
       "supported_surfaces": {
         "cli": {
-          "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief>",
+          "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief> [--reference-design-source <reference_design_source_ref>] [--reference-design-pattern <reference_design_pattern_note>]",
           "surface_kind": "domain_smoke_cli"
         },
         "mcp": {
@@ -161,11 +163,11 @@
         "skill": {
           "command_contract_id": "opl-meta-agent.build-agent-baseline",
           "surface_kind": "opl_generated_skill_contract",
-          "intent_mapping": "Codex extracts domain_id, domain_label, delivery_domain, target_brief, output_dir, opl_bin, and ai_reviewer_evaluation from the user natural-language request before invoking this action."
+          "intent_mapping": "Codex extracts domain_id, domain_label, delivery_domain, target_brief, optional reference_design_source_refs, optional reference_design_pattern_notes, output_dir, opl_bin, and ai_reviewer_evaluation from the user natural-language request before invoking this action."
         },
         "product_entry": {
           "action_key": "build-agent-baseline",
-          "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief>",
+          "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief> [--reference-design-source <reference_design_source_ref>] [--reference-design-pattern <reference_design_pattern_note>]",
           "surface_kind": "domain_product_entry_action"
         },
         "openai": {

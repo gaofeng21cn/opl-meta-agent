@@ -279,6 +279,18 @@ function nonEmptyValue(flag: string, value: string | undefined): string {
   return trimmed;
 }
 
+function nonEmptyStringList(flag: string, value: string | string[] | undefined): string[] {
+  const entries = Array.isArray(value) ? value : value === undefined ? [] : [value];
+  return entries.map((entry) => nonEmptyValue(flag, entry));
+}
+
+function referenceDesignEvidenceRefs(targetAgent: TargetAgent): string[] {
+  return [
+    ...(targetAgent.reference_design_source_refs ?? []),
+    ...(targetAgent.reference_design_pattern_notes ?? []).map((note) => `reference-design-pattern:${note}`),
+  ];
+}
+
 export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineArgs {
   const parsed: {
     outputDir: string | null;
@@ -288,6 +300,8 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
     domainLabel: string | null;
     deliveryDomain: string | null;
     targetBrief: string | null;
+    referenceDesignSourceRefs: string[];
+    referenceDesignPatternNotes: string[];
     stageRunner: StageRunnerKind;
     stageCloseoutPacketPath: string | null;
   } = {
@@ -298,6 +312,8 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
     domainLabel: null,
     deliveryDomain: null,
     targetBrief: null,
+    referenceDesignSourceRefs: [],
+    referenceDesignPatternNotes: [],
     stageRunner: 'live',
     stageCloseoutPacketPath: null,
   };
@@ -312,6 +328,8 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
       'domain-label': { type: 'string' },
       'delivery-domain': { type: 'string' },
       'target-brief': { type: 'string' },
+      'reference-design-source': { type: 'string', multiple: true },
+      'reference-design-pattern': { type: 'string', multiple: true },
       'stage-runner': { type: 'string' },
       'stage-closeout-packet': { type: 'string' },
       'stage-decomposition-closeout': { type: 'string' },
@@ -341,6 +359,14 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
   if (typeof values['target-brief'] === 'string') {
     parsed.targetBrief = nonEmptyValue('--target-brief', values['target-brief']);
   }
+  parsed.referenceDesignSourceRefs = nonEmptyStringList(
+    '--reference-design-source',
+    values['reference-design-source'],
+  );
+  parsed.referenceDesignPatternNotes = nonEmptyStringList(
+    '--reference-design-pattern',
+    values['reference-design-pattern'],
+  );
   if (typeof values['stage-runner'] === 'string') {
     const runner = nonEmptyValue('--stage-runner', values['stage-runner']);
     if (runner !== 'fixture' && runner !== 'live') {
@@ -381,6 +407,12 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
     delivery_domain: parsed.deliveryDomain ?? 'knowledge_delivery',
     target_brief: parsed.targetBrief
       ?? `Create an owner-gated ${domainLabel} delivery from declared workspace refs.`,
+    ...(parsed.referenceDesignSourceRefs.length > 0
+      ? { reference_design_source_refs: parsed.referenceDesignSourceRefs }
+      : {}),
+    ...(parsed.referenceDesignPatternNotes.length > 0
+      ? { reference_design_pattern_notes: parsed.referenceDesignPatternNotes }
+      : {}),
   };
   return {
     outputDir: parsed.outputDir,
@@ -500,7 +532,10 @@ function buildAgentLabSuite({
     receiptRefs: [`owner-receipt:opl-meta-agent/${targetAgent.domain_id}/baseline-delivery`],
     scorecardRef: 'quality-scorecard:opl-meta-agent/baseline-acceptance',
     metricRefs: ['metric-ref:descriptor-valid', 'metric-ref:agent-lab-suite-valid'],
-    evidenceRefs: [`evidence-ref:${targetAgent.domain_id}/scaffold-validation`],
+    evidenceRefs: [
+      `evidence-ref:${targetAgent.domain_id}/scaffold-validation`,
+      ...referenceDesignEvidenceRefs(targetAgent),
+    ],
     reviewRefs: ['review-ref:opl-meta-agent/baseline-review'],
     qualityGateRefs: ['quality-gate:opl-meta-agent/baseline-owner'],
     improvementCandidateRef: `improvement-candidate:opl-meta-agent/${targetAgent.domain_id}/rubric-gap-tightening`,
@@ -562,6 +597,13 @@ function buildBaselineReceipt(
       },
     }),
     target_agent: targetAgent,
+    reference_design: {
+      source_refs: targetAgent.reference_design_source_refs ?? [],
+      pattern_notes: targetAgent.reference_design_pattern_notes ?? [],
+      role: 'external_architecture_inspiration_not_target_domain_truth',
+      can_write_target_domain_truth: false,
+      can_replace_target_owner_judgment: false,
+    },
     scaffold_validation_status: scaffoldValidation.standard_domain_agent_scaffold.validation.status,
     ...aiReviewerReceiptFields(aiReviewerEvaluation, aiReviewerEvaluationRef),
     ...domainPackReceiptFields(domainPackSummary),
@@ -657,7 +699,10 @@ function buildRealTargetAgentSuite({
       'metric-ref:real-target-agent-lab-suite-valid',
       'metric-ref:real-target-owner-receipt-present',
     ],
-    evidenceRefs: [`evidence-ref:${realTargetAgent.domain_id}/scaffold-validation`],
+    evidenceRefs: [
+      `evidence-ref:${realTargetAgent.domain_id}/scaffold-validation`,
+      ...referenceDesignEvidenceRefs(realTargetAgent),
+    ],
     reviewRefs: [`review-ref:opl-meta-agent/${realTargetAgent.domain_id}/real-target-review`],
     qualityGateRefs: [`quality-gate:opl-meta-agent/${realTargetAgent.domain_id}/baseline-owner`],
     improvementCandidateRef: `improvement-candidate:opl-meta-agent/${realTargetAgent.domain_id}/source-coverage`,
@@ -727,6 +772,12 @@ export function runBuildAgentBaseline({
     ...descriptor,
     delivery_domain: targetAgent.delivery_domain,
     target_brief: targetAgent.target_brief,
+    ...(targetAgent.reference_design_source_refs
+      ? { reference_design_source_refs: targetAgent.reference_design_source_refs }
+      : {}),
+    ...(targetAgent.reference_design_pattern_notes
+      ? { reference_design_pattern_notes: targetAgent.reference_design_pattern_notes }
+      : {}),
   });
   const targetAgentCapabilityMapPath = writeTargetAgentCapabilityMap(targetAgentDir, targetAgent);
   const targetDomainPackSummary = readDomainPackSummary(targetAgentDir, {

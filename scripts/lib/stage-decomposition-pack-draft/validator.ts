@@ -39,6 +39,25 @@ function validateNoForbiddenWritePolicy(policy: JsonObject): void {
   ].forEach((field) => assertBooleanFalse(policy, field, `no_forbidden_write_policy.${field}`));
 }
 
+function normalizeOptionalStringArray(value: unknown, field: string): string[] | null {
+  if (value === undefined || value === null) {
+    return null;
+  }
+  return asStringArray(value, field);
+}
+
+function assertMatchingOptionalStringArray(
+  actual: unknown,
+  expected: unknown,
+  field: string,
+): void {
+  const actualList = normalizeOptionalStringArray(actual, `stage_decomposition_pack_draft.target_agent.${field}`);
+  const expectedList = normalizeOptionalStringArray(expected, `requested_target_agent.${field}`);
+  if (JSON.stringify(actualList) !== JSON.stringify(expectedList)) {
+    throw new Error(`stage-decomposition pack draft target_agent.${field} does not match requested target.`);
+  }
+}
+
 function validateActionCatalog(catalog: JsonObject, targetAgent: TargetAgent): void {
   if (catalog.surface_kind !== 'family_action_catalog') {
     throw new Error('stage-decomposition pack draft action_catalog.surface_kind must be family_action_catalog.');
@@ -512,6 +531,16 @@ export function validateStageDecompositionCloseoutPacket(
   if ((draftTarget.target_brief ?? null) !== (targetAgent.target_brief ?? null)) {
     throw new Error('stage-decomposition pack draft target_agent.target_brief does not match requested target.');
   }
+  assertMatchingOptionalStringArray(
+    draftTarget.reference_design_source_refs,
+    targetAgent.reference_design_source_refs,
+    'reference_design_source_refs',
+  );
+  assertMatchingOptionalStringArray(
+    draftTarget.reference_design_pattern_notes,
+    targetAgent.reference_design_pattern_notes,
+    'reference_design_pattern_notes',
+  );
   validateNoForbiddenWritePolicy(asRecord(draft.no_forbidden_write_policy, 'no_forbidden_write_policy'));
   const files = filesByPath(draft.files);
   const artifactMorphologyContract = asRecord(

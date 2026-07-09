@@ -38,7 +38,6 @@ test('runtime source shape keeps generated and generic wrappers out of the repo'
     'bin',
     'cli',
     'mcp',
-    'plugins',
     'product-entry',
     'product_entry',
     'sidecar',

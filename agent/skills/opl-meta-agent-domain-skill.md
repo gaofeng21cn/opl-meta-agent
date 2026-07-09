@@ -7,14 +7,14 @@
 ## 输入
 
 - 目标 agent 的领域、交付物、质量门槛和禁止事项。
-- 可选已有 workflow、repo、文档、公开参考或失败样例。
+- 可选已有 workflow、repo、文档、论文/PDF、公开参考、案例系统或失败样例。
 - OPL binary locator、输出 workspace locator 和 stage-decomposition runner 设置。
-- 由 Codex 从用户话语抽取的 `domain_id`、`domain_label`、`delivery_domain` 和 `target_brief`。
+- 由 Codex 从用户话语抽取的 `domain_id`、`domain_label`、`delivery_domain`、`target_brief`、可选 `reference_design_source_refs` 和 `reference_design_pattern_notes`。
 
 ## 流程
 
 1. 执行 `intent-intake`，冻结目标、边界和 acceptance criteria，并把自然语言需求归一为 target-agent descriptor 字段。
-2. 执行 `web-experience-research`，只吸收可迁移模式。
+2. 执行 `web-experience-research` 或用户提供参考设计读取，记录 source refs / pattern notes，只吸收可迁移模式，不复制外部 runtime、私有数据或领域 truth。
 3. 执行 `stage-decomposition` Codex stage attempt，产出 typed closeout packet；stage/action/pack files/gate policy 必须从该 closeout 来。
 4. 执行 `agent-skeleton-build`，只校验并物化 closeout 中的 candidate package，再跑 scaffold/interface validation。
 5. 执行 `eval-suite-build` 和 `baseline-run`，获得 Agent Lab evidence。
@@ -37,6 +37,7 @@
 ## 质量门槛
 
 - 用户自然语言能追溯到 `target_brief`；字段缺失时只回问会改变交付物或 owner boundary 的问题。
+- 用户提供论文、PDF、repo 或案例系统作为参考时，必须保留 reference design refs 并说明其只作为架构/评估/工作流模式来源。
 - 所有 stage 都有 prompt、tools/action、knowledge、handoff、quality gate declaration 和 independent gate policy。
 - free text closeout、partial refs、缺 independent gate policy、缺 quality gate declaration 或 self-review 必须 fail closed。
 - generated interfaces 从 contracts 派生，不新增私有 wrapper。

@@ -13,6 +13,8 @@
 - `domain_label`
 - `delivery_domain`
 - `target_brief`
+- 可选 `reference_design_source_refs`：用户提供的论文/PDF/repo/产品文档/案例系统等设计参考。
+- 可选 `reference_design_pattern_notes`：从参考设计抽取的短模式说明，例如 grounding、mode routing、rubric、validation 或 failure taxonomy。
 - stage-decomposition runner settings or explicit `stage_decomposition_closeout`
 - intent、stage、action、memory、artifact 和 quality gate refs。
 - artifact morphology brief refs：native source format、artifact body owner、creative source/export refs、sharding strategy、extent/scale contract、asset custody/file-path policy、thin assembler/helper boundary 和 realistic target task review refs。
@@ -24,7 +26,7 @@
 
 1. 准备 output workspace，确认不会写入 source checkout 的 runtime artifact。
 2. 从自然语言目标生成稳定的 target-agent descriptor 字段和 candidate agent package 路径。
-3. 启动或读取 `stage-decomposition` typed closeout，从其中的 stage graph、action refs、artifact morphology brief、pack file bodies、independent gate policy 和 quality gate declaration 生成 candidate agent package 的标准目录和 contracts。
+3. 启动或读取 `stage-decomposition` typed closeout，从其中的 stage graph、action refs、artifact morphology brief、pack file bodies、independent gate policy、reference design refs 和 quality gate declaration 生成 candidate agent package 的标准目录和 contracts。
 4. 写入 prompts、skills、stages、quality gates、knowledge policy，并保留 generated-from-closeout proof。
 5. 确认 target artifact locator 引用 morphology refs，且长书、长 deck、长文、素材型交付或数据型交付的 creative source 是可分片 native source，不是脚本字符串或单一导出物。
 6. 调用 OPL scaffold validation。
@@ -41,6 +43,7 @@
 - `opl_agent_package_manifest_ref`，指向目标 agent repo 的 `contracts/opl_agent_package_manifest.json`
 - scaffold validation ref
 - generated interface bundle ref
+- reference design source refs / pattern notes ref
 - artifact morphology brief ref
 - artifact morphology review / realistic target task evidence ref
 - baseline suite result ref
