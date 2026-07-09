@@ -1,10 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {
+  buildAgentPackPlan,
   buildCapabilityPlanRequirements,
   buildProfileRequirements,
   buildProfileSelectionReceipt,
+  buildReferenceDesignPacket,
   buildSourceDerivedDesignReceipt,
+  buildTransferMap,
   buildTransferablePatternRequirements,
   type JsonObject,
 } from './domain-pack.ts';
@@ -72,6 +75,9 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
   const referenceDesignSourceRefs = stringList(input.targetAgent.reference_design_source_refs);
   const referenceDesignPatternNotes = stringList(input.targetAgent.reference_design_pattern_notes);
   const referenceDesignPatternPacketRefs = stringList(input.targetAgent.reference_design_pattern_packet_refs);
+  const referenceDesignPacket = buildReferenceDesignPacket(input.targetAgent);
+  const transferMap = buildTransferMap(input.targetAgent);
+  const agentPackPlan = buildAgentPackPlan(input.targetAgent);
   return {
     surface_kind: 'opl_meta_agent_stage_decomposition_attempt_input',
     version: 'opl-meta-agent.stage-decomposition-attempt-input.v1',
@@ -87,9 +93,18 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
       profile_requirements: buildProfileRequirements(input.targetAgent),
       source_derived_design_receipt: profileSelectionReceipt.source_derived_design_receipt,
       source_derived_design_receipt_ref: profileSelectionReceipt.source_derived_design_receipt_ref,
+      reference_design_packet: referenceDesignPacket,
+      reference_design_packet_ref: referenceDesignPacket?.packet_ref ?? null,
+      transfer_map: transferMap,
+      transfer_map_ref: transferMap?.transfer_map_ref ?? null,
+      agent_pack_plan: agentPackPlan,
+      agent_pack_plan_ref: agentPackPlan?.plan_ref ?? null,
       reference_design_pattern_packet_refs: profileSelectionReceipt.reference_design_pattern_packet_refs,
       transferable_pattern_requirements: profileSelectionReceipt.transferable_pattern_requirements,
       capability_plan_requirements: profileSelectionReceipt.capability_plan_requirements,
+      required_machine_objects: profileSelectionReceipt.source_derived_design_receipt
+        ? ['ReferenceDesignPacket', 'TransferMap', 'AgentPackPlan']
+        : [],
       stage_closeout_must_preserve_selected_profile:
         stringList(input.targetAgent.selected_opl_profile_refs).length > 0,
       stage_closeout_must_preserve_source_derived_design:
@@ -104,6 +119,12 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
       pattern_notes: referenceDesignPatternNotes,
       pattern_packet_refs: referenceDesignPatternPacketRefs,
       source_derived_design_receipt: buildSourceDerivedDesignReceipt(input.targetAgent),
+      reference_design_packet: referenceDesignPacket,
+      reference_design_packet_ref: referenceDesignPacket?.packet_ref ?? null,
+      transfer_map: transferMap,
+      transfer_map_ref: transferMap?.transfer_map_ref ?? null,
+      agent_pack_plan: agentPackPlan,
+      agent_pack_plan_ref: agentPackPlan?.plan_ref ?? null,
       transferable_pattern_requirements: buildTransferablePatternRequirements(input.targetAgent),
       capability_plan_requirements: buildCapabilityPlanRequirements(input.targetAgent),
       role: 'external_architecture_inspiration_not_target_domain_truth',

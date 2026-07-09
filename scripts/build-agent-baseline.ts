@@ -643,6 +643,7 @@ function buildBaselineReceipt(
   stageDecompositionAttempt: StageDecompositionAttemptReceipt,
 ): OwnerReceipt {
   assertBaselineReviewerMorphologyEvidence(aiReviewerEvaluation);
+  const profileSelectionReceipt = buildProfileSelectionReceipt(targetAgent);
   const receipt = {
     ...buildOwnerReceipt({
       receiptClass: 'baseline_delivery_receipt',
@@ -663,6 +664,12 @@ function buildBaselineReceipt(
       source_refs: targetAgent.reference_design_source_refs ?? [],
       pattern_notes: targetAgent.reference_design_pattern_notes ?? [],
       pattern_packet_refs: targetAgent.reference_design_pattern_packet_refs ?? [],
+      reference_design_packet_ref: profileSelectionReceipt.reference_design_packet_ref,
+      reference_design_packet: profileSelectionReceipt.reference_design_packet,
+      transfer_map_ref: profileSelectionReceipt.transfer_map_ref,
+      transfer_map: profileSelectionReceipt.transfer_map,
+      agent_pack_plan_ref: profileSelectionReceipt.agent_pack_plan_ref,
+      agent_pack_plan: profileSelectionReceipt.agent_pack_plan,
       role: 'external_architecture_inspiration_not_target_domain_truth',
       can_write_target_domain_truth: false,
       can_replace_target_owner_judgment: false,
@@ -857,6 +864,12 @@ export function runBuildAgentBaseline({
       : {}),
     source_derived_design_receipt: profileSelectionReceipt.source_derived_design_receipt,
     source_derived_design_receipt_ref: profileSelectionReceipt.source_derived_design_receipt_ref,
+    reference_design_packet: profileSelectionReceipt.reference_design_packet,
+    reference_design_packet_ref: profileSelectionReceipt.reference_design_packet_ref,
+    transfer_map: profileSelectionReceipt.transfer_map,
+    transfer_map_ref: profileSelectionReceipt.transfer_map_ref,
+    agent_pack_plan: profileSelectionReceipt.agent_pack_plan,
+    agent_pack_plan_ref: profileSelectionReceipt.agent_pack_plan_ref,
     transferable_pattern_requirements: profileSelectionReceipt.transferable_pattern_requirements,
     capability_plan_requirements: profileSelectionReceipt.capability_plan_requirements,
   });

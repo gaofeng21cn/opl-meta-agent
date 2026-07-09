@@ -1,7 +1,10 @@
 import {
+  buildAgentPackPlan,
   buildCapabilityPlanRequirements,
   buildProfileRequirements,
   buildProfileSelectionReceipt,
+  buildReferenceDesignPacket,
+  buildTransferMap,
   buildTransferablePatternRequirements,
   type JsonObject,
 } from '../domain-pack.ts';
@@ -86,6 +89,273 @@ function assertMatchingObject(actual: unknown, expected: unknown, field: string)
   }
 }
 
+function optionalString(value: unknown): string | null {
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
+}
+
+function optionalStringArray(value: unknown, field: string): string[] {
+  if (value === undefined || value === null) {
+    return [];
+  }
+  return asStringArray(value, field);
+}
+
+function assertOptionalRefField(
+  actual: unknown,
+  expected: string | null,
+  field: string,
+): void {
+  if (!expected) {
+    if (actual !== undefined && actual !== null) {
+      throw new Error(`stage-decomposition pack draft ${field} must be absent when source-derived design is not active.`);
+    }
+    return;
+  }
+  if (actual !== expected) {
+    throw new Error(`stage-decomposition pack draft ${field} does not match requested target.`);
+  }
+}
+
+function assertOptionalRefArrayIncludes(
+  actual: unknown,
+  expected: string | null,
+  field: string,
+): void {
+  if (!expected) {
+    return;
+  }
+  if (!optionalStringArray(actual, field).includes(expected)) {
+    throw new Error(`stage-decomposition pack draft ${field} missing ${expected}.`);
+  }
+}
+
+function expectedSourcePatternRefs(targetAgent: TargetAgent): string[] {
+  return [
+    ...normalizedStringArray(
+      targetAgent.reference_design_pattern_packet_refs,
+      'requested_target_agent.reference_design_pattern_packet_refs',
+    ),
+    ...normalizedStringArray(
+      targetAgent.reference_design_pattern_notes,
+      'requested_target_agent.reference_design_pattern_notes',
+    ).map((_, index) => `reference-design-pattern-note:${targetAgent.domain_id}/${index + 1}`),
+  ];
+}
+
+function assertHasStringRef(list: unknown, expected: string, field: string): void {
+  if (!asStringArray(list, field).includes(expected)) {
+    throw new Error(`stage-decomposition pack draft ${field} missing ${expected}.`);
+  }
+}
+
+function validateReferenceDesignPacketObject(
+  actualPacket: JsonObject,
+  targetAgent: TargetAgent,
+  packetRef: string,
+  transferMapRef: string,
+  agentPackPlanRef: string,
+  field: string,
+): void {
+  if (actualPacket.surface_kind !== 'opl_meta_agent_reference_design_packet' || actualPacket.packet_ref !== packetRef) {
+    throw new Error(`stage-decomposition pack draft ${field}.reference_design_packet identity is invalid.`);
+  }
+  assertMatchingStringArray(
+    actualPacket.reference_source_refs,
+    targetAgent.reference_design_source_refs,
+    `${field}.reference_design_packet.reference_source_refs`,
+  );
+  assertMatchingStringArray(
+    actualPacket.reference_design_pattern_packet_refs,
+    targetAgent.reference_design_pattern_packet_refs,
+    `${field}.reference_design_packet.reference_design_pattern_packet_refs`,
+  );
+  assertMatchingStringArray(
+    actualPacket.reference_design_pattern_notes,
+    targetAgent.reference_design_pattern_notes,
+    `${field}.reference_design_packet.reference_design_pattern_notes`,
+  );
+  const expectedPatternRefs = expectedSourcePatternRefs(targetAgent);
+  if (expectedPatternRefs.length === 0) {
+    throw new Error(`stage-decomposition pack draft ${field}.reference_design_packet requires extracted pattern refs.`);
+  }
+  const patterns = asRecordArray(
+    actualPacket.transferable_design_patterns,
+    `${field}.reference_design_packet.transferable_design_patterns`,
+  );
+  expectedPatternRefs.forEach((expectedRef) => {
+    if (!patterns.some((pattern) => pattern.source_pattern_ref === expectedRef)) {
+      throw new Error(`stage-decomposition pack draft ${field}.reference_design_packet missing transferable pattern ${expectedRef}.`);
+    }
+  });
+  const aspects = asRecordArray(
+    actualPacket.extractable_design_aspects,
+    `${field}.reference_design_packet.extractable_design_aspects`,
+  );
+  const requiredSlots = [
+    'stage_control_plane',
+    'knowledge_tool_quality_gate_refs',
+    'typed_blocker_and_owner_handoff_policy',
+  ];
+  expectedPatternRefs.forEach((expectedRef) => {
+    requiredSlots.forEach((slot) => {
+      if (!aspects.some((aspect) =>
+        aspect.source_pattern_ref === expectedRef
+        && aspect.target_design_slot === slot
+        && (
+          aspect.required_output_ref === transferMapRef
+          || aspect.required_output_ref === agentPackPlanRef
+        )
+        && typeof aspect.extracted_design_claim === 'string'
+        && aspect.extracted_design_claim.trim().length > 0
+      )) {
+        throw new Error(`stage-decomposition pack draft ${field}.reference_design_packet missing extracted aspect ${slot} for ${expectedRef}.`);
+      }
+    });
+  });
+  const policy = asRecord(
+    actualPacket.source_body_policy,
+    `${field}.reference_design_packet.source_body_policy`,
+  );
+  if (policy.refs_only !== true || policy.extracted_pattern_refs_required !== true) {
+    throw new Error(`stage-decomposition pack draft ${field}.reference_design_packet source body policy is invalid.`);
+  }
+}
+
+function validateTransferMapObject(
+  actualTransferMap: JsonObject,
+  targetAgent: TargetAgent,
+  packetRef: string,
+  transferMapRef: string,
+  field: string,
+): void {
+  if (actualTransferMap.surface_kind !== 'opl_meta_agent_transfer_map' || actualTransferMap.transfer_map_ref !== transferMapRef) {
+    throw new Error(`stage-decomposition pack draft ${field}.transfer_map identity is invalid.`);
+  }
+  if (actualTransferMap.reference_design_packet_ref !== packetRef) {
+    throw new Error(`stage-decomposition pack draft ${field}.transfer_map reference_design_packet_ref is invalid.`);
+  }
+  const expectedPatternRefs = expectedSourcePatternRefs(targetAgent);
+  const mappings = asRecordArray(actualTransferMap.mappings, `${field}.transfer_map.mappings`);
+  expectedPatternRefs.forEach((expectedRef) => {
+    [
+      'stage_control_plane',
+      'prompt_knowledge_tool_quality_gate_refs',
+    ].forEach((slot) => {
+      if (!mappings.some((mapping) =>
+        mapping.source_pattern_ref === expectedRef
+        && mapping.target_capability_slot === slot
+        && ['adapt', 'adopt'].includes(String(mapping.disposition))
+        && typeof mapping.rationale === 'string'
+        && mapping.rationale.trim().length > 0
+      )) {
+        throw new Error(`stage-decomposition pack draft ${field}.transfer_map missing mapping ${slot} for ${expectedRef}.`);
+      }
+    });
+  });
+  if (!mappings.some((mapping) =>
+    mapping.disposition === 'reject'
+    && String(mapping.source_pattern_ref).startsWith(`non-transferable:${targetAgent.domain_id}/`)
+  )) {
+    throw new Error(`stage-decomposition pack draft ${field}.transfer_map missing non-transferable rejection mapping.`);
+  }
+}
+
+function validateAgentPackPlanObject(
+  actualAgentPackPlan: JsonObject,
+  targetAgent: TargetAgent,
+  packetRef: string,
+  transferMapRef: string,
+  agentPackPlanRef: string,
+  field: string,
+): void {
+  if (actualAgentPackPlan.surface_kind !== 'opl_meta_agent_agent_pack_plan' || actualAgentPackPlan.plan_ref !== agentPackPlanRef) {
+    throw new Error(`stage-decomposition pack draft ${field}.agent_pack_plan identity is invalid.`);
+  }
+  if (actualAgentPackPlan.reference_design_packet_ref !== packetRef || actualAgentPackPlan.transfer_map_ref !== transferMapRef) {
+    throw new Error(`stage-decomposition pack draft ${field}.agent_pack_plan source refs are invalid.`);
+  }
+  const expectedPatternRefs = expectedSourcePatternRefs(targetAgent);
+  const plannedStageRefs = asRecordArray(
+    actualAgentPackPlan.planned_stage_refs,
+    `${field}.agent_pack_plan.planned_stage_refs`,
+  );
+  expectedPatternRefs.forEach((expectedRef) => {
+    if (!plannedStageRefs.some((stageRef) =>
+      stageRef.origin === 'source_pattern_ref'
+      && stageRef.source_pattern_ref === expectedRef
+      && typeof stageRef.stage_id === 'string'
+      && String(stageRef.stage_id).trim().length > 0
+    )) {
+      throw new Error(`stage-decomposition pack draft ${field}.agent_pack_plan missing source-pattern planned stage ${expectedRef}.`);
+    }
+  });
+  [
+    'planned_control_refs',
+    'planned_capability_refs',
+    'planned_knowledge_refs',
+    'planned_tool_refs',
+    'planned_quality_gate_refs',
+  ].forEach((listField) => {
+    if (asStringArray(actualAgentPackPlan[listField], `${field}.agent_pack_plan.${listField}`).length === 0) {
+      throw new Error(`stage-decomposition pack draft ${field}.agent_pack_plan.${listField} must not be empty.`);
+    }
+  });
+  assertHasStringRef(
+    actualAgentPackPlan.source_pattern_ref_requirements,
+    packetRef,
+    `${field}.agent_pack_plan.source_pattern_ref_requirements`,
+  );
+  assertHasStringRef(
+    actualAgentPackPlan.source_pattern_ref_requirements,
+    transferMapRef,
+    `${field}.agent_pack_plan.source_pattern_ref_requirements`,
+  );
+  assertHasStringRef(
+    actualAgentPackPlan.source_pattern_ref_requirements,
+    agentPackPlanRef,
+    `${field}.agent_pack_plan.source_pattern_ref_requirements`,
+  );
+}
+
+function assertReferenceDesignObjectRefs(value: JsonObject, targetAgent: TargetAgent, field: string): void {
+  const packet = buildReferenceDesignPacket(targetAgent);
+  const transferMap = buildTransferMap(targetAgent);
+  const agentPackPlan = buildAgentPackPlan(targetAgent);
+  const packetRef = optionalString(packet?.packet_ref);
+  const transferMapRef = optionalString(transferMap?.transfer_map_ref);
+  const agentPackPlanRef = optionalString(agentPackPlan?.plan_ref);
+  assertOptionalRefField(value.reference_design_packet_ref, packetRef, `${field}.reference_design_packet_ref`);
+  assertOptionalRefField(value.transfer_map_ref, transferMapRef, `${field}.transfer_map_ref`);
+  assertOptionalRefField(value.agent_pack_plan_ref, agentPackPlanRef, `${field}.agent_pack_plan_ref`);
+  assertOptionalRefArrayIncludes(
+    value.reference_design_packet_refs,
+    packetRef,
+    `${field}.reference_design_packet_refs`,
+  );
+  assertOptionalRefArrayIncludes(value.transfer_map_refs, transferMapRef, `${field}.transfer_map_refs`);
+  assertOptionalRefArrayIncludes(value.agent_pack_plan_refs, agentPackPlanRef, `${field}.agent_pack_plan_refs`);
+
+  if (packetRef && transferMapRef && agentPackPlanRef) {
+    const actualPacket = asRecord(value.reference_design_packet, `${field}.reference_design_packet`);
+    const actualTransferMap = asRecord(value.transfer_map, `${field}.transfer_map`);
+    const actualAgentPackPlan = asRecord(value.agent_pack_plan, `${field}.agent_pack_plan`);
+    validateReferenceDesignPacketObject(actualPacket, targetAgent, packetRef, transferMapRef, agentPackPlanRef, field);
+    validateTransferMapObject(actualTransferMap, targetAgent, packetRef, transferMapRef, field);
+    validateAgentPackPlanObject(actualAgentPackPlan, targetAgent, packetRef, transferMapRef, agentPackPlanRef, field);
+  }
+}
+
+function sourceDerivedObjectRequirementRefs(targetAgent: TargetAgent): string[] {
+  const packet = buildReferenceDesignPacket(targetAgent);
+  const transferMap = buildTransferMap(targetAgent);
+  const agentPackPlan = buildAgentPackPlan(targetAgent);
+  return [
+    optionalString(packet?.packet_ref) ? `reference-design-packet-ref:${String(packet?.packet_ref)}` : null,
+    optionalString(transferMap?.transfer_map_ref) ? `transfer-map-ref:${String(transferMap?.transfer_map_ref)}` : null,
+    optionalString(agentPackPlan?.plan_ref) ? `agent-pack-plan-ref:${String(agentPackPlan?.plan_ref)}` : null,
+  ].filter((entry): entry is string => Boolean(entry));
+}
+
 function validateReferenceDesignBoundary(
   boundaryValue: unknown,
   targetAgent: TargetAgent,
@@ -102,6 +372,21 @@ function validateReferenceDesignBoundary(
   if (boundary.role !== 'external_architecture_inspiration_not_target_domain_truth') {
     throw new Error(`stage-decomposition pack draft ${field}.role must mark reference designs as inspiration only.`);
   }
+  assertOptionalRefField(
+    boundary.reference_design_packet_ref,
+    optionalString(buildReferenceDesignPacket(targetAgent)?.packet_ref),
+    `${field}.reference_design_packet_ref`,
+  );
+  assertOptionalRefField(
+    boundary.transfer_map_ref,
+    optionalString(buildTransferMap(targetAgent)?.transfer_map_ref),
+    `${field}.transfer_map_ref`,
+  );
+  assertOptionalRefField(
+    boundary.agent_pack_plan_ref,
+    optionalString(buildAgentPackPlan(targetAgent)?.plan_ref),
+    `${field}.agent_pack_plan_ref`,
+  );
   [
     'can_copy_external_runtime',
     'can_copy_external_domain_truth',
@@ -149,6 +434,7 @@ function assertMatchingProfileSelectionFields(value: JsonObject, targetAgent: Ta
   if (JSON.stringify(value.source_derived_design_receipt ?? null) !== JSON.stringify(expectedSourceReceipt ?? null)) {
     throw new Error(`stage-decomposition pack draft ${field}.source_derived_design_receipt does not match requested target.`);
   }
+  assertReferenceDesignObjectRefs(value, targetAgent, field);
 }
 
 function validateProfileRequirementBody(
@@ -367,6 +653,7 @@ function validateStageControlPlane(
     asString(action.action_id, 'action.action_id')
   )));
   const stages = asRecordArray(stageControl.stages, 'stage_control_plane.stages');
+  const sourceDerivedDesignActive = buildProfileSelectionReceipt(targetAgent).source_derived_design_receipt !== null;
   const morphologyRefs = asRecord(artifactMorphologyContract.stage_refs, 'artifact_morphology_contract.stage_refs');
   const requiredMorphologyRefs = [
     asString(morphologyRefs.artifact_morphology_ref, 'artifact_morphology_contract.stage_refs.artifact_morphology_ref'),
@@ -384,6 +671,20 @@ function validateStageControlPlane(
     assertMatchingProfileSelectionFields(stage, targetAgent, `stage ${stageId}`);
     if (stage.profile_selection_receipt_ref !== 'contracts/capability_map.json#/profile_selection_receipt') {
       throw new Error(`stage-decomposition pack draft stage ${stageId} missing profile_selection_receipt_ref.`);
+    }
+    if (sourceDerivedDesignActive) {
+      const stagePatternSourceRefs = optionalStringArray(
+        stage.stage_pattern_source_refs,
+        `stage ${stageId}.stage_pattern_source_refs`,
+      );
+      if (stagePatternSourceRefs.length === 0) {
+        throw new Error(`stage-decomposition pack draft stage ${stageId} missing stage_pattern_source_refs.`);
+      }
+      expectedSourcePatternRefs(targetAgent).forEach((expectedRef) => {
+        if (!stagePatternSourceRefs.includes(expectedRef)) {
+          throw new Error(`stage-decomposition pack draft stage ${stageId} missing stage pattern source ${expectedRef}.`);
+        }
+      });
     }
     validateReferenceDesignBoundary(
       stage.reference_design_boundary,
@@ -414,6 +715,19 @@ function validateStageControlPlane(
     ].forEach((expected) => {
       if (!inputs.some((entry) => entry.ref_kind === expected.kind && entry.ref === expected.ref)) {
         throw new Error(`stage-decomposition pack draft stage ${stageId} missing input ${expected.kind}.`);
+      }
+    });
+    [
+      ...sourceDerivedObjectRequirementRefs(targetAgent),
+    ].forEach((expectedRef) => {
+      const refKind = expectedRef.startsWith('reference-design-packet-ref:')
+        ? 'reference_design_packet_ref'
+        : expectedRef.startsWith('transfer-map-ref:')
+          ? 'transfer_map_ref'
+          : 'agent_pack_plan_ref';
+      const rawRef = expectedRef.replace(/^reference-design-packet-ref:|^transfer-map-ref:|^agent-pack-plan-ref:/, '');
+      if (!inputs.some((entry) => entry.ref_kind === refKind && entry.ref === rawRef)) {
+        throw new Error(`stage-decomposition pack draft stage ${stageId} missing source-derived design object input ${rawRef}.`);
       }
     });
     if (!inputs.some((entry) =>
@@ -508,6 +822,7 @@ function validateStageControlPlane(
           'requested_target_agent.reference_design_pattern_packet_refs',
         ).length > 0 ? [`reference-design-pattern-packet-refs:${targetAgent.domain_id}`] : []
       ),
+      ...sourceDerivedObjectRequirementRefs(targetAgent),
     ].forEach((requiredRef) => {
       if (!requires.includes(requiredRef)) {
         throw new Error(`stage-decomposition pack draft stage ${stageId} missing reference design requirement ${requiredRef}.`);

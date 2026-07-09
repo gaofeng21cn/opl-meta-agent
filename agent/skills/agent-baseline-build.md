@@ -20,6 +20,7 @@
 - 可选 `reference_design_source_refs`：用户提供的论文/PDF/repo/产品文档/案例系统等设计参考。
 - 可选 `reference_design_pattern_notes`：从参考设计抽取的短模式说明，例如 grounding、mode routing、rubric、validation 或 failure taxonomy。
 - 可选 `reference_design_pattern_packet_refs`：由 OPL source ingest / Codex extraction 从 PDF/论文/外部案例提炼出的 refs-only 模式包。
+- source-derived design machine objects：`ReferenceDesignPacket`、`TransferMap`、`AgentPackPlan`，当用户提供论文/PDF/repo/案例系统作为参考设计时必须生成并保留；三对象必须来自 pattern packet 或 pattern note，不能只是 raw source ref 或 identity shell。
 - stage-decomposition runner settings or explicit `stage_decomposition_closeout`
 - intent、stage、action、memory、artifact 和 quality gate refs。
 - artifact morphology brief refs：native source format、artifact body owner、creative source/export refs、sharding strategy、extent/scale contract、asset custody/file-path policy、thin assembler/helper boundary 和 realistic target task review refs。
@@ -31,8 +32,8 @@
 
 1. 准备 output workspace，确认不会写入 source checkout 的 runtime artifact。
 2. 从自然语言目标生成稳定的 target-agent descriptor 字段和 candidate agent package 路径。
-3. 调用或消费 OPL profile selector / readback：builtin / hybrid 路线把 selected profile、rationale 和 requirements 写入 target descriptor、capability map 和 stage control plane；source-derived 路线把 `source_derived_design_receipt`、pattern packet refs、transferable pattern requirements 和 capability plan requirements 写入同一组 surface。
-4. 启动或读取 `stage-decomposition` typed closeout，从其中的 stage graph、action refs、artifact morphology brief、pack file bodies、profile selection mode、selected profile refs / source-derived design refs、profile requirements、independent gate policy、reference design refs / pattern packet refs 和 quality gate declaration 生成 candidate agent package 的标准目录和 contracts。
+3. 调用或消费 OPL profile selector / readback：builtin / hybrid 路线把 selected profile、rationale 和 requirements 写入 target descriptor、capability map 和 stage control plane；source-derived 路线先把论文/外部系统参考设计提炼成非空 `ReferenceDesignPacket`，再映射成非空 `TransferMap`，最后落成非空 `AgentPackPlan`，并把 `source_derived_design_receipt`、pattern packet refs、transferable pattern requirements 和 capability plan requirements 写入同一组 surface。只有 source ref 但没有 pattern packet / pattern note 时必须 route back 或 typed blocker。
+4. 启动或读取 `stage-decomposition` typed closeout，从其中的 stage graph、action refs、artifact morphology brief、pack file bodies、profile selection mode、selected profile refs / source-derived design refs、三类设计对象、profile requirements、independent gate policy、reference design refs / pattern packet refs 和 quality gate declaration 生成 candidate agent package 的标准目录和 contracts。
 5. 写入 prompts、skills、stages、quality gates、knowledge policy，并保留 generated-from-closeout proof。
 6. 确认 target artifact locator 引用 morphology refs，且长书、长 deck、长文、素材型交付或数据型交付的 creative source 是可分片 native source，不是脚本字符串或单一导出物。
 7. 调用 OPL scaffold validation。
@@ -50,6 +51,7 @@
 - scaffold validation ref
 - generated interface bundle ref
 - profile selection mode / selected OPL profile refs or source-derived design receipt / profile selection receipt ref / profile requirements
+- `ReferenceDesignPacket` / `TransferMap` / `AgentPackPlan` refs 与非空对象；每个 source-derived stage 的 `stage_pattern_source_refs`
 - reference design source refs / pattern notes / pattern packet refs
 - artifact morphology brief ref
 - artifact morphology review / realistic target task evidence ref

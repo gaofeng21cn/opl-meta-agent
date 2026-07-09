@@ -1,8 +1,12 @@
 import {
+  buildAgentPackPlan,
   buildCapabilityPlanRequirements,
   buildProfileRequirements,
   buildProfileSelectionReceipt,
+  buildReferenceDesignPacket,
+  buildTransferMap,
   buildTransferablePatternRequirements,
+  type AgentPackPlanOptions,
   type JsonObject,
 } from '../domain-pack.ts';
 import type { TargetAgent } from '../meta-agent-loop-io.ts';
@@ -67,10 +71,15 @@ function stringList(value: string[] | null | undefined): string[] {
 }
 
 function buildReferenceDesignBoundary(targetAgent: TargetAgent): JsonObject {
+  const receipt = buildProfileSelectionReceipt(targetAgent);
   return {
     source_refs: stringList(targetAgent.reference_design_source_refs),
     pattern_notes: stringList(targetAgent.reference_design_pattern_notes),
     pattern_packet_refs: stringList(targetAgent.reference_design_pattern_packet_refs),
+    reference_design_packet_ref: receipt.reference_design_packet_ref ?? null,
+    transfer_map_ref: receipt.transfer_map_ref ?? null,
+    agent_pack_plan_ref: receipt.agent_pack_plan_ref ?? null,
+    hard_gate_required: receipt.source_derived_design_receipt !== null,
     role: 'external_architecture_inspiration_not_target_domain_truth',
     may_inform_stage_graph: true,
     may_inform_artifact_morphology: true,
@@ -88,6 +97,15 @@ function profileRequirementLines(targetAgent: TargetAgent): string[] {
   const profileRequirements = buildProfileRequirements(targetAgent);
   const transferablePatternRequirements = buildTransferablePatternRequirements(targetAgent);
   const capabilityPlanRequirements = buildCapabilityPlanRequirements(targetAgent);
+  const referenceDesignPacketRef = typeof profileSelectionReceipt.reference_design_packet_ref === 'string'
+    ? profileSelectionReceipt.reference_design_packet_ref
+    : null;
+  const transferMapRef = typeof profileSelectionReceipt.transfer_map_ref === 'string'
+    ? profileSelectionReceipt.transfer_map_ref
+    : null;
+  const agentPackPlanRef = typeof profileSelectionReceipt.agent_pack_plan_ref === 'string'
+    ? profileSelectionReceipt.agent_pack_plan_ref
+    : null;
   if (
     selectedProfileRefs.length === 0
     && transferablePatternRequirements.length === 0
@@ -106,6 +124,9 @@ function profileRequirementLines(targetAgent: TargetAgent): string[] {
     ...(selectedProfileRefs.length > 0
       ? selectedProfileRefs.map((profileRef) => `Selected OPL profile: ${profileRef}`)
       : ['Selected OPL profile: none; consume source-derived design receipt and pattern packet refs.']),
+    ...(referenceDesignPacketRef ? [`ReferenceDesignPacket ref: ${referenceDesignPacketRef}`] : []),
+    ...(transferMapRef ? [`TransferMap ref: ${transferMapRef}`] : []),
+    ...(agentPackPlanRef ? [`AgentPackPlan ref: ${agentPackPlanRef}`] : []),
     ...stringList(targetAgent.profile_requirement_refs).map((profileRequirementRef) =>
       `Profile requirement ref: ${profileRequirementRef}`
     ),
@@ -115,6 +136,7 @@ function profileRequirementLines(targetAgent: TargetAgent): string[] {
     ),
     ...transferablePatternRequirements.map((requirement) => `Transferable pattern requirement: ${requirement}`),
     ...capabilityPlanRequirements.map((requirement) => `Capability plan requirement: ${requirement}`),
+    'For source-derived design, materialize ReferenceDesignPacket -> TransferMap -> AgentPackPlan before applying lower-bound profile requirements.',
     'Map builtin profile and source-derived design requirements into knowledge/tool/evaluation refs before owner handoff.',
   ];
 }
@@ -324,6 +346,38 @@ function buildToolAffordanceBoundary(): JsonObject {
   };
 }
 
+function buildAgentPackPlanOptions({
+  stageId,
+  actionId,
+  promptPath,
+  skillPath,
+  knowledgePath,
+  qualityGatePath,
+}: Required<FixtureStageSpec>): AgentPackPlanOptions {
+  return {
+    stageId,
+    actionId,
+    promptPath,
+    skillPath,
+    knowledgePath,
+    toolPath: DEFAULT_TOOL_AFFORDANCE_REF,
+    qualityGatePath,
+  };
+}
+
+function optionalString(value: unknown): string | null {
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
+}
+
+function plannedSourcePatternRefs(agentPackPlan: JsonObject | null): string[] {
+  const plannedStageRefs = Array.isArray(agentPackPlan?.planned_stage_refs)
+    ? agentPackPlan.planned_stage_refs
+    : [];
+  return plannedStageRefs
+    .map((entry) => optionalString((entry as JsonObject).source_pattern_ref))
+    .filter((entry): entry is string => Boolean(entry));
+}
+
 function buildStageControlPlane({
   targetAgent,
   stageId,
@@ -355,6 +409,25 @@ function buildStageControlPlane({
   const sourceDerivedDesignReceipt = profileSelectionReceipt.source_derived_design_receipt;
   const transferablePatternRequirements = buildTransferablePatternRequirements(targetAgent);
   const capabilityPlanRequirements = buildCapabilityPlanRequirements(targetAgent);
+  const agentPackPlanOptions = buildAgentPackPlanOptions({
+    targetAgent,
+    stageId,
+    actionId,
+    title,
+    summary,
+    promptPath,
+    stagePath: `agent/stages/${stageId}.md`,
+    skillPath,
+    knowledgePath,
+    qualityGatePath,
+  });
+  const referenceDesignPacket = buildReferenceDesignPacket(targetAgent);
+  const transferMap = buildTransferMap(targetAgent, agentPackPlanOptions);
+  const agentPackPlan = buildAgentPackPlan(targetAgent, agentPackPlanOptions);
+  const referenceDesignPacketRef = optionalString(referenceDesignPacket?.packet_ref);
+  const transferMapRef = optionalString(transferMap?.transfer_map_ref);
+  const agentPackPlanRef = optionalString(agentPackPlan?.plan_ref);
+  const stagePatternSourceRefs = plannedSourcePatternRefs(agentPackPlan);
   const referenceDesignSourceRefs = stringList(targetAgent.reference_design_source_refs);
   const referenceDesignPatternPacketRefs = stringList(targetAgent.reference_design_pattern_packet_refs);
   const referenceDesignInputRefs = [
@@ -364,10 +437,16 @@ function buildStageControlPlane({
     ...(referenceDesignPatternPacketRefs.length > 0
       ? [ref('reference_design_pattern_packet_refs', `reference-design-pattern-packet-refs:${domainId}`)]
       : []),
+    ...(referenceDesignPacketRef ? [ref('reference_design_packet_ref', referenceDesignPacketRef)] : []),
+    ...(transferMapRef ? [ref('transfer_map_ref', transferMapRef)] : []),
+    ...(agentPackPlanRef ? [ref('agent_pack_plan_ref', agentPackPlanRef)] : []),
   ];
   const referenceDesignRequiredRefs = [
     ...(referenceDesignSourceRefs.length > 0 ? [`reference-design-source-refs:${domainId}`] : []),
     ...(referenceDesignPatternPacketRefs.length > 0 ? [`reference-design-pattern-packet-refs:${domainId}`] : []),
+    ...(referenceDesignPacketRef ? [`reference-design-packet-ref:${referenceDesignPacketRef}`] : []),
+    ...(transferMapRef ? [`transfer-map-ref:${transferMapRef}`] : []),
+    ...(agentPackPlanRef ? [`agent-pack-plan-ref:${agentPackPlanRef}`] : []),
   ];
   return {
     surface_kind: 'family_stage_control_plane',
@@ -383,6 +462,16 @@ function buildStageControlPlane({
       : profileSelectionReceipt.profile_requirement_refs,
     profile_requirements: profileRequirements,
     source_derived_design_receipt: sourceDerivedDesignReceipt,
+    reference_design_packet: referenceDesignPacket,
+    reference_design_packet_ref: referenceDesignPacketRef,
+    reference_design_packet_refs: referenceDesignPacketRef ? [referenceDesignPacketRef] : [],
+    transfer_map: transferMap,
+    transfer_map_ref: transferMapRef,
+    transfer_map_refs: transferMapRef ? [transferMapRef] : [],
+    agent_pack_plan: agentPackPlan,
+    agent_pack_plan_ref: agentPackPlanRef,
+    agent_pack_plan_refs: agentPackPlanRef ? [agentPackPlanRef] : [],
+    reference_design_source_refs: referenceDesignSourceRefs,
     reference_design_pattern_packet_refs: referenceDesignPatternPacketRefs,
     transferable_pattern_requirements: transferablePatternRequirements,
     capability_plan_requirements: capabilityPlanRequirements,
@@ -408,6 +497,16 @@ function buildStageControlPlane({
         profile_selection_receipt_ref: 'contracts/capability_map.json#/profile_selection_receipt',
         profile_requirements: profileRequirements,
         source_derived_design_receipt: sourceDerivedDesignReceipt,
+        reference_design_packet: referenceDesignPacket,
+        reference_design_packet_ref: referenceDesignPacketRef,
+        reference_design_packet_refs: referenceDesignPacketRef ? [referenceDesignPacketRef] : [],
+        transfer_map: transferMap,
+        transfer_map_ref: transferMapRef,
+        transfer_map_refs: transferMapRef ? [transferMapRef] : [],
+        agent_pack_plan: agentPackPlan,
+        agent_pack_plan_ref: agentPackPlanRef,
+        agent_pack_plan_refs: agentPackPlanRef ? [agentPackPlanRef] : [],
+        stage_pattern_source_refs: stagePatternSourceRefs,
         reference_design_pattern_packet_refs: referenceDesignPatternPacketRefs,
         transferable_pattern_requirements: transferablePatternRequirements,
         capability_plan_requirements: capabilityPlanRequirements,
@@ -688,16 +787,23 @@ function buildFiles({
   const referenceDesignPatternNotes = stringList(targetAgent.reference_design_pattern_notes);
   const referenceDesignPatternPacketRefs = stringList(targetAgent.reference_design_pattern_packet_refs);
   const profileLines = profileRequirementLines(targetAgent);
+  const profileSelectionReceipt = buildProfileSelectionReceipt(targetAgent);
+  const referenceDesignPacketRef = optionalString(profileSelectionReceipt.reference_design_packet_ref);
+  const transferMapRef = optionalString(profileSelectionReceipt.transfer_map_ref);
+  const agentPackPlanRef = optionalString(profileSelectionReceipt.agent_pack_plan_ref);
   const referenceDesignLines = referenceDesignSourceRefs.length > 0
     || referenceDesignPatternNotes.length > 0
     || referenceDesignPatternPacketRefs.length > 0
     ? [
         '',
         'Reference design inputs are architecture inspiration only, not target-domain truth or owner acceptance.',
+        ...(referenceDesignPacketRef ? [`ReferenceDesignPacket ref: ${referenceDesignPacketRef}`] : []),
+        ...(transferMapRef ? [`TransferMap ref: ${transferMapRef}`] : []),
+        ...(agentPackPlanRef ? [`AgentPackPlan ref: ${agentPackPlanRef}`] : []),
         ...referenceDesignSourceRefs.map((sourceRef) => `Reference design source: ${sourceRef}`),
         ...referenceDesignPatternNotes.map((note) => `Transfer pattern: ${note}`),
         ...referenceDesignPatternPacketRefs.map((packetRef) => `Pattern packet ref: ${packetRef}`),
-        'Extract transferable workflow, grounding, evaluation, handoff, and failure-taxonomy patterns; do not copy external runtime ownership or domain verdicts.',
+        'Extract transferable workflow, grounding, evaluation, handoff, and failure-taxonomy patterns into ReferenceDesignPacket -> TransferMap -> AgentPackPlan; do not copy external runtime ownership or domain verdicts.',
       ]
     : [];
   return [
@@ -878,7 +984,10 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
         'Materialized action catalog, stage control plane, prompt, skill, knowledge, and quality gate draft refs without writing target-domain truth.',
         'Generated Stage-Native Artifact Contract refs for stage folder, manifest, receipt, blocker, current pointer, and canonical artifact refs.',
         ...(referenceDesignSourceRefs.length > 0 || referenceDesignPatternPacketRefs.length > 0
-          ? ['Preserved external reference design refs and pattern packet refs as architecture inspiration only.']
+          ? [
+              'Preserved external reference design refs and pattern packet refs as architecture inspiration only.',
+              'Materialized ReferenceDesignPacket, TransferMap, and AgentPackPlan refs before target stage pack handoff.',
+            ]
           : []),
       ],
       changed_stage_surfaces: [
@@ -902,6 +1011,9 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
         `stage-folder-contract-ref:${targetAgent.domain_id}/${stageId}`,
         ...referenceDesignSourceRefs,
         ...referenceDesignPatternPacketRefs,
+        ...(stageControlPlane.reference_design_packet_ref ? [String(stageControlPlane.reference_design_packet_ref)] : []),
+        ...(stageControlPlane.transfer_map_ref ? [String(stageControlPlane.transfer_map_ref)] : []),
+        ...(stageControlPlane.agent_pack_plan_ref ? [String(stageControlPlane.agent_pack_plan_ref)] : []),
       ],
     },
     route_impact: {

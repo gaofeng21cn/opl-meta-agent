@@ -27,6 +27,20 @@ const targetAgent = {
     'The target agent needs refs-only grounding, mode routing, and owner-gated decision support.',
 };
 
+const sourceDerivedTargetAgent = {
+  domain_id: 'surgery-risk-from-paper-agent',
+  domain_label: 'Surgery Risk From Paper Agent',
+  delivery_domain: 'surgical_risk_support',
+  target_brief: 'Create an owner-gated surgical risk support agent from a supplied reference paper design.',
+  reference_design_source_refs: ['paper-ref:uploaded-surgical-risk-agent-framework'],
+  reference_design_pattern_notes: [
+    'extract source case representation, route selection, grounding, rubric, validation, and handoff patterns',
+  ],
+  reference_design_pattern_packet_refs: [
+    'pattern-packet-ref:oma/reference-designs/uploaded-surgical-risk-agent-framework/distilled-agent-design',
+  ],
+};
+
 test('stage-decomposition materializer writes refs-only stage pack surfaces', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-stage-materializer-pass4-'));
   try {
@@ -76,5 +90,49 @@ test('stage-decomposition validator fails closed on untyped or unsafe closeout',
   assert.throws(
     () => validateStageDecompositionCloseoutPacket(packet, { targetAgent }),
     /independent_gate_policy/i,
+  );
+});
+
+test('stage-decomposition validator fails closed on empty source-derived design objects', () => {
+  const packet = buildFixtureStageDecompositionCloseout({ targetAgent: sourceDerivedTargetAgent });
+  const draft = packet.stage_decomposition_pack_draft as JsonObject;
+  const stageControl = draft.stage_control_plane as JsonObject;
+  const stage = (stageControl.stages as JsonObject[])[0];
+
+  const emptyPacket = {
+    surface_kind: 'opl_meta_agent_reference_design_packet',
+    packet_ref: stageControl.reference_design_packet_ref,
+  };
+  const emptyTransferMap = {
+    surface_kind: 'opl_meta_agent_transfer_map',
+    transfer_map_ref: stageControl.transfer_map_ref,
+  };
+  const emptyAgentPackPlan = {
+    surface_kind: 'opl_meta_agent_agent_pack_plan',
+    plan_ref: stageControl.agent_pack_plan_ref,
+  };
+  stageControl.reference_design_packet = emptyPacket;
+  stageControl.transfer_map = emptyTransferMap;
+  stageControl.agent_pack_plan = emptyAgentPackPlan;
+  stage.reference_design_packet = emptyPacket;
+  stage.transfer_map = emptyTransferMap;
+  stage.agent_pack_plan = emptyAgentPackPlan;
+
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(packet, { targetAgent: sourceDerivedTargetAgent }),
+    /reference_source_refs|transferable_design_patterns|extractable_design_aspects|mappings|planned_stage_refs/i,
+  );
+});
+
+test('stage-decomposition validator fails closed when source-derived stage lacks source pattern refs', () => {
+  const packet = buildFixtureStageDecompositionCloseout({ targetAgent: sourceDerivedTargetAgent });
+  const draft = packet.stage_decomposition_pack_draft as JsonObject;
+  const stageControl = draft.stage_control_plane as JsonObject;
+  const stage = (stageControl.stages as JsonObject[])[0];
+  delete stage.stage_pattern_source_refs;
+
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(packet, { targetAgent: sourceDerivedTargetAgent }),
+    /stage_pattern_source_refs/i,
   );
 });

@@ -13,7 +13,7 @@ or target owner authority.
 ## 输入
 
 - `intent_brief_ref`、`acceptance_criteria_ref`、`authority_boundary_ref`。
-- `profile_selection_mode`、可选 `selected_opl_profile_refs`、`profile_selection_rationale`、`profile_requirement_refs` 和 profile requirements；内置 profile / hybrid 路线必须来自 OPL `profiles select/inspect` readback，source-derived 路线必须来自 OPL selector 的 source-derived design receipt 和 reference design pattern packet refs。
+- `profile_selection_mode`、可选 `selected_opl_profile_refs`、`profile_selection_rationale`、`profile_requirement_refs` 和 profile requirements；内置 profile / hybrid 路线必须来自 OPL `profiles select/inspect` readback，source-derived 路线必须来自 OPL selector 的 source-derived design receipt、reference design pattern packet refs、`ReferenceDesignPacket`、`TransferMap` 和 `AgentPackPlan`。
 - `research_brief_ref`、`source_refs`、`pattern_disposition_refs`、`reference_design_source_refs`、`reference_design_pattern_notes` 和 `reference_design_pattern_packet_refs`。
 - OPL-compatible Foundry Agent 的合同边界：stage-led、refs-only handoff、domain-owned truth。
 - 用户或 source 声明的目标交付物形态、体量、开放式正文范围、外部资产来源和真实目标任务样例；缺失时必须在 closeout 中写成 route-back / blocker，不能静默缩小交付物。
@@ -22,8 +22,8 @@ or target owner authority.
 
 1. 列出目标 agent 从 intake 到 delivery 的最小 stage sequence，避免把多个 owner 的责任塞进同一 stage。
 2. 让 Codex 先给出候选 stage graph 与反例：哪些 stage 太机械、哪些 stage 会限制 AI executor、哪些 stage 需要合并/拆分/删除。
-3. 把 active profile selection mode 映射进 stage graph：内置 profile requirements 的 required stage archetypes 进入 stage_contract requires，reference pack / source freshness / provenance requirements 进入 knowledge refs，tool connector requirements 进入 tool refs，quality/evaluation requirements 进入 quality gate；source-derived design route 的 transferable pattern requirements 和 capability plan requirements 必须进入 stage graph、prompt/knowledge/quality gate 和 Agent Lab suite seed。
-4. 若输入包含论文/PDF/repo/产品参考设计，优先消费由 source ingest / Codex extraction 产出的 pattern packet refs；没有 packet 时才记录短 pattern notes。两者都只作为架构灵感：输入结构化、route/mode selection、grounding sources、tool orchestration、rubric、validation design、handoff 和 failure taxonomy；拒绝复制外部 runtime、私有数据、领域事实或 promotion authority。
+3. 把 active profile selection mode 映射进 stage graph：内置 profile requirements 的 required stage archetypes 进入 stage_contract requires，reference pack / source freshness / provenance requirements 进入 knowledge refs，tool connector requirements 进入 tool refs，quality/evaluation requirements 进入 quality gate；source-derived design route 必须先形成 `ReferenceDesignPacket -> TransferMap -> AgentPackPlan`，再把 transferable pattern requirements 和 capability plan requirements 进入 stage graph、prompt/knowledge/quality gate 和 Agent Lab suite seed。
+4. 若输入包含论文/PDF/repo/产品参考设计，优先消费由 source ingest / Codex extraction 产出的 pattern packet refs；没有 packet 时才记录短 pattern notes。两者都只作为架构灵感：输入结构化、route/mode selection、grounding sources、tool orchestration、rubric、validation design、handoff 和 failure taxonomy。`ReferenceDesignPacket` 不能只是 source ref 或 identity shell，必须包含 transferable patterns 和 extractable design aspects；每个 source-derived stage 必须标注来自参考设计的 `stage_pattern_source_refs`，不能用 target-only owner gate 替代；拒绝复制外部 runtime、私有数据、领域事实或 promotion authority。
 5. 为每个 stage 明确 goal、inputs、prompt refs、tools/action refs、knowledge refs、outputs、handoff 和 quality gate。
 6. 对每个 stage 写清 AI executor autonomy：Codex 可在哪些范围内自主规划、调用工具、要求补充 source、route-back、重写策略。
 7. 设计 action catalog，只保留 domain authority function 或 smoke CLI；generic CLI/MCP/Skill/product-entry 交给 OPL generated interface。
@@ -48,7 +48,7 @@ or target owner authority.
 `stage_decomposition_pack_draft` 必须包含：
 
 - `target_agent`：`domain_id`、`domain_label`、`delivery_domain`、`target_brief`、`profile_selection_mode`，以及内置 profile 路线中的 `selected_opl_profile_refs` / `profile_selection_rationale`。
-- `stage_control_plane` 和每个 stage 必须保留 `profile_selection_mode`、`selected_profile_refs`、`profile_selection_receipt_ref`、`profile_requirements`；source-derived 路线还必须保留 `source_derived_design_receipt`、`reference_design_pattern_packet_refs`、`transferable_pattern_requirements` 和 `capability_plan_requirements`。stage inputs/requires 必须引用 profile selection receipt。
+- `stage_control_plane` 和每个 stage 必须保留 `profile_selection_mode`、`selected_profile_refs`、`profile_selection_receipt_ref`、`profile_requirements`；source-derived 路线还必须保留 `source_derived_design_receipt`、`reference_design_pattern_packet_refs`、非空 `ReferenceDesignPacket`、非空 `TransferMap`、非空 `AgentPackPlan`、`transferable_pattern_requirements` 和 `capability_plan_requirements`。stage inputs/requires 必须引用 profile selection receipt 和三类 source-derived design 对象；每个 source-derived stage 必须声明 `stage_pattern_source_refs`。
 - 若请求包含参考设计，`target_agent` 必须保留 `reference_design_source_refs`、`reference_design_pattern_notes` 和 `reference_design_pattern_packet_refs`；stage pack 必须把它们声明为 architecture inspiration，不作为 target truth、runtime dependency 或 owner verdict。
 - `artifact_morphology_brief`：native source format、artifact body owner、creative source refs、assembled/export refs、sharding strategy、extent/scale contract、asset custody/file-path policy、thin assembler/helper boundary 和 realistic target task review refs。
 - `action_catalog`：domain-owned action metadata、supported surfaces 和 no-forbidden-write authority boundary。

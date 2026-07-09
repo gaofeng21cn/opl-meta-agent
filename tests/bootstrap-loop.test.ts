@@ -59,6 +59,13 @@ const sourceDerivedTargetAgent = {
   ],
 };
 
+const sourceDerivedObjectRefs = {
+  referenceDesignPacketRef: 'reference-design-packet:opl-meta-agent/surgery-risk-from-paper-agent',
+  transferMapRef: 'transfer-map:opl-meta-agent/surgery-risk-from-paper-agent',
+  agentPackPlanRef: 'agent-pack-plan:opl-meta-agent/surgery-risk-from-paper-agent',
+  patternNoteRef: 'reference-design-pattern-note:surgery-risk-from-paper-agent/1',
+};
+
 function morphologyRefs(domainId: string, stageId = 'agent-output-draft'): string[] {
   return [
     `artifact-morphology-ref:${domainId}`,
@@ -218,6 +225,12 @@ test('build-agent-baseline materializes an explicit target package and owner-gat
       receipt.reference_design.pattern_packet_refs,
       targetAgent.reference_design_pattern_packet_refs,
     );
+    assert.equal(
+      receipt.reference_design.reference_design_packet_ref,
+      'reference-design-packet:opl-meta-agent/research-workbench-agent',
+    );
+    assert.equal(receipt.reference_design.transfer_map_ref, 'transfer-map:opl-meta-agent/research-workbench-agent');
+    assert.equal(receipt.reference_design.agent_pack_plan_ref, 'agent-pack-plan:opl-meta-agent/research-workbench-agent');
     assert.equal(receipt.authority_boundary.can_write_target_domain_truth, false);
     assert.equal(receipt.authority_boundary.can_authorize_target_domain_quality_or_export, false);
     assert.ok(primarySkill.includes(targetAgent.reference_design_pattern_packet_refs[0]));
@@ -288,9 +301,19 @@ test('build-agent-baseline materializes a source-derived target package without 
       descriptor.source_derived_design_receipt.route_ref,
       'opl-profile-route:source_derived_design_profile_route.v1',
     );
+    assert.equal(
+      descriptor.reference_design_packet_ref,
+      sourceDerivedObjectRefs.referenceDesignPacketRef,
+    );
+    assert.equal(descriptor.transfer_map_ref, sourceDerivedObjectRefs.transferMapRef);
+    assert.equal(descriptor.agent_pack_plan_ref, sourceDerivedObjectRefs.agentPackPlanRef);
     assert.deepEqual(
       descriptor.source_derived_design_receipt.reference_design_pattern_packet_refs,
       sourceDerivedTargetAgent.reference_design_pattern_packet_refs,
+    );
+    assert.deepEqual(
+      descriptor.source_derived_design_receipt.required_machine_objects,
+      ['ReferenceDesignPacket', 'TransferMap', 'AgentPackPlan'],
     );
     assert.equal(capabilityMap.profile_selection_mode, 'source_derived_design');
     assert.deepEqual(capabilityMap.selected_profile_refs, []);
@@ -301,6 +324,18 @@ test('build-agent-baseline materializes a source-derived target package without 
     assert.ok(
       capabilityMap.profile_requirements.required_stage_archetypes.includes('reference_design_pattern_extraction'),
     );
+    assert.equal(capabilityMap.reference_design_packet_ref, sourceDerivedObjectRefs.referenceDesignPacketRef);
+    assert.deepEqual(capabilityMap.reference_design_packet_refs, [sourceDerivedObjectRefs.referenceDesignPacketRef]);
+    assert.equal(capabilityMap.transfer_map_ref, sourceDerivedObjectRefs.transferMapRef);
+    assert.deepEqual(capabilityMap.transfer_map_refs, [sourceDerivedObjectRefs.transferMapRef]);
+    assert.equal(capabilityMap.agent_pack_plan_ref, sourceDerivedObjectRefs.agentPackPlanRef);
+    assert.deepEqual(capabilityMap.agent_pack_plan_refs, [sourceDerivedObjectRefs.agentPackPlanRef]);
+    assert.equal(
+      capabilityMap.profile_selection_receipt.reference_design_packet_ref,
+      sourceDerivedObjectRefs.referenceDesignPacketRef,
+    );
+    assert.equal(capabilityMap.profile_selection_receipt.transfer_map_ref, sourceDerivedObjectRefs.transferMapRef);
+    assert.equal(capabilityMap.profile_selection_receipt.agent_pack_plan_ref, sourceDerivedObjectRefs.agentPackPlanRef);
     assert.deepEqual(
       capabilityMap.reference_design_pattern_packet_refs,
       sourceDerivedTargetAgent.reference_design_pattern_packet_refs,
@@ -311,6 +346,51 @@ test('build-agent-baseline materializes a source-derived target package without 
       stageControl.source_derived_design_receipt.route_ref,
       'opl-profile-route:source_derived_design_profile_route.v1',
     );
+    assert.equal(stageControl.reference_design_packet_ref, sourceDerivedObjectRefs.referenceDesignPacketRef);
+    assert.equal(stageControl.transfer_map_ref, sourceDerivedObjectRefs.transferMapRef);
+    assert.equal(stageControl.agent_pack_plan_ref, sourceDerivedObjectRefs.agentPackPlanRef);
+    assert.deepEqual(stageControl.stages[0].stage_pattern_source_refs, [
+      sourceDerivedTargetAgent.reference_design_pattern_packet_refs[0],
+      sourceDerivedObjectRefs.patternNoteRef,
+    ]);
+    assert.ok(
+      stageControl.reference_design_packet.extractable_design_aspects.some((aspect: JsonObject) =>
+        aspect.source_pattern_ref === sourceDerivedTargetAgent.reference_design_pattern_packet_refs[0]
+        && aspect.target_design_slot === 'stage_control_plane'
+      ),
+    );
+    assert.ok(
+      stageControl.transfer_map.mappings.some((mapping: JsonObject) =>
+        mapping.source_pattern_ref === sourceDerivedObjectRefs.patternNoteRef
+        && mapping.target_capability_slot === 'prompt_knowledge_tool_quality_gate_refs'
+      ),
+    );
+    assert.ok(
+      stageControl.agent_pack_plan.planned_stage_refs.some((stageRef: JsonObject) =>
+        stageRef.source_pattern_ref === sourceDerivedTargetAgent.reference_design_pattern_packet_refs[0]
+      ),
+    );
+    assert.ok(
+      stageControl.stages[0].inputs.some((entry: JsonObject) =>
+        entry.ref_kind === 'reference_design_packet_ref'
+        && entry.ref === sourceDerivedObjectRefs.referenceDesignPacketRef
+      ),
+    );
+    assert.ok(
+      stageControl.stages[0].stage_contract.requires.includes(
+        `reference-design-packet-ref:${sourceDerivedObjectRefs.referenceDesignPacketRef}`,
+      ),
+    );
+    assert.ok(
+      stageControl.stages[0].stage_contract.requires.includes(
+        `transfer-map-ref:${sourceDerivedObjectRefs.transferMapRef}`,
+      ),
+    );
+    assert.ok(
+      stageControl.stages[0].stage_contract.requires.includes(
+        `agent-pack-plan-ref:${sourceDerivedObjectRefs.agentPackPlanRef}`,
+      ),
+    );
     assert.ok(
       stageControl.capability_plan_requirements.includes(
         'map_transferable_patterns_into_stage_control_plane_prompt_knowledge_quality_gate_and_agent_lab_suite_seed',
@@ -318,6 +398,10 @@ test('build-agent-baseline materializes a source-derived target package without 
     );
     assert.ok(primarySkill.includes('Profile selection mode: source_derived_design'));
     assert.ok(primarySkill.includes('Selected profile ref: none; source-derived design refs are the active design input.'));
+    assert.ok(primarySkill.includes(sourceDerivedObjectRefs.referenceDesignPacketRef));
+    assert.ok(primarySkill.includes(sourceDerivedObjectRefs.transferMapRef));
+    assert.ok(primarySkill.includes(sourceDerivedObjectRefs.agentPackPlanRef));
+    assert.ok(generatedPrompt.includes('ReferenceDesignPacket -> TransferMap -> AgentPackPlan'));
     assert.ok(generatedPrompt.includes(sourceDerivedTargetAgent.reference_design_pattern_packet_refs[0]));
     assert.equal(payload.target_agent.selected_opl_profile_refs, undefined);
   } finally {

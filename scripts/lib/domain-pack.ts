@@ -63,6 +63,16 @@ export type MinimalTargetAgent = {
 
 export type ProfileSelectionMode = 'builtin_profile' | 'source_derived_design' | 'hybrid';
 
+export type AgentPackPlanOptions = {
+  stageId?: string;
+  actionId?: string;
+  promptPath?: string;
+  skillPath?: string;
+  knowledgePath?: string;
+  toolPath?: string;
+  qualityGatePath?: string;
+};
+
 const DOMAIN_PACK_SECTIONS: DomainPackSection[] = [
   {
     section: 'prompts',
@@ -186,11 +196,249 @@ function stringList(value: string[] | null | undefined): string[] {
   return Array.isArray(value) ? value.filter((entry) => entry.trim()).map((entry) => entry.trim()) : [];
 }
 
+function hasReferenceDesignInput(targetAgent: MinimalTargetAgent): boolean {
+  return stringList(targetAgent.reference_design_source_refs).length > 0
+    || stringList(targetAgent.reference_design_pattern_notes).length > 0
+    || stringList(targetAgent.reference_design_pattern_packet_refs).length > 0;
+}
+
+function referenceDesignObjectRefs(targetAgent: MinimalTargetAgent): JsonObject | null {
+  if (!hasReferenceDesignInput(targetAgent)) {
+    return null;
+  }
+  return {
+    reference_design_packet_ref: `reference-design-packet:opl-meta-agent/${targetAgent.domain_id}`,
+    transfer_map_ref: `transfer-map:opl-meta-agent/${targetAgent.domain_id}`,
+    agent_pack_plan_ref: `agent-pack-plan:opl-meta-agent/${targetAgent.domain_id}`,
+  };
+}
+
+function primarySourcePatternRef(targetAgent: MinimalTargetAgent): string {
+  return designPatternInputs(targetAgent)[0]?.source_pattern_ref
+    ?? stringList(targetAgent.reference_design_source_refs)[0]
+    ?? `target-only-requirement:${targetAgent.domain_id}`;
+}
+
+function sourcePatternNoteRef(targetAgent: MinimalTargetAgent, index: number): string {
+  return `reference-design-pattern-note:${targetAgent.domain_id}/${index + 1}`;
+}
+
+function designPatternInputs(targetAgent: MinimalTargetAgent): JsonObject[] {
+  return [
+    ...stringList(targetAgent.reference_design_pattern_packet_refs).map((packetRef, index) => ({
+      pattern_id: `pattern-packet-${index + 1}`,
+      source_pattern_ref: packetRef,
+      source_kind: 'reference_design_pattern_packet',
+      pattern_summary_ref: packetRef,
+    })),
+    ...stringList(targetAgent.reference_design_pattern_notes).map((note, index) => ({
+      pattern_id: `pattern-note-${index + 1}`,
+      source_pattern_ref: sourcePatternNoteRef(targetAgent, index),
+      source_kind: 'reference_design_pattern_note',
+      pattern_summary: note,
+    })),
+  ];
+}
+
+function buildExtractableDesignAspects(targetAgent: MinimalTargetAgent, refs: JsonObject): JsonObject[] {
+  return designPatternInputs(targetAgent).flatMap((pattern) => [
+    {
+      aspect_id: `${pattern.pattern_id}:stage_graph_and_handoff`,
+      source_pattern_ref: pattern.source_pattern_ref,
+      pattern_summary_ref: pattern.pattern_summary_ref ?? null,
+      pattern_summary: pattern.pattern_summary ?? null,
+      target_design_slot: 'stage_control_plane',
+      required_output_ref: refs.transfer_map_ref,
+      extracted_design_claim: 'source pattern informs stage sequence, handoff, and route-back shape',
+    },
+    {
+      aspect_id: `${pattern.pattern_id}:grounding_tool_evaluation_pattern`,
+      source_pattern_ref: pattern.source_pattern_ref,
+      pattern_summary_ref: pattern.pattern_summary_ref ?? null,
+      pattern_summary: pattern.pattern_summary ?? null,
+      target_design_slot: 'knowledge_tool_quality_gate_refs',
+      required_output_ref: refs.agent_pack_plan_ref,
+      extracted_design_claim: 'source pattern informs grounding, tool affordance, rubric, validation, and review refs',
+    },
+    {
+      aspect_id: `${pattern.pattern_id}:failure_taxonomy_and_route_back`,
+      source_pattern_ref: pattern.source_pattern_ref,
+      pattern_summary_ref: pattern.pattern_summary_ref ?? null,
+      pattern_summary: pattern.pattern_summary ?? null,
+      target_design_slot: 'typed_blocker_and_owner_handoff_policy',
+      required_output_ref: refs.transfer_map_ref,
+      extracted_design_claim: 'source pattern informs failure taxonomy, unsupported-evidence blocker, and owner handoff',
+    },
+  ]);
+}
+
+export function buildReferenceDesignPacket(targetAgent: MinimalTargetAgent): JsonObject | null {
+  const refs = referenceDesignObjectRefs(targetAgent);
+  if (!refs) {
+    return null;
+  }
+  const transferableDesignPatterns = designPatternInputs(targetAgent);
+  return {
+    surface_kind: 'opl_meta_agent_reference_design_packet',
+    version: 'opl-meta-agent.reference-design-packet.v1',
+    packet_ref: refs.reference_design_packet_ref,
+    target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
+    reference_source_refs: stringList(targetAgent.reference_design_source_refs),
+    reference_design_pattern_packet_refs: stringList(targetAgent.reference_design_pattern_packet_refs),
+    reference_design_pattern_notes: stringList(targetAgent.reference_design_pattern_notes),
+    transferable_design_patterns: transferableDesignPatterns,
+    extractable_design_aspects: buildExtractableDesignAspects(targetAgent, refs),
+    non_transferable_constraints: [
+      'external_runtime_or_scheduler_not_importable',
+      'external_private_data_not_importable',
+      'external_domain_truth_or_verdict_not_importable',
+      'external_owner_receipt_or_promotion_authority_not_importable',
+    ],
+    source_body_policy: {
+      refs_only: true,
+      source_bodies_copied: false,
+      pattern_packet_body_copied: false,
+      packet_body_required_for_target_truth: false,
+      extracted_pattern_refs_required: true,
+      route_back_when_extractable_design_aspects_are_missing: true,
+    },
+  };
+}
+
+export function buildTransferMap(
+  targetAgent: MinimalTargetAgent,
+  options: AgentPackPlanOptions = {},
+): JsonObject | null {
+  const refs = referenceDesignObjectRefs(targetAgent);
+  if (!refs) {
+    return null;
+  }
+  const stageId = options.stageId ?? 'agent-output-draft';
+  const actionId = options.actionId ?? 'draft-agent-output';
+  const patterns = designPatternInputs(targetAgent);
+  return {
+    surface_kind: 'opl_meta_agent_transfer_map',
+    version: 'opl-meta-agent.transfer-map.v1',
+    transfer_map_ref: refs.transfer_map_ref,
+    reference_design_packet_ref: refs.reference_design_packet_ref,
+    target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
+    mappings: [
+      ...patterns.flatMap((pattern) => [
+        {
+          map_id: `${pattern.pattern_id}:source_pattern_to_stage_graph`,
+          source_pattern_ref: pattern.source_pattern_ref,
+          source_pattern_summary_ref: pattern.pattern_summary_ref ?? null,
+          source_pattern_summary: pattern.pattern_summary ?? null,
+          target_stage_ref: `stage:${targetAgent.domain_id}/${stageId}`,
+          target_capability_slot: 'stage_control_plane',
+          disposition: 'adapt',
+          rationale: 'Reference design informs the target stage sequence, while target owner authority and OPL stage runtime stay local.',
+          known_limits: ['source stage names and runtime topology are not copied verbatim'],
+        },
+        {
+          map_id: `${pattern.pattern_id}:source_pattern_to_agent_pack_refs`,
+          source_pattern_ref: pattern.source_pattern_ref,
+          source_pattern_summary_ref: pattern.pattern_summary_ref ?? null,
+          source_pattern_summary: pattern.pattern_summary ?? null,
+          target_stage_ref: `stage:${targetAgent.domain_id}/${stageId}`,
+          target_capability_slot: 'prompt_knowledge_tool_quality_gate_refs',
+          disposition: 'adopt',
+          rationale: 'Transferable grounding, route, validation, handoff, and failure-taxonomy requirements become explicit pack refs.',
+          known_limits: ['domain facts and quality verdicts remain target-owner owned'],
+        },
+      ]),
+      {
+        map_id: 'source_runtime_and_truth_boundary',
+        source_pattern_ref: `non-transferable:${targetAgent.domain_id}/external-runtime-truth-authority`,
+        target_stage_ref: `stage:${targetAgent.domain_id}/${stageId}`,
+        target_capability_slot: 'authority_boundary',
+        disposition: 'reject',
+        rationale: 'External runtime, private data, target truth, verdicts, owner receipts, and promotion authority cannot transfer.',
+        known_limits: ['requires route-back if design cannot be expressed without forbidden imports'],
+      },
+      {
+        map_id: 'target_requirement_to_action',
+        source_pattern_ref: `target-only-requirement:${targetAgent.domain_id}/${actionId}`,
+        target_stage_ref: `stage:${targetAgent.domain_id}/${stageId}`,
+        target_capability_slot: 'domain_action_catalog',
+        disposition: 'adapt',
+        rationale: 'Target action naming and owner handoff derive from the requested target job, not from the reference source.',
+        known_limits: ['target owner must still accept the resulting action semantics'],
+      },
+    ],
+  };
+}
+
+export function buildAgentPackPlan(
+  targetAgent: MinimalTargetAgent,
+  options: AgentPackPlanOptions = {},
+): JsonObject | null {
+  const refs = referenceDesignObjectRefs(targetAgent);
+  const transferMap = buildTransferMap(targetAgent, options);
+  if (!refs || !transferMap) {
+    return null;
+  }
+  const stageId = options.stageId ?? 'agent-output-draft';
+  const actionId = options.actionId ?? 'draft-agent-output';
+  const promptPath = options.promptPath ?? 'agent/prompts/agent-output-draft.md';
+  const skillPath = options.skillPath ?? 'agent/skills/target-agent-domain-skill.md';
+  const knowledgePath = options.knowledgePath ?? 'agent/knowledge/target-agent-boundary-policy.md';
+  const toolPath = options.toolPath ?? 'agent/tools/domain_affordances.md';
+  const qualityGatePath = options.qualityGatePath ?? 'agent/quality_gates/agent-output-draft-quality-gate.md';
+  const sourcePatternStageRefs = designPatternInputs(targetAgent).map((pattern) => ({
+    stage_id: stageId,
+    stage_ref: `stage:${targetAgent.domain_id}/${stageId}`,
+    origin: 'source_pattern_ref',
+    source_pattern_ref: pattern.source_pattern_ref,
+  }));
+  return {
+    surface_kind: 'opl_meta_agent_agent_pack_plan',
+    version: 'opl-meta-agent.agent-pack-plan.v1',
+    plan_ref: refs.agent_pack_plan_ref,
+    reference_design_packet_ref: refs.reference_design_packet_ref,
+    transfer_map_ref: refs.transfer_map_ref,
+    target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
+    planned_stage_refs: [
+      ...sourcePatternStageRefs,
+      {
+        stage_id: `${stageId}-owner-gate`,
+        stage_ref: `stage:${targetAgent.domain_id}/${stageId}/owner-gate`,
+        origin: 'target_only_requirement',
+        target_only_requirement_ref: `target-only-requirement:${targetAgent.domain_id}/owner-gated-closeout`,
+      },
+    ],
+    planned_control_refs: [
+      'contracts/stage_control_plane.json',
+      'contracts/action_catalog.json',
+      'contracts/artifact_morphology_contract.json',
+      'contracts/stage_native_artifact_contract.json',
+    ],
+    planned_capability_refs: [
+      'contracts/capability_map.json#/primary_skill_capability',
+      `action-ref:${actionId}`,
+      `domain-skill-ref:${skillPath}`,
+    ],
+    planned_knowledge_refs: [knowledgePath],
+    planned_tool_refs: [toolPath],
+    planned_quality_gate_refs: [qualityGatePath],
+    source_pattern_ref_requirements: [
+      refs.reference_design_packet_ref,
+      refs.transfer_map_ref,
+      refs.agent_pack_plan_ref,
+    ],
+  };
+}
+
 function buildReferenceDesignBoundary(targetAgent: MinimalTargetAgent): JsonObject {
+  const refs = referenceDesignObjectRefs(targetAgent);
   return {
     source_refs: stringList(targetAgent.reference_design_source_refs),
     pattern_notes: stringList(targetAgent.reference_design_pattern_notes),
     pattern_packet_refs: stringList(targetAgent.reference_design_pattern_packet_refs),
+    reference_design_packet_ref: refs?.reference_design_packet_ref ?? null,
+    transfer_map_ref: refs?.transfer_map_ref ?? null,
+    agent_pack_plan_ref: refs?.agent_pack_plan_ref ?? null,
+    hard_gate_required: refs !== null,
     role: 'external_architecture_inspiration_not_target_domain_truth',
     may_inform_stage_graph: true,
     may_inform_quality_gate_design: true,
@@ -209,7 +457,7 @@ function sourceDerivedDesignRefs(targetAgent: MinimalTargetAgent): string[] {
 }
 
 function hasSourceDerivedDesign(targetAgent: MinimalTargetAgent): boolean {
-  return sourceDerivedDesignRefs(targetAgent).length > 0;
+  return hasReferenceDesignInput(targetAgent);
 }
 
 export function buildProfileSelectionMode(targetAgent: MinimalTargetAgent): ProfileSelectionMode {
@@ -227,7 +475,7 @@ export function buildProfileSelectionMode(targetAgent: MinimalTargetAgent): Prof
 export function buildTransferablePatternRequirements(targetAgent: MinimalTargetAgent): string[] {
   return hasSourceDerivedDesign(targetAgent)
     ? [
-        'preserve_reference_design_source_or_pattern_packet_refs',
+        'preserve_reference_design_packet_transfer_map_and_agent_pack_plan_refs',
         'extract_transferable_stage_graph_inputs_outputs_grounding_evaluation_handoff_failure_taxonomy',
         'reject_external_runtime_private_data_domain_truth_verdict_or_promotion_authority_imports',
       ]
@@ -238,6 +486,7 @@ export function buildCapabilityPlanRequirements(targetAgent: MinimalTargetAgent)
   return hasSourceDerivedDesign(targetAgent)
     ? [
         'map_transferable_patterns_into_stage_control_plane_prompt_knowledge_quality_gate_and_agent_lab_suite_seed',
+        'mark_each_planned_stage_as_source_pattern_ref_or_target_only_requirement',
         'preserve_owner_boundary_and_refs_only_source_design_receipt',
         'route_back_when_reference_design_packet_is_insufficient_for_target_agent_design',
       ]
@@ -248,6 +497,7 @@ export function buildSourceDerivedDesignReceipt(targetAgent: MinimalTargetAgent)
   if (!hasSourceDerivedDesign(targetAgent)) {
     return null;
   }
+  const refs = referenceDesignObjectRefs(targetAgent);
   return {
     surface_kind: 'opl_meta_agent_source_derived_design_receipt',
     version: 'opl-meta-agent.source-derived-design-receipt.v1',
@@ -259,6 +509,14 @@ export function buildSourceDerivedDesignReceipt(targetAgent: MinimalTargetAgent)
     source_refs: stringList(targetAgent.reference_design_source_refs),
     pattern_notes: stringList(targetAgent.reference_design_pattern_notes),
     reference_design_pattern_packet_refs: stringList(targetAgent.reference_design_pattern_packet_refs),
+    reference_design_packet_ref: refs?.reference_design_packet_ref,
+    transfer_map_ref: refs?.transfer_map_ref,
+    agent_pack_plan_ref: refs?.agent_pack_plan_ref,
+    required_machine_objects: [
+      'ReferenceDesignPacket',
+      'TransferMap',
+      'AgentPackPlan',
+    ],
     profile_requirements: SOURCE_DERIVED_DESIGN_PROFILE_REQUIREMENTS,
     transferable_pattern_requirements: buildTransferablePatternRequirements(targetAgent),
     capability_plan_requirements: buildCapabilityPlanRequirements(targetAgent),
@@ -330,6 +588,9 @@ export function buildProfileSelectionReceipt(targetAgent: MinimalTargetAgent): J
   const selectedProfileRefs = stringList(targetAgent.selected_opl_profile_refs);
   const rationale = targetAgent.profile_selection_rationale?.trim() ?? '';
   const sourceDerivedDesignReceipt = buildSourceDerivedDesignReceipt(targetAgent);
+  const referenceDesignPacket = buildReferenceDesignPacket(targetAgent);
+  const transferMap = buildTransferMap(targetAgent);
+  const agentPackPlan = buildAgentPackPlan(targetAgent);
   if (selectedProfileRefs.length === 0 && !sourceDerivedDesignReceipt) {
     throw new Error('profile_selection_required:selected_opl_profile_refs_or_source_derived_design_refs_missing');
   }
@@ -353,6 +614,12 @@ export function buildProfileSelectionReceipt(targetAgent: MinimalTargetAgent): J
     profile_requirements: buildProfileRequirements(targetAgent),
     source_derived_design_receipt: sourceDerivedDesignReceipt,
     source_derived_design_receipt_ref: sourceDerivedDesignReceipt?.receipt_ref ?? null,
+    reference_design_packet: referenceDesignPacket,
+    reference_design_packet_ref: referenceDesignPacket?.packet_ref ?? null,
+    transfer_map: transferMap,
+    transfer_map_ref: transferMap?.transfer_map_ref ?? null,
+    agent_pack_plan: agentPackPlan,
+    agent_pack_plan_ref: agentPackPlan?.plan_ref ?? null,
     reference_design_pattern_packet_refs: stringList(targetAgent.reference_design_pattern_packet_refs),
     transferable_pattern_requirements: buildTransferablePatternRequirements(targetAgent),
     capability_plan_requirements: buildCapabilityPlanRequirements(targetAgent),
@@ -390,14 +657,23 @@ function referenceDesignMarkdown(targetAgent: MinimalTargetAgent): string[] {
   if (sourceRefs.length === 0 && patternNotes.length === 0 && patternPacketRefs.length === 0) {
     return [];
   }
+  const refs = referenceDesignObjectRefs(targetAgent);
   return [
     '## Reference Design Inputs',
     '',
     'OMA recorded these external refs as design inspiration only; they are not target-domain truth, owner acceptance, or runtime dependencies.',
+    ...(refs
+      ? [
+          `- ReferenceDesignPacket: ${refs.reference_design_packet_ref}`,
+          `- TransferMap: ${refs.transfer_map_ref}`,
+          `- AgentPackPlan: ${refs.agent_pack_plan_ref}`,
+        ]
+      : []),
     ...sourceRefs.map((ref) => `- Source ref: ${ref}`),
     ...patternNotes.map((note) => `- Transfer pattern: ${note}`),
     ...patternPacketRefs.map((ref) => `- Pattern packet ref: ${ref}`),
-    'Extract transferable architecture, workflow, rubric, handoff, evaluation, and failure-taxonomy patterns. Do not copy external runtime ownership, private data, or domain verdicts.',
+    'Extract transferable architecture, workflow, rubric, handoff, evaluation, and failure-taxonomy patterns into ReferenceDesignPacket -> TransferMap -> AgentPackPlan before choosing or applying an OPL profile.',
+    'Do not copy external runtime ownership, private data, domain verdicts, owner receipts, or promotion authority.',
     '',
   ];
 }
@@ -417,6 +693,9 @@ function profileSelectionMarkdown(targetAgent: MinimalTargetAgent): string[] {
     `- Rationale: ${receipt.profile_selection_rationale}`,
     ...((receipt.profile_requirement_refs as string[]).map((ref) => `- Required capability: ${ref}`)),
     ...(sourceReceipt ? [`- Source-derived design receipt: ${sourceReceipt.receipt_ref}`] : []),
+    ...(receipt.reference_design_packet_ref ? [`- ReferenceDesignPacket ref: ${receipt.reference_design_packet_ref}`] : []),
+    ...(receipt.transfer_map_ref ? [`- TransferMap ref: ${receipt.transfer_map_ref}`] : []),
+    ...(receipt.agent_pack_plan_ref ? [`- AgentPackPlan ref: ${receipt.agent_pack_plan_ref}`] : []),
     ...((receipt.reference_design_pattern_packet_refs as string[]).map((ref) => `- Pattern packet ref: ${ref}`)),
     ...((receipt.transferable_pattern_requirements as string[]).map((requirement) =>
       `- Transferable pattern requirement: ${requirement}`
@@ -683,6 +962,9 @@ function buildTargetAgentPrimarySkillCapability(targetAgent: MinimalTargetAgent)
     ...(selectedProfileRefs[0] ? { profile_ref: selectedProfileRefs[0] } : {}),
     profile_selection_receipt_ref: 'contracts/capability_map.json#/profile_selection_receipt',
     source_derived_design_receipt_ref: profileSelectionReceipt.source_derived_design_receipt_ref,
+    reference_design_packet_ref: profileSelectionReceipt.reference_design_packet_ref,
+    transfer_map_ref: profileSelectionReceipt.transfer_map_ref,
+    agent_pack_plan_ref: profileSelectionReceipt.agent_pack_plan_ref,
     reference_design_pattern_packet_refs: profileSelectionReceipt.reference_design_pattern_packet_refs,
     transferable_pattern_requirements: profileSelectionReceipt.transferable_pattern_requirements,
     capability_plan_requirements: profileSelectionReceipt.capability_plan_requirements,
@@ -747,6 +1029,18 @@ export function writeTargetAgentCapabilityMap(targetAgentDir: string, targetAgen
     profile_requirements: profileSelectionReceipt.profile_requirements,
     profile_selection_receipt: profileSelectionReceipt,
     source_derived_design_receipt: profileSelectionReceipt.source_derived_design_receipt,
+    reference_design_packet: profileSelectionReceipt.reference_design_packet,
+    reference_design_packet_ref: profileSelectionReceipt.reference_design_packet_ref,
+    reference_design_packet_refs: profileSelectionReceipt.reference_design_packet_ref
+      ? [profileSelectionReceipt.reference_design_packet_ref]
+      : [],
+    transfer_map: profileSelectionReceipt.transfer_map,
+    transfer_map_ref: profileSelectionReceipt.transfer_map_ref,
+    transfer_map_refs: profileSelectionReceipt.transfer_map_ref ? [profileSelectionReceipt.transfer_map_ref] : [],
+    agent_pack_plan: profileSelectionReceipt.agent_pack_plan,
+    agent_pack_plan_ref: profileSelectionReceipt.agent_pack_plan_ref,
+    agent_pack_plan_refs: profileSelectionReceipt.agent_pack_plan_ref ? [profileSelectionReceipt.agent_pack_plan_ref] : [],
+    reference_design_source_refs: stringList(targetAgent.reference_design_source_refs),
     reference_design_pattern_packet_refs: profileSelectionReceipt.reference_design_pattern_packet_refs,
     transferable_pattern_requirements: profileSelectionReceipt.transferable_pattern_requirements,
     capability_plan_requirements: profileSelectionReceipt.capability_plan_requirements,
@@ -760,6 +1054,11 @@ export function writeTargetAgentCapabilityMap(targetAgentDir: string, targetAgen
       source_derived_design_receipt_refs: profileSelectionReceipt.source_derived_design_receipt_ref
         ? [profileSelectionReceipt.source_derived_design_receipt_ref]
         : [],
+      reference_design_packet_refs: profileSelectionReceipt.reference_design_packet_ref
+        ? [profileSelectionReceipt.reference_design_packet_ref]
+        : [],
+      transfer_map_refs: profileSelectionReceipt.transfer_map_ref ? [profileSelectionReceipt.transfer_map_ref] : [],
+      agent_pack_plan_refs: profileSelectionReceipt.agent_pack_plan_ref ? [profileSelectionReceipt.agent_pack_plan_ref] : [],
       reference_design_pattern_packet_refs: profileSelectionReceipt.reference_design_pattern_packet_refs,
       primary_skill_refs: ['contracts/capability_map.json#/primary_skill_capability'],
     },
