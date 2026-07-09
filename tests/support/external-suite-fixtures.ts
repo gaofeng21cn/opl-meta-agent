@@ -9,7 +9,7 @@ import {
 import type { JsonObject } from '../../scripts/lib/domain-pack.ts';
 import { oplBin, writeJsonFile } from './contracts.ts';
 
-export const targetPatchLoopMachineRefFields = [
+export const targetPatchLoopProjectionRequiredFields = [
   'blocked_suite_result_ref',
   'developer_patch_work_order_ref',
   'patch_traceability_matrix_ref',
@@ -21,9 +21,6 @@ export const targetPatchLoopMachineRefFields = [
   'patch_absorption_ref',
   'worktree_cleanup_ref',
   'agent_lab_re_evaluation_ref',
-];
-
-export const targetPatchLoopReviewerProjectionFields = [
   'ai_reviewer_evaluation_ref',
   'ai_reviewer_evidence.source_refs',
   'ai_reviewer_evidence.direct_evidence_refs',
@@ -33,11 +30,6 @@ export const targetPatchLoopReviewerProjectionFields = [
   'review_provenance',
   'reviewer_pool_refs',
   'work_order_completeness.reviewer_refs',
-];
-
-export const targetPatchLoopProjectionRequiredFields = [
-  ...targetPatchLoopMachineRefFields,
-  ...targetPatchLoopReviewerProjectionFields,
 ];
 
 const refsOnlySuiteAuthorityBoundary = (): JsonObject => ({
@@ -54,6 +46,19 @@ const localRefsOnlyEnvironment = (workspaceLocatorRef: string): JsonObject => ({
   network_policy: 'domain_owner_policy',
 });
 
+const medicalRubricGapRefs = [
+  'rubric-gap:mas/002/hdl-harmonization-and-sensitivity',
+  'rubric-gap:mas/002/internal-quality-language-purge',
+];
+
+const efficiencyRefs = {
+  qualityFloor: 'quality-floor:target-agent/current-behavior-gate',
+  latency: 'latency-baseline:target-agent/p50-p95-before',
+  usageCost: 'usage-cost:target-agent/token-cost-before',
+  cacheReuse: 'cache-reuse:target-agent/reused-prefix-cache',
+  verification: 'target-verification:target-agent/efficiency-redrive',
+};
+
 function stageCompletionPolicy(domainId: string, taskFamily: string): JsonObject {
   return {
     surface_kind: 'domain_stage_completion_policy',
@@ -63,19 +68,8 @@ function stageCompletionPolicy(domainId: string, taskFamily: string): JsonObject
     provider_completion_is_domain_completion: false,
     opl_content_judgment_allowed: false,
     next_stage_transition_owner: 'opl_runtime',
-    required_closeout_outcomes: [
-      'completed_and_continue',
-      'completed_and_wait_owner',
-      'route_back',
-      'blocked',
-      'rejected',
-    ],
-    accepted_closeout_ref_fields: [
-      'owner_receipt_ref',
-      'typed_blocker_ref',
-      'human_gate_ref',
-      'route_back_ref',
-    ],
+    required_closeout_outcomes: ['completed_and_continue', 'completed_and_wait_owner', 'route_back', 'blocked', 'rejected'],
+    accepted_closeout_ref_fields: ['owner_receipt_ref', 'typed_blocker_ref', 'human_gate_ref', 'route_back_ref'],
     authority_boundary: {
       opl_can_decide_domain_completion: false,
       provider_completion_counts_as_stage_complete: false,
@@ -152,10 +146,7 @@ export function writeAiReviewerEvaluation(filePath: string, overrides: JsonObjec
       'Map HDL unit harmonization to the prediction model quality contract.',
       'Purge internal-quality language from manuscript writing prompts and reviewer rubrics.',
     ],
-    source_refs: [
-      'rubric-gap:mas/002/hdl-harmonization-and-sensitivity',
-      'rubric-gap:mas/002/internal-quality-language-purge',
-    ],
+    source_refs: [...medicalRubricGapRefs],
     direct_evidence_refs: ['paper/evidence_ledger.json'],
     verdict: 'blocked_requires_developer_patch',
     predicted_impact: 'The patch should convert reviewer-observed quality gaps into target-owned source refs without moving publication authority out of MAS.',
@@ -202,10 +193,7 @@ function blockedMedicalTask(overrides: JsonObject = {}): JsonObject {
       tool_call_refs: ['tool-call:mas/publication-eval-read'],
       artifact_refs: ['artifacts/publication_eval/latest.json'],
       receipt_refs: ['artifacts/publication_eval/latest.json'],
-      repair_refs: [
-        'rubric-gap:mas/002/hdl-harmonization-and-sensitivity',
-        'rubric-gap:mas/002/internal-quality-language-purge',
-      ],
+      repair_refs: [...medicalRubricGapRefs],
       trace_refs: ['trace-ref:agent-lab/mas-high-quality-medical-manuscript'],
     },
     scorecard: {
@@ -222,10 +210,7 @@ function blockedMedicalTask(overrides: JsonObject = {}): JsonObject {
       candidate_ref: 'improvement-candidate:mas/002/high-quality-medical-manuscript-rubric-gap',
       candidate_kind: 'rubric_gap',
       target_ref: 'rubric-gap-ref:mas/high-quality-medical-manuscript-ai-reviewer',
-      evidence_refs: [
-        'rubric-gap:mas/002/hdl-harmonization-and-sensitivity',
-        'rubric-gap:mas/002/internal-quality-language-purge',
-      ],
+      evidence_refs: [...medicalRubricGapRefs],
       allowed_change_scope: 'branch_only',
       promotion_gate_ref: 'promotion-gate:mas/002/high-quality-medical-manuscript',
     },
@@ -345,7 +330,7 @@ export function writeEfficiencyTargetImprovementPolicy(targetAgentDir: string): 
       ],
       capability_id: 'target-agent.efficiency-runtime',
       canonical_paths: ['src/runtime/efficiency-policy.ts'],
-      verification_refs: ['target-verification:target-agent/efficiency-redrive'],
+      verification_refs: [efficiencyRefs.verification],
       forbidden_target_paths_or_surfaces: ['target quality verdict bodies', 'target export authority'],
       authority_boundary: { can_write_target_owner_receipt_body: false },
       change_ref_mappings: [
@@ -387,6 +372,7 @@ export function writeOwnerReceiptAiReviewerEvaluation(filePath: string, override
 
 function buildOwnerReceiptSuite(domainId: string, passed: boolean): JsonObject {
   const receiptRef = `owner-receipt:${domainId}/live-acceptance`;
+  const taskFamily = domainId === 'external-agent' ? 'owner_receipt_coordination' : 'owner_receipt_result_consumption';
   return {
     suite_id: `${domainId}-suite:owner-receipt-consumption`,
     suite_kind: 'agent_lab_external_suite',
@@ -395,14 +381,12 @@ function buildOwnerReceiptSuite(domainId: string, passed: boolean): JsonObject {
       {
         task_id: `agent-lab-task:${domainId}/owner-receipt-consumption`,
         domain_id: domainId,
-        task_family: domainId === 'external-agent' ? 'owner_receipt_coordination' : 'owner_receipt_result_consumption',
+        task_family: taskFamily,
         environment: localRefsOnlyEnvironment(`workspace-locator:${domainId}/owner-receipt`),
         instructions_ref: `instructions:${domainId}/owner-receipt-consumption`,
         agent_entry_ref: `domain-agent-entry:${domainId}`,
         stage_refs: [`stage:${domainId}/owner-review`],
-        stage_completion_policy: stageCompletionPolicy(domainId, domainId === 'external-agent'
-          ? 'owner_receipt_coordination'
-          : 'owner_receipt_result_consumption'),
+        stage_completion_policy: stageCompletionPolicy(domainId, taskFamily),
         oracle_refs: [`oracle:${domainId}/owner-receipt-boundary`],
         scorer_refs: [`scorer:${domainId}/owner-receipt-ref-projection`],
         recovery_probes: [
@@ -486,7 +470,7 @@ export function buildBlockedEfficiencySuite(options: { includeHandoffProjection?
             probe_kind: 'efficiency_non_regression_redrive',
             expected_status: 'passed',
             observed_status: 'blocked',
-            source_refs: ['target-verification:target-agent/efficiency-redrive'],
+            source_refs: [efficiencyRefs.verification],
           },
         ],
         trajectory: {
@@ -496,7 +480,7 @@ export function buildBlockedEfficiencySuite(options: { includeHandoffProjection?
           stage_attempt_refs: ['stage-attempt:target-agent/efficiency-review'],
           tool_call_refs: ['tool-call:target-agent/efficiency-evidence-read'],
           artifact_refs: ['artifact-ref:target-agent/latency-baseline'],
-          receipt_refs: ['target-verification:target-agent/efficiency-redrive'],
+          receipt_refs: [efficiencyRefs.verification],
           repair_refs: ['efficiency-gap:target-agent/cache-reuse-missing'],
           trace_refs: ['trace-ref:target-agent/efficiency-non-regression'],
         },
@@ -506,13 +490,7 @@ export function buildBlockedEfficiencySuite(options: { includeHandoffProjection?
           opl_scorecard_role: 'scorecard_ref_projection_only',
           passed: false,
           metric_refs: ['metric-ref:target-agent/usage-cost-regression'],
-          evidence_refs: [
-            'quality-floor:target-agent/current-behavior-gate',
-            'latency-baseline:target-agent/p50-p95-before',
-            'usage-cost:target-agent/token-cost-before',
-            'cache-reuse:target-agent/reused-prefix-cache',
-            'target-verification:target-agent/efficiency-redrive',
-          ],
+          evidence_refs: [efficiencyRefs.qualityFloor, efficiencyRefs.latency, efficiencyRefs.usageCost, efficiencyRefs.cacheReuse, efficiencyRefs.verification],
           review_refs: ['review-ref:target-agent/efficiency-reviewer'],
           quality_gate_refs: ['quality-gate:target-agent/owner-quality-floor'],
         },
@@ -521,11 +499,11 @@ export function buildBlockedEfficiencySuite(options: { includeHandoffProjection?
           candidate_kind: 'efficiency_non_regression',
           evidence_refs: ['efficiency-gap:target-agent/cache-reuse-missing'],
           efficiency_evidence_refs: {
-            quality_floor_refs: ['quality-floor:target-agent/current-behavior-gate'],
-            latency_baseline_refs: ['latency-baseline:target-agent/p50-p95-before'],
-            usage_cost_refs: ['usage-cost:target-agent/token-cost-before'],
-            cache_reuse_refs: ['cache-reuse:target-agent/reused-prefix-cache'],
-            target_verification_refs: ['target-verification:target-agent/efficiency-redrive'],
+            quality_floor_refs: [efficiencyRefs.qualityFloor],
+            latency_baseline_refs: [efficiencyRefs.latency],
+            usage_cost_refs: [efficiencyRefs.usageCost],
+            cache_reuse_refs: [efficiencyRefs.cacheReuse],
+            target_verification_refs: [efficiencyRefs.verification],
           },
           allowed_change_scope: 'branch_only',
           promotion_gate_ref: 'promotion-gate:target-agent/efficiency',
@@ -533,7 +511,7 @@ export function buildBlockedEfficiencySuite(options: { includeHandoffProjection?
         promotion_gate: {
           gate_ref: 'promotion-gate:target-agent/efficiency',
           gate_status: 'blocked',
-          required_refs: ['quality-floor:target-agent/current-behavior-gate'],
+          required_refs: [efficiencyRefs.qualityFloor],
           regression_suite_refs: ['regression-suite:target-agent/efficiency-non-regression'],
           no_forbidden_write_proof_refs: ['no-forbidden-write:target-agent/efficiency'],
         },
@@ -562,16 +540,8 @@ export function writeEfficiencyReviewerEvaluation(filePath: string, overrides: J
   return writeAiReviewerEvaluation(filePath, {
     critique: 'The suite shows an efficiency regression candidate with latency, usage cost, cache reuse, target verification, and preserved quality-floor evidence.',
     suggestions: ['Generate a generic target-agent efficiency work order that preserves the quality floor.'],
-    source_refs: [
-      'latency-baseline:target-agent/p50-p95-before',
-      'usage-cost:target-agent/token-cost-before',
-      'cache-reuse:target-agent/reused-prefix-cache',
-      'quality-floor:target-agent/current-behavior-gate',
-    ],
-    direct_evidence_refs: [
-      'quality-floor:target-agent/current-behavior-gate',
-      'target-verification:target-agent/efficiency-redrive',
-    ],
+    source_refs: [efficiencyRefs.latency, efficiencyRefs.usageCost, efficiencyRefs.cacheReuse, efficiencyRefs.qualityFloor],
+    direct_evidence_refs: [efficiencyRefs.qualityFloor, efficiencyRefs.verification],
     predicted_impact: 'The target agent can reduce latency and usage cost while proving quality-floor non-regression and cache reuse.',
     ...overrides,
   });
