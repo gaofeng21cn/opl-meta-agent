@@ -41,8 +41,9 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 
 - 决策：OMA stage 设计遵循 AI-first / contract-light。stage 主提示词负责 top-level stage graph、stage 大小和 closeout shape；repo-local professional skill 只在 stage 内需要专家方法判断时介入。一个 top-level stage 应只承载一个主要开放语义判断；确定性生成、校验、文件物化、helper receipt 和 readback 留在该 stage 内。多个独立开放判断需要不同 owner、知识源、quality gate、handoff recipient 或失败路由时才拆成不同 top-level stage。
 - 决策：刻意保留的大 stage 必须暴露 typed subpacket 或 gate boundary，例如 `StageDecompositionSubpacketSet`。这些 subpacket 只证明 stage 内部认知步骤、refs、顺序、物化边界和 fail-closed checks，不升级成 OPL runtime stage，也不替代目标 stage graph 的语义拆分判断。
+- 决策：OMA stage admission 采用 Progress-First 修正口径。validator、schema 或 materializer 发现的 format、projection、ref、stage input、`requires` 或 expected receipt 缺口，如果可由有效设计对象、stage graph 和 authority refs 机械推导，应在同一 stage materialization/admission 内有界修正并继续推进；不能直接变成 terminal blocker，也不能拆成新的 runtime stage 或私有控制面。核心语义对象缺失、source/evidence 缺失、owner 决策缺失、authority 越权、forbidden claim、target truth 写入或无法推导的设计缺口仍必须 fail closed 到 route-back、typed blocker 或 human gate。
 - 理由：OMA 的核心价值是 agent-building reasoning。若把 stage 大小交给 schema、validator 或脚本默认图，系统会把开放判断退化成固定流程；若把多个开放判断塞进一个大 stage，又会让某一步指令遵循失败污染整段产出。
-- 影响：contracts、schema、validator 和 tests 只记录已选 stage graph、refs、subpacket chain、authority boundary 和 fail-closed 条件；它们不能作为 stage-size selector。OMA 不新增 generic runtime、scheduler、queue 或 generated surface 来解决 stage 大小问题。
+- 影响：contracts、schema、validator 和 tests 只记录已选 stage graph、refs、subpacket chain、authority boundary、admission repair boundary 和 fail-closed 条件；它们不能作为 stage-size selector。OMA 不新增 generic runtime、scheduler、queue 或 generated surface 来解决 stage 大小或可修格式缺口问题。
 
 ### Target agent repo 目录标准归 OPL scaffold，OMA 只写领域语义
 
