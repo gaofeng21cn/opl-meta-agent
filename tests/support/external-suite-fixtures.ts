@@ -1,10 +1,13 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import {
   parseImproveFromAgentLabSuiteArgs,
   runImproveFromAgentLabSuite,
 } from '../../scripts/improve-from-agent-lab-suite.ts';
 import type { JsonObject } from '../../scripts/lib/domain-pack.ts';
-import { writeJsonFile } from './contracts.ts';
+import { oplBin, writeJsonFile } from './contracts.ts';
 
 export const targetPatchLoopMachineRefFields = [
   'blocked_suite_result_ref',
@@ -82,6 +85,57 @@ function stageCompletionPolicy(domainId: string, taskFamily: string): JsonObject
 
 export function runImproveArgs(args: string[]): JsonObject {
   return runImproveFromAgentLabSuite(parseImproveFromAgentLabSuiteArgs(args));
+}
+
+export function withOutputRoot(prefix: string, run: (outputRoot: string) => void): void {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+  try {
+    run(outputRoot);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+}
+
+export function writeTargetDescriptor(
+  targetAgentDir: string,
+  domainId = 'med-autoscience',
+  deliveryDomain?: string,
+): void {
+  const domainLabel = domainId === 'med-autoscience' ? 'MedAutoScience'
+    : domainId === 'target-agent' ? 'Target Agent'
+      : domainId === 'external-agent' ? 'External Agent' : domainId;
+  writeJsonFile(path.join(targetAgentDir, 'contracts/domain_descriptor.json'), {
+    domain_id: domainId,
+    domain_label: domainLabel,
+    delivery_domain: deliveryDomain ?? (domainId === 'med-autoscience'
+      ? 'medical_research'
+      : 'opl_compatible_target_agent'),
+  });
+}
+
+export function runImproveFromSuite(args: {
+  suitePath: string;
+  targetAgentDir: string;
+  outputRoot: string;
+  reviewerEvaluationPath?: string;
+  feedbackRef?: string;
+}): JsonObject {
+  return runImproveArgs([
+    '--suite',
+    args.suitePath,
+    '--target-agent-dir',
+    args.targetAgentDir,
+    '--output-dir',
+    args.outputRoot,
+    ...(args.feedbackRef ? ['--feedback-ref', args.feedbackRef] : []),
+    ...(args.reviewerEvaluationPath ? ['--ai-reviewer-evaluation', args.reviewerEvaluationPath] : []),
+    '--opl-bin',
+    oplBin,
+  ]);
+}
+
+export function assertIncludesAll(actual: string[], expected: string[], label: string): void {
+  expected.forEach((ref) => assert.ok(actual.includes(ref), `${label} missing ${ref}`));
 }
 
 export function writeAiReviewerEvaluation(filePath: string, overrides: JsonObject = {}): JsonObject {

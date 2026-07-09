@@ -1,61 +1,21 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import type { JsonObject } from './support/contracts.ts';
 import {
-  oplBin,
   writeJsonFile as writeJson,
   readJsonFile as readJson,
 } from './support/contracts.ts';
 import test from 'node:test';
 import {
-  runImproveArgs,
+  assertIncludesAll,
+  runImproveFromSuite,
+  withOutputRoot,
+  writeTargetDescriptor,
   writeAiReviewerEvaluation,
   buildBlockedMedicalManuscriptSuite,
   buildReviewerRevisionFeedbackSuite,
   writeMedicalTargetImprovementPolicy,
 } from './support/external-suite-fixtures.ts';
-
-function withOutputRoot(prefix: string, run: (outputRoot: string) => void): void {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
-  try {
-    run(outputRoot);
-  } finally {
-    fs.rmSync(outputRoot, { recursive: true, force: true });
-  }
-}
-
-function writeTargetDescriptor(targetAgentDir: string, domainId = 'med-autoscience'): void {
-  writeJson(path.join(targetAgentDir, 'contracts/domain_descriptor.json'), {
-    domain_id: domainId,
-    domain_label: domainId === 'med-autoscience' ? 'MedAutoScience' : 'Target Agent',
-    delivery_domain: domainId === 'med-autoscience' ? 'medical_research' : 'opl_compatible_target_agent',
-  });
-}
-
-function improveWithReviewer(args: {
-  suitePath: string;
-  targetAgentDir: string;
-  outputRoot: string;
-  reviewerEvaluationPath: string;
-  feedbackRef: string;
-}): JsonObject {
-  return runImproveArgs([
-    '--suite',
-    args.suitePath,
-    '--target-agent-dir',
-    args.targetAgentDir,
-    '--output-dir',
-    args.outputRoot,
-    '--feedback-ref',
-    args.feedbackRef,
-    '--ai-reviewer-evaluation',
-    args.reviewerEvaluationPath,
-    '--opl-bin',
-    oplBin,
-  ]);
-}
 
 function assertWorkOrderBoundary(workOrder: JsonObject): void {
   assert.equal(workOrder.surface_kind, 'opl_meta_agent_developer_patch_work_order');
@@ -164,7 +124,7 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
     writeAiReviewerEvaluation(reviewerEvaluationPath);
 
-    const payload = improveWithReviewer({
+    const payload = runImproveFromSuite({
       suitePath,
       targetAgentDir,
       outputRoot,
@@ -193,10 +153,12 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     assert.equal(workOrder.status, 'ready_for_target_agent_source_patch');
     assertWorkOrderBoundary(workOrder);
     assert.equal(workOrder.target_owner_route.owner_route_ref, 'target-agent-owner:med-autoscience');
-    assert.ok(workOrder.source_external_suite_intake.accepted_input_profiles.includes('mas_feedback_agent_lab_external_suite'));
-    assert.ok(workOrder.source_external_suite_intake.accepted_input_profiles.includes('high_quality_medical_manuscript_feedback'));
-    assert.ok(workOrder.allowed_editable_surfaces.includes('quality_contract_ref'));
-    assert.ok(workOrder.required_verification_refs.includes('target_repo_test_receipt'));
+    assertIncludesAll(workOrder.source_external_suite_intake.accepted_input_profiles as string[], [
+      'mas_feedback_agent_lab_external_suite',
+      'high_quality_medical_manuscript_feedback',
+    ], 'accepted_input_profiles');
+    assertIncludesAll(workOrder.allowed_editable_surfaces as string[], ['quality_contract_ref'], 'allowed_editable_surfaces');
+    assertIncludesAll(workOrder.required_verification_refs as string[], ['target_repo_test_receipt'], 'required_verification_refs');
     assert.equal(workOrder.work_order_completeness.patch_traceability.traceability_status, 'gap_to_patch_refs_mapped');
     assert.equal(workOrder.version_management.absorb_back_required, true);
     assert.ok((workOrder.patch_traceability_matrix as JsonObject[])
@@ -230,7 +192,7 @@ test('generic target-agent feedback external suite is accepted without MAS-only 
       version_refs: ['version:target-agent/current-head'],
     });
 
-    const payload = improveWithReviewer({
+    const payload = runImproveFromSuite({
       suitePath,
       targetAgentDir,
       outputRoot,
@@ -275,7 +237,7 @@ test('MAS reviewer_revision feedback external suite is accepted as developer wor
       ],
     });
 
-    const payload = improveWithReviewer({
+    const payload = runImproveFromSuite({
       suitePath,
       targetAgentDir,
       outputRoot,
@@ -286,11 +248,17 @@ test('MAS reviewer_revision feedback external suite is accepted as developer wor
     assert.equal(payload.status, 'blocked_with_developer_patch_work_order');
     const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
     assert.equal(workOrder.source_agent_lab_result_ref, workOrder.work_order_currentness.eval_result_ref);
-    assert.ok(workOrder.source_external_suite_intake.accepted_input_profiles.includes('mas_feedback_agent_lab_external_suite'));
-    assert.ok(workOrder.source_external_suite_intake.accepted_input_profiles.includes('reviewer_revision_feedback'));
-    assert.ok(workOrder.source_external_suite_intake.task_families.includes('reviewer_revision_feedback_self_evolution'));
-    assert.ok(workOrder.reviewer_evidence_refs.includes('reviewer-evidence:mas/002/reviewer_revision/response-matrix'));
-    assert.ok(workOrder.reviewer_evidence_refs.includes('paper/review/reviewer_revision_ledger.json'));
+    assertIncludesAll(workOrder.source_external_suite_intake.accepted_input_profiles as string[], [
+      'mas_feedback_agent_lab_external_suite',
+      'reviewer_revision_feedback',
+    ], 'accepted_input_profiles');
+    assertIncludesAll(workOrder.source_external_suite_intake.task_families as string[], [
+      'reviewer_revision_feedback_self_evolution',
+    ], 'task_families');
+    assertIncludesAll(workOrder.reviewer_evidence_refs as string[], [
+      'reviewer-evidence:mas/002/reviewer_revision/response-matrix',
+      'paper/review/reviewer_revision_ledger.json',
+    ], 'reviewer_evidence_refs');
     assertWorkOrderBoundary(workOrder);
     assert.equal(workOrder.authority_boundary.can_authorize_target_domain_quality_or_export, false);
     assert.equal(workOrder.target_progress_accounting.progress_delta_classification, 'mixed');

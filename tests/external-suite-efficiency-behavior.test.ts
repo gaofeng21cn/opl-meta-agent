@@ -1,30 +1,26 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import type { JsonObject } from './support/contracts.ts';
 import {
-  oplBin,
   writeJsonFile as writeJson,
   readJsonFile as readJson,
 } from './support/contracts.ts';
 import test from 'node:test';
 import {
-  runImproveArgs,
+  assertIncludesAll,
   buildBlockedEfficiencySuite,
+  runImproveFromSuite,
+  withOutputRoot,
+  writeTargetDescriptor,
   writeEfficiencyTargetImprovementPolicy,
   writeEfficiencyReviewerEvaluation,
 } from './support/external-suite-fixtures.ts';
 
 test('external suite efficiency evidence is projected into developer work order refs', () => {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-efficiency-suite-'));
-  try {
+  withOutputRoot('opl-meta-agent-efficiency-suite-', (outputRoot) => {
     const targetAgentDir = path.join(outputRoot, 'target-agent');
-    writeJson(path.join(targetAgentDir, 'contracts/domain_descriptor.json'), {
-      domain_id: 'target-agent',
-      domain_label: 'Target Agent',
-      delivery_domain: 'generic_target_agent',
-    });
+    writeTargetDescriptor(targetAgentDir, 'target-agent', 'generic_target_agent');
     writeEfficiencyTargetImprovementPolicy(targetAgentDir);
     writeJson(path.join(targetAgentDir, 'contracts/capability_map.json'), {
       surface_kind: 'target_capability_map',
@@ -49,40 +45,34 @@ test('external suite efficiency evidence is projected into developer work order 
     const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
     writeEfficiencyReviewerEvaluation(reviewerEvaluationPath);
 
-    const payload = runImproveArgs([
-      '--suite',
+    const payload = runImproveFromSuite({
       suitePath,
-      '--target-agent-dir',
       targetAgentDir,
-      '--output-dir',
       outputRoot,
-      '--ai-reviewer-evaluation',
       reviewerEvaluationPath,
-      '--opl-bin',
-      oplBin,
-    ]);
+    });
     assert.equal(payload.status, 'blocked_with_developer_patch_work_order');
     const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
-    [
+    assertIncludesAll(workOrder.efficiency_non_regression_refs.quality_floor_refs as string[], [
       'quality-floor:target-agent/current-behavior-gate',
       'workspace-runtime-ref:review-export:run-1',
-    ].forEach((ref) => assert.ok(workOrder.efficiency_non_regression_refs.quality_floor_refs.includes(ref)));
-    [
+    ], 'quality_floor_refs');
+    assertIncludesAll(workOrder.efficiency_non_regression_refs.latency_baseline_refs as string[], [
       'latency-baseline:target-agent/p50-p95-before',
       'workspace-runtime-ref:route-summary:run-1#/elapsed_ms',
-    ].forEach((ref) => assert.ok(workOrder.efficiency_non_regression_refs.latency_baseline_refs.includes(ref)));
-    [
+    ], 'latency_baseline_refs');
+    assertIncludesAll(workOrder.efficiency_non_regression_refs.usage_cost_refs as string[], [
       'usage-cost:target-agent/token-cost-before',
       'workspace-runtime-ref:route-summary:run-1#/cost_summary',
-    ].forEach((ref) => assert.ok(workOrder.efficiency_non_regression_refs.usage_cost_refs.includes(ref)));
-    [
+    ], 'usage_cost_refs');
+    assertIncludesAll(workOrder.efficiency_non_regression_refs.cache_reuse_refs as string[], [
       'cache-reuse:target-agent/reused-prefix-cache',
       'workspace-runtime-ref:route-artifact:run-1#/render_execution/reused_slide_ids',
-    ].forEach((ref) => assert.ok(workOrder.efficiency_non_regression_refs.cache_reuse_refs.includes(ref)));
-    [
+    ], 'cache_reuse_refs');
+    assertIncludesAll(workOrder.efficiency_non_regression_refs.target_verification_refs as string[], [
       'target-verification:target-agent/efficiency-redrive',
       'workspace-runtime-ref:export-result:run-1',
-    ].forEach((ref) => assert.ok(workOrder.efficiency_non_regression_refs.target_verification_refs.includes(ref)));
+    ], 'target_verification_refs');
     assert.deepEqual(
       workOrder.work_order_completeness.efficiency_non_regression_refs,
       workOrder.efficiency_non_regression_refs,
@@ -91,12 +81,10 @@ test('external suite efficiency evidence is projected into developer work order 
       workOrder.machine_closeout_refs.efficiency_non_regression_refs,
       workOrder.efficiency_non_regression_refs,
     );
-    assert.ok(workOrder.required_verification_refs.includes('target-verification:target-agent/efficiency-redrive'));
-    assert.ok(
-      workOrder.required_verification_refs.includes(
-        'target-verification:target-agent/capability-map-efficiency-redrive',
-      ),
-    );
+    assertIncludesAll(workOrder.required_verification_refs as string[], [
+      'target-verification:target-agent/efficiency-redrive',
+      'target-verification:target-agent/capability-map-efficiency-redrive',
+    ], 'required_verification_refs');
     assert.deepEqual(workOrder.matched_capability_ids, ['target-agent.efficiency-runtime']);
     assert.deepEqual(workOrder.canonical_target_paths, ['src/runtime/efficiency-policy.ts']);
     assert.deepEqual(workOrder.failure_token_registry_refs, ['failure-token-registry:target-agent/efficiency']);
@@ -106,20 +94,13 @@ test('external suite efficiency evidence is projected into developer work order 
     assert.equal(workOrder.owner_closeout_boundary.oma_can_create_target_typed_blocker, false);
     assert.equal(workOrder.implementation_controls.quality_floor_non_regression_required, true);
     assert.equal(workOrder.authority_boundary.can_authorize_target_domain_quality_or_export, false);
-  } finally {
-    fs.rmSync(outputRoot, { recursive: true, force: true });
-  }
+  });
 });
 
 test('external suite efficiency evidence without quality floor fails closed with typed blocker', () => {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-efficiency-blocker-'));
-  try {
+  withOutputRoot('opl-meta-agent-efficiency-blocker-', (outputRoot) => {
     const targetAgentDir = path.join(outputRoot, 'target-agent');
-    writeJson(path.join(targetAgentDir, 'contracts/domain_descriptor.json'), {
-      domain_id: 'target-agent',
-      domain_label: 'Target Agent',
-      delivery_domain: 'generic_target_agent',
-    });
+    writeTargetDescriptor(targetAgentDir, 'target-agent', 'generic_target_agent');
     const suite = buildBlockedEfficiencySuite({ includeHandoffProjection: false });
     ((suite.tasks as JsonObject[])[0].improvement_candidate as JsonObject).efficiency_evidence_refs = {
       latency_baseline_refs: ['latency-baseline:target-agent/p50-p95-before'],
@@ -138,18 +119,12 @@ test('external suite efficiency evidence without quality floor fails closed with
       direct_evidence_refs: ['target-verification:target-agent/efficiency-redrive'],
     });
 
-    const payload = runImproveArgs([
-      '--suite',
+    const payload = runImproveFromSuite({
       suitePath,
-      '--target-agent-dir',
       targetAgentDir,
-      '--output-dir',
       outputRoot,
-      '--ai-reviewer-evaluation',
       reviewerEvaluationPath,
-      '--opl-bin',
-      oplBin,
-    ]);
+    });
     assert.equal(payload.status, 'blocked_efficiency_quality_floor_missing');
     assert.equal(fs.existsSync(path.join(outputRoot, 'mechanism-patch-proposal.json')), false);
     const typedBlocker = readJson(payload.artifacts.typed_blocker_path);
@@ -160,7 +135,5 @@ test('external suite efficiency evidence without quality floor fails closed with
     ]);
     assert.equal(typedBlocker.authority_boundary.no_executable_work_order_issued, true);
     assert.equal(typedBlocker.authority_boundary.can_authorize_target_quality_or_export, false);
-  } finally {
-    fs.rmSync(outputRoot, { recursive: true, force: true });
-  }
+  });
 });

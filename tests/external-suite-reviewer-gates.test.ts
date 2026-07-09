@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import {
@@ -13,7 +12,9 @@ import {
 } from './support/contracts.ts';
 import test from 'node:test';
 import {
-  runImproveArgs,
+  runImproveFromSuite,
+  withOutputRoot,
+  writeTargetDescriptor,
   writeAiReviewerEvaluation,
   buildBlockedMedicalManuscriptSuite,
   writeMedicalTargetImprovementPolicy,
@@ -61,12 +62,13 @@ function withMedicalFixture(
     reviewerEvaluationPath?: string;
   }) => void,
 ): void {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
-  try {
+  withOutputRoot(prefix, (outputRoot) => {
     const targetAgentDir = path.join(outputRoot, 'med-autoscience');
-    if (options.descriptor !== 'none') {
+    const descriptor = options.descriptor ?? 'domain';
+    if (descriptor === 'domain') {
+      writeTargetDescriptor(targetAgentDir);
+    } else if (descriptor === 'missing-domain-id') {
       writeJson(path.join(targetAgentDir, 'contracts/domain_descriptor.json'), {
-        ...(options.descriptor === 'missing-domain-id' ? {} : { domain_id: 'med-autoscience' }),
         domain_label: 'MedAutoScience',
         delivery_domain: 'medical_research',
       });
@@ -84,9 +86,7 @@ function withMedicalFixture(
       writeAiReviewerEvaluation(reviewerEvaluationPath, reviewerEvaluation);
     }
     run({ outputRoot, targetAgentDir, suitePath, reviewerEvaluationPath });
-  } finally {
-    fs.rmSync(outputRoot, { recursive: true, force: true });
-  }
+  });
 }
 
 const failureCases: Array<{
@@ -143,8 +143,7 @@ failureCases.forEach((testCase) => {
 });
 
 test('external suite improvement accepts capability pack target descriptor', () => {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-capability-pack-target-'));
-  try {
+  withOutputRoot('opl-meta-agent-capability-pack-target-', (outputRoot) => {
     const targetAgentDir = path.join(outputRoot, 'mas-scholar-skills');
     writeJson(path.join(targetAgentDir, 'contracts/capability_pack_descriptor.json'), {
       surface_kind: 'capability_pack_descriptor',
@@ -172,38 +171,24 @@ test('external suite improvement accepts capability pack target descriptor', () 
       source_refs: ['rubric-gap:medical_journal_prose_quality'],
     });
 
-    const payload = runImproveArgs([
-      '--suite',
+    const payload = runImproveFromSuite({
       suitePath,
-      '--target-agent-dir',
       targetAgentDir,
-      '--output-dir',
       outputRoot,
-      '--feedback-ref',
-      'manual-review:capability-pack/medical-writing',
-      '--ai-reviewer-evaluation',
+      feedbackRef: 'manual-review:capability-pack/medical-writing',
       reviewerEvaluationPath,
-      '--opl-bin',
-      oplBin,
-    ]);
+    });
 
     const workOrder = payload.learning_loop.developer_patch_work_order;
     assert.equal(workOrder.target_agent.domain_id, 'mas-scholar-skills');
     assert.ok(workOrder.proposed_change_refs.includes('professional_skill_medical_manuscript_writing'));
-  } finally {
-    fs.rmSync(outputRoot, { recursive: true, force: true });
-  }
+  });
 });
 
 test('external suite improvement uses capability map as patch-target source when handoff duplicates token refs', () => {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-capability-map-source-'));
-  try {
+  withOutputRoot('opl-meta-agent-capability-map-source-', (outputRoot) => {
     const targetAgentDir = path.join(outputRoot, 'med-autoscience');
-    writeJson(path.join(targetAgentDir, 'contracts/domain_descriptor.json'), {
-      domain_id: 'med-autoscience',
-      domain_label: 'MedAutoScience',
-      delivery_domain: 'medical_research',
-    });
+    writeTargetDescriptor(targetAgentDir);
     writeJson(path.join(targetAgentDir, 'contracts/agent_lab_handoff.json'), {
       surface_kind: 'domain_agent_lab_production_evidence_handoff',
       domain_id: 'med-autoscience',
@@ -250,20 +235,13 @@ test('external suite improvement uses capability map as patch-target source when
       source_refs: ['rubric-gap:mas/002/medical_journal_prose_quality'],
     });
 
-    const payload = runImproveArgs([
-      '--suite',
+    const payload = runImproveFromSuite({
       suitePath,
-      '--target-agent-dir',
       targetAgentDir,
-      '--output-dir',
       outputRoot,
-      '--feedback-ref',
-      'manual-review:capability-map-source-of-truth',
-      '--ai-reviewer-evaluation',
+      feedbackRef: 'manual-review:capability-map-source-of-truth',
       reviewerEvaluationPath,
-      '--opl-bin',
-      oplBin,
-    ]);
+    });
 
     const candidate = payload.learning_loop.target_capability_improvement_candidate;
     assert.deepEqual(candidate.proposed_change_refs, ['professional_skill_medical_journal_prose_quality']);
@@ -277,9 +255,7 @@ test('external suite improvement uses capability map as patch-target source when
     const workOrder = readJson(path.join(outputRoot, 'developer-patch-work-order.json'));
     assert.equal(workOrder.proposed_change_refs.includes('legacy_handoff_patch_ref:must_not_be_used'), false);
     assert.deepEqual(workOrder.target_repo_file_hints, ['skills/medical-journal-prose-quality/SKILL.md']);
-  } finally {
-    fs.rmSync(outputRoot, { recursive: true, force: true });
-  }
+  });
 });
 
 test('external blocked suite writes typed blocker when target-owned improvement policy is missing', () => {

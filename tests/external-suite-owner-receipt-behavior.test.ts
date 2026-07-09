@@ -1,15 +1,14 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import {
-  oplBin,
   writeJsonFile as writeJson,
   readJsonFile as readJson,
 } from './support/contracts.ts';
 import test from 'node:test';
 import {
-  runImproveArgs,
+  runImproveFromSuite,
+  withOutputRoot,
+  writeTargetDescriptor,
   writeOwnerReceiptAiReviewerEvaluation,
   buildPassedTargetAgentOwnerReceiptSuite,
   buildPassedGenericOwnerReceiptSuite,
@@ -20,20 +19,13 @@ function withTargetDescriptor(
   domainId: string,
   run: (fixture: { outputRoot: string; targetAgentDir: string; reviewerEvaluationPath: string; suitePath: string }) => void,
 ): void {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
-  try {
+  withOutputRoot(prefix, (outputRoot) => {
     const targetAgentDir = path.join(outputRoot, domainId);
-    writeJson(path.join(targetAgentDir, 'contracts/domain_descriptor.json'), {
-      domain_id: domainId,
-      domain_label: domainId === 'target-agent' ? 'Target Agent' : 'External Agent',
-      delivery_domain: domainId === 'target-agent' ? 'opl_compatible_target_agent' : 'external_opl_compatible_agent',
-    });
+    writeTargetDescriptor(targetAgentDir, domainId, domainId === 'target-agent' ? undefined : 'external_opl_compatible_agent');
     const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
     const suitePath = path.join(outputRoot, 'owner-receipt-suite.json');
     run({ outputRoot, targetAgentDir, reviewerEvaluationPath, suitePath });
-  } finally {
-    fs.rmSync(outputRoot, { recursive: true, force: true });
-  }
+  });
 }
 
 test('target-agent owner receipt suite becomes a no-patch coordination record', () => {
@@ -41,20 +33,13 @@ test('target-agent owner receipt suite becomes a no-patch coordination record', 
     writeJson(fixture.suitePath, buildPassedTargetAgentOwnerReceiptSuite());
     const reviewerEvaluation = writeOwnerReceiptAiReviewerEvaluation(fixture.reviewerEvaluationPath);
 
-    const payload = runImproveArgs([
-      '--suite',
-      fixture.suitePath,
-      '--target-agent-dir',
-      fixture.targetAgentDir,
-      '--output-dir',
-      fixture.outputRoot,
-      '--feedback-ref',
-      'manual-review:gpt-5.5/target-agent-owner-receipt',
-      '--ai-reviewer-evaluation',
-      fixture.reviewerEvaluationPath,
-      '--opl-bin',
-      oplBin,
-    ]);
+    const payload = runImproveFromSuite({
+      suitePath: fixture.suitePath,
+      targetAgentDir: fixture.targetAgentDir,
+      outputRoot: fixture.outputRoot,
+      feedbackRef: 'manual-review:gpt-5.5/target-agent-owner-receipt',
+      reviewerEvaluationPath: fixture.reviewerEvaluationPath,
+    });
 
     assert.equal(payload.status, 'passed');
     assert.equal(payload.target_agent.domain_id, 'target-agent');
@@ -102,20 +87,13 @@ test('owner-receipt wording in a standard suite stays target-agent generic', () 
       predicted_impact: 'The external owner-receipt projection remains auditable without target source changes.',
     });
 
-    const payload = runImproveArgs([
-      '--suite',
-      fixture.suitePath,
-      '--target-agent-dir',
-      fixture.targetAgentDir,
-      '--output-dir',
-      fixture.outputRoot,
-      '--feedback-ref',
-      'manual-review:gpt-5.5/external-owner-receipt',
-      '--opl-bin',
-      oplBin,
-      '--ai-reviewer-evaluation',
-      fixture.reviewerEvaluationPath,
-    ]);
+    const payload = runImproveFromSuite({
+      suitePath: fixture.suitePath,
+      targetAgentDir: fixture.targetAgentDir,
+      outputRoot: fixture.outputRoot,
+      feedbackRef: 'manual-review:gpt-5.5/external-owner-receipt',
+      reviewerEvaluationPath: fixture.reviewerEvaluationPath,
+    });
     const candidate = payload.learning_loop.target_capability_improvement_candidate;
     assert.equal(payload.target_agent.domain_id, 'external-agent');
     assert.equal(candidate.proposed_change_refs.some((ref: string) => ref.includes(':mag/')), false);
