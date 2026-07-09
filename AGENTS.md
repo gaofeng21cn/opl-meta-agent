@@ -12,6 +12,10 @@
 
 OPL Framework 持有通用 runtime、Agent Lab、queue、stage attempt ledger、provider receipt、observability、optimizer/RL transition refs、scaffold generator、generated interface bundle 和 promotion gate。`opl-meta-agent` 只消费这些能力，不在本仓实现第二套 generic runtime 或私有通用入口包装层。
 
+`agent/primary_skill/SKILL.md` 是标准 OPL Agent 的 canonical rich primary skill；`plugins/<agent>/skills/<agent>/SKILL.md` 是 Codex plugin 安装要求的 materialized full-skill carrier mirror。该关系以 `contracts/capability_map.json` 中的 `carrier_projection_contract` 为机器权威；两者字节相同表示同步健康，不表示应删除重复，mirror 漂移才是问题。
+
+OPL canonical id 固定为 `oma`；`opl-meta-agent`、包名和 plugin slug 只作为 repo/package/carrier locator，不改变 domain canonical id。
+
 ## Skill 目录语义
 
 - `agent/skills/*.md` 是 OMA domain skill declarations：供 `contracts/stage_control_plane.json`、OPL generated surface、stage prompt 或 domain action flow 引用。它不是 Codex-style 专业方法 Skill 目录。
