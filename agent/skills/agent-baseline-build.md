@@ -13,7 +13,7 @@
 - `domain_label`
 - `delivery_domain`
 - `target_brief`
-- `selected_opl_profile_refs`：先消费 OPL profile catalog / readback（例如 `opl foundry evidence-profile inspect --json`），再由 OMA/Codex 明确选择适配目标 agent 的 profile ref。
+- `selected_opl_profile_refs`：先消费 OPL profile selector / readback（`opl profiles select --intent ... --json` 与 `opl profiles inspect ... --json`），再由 OMA/Codex 明确选择适配目标 agent 的 profile ref。
 - `profile_selection_rationale`：来自 OMA profile selection receipt，说明为什么该 OPL 基座 profile 覆盖目标 agent。
 - 可选 `profile_requirement_refs`：来自 OPL profile readback 与 OMA profile selection receipt 的 requirement refs。
 - 可选 `reference_design_source_refs`：用户提供的论文/PDF/repo/产品文档/案例系统等设计参考。
@@ -30,7 +30,7 @@
 
 1. 准备 output workspace，确认不会写入 source checkout 的 runtime artifact。
 2. 从自然语言目标生成稳定的 target-agent descriptor 字段和 candidate agent package 路径。
-3. 调用或消费 OPL profile catalog / readback（例如 `opl foundry evidence-profile inspect --json`），把 selected profile、rationale 和 requirements 写入 target descriptor、capability map 和 stage control plane。
+3. 调用或消费 OPL profile selector / readback（`opl profiles select --intent ... --json` 与 `opl profiles inspect ... --json`），把 selected profile、rationale 和 requirements 写入 target descriptor、capability map 和 stage control plane。
 4. 启动或读取 `stage-decomposition` typed closeout，从其中的 stage graph、action refs、artifact morphology brief、pack file bodies、selected profile refs / profile requirements、independent gate policy、reference design refs / pattern packet refs 和 quality gate declaration 生成 candidate agent package 的标准目录和 contracts。
 5. 写入 prompts、skills、stages、quality gates、knowledge policy，并保留 generated-from-closeout proof。
 6. 确认 target artifact locator 引用 morphology refs，且长书、长 deck、长文、素材型交付或数据型交付的 creative source 是可分片 native source，不是脚本字符串或单一导出物。

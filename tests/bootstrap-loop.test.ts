@@ -148,11 +148,16 @@ test('build-agent-baseline materializes an explicit target package and owner-gat
     );
     assert.ok(
       capabilityMap.profile_selection_receipt.profile_catalog_refs.includes(
-        'opl foundry evidence-profile inspect --json',
+        'opl profiles select --intent <target-agent-intent> --json',
+      ),
+    );
+    assert.ok(
+      capabilityMap.profile_selection_receipt.profile_catalog_refs.includes(
+        'opl profiles inspect evidence_grounded_decision_agent_profile.v1 --json',
       ),
     );
     assert.equal(
-      JSON.stringify(capabilityMap.profile_selection_receipt).includes('opl profiles'),
+      JSON.stringify(capabilityMap.profile_selection_receipt).includes('opl foundry evidence-profile inspect'),
       false,
     );
     assert.ok(

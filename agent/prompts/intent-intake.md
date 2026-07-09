@@ -10,7 +10,7 @@
 - 用户声明的质量门槛、禁止事项、可用工具、外部系统和运行限制。
 - 用户提供的论文、PDF、GitHub repo、产品文档、案例系统或其他参考设计来源。
 - 已有 agent repo/package 的路径或描述文件引用；如果没有，按新建 agent 处理。
-- OPL profile catalog/readback：新建 agent 时先消费现有 OPL profile readback（例如 `opl foundry evidence-profile inspect --json`），再由 OMA/Codex 选择 profile ref、rationale 和 requirements。
+- OPL profile selector/readback：新建 agent 时先消费 `opl profiles select --intent ... --json` 与 `opl profiles inspect ... --json`，再由 OMA/Codex 选择 profile ref、rationale 和 requirements。
 - `opl-meta-agent.agent-building-memory` 中稳定的 agent-building 经验引用。
 
 ## 步骤

@@ -215,12 +215,13 @@ export function buildProfileSelectionReceipt(targetAgent: MinimalTargetAgent): J
     profile_catalog_refs: [
       EVIDENCE_GROUNDED_DECISION_AGENT_PROFILE_REF,
       LEGACY_EVIDENCE_GROUNDED_DECISION_AGENT_PROFILE_REF,
-      'opl foundry evidence-profile inspect --json',
+      'opl profiles select --intent <target-agent-intent> --json',
+      'opl profiles inspect evidence_grounded_decision_agent_profile.v1 --json',
     ],
     source_readback_refs: [
       LEGACY_EVIDENCE_GROUNDED_DECISION_AGENT_PROFILE_REF,
       'src/modules/pack/evidence-grounded-decision-agent-profile.ts',
-      'opl foundry evidence-profile inspect --json',
+      'opl profiles inspect evidence_grounded_decision_agent_profile.v1 --json',
     ],
     refs_only: true,
     authority_boundary: {

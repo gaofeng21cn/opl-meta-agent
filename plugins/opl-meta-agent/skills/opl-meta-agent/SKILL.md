@@ -15,7 +15,7 @@ OMA 是 agent-building domain owner，不是 OPL Framework、Agent Lab、App reg
 
 - 用户说“帮我做一个能交付 X 的智能体”“把这个流程做成 OPL Agent”“为这个 agent 补 baseline / suite / takeover / improvement loop”时，先用 OMA。
 - 先把自然语言收敛成 target agent 的 `domain_id`、`domain_label`、`delivery_domain`、`target_brief`、acceptance criteria、non-goals 和 owner boundary。
-- 新建 target agent 时，必须先消费 OPL Framework 的 profile catalog / readback（例如 `opl foundry evidence-profile inspect --json`），再由 OMA/Codex 明确选择 profile ref 并补齐 stage、capability、knowledge、tool 和 evaluation requirements；不要靠 OMA 记忆猜测 OPL 基座能力。
+- 新建 target agent 时，必须先消费 OPL Framework 的 profile selector / readback（`opl profiles select --intent ... --json` 与 `opl profiles inspect ... --json`），再由 OMA/Codex 明确选择 profile ref 并补齐 stage、capability、knowledge、tool 和 evaluation requirements；不要靠 OMA 记忆猜测 OPL 基座能力。
 - 若用户提供论文、PDF、GitHub repo、产品文档或案例系统作为参考，记录为 `reference_design_source_refs`、`reference_design_pattern_notes` 或由 OPL source ingest / Codex extraction 形成的 `reference_design_pattern_packet_refs`；只消费 refs 和可迁移的架构、工作流、grounding、评估、handoff、failure taxonomy 模式，不读取 packet body，不把外部系统 runtime、私有数据或领域结论复制成目标 agent truth。
 - 若问题只是在某个已存在 target domain 的 truth、artifact body、quality verdict 或 owner receipt 内部，转回对应 target domain owner，不用 OMA 接管。
 
