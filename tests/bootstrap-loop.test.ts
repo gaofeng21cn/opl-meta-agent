@@ -860,18 +860,88 @@ test('expert workflow seeds produce different workflow-step stage graphs for the
   assert.ok(stageIds(rcaPlan).some((stageId) => String(stageId).includes('timeline-and-impact-reconstruction')));
 });
 
-test('OMA executes OPL selector signals for a Chinese hybrid reference-driven intent', () => {
-  const selected = resolveTargetAgentProfileSelection({
-    ...sourceDerivedTargetAgent,
-    target_brief: '参考这篇论文的设计思路，构建一个肠癌手术风险决策支持智能体。',
-    intent_signals: ['risk', 'guideline'],
-  }, oplBin);
+test('build-agent-baseline consumes raw OPL receipts for a Chinese hybrid intent', () => {
+  const chineseIntent = '参考这篇论文的设计思路，构建一个肠癌手术风险决策支持智能体。';
+  const intentSignals = ['risk', 'guideline'];
+  const builtinProfileRef = 'opl-profile:evidence_grounded_decision_agent_profile.v1';
+  const sourceRouteRef = 'opl-profile-route:source_derived_design_profile_route.v1';
+  const selectorArgs = [
+    'profiles',
+    'select',
+    '--intent',
+    chineseIntent,
+    '--reference-source',
+    sourceDerivedTargetAgent.reference_design_source_refs[0],
+    '--pattern-packet',
+    sourceDerivedTargetAgent.reference_design_pattern_packet_refs[0],
+  ];
+  const readSelectorReceipt = (signalArgs: string[]): JsonObject => {
+    const result = spawnSync(oplBin, [...selectorArgs, ...signalArgs, '--json'], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      maxBuffer: 16 * 1024 * 1024,
+    });
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    const payload = JSON.parse(result.stdout) as JsonObject;
+    assert.ok(payload.profile_selection_receipt);
+    return payload.profile_selection_receipt as JsonObject;
+  };
 
-  assert.deepEqual(selected.selected_opl_profile_refs, [
-    'opl-profile:evidence_grounded_decision_agent_profile.v1',
+  const hybridReceipt = readSelectorReceipt([
+    '--intent-signal',
+    intentSignals[0],
+    '--intent-signal',
+    intentSignals[1],
   ]);
-  assert.equal(buildProfileSelectionReceipt(selected).profile_selection_mode, 'hybrid');
-  assert.match(String(selected.profile_selection_rationale), /risk.*guideline|guideline.*risk/);
+  assert.equal(hybridReceipt.profile_selection_mode, 'hybrid');
+  assert.deepEqual(hybridReceipt.selected_profile_refs, [builtinProfileRef, sourceRouteRef]);
+  assert.deepEqual(
+    [...hybridReceipt.matched_trigger_signals].sort(),
+    [...intentSignals].sort(),
+  );
+  assert.deepEqual(hybridReceipt.intent_signals, intentSignals);
+
+  const sourceDerivedReceipt = readSelectorReceipt([]);
+  assert.equal(sourceDerivedReceipt.profile_selection_mode, 'source_derived_design');
+  assert.deepEqual(sourceDerivedReceipt.selected_profile_refs, [sourceRouteRef]);
+  assert.deepEqual(sourceDerivedReceipt.matched_trigger_signals, []);
+  assert.deepEqual(sourceDerivedReceipt.intent_signals, []);
+
+  const parsed = parseBuildAgentBaselineArgs([
+    '--output-dir',
+    '/tmp/oma-intent-signal-standard-boundary',
+    '--opl-bin',
+    oplBin,
+    '--ai-reviewer-evaluation',
+    '/tmp/reviewer.json',
+    '--domain-id',
+    sourceDerivedTargetAgent.domain_id,
+    '--domain-label',
+    sourceDerivedTargetAgent.domain_label,
+    '--delivery-domain',
+    sourceDerivedTargetAgent.delivery_domain,
+    '--target-brief',
+    chineseIntent,
+    '--intent-signal',
+    intentSignals[0],
+    '--intent-signal',
+    intentSignals[1],
+    '--reference-design-source',
+    sourceDerivedTargetAgent.reference_design_source_refs[0],
+    '--reference-design-pattern',
+    sourceDerivedTargetAgent.reference_design_pattern_notes[0],
+    '--reference-design-pattern-packet',
+    sourceDerivedTargetAgent.reference_design_pattern_packet_refs[0],
+  ]);
+
+  assert.equal(parsed.targetAgent.target_brief, chineseIntent);
+  assert.deepEqual(parsed.targetAgent.intent_signals, intentSignals);
+  const selected = resolveTargetAgentProfileSelection(parsed.targetAgent, parsed.oplBin);
+
+  assert.equal(selected.target_brief, chineseIntent);
+  assert.deepEqual(selected.intent_signals, intentSignals);
+  assert.deepEqual(selected.selected_opl_profile_refs, [builtinProfileRef]);
+  assert.deepEqual(selected.reference_design_source_refs, sourceDerivedTargetAgent.reference_design_source_refs);
 });
 
 test('OMA canonicalizes and validates explicit builtin profile refs', () => {

@@ -134,7 +134,7 @@ test('all action catalog schemas are self-contained and compile in the OPL regis
   assert.equal(ids.size, actions.length * 2, 'every action input/output must have a unique root schema');
 });
 
-test('build-agent-baseline action metadata exposes every design-basis route', () => {
+test('build-agent-baseline action metadata exposes canonical intent signals and every design-basis route', () => {
   const catalog = readJson('contracts/action_catalog.json');
   const action = (catalog.actions as JsonObject[]).find((entry) => entry.action_id === 'build-agent-baseline');
   assert.ok(action);
@@ -143,6 +143,11 @@ test('build-agent-baseline action metadata exposes every design-basis route', ()
     action.supported_surfaces.cli.command,
     action.supported_surfaces.product_entry.command,
   ] as string[];
+  const intentSignalFlag = '[--intent-signal <intent_signal>]';
+  const intentMappings = [
+    action.supported_surfaces.skill.intent_mapping,
+    action.supported_surfaces.product_entry.intent_mapping,
+  ];
   const routeFields = [
     'reference_design_source_refs',
     'reference_design_pattern_notes',
@@ -159,7 +164,15 @@ test('build-agent-baseline action metadata exposes every design-basis route', ()
     '--expert-practice',
     '--research-synthesis',
   ];
-  commands.forEach((command) => routeFlags.forEach((flag) => assert.ok(command.includes(flag), flag)));
+  commands.forEach((command) => {
+    assert.ok(command.includes(intentSignalFlag), intentSignalFlag);
+    routeFlags.forEach((flag) => assert.ok(command.includes(flag), flag));
+  });
+  intentMappings.forEach((mapping) => {
+    assert.equal(typeof mapping, 'string');
+    assert.match(mapping, /optional canonical intent_signals/);
+  });
+  assert.equal(action.workspace_locator_fields.includes('intent_signals'), false);
   routeFields.forEach((field) => {
     assert.ok(action.workspace_locator_fields.includes(field), field);
     assert.ok(action.supported_surfaces.skill.intent_mapping.includes(field), field);
