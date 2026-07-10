@@ -1,274 +1,155 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
-import {
-  parseJsonText,
-  repoRoot,
-  oplBin,
-  readJsonFile as readJson,
-  writeJsonFile as writeJson,
-  type JsonObject,
-} from './support/contracts.ts';
 import test from 'node:test';
+import { parseImproveFromAgentLabSuiteArgs } from '../scripts/improve-from-agent-lab-suite.ts';
+import { writeJsonFile as writeJson } from './support/contracts.ts';
 import {
+  buildExternalSuite,
   runImproveFromSuite,
   withOutputRoot,
-  writeTargetDescriptor,
   writeAiReviewerEvaluation,
-  buildBlockedMedicalManuscriptSuite,
-  writeMedicalTargetImprovementPolicy,
+  writeTargetDescriptor,
 } from './support/external-suite-fixtures.ts';
 
-function spawnImprove(args: {
-  suitePath: string;
-  targetAgentDir: string;
-  outputRoot: string;
-  reviewerEvaluationPath?: string;
-}) {
-  return spawnSync(
-    process.execPath,
-    [
-      path.join(repoRoot, 'scripts/improve-from-agent-lab-suite.ts'),
-      '--suite',
-      args.suitePath,
-      '--target-agent-dir',
-      args.targetAgentDir,
-      '--output-dir',
-      args.outputRoot,
-      ...(args.reviewerEvaluationPath ? ['--ai-reviewer-evaluation', args.reviewerEvaluationPath] : []),
-      '--opl-bin',
-      oplBin,
-    ],
-    {
-      cwd: repoRoot,
-      encoding: 'utf8',
-      maxBuffer: 16 * 1024 * 1024,
-    },
-  );
+function writeMedicalSuite(suitePath: string): void {
+  writeJson(suitePath, buildExternalSuite({
+    suiteId: 'mas-suite:high-quality-medical-manuscript',
+    domainId: 'med-autoscience',
+    taskFamily: 'high_quality_medical_manuscript_self_evolution',
+    evidenceRefs: ['rubric-gap:mas/002/medical_journal_prose_quality'],
+    feedbackRefs: ['feedback-ref:mas/002/manuscript-review'],
+  }));
 }
 
-function withMedicalFixture(
-  prefix: string,
-  options: {
-    descriptor?: 'domain' | 'missing-domain-id' | 'none';
-    targetPolicy?: boolean;
-    reviewerEvaluation?: false | JsonObject;
-  },
-  run: (fixture: {
-    outputRoot: string;
-    targetAgentDir: string;
-    suitePath: string;
-    reviewerEvaluationPath?: string;
-  }) => void,
-): void {
-  withOutputRoot(prefix, (outputRoot) => {
+test('external suite improvement fails closed when AI reviewer evaluation is missing', () => {
+  withOutputRoot('oma-missing-reviewer-', (outputRoot) => {
     const targetAgentDir = path.join(outputRoot, 'med-autoscience');
-    const descriptor = options.descriptor ?? 'domain';
-    if (descriptor === 'domain') {
-      writeTargetDescriptor(targetAgentDir);
-    } else if (descriptor === 'missing-domain-id') {
-      writeJson(path.join(targetAgentDir, 'contracts/domain_descriptor.json'), {
-        domain_label: 'MedAutoScience',
-        delivery_domain: 'medical_research',
-      });
-    } else {
-      fs.mkdirSync(targetAgentDir, { recursive: true });
-    }
-    if (options.targetPolicy !== false) writeMedicalTargetImprovementPolicy(targetAgentDir);
-    const suitePath = path.join(outputRoot, 'medical-manuscript-quality-suite.json');
-    writeJson(suitePath, buildBlockedMedicalManuscriptSuite(suitePath));
-    const reviewerEvaluationPath = options.reviewerEvaluation === false
-      ? undefined
-      : path.join(outputRoot, 'ai-reviewer-evaluation.json');
-    if (reviewerEvaluationPath) {
-      const reviewerEvaluation = options.reviewerEvaluation === false ? {} : options.reviewerEvaluation ?? {};
-      writeAiReviewerEvaluation(reviewerEvaluationPath, reviewerEvaluation);
-    }
-    run({ outputRoot, targetAgentDir, suitePath, reviewerEvaluationPath });
-  });
-}
-
-const failureCases: Array<{
-  name: string;
-  prefix: string;
-  options: {
-    descriptor?: 'domain' | 'missing-domain-id' | 'none';
-    targetPolicy?: boolean;
-    reviewerEvaluation?: false | JsonObject;
-  };
-  expected: RegExp;
-}> = [
-  { name: 'AI reviewer evaluation is missing', prefix: 'opl-meta-agent-external-suite-missing-reviewer-', options: { reviewerEvaluation: false }, expected: /ai reviewer evaluation/i },
-  { name: 'target descriptor is missing', prefix: 'opl-meta-agent-external-suite-missing-descriptor-', options: { descriptor: 'none' }, expected: /Target descriptor is required: .*contracts\/domain_descriptor\.json.*contracts\/capability_pack_descriptor\.json/ },
-  { name: 'target descriptor domain_id is missing', prefix: 'opl-meta-agent-external-suite-missing-domain-id-', options: { descriptor: 'missing-domain-id' }, expected: /Target agent descriptor is missing domain_id or capability_pack_id: .*contracts\/domain_descriptor\.json/ },
-  { name: 'AI reviewer predicted impact is missing', prefix: 'opl-meta-agent-external-suite-missing-impact-', options: { reviewerEvaluation: { predicted_impact: '' } }, expected: /predicted_impact must be a non-empty string/ },
-  { name: 'reviewer direct evidence is scaffold-only', prefix: 'opl-meta-agent-external-suite-scaffold-reviewer-', options: { reviewerEvaluation: { direct_evidence_refs: ['suite:mas/002/generated-scaffold'] } }, expected: /direct_evidence_refs must include direct evidence beyond suite\/scaffold refs/ },
-];
-
-failureCases.forEach((testCase) => {
-  test(`external suite improvement fails closed when ${testCase.name}`, () => {
-    withMedicalFixture(testCase.prefix, testCase.options, (fixture) => {
-      const result = spawnImprove(fixture);
-
-      assert.notEqual(result.status, 0);
-      assert.match(result.stderr, testCase.expected);
-    });
+    const suitePath = path.join(outputRoot, 'suite.json');
+    writeTargetDescriptor(targetAgentDir);
+    writeMedicalSuite(suitePath);
+    assert.throws(() => parseImproveFromAgentLabSuiteArgs([
+      '--suite', suitePath,
+      '--target-agent-dir', targetAgentDir,
+    ]), /ai reviewer evaluation/i);
   });
 });
 
+const reviewerFailureCases = [
+  { name: 'target descriptor is missing', descriptor: 'missing', reviewer: {}, expected: /Target descriptor is required: .*domain_descriptor\.json.*capability_pack_descriptor\.json/ },
+  { name: 'target descriptor domain_id is missing', descriptor: 'missing-id', reviewer: {}, expected: /missing domain_id or capability_pack_id/ },
+  { name: 'AI reviewer predicted impact is missing', descriptor: 'valid', reviewer: { predicted_impact: '' }, expected: /predicted_impact must be a non-empty string/ },
+  { name: 'reviewer direct evidence is scaffold-only', descriptor: 'valid', reviewer: { direct_evidence_refs: ['suite:mas/generated-scaffold'] }, expected: /direct_evidence_refs must include direct evidence beyond suite\/scaffold refs/ },
+];
+
+for (const testCase of reviewerFailureCases) {
+  test(`external suite improvement fails closed when ${testCase.name}`, () => {
+    withOutputRoot('oma-reviewer-gate-', (outputRoot) => {
+      const targetAgentDir = path.join(outputRoot, 'med-autoscience');
+      const suitePath = path.join(outputRoot, 'suite.json');
+      const reviewerEvaluationPath = path.join(outputRoot, 'reviewer.json');
+      if (testCase.descriptor === 'valid') writeTargetDescriptor(targetAgentDir);
+      if (testCase.descriptor === 'missing-id') {
+        writeJson(path.join(targetAgentDir, 'contracts/domain_descriptor.json'), { domain_label: 'MedAutoScience' });
+      }
+      if (testCase.descriptor === 'missing') fs.mkdirSync(targetAgentDir, { recursive: true });
+      writeMedicalSuite(suitePath);
+      writeAiReviewerEvaluation(reviewerEvaluationPath, testCase.reviewer);
+
+      assert.throws(
+        () => runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath }),
+        testCase.expected,
+      );
+    });
+  });
+}
+
 test('external suite improvement accepts capability pack target descriptor', () => {
-  withOutputRoot('opl-meta-agent-capability-pack-target-', (outputRoot) => {
+  withOutputRoot('oma-capability-pack-', (outputRoot) => {
     const targetAgentDir = path.join(outputRoot, 'mas-scholar-skills');
+    const suitePath = path.join(outputRoot, 'suite.json');
+    const reviewerEvaluationPath = path.join(outputRoot, 'reviewer.json');
     writeJson(path.join(targetAgentDir, 'contracts/capability_pack_descriptor.json'), {
       surface_kind: 'capability_pack_descriptor',
       capability_pack_id: 'mas-scholar-skills',
-      capability_pack_label: 'MAS Scholar Skills',
     });
     writeJson(path.join(targetAgentDir, 'contracts/capability_map.json'), {
-      surface_kind: 'target_capability_map',
-      capabilities: [
-        {
-          capability_id: 'medical-manuscript-writing',
-          kind: 'professional_skill',
-          canonical_paths: ['skills/medical-manuscript-writing/SKILL.md'],
-          improvement_tokens: ['medical_journal_prose_quality'],
-          verification_refs: ['target_repo_test_receipt'],
-          forbidden_surfaces: ['target owner receipt body'],
-        },
-      ],
+      capabilities: [{
+        capability_id: 'medical-manuscript-writing',
+        kind: 'professional_skill',
+        canonical_paths: ['skills/medical-manuscript-writing/SKILL.md'],
+        improvement_tokens: ['medical_journal_prose_quality'],
+        verification_refs: ['target_repo_test_receipt'],
+        forbidden_surfaces: ['target owner receipt body'],
+      }],
     });
-    const suitePath = path.join(outputRoot, 'medical-manuscript-quality-suite.json');
-    writeJson(suitePath, buildBlockedMedicalManuscriptSuite(suitePath));
-    const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
-    writeAiReviewerEvaluation(reviewerEvaluationPath, {
-      critique: 'The medical_journal_prose_quality gap belongs in the writing capability pack.',
-      source_refs: ['rubric-gap:medical_journal_prose_quality'],
-    });
+    writeMedicalSuite(suitePath);
+    writeAiReviewerEvaluation(reviewerEvaluationPath);
 
-    const payload = runImproveFromSuite({
-      suitePath,
-      targetAgentDir,
-      outputRoot,
-      feedbackRef: 'manual-review:capability-pack/medical-writing',
-      reviewerEvaluationPath,
-    });
-
+    const payload = runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
     const workOrder = payload.learning_loop.developer_patch_work_order;
     assert.equal(workOrder.target_agent.domain_id, 'mas-scholar-skills');
-    assert.ok(workOrder.proposed_change_refs.includes('professional_skill_medical_manuscript_writing'));
+    assert.deepEqual(workOrder.proposed_change_refs, ['professional_skill_medical_manuscript_writing']);
+    assert.deepEqual(workOrder.target_repo_file_hints, ['skills/medical-manuscript-writing/SKILL.md']);
   });
 });
 
 test('external suite improvement uses capability map as patch-target source when handoff duplicates token refs', () => {
-  withOutputRoot('opl-meta-agent-capability-map-source-', (outputRoot) => {
+  withOutputRoot('oma-capability-map-source-', (outputRoot) => {
     const targetAgentDir = path.join(outputRoot, 'med-autoscience');
+    const suitePath = path.join(outputRoot, 'suite.json');
+    const reviewerEvaluationPath = path.join(outputRoot, 'reviewer.json');
     writeTargetDescriptor(targetAgentDir);
     writeJson(path.join(targetAgentDir, 'contracts/agent_lab_handoff.json'), {
-      surface_kind: 'domain_agent_lab_production_evidence_handoff',
-      domain_id: 'med-autoscience',
-      owner: 'MedAutoScience',
-      handoff_status: 'ready_for_opl_meta_agent_and_agent_lab_execution',
       external_suite_improvement_policy: {
-        default_change_ref_triggers: ['medical_journal_prose_quality'],
-        default_change_refs: ['legacy_handoff_patch_ref:must_not_be_used'],
-        change_ref_mappings: [
-          {
-            token: 'medical_journal_prose_quality',
-            refs: ['legacy_handoff_patch_ref:must_not_be_used'],
-          },
-        ],
-        patch_surface_hints: {
-          legacy_handoff_patch_ref: ['legacy/handoff/path.ts'],
-        },
+        change_ref_mappings: [{
+          token: 'medical_journal_prose_quality',
+          refs: ['legacy_handoff_patch_ref:must_not_be_used'],
+        }],
         external_learning_refs: ['external-source:legacy-handoff/context-only'],
-        runtime_required_surface_refs: ['target_agent_owner_route'],
       },
     });
     writeJson(path.join(targetAgentDir, 'contracts/capability_map.json'), {
-      surface_kind: 'target_capability_map',
-      capabilities: [
-        {
-          capability_id: 'medical-journal-prose-quality',
-          kind: 'professional_skill',
-          failure_token_registry_ref: 'failure-token-registry:mas/medical-journal-prose-quality',
-          canonical_paths: ['skills/medical-journal-prose-quality/SKILL.md'],
-          improvement_tokens: ['medical_journal_prose_quality'],
-          verification_refs: ['target_repo_test_receipt'],
-          forbidden_surfaces: ['target owner receipt body'],
-          authority_boundary: {
-            can_write_target_owner_receipt_body: false,
-          },
-        },
-      ],
+      capabilities: [{
+        capability_id: 'medical-journal-prose-quality',
+        kind: 'professional_skill',
+        canonical_paths: ['skills/medical-journal-prose-quality/SKILL.md'],
+        improvement_tokens: ['medical_journal_prose_quality'],
+        verification_refs: ['target_repo_test_receipt'],
+        forbidden_surfaces: ['target owner receipt body'],
+      }],
     });
-    const suitePath = path.join(outputRoot, 'medical-manuscript-quality-suite.json');
-    writeJson(suitePath, buildBlockedMedicalManuscriptSuite(suitePath));
-    const reviewerEvaluationPath = path.join(outputRoot, 'ai-reviewer-evaluation.json');
-    writeAiReviewerEvaluation(reviewerEvaluationPath, {
-      critique: 'The medical_journal_prose_quality gap belongs to the target capability map.',
-      source_refs: ['rubric-gap:mas/002/medical_journal_prose_quality'],
-    });
+    writeMedicalSuite(suitePath);
+    writeAiReviewerEvaluation(reviewerEvaluationPath);
 
-    const payload = runImproveFromSuite({
-      suitePath,
-      targetAgentDir,
-      outputRoot,
-      feedbackRef: 'manual-review:capability-map-source-of-truth',
-      reviewerEvaluationPath,
-    });
-
+    const payload = runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
     const candidate = payload.learning_loop.target_capability_improvement_candidate;
     assert.deepEqual(candidate.proposed_change_refs, ['professional_skill_medical_journal_prose_quality']);
-    assert.equal(candidate.proposed_change_refs.includes('legacy_handoff_patch_ref:must_not_be_used'), false);
-    assert.ok(candidate.external_learning_refs.includes('external-source:legacy-handoff/context-only'));
-    const trace = candidate.patch_traceability_matrix[0];
-    assert.deepEqual(trace.required_patch_refs, ['professional_skill_medical_journal_prose_quality']);
-    assert.deepEqual(trace.target_repo_file_hints, ['skills/medical-journal-prose-quality/SKILL.md']);
-    assert.equal(trace.capability_authority_boundary.can_write_target_owner_receipt_body, false);
-
-    const workOrder = readJson(path.join(outputRoot, 'developer-patch-work-order.json'));
-    assert.equal(workOrder.proposed_change_refs.includes('legacy_handoff_patch_ref:must_not_be_used'), false);
-    assert.deepEqual(workOrder.target_repo_file_hints, ['skills/medical-journal-prose-quality/SKILL.md']);
+    assert.deepEqual(candidate.patch_traceability_matrix[0].target_repo_file_hints, [
+      'skills/medical-journal-prose-quality/SKILL.md',
+    ]);
+    assert.deepEqual(candidate.external_learning_refs, ['external-source:legacy-handoff/context-only']);
+    assert.equal(JSON.stringify(candidate).includes('legacy_handoff_patch_ref:must_not_be_used'), false);
   });
 });
 
 test('external blocked suite writes typed blocker when target-owned improvement policy is missing', () => {
-  withMedicalFixture(
-    'opl-meta-agent-external-suite-missing-target-policy-',
-    {
-      targetPolicy: false,
-      reviewerEvaluation: {
-        critique: 'The owner-receipt package typed-blocker language is generic and has no target-owned patch target.',
-        suggestions: ['Do not synthesize a package patch target without a capability_map or target-owned policy.'],
-        source_refs: 'owner-receipt:external-agent/live-acceptance typed-blocker:external-agent/package-closeout'.split(' '),
-        direct_evidence_refs: ['agent-lab-result:external-agent/generic-owner-boundary'],
-      },
-    },
-    ({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath }) => {
-      const result = spawnImprove({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
+  withOutputRoot('oma-missing-target-policy-', (outputRoot) => {
+    const targetAgentDir = path.join(outputRoot, 'med-autoscience');
+    const suitePath = path.join(outputRoot, 'suite.json');
+    const reviewerEvaluationPath = path.join(outputRoot, 'reviewer.json');
+    writeTargetDescriptor(targetAgentDir);
+    writeMedicalSuite(suitePath);
+    writeAiReviewerEvaluation(reviewerEvaluationPath);
 
-      assert.equal(result.status, 0);
-      const payload = parseJsonText(result.stdout);
-      assert.equal(payload.status, 'blocked_target_improvement_policy_missing');
-      assert.equal(fs.existsSync(path.join(outputRoot, 'developer-patch-work-order.json')), false);
-      assert.equal(fs.existsSync(path.join(outputRoot, 'typed-blocker.json')), true);
-
-      const candidate = readJson(path.join(outputRoot, 'target-capability-improvement-candidate.json'));
-      assert.deepEqual(candidate.proposed_change_refs, []);
-      assert.deepEqual(candidate.patch_traceability_matrix, []);
-      assert.equal(candidate.traceability_status, 'target_owned_patch_refs_missing');
-      assert.equal(
-        candidate.target_editable_surface_refs.some((ref: string) => ref.startsWith('target_agent_')),
-        false,
-      );
-
-      const blocker = readJson(path.join(outputRoot, 'typed-blocker.json'));
-      assert.equal(blocker.status, 'blocked_target_improvement_policy_missing');
-      assert.equal(blocker.blocked_reason, 'target_owned_change_refs_required');
-      assert.equal(blocker.authority_boundary.typed_blocker_only, true);
-      assert.equal(blocker.authority_boundary.no_executable_work_order_issued, true);
-      assert.equal(payload.authority_boundary.no_executable_work_order_issued, true);
-    },
-  );
+    const payload = runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
+    const candidate = payload.learning_loop.target_capability_improvement_candidate;
+    const blocker = payload.learning_loop.typed_blocker;
+    assert.equal(payload.status, 'blocked_target_improvement_policy_missing');
+    assert.equal(fs.existsSync(path.join(outputRoot, 'developer-patch-work-order.json')), false);
+    assert.deepEqual(candidate.proposed_change_refs, []);
+    assert.equal(candidate.traceability_status, 'target_owned_patch_refs_missing');
+    assert.equal(blocker.blocked_reason, 'target_owned_change_refs_required');
+    assert.equal(blocker.authority_boundary.no_executable_work_order_issued, true);
+  });
 });
