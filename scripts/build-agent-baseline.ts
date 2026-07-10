@@ -43,16 +43,11 @@ import {
   writeJson,
 } from './lib/meta-agent-loop-io.ts';
 import {
-  type LearningCandidate,
-  type OwnerReceipt,
-  type SuiteResult,
-  buildAgentLabSuite as buildExternalSuite,
-  buildLearningCandidate as buildGatedLearningCandidate,
-  buildMechanismPatchProposal,
-  buildOwnerReceipt,
-  buildRealTargetDeliveryReceipt,
-  buildScaleoutEvidenceLedger,
+  buildAgentLabSuiteSeed as buildExternalSuiteSeed,
 } from './lib/meta-agent-loop-receipts.ts';
+import {
+  buildFoundryLabWorkOrder,
+} from './lib/foundry-lab-work-order.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -64,212 +59,6 @@ export type BuildAgentBaselineArgs = {
   stageRunner: StageRunnerKind;
   stageCloseoutPacketPath: string | null;
 };
-
-type NewAgentDeliveryGateInput = {
-  targetAgent: TargetAgent;
-  scaffoldValidationStatus: string;
-  generatedInterfaceStatus: string;
-  baselineSuiteResult: JsonObject;
-  realTargetSuiteResult?: JsonObject | null;
-  aiReviewerEvaluation: AiReviewerEvaluation | JsonObject;
-  selfEvolutionConsumptionRef?: string | null;
-  deliveryReceipt?: JsonObject | null;
-  noPatchCoordinationReceipt?: JsonObject | null;
-  developerPatchWorkOrder?: JsonObject | null;
-  typedBlocker?: JsonObject | null;
-  stageRunRefsOnlyConsumptionRef?: string | null;
-  stageCompletionPolicyRef?: string | null;
-  stageCloseoutPacketRef?: string | null;
-  targetOwnerReceiptOrTypedBlockerOrHumanGateRef?: string | null;
-  noForbiddenWriteProofRef?: string | null;
-  sourceMorphologyRef?: string | null;
-  ownerRouteRef?: string | null;
-  generatedSurfaceConsumptionRef?: string | null;
-  privateResidueDecisionRef?: string | null;
-  ownerAnswerShape?: string | null;
-  providerCompletionIsDomainCompletion?: boolean;
-  omaTargetAuthorityBoundary?: JsonObject | null;
-};
-
-function nonEmptyString(value: unknown): value is string {
-  return typeof value === 'string' && value.trim().length > 0;
-}
-
-function objectHasNonEmptyString(value: unknown, field: string): boolean {
-  return (
-    typeof value === 'object'
-    && value !== null
-    && !Array.isArray(value)
-    && nonEmptyString((value as Record<string, unknown>)[field])
-  );
-}
-
-function suiteResultRef(value: JsonObject | null | undefined): string | null {
-  if (!value) {
-    return null;
-  }
-  for (const field of ['result_id', 'suite_result_ref', 'run_ref']) {
-    const candidate = value[field];
-    if (nonEmptyString(candidate)) {
-      return candidate;
-    }
-  }
-  return null;
-}
-
-function booleanTrueField(value: JsonObject | null | undefined, field: string): boolean {
-  return value?.[field] === true;
-}
-
-export function assertNewAgentDeliveryGate(input: NewAgentDeliveryGateInput): JsonObject {
-  const baselineSuiteRef = suiteResultRef(input.baselineSuiteResult);
-  const realTargetSuiteRef = suiteResultRef(input.realTargetSuiteResult ?? null);
-  const closeoutOutcomes = [
-    input.deliveryReceipt ? 'delivery_receipt' : null,
-    input.noPatchCoordinationReceipt ? 'no_patch_coordination_receipt' : null,
-    input.developerPatchWorkOrder ? 'developer_patch_work_order' : null,
-    input.typedBlocker ? 'typed_blocker' : null,
-  ].filter((entry): entry is string => Boolean(entry));
-  const blockers = [
-    ['passed', 'valid', 'validated'].includes(input.scaffoldValidationStatus)
-      ? null
-      : 'scaffold_validation_not_passed',
-    input.generatedInterfaceStatus === 'ready'
-      ? null
-      : 'generated_interface_projection_not_ready',
-    baselineSuiteRef
-      ? null
-      : 'agent_lab_baseline_or_takeover_suite_ref_missing',
-    input.baselineSuiteResult.status === 'passed'
-      ? null
-      : 'agent_lab_baseline_or_takeover_suite_not_passed',
-    realTargetSuiteRef
-      ? null
-      : 'real_target_or_external_suite_ref_missing',
-    objectHasNonEmptyString(input.aiReviewerEvaluation, 'critique')
-      ? null
-      : 'ai_reviewer_critique_missing',
-    Array.isArray(input.aiReviewerEvaluation.suggestions) && input.aiReviewerEvaluation.suggestions.length > 0
-      ? null
-      : 'ai_reviewer_suggestions_missing',
-    Array.isArray(input.aiReviewerEvaluation.direct_evidence_refs)
-      && input.aiReviewerEvaluation.direct_evidence_refs.length > 0
-      ? null
-      : 'ai_reviewer_direct_evidence_refs_missing',
-    objectHasNonEmptyString(input.aiReviewerEvaluation, 'run_ref')
-      && objectHasNonEmptyString(input.aiReviewerEvaluation, 'review_attempt_ref')
-      ? null
-      : 'ai_reviewer_provenance_missing',
-    nonEmptyString(input.selfEvolutionConsumptionRef)
-      ? null
-      : 'self_evolution_consumption_ref_missing',
-    nonEmptyString(input.stageRunRefsOnlyConsumptionRef)
-      ? null
-      : 'stage_run_refs_only_consumption_ref_missing',
-    nonEmptyString(input.stageCompletionPolicyRef)
-      ? null
-      : 'stage_completion_policy_ref_missing',
-    nonEmptyString(input.stageCloseoutPacketRef)
-      ? null
-      : 'stage_closeout_packet_ref_missing',
-    nonEmptyString(input.targetOwnerReceiptOrTypedBlockerOrHumanGateRef)
-      ? null
-      : 'target_owner_receipt_or_typed_blocker_or_human_gate_ref_missing',
-    nonEmptyString(input.noForbiddenWriteProofRef)
-      ? null
-      : 'no_forbidden_write_proof_ref_missing',
-    nonEmptyString(input.sourceMorphologyRef)
-      ? null
-      : 'source_morphology_ref_missing',
-    nonEmptyString(input.ownerRouteRef)
-      ? null
-      : 'owner_route_ref_missing',
-    nonEmptyString(input.generatedSurfaceConsumptionRef)
-      ? null
-      : 'generated_surface_consumption_ref_missing',
-    nonEmptyString(input.privateResidueDecisionRef)
-      ? null
-      : 'private_residue_decision_ref_missing',
-    [
-      'owner_receipt',
-      'typed_blocker',
-      'human_gate',
-      'route_back',
-      'rejected',
-      'completed_and_continue',
-      'completed_and_wait_owner',
-    ].includes(input.ownerAnswerShape ?? '')
-      ? null
-      : 'owner_answer_shape_missing_or_unaccepted',
-    input.providerCompletionIsDomainCompletion === true
-      ? 'provider_completion_is_domain_completion_forbidden'
-      : null,
-    booleanTrueField(input.omaTargetAuthorityBoundary ?? null, 'can_write_target_domain_truth')
-      ? 'oma_target_authority_boundary_can_write_target_domain_truth_forbidden'
-      : null,
-    booleanTrueField(input.omaTargetAuthorityBoundary ?? null, 'can_write_target_owner_receipt_body')
-      ? 'oma_target_authority_boundary_can_write_target_owner_receipt_body_forbidden'
-      : null,
-    booleanTrueField(input.omaTargetAuthorityBoundary ?? null, 'can_mutate_target_domain_artifact_body')
-      ? 'oma_target_authority_boundary_can_mutate_target_domain_artifact_body_forbidden'
-      : null,
-    booleanTrueField(input.omaTargetAuthorityBoundary ?? null, 'can_authorize_target_domain_quality_or_export')
-      ? 'oma_target_authority_boundary_can_authorize_target_domain_quality_or_export_forbidden'
-      : null,
-    closeoutOutcomes.length === 1
-      ? null
-      : 'exactly_one_closeout_outcome_required',
-  ].filter((entry): entry is string => Boolean(entry));
-  if (blockers.length > 0) {
-    throw new Error(`new_agent_delivery_gate_blocked:${blockers.join(',')}`);
-  }
-  return {
-    surface_kind: 'opl_meta_agent_new_agent_delivery_gate',
-    policy_id: 'opl-meta-agent.new-agent-delivery-gate.v1',
-    gate_status: 'passed',
-    target_agent: input.targetAgent,
-    required_evidence: {
-      scaffold_validation_status: input.scaffoldValidationStatus,
-      generated_interface_status: input.generatedInterfaceStatus,
-      baseline_or_takeover_suite_result_ref: baselineSuiteRef,
-      real_target_or_external_suite_result_ref: realTargetSuiteRef,
-      ai_reviewer_run_ref: input.aiReviewerEvaluation.run_ref,
-      ai_reviewer_review_attempt_ref: input.aiReviewerEvaluation.review_attempt_ref,
-      self_evolution_consumption_ref: input.selfEvolutionConsumptionRef,
-      stage_run_refs_only_consumption_ref: input.stageRunRefsOnlyConsumptionRef,
-      stage_completion_policy_ref: input.stageCompletionPolicyRef,
-      stage_closeout_packet_ref: input.stageCloseoutPacketRef,
-      target_owner_receipt_or_typed_blocker_or_human_gate_ref:
-        input.targetOwnerReceiptOrTypedBlockerOrHumanGateRef,
-      no_forbidden_write_proof_ref: input.noForbiddenWriteProofRef,
-      source_morphology_ref: input.sourceMorphologyRef,
-      owner_route_ref: input.ownerRouteRef,
-      generated_surface_consumption_ref: input.generatedSurfaceConsumptionRef,
-      private_residue_decision_ref: input.privateResidueDecisionRef,
-      owner_answer_shape: input.ownerAnswerShape,
-      closeout_outcome: closeoutOutcomes[0],
-      closeout_outcome_count: closeoutOutcomes.length,
-    },
-    false_completion_guard: {
-      scaffold_or_generated_interface_can_claim_complete: false,
-      contract_validation_can_claim_complete: false,
-      suite_pass_can_claim_complete: false,
-      provider_completion_can_claim_complete: false,
-      missing_source_morphology_owner_route_generated_consumption_private_residue_or_owner_answer_fails_closed: true,
-      exactly_one_closeout_outcome_required: true,
-    },
-    authority_boundary: {
-      delegates_work_order_execution_to_opl: true,
-      oma_can_write_target_domain_truth: false,
-      oma_can_write_target_domain_memory_body: false,
-      oma_can_mutate_target_domain_artifact_body: false,
-      oma_can_authorize_target_domain_quality_or_export: false,
-      oma_can_manage_target_worktree_lifecycle: false,
-      oma_can_write_target_owner_receipt_body: false,
-      oma_can_promote_default_agent_without_gate: false,
-    },
-  };
-}
 
 function nonEmptyValue(flag: string, value: string | undefined): string {
   if (!value) {
@@ -644,7 +433,7 @@ function writeStageDecompositionBlocker(
   return blockerPath;
 }
 
-function buildAgentLabSuite({
+function buildBaselineAgentLabSuiteSeed({
   targetAgent,
   targetAgentDir,
   aiReviewerEvaluation,
@@ -655,7 +444,7 @@ function buildAgentLabSuite({
   aiReviewerEvaluation: AiReviewerEvaluation;
   aiReviewerEvaluationRef: string;
 }): JsonObject {
-  return buildExternalSuite({
+  return buildExternalSuiteSeed({
     suiteId: `opl-meta-agent-baseline-suite:${targetAgent.domain_id}`,
     taskId: `agent-lab-task:opl-meta-agent/${targetAgent.domain_id}-baseline`,
     taskFamily: 'agent_building_baseline',
@@ -713,181 +502,6 @@ function assertBaselineReviewerMorphologyEvidence(aiReviewerEvaluation: AiReview
   }
 }
 
-function buildBaselineReceipt(
-  targetAgent: TargetAgent,
-  suiteResult: SuiteResult,
-  scaffoldValidation: JsonObject,
-  domainPackSummary: DomainPackSummary,
-  targetDomainPackSummary: DomainPackSummary,
-  aiReviewerEvaluation: AiReviewerEvaluation,
-  aiReviewerEvaluationRef: string,
-  stageDecompositionAttempt: StageDecompositionAttemptReceipt,
-): OwnerReceipt {
-  assertBaselineReviewerMorphologyEvidence(aiReviewerEvaluation);
-  const profileSelectionReceipt = buildProfileSelectionReceipt(targetAgent);
-  const receipt = {
-    ...buildOwnerReceipt({
-      receiptClass: 'baseline_delivery_receipt',
-      status: 'baseline_delivered',
-      targetAgent,
-      suiteResult,
-      extraAcceptanceGates: {
-        direct_and_hosted_path_declared: true,
-        operator_runbook_present: true,
-        target_agent_brief_declared: Boolean(targetAgent.target_brief),
-        ...aiReviewerAcceptanceGates(),
-        artifact_morphology_reviewer_source_refs_present: true,
-        artifact_morphology_reviewer_direct_evidence_refs_present: true,
-      },
-    }),
-    target_agent: targetAgent,
-    reference_design: {
-      source_refs: targetAgent.reference_design_source_refs ?? [],
-      pattern_notes: targetAgent.reference_design_pattern_notes ?? [],
-      pattern_packet_refs: targetAgent.reference_design_pattern_packet_refs ?? [],
-      reference_design_packet_ref: profileSelectionReceipt.reference_design_packet_ref,
-      reference_design_packet: profileSelectionReceipt.reference_design_packet,
-      transfer_map_ref: profileSelectionReceipt.transfer_map_ref,
-      transfer_map: profileSelectionReceipt.transfer_map,
-      agent_pack_plan_ref: profileSelectionReceipt.agent_pack_plan_ref,
-      agent_pack_plan: profileSelectionReceipt.agent_pack_plan,
-      design_admission_receipt_ref: profileSelectionReceipt.design_admission_receipt_ref,
-      design_admission_receipt: profileSelectionReceipt.design_admission_receipt,
-      stage_decomposition_subpacket_set_ref: profileSelectionReceipt.stage_decomposition_subpacket_set_ref,
-      stage_decomposition_subpacket_set: profileSelectionReceipt.stage_decomposition_subpacket_set,
-      role: 'external_architecture_inspiration_not_target_domain_truth',
-      can_write_target_domain_truth: false,
-      can_replace_target_owner_judgment: false,
-    },
-    research_driven_design: {
-      source_refs: targetAgent.research_source_refs ?? [],
-      expert_practice_notes: targetAgent.expert_practice_notes ?? [],
-      synthesis_refs: targetAgent.research_synthesis_refs ?? [],
-      research_driven_design_receipt_ref: profileSelectionReceipt.research_driven_design_receipt_ref,
-      research_driven_design_receipt: profileSelectionReceipt.research_driven_design_receipt,
-      research_synthesis_packet_ref: profileSelectionReceipt.research_synthesis_packet_ref,
-      research_synthesis_packet: profileSelectionReceipt.research_synthesis_packet,
-      transfer_map_ref: profileSelectionReceipt.transfer_map_ref,
-      agent_pack_plan_ref: profileSelectionReceipt.agent_pack_plan_ref,
-      design_admission_receipt_ref: profileSelectionReceipt.design_admission_receipt_ref,
-      design_admission_receipt: profileSelectionReceipt.design_admission_receipt,
-      stage_decomposition_subpacket_set_ref: profileSelectionReceipt.stage_decomposition_subpacket_set_ref,
-      stage_decomposition_subpacket_set: profileSelectionReceipt.stage_decomposition_subpacket_set,
-      role: 'expert_practice_research_inspiration_not_target_domain_truth',
-      can_write_target_domain_truth: false,
-      can_replace_target_owner_judgment: false,
-    },
-    scaffold_validation_status: scaffoldValidation.standard_domain_agent_scaffold.validation.status,
-    ...aiReviewerReceiptFields(aiReviewerEvaluation, aiReviewerEvaluationRef),
-    ...domainPackReceiptFields(domainPackSummary),
-    source_domain_pack: domainPackSummary,
-    target_agent_domain_pack: targetDomainPackSummary,
-    stage_decomposition_attempt: stageDecompositionAttempt,
-    generated_from_stage_decomposition_closeout: {
-      status: 'verified',
-      stage_packet_ref: stageDecompositionAttempt.stage_packet_ref,
-      closeout_packet_ref: stageDecompositionAttempt.closeout_packet_ref,
-      closeout_refs: stageDecompositionAttempt.closeout_refs,
-      runner_kind: stageDecompositionAttempt.runner_kind,
-    },
-  };
-  return receipt;
-}
-
-function buildLearningCandidate(suiteResult: SuiteResult, baselineReceipt: OwnerReceipt): LearningCandidate {
-  const targetAgent = baselineReceipt.target_agent as TargetAgent;
-  return buildGatedLearningCandidate({
-    suiteResult,
-    receipt: baselineReceipt,
-    targetAgent,
-    candidateKind: 'rubric_gap',
-    targetRef: 'quality-gate:opl-meta-agent/baseline-owner',
-    proposedChangeRefs: [`candidate-ref:${targetAgent.domain_id}/add-source-coverage-rubric`],
-    promotionGateRef: `promotion-gate:opl-meta-agent/${targetAgent.domain_id}`,
-  });
-}
-
-function buildBaselineMechanismPatchProposal(
-  suiteResult: SuiteResult,
-  baselineReceipt: OwnerReceipt,
-  learningCandidate: LearningCandidate,
-  aiReviewerEvaluation: AiReviewerEvaluation,
-  aiReviewerEvaluationRef: string,
-): JsonObject {
-  return buildMechanismPatchProposal({
-    suiteResult,
-    receipt: baselineReceipt,
-    learningCandidate,
-    mechanismRef: `mechanism:opl-meta-agent/${baselineReceipt.target_agent.domain_id}/self-learning-loop`,
-    editableSurfaces: [
-      'prompt_policy_ref',
-      'skill_policy_ref',
-      'stage_policy_ref',
-      'quality_gate_policy_ref',
-      'agent_lab_suite_policy_ref',
-    ],
-    evidenceDeltaRef: `evidence-delta:opl-meta-agent/${baselineReceipt.target_agent.domain_id}/baseline`,
-    observeRefs: [aiReviewerEvaluationRef],
-    diagnoseRefs: aiReviewerEvaluation.source_refs,
-    editRefs: aiReviewerEvaluation.suggestions.map((suggestion) => `ai-reviewer-suggestion:${suggestion}`),
-  });
-}
-
-function buildRealTargetAgentSuite({
-  realTargetAgent,
-  realTargetAgentDir,
-  aiReviewerEvaluation,
-  aiReviewerEvaluationRef,
-}: {
-  realTargetAgent: TargetAgent;
-  realTargetAgentDir: string;
-  aiReviewerEvaluation: AiReviewerEvaluation;
-  aiReviewerEvaluationRef: string;
-}): JsonObject {
-  return buildExternalSuite({
-    suiteId: 'opl-meta-agent-real-target-delivery-suite',
-    taskId: `agent-lab-task:opl-meta-agent/${realTargetAgent.domain_id}/real-target-delivery`,
-    taskFamily: 'real_target_delivery',
-    targetAgent: {
-      ...realTargetAgent,
-      descriptor_ref: path.join(realTargetAgentDir, 'contracts', 'domain_descriptor.json'),
-    },
-    targetAgentDir: realTargetAgentDir,
-    instructionsRef: `instructions:opl-meta-agent/${realTargetAgent.domain_id}/real-target-delivery`,
-    agentEntryRef: `domain-agent-entry:${realTargetAgent.domain_id}`,
-    stageRefs: [
-      `stage:${realTargetAgent.domain_id}/intent`,
-      `stage:${realTargetAgent.domain_id}/draft`,
-      `stage:${realTargetAgent.domain_id}/delivery`,
-    ],
-    oracleRefs: ['oracle:opl-meta-agent/real-target-contract-valid'],
-    scorerRefs: ['scorer:opl-meta-agent/real-target-delivery-acceptance'],
-    trajectoryRef: `trajectory:opl-meta-agent/${realTargetAgent.domain_id}/real-target-delivery`,
-    runRef: `run:opl-meta-agent/${realTargetAgent.domain_id}/real-target-delivery`,
-    artifactRefs: [`artifact-ref:${realTargetAgent.domain_id}/package`],
-    receiptRefs: [`owner-receipt:opl-meta-agent/${realTargetAgent.domain_id}/baseline-delivery`],
-    scorecardRef: `quality-scorecard:opl-meta-agent/${realTargetAgent.domain_id}/real-target-delivery`,
-    metricRefs: [
-      'metric-ref:real-target-descriptor-valid',
-      'metric-ref:real-target-agent-lab-suite-valid',
-      'metric-ref:real-target-owner-receipt-present',
-    ],
-    evidenceRefs: [
-      `evidence-ref:${realTargetAgent.domain_id}/scaffold-validation`,
-      ...referenceDesignEvidenceRefs(realTargetAgent),
-    ],
-    reviewRefs: [`review-ref:opl-meta-agent/${realTargetAgent.domain_id}/real-target-review`],
-    qualityGateRefs: [`quality-gate:opl-meta-agent/${realTargetAgent.domain_id}/baseline-owner`],
-    improvementCandidateRef: `improvement-candidate:opl-meta-agent/${realTargetAgent.domain_id}/source-coverage`,
-    improvementCandidateKind: 'prompt_policy',
-    improvementTargetRef: `prompt-policy:${realTargetAgent.domain_id}/source-grounded-briefing`,
-    promotionGateRef: `promotion-gate:opl-meta-agent/${realTargetAgent.domain_id}`,
-    regressionSuiteRefs: ['regression-suite:opl-meta-agent/real-target-delivery'],
-    aiReviewerEvaluation,
-    aiReviewerEvaluationRef,
-  });
-}
-
 export function runBuildAgentBaseline({
     outputDir,
     oplBin,
@@ -903,12 +517,8 @@ export function runBuildAgentBaseline({
 
   const targetAgentLabel = targetAgent.domain_label ?? targetAgent.domain_id;
   const targetAgentDir = path.join(outputDir, targetAgent.domain_id);
-  const suitePath = path.join(outputDir, 'agent-lab-suite.json');
-  const receiptPath = path.join(outputDir, 'baseline-delivery-receipt.json');
-  const learningPath = path.join(outputDir, 'online-learning-candidate.json');
-  const mechanismPath = path.join(outputDir, 'mechanism-patch-proposal.json');
-  const realTargetReceiptPath = path.join(outputDir, 'real-target-delivery-receipt.json');
-  const scaleoutLedgerPath = path.join(outputDir, 'real-target-scaleout-evidence-ledger.json');
+  const suiteSeedPath = path.join(outputDir, 'agent-lab-suite-seed.json');
+  const foundryLabWorkOrderPath = path.join(outputDir, 'foundry-lab-work-order.json');
 
   const scaffold = runOpl(oplBin, [
     'agents',
@@ -1027,118 +637,47 @@ export function runBuildAgentBaseline({
     '--json',
   ]);
 
-  const suite = buildAgentLabSuite({
+  const suiteSeed = buildBaselineAgentLabSuiteSeed({
     targetAgent,
     targetAgentDir,
     aiReviewerEvaluation,
     aiReviewerEvaluationRef: aiReviewerEvaluationPath,
   });
-  writeJson(suitePath, suite);
-  const agentLabRun = runOpl(oplBin, ['agent-lab', 'run', '--suite', suitePath, '--json']);
-  const suiteResult = agentLabRun.agent_lab_run.suite_result as SuiteResult;
+  writeJson(suiteSeedPath, suiteSeed);
 
-  const baselineReceipt = buildBaselineReceipt(
-    targetAgent,
-    suiteResult,
-    scaffoldValidation,
-    domainPackSummary,
-    targetDomainPackSummary,
-    aiReviewerEvaluation,
-    aiReviewerEvaluationPath,
-    stageDecompositionAttempt,
-  );
-  const learningCandidate = buildLearningCandidate(suiteResult, baselineReceipt);
-  const mechanismPatchProposal = buildBaselineMechanismPatchProposal(
-    suiteResult,
-    baselineReceipt,
-    learningCandidate,
-    aiReviewerEvaluation,
-    aiReviewerEvaluationPath,
-  );
-  writeJson(receiptPath, baselineReceipt);
-  writeJson(learningPath, learningCandidate);
-  writeJson(mechanismPath, mechanismPatchProposal);
-
-  const realTargetAgent: TargetAgent = {
-    ...targetAgent,
-    repo_dir: targetAgentDir,
-    descriptor_ref: path.join(targetAgentDir, 'contracts', 'domain_descriptor.json'),
-  };
-  const realTargetSuitePath = path.join(outputDir, 'real-target-agent-lab-suite.json');
-  const realTargetSuite = buildRealTargetAgentSuite({
-    realTargetAgent,
-    realTargetAgentDir: targetAgentDir,
-    aiReviewerEvaluation,
-    aiReviewerEvaluationRef: aiReviewerEvaluationPath,
-  });
-  writeJson(realTargetSuitePath, realTargetSuite);
-  const realTargetAgentLabRun = runOpl(oplBin, ['agent-lab', 'run', '--suite', realTargetSuitePath, '--json']);
-  const realTargetSuiteResult = realTargetAgentLabRun.agent_lab_run.suite_result as SuiteResult;
-  const realTargetDeliveryReceipt = buildRealTargetDeliveryReceipt({
-    targetAgent: realTargetAgent,
-    suiteResult: realTargetSuiteResult,
-    baselineDeliveryReceipt: baselineReceipt,
-    candidateAgentPackageRef: `candidate-agent-package:${targetAgent.domain_id}`,
-    agentLabSuiteRef: realTargetSuitePath,
-    promotionGateRefs: [`promotion-gate:opl-meta-agent/${targetAgent.domain_id}`],
-    noForbiddenWriteProofRefs: [
-      `no-forbidden-write:opl-meta-agent/${targetAgent.domain_id}/real_target_delivery`,
+  const foundryLabWorkOrder = buildFoundryLabWorkOrder({
+    workOrderKind: 'agent_baseline_evaluation',
+    targetAgent: {
+      ...targetAgent,
+      repo_dir: targetAgentDir,
+      descriptor_ref: path.join(targetAgentDir, 'contracts', 'domain_descriptor.json'),
+    },
+    suiteSeed,
+    suiteSeedRef: suiteSeedPath,
+    sourceRefs: [
+      descriptorPath,
+      targetAgentPackageManifestPath,
+      targetAgentCapabilityMapPath,
+      stageDecompositionAttempt.attempt_ref,
+      stageDecompositionAttempt.closeout_packet_ref,
+      ...referenceDesignEvidenceRefs(targetAgent),
+    ].filter((ref): ref is string => typeof ref === 'string' && ref.length > 0),
+    reviewerRefs: [
+      aiReviewerEvaluationPath,
+      ...aiReviewerEvaluation.source_refs,
+      ...aiReviewerEvaluation.direct_evidence_refs,
+    ],
+    candidateRefs: [
+      'candidate-agent-package:' + targetAgent.domain_id,
+      'improvement-candidate:opl-meta-agent/' + targetAgent.domain_id + '/rubric-gap-tightening',
     ],
   });
-  const scaleoutEvidenceLedger = buildScaleoutEvidenceLedger({
-    deliveryReceipts: [realTargetDeliveryReceipt],
-  });
-  const newAgentDeliveryGate = assertNewAgentDeliveryGate({
-    targetAgent: realTargetAgent,
-    scaffoldValidationStatus: scaffoldValidation.standard_domain_agent_scaffold.validation.status,
-    generatedInterfaceStatus: generatedInterfaces.generated_agent_interfaces.status,
-    baselineSuiteResult: suiteResult as unknown as JsonObject,
-    realTargetSuiteResult: realTargetSuiteResult as unknown as JsonObject,
-    aiReviewerEvaluation,
-    selfEvolutionConsumptionRef: learningCandidate.candidate_id,
-    deliveryReceipt: realTargetDeliveryReceipt as unknown as JsonObject,
-    stageRunRefsOnlyConsumptionRef: stageDecompositionAttempt.attempt_ref,
-    stageCompletionPolicyRef: stageDecompositionAttempt.stage_packet_ref,
-    stageCloseoutPacketRef: stageDecompositionAttempt.closeout_packet_ref,
-    targetOwnerReceiptOrTypedBlockerOrHumanGateRef: realTargetDeliveryReceipt.owner_receipt_refs[0],
-    noForbiddenWriteProofRef: realTargetDeliveryReceipt.no_forbidden_write_proof_refs[0],
-    sourceMorphologyRef: stageDecompositionAttempt.closeout_refs
-      .find(hasMorphologyEvidenceRef) ?? aiReviewerEvaluation.direct_evidence_refs.find(hasMorphologyEvidenceRef),
-    ownerRouteRef: realTargetDeliveryReceipt.owner_receipt_refs[0],
-    generatedSurfaceConsumptionRef:
-      generatedInterfaces.generated_agent_interfaces.generated_surface_consumption_bundle?.surface_kind,
-    privateResidueDecisionRef: 'contracts/default_caller_deletion_evidence.json',
-    ownerAnswerShape: 'owner_receipt',
-    providerCompletionIsDomainCompletion: false,
-    omaTargetAuthorityBoundary: {
-      can_write_target_domain_truth: false,
-      can_write_target_owner_receipt_body: false,
-      can_mutate_target_domain_artifact_body: false,
-      can_authorize_target_domain_quality_or_export: false,
-    },
-  });
-  writeJson(realTargetReceiptPath, realTargetDeliveryReceipt);
-  writeJson(scaleoutLedgerPath, scaleoutEvidenceLedger);
-  const realTargetDelivery = {
-    target_agent: {
-      ...realTargetAgent,
-      scaffold_validation_status: scaffoldValidation.standard_domain_agent_scaffold.validation.status,
-      generated_interface_status: generatedInterfaces.generated_agent_interfaces.status,
-    },
-    agent_lab_run: realTargetAgentLabRun.agent_lab_run,
-    delivery_receipt: realTargetDeliveryReceipt,
-    new_agent_delivery_gate: newAgentDeliveryGate,
-    scaleout_evidence_ledger: scaleoutEvidenceLedger,
-    stage_decomposition_attempt: stageDecompositionAttempt,
-    opl_agent_package_manifest_ref: targetAgentPackageManifestPath,
-    capability_map_ref: targetAgentCapabilityMapPath,
-    primary_skill_ref: targetPrimarySkillPath,
-  };
+  writeJson(foundryLabWorkOrderPath, foundryLabWorkOrder);
 
   return {
-    surface_kind: 'opl_meta_agent_self_learning_loop_result',
-    version: 'opl-meta-agent.self-learning-loop.v1',
-    status: suiteResult.status === 'passed' ? 'passed' : 'blocked',
+    surface_kind: 'opl_meta_agent_candidate_package_handoff',
+    version: 'opl-meta-agent.candidate-package-handoff.v1',
+    status: 'candidate_package_materialized_evaluation_consumer_blocked',
     product_id: 'opl-meta-agent',
     meta_agent_kind: 'opl_compatible_meta_agent',
     target_agent: {
@@ -1154,32 +693,32 @@ export function runBuildAgentBaseline({
     source_domain_pack: domainPackSummary,
     target_agent_domain_pack: targetDomainPackSummary,
     artifacts: {
-      stage_decomposition_attempt_receipt_path: path.join(outputDir, `${targetAgent.domain_id}-stage-decomposition-attempt-receipt.json`),
+      stage_decomposition_attempt_receipt_path: path.join(
+        outputDir,
+        targetAgent.domain_id + '-stage-decomposition-attempt-receipt.json',
+      ),
       stage_decomposition_closeout_packet_path: stageDecompositionAttempt.closeout_packet_path,
-      suite_path: suitePath,
-      baseline_delivery_receipt_path: receiptPath,
-      online_learning_candidate_path: learningPath,
-      mechanism_patch_proposal_path: mechanismPath,
-      real_target_agent_lab_suite_path: path.join(outputDir, 'real-target-agent-lab-suite.json'),
-      real_target_delivery_receipt_path: realTargetReceiptPath,
-      real_target_scaleout_evidence_ledger_path: scaleoutLedgerPath,
+      agent_lab_suite_seed_path: suiteSeedPath,
+      foundry_lab_work_order_path: foundryLabWorkOrderPath,
       opl_agent_package_manifest_path: targetAgentPackageManifestPath,
       target_agent_capability_map_path: targetAgentCapabilityMapPath,
       target_agent_primary_skill_path: targetPrimarySkillPath,
     },
     opl_agent_package_manifest_validation:
       targetAgentPackageManifestValidation.opl_agent_package_manifest,
-    opl_agent_lab: agentLabRun.agent_lab_run,
     opl_generated_interfaces: generatedInterfaces.generated_agent_interfaces,
     stage_decomposition_attempt: stageDecompositionAttempt,
-    learning_loop: {
-      baseline_receipt: baselineReceipt,
-      online_learning_candidate: learningCandidate,
-      online_learning_policy: learningCandidate.online_learning_policy,
-      mechanism_patch_proposal: mechanismPatchProposal,
+    agent_building_judgment: {
+      ai_reviewer_evaluation_ref: aiReviewerEvaluationPath,
+      verdict: aiReviewerEvaluation.verdict,
+      source_refs: aiReviewerEvaluation.source_refs,
+      direct_evidence_refs: aiReviewerEvaluation.direct_evidence_refs,
     },
-    new_agent_delivery_gate: newAgentDeliveryGate,
-    real_target_delivery: realTargetDelivery,
+    foundry_lab_handoff: {
+      suite_seed: suiteSeed,
+      work_order: foundryLabWorkOrder,
+    },
+    authority_boundary: foundryLabWorkOrder.authority_boundary,
   };
 }
 

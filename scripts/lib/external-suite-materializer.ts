@@ -1,13 +1,7 @@
-import path from 'node:path';
 import type { JsonObject } from './domain-pack.ts';
-import {
-  type OwnerReceipt,
-  type SuiteResult,
-} from './meta-agent-loop-receipts.ts';
 import {
   type TargetAgent,
   stableId,
-  writeJson,
 } from './meta-agent-loop-io.ts';
 import type {
   PatchTraceabilityEntry,
@@ -43,21 +37,10 @@ export type CapabilityCandidate = JsonObject & {
   efficiency_non_regression_refs: EfficiencyNonRegressionRefs;
 };
 
-type EfficiencyBlockerArtifactOptions = {
-  outputDir: string;
-  capabilityCandidate: CapabilityCandidate;
-  blocker: JsonObject;
-  agentLabRun: JsonObject;
-};
-
-type ExternalSuiteArtifactOptions = {
-  outputDir: string;
-  receipt: OwnerReceipt;
-  learningCandidate: JsonObject;
-  mechanismPatchProposal: JsonObject;
-  capabilityCandidate: CapabilityCandidate;
-  developerPatchWorkOrder: JsonObject;
-  agentLabRun: JsonObject;
+export type SuiteResult = JsonObject & {
+  result_id: string;
+  status: string;
+  foundry_lab_execution_receipt_ref?: string;
 };
 
 function unique(values: string[]): string[] {
@@ -132,61 +115,18 @@ function buildPrivateResidueDecision({
   };
 }
 
-export function writeTypedBlockerArtifacts({
-  outputDir,
-  capabilityCandidate,
-  blocker,
-  agentLabRun,
-}: EfficiencyBlockerArtifactOptions): JsonObject {
-  const artifacts = {
-    target_capability_improvement_candidate_path: path.join(outputDir, 'target-capability-improvement-candidate.json'),
-    typed_blocker_path: path.join(outputDir, 'typed-blocker.json'),
-    agent_lab_run_result_path: path.join(outputDir, 'agent-lab-run-result.json'),
-  };
-  writeJson(artifacts.target_capability_improvement_candidate_path, capabilityCandidate);
-  writeJson(artifacts.typed_blocker_path, blocker);
-  writeJson(artifacts.agent_lab_run_result_path, agentLabRun);
-  return artifacts;
-}
-
-export function writeExternalSuiteArtifacts({
-  outputDir,
-  receipt,
-  learningCandidate,
-  mechanismPatchProposal,
-  capabilityCandidate,
-  developerPatchWorkOrder,
-  agentLabRun,
-}: ExternalSuiteArtifactOptions): JsonObject {
-  const artifacts = {
-    meta_agent_improvement_receipt_path: path.join(outputDir, 'meta-agent-improvement-receipt.json'),
-    online_learning_candidate_path: path.join(outputDir, 'online-learning-candidate.json'),
-    mechanism_patch_proposal_path: path.join(outputDir, 'mechanism-patch-proposal.json'),
-    target_capability_improvement_candidate_path: path.join(outputDir, 'target-capability-improvement-candidate.json'),
-    developer_patch_work_order_path: path.join(outputDir, 'developer-patch-work-order.json'),
-    agent_lab_run_result_path: path.join(outputDir, 'agent-lab-run-result.json'),
-  };
-  writeJson(artifacts.meta_agent_improvement_receipt_path, receipt);
-  writeJson(artifacts.online_learning_candidate_path, learningCandidate);
-  writeJson(artifacts.mechanism_patch_proposal_path, mechanismPatchProposal);
-  writeJson(artifacts.target_capability_improvement_candidate_path, capabilityCandidate);
-  writeJson(artifacts.developer_patch_work_order_path, developerPatchWorkOrder);
-  writeJson(artifacts.agent_lab_run_result_path, agentLabRun);
-  return artifacts;
-}
-
 export function buildDeveloperPatchWorkOrder({
   targetAgent,
   suite,
   suiteResult,
-  receipt,
+  foundryLabExecutionReceiptRef,
   capabilityCandidate,
   policy,
 }: {
   targetAgent: TargetAgent;
   suite: JsonObject;
   suiteResult: SuiteResult;
-  receipt: OwnerReceipt;
+  foundryLabExecutionReceiptRef: string;
   capabilityCandidate: CapabilityCandidate;
   policy: TargetImprovementPolicy;
 }): JsonObject {
@@ -320,7 +260,7 @@ export function buildDeveloperPatchWorkOrder({
       ownerRouteRef,
     }),
     target_capability_improvement_candidate_ref: capabilityCandidate.candidate_id,
-    owner_receipt_ref: receipt.receipt_id,
+    foundry_lab_execution_receipt_ref: foundryLabExecutionReceiptRef,
     ai_reviewer_evaluation_ref: capabilityCandidate.ai_reviewer_evaluation_ref,
     ai_reviewer_review: capabilityCandidate.ai_reviewer_review,
     ai_reviewer_independence: capabilityCandidate.ai_reviewer_independence,
@@ -490,124 +430,6 @@ export function buildDeveloperPatchWorkOrder({
       can_authorize_target_domain_quality_or_export: false,
       can_promote_default_agent_without_gate: false,
       can_train_or_deploy_model_weights: false,
-    },
-  };
-}
-
-export function buildTargetImprovementPolicyTypedBlocker({
-  targetAgent,
-  suite,
-  suiteResult,
-  capabilityCandidate,
-  missingFields,
-}: {
-  targetAgent: TargetAgent;
-  suite: JsonObject;
-  suiteResult: SuiteResult;
-  capabilityCandidate: CapabilityCandidate;
-  missingFields: string[];
-}): JsonObject {
-  const workOrderId = stableId('oma_target_improvement_policy_blocker', [
-    targetAgent.domain_id,
-    suite.suite_id,
-    suiteResult.result_id,
-    capabilityCandidate.candidate_id,
-    missingFields,
-  ]);
-  return {
-    surface_kind: 'opl_meta_agent_target_improvement_policy_typed_blocker',
-    version: 'opl-meta-agent.target-improvement-policy-typed-blocker.v1',
-    blocker_id: stableId('oma_target_improvement_policy_blocker', [workOrderId]),
-    status: 'blocked_target_improvement_policy_missing',
-    blocked_reason: 'target_owned_change_refs_required',
-    repeat_budget: {
-      max_attempts: 2,
-      remaining_attempts: 0,
-      repeat_scope: 'same_target_eval_work_order_owner_route_tuple',
-    },
-    dead_letter_refs: [
-      `dead-letter:opl-meta-agent/${targetAgent.domain_id}/${workOrderId}`,
-    ],
-    escalation_refs: [
-      `escalation:target-owner/${targetAgent.domain_id}/target-improvement-policy`,
-    ],
-    next_allowed_action: 'supply_target_owned_change_refs_or_escalate_to_target_owner',
-    target_agent: capabilityCandidate.target_agent,
-    source_agent_lab_result_ref: suiteResult.result_id,
-    target_capability_improvement_candidate_ref: capabilityCandidate.candidate_id,
-    work_order_ref: workOrderId,
-    missing_required_fields: missingFields,
-    required_input_refs: [
-      'contracts/capability_map.json#capabilities[].canonical_paths',
-      'contracts/capability_map.json#capabilities[].improvement_tokens',
-      'contracts/capability_map.json#capabilities[].failure_token_registry_ref',
-      'contracts/capability_map.json#capabilities[].verification_refs',
-    ],
-    authority_boundary: {
-      typed_blocker_only: true,
-      no_executable_work_order_issued: true,
-      can_write_target_domain_truth: false,
-      can_write_target_domain_memory_body: false,
-      can_mutate_target_domain_artifact_body: false,
-      can_authorize_target_domain_quality_or_export: false,
-      can_promote_default_agent_without_gate: false,
-    },
-  };
-}
-
-export function buildEfficiencyTypedBlocker({
-  targetAgent,
-  suite,
-  suiteResult,
-  capabilityCandidate,
-  missingFields,
-}: {
-  targetAgent: TargetAgent;
-  suite: JsonObject;
-  suiteResult: SuiteResult;
-  capabilityCandidate: CapabilityCandidate;
-  missingFields: string[];
-}): JsonObject {
-  const workOrderId = stableId('oma_efficiency_work_order_blocker', [
-    targetAgent.domain_id,
-    suite.suite_id,
-    suiteResult.result_id,
-    capabilityCandidate.candidate_id,
-    missingFields,
-  ]);
-  return {
-    surface_kind: 'opl_meta_agent_efficiency_work_order_typed_blocker',
-    version: 'opl-meta-agent.efficiency-work-order-typed-blocker.v1',
-    blocker_id: stableId('oma_efficiency_blocker', [workOrderId]),
-    status: 'blocked_efficiency_quality_floor_missing',
-    blocked_reason: 'efficiency_evidence_requires_quality_floor_refs',
-    repeat_budget: {
-      max_attempts: 2,
-      remaining_attempts: 0,
-      repeat_scope: 'same_target_eval_work_order_owner_route_tuple',
-    },
-    dead_letter_refs: [
-      `dead-letter:opl-meta-agent/${targetAgent.domain_id}/${workOrderId}`,
-    ],
-    escalation_refs: [
-      `escalation:target-owner/${targetAgent.domain_id}/efficiency-non-regression`,
-    ],
-    next_allowed_action: 'supply_quality_floor_refs_or_escalate_to_target_owner',
-    target_agent: capabilityCandidate.target_agent,
-    source_agent_lab_result_ref: suiteResult.result_id,
-    target_capability_improvement_candidate_ref: capabilityCandidate.candidate_id,
-    work_order_ref: workOrderId,
-    missing_required_fields: missingFields,
-    efficiency_non_regression_refs: capabilityCandidate.efficiency_non_regression_refs,
-    required_input_refs: ['efficiency_non_regression_refs.quality_floor_refs'],
-    authority_boundary: {
-      typed_blocker_only: true,
-      no_executable_work_order_issued: true,
-      can_write_target_domain_truth: false,
-      can_write_target_domain_memory_body: false,
-      can_mutate_target_domain_artifact_body: false,
-      can_authorize_target_quality_or_export: false,
-      can_promote_default_agent_without_gate: false,
     },
   };
 }

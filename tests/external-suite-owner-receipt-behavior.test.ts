@@ -37,18 +37,16 @@ for (const [name, domainId, taskFamily] of cases) {
       });
 
       const payload = runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
-      const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
-      assert.equal(payload.status, 'passed');
-      assert.equal(workOrder.status, 'no_patch_required');
+      const candidate = readJson(payload.artifacts.target_capability_improvement_candidate_path);
+      assert.equal(payload.status, 'no_source_patch_required');
+      assert.equal(payload.artifacts.developer_patch_work_order_path, undefined);
+      assert.equal(candidate.status, 'evaluated_no_source_patch_required');
       if (domainId === 'target-agent') {
-        assert.deepEqual(workOrder.required_patch_surfaces, []);
-        assert.equal(workOrder.implementation_controls.source_patch_required, false);
-        assert.equal(workOrder.version_management.absorb_back_required, false);
-        assert.match(workOrder.machine_closeout_refs.patch_absorption_ref, /no-source-patch/);
+        assert.deepEqual(candidate.proposed_change_refs, []);
+        assert.deepEqual(candidate.target_editable_surface_refs, []);
       } else {
-        const serialized = JSON.stringify(workOrder);
-        assert.equal(workOrder.target_agent.domain_id, 'external-agent');
-        assert.equal(workOrder.target_owner_route.owner_route_ref, 'target-agent-owner:external-agent');
+        const serialized = JSON.stringify(candidate);
+        assert.equal(candidate.target_agent.domain_id, 'external-agent');
         assert.match(serialized, /external-agent/);
         assert.doesNotMatch(serialized, /med-autogrant|:mag\//i);
       }

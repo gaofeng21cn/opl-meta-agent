@@ -11,30 +11,6 @@ import {
   writeJsonFile as writeJson,
 } from './support/contracts.ts';
 
-function writeFakeOplBin(filePath: string): void {
-  fs.writeFileSync(
-    filePath,
-    `#!/usr/bin/env node
-const fs = require('node:fs');
-const path = require('node:path');
-const suitePath = process.argv[process.argv.indexOf('--suite') + 1];
-const suite = JSON.parse(fs.readFileSync(suitePath, 'utf8'));
-process.stdout.write(JSON.stringify({
-  agent_lab_run: {
-    suite_path: suitePath,
-    suite_result: {
-      result_id: 'fake-agent-lab-result:' + path.basename(suitePath),
-      suite_kind: suite.suite_kind,
-      status: suite.ai_reviewer_evaluation_ref ? 'passed' : 'blocked',
-      summary: { recovery_probe_count: 1, recovery_passed_count: 1, forbidden_authority_flag_count: 0 }
-    }
-  }
-}, null, 2) + '\\n');
-`,
-  );
-  fs.chmodSync(filePath, 0o755);
-}
-
 function writeTargetAgentFixture(agentRepo: string): void {
   writeJson(path.join(agentRepo, 'contracts/domain_descriptor.json'), {
     domain_id: 'med-autoscience',
@@ -54,22 +30,18 @@ function writeTargetAgentFixture(agentRepo: string): void {
     domain_id: 'med-autoscience',
     owner: 'MedAutoScience',
     external_suite_seed: {
-      tasks: [
-        {
-          task_id: 'agent-lab-task:mas/production-evidence-tail',
-          gate_id: 'production_evidence_tail',
-          owner_route: 'MedAutoScience',
-          required_return_shapes: ['owner_receipt', 'typed_blocker'],
-        },
-      ],
+      tasks: [{
+        task_id: 'agent-lab-task:mas/production-evidence-tail',
+        gate_id: 'production_evidence_tail',
+        owner_route: 'MedAutoScience',
+        required_return_shapes: ['owner_receipt', 'typed_blocker'],
+      }],
     },
   });
   writeJson(path.join(agentRepo, 'contracts/production_acceptance/production-acceptance.json'), {
     domain_id: 'med-autoscience',
     owner: 'MedAutoScience',
-    production_like_receipt_chain: {
-      required_return_shapes: ['owner_receipt', 'typed_blocker'],
-    },
+    production_like_receipt_chain: { required_return_shapes: ['owner_receipt', 'typed_blocker'] },
     domain_acceptance_receipt: {
       owner_receipt_refs: [{ ref: 'contracts/owner_receipt_contract.json' }],
       progress_delta_refs: [{ ref: 'docs/status.md#current-evidence-tail' }],
@@ -77,9 +49,6 @@ function writeTargetAgentFixture(agentRepo: string): void {
       next_verification_command_refs: [{ ref: 'scripts/verify.sh' }],
     },
     authority_boundary: {
-      domain_ready_requires_owner_receipt_or_typed_blocker: true,
-      quality_or_export_ready_requires_target_owner_gate: true,
-      artifact_mutation_requires_owner_receipt: true,
       no_forbidden_write_proof_refs: ['no-forbidden-write:med-autoscience/production-evidence-tail'],
     },
   });
@@ -94,12 +63,12 @@ function writeReviewerEvaluation(filePath: string): void {
     review_attempt_ref: 'attempt:ai-reviewer/mas/pass4',
     no_shared_context: true,
     independent_attempt: true,
-    critique: 'Production evidence tail needs refs-only owner-route and no-forbidden-write proof.',
-    suggestions: ['Emit a proposal without writing target truth or owner receipts.'],
+    critique: 'Production evidence tail needs refs-only owner routing.',
+    suggestions: ['Submit a Foundry Lab work order without writing target truth.'],
     source_refs: ['contracts/agent_lab_handoff.json'],
     direct_evidence_refs: ['contracts/production_acceptance/production-acceptance.json'],
-    verdict: 'blocked_requires_developer_patch',
-    predicted_impact: 'The proposal should expose missing owner-route refs without readiness claims.',
+    verdict: 'requires_foundry_lab_evaluation',
+    predicted_impact: 'The work order keeps execution and ledgers in Foundry Lab.',
     provenance: { artifact_ref: 'artifact-ref:mas/pass4-review', created_by: 'test-fixture' },
   });
 }
@@ -112,66 +81,51 @@ function runMaterializer(args: string[]) {
   );
 }
 
-test('agent:evidence emits refs-only proposal and work order without target authority', () => {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-agent-evidence-pass4-'));
+test('agent:evidence emits suite seed, candidate, and Foundry Lab work order only', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-agent-evidence-'));
   try {
     const agentRepo = path.join(outputRoot, 'med-autoscience');
     const outputDir = path.join(outputRoot, 'out');
-    const fakeOpl = path.join(outputRoot, 'opl');
     const reviewerPath = path.join(outputRoot, 'reviewer.json');
     writeTargetAgentFixture(agentRepo);
-    writeFakeOplBin(fakeOpl);
     writeReviewerEvaluation(reviewerPath);
 
     const result = runMaterializer([
-      '--agent-repo',
-      agentRepo,
-      '--output-dir',
-      outputDir,
-      '--opl-bin',
-      fakeOpl,
-      '--ai-reviewer-evaluation',
-      reviewerPath,
+      '--agent-repo', agentRepo,
+      '--output-dir', outputDir,
+      '--ai-reviewer-evaluation', reviewerPath,
     ]);
     assert.equal(result.status, 0, result.stderr);
     const payload = parseJsonText(result.stdout);
-    const workOrder = readJson(path.join(outputDir, 'developer-patch-work-order.json'));
-    assert.equal(payload.status, 'proposal_recorded_requires_target_owner_gate');
-    assert.equal(workOrder.status, 'ready_for_target_agent_source_patch_proposal');
-    assert.equal(workOrder.source_morphology_proof.consumed_as_refs_only, true);
-    assert.equal(workOrder.private_residue_decision.target_truth_write_authorized, false);
-    assert.equal(workOrder.authority_boundary.can_write_target_domain_truth, false);
-    assert.equal(workOrder.authority_boundary.can_authorize_target_quality_or_export, false);
-    assert.equal(fs.existsSync(path.join(outputDir, 'mechanism-patch-proposal.json')), true);
+    const workOrder = readJson(path.join(outputDir, 'foundry-lab-work-order.json'));
+    const suiteSeed = readJson(path.join(outputDir, 'agent-lab-suite-seed.json'));
+    assert.equal(payload.status, 'foundry_lab_evaluation_candidate_blocked_missing_consumer');
+    assert.equal(workOrder.work_order_kind, 'target_agent_production_evidence_evaluation');
+    assert.equal(workOrder.authority_boundary.oma_can_execute_agent_lab_suite, false);
+    assert.equal(suiteSeed.seed_status, 'declarative_seed_candidate_waiting_for_foundry_lab_consumer');
+    assert.equal(fs.existsSync(path.join(outputDir, 'agent-lab-run-result.json')), false);
+    assert.equal(fs.existsSync(path.join(outputDir, 'developer-patch-work-order.json')), false);
+    assert.equal(fs.existsSync(path.join(outputDir, 'typed-blocker.json')), false);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }
 });
 
-test('agent:evidence writes typed blocker when reviewer evidence is missing', () => {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-agent-evidence-blocker-pass4-'));
+test('agent:evidence projects an expected blocker ref instead of writing a blocker body', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-agent-evidence-missing-reviewer-'));
   try {
     const agentRepo = path.join(outputRoot, 'med-autoscience');
     const outputDir = path.join(outputRoot, 'out');
-    const fakeOpl = path.join(outputRoot, 'opl');
     writeTargetAgentFixture(agentRepo);
-    writeFakeOplBin(fakeOpl);
-
-    const result = runMaterializer([
-      '--agent-repo',
-      agentRepo,
-      '--output-dir',
-      outputDir,
-      '--opl-bin',
-      fakeOpl,
-    ]);
+    const result = runMaterializer(['--agent-repo', agentRepo, '--output-dir', outputDir]);
     assert.equal(result.status, 0, result.stderr);
     const payload = parseJsonText(result.stdout);
-    const blocker = readJson(path.join(outputDir, 'typed-blocker.json'));
-    assert.equal(payload.status, 'blocked_missing_ai_reviewer_evaluation');
-    assert.equal(blocker.authority_boundary.no_delivery_receipt_signed, true);
-    assert.equal(blocker.authority_boundary.can_write_target_domain_truth, false);
-    assert.equal(fs.existsSync(path.join(outputDir, 'mechanism-patch-proposal.json')), false);
+    assert.equal(
+      payload.status,
+      'foundry_lab_evaluation_candidate_blocked_missing_consumer_and_reviewer_evidence',
+    );
+    assert.match(payload.agent_building_judgment.expected_typed_blocker_ref, /^expected-typed-blocker-ref:/);
+    assert.equal(fs.existsSync(path.join(outputDir, 'typed-blocker.json')), false);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }

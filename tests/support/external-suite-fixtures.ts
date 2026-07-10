@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { runImproveFromAgentLabSuite } from '../../scripts/improve-from-agent-lab-suite.ts';
 import type { JsonObject } from '../../scripts/lib/domain-pack.ts';
-import { oplBin, writeJsonFile } from './contracts.ts';
+import { readJsonFile, writeJsonFile } from './contracts.ts';
 
 export { withTempDir as withOutputRoot } from './contracts.ts';
 
@@ -142,12 +142,28 @@ export function runImproveFromSuite(args: {
   suitePath: string; targetAgentDir: string; outputRoot: string;
   reviewerEvaluationPath: string; feedbackRef?: string;
 }): JsonObject {
+  const suite = readJsonFile(args.suitePath);
+  const task = Array.isArray(suite.tasks) ? suite.tasks[0] : {};
+  const passed = task?.scorecard?.passed === true
+    || task?.promotion_gate?.gate_status === 'passed';
+  const suiteResultPath = path.join(args.outputRoot, 'foundry-lab-suite-result.json');
+  writeJsonFile(suiteResultPath, {
+    result_id: `foundry-suite-result:${String(suite.suite_id ?? path.basename(args.suitePath))}`,
+    status: passed ? 'passed' : 'blocked',
+    foundry_lab_execution_receipt_ref:
+      `foundry-lab-execution-receipt:${String(suite.suite_id ?? path.basename(args.suitePath))}`,
+    summary: {
+      recovery_probe_count: 1,
+      recovery_passed_count: passed ? 1 : 0,
+      forbidden_authority_flag_count: 0,
+    },
+  });
   return runImproveFromAgentLabSuite({
     suitePath: args.suitePath,
+    suiteResultPath,
     targetAgentDir: args.targetAgentDir,
     outputDir: args.outputRoot,
     feedbackRef: args.feedbackRef ?? null,
     aiReviewerEvaluationPath: args.reviewerEvaluationPath,
-    oplBin,
   });
 }

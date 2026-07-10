@@ -7,15 +7,16 @@
       "scripts/lib/agent-evidence-materializer.ts",
       "scripts/lib/agent-evidence-typed-blocker.ts",
       "scripts/lib/external-suite-materializer.ts",
+      "scripts/lib/foundry-lab-work-order.ts",
       "scripts/lib/target-improvement-policy.ts",
       "scripts/lib/work-order-builders.ts",
       "scripts/lib/work-order-efficiency.ts",
       "scripts/lib/work-order-refs.ts",
       "scripts/lib/work-order-validation.ts"
     ],
-    "current_role": "target_agent_generic_work_order_candidate_proposal_or_typed_blocker_materializer",
+    "current_role": "target_agent_suite_result_judgment_candidate_and_declarative_work_order_materializer",
     "retention_state": "retained_current_authority_function",
-    "retention_reason": "current OMA refs-only materializer group for agent-evidence and external-suite developer work-order candidate, target improvement proposal, typed blocker shape, runtime read-model consumption, workspace proof, and no-forbidden-write proof refs without owning target truth, target worktree lifecycle, quality verdicts, owner receipt bodies, OPL runner parity, or promotion gates",
+    "retention_reason": "current OMA refs-only group emits suite seeds, Foundry Lab work orders, target capability candidates, developer work orders, and expected blocker refs, or consumes an explicit Foundry Lab suite-result ref for agent-building judgment. It does not execute Agent Lab, write suite results, owner receipt or typed blocker bodies, learning/promotion/mechanism/scaleout ledgers, delivery gates, target worktree lifecycle, target truth, or quality verdicts",
     "retention_evidence_refs": [
       "contracts/developer_work_order_policy.json",
       "contracts/developer_work_order_policy.json#/target_improvement_default_change_ref_policy",
@@ -26,7 +27,7 @@
       "tests/external-suite-reviewer-gates.test.ts",
       "tests/target-improvement-policy.test.ts"
     ],
-    "allowed_until": "active_npm_or_test_caller_requires_refs_only_artifact_materialization",
+    "allowed_until": "active_npm_or_test_caller_requires_oma_agent_building_judgment_or_declarative_work_order_emission",
     "required_before_retire_or_absorb": [
       "stable_policy_moved_to_agent_contracts_authority_or_opl_primitive_ref",
       "opl_agent_lab_runner_parity_ref",
@@ -43,6 +44,10 @@
     ],
     "forbidden_long_term_claims": [
       "agent_lab_runner",
+      "agent_lab_suite_result_or_execution_receipt_writer",
+      "learning_promotion_mechanism_or_scaleout_ledger_writer",
+      "owner_receipt_or_typed_blocker_body_writer",
+      "delivery_gate_assembler",
       "promotion_gate",
       "target_worktree_lifecycle_owner",
       "target_owner_closeout_hook_owner",
@@ -67,7 +72,7 @@
     ],
     "current_role": "typed_stage_closeout_validator_and_candidate_pack_materializer",
     "retention_state": "retained_current_authority_function",
-    "retention_reason": "current OMA thin refs-only authority surface for build-agent baseline and stage-decomposition typed closeout validation, explicit fixture or live stage-attempt consumption, candidate domain-pack materialization, stage-native artifact refs, and typed blocker refs without owning pack compiler, generated interface, target truth, runtime state, promotion, target worktree lifecycle, or owner receipt bodies",
+    "retention_reason": "current OMA thin authority surface for stage-decomposition closeout validation, candidate domain-pack materialization, suite-seed emission, and declarative Foundry Lab work-order handoff without owning Agent Lab execution/results/ledgers, pack compiler, generated interface, target truth, runtime state, promotion, target worktree lifecycle, owner receipt bodies, or typed blocker bodies",
     "retention_evidence_refs": [
       "package.json#scripts.build-agent-baseline",
       "contracts/stage_native_artifact_vocabulary.json",

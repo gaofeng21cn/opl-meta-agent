@@ -1,195 +1,81 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import test from 'node:test';
 import {
-  assertNewAgentDeliveryGate,
-} from '../scripts/build-agent-baseline.ts';
-import type { JsonObject } from '../scripts/lib/domain-pack.ts';
+  buildFoundryLabWorkOrder,
+} from '../scripts/lib/foundry-lab-work-order.ts';
+import {
+  repoRoot,
+} from './support/contracts.ts';
 
-function reviewerEvaluation(overrides: JsonObject = {}): JsonObject {
-  return {
-    reviewer_kind: 'ai_reviewer',
-    model_or_provider: 'gpt-5.5',
-    run_ref: 'run:ai-reviewer/oma/new-agent-delivery',
-    execution_attempt_ref: 'attempt:executor/oma/new-agent-delivery',
-    review_attempt_ref: 'attempt:ai-reviewer/oma/new-agent-delivery',
-    no_shared_context: true,
-    independent_attempt: true,
-    critique: 'The target agent needs external suite consumption before delivery can close.',
-    suggestions: ['Consume the Agent Lab result through the OMA self-evolution loop.'],
-    source_refs: ['review-ref:oma/new-agent-delivery'],
-    direct_evidence_refs: ['artifact-ref:target-agent/source-review'],
-    verdict: 'requires_self_evolution_consumption',
-    predicted_impact: 'The delivery gate avoids treating scaffold readiness as target-agent delivery.',
-    provenance: {
-      reviewer_prompt_ref: 'prompt:oma/new-agent-delivery-review',
-    },
-    ...overrides,
-  };
-}
+const ACTIVE_MATERIALIZER_REFS = [
+  'scripts/build-agent-baseline.ts',
+  'scripts/improve-from-agent-lab-suite.ts',
+  'scripts/lib/agent-evidence-materializer.ts',
+  'scripts/lib/external-suite-materializer.ts',
+  'scripts/takeover-agent.ts',
+];
 
-type NewAgentDeliveryGateInput = Parameters<typeof assertNewAgentDeliveryGate>[0];
-
-function passedSuiteResult(kind: 'baseline' | 'real-target'): JsonObject {
-  return {
-    result_id: `agent-lab-result:target-agent/${kind}`,
-    status: 'passed',
-    summary: {
-      recovery_probe_count: 1,
-      recovery_passed_count: 1,
-      forbidden_authority_flag_count: 0,
-    },
-  };
-}
-
-function baseDeliveryGateInput(overrides: Partial<NewAgentDeliveryGateInput> = {}): NewAgentDeliveryGateInput {
-  return {
+test('OMA emits a blocked Foundry Lab work-order candidate without execution or ledger authority', () => {
+  const workOrder = buildFoundryLabWorkOrder({
+    workOrderKind: 'target_agent_takeover_evaluation',
     targetAgent: {
       domain_id: 'target-agent',
       domain_label: 'Target Agent',
-      delivery_domain: 'opl_compatible_target_agent',
+      repo_dir: '/tmp/target-agent',
     },
-    scaffoldValidationStatus: 'valid',
-    generatedInterfaceStatus: 'ready',
-    baselineSuiteResult: passedSuiteResult('baseline'),
-    realTargetSuiteResult: passedSuiteResult('real-target'),
-    aiReviewerEvaluation: reviewerEvaluation(),
-    ...overrides,
-  };
-}
-
-function deliveryReceiptGateInput(overrides: Partial<NewAgentDeliveryGateInput> = {}): NewAgentDeliveryGateInput {
-  return baseDeliveryGateInput({
-    selfEvolutionConsumptionRef: 'self-evolution-consumption:target-agent/external-suite',
-    deliveryReceipt: {
-      surface_kind: 'opl_meta_agent_real_target_agent_delivery_receipt',
-      receipt_id: 'receipt:target-agent/delivery',
+    suiteSeed: {
+      suite_id: 'agent-lab-suite-seed:target-agent/takeover',
+      suite_kind: 'agent_lab_external_suite',
     },
-    stageRunRefsOnlyConsumptionRef: 'stage-run-ref:target-agent/baseline',
-    stageCompletionPolicyRef: 'stage-completion-policy-ref:target-agent/baseline',
-    stageCloseoutPacketRef: 'stage-closeout-packet-ref:target-agent/baseline',
-    targetOwnerReceiptOrTypedBlockerOrHumanGateRef: 'owner-receipt-ref:target-agent/baseline',
-    noForbiddenWriteProofRef: 'no-forbidden-write:target-agent/baseline',
-    sourceMorphologyRef: 'artifact-morphology-ref:target-agent/baseline',
-    ownerRouteRef: 'target-owner-route-ref:target-agent/baseline',
-    generatedSurfaceConsumptionRef: 'generated-interface-bundle-ref:target-agent',
-    privateResidueDecisionRef: 'private-residue-decision-ref:target-agent/default-caller',
-    ownerAnswerShape: 'owner_receipt',
-    ...overrides,
+    suiteSeedRef: '/tmp/oma/agent-lab-suite-seed.json',
+    sourceRefs: ['contracts/agent_lab_handoff.json'],
+    reviewerRefs: ['review:target-agent/takeover'],
+    candidateRefs: ['improvement-candidate:target-agent/takeover'],
   });
-}
 
-test('new agent delivery gate rejects scaffold generated interface and baseline pass without self-evolution closeout', () => {
-  assert.throws(
-    () =>
-      assertNewAgentDeliveryGate(baseDeliveryGateInput()),
-    /self_evolution_consumption_ref.*exactly_one_closeout_outcome/,
-  );
+  assert.equal(workOrder.surface_kind, 'opl_meta_agent_foundry_lab_work_order_candidate');
+  assert.equal(workOrder.version, 'opl-meta-agent.foundry-lab-work-order-candidate.v1');
+  assert.equal(workOrder.status, 'blocked_missing_opl_foundry_lab_evaluation_work_order_consumer');
+  assert.equal(workOrder.consumer_dependency.status, 'missing');
+  assert.equal(workOrder.execution_aperture.action_ref, null);
+  assert.equal(workOrder.execution_owner, 'one-person-lab/OPL Foundry Lab');
+  assert.equal(workOrder.suite_seed.ref, '/tmp/oma/agent-lab-suite-seed.json');
+  assert.deepEqual(workOrder.candidate_refs, ['improvement-candidate:target-agent/takeover']);
+  assert.deepEqual(workOrder.expected_return_shapes, [
+    'agent_lab_suite_result_ref',
+    'foundry_lab_execution_receipt_ref',
+    'improvement_candidate_refs',
+    'mechanism_proposal_refs',
+    'promotion_gate_refs',
+    'scaleout_ledger_refs',
+    'target_owner_receipt_or_typed_blocker_ref',
+  ]);
+
+  const boundary = workOrder.authority_boundary;
+  [
+    'oma_can_execute_agent_lab_suite',
+    'oma_can_write_agent_lab_result',
+    'oma_can_write_owner_receipt_body',
+    'oma_can_write_learning_candidate_ledger',
+    'oma_can_write_promotion_gate',
+    'oma_can_write_mechanism_or_scaleout_ledger',
+    'oma_can_manage_work_order_lifecycle',
+    'oma_can_write_target_domain_truth',
+    'oma_can_write_target_domain_memory_body',
+    'oma_can_mutate_target_domain_artifact_body',
+    'oma_can_authorize_target_domain_quality_or_export',
+  ].forEach((field) => assert.equal(boundary[field], false, field));
 });
 
-test('new agent delivery gate rejects terminal closeout without StageRun refs-only owner boundary evidence', () => {
-  assert.throws(
-    () =>
-      assertNewAgentDeliveryGate(baseDeliveryGateInput({
-        aiReviewerEvaluation: reviewerEvaluation({
-          source_refs: ['review-ref:oma/new-agent-delivery', 'artifact-morphology:target-agent/brief'],
-          direct_evidence_refs: [
-            'artifact-ref:target-agent/source-review',
-            'artifact-morphology:target-agent/realistic-target-task-review',
-          ],
-        }),
-        selfEvolutionConsumptionRef: 'self-evolution-consumption:target-agent/external-suite',
-        deliveryReceipt: {
-          surface_kind: 'opl_meta_agent_real_target_agent_delivery_receipt',
-          receipt_id: 'receipt:target-agent/delivery',
-        },
-      })),
-    /stage_run_refs_only_consumption_ref_missing.*stage_completion_policy_ref_missing.*stage_closeout_packet_ref_missing.*target_owner_receipt_or_typed_blocker_or_human_gate_ref_missing.*no_forbidden_write_proof_ref_missing/,
-  );
-});
-
-test('new agent delivery gate rejects half-standard default path without morphology route generated consumption private residue decision and owner answer shape', () => {
-  assert.throws(
-    () =>
-      assertNewAgentDeliveryGate(baseDeliveryGateInput({
-        selfEvolutionConsumptionRef: 'self-evolution-consumption:target-agent/external-suite',
-        deliveryReceipt: {
-          surface_kind: 'opl_meta_agent_real_target_agent_delivery_receipt',
-          receipt_id: 'receipt:target-agent/delivery',
-        },
-        stageRunRefsOnlyConsumptionRef: 'stage-run-ref:target-agent/baseline',
-        stageCompletionPolicyRef: 'stage-completion-policy-ref:target-agent/baseline',
-        stageCloseoutPacketRef: 'stage-closeout-packet-ref:target-agent/baseline',
-        targetOwnerReceiptOrTypedBlockerOrHumanGateRef: 'owner-receipt-ref:target-agent/baseline',
-        noForbiddenWriteProofRef: 'no-forbidden-write:target-agent/baseline',
-      })),
-    /source_morphology_ref_missing.*owner_route_ref_missing.*generated_surface_consumption_ref_missing.*private_residue_decision_ref_missing.*owner_answer_shape_missing_or_unaccepted/,
-  );
-});
-
-test('new agent delivery gate rejects provider completion and OMA target truth write authority', () => {
-  assert.throws(
-    () =>
-      assertNewAgentDeliveryGate(deliveryReceiptGateInput({
-        aiReviewerEvaluation: reviewerEvaluation({
-          source_refs: ['review-ref:oma/new-agent-delivery', 'artifact-morphology:target-agent/brief'],
-          direct_evidence_refs: [
-            'artifact-ref:target-agent/source-review',
-            'artifact-morphology:target-agent/realistic-target-task-review',
-          ],
-        }),
-        selfEvolutionConsumptionRef: 'self-evolution-consumption:target-agent/external-suite',
-        deliveryReceipt: {
-          surface_kind: 'opl_meta_agent_real_target_agent_delivery_receipt',
-          receipt_id: 'receipt:target-agent/delivery',
-        },
-        stageRunRefsOnlyConsumptionRef: 'stage-run-ref:target-agent/baseline',
-        stageCompletionPolicyRef: 'stage-completion-policy-ref:target-agent/baseline',
-        stageCloseoutPacketRef: 'stage-closeout-packet-ref:target-agent/baseline',
-        targetOwnerReceiptOrTypedBlockerOrHumanGateRef: 'owner-receipt-ref:target-agent/baseline',
-        noForbiddenWriteProofRef: 'no-forbidden-write:target-agent/baseline',
-        sourceMorphologyRef: 'artifact-morphology-ref:target-agent/baseline',
-        ownerRouteRef: 'target-owner-route-ref:target-agent/baseline',
-        generatedSurfaceConsumptionRef: 'generated-interface-bundle-ref:target-agent',
-        privateResidueDecisionRef: 'private-residue-decision-ref:target-agent/default-caller',
-        ownerAnswerShape: 'owner_receipt',
-        providerCompletionIsDomainCompletion: true,
-        omaTargetAuthorityBoundary: {
-          can_write_target_domain_truth: true,
-          can_write_target_owner_receipt_body: true,
-        },
-      })),
-    /provider_completion_is_domain_completion_forbidden.*oma_target_authority_boundary_can_write_target_domain_truth_forbidden.*oma_target_authority_boundary_can_write_target_owner_receipt_body_forbidden/,
-  );
-});
-
-test('new agent delivery gate accepts exactly one delivery receipt closeout with reviewer and self-evolution evidence', () => {
-  const gate = assertNewAgentDeliveryGate(deliveryReceiptGateInput({
-    providerCompletionIsDomainCompletion: false,
-    omaTargetAuthorityBoundary: {
-      can_write_target_domain_truth: false,
-      can_write_target_owner_receipt_body: false,
-    },
-  }));
-
-  assert.equal(gate.gate_status, 'passed');
-  assert.equal(gate.required_evidence.closeout_outcome_count, 1);
-  assert.equal(gate.required_evidence.stage_run_refs_only_consumption_ref, 'stage-run-ref:target-agent/baseline');
-  assert.equal(gate.required_evidence.stage_completion_policy_ref, 'stage-completion-policy-ref:target-agent/baseline');
-  assert.equal(gate.required_evidence.stage_closeout_packet_ref, 'stage-closeout-packet-ref:target-agent/baseline');
-  assert.equal(
-    gate.required_evidence.target_owner_receipt_or_typed_blocker_or_human_gate_ref,
-    'owner-receipt-ref:target-agent/baseline',
-  );
-  assert.equal(gate.required_evidence.source_morphology_ref, 'artifact-morphology-ref:target-agent/baseline');
-  assert.equal(gate.required_evidence.owner_route_ref, 'target-owner-route-ref:target-agent/baseline');
-  assert.equal(gate.required_evidence.generated_surface_consumption_ref, 'generated-interface-bundle-ref:target-agent');
-  assert.equal(gate.required_evidence.private_residue_decision_ref, 'private-residue-decision-ref:target-agent/default-caller');
-  assert.equal(gate.required_evidence.owner_answer_shape, 'owner_receipt');
-  assert.equal(
-    gate.false_completion_guard.missing_source_morphology_owner_route_generated_consumption_private_residue_or_owner_answer_fails_closed,
-    true,
-  );
-  assert.equal(gate.false_completion_guard.provider_completion_can_claim_complete, false);
-  assert.equal(gate.authority_boundary.delegates_work_order_execution_to_opl, true);
-  assert.equal(gate.authority_boundary.oma_can_manage_target_worktree_lifecycle, false);
+test('active OMA materializers do not execute Agent Lab or materialize hosted ledgers', () => {
+  ACTIVE_MATERIALIZER_REFS.forEach((ref) => {
+    const source = fs.readFileSync(path.join(repoRoot, ref), 'utf8');
+    assert.doesNotMatch(source, /\['agent-lab',\s*'run'/, `${ref} must not invoke Agent Lab`);
+    assert.doesNotMatch(source, /agent-lab-run-result\.json/, `${ref} must not write Agent Lab results`);
+    assert.doesNotMatch(source, /(?:delivery|takeover)-receipt\.json/, `${ref} must not write owner receipts`);
+    assert.doesNotMatch(source, /scaleout-evidence-ledger\.json/, `${ref} must not write scaleout ledgers`);
+    assert.doesNotMatch(source, /new-agent-delivery-gate\.json/, `${ref} must not assemble delivery gates`);
+  });
 });

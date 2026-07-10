@@ -42,7 +42,7 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     writeAiReviewerEvaluation(reviewerEvaluationPath);
 
     const payload = runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
-    assert.equal(payload.status, 'blocked_with_developer_patch_work_order');
+    assert.equal(payload.status, 'developer_patch_work_order_ready_for_opl_foundry_lab');
     const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
     assert.equal(workOrder.status, 'ready_for_target_agent_source_patch');
     assert.equal(workOrder.target_agent.domain_id, 'med-autoscience');
@@ -84,7 +84,7 @@ test('generic target-agent feedback external suite is accepted without MAS-only 
 
     const payload = runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
     const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
-    assert.equal(payload.status, 'blocked_with_developer_patch_work_order');
+    assert.equal(payload.status, 'developer_patch_work_order_ready_for_opl_foundry_lab');
     assert.equal(workOrder.target_agent.domain_id, 'target-agent');
     assert.deepEqual(workOrder.source_external_suite_intake.accepted_input_profiles, [
       'target_agent_feedback_external_suite',

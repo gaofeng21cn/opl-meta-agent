@@ -28,6 +28,7 @@
     "scripts/lib/agent-evidence-typed-blocker.ts",
     "scripts/lib/domain-pack.ts",
     "scripts/lib/external-suite-materializer.ts",
+    "scripts/lib/foundry-lab-work-order.ts",
     "scripts/lib/meta-agent-loop-ai-reviewer.ts",
     "scripts/lib/meta-agent-loop-io.ts",
     "scripts/lib/meta-agent-loop-receipts.ts",
@@ -69,10 +70,8 @@
         "script_ref": "scripts/build-agent-baseline.ts",
         "active_caller_refs": [
           "package.json#scripts.build-agent-baseline",
-          "scripts/takeover-agent.ts#import",
           "tests/bootstrap-loop.test.ts#import",
           "tests/bootstrap-loop.test.ts#test_ref",
-          "tests/new-agent-delivery-gate.test.ts#import",
           "tests/new-agent-delivery-gate.test.ts#test_ref"
         ]
       },
@@ -93,18 +92,15 @@
         "script_ref": "scripts/execute-external-work-order.ts",
         "active_caller_refs": [
           "package.json#scripts.execute:external-work-order",
-          "tests/contracts-action-authority.test.ts#test_ref",
-          "tests/execute-external-work-order.test.ts#test_ref",
-          "tests/source-structure-lane.test.ts#test_ref"
+          "tests/execute-external-work-order.test.ts#test_ref"
         ]
       },
       {
         "script_ref": "scripts/improve-from-agent-lab-suite.ts",
         "active_caller_refs": [
           "package.json#scripts.improve:external-suite",
-          "tests/contracts-generated-surfaces.test.ts#test_ref",
-          "tests/external-suite-efficiency-handoff.test.ts#test_ref",
           "tests/external-suite-reviewer-gates.test.ts#test_ref",
+          "tests/new-agent-delivery-gate.test.ts#test_ref",
           "tests/support/external-suite-fixtures.ts#import",
           "tests/support/external-suite-fixtures.ts#test_ref"
         ]
@@ -119,14 +115,14 @@
         "script_ref": "scripts/lib/agent-evidence-materializer.ts",
         "active_caller_refs": [
           "package.json#scripts.agent:evidence",
-          "scripts/lib/agent-evidence-typed-blocker.ts#import",
           "tests/agent-evidence-materializer.test.ts#test_ref",
-          "tests/contracts-generated-surfaces.test.ts#test_ref"
+          "tests/new-agent-delivery-gate.test.ts#test_ref"
         ]
       },
       {
         "script_ref": "scripts/lib/agent-evidence-typed-blocker.ts",
         "active_caller_refs": [
+          "scripts/improve-from-agent-lab-suite.ts#import",
           "scripts/lib/agent-evidence-materializer.ts#import"
         ]
       },
@@ -138,8 +134,8 @@
           "scripts/improve-from-agent-lab-suite.ts#import",
           "scripts/lib/agent-evidence-contracts.ts#import",
           "scripts/lib/agent-evidence-materializer.ts#import",
-          "scripts/lib/agent-evidence-typed-blocker.ts#import",
           "scripts/lib/external-suite-materializer.ts#import",
+          "scripts/lib/foundry-lab-work-order.ts#import",
           "scripts/lib/meta-agent-loop-ai-reviewer.ts#import",
           "scripts/lib/meta-agent-loop-io.ts#import",
           "scripts/lib/meta-agent-loop-receipts.ts#import",
@@ -159,24 +155,29 @@
           "scripts/takeover-agent.ts#import",
           "tests/bootstrap-loop.test.ts#import",
           "tests/bootstrap-loop.test.ts#test_ref",
-          "tests/external-suite-efficiency-handoff.test.ts#import",
-          "tests/external-suite-efficiency-handoff.test.ts#test_ref",
-          "tests/new-agent-delivery-gate.test.ts#import",
-          "tests/new-agent-delivery-gate.test.ts#test_ref",
           "tests/stage-decomposition-materializer.test.ts#import",
           "tests/stage-decomposition-materializer.test.ts#test_ref",
           "tests/support/contracts.ts#import",
           "tests/support/contracts.ts#test_ref",
           "tests/support/external-suite-fixtures.ts#import",
-          "tests/support/external-suite-fixtures.ts#test_ref",
-          "tests/takeover-loop.test.ts#import",
-          "tests/takeover-loop.test.ts#test_ref"
+          "tests/support/external-suite-fixtures.ts#test_ref"
         ]
       },
       {
         "script_ref": "scripts/lib/external-suite-materializer.ts",
         "active_caller_refs": [
-          "scripts/improve-from-agent-lab-suite.ts#import"
+          "scripts/improve-from-agent-lab-suite.ts#import",
+          "tests/new-agent-delivery-gate.test.ts#test_ref"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/foundry-lab-work-order.ts",
+        "active_caller_refs": [
+          "scripts/build-agent-baseline.ts#import",
+          "scripts/lib/agent-evidence-materializer.ts#import",
+          "scripts/takeover-agent.ts#import",
+          "tests/new-agent-delivery-gate.test.ts#import",
+          "tests/new-agent-delivery-gate.test.ts#test_ref"
         ]
       },
       {
@@ -200,8 +201,8 @@
           "scripts/improve-from-agent-lab-suite.ts#import",
           "scripts/lib/agent-evidence-contracts.ts#import",
           "scripts/lib/agent-evidence-materializer.ts#import",
-          "scripts/lib/agent-evidence-typed-blocker.ts#import",
           "scripts/lib/external-suite-materializer.ts#import",
+          "scripts/lib/foundry-lab-work-order.ts#import",
           "scripts/lib/meta-agent-loop-ai-reviewer.ts#import",
           "scripts/lib/meta-agent-loop-receipts.ts#import",
           "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts#import",
@@ -212,15 +213,15 @@
           "scripts/lib/stage-decomposition-pack-draft/validator.ts#import",
           "scripts/lib/stage-decomposition-runner.ts#import",
           "scripts/lib/target-improvement-policy.ts#import",
-          "scripts/takeover-agent.ts#import"
+          "scripts/takeover-agent.ts#import",
+          "tests/bootstrap-loop.test.ts#import",
+          "tests/bootstrap-loop.test.ts#test_ref"
         ]
       },
       {
         "script_ref": "scripts/lib/meta-agent-loop-receipts.ts",
         "active_caller_refs": [
           "scripts/build-agent-baseline.ts#import",
-          "scripts/improve-from-agent-lab-suite.ts#import",
-          "scripts/lib/external-suite-materializer.ts#import",
           "scripts/takeover-agent.ts#import"
         ]
       },
@@ -309,7 +310,6 @@
         "script_ref": "scripts/lib/work-order-builders.ts",
         "active_caller_refs": [
           "scripts/improve-from-agent-lab-suite.ts#import",
-          "scripts/lib/agent-evidence-materializer.ts#import",
           "scripts/lib/external-suite-materializer.ts#import"
         ]
       },
@@ -327,7 +327,6 @@
         "active_caller_refs": [
           "scripts/lib/agent-evidence-contracts.ts#import",
           "scripts/lib/agent-evidence-materializer.ts#import",
-          "scripts/lib/agent-evidence-typed-blocker.ts#import",
           "scripts/lib/external-suite-materializer.ts#import",
           "scripts/lib/target-improvement-policy.ts#import",
           "scripts/lib/work-order-builders.ts#import",
@@ -339,8 +338,7 @@
         "script_ref": "scripts/lib/work-order-validation.ts",
         "active_caller_refs": [
           "scripts/execute-external-work-order.ts#import",
-          "scripts/improve-from-agent-lab-suite.ts#import",
-          "scripts/lib/agent-evidence-materializer.ts#import"
+          "scripts/improve-from-agent-lab-suite.ts#import"
         ]
       },
       {
@@ -398,6 +396,7 @@
         "script_ref": "scripts/takeover-agent.ts",
         "active_caller_refs": [
           "package.json#scripts.takeover:test",
+          "tests/new-agent-delivery-gate.test.ts#test_ref",
           "tests/takeover-loop.test.ts#import",
           "tests/takeover-loop.test.ts#test_ref"
         ]
@@ -469,13 +468,15 @@
       "repo_owned_queue_or_attempt_ledger_materializer",
       "repo_owned_target_worktree_lifecycle_materializer"
     ],
-    "retained_materializer_role": "refs_only_target_agent_semantics_work_order_candidate_or_typed_blocker_materializer",
+    "retained_materializer_role": "refs_only_target_agent_semantics_suite_seed_work_order_candidate_or_expected_blocker_ref_materializer",
     "allowed_outputs": [
       "candidate_agent_package_ref",
+      "agent_lab_suite_seed_ref",
+      "foundry_lab_work_order_candidate_ref",
       "developer_patch_work_order_ref",
       "target_capability_improvement_candidate_ref",
-      "mechanism_patch_proposal_ref",
-      "typed_blocker_ref",
+      "mechanism_patch_candidate_ref",
+      "expected_typed_blocker_ref",
       "refs_only_contract_template_ref"
     ],
     "retired_materializer_tails": [
