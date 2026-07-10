@@ -324,7 +324,7 @@ function writeNormalizedBuildStageRunReadbacks(
               },
               closeout_ref_metadata: [{
                 ref: payloadRef,
-                role: 'oma_stage_closeout_payload',
+                kind: 'oma_stage_closeout_payload',
                 sha256: payloadSha256,
               }],
               consumed_refs: [],

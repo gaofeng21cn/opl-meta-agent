@@ -95,7 +95,7 @@ function domainCloseoutPayload(
     ? packet.closeout_ref_metadata.filter(isRecord)
     : [];
   const payloadMetadata = metadata.find((entry) =>
-    entry.role === 'oma_stage_closeout_payload'
+    entry.kind === 'oma_stage_closeout_payload'
     && entry.ref === outputRef
   );
   if (!payloadMetadata) {
