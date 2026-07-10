@@ -7,9 +7,9 @@
 ## 输入
 
 - `suite_path`
+- `suite_result_path`
 - `target-agent-dir`
 - `output_dir`
-- `opl_bin`
 - `ai_reviewer_evaluation`
 - 可选 `feedback_ref`
 
@@ -21,9 +21,9 @@
 4. 若 suite 或 production evidence 出现效率证据，提取通用 target-agent efficiency non-regression refs：`quality_floor_refs`、`latency_baseline_refs`、`usage_cost_refs`、`cache_reuse_refs` 和 `target_verification_refs`；缺 `quality_floor_refs` 时 fail closed 到 typed blocker。
 5. 判断可编辑面：source、tests、docs、prompt policy、skill policy、stage policy、suite policy 或 quality gate policy。
 6. 生成 developer work order completeness：reviewer refs、Codex/executor-first aperture、patch traceability、target verification、owner route、no-forbidden-write proof、canary、rollback、version refs 和 efficiency non-regression refs。
-6. 在 target owner gate 允许时执行最小源码/测试/文档补丁。
-7. 运行目标 agent 验证和 Agent Lab regression。
-8. 写入 developer patch work order、target version receipt、online-learning candidate 和 mechanism patch proposal。
+6. 当 declarative inputs 完整时生成 target capability candidate 与 developer patch work order；缺字段时只返回 expected typed-blocker ref，不物化 target-domain blocker body。
+7. 将 developer patch work order 交给 `execute:external-work-order` / OPL primitive；OMA 不直接修改 target repo，也不执行 verification、Agent Lab regression、absorb 或 cleanup。
+8. 只有 OPL / target owner 返回的 execution、verification、re-evaluation 和 closeout refs 才能进入后续判断；OMA 不写 target version receipt、online-learning ledger 或 promotion result。
 
 ## Advisory Boundary
 
@@ -35,10 +35,9 @@
 
 - `developer_patch_work_order_refs`
 - `target_capability_improvement_candidate_refs`
-- `regression_result_refs`
-- `target_agent_version_receipt_refs`
-- `mechanism_patch_proposal_refs`
-- `typed_blocker_refs`
+- optional externally returned regression / target-version refs
+- `mechanism_candidate_refs`
+- `expected_typed_blocker_refs`
 - `machine_closeout_refs`
 - `efficiency_non_regression_refs`
 
@@ -51,13 +50,14 @@
 - 出现 latency / usage cost / cache reuse / target verification 证据时，developer work order、completeness 和 patch traceability / closeout 投影必须保留 `quality_floor_refs`、`latency_baseline_refs`、`usage_cost_refs`、`cache_reuse_refs`、`target_verification_refs`。
 - machine closeout refs 必须覆盖 blocked suite、developer work order、patch traceability、target verification、runtime/read-model consumption、workspace proof、no-forbidden-write、target owner receipt or typed blocker、patch absorption、worktree cleanup 和 Agent Lab re-evaluation。
 - receipt 证明目标 domain truth、memory body、artifact body、quality verdict 未被写入。
-- 修复被目标 runtime/read-model 消费，而不仅是源码测试通过。
+- work order 要求修复被目标 runtime/read-model 消费；producer 不得把 work-order ready 当成该证据已经存在。
 
 ## 禁止事项
 
 - 禁止无 gate 改目标 agent。
+- 禁止 OMA 直接执行 target patch、Agent Lab regression、absorb/cleanup 或 owner closeout。
 - 禁止只产出泛泛建议，不给可执行 work order。
 - 禁止把 regression pass 写成 target quality verdict。
 - 禁止把 suite pass、scorecard、external learning memory、optimizer signal 或 promotion hint 写成 target owner verdict、default promotion、App-live readiness 或 export/quality verdict。
 - 禁止在缺 quality floor refs 时把效率优化证据升级成 executable work order。
-- 禁止在缺 direct evidence、reviewer provenance 或 work order completeness 字段时产出 patch proposal；必须 fail closed 到 typed blocker。
+- 禁止在缺 direct evidence、reviewer provenance 或 work order completeness 字段时产出 executable work order；只返回 expected typed-blocker ref，不伪造 blocker body。

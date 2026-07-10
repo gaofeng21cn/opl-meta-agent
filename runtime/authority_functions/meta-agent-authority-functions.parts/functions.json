@@ -12,7 +12,8 @@
     ],
     "output_refs": [
       "candidate_agent_package_ref",
-      "owner_receipt_ref"
+      "agent_lab_suite_seed_ref",
+      "foundry_lab_work_order_candidate_ref"
     ],
     "boundary": {
       "refs_only": true,
@@ -28,14 +29,13 @@
     "classification": "minimal_authority_function",
     "authority_ref": "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer",
     "implementation_refs": [
-      "scripts/lib/meta-agent-loop-receipts.ts"
+      "scripts/lib/foundry-lab-work-order.ts"
     ],
     "invoked_by_refs": [
       "action-ref:generate-mechanism-patch-proposal"
     ],
     "output_refs": [
-      "mechanism_patch_proposal_ref",
-      "owner_receipt_ref"
+      "mechanism_patch_candidate_ref"
     ],
     "boundary": {
       "refs_only": true,

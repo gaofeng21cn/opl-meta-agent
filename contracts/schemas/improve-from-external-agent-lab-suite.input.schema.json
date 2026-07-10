@@ -6,6 +6,7 @@
   "type": "object",
   "required": [
     "suite_path",
+    "suite_result_path",
     "agent_dir",
     "ai_reviewer_evaluation"
   ],
@@ -13,6 +14,11 @@
     "suite_path": {
       "type": "string",
       "minLength": 1
+    },
+    "suite_result_path": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Path to the OPL Foundry Lab suite result or evaluation execution output."
     },
     "agent_dir": {
       "type": "string",
@@ -23,10 +29,6 @@
       "minLength": 1
     },
     "feedback_ref": {
-      "type": "string",
-      "minLength": 1
-    },
-    "opl_bin": {
       "type": "string",
       "minLength": 1
     },

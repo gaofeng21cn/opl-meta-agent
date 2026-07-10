@@ -208,7 +208,7 @@
       "owner": "one-person-lab",
       "target_role": "opl_generated_surface",
       "status": "descriptor_source_available_with_domain_boundary_evidence_refs",
-      "source_contract": "contracts/stage_control_plane.json",
+      "source_contract": "agent/stages/manifest.json",
       "current_paths": [],
       "current_surface_refs": [
         "opl-generated-default-caller:opl-meta-agent/product_session",

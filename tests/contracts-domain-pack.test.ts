@@ -35,6 +35,8 @@ test('domain pack files and stage prompt refs resolve to usable repo files', () 
   ];
 
   assert.equal(packCompilerInput.domain_pack_owner, 'opl-meta-agent');
+  assert.equal(packCompilerInput.domain_id, 'opl-meta-agent');
+  assert.equal(packCompilerInput.canonical_agent_id, 'oma');
   assert.equal(packCompilerInput.canonical_semantic_pack_root, 'agent/');
   assert.equal(generatedSurfaceHandoff.generated_interface_role, 'invoke_and_project_without_domain_authority_escalation');
   assertIncludesAll(asStrings(generatedSurfaceHandoff.required_domain_handoff), [
@@ -42,9 +44,12 @@ test('domain pack files and stage prompt refs resolve to usable repo files', () 
     'stage_prompt_refs_resolve_to_domain_pack_files',
   ], 'generated surface handoff');
 
-  const actualDomainPackPaths = listMarkdownFiles('agent')
-    .filter((relativePath) => !relativePath.endsWith('/README.md'))
-    .filter((relativePath) => !relativePath.endsWith('/TOMBSTONE.md'));
+  const actualDomainPackPaths = [
+    'agent/stages/manifest.json',
+    ...listMarkdownFiles('agent')
+      .filter((relativePath) => !relativePath.endsWith('/README.md'))
+      .filter((relativePath) => !relativePath.endsWith('/TOMBSTONE.md')),
+  ].sort();
   assert.deepEqual(packCompilerInput.required_domain_pack_paths, actualDomainPackPaths);
   actualDomainPackPaths.forEach(assertUsablePackFile);
 
@@ -64,6 +69,57 @@ test('domain pack files and stage prompt refs resolve to usable repo files', () 
   assert.equal(packCompilerInput.authority_boundary.generated_interface_can_invoke_minimal_authority_functions, true);
   assert.equal(packCompilerInput.authority_boundary.generated_interface_can_write_domain_truth, false);
   assert.equal(packCompilerInput.authority_boundary.generated_interface_can_authorize_quality_or_export, false);
+});
+
+test('declarative stage manifest is the OPL Pack compiler source', () => {
+  const manifest = readJson('agent/stages/manifest.json');
+  const packCompilerInput = readJson('contracts/pack_compiler_input.json');
+  const actionCatalog = readJson('contracts/action_catalog.json');
+  const stages = asObjects(manifest.stages);
+  const stageIds = stages.map((stage) => String(stage.stage_id));
+  const actionIds = new Set(asObjects(actionCatalog.actions).map((action) => String(action.action_id)));
+
+  assert.equal(manifest.surface_kind, 'opl_standard_agent_declarative_stage_manifest');
+  assert.equal(manifest.version, 'opl-standard-agent-declarative-stage-manifest.v1');
+  assert.equal(manifest.target_domain_id, 'opl-meta-agent');
+  assert.equal(manifest.owner, 'opl-meta-agent');
+  assert.equal(manifest.authority_boundary.domain_truth_owner, 'opl-meta-agent');
+  assert.equal(manifest.authority_boundary.opl_can_write_domain_truth, false);
+  assert.equal(manifest.authority_boundary.opl_can_authorize_quality_or_export, false);
+  assert.deepEqual(stageIds, [
+    'intent-intake',
+    'web-experience-research',
+    'stage-decomposition',
+    'agent-skeleton-build',
+    'eval-suite-build',
+    'baseline-run',
+    'target-agent-takeover',
+    'optimizer-iteration',
+    'baseline-delivery',
+    'trajectory-learning-intake',
+    'online-learning',
+  ]);
+
+  stages.forEach((stage) => {
+    assertUsablePackFile(String(stage.policy_ref));
+    assertUsablePackFile(String(stage.prompt_ref));
+    asStrings(stage.knowledge_refs).forEach(assertUsablePackFile);
+    asStrings(stage.quality_gate_refs).forEach(assertUsablePackFile);
+    assert.ok(asStrings(stage.allowed_action_refs).length > 0, `${stage.stage_id}.allowed_action_refs`);
+    asStrings(stage.allowed_action_refs).forEach((actionId) => {
+      assert.equal(actionIds.has(actionId), true, `${stage.stage_id} references ${actionId}`);
+    });
+    asStrings(stage.next_stage_refs).forEach((stageId) => {
+      assert.ok(stageIds.includes(stageId), `${stage.stage_id} references ${stageId}`);
+    });
+  });
+
+  assert.ok(asStrings(packCompilerInput.required_domain_pack_paths).includes('agent/stages/manifest.json'));
+  assertUsablePackFile('runtime/authority_functions/README.md');
+  assert.equal(
+    packCompilerInput.standard_stage_pack_conformance.enforcement_ref,
+    'agent/stages/manifest.json',
+  );
 });
 
 test('domain skill declarations and professional skills stay separate', () => {

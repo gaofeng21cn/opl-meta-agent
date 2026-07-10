@@ -12,7 +12,6 @@ import {
 } from './lib/domain-pack.ts';
 import {
   type AiReviewerEvaluation,
-  aiReviewerAcceptanceGates,
   aiReviewerReceiptFields,
   loadAiReviewerEvaluation,
 } from './lib/meta-agent-loop-ai-reviewer.ts';
@@ -20,21 +19,10 @@ import {
   type TargetAgent,
   readJson,
   readTargetAgent,
-  resolveOplBin,
-  runOpl,
   stableId,
+  writeJson,
 } from './lib/meta-agent-loop-io.ts';
-import {
-  type LearningCandidate,
-  type OwnerReceipt,
-  type SuiteResult,
-  buildLearningCandidate,
-  buildMechanismPatchProposal,
-  buildOwnerReceipt,
-} from './lib/meta-agent-loop-receipts.ts';
-import {
-  buildOplWorkOrderPrimitiveRefs,
-} from './lib/work-order-builders.ts';
+import type { SuiteResult } from './lib/external-suite-materializer.ts';
 import {
   collectEfficiencyNonRegressionRefs,
   type EfficiencyNonRegressionRefs,
@@ -48,44 +36,42 @@ import {
   type TargetImprovementPolicy,
   buildPatchTraceabilityMatrix,
   inferProposedChangeRefs,
-  mechanismEditableSurfaces,
   targetEditableSurfaceRefs,
   targetImprovementPolicy,
 } from './lib/target-improvement-policy.ts';
 import {
   type CapabilityCandidate,
   buildDeveloperPatchWorkOrder,
-  buildEfficiencyTypedBlocker,
-  buildTargetImprovementPolicyTypedBlocker,
-  writeExternalSuiteArtifacts,
-  writeTypedBlockerArtifacts,
 } from './lib/external-suite-materializer.ts';
+import {
+  buildExpectedTypedBlockerRef,
+} from './lib/agent-evidence-typed-blocker.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 export type ImproveArgs = {
   suitePath: string;
+  suiteResultPath: string;
   targetAgentDir: string;
   outputDir: string;
   feedbackRef: string | null;
-  oplBin: string;
   aiReviewerEvaluationPath: string;
 };
 
 export function parseImproveFromAgentLabSuiteArgs(argv: string[]): ImproveArgs {
   const parsed: {
     suitePath: string | null;
+    suiteResultPath: string | null;
     targetAgentDir: string | null;
     outputDir: string | null;
     feedbackRef: string | null;
-    oplBin: string;
     aiReviewerEvaluationPath: string | null;
   } = {
     suitePath: null,
+    suiteResultPath: null,
     targetAgentDir: null,
     outputDir: null,
     feedbackRef: null,
-    oplBin: resolveOplBin(),
     aiReviewerEvaluationPath: null,
   };
 
@@ -93,12 +79,12 @@ export function parseImproveFromAgentLabSuiteArgs(argv: string[]): ImproveArgs {
     args: argv,
     options: {
       suite: { type: 'string' },
+      'suite-result': { type: 'string' },
       'target-agent-dir': { type: 'string' },
       'agent-dir': { type: 'string' },
       'output-dir': { type: 'string' },
       'feedback-ref': { type: 'string' },
       'ai-reviewer-evaluation': { type: 'string' },
-      'opl-bin': { type: 'string' },
     },
     strict: true,
     allowPositionals: false,
@@ -106,6 +92,9 @@ export function parseImproveFromAgentLabSuiteArgs(argv: string[]): ImproveArgs {
   });
   if (typeof values.suite === 'string') {
     parsed.suitePath = path.resolve(values.suite);
+  }
+  if (typeof values['suite-result'] === 'string') {
+    parsed.suiteResultPath = path.resolve(values['suite-result']);
   }
   const targetAgentDir = tokens
     .filter((token) =>
@@ -125,15 +114,18 @@ export function parseImproveFromAgentLabSuiteArgs(argv: string[]): ImproveArgs {
   if (typeof values['ai-reviewer-evaluation'] === 'string') {
     parsed.aiReviewerEvaluationPath = path.resolve(values['ai-reviewer-evaluation']);
   }
-  if (typeof values['opl-bin'] === 'string') {
-    parsed.oplBin = resolveOplBin(values['opl-bin']);
-  }
 
   if (!parsed.suitePath) {
     throw new Error('Missing required --suite <path>.');
   }
   if (!fs.existsSync(parsed.suitePath)) {
     throw new Error(`Suite path does not exist: ${parsed.suitePath}`);
+  }
+  if (!parsed.suiteResultPath) {
+    throw new Error('Missing required --suite-result <path>.');
+  }
+  if (!fs.existsSync(parsed.suiteResultPath)) {
+    throw new Error(`Suite result path does not exist: ${parsed.suiteResultPath}`);
   }
   if (!parsed.targetAgentDir) {
     throw new Error('Missing required --target-agent-dir <path>.');
@@ -150,10 +142,10 @@ export function parseImproveFromAgentLabSuiteArgs(argv: string[]): ImproveArgs {
   parsed.outputDir ??= fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-external-suite-'));
   return {
     suitePath: parsed.suitePath,
+    suiteResultPath: parsed.suiteResultPath,
     targetAgentDir: parsed.targetAgentDir,
     outputDir: parsed.outputDir,
     feedbackRef: parsed.feedbackRef,
-    oplBin: parsed.oplBin,
     aiReviewerEvaluationPath: parsed.aiReviewerEvaluationPath,
   };
 }
@@ -196,6 +188,210 @@ function arrayOfStrings(value: unknown): string[] {
 
 function uniqueStrings(values: string[]): string[] {
   return [...new Set(values.filter((value) => value.trim().length > 0))];
+}
+
+function jsonObject(value: unknown): JsonObject | null {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? value as JsonObject
+    : null;
+}
+
+function nonEmptyString(value: unknown, field: string, suiteResultPath: string): string {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new Error(`Foundry Lab suite result requires ${field}: ${suiteResultPath}`);
+  }
+  return value.trim();
+}
+
+function sameStringSet(left: string[], right: string[]): boolean {
+  return left.length === right.length && left.every((value) => right.includes(value));
+}
+
+function canonicalJsonValue(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(canonicalJsonValue);
+  }
+  const object = jsonObject(value);
+  if (!object) {
+    return value;
+  }
+  return Object.fromEntries(
+    Object.keys(object)
+      .sort()
+      .map((key) => [key, canonicalJsonValue(object[key])]),
+  );
+}
+
+function canonicalProvenanceBindings(bindings: JsonObject[]): JsonObject[] {
+  return bindings
+    .map((binding) => canonicalJsonValue(binding) as JsonObject)
+    .sort((left, right) => {
+      const leftKey = JSON.stringify(left);
+      const rightKey = JSON.stringify(right);
+      return leftKey < rightKey ? -1 : leftKey > rightKey ? 1 : 0;
+    });
+}
+
+const taskScopedProvenanceRoles = new Set([
+  'promotion_gate_observation',
+  'recovery_probe_observation',
+  'scorecard_observation',
+  'stage_completion_policy',
+  'trajectory_observation',
+]);
+
+function readFoundryLabSuiteResult(
+  suiteResultPath: string,
+  suite: JsonObject,
+  targetAgent: TargetAgent,
+): SuiteResult {
+  const payload = readJson(suiteResultPath);
+  const execution = jsonObject(payload.agent_lab_evaluation_work_order_execution) ?? payload;
+  const nestedResult = jsonObject(payload.agent_lab_run)?.suite_result
+    ?? execution.suite_result
+    ?? payload.suite_result
+    ?? payload;
+  const result = jsonObject(nestedResult);
+  if (!result) {
+    throw new Error(`Foundry Lab suite result is invalid: ${suiteResultPath}`);
+  }
+  const resultId = nonEmptyString(result.result_id, 'result_id', suiteResultPath);
+  const status = nonEmptyString(result.status, 'status', suiteResultPath);
+  if (status !== 'passed' && status !== 'blocked') {
+    throw new Error(`Foundry Lab suite result status must be passed or blocked: ${suiteResultPath}`);
+  }
+  const expectedSuiteId = nonEmptyString(suite.suite_id, 'input suite.suite_id', suiteResultPath);
+  const resultSuiteId = nonEmptyString(result.suite_id, 'suite_id', suiteResultPath);
+  if (resultSuiteId !== expectedSuiteId) {
+    throw new Error(`Foundry Lab suite result suite_id does not match the input suite: ${suiteResultPath}`);
+  }
+
+  const expectedTarget = {
+    domain_id: nonEmptyString(targetAgent.domain_id, 'target_agent.domain_id', suiteResultPath),
+    target_agent_ref: nonEmptyString(
+      targetAgent.target_agent_ref,
+      'target_agent.target_agent_ref',
+      suiteResultPath,
+    ),
+    descriptor_ref: nonEmptyString(
+      targetAgent.descriptor_ref,
+      'target_agent.descriptor_ref',
+      suiteResultPath,
+    ),
+  };
+  const assertTargetIdentity = (value: unknown, field: string) => {
+    const target = jsonObject(value);
+    if (!target) {
+      throw new Error(`Foundry Lab ${field} is required: ${suiteResultPath}`);
+    }
+    for (const targetField of ['domain_id', 'target_agent_ref', 'descriptor_ref'] as const) {
+      if (nonEmptyString(target[targetField], `${field}.${targetField}`, suiteResultPath)
+        !== expectedTarget[targetField]) {
+        throw new Error(
+          `Foundry Lab ${field}.${targetField} does not match the target agent: ${suiteResultPath}`,
+        );
+      }
+    }
+    return target;
+  };
+  assertTargetIdentity(suite.evaluation_target_agent, 'input suite evaluation_target_agent');
+  const evaluationTarget = jsonObject(result.evaluation_target_agent);
+  assertTargetIdentity(evaluationTarget, 'suite result evaluation_target_agent');
+
+  const suiteTasks = Array.isArray(suite.tasks) ? suite.tasks : [];
+  const expectedTaskIds = suiteTasks.map((task, index) =>
+    nonEmptyString(jsonObject(task)?.task_id, `input suite.tasks[${index}].task_id`, suiteResultPath));
+  if (expectedTaskIds.length === 0 || uniqueStrings(expectedTaskIds).length !== expectedTaskIds.length) {
+    throw new Error(`Foundry Lab input suite requires unique task ids: ${suiteResultPath}`);
+  }
+  if (!Array.isArray(result.runs)) {
+    throw new Error(`Foundry Lab suite result requires runs: ${suiteResultPath}`);
+  }
+  const resultTaskIds = result.runs.map((run, index) =>
+    nonEmptyString(jsonObject(run)?.task_id, `runs[${index}].task_id`, suiteResultPath));
+  if (
+    uniqueStrings(resultTaskIds).length !== resultTaskIds.length
+    || !sameStringSet(resultTaskIds, expectedTaskIds)
+  ) {
+    throw new Error(`Foundry Lab suite result runs[].task_id does not match the input suite: ${suiteResultPath}`);
+  }
+
+  const refs = jsonObject(result.refs);
+  if (!refs || !Array.isArray(refs.evaluation_provenance_refs)) {
+    throw new Error(`Foundry Lab suite result requires refs.evaluation_provenance_refs: ${suiteResultPath}`);
+  }
+  const provenanceRefs = refs.evaluation_provenance_refs.map((ref, index) =>
+    nonEmptyString(ref, `refs.evaluation_provenance_refs[${index}]`, suiteResultPath));
+  if (provenanceRefs.length === 0 || uniqueStrings(provenanceRefs).length !== provenanceRefs.length) {
+    throw new Error(`Foundry Lab suite result requires unique evaluation provenance refs: ${suiteResultPath}`);
+  }
+  if (!Array.isArray(result.evaluation_provenance_bindings)
+    || result.evaluation_provenance_bindings.length === 0) {
+    throw new Error(`Foundry Lab suite result requires evaluation_provenance_bindings: ${suiteResultPath}`);
+  }
+  const provenanceBindings = result.evaluation_provenance_bindings.map((binding, index) => {
+    const record = jsonObject(binding);
+    if (!record) {
+      throw new Error(`Foundry Lab suite result has invalid evaluation_provenance_bindings[${index}]: ${suiteResultPath}`);
+    }
+    const receiptRole = nonEmptyString(
+      record.receipt_role,
+      `evaluation_provenance_bindings[${index}].receipt_role`,
+      suiteResultPath,
+    );
+    nonEmptyString(record.receipt_ref, `evaluation_provenance_bindings[${index}].receipt_ref`, suiteResultPath);
+    if (record.task_id !== undefined) {
+      const taskId = nonEmptyString(
+        record.task_id,
+        `evaluation_provenance_bindings[${index}].task_id`,
+        suiteResultPath,
+      );
+      if (!expectedTaskIds.includes(taskId)) {
+        throw new Error(
+          `Foundry Lab suite result evaluation_provenance_bindings[].task_id is not in the suite: ${suiteResultPath}`,
+        );
+      }
+      if (!taskScopedProvenanceRoles.has(receiptRole)) {
+        throw new Error(
+          `Foundry Lab suite result has non-canonical task-scoped evaluation provenance binding: ${suiteResultPath}`,
+        );
+      }
+    }
+    return record;
+  });
+  for (const taskId of expectedTaskIds) {
+    if (!provenanceBindings.some((binding) => binding.task_id === taskId)) {
+      throw new Error(
+        `Foundry Lab suite result requires task-scoped evaluation provenance binding for ${taskId}: ${suiteResultPath}`,
+      );
+    }
+  }
+  const canonicalBindings = canonicalProvenanceBindings(provenanceBindings);
+  const canonicalBindingKeys = canonicalBindings.map((binding) => JSON.stringify(binding));
+  if (uniqueStrings(canonicalBindingKeys).length !== canonicalBindingKeys.length) {
+    throw new Error(`Foundry Lab suite result has duplicate evaluation provenance binding: ${suiteResultPath}`);
+  }
+  const bindingRefs = uniqueStrings(canonicalBindings.map((binding) => String(binding.receipt_ref)));
+  if (!sameStringSet(bindingRefs, provenanceRefs)) {
+    throw new Error(
+      `Foundry Lab suite result evaluation provenance refs and bindings do not match: ${suiteResultPath}`,
+    );
+  }
+
+  const executionReceiptRef = jsonObject(execution.receipt)?.foundry_lab_execution_receipt_ref;
+  return {
+    ...result,
+    result_id: resultId,
+    suite_id: resultSuiteId,
+    status,
+    evaluation_target_agent: expectedTarget,
+    refs: { ...refs, evaluation_provenance_refs: provenanceRefs },
+    evaluation_provenance_bindings: canonicalBindings,
+    runs: result.runs,
+    ...(typeof executionReceiptRef === 'string'
+      ? { foundry_lab_execution_receipt_ref: executionReceiptRef.trim() }
+      : {}),
+  } as SuiteResult;
 }
 
 function suiteTaskFamilies(suite: JsonObject): string[] {
@@ -358,10 +554,6 @@ function improvementAreaForTarget(targetAgent: TargetAgent): string {
   return `${targetAgent.domain_id.replace(/[^a-z0-9]+/gi, '_').toLowerCase()}_agent_lab_result_consumption_capability`;
 }
 
-function targetCapabilityRef(targetAgent: TargetAgent): string {
-  return `domain-agent:${targetAgent.domain_id}/agent-lab-result-consumption-capability`;
-}
-
 function traceabilityStatus({
   suiteResult,
   patchTraceabilityMatrix,
@@ -420,7 +612,6 @@ function buildCapabilityCandidate({
   targetAgent,
   suite,
   suiteResult,
-  receipt,
   proposedChangeRefs,
   suiteRefs,
   feedbackRef,
@@ -434,7 +625,6 @@ function buildCapabilityCandidate({
   targetAgent: TargetAgent;
   suite: JsonObject;
   suiteResult: SuiteResult;
-  receipt: OwnerReceipt;
   proposedChangeRefs: string[];
   suiteRefs: string[];
   feedbackRef: string | null;
@@ -450,9 +640,13 @@ function buildCapabilityCandidate({
     version: 'opl-meta-agent.target-capability-improvement-candidate.v1',
     candidate_id: stableId('oma_target_capability_candidate', [
       targetAgent.domain_id,
+      targetAgent.target_agent_ref,
+      targetAgent.descriptor_ref,
       suite.suite_id,
       suiteResult.result_id,
-      proposedChangeRefs,
+      suiteResult.evaluation_target_agent,
+      canonicalProvenanceBindings(suiteResult.evaluation_provenance_bindings),
+      [...proposedChangeRefs].sort(),
     ]),
     status: 'candidate_recorded_requires_target_owner_gate',
     product_id: 'opl-meta-agent',
@@ -461,6 +655,7 @@ function buildCapabilityCandidate({
       domain_label: targetAgent.domain_label,
       delivery_domain: targetAgent.delivery_domain,
       repo_dir: targetAgent.repo_dir,
+      target_agent_ref: targetAgent.target_agent_ref,
       descriptor_ref: targetAgent.descriptor_ref,
     },
     source_agent_lab_suite: {
@@ -470,6 +665,9 @@ function buildCapabilityCandidate({
       result_status: suiteResult.status,
       suite_passed: suiteResult.status === 'passed',
     },
+    evaluation_target_agent: suiteResult.evaluation_target_agent,
+    evaluation_provenance_refs: suiteResult.refs.evaluation_provenance_refs,
+    evaluation_provenance_bindings: suiteResult.evaluation_provenance_bindings,
     feedback_ref: feedbackRef,
     ai_reviewer_evaluation: aiReviewerEvaluation,
     ...aiReviewerReceiptFields(aiReviewerEvaluation, aiReviewerEvaluationRef),
@@ -491,7 +689,7 @@ function buildCapabilityCandidate({
     source_domain_pack: domainPackSummary,
     target_editable_surface_refs: targetEditableSurfaceRefs(proposedChangeRefs),
     external_learning_refs: policy.externalLearningRefs,
-    owner_receipt_ref: receipt.receipt_id,
+    foundry_lab_execution_receipt_ref: suiteResult.foundry_lab_execution_receipt_ref,
     authority_boundary: {
       source_patch_allowed_after_owner_gate: suiteResult.status !== 'passed',
       can_write_target_domain_truth: false,
@@ -506,22 +704,20 @@ function buildCapabilityCandidate({
 
 export function runImproveFromAgentLabSuite({
   suitePath,
+  suiteResultPath,
   targetAgentDir,
   outputDir,
   feedbackRef,
-  oplBin,
   aiReviewerEvaluationPath,
 }: ImproveArgs): JsonObject {
   fs.mkdirSync(outputDir, { recursive: true });
   const domainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
   const aiReviewerEvaluation = loadAiReviewerEvaluation(aiReviewerEvaluationPath);
-
   const suite = readJson(suitePath);
   const targetAgent = readTargetAgent(targetAgentDir);
+  const suiteResult = readFoundryLabSuiteResult(suiteResultPath, suite, targetAgent);
   const policy = targetImprovementPolicy(targetAgentDir);
 
-  const agentLabRun = runOpl(oplBin, ['agent-lab', 'run', '--suite', suitePath, '--json']);
-  const suiteResult = agentLabRun.agent_lab_run.suite_result as SuiteResult;
   const suiteRefs = collectSuiteRefs(suite);
   const directReviewerEvidenceRefs = reviewerEvidenceRefs({
     aiReviewerEvaluation,
@@ -540,57 +736,10 @@ export function runImproveFromAgentLabSuite({
     policy,
   });
   const efficiencyNonRegressionRefs = collectEfficiencyNonRegressionRefs(suite, aiReviewerEvaluation);
-
-  const receipt: OwnerReceipt = {
-    ...buildOwnerReceipt({
-      receiptClass: 'external_suite_quality_failure_self_evolution_receipt',
-      status: suiteResult.status === 'passed'
-        ? 'external_suite_passed_no_mechanism_patch_required'
-        : 'external_suite_blocked_mechanism_candidate_recorded',
-      targetAgent,
-      suiteResult,
-      extraAcceptanceGates: {
-        external_suite_consumed: true,
-        blocked_suite_can_generate_proposal_only_candidate: suiteResult.status !== 'passed',
-        target_domain_truth_authority_preserved: true,
-        target_quality_authority_preserved: true,
-        target_artifact_authority_preserved: true,
-        target_memory_authority_preserved: true,
-        ...aiReviewerAcceptanceGates(),
-      },
-    }),
-    ...aiReviewerReceiptFields(aiReviewerEvaluation, aiReviewerEvaluationPath),
-    ...domainPackReceiptFields(domainPackSummary),
-    source_domain_pack: domainPackSummary,
-  };
-  const learningCandidate = buildLearningCandidate({
-    suiteResult,
-    receipt,
-    targetAgent,
-    candidateKind: 'target_agent_capability_gap',
-    targetRef: targetCapabilityRef(targetAgent),
-    proposedChangeRefs,
-    promotionGateRef: `promotion-gate:opl-meta-agent/${targetAgent.domain_id}/external-suite-self-evolution`,
-  });
-  const mechanismPatchProposal = buildMechanismPatchProposal({
-    suiteResult,
-    receipt,
-    learningCandidate,
-    mechanismRef: `mechanism:opl-meta-agent/${targetAgent.domain_id}/external-suite-self-evolution-loop`,
-    editableSurfaces: mechanismEditableSurfaces(proposedChangeRefs),
-    evidenceDeltaRef: `evidence-delta:opl-meta-agent/${targetAgent.domain_id}/external-agent-lab-suite`,
-    observeRefs: [suitePath, aiReviewerEvaluationPath, ...policy.externalLearningRefs],
-    diagnoseRefs: [...suiteRefs, ...aiReviewerEvaluation.source_refs],
-    editRefs: [
-      ...proposedChangeRefs,
-      ...aiReviewerEvaluation.suggestions.map((suggestion) => `ai-reviewer-suggestion:${suggestion}`),
-    ],
-  });
   const capabilityCandidate = buildCapabilityCandidate({
     targetAgent,
     suite,
     suiteResult,
-    receipt,
     proposedChangeRefs,
     suiteRefs,
     feedbackRef,
@@ -601,87 +750,78 @@ export function runImproveFromAgentLabSuite({
     aiReviewerEvaluationRef: aiReviewerEvaluationPath,
     policy,
   });
-  const missingEfficiencyFields = missingEfficiencyNonRegressionFields(capabilityCandidate.efficiency_non_regression_refs);
-  if (missingEfficiencyFields.length > 0) {
-    const blocker = buildEfficiencyTypedBlocker({
-      targetAgent,
-      suite,
+  const capabilityPath = path.join(outputDir, 'target-capability-improvement-candidate.json');
+  const missingFields = [
+    ...missingEfficiencyNonRegressionFields(capabilityCandidate.efficiency_non_regression_refs),
+    ...missingTargetImprovementPolicyFields({
       suiteResult,
-      capabilityCandidate,
-      missingFields: missingEfficiencyFields,
-    });
-    const artifacts = writeTypedBlockerArtifacts({
-      outputDir,
-      capabilityCandidate,
-      blocker,
-      agentLabRun,
-    });
+      proposedChangeRefs,
+      patchTraceabilityMatrix,
+    }),
+    ...(typeof suiteResult.foundry_lab_execution_receipt_ref === 'string'
+      && suiteResult.foundry_lab_execution_receipt_ref.length > 0
+      ? []
+      : ['foundry_lab_execution_receipt_ref']),
+  ];
+
+  if (missingFields.length > 0) {
+    const expectedTypedBlockerRef = buildExpectedTypedBlockerRef(
+      targetAgent.domain_id,
+      capabilityCandidate.candidate_id,
+      'developer_work_order_inputs_missing',
+    );
+    capabilityCandidate.status = 'candidate_blocked_missing_declarative_work_order_inputs';
+    capabilityCandidate.missing_required_fields = uniqueStrings(missingFields);
+    capabilityCandidate.expected_typed_blocker_ref = expectedTypedBlockerRef;
+    writeJson(capabilityPath, capabilityCandidate);
     return {
-      surface_kind: 'opl_meta_agent_external_suite_self_evolution_result',
-      version: 'opl-meta-agent.external-suite-self-evolution.v1',
-      status: 'blocked_efficiency_quality_floor_missing',
+      surface_kind: 'opl_meta_agent_external_suite_judgment',
+      version: 'opl-meta-agent.external-suite-judgment.v1',
+      status: 'candidate_blocked_missing_declarative_work_order_inputs',
       product_id: 'opl-meta-agent',
       target_agent: capabilityCandidate.target_agent,
+      source_agent_lab_result_ref: suiteResult.result_id,
+      evaluation_target_agent: suiteResult.evaluation_target_agent,
+      evaluation_provenance_refs: suiteResult.refs.evaluation_provenance_refs,
+      candidate_refs: [capabilityCandidate.candidate_id, expectedTypedBlockerRef],
+      missing_required_fields: uniqueStrings(missingFields),
+      artifacts: {
+        target_capability_improvement_candidate_path: capabilityPath,
+      },
       authority_boundary: {
         ...capabilityCandidate.authority_boundary,
-        no_executable_work_order_issued: true,
-      },
-      artifacts: {
-        suite_path: suitePath,
-        ...artifacts,
-      },
-      opl_agent_lab: agentLabRun.agent_lab_run,
-      learning_loop: {
-        target_capability_improvement_candidate: capabilityCandidate,
-        typed_blocker: blocker,
+        typed_blocker_body_materialized_by_oma: false,
+        executable_work_order_materialized: false,
       },
     };
   }
-  const missingTargetImprovementPolicy = missingTargetImprovementPolicyFields({
-    suiteResult,
-    proposedChangeRefs,
-    patchTraceabilityMatrix,
-  });
-  if (missingTargetImprovementPolicy.length > 0) {
-    const blocker = buildTargetImprovementPolicyTypedBlocker({
-      targetAgent,
-      suite,
-      suiteResult,
-      capabilityCandidate,
-      missingFields: missingTargetImprovementPolicy,
-    });
-    const artifacts = writeTypedBlockerArtifacts({
-      outputDir,
-      capabilityCandidate,
-      blocker,
-      agentLabRun,
-    });
+
+  if (suiteResult.status === 'passed') {
+    capabilityCandidate.status = 'evaluated_no_source_patch_required';
+    writeJson(capabilityPath, capabilityCandidate);
     return {
-      surface_kind: 'opl_meta_agent_external_suite_self_evolution_result',
-      version: 'opl-meta-agent.external-suite-self-evolution.v1',
-      status: 'blocked_target_improvement_policy_missing',
+      surface_kind: 'opl_meta_agent_external_suite_judgment',
+      version: 'opl-meta-agent.external-suite-judgment.v1',
+      status: 'no_source_patch_required',
       product_id: 'opl-meta-agent',
       target_agent: capabilityCandidate.target_agent,
-      authority_boundary: {
-        ...capabilityCandidate.authority_boundary,
-        no_executable_work_order_issued: true,
-      },
+      source_agent_lab_result_ref: suiteResult.result_id,
+      foundry_lab_execution_receipt_ref: suiteResult.foundry_lab_execution_receipt_ref,
+      evaluation_target_agent: suiteResult.evaluation_target_agent,
+      evaluation_provenance_refs: suiteResult.refs.evaluation_provenance_refs,
+      candidate_refs: [capabilityCandidate.candidate_id],
       artifacts: {
-        suite_path: suitePath,
-        ...artifacts,
+        target_capability_improvement_candidate_path: capabilityPath,
       },
-      opl_agent_lab: agentLabRun.agent_lab_run,
-      learning_loop: {
-        target_capability_improvement_candidate: capabilityCandidate,
-        typed_blocker: blocker,
-      },
+      authority_boundary: capabilityCandidate.authority_boundary,
     };
   }
+
   const developerPatchWorkOrder = buildDeveloperPatchWorkOrder({
     targetAgent,
     suite,
     suiteResult,
-    receipt,
+    foundryLabExecutionReceiptRef: String(suiteResult.foundry_lab_execution_receipt_ref),
     capabilityCandidate,
     policy,
   });
@@ -695,58 +835,45 @@ export function runImproveFromAgentLabSuite({
     developerPatchWorkOrder,
   }));
   Object.assign(developerPatchWorkOrder.work_order_completeness as JsonObject, {
-    reviewer_evidence: {
-      refs: directReviewerEvidenceRefs,
-    },
+    reviewer_evidence: { refs: directReviewerEvidenceRefs },
     opl_work_order_delegation_aperture: developerPatchWorkOrder.opl_work_order_delegation_aperture,
   });
-  Object.assign(mechanismPatchProposal, {
-    repeat_budget: {
-      max_attempts: 2,
-      remaining_attempts: 1,
-      repeat_scope: 'same_target_eval_work_order_owner_route_tuple',
-    },
-    dead_letter_refs: [
-      `dead-letter:opl-meta-agent/${targetAgent.domain_id}/${mechanismPatchProposal.proposal_id}`,
-    ],
-    escalation_refs: [
-      `escalation:target-owner/${targetAgent.domain_id}/external-suite-self-evolution`,
-      String(developerPatchWorkOrder.work_order_completeness?.fail_closed_blocker_ref),
-    ],
-    next_allowed_action: 'delegate_to_opl_work_order_execute_after_currentness_gate',
-  });
   validateDeveloperPatchWorkOrder(developerPatchWorkOrder);
-
-  const artifacts = writeExternalSuiteArtifacts({
-    outputDir,
-    receipt,
-    learningCandidate,
-    mechanismPatchProposal,
-    capabilityCandidate,
-    developerPatchWorkOrder,
-    agentLabRun,
-  });
+  const workOrderPath = path.join(outputDir, 'developer-patch-work-order.json');
+  writeJson(capabilityPath, capabilityCandidate);
+  writeJson(workOrderPath, developerPatchWorkOrder);
 
   return {
-    surface_kind: 'opl_meta_agent_external_suite_self_evolution_result',
-    version: 'opl-meta-agent.external-suite-self-evolution.v1',
-    status: suiteResult.status === 'passed' ? 'passed' : 'blocked_with_developer_patch_work_order',
+    surface_kind: 'opl_meta_agent_external_suite_judgment',
+    version: 'opl-meta-agent.external-suite-judgment.v1',
+    status: 'developer_patch_work_order_ready_for_opl_foundry_lab',
     product_id: 'opl-meta-agent',
     target_agent: capabilityCandidate.target_agent,
-    authority_boundary: capabilityCandidate.authority_boundary,
+    source_agent_lab_result_ref: suiteResult.result_id,
+    foundry_lab_execution_receipt_ref: suiteResult.foundry_lab_execution_receipt_ref,
+    evaluation_target_agent: suiteResult.evaluation_target_agent,
+    evaluation_provenance_refs: suiteResult.refs.evaluation_provenance_refs,
+    candidate_refs: [
+      capabilityCandidate.candidate_id,
+      developerPatchWorkOrder.work_order_id,
+    ],
     ...domainPackReceiptFields(domainPackSummary),
     source_domain_pack: domainPackSummary,
     artifacts: {
-      suite_path: suitePath,
-      ...artifacts,
+      target_capability_improvement_candidate_path: capabilityPath,
+      developer_patch_work_order_path: workOrderPath,
     },
-    opl_agent_lab: agentLabRun.agent_lab_run,
-    learning_loop: {
-      improvement_receipt: receipt,
-      online_learning_candidate: learningCandidate,
-      mechanism_patch_proposal: mechanismPatchProposal,
+    agent_building_judgment: {
       target_capability_improvement_candidate: capabilityCandidate,
       developer_patch_work_order: developerPatchWorkOrder,
+    },
+    authority_boundary: {
+      ...capabilityCandidate.authority_boundary,
+      oma_can_execute_agent_lab_suite: false,
+      oma_can_execute_developer_work_order: false,
+      oma_can_write_owner_receipt_body: false,
+      oma_can_write_typed_blocker_body: false,
+      oma_can_manage_target_worktree_lifecycle: false,
     },
   };
 }

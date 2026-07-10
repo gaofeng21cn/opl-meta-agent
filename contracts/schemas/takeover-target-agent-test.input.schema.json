@@ -18,10 +18,6 @@
       "type": "string",
       "minLength": 1
     },
-    "opl_bin": {
-      "type": "string",
-      "minLength": 1
-    },
     "ai_reviewer_evaluation": {
       "type": "string",
       "minLength": 1,

@@ -57,7 +57,10 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   const trajectoryAction = actionById(actions, 'materialize-trajectory-learning-proposal');
 
   assert.match(String(baselineAction.source_command.command), /^npm run build-agent-baseline --/);
-  assert.deepEqual(takeoverAction.new_agent_delivery_gate, baselineAction.new_agent_delivery_gate);
+  assert.equal(Object.hasOwn(baselineAction, 'new_agent_delivery_gate'), false);
+  assert.equal(Object.hasOwn(takeoverAction, 'new_agent_delivery_gate'), false);
+  assert.match(String(baselineAction.summary), /without creating a suite result or owner receipt/);
+  assert.match(String(takeoverAction.summary), /without local suite execution or owner receipt creation/);
   assert.equal(takeoverAction.supported_surfaces.mcp.descriptor_only, true);
   assert.equal(takeoverAction.supported_surfaces.mcp.public_runtime, false);
 
@@ -98,18 +101,6 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
     'oma_can_write_target_owner_receipt_body',
     'oma_can_write_target_domain_truth',
   ], 'feedback readback authority_boundary');
-
-  const deliveryGate = baselineAction.new_agent_delivery_gate as JsonObject;
-  assert.equal(deliveryGate.exactly_one_terminal_outcome_required, true);
-  assert.equal(deliveryGate.stage_run_boundary.provider_completion_is_domain_completion, false);
-  assert.equal(deliveryGate.target_domain_boundary.accepted_owner_answer_shape_required, true);
-  assertFalseFlags(deliveryGate.authority_boundary as JsonObject, [
-    'oma_can_manage_target_worktree_lifecycle',
-    'oma_can_write_target_owner_receipt_body',
-    'oma_can_write_target_domain_truth',
-    'oma_can_mutate_target_domain_artifact_body',
-    'oma_can_promote_default_agent_without_gate',
-  ], 'new agent delivery gate authority_boundary');
 
   assertIncludesAll(asStrings(ownerReceipt.forbidden_claims), [
     'opl_meta_agent_wrote_target_domain_truth',

@@ -1,13 +1,15 @@
 {
   "gate_id": "purpose-first-owner-delta-gate",
   "status": "active",
-  "default_output_shape": "target_agent_semantics_or_work_order_or_candidate_or_typed_blocker",
+  "default_output_shape": "target_agent_semantics_or_suite_seed_or_declarative_work_order_or_candidate_ref",
   "allowed_output_refs": [
     "target_agent_semantic_delta_ref",
+    "agent_lab_suite_seed_ref",
+    "foundry_lab_work_order_candidate_ref",
     "developer_patch_work_order_ref",
     "target_capability_improvement_candidate_ref",
-    "mechanism_patch_proposal_ref",
-    "typed_blocker_ref"
+    "mechanism_patch_candidate_ref",
+    "expected_typed_blocker_ref"
   ],
   "required_owner_delta_refs": [
     "next_forced_delta_ref",
@@ -32,6 +34,9 @@
     "scripts_can_own_target_worktree_lifecycle": false,
     "scripts_can_own_queue_or_attempt_ledger": false,
     "scripts_can_own_work_order_absorb_or_cleanup": false,
+    "scripts_can_write_agent_lab_suite_result": false,
+    "scripts_can_write_learning_promotion_mechanism_or_scaleout_ledger": false,
+    "scripts_can_write_typed_blocker_body": false,
     "scripts_can_create_stage_folder_runtime_state": false,
     "scripts_can_create_owner_promotion": false,
     "scripts_can_write_target_owner_receipt_body": false,
@@ -41,13 +46,17 @@
     "oma_is_agent_lab_or_opl_framework_replacement": false,
     "allowed_oma_products": [
       "candidate_agent_package_ref",
+      "agent_lab_suite_seed_ref",
+      "foundry_lab_work_order_candidate_ref",
       "developer_patch_work_order_ref",
       "target_capability_improvement_candidate_ref",
-      "mechanism_patch_proposal_ref",
-      "typed_blocker_ref"
+      "mechanism_patch_candidate_ref",
+      "expected_typed_blocker_ref"
     ],
     "delegated_framework_surfaces": {
       "agent_lab_runner": "one-person-lab",
+      "agent_lab_suite_materialization_and_result_ledger": "one-person-lab/OPL Foundry Lab; evaluation work-order consumer dependency open",
+      "learning_promotion_mechanism_and_scaleout_ledgers": "one-person-lab/OPL Foundry Lab",
       "promotion_gate": "one-person-lab",
       "queue_attempt_ledger": "one-person-lab",
       "physical_stage_kernel": "one-person-lab",
@@ -60,6 +69,9 @@
     },
     "forbidden_oma_owned_surfaces": [
       "agent_lab_runner",
+      "agent_lab_suite_result_or_execution_receipt_writer",
+      "learning_promotion_mechanism_or_scaleout_ledger_writer",
+      "target_typed_blocker_body_writer",
       "promotion_gate",
       "queue_attempt_ledger",
       "physical_stage_kernel",

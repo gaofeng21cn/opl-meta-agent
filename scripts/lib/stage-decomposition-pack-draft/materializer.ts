@@ -19,6 +19,7 @@ import type {
 import {
   asRecordArray,
   asString,
+  asStringArray,
   isRecord,
   validateBody,
   validateRelativeMarkdownPath,
@@ -38,6 +39,97 @@ function uniqueStrings(values: unknown[]): string[] {
   return [...new Set(values.filter((value): value is string =>
     typeof value === 'string' && value.trim().length > 0
   ).map((value) => value.trim()))];
+}
+
+function refValues(value: unknown, field: string): string[] {
+  return asRecordArray(value, field).map((entry, index) =>
+    asString(entry.ref, `${field}[${index}].ref`)
+  );
+}
+
+function optionalString(value: unknown): string | null {
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
+}
+
+function buildDeclarativeStageManifest(draft: StageDecompositionPackDraft): JsonObject {
+  const domainId = draft.target_agent.domain_id;
+  const stages = asRecordArray(draft.stage_control_plane.stages, 'stage_control_plane.stages');
+  return {
+    surface_kind: 'opl_standard_agent_declarative_stage_manifest',
+    version: 'opl-standard-agent-declarative-stage-manifest.v1',
+    target_domain_id: domainId,
+    owner: domainId,
+    authority_boundary: {
+      domain_truth_owner: domainId,
+      opl_can_write_domain_truth: false,
+      opl_can_authorize_quality_or_export: false,
+    },
+    stages: stages.map((stage, index) => {
+      const stageId = asString(stage.stage_id, `stage_control_plane.stages[${index}].stage_id`);
+      const stageContract = isRecord(stage.stage_contract)
+        ? stage.stage_contract
+        : (() => { throw new Error(`stage_control_plane stage ${stageId} requires stage_contract.`); })();
+      const promptRefs = refValues(stage.prompt_refs, `stage_control_plane.stages[${index}].prompt_refs`);
+      const patternRefs = asStringArray(
+        stage.stage_pattern_source_refs ?? [],
+        `stage_control_plane.stages[${index}].stage_pattern_source_refs`,
+      );
+      const stageOrigin = optionalString(stage.stage_origin);
+      const sourcePatternRef = stageOrigin === 'source_pattern_ref' ? patternRefs[0] : null;
+      const policyRef = `agent/stages/${stageId}.md`;
+      if (!draft.files.some((file) => file.path === policyRef)) {
+        throw new Error(`stage-decomposition pack draft stage ${stageId} is missing ${policyRef}.`);
+      }
+      const trustLane = isRecord(stage.trust_boundary)
+        ? optionalString(stage.trust_boundary.lane)
+        : null;
+      return {
+        stage_id: stageId,
+        stage_kind: asString(stage.stage_kind, `stage_control_plane.stages[${index}].stage_kind`),
+        title: asString(stage.title, `stage_control_plane.stages[${index}].title`),
+        summary: optionalString(stage.summary) ?? undefined,
+        goal: asString(stage.goal, `stage_control_plane.stages[${index}].goal`),
+        policy_ref: policyRef,
+        prompt_ref: asString(promptRefs[0], `stage_control_plane.stages[${index}].prompt_refs[0].ref`),
+        knowledge_refs: refValues(
+          stage.knowledge_refs,
+          `stage_control_plane.stages[${index}].knowledge_refs`,
+        ),
+        quality_gate_refs: refValues(
+          stage.evaluation,
+          `stage_control_plane.stages[${index}].evaluation`,
+        ),
+        allowed_action_refs: asStringArray(
+          stage.allowed_action_refs,
+          `stage_control_plane.stages[${index}].allowed_action_refs`,
+        ),
+        requires: asStringArray(stageContract.requires, `stage_control_plane.stages[${index}].stage_contract.requires`),
+        ensures: asStringArray(stageContract.ensures, `stage_control_plane.stages[${index}].stage_contract.ensures`),
+        next_stage_refs: index + 1 < stages.length
+          ? [asString(stages[index + 1]?.stage_id, `stage_control_plane.stages[${index + 1}].stage_id`)]
+          : [],
+        ...(trustLane ? { lane_kind: trustLane, trust_lane: trustLane } : {}),
+        ...(stageOrigin ? { stage_origin: stageOrigin } : {}),
+        ...(optionalString(stage.pattern_id) ? { pattern_id: optionalString(stage.pattern_id) } : {}),
+        ...(optionalString(stage.step_id) ? { step_id: optionalString(stage.step_id) } : {}),
+        ...(optionalString(stage.provenance_kind)
+          ? { provenance_kind: optionalString(stage.provenance_kind) }
+          : {}),
+        ...(sourcePatternRef ? { source_pattern_ref: sourcePatternRef } : {}),
+        ...(asStringArray(stage.source_anchor_refs ?? [], `stage_control_plane.stages[${index}].source_anchor_refs`).length > 0
+          ? { source_anchor_refs: asStringArray(
+              stage.source_anchor_refs,
+              `stage_control_plane.stages[${index}].source_anchor_refs`,
+            ) }
+          : {}),
+        ...(patternRefs.length > 0 ? { stage_pattern_source_refs: patternRefs } : {}),
+        ...(optionalString(stage.target_only_requirement_ref)
+          ? { target_only_requirement_ref: optionalString(stage.target_only_requirement_ref) }
+          : {}),
+        stage_contract: stageContract,
+      };
+    }),
+  };
 }
 
 function installBuildReceipt(surface: JsonObject, receipt: JsonObject): void {
@@ -249,12 +341,69 @@ function addStageSubpacketRefs(stage: JsonObject, expectedRef: string, repairNot
   }
 }
 
+function installFoundryStageIdentityProjection(
+  draft: JsonObject,
+  targetAgent: TargetAgent,
+  repairNotes: string[],
+): void {
+  const foundrySeries = isRecord(draft.foundry_agent_series) ? draft.foundry_agent_series : null;
+  if (!foundrySeries) {
+    return;
+  }
+  if (!Array.isArray(foundrySeries.required_identity_fields)
+    || foundrySeries.required_identity_fields.some((field) =>
+      typeof field !== 'string' || field.trim().length === 0
+    )) {
+    return;
+  }
+  const requiredIdentityFields = foundrySeries.required_identity_fields.map((field) => field.trim());
+  const expectedLabel = targetAgent.domain_label ?? targetAgent.domain_id;
+  const expectedCoreIdentity: Record<string, string> = {
+    domain_id: targetAgent.domain_id,
+    foundry_agent_id: targetAgent.domain_id,
+    product_layer: 'foundry_agent',
+    domain_label: expectedLabel,
+    authority_owner: expectedLabel,
+    stage_control_plane_target_domain_id: targetAgent.domain_id,
+  };
+  const requiredLegacyIdentityFields = [
+    'domain_id',
+    'foundry_agent_id',
+    'product_layer',
+    'domain_label',
+    'authority_owner',
+    'stage_control_plane_ref',
+  ];
+  if (uniqueStrings(requiredIdentityFields).length !== requiredIdentityFields.length
+    || requiredLegacyIdentityFields.some((field) => !requiredIdentityFields.includes(field))
+    || Object.entries(expectedCoreIdentity).some(([field, expected]) => foundrySeries[field] !== expected)) {
+    return;
+  }
+  const expectedFields: Record<string, string> = {
+    stage_manifest_ref: 'agent/stages/manifest.json',
+    stage_control_plane_ref: 'opl-generated:family_stage_control_plane',
+  };
+  Object.entries(expectedFields).forEach(([field, expected]) => {
+    if (foundrySeries[field] !== expected) {
+      foundrySeries[field] = expected;
+      repairNotes.push(`foundry_agent_series.${field}`);
+    }
+  });
+  for (const field of ['stage_manifest_ref', 'stage_control_plane_ref']) {
+    if (!requiredIdentityFields.includes(field)) {
+      requiredIdentityFields.push(field);
+      repairNotes.push(`foundry_agent_series.required_identity_fields.${field}`);
+    }
+  }
+  foundrySeries.required_identity_fields = requiredIdentityFields;
+}
+
 export function repairStageDecompositionCloseoutPacket(
   packet: unknown,
   { targetAgent }: { targetAgent: TargetAgent },
 ): StageDecompositionCloseoutRepairResult {
   const expectedSet = buildStageDecompositionSubpacketSet(targetAgent);
-  if (!expectedSet || !isRecord(packet)) {
+  if (!isRecord(packet)) {
     return { packet, repaired: false, repair_notes: [] };
   }
   if (
@@ -268,22 +417,24 @@ export function repairStageDecompositionCloseoutPacket(
   const repairedPacket = cloneJson(packet) as StageDecompositionCloseoutPacket;
   const repairNotes: string[] = [];
   const draft = repairedPacket.stage_decomposition_pack_draft as unknown as JsonObject;
-  const expectedRef = String(expectedSet.packet_set_ref);
+  installFoundryStageIdentityProjection(draft, targetAgent, repairNotes);
 
-  installSubpacketSetProjection(draft, expectedSet, repairNotes, 'stage_decomposition_pack_draft');
-
-  const stageControl = isRecord(draft.stage_control_plane) ? draft.stage_control_plane : null;
-  if (stageControl) {
-    installSubpacketSetProjection(stageControl, expectedSet, repairNotes, 'stage_control_plane');
-    if (Array.isArray(stageControl.stages)) {
-      stageControl.stages.forEach((stage, index) => {
-        if (!isRecord(stage)) {
-          return;
-        }
-        const stageName = `stage_control_plane.stages[${index}]`;
-        installSubpacketSetProjection(stage, expectedSet, repairNotes, stageName);
-        addStageSubpacketRefs(stage, expectedRef, repairNotes, stageName);
-      });
+  if (expectedSet) {
+    const expectedRef = String(expectedSet.packet_set_ref);
+    installSubpacketSetProjection(draft, expectedSet, repairNotes, 'stage_decomposition_pack_draft');
+    const stageControl = isRecord(draft.stage_control_plane) ? draft.stage_control_plane : null;
+    if (stageControl) {
+      installSubpacketSetProjection(stageControl, expectedSet, repairNotes, 'stage_control_plane');
+      if (Array.isArray(stageControl.stages)) {
+        stageControl.stages.forEach((stage, index) => {
+          if (!isRecord(stage)) {
+            return;
+          }
+          const stageName = `stage_control_plane.stages[${index}]`;
+          installSubpacketSetProjection(stage, expectedSet, repairNotes, stageName);
+          addStageSubpacketRefs(stage, expectedRef, repairNotes, stageName);
+        });
+      }
     }
   }
 
@@ -364,6 +515,7 @@ export function materializeStageDecompositionPackDraft(
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     fs.writeFileSync(filePath, body);
   }
+  writeJson(path.join(targetAgentDir, 'agent', 'stages', 'manifest.json'), buildDeclarativeStageManifest(draft));
   writeJson(path.join(targetAgentDir, 'contracts', 'action_catalog.json'), draft.action_catalog);
   writeJson(path.join(targetAgentDir, 'contracts', 'artifact_morphology_contract.json'), draft.artifact_morphology_contract);
   writeJson(path.join(targetAgentDir, 'contracts', 'stage_control_plane.json'), draft.stage_control_plane);

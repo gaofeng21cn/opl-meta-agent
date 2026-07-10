@@ -19,6 +19,7 @@ const suiteSeed = {
   version: 'opl-meta-agent.agent-lab-suite-seed.v1',
   suite_id: 'opl-meta-agent-baseline-suite:colorectal-surgery-risk-agent',
   suite_kind: 'agent_lab_external_suite',
+  tasks: [{ task_id: 'agent-lab-task:colorectal-surgery-risk-agent/baseline' }],
 };
 
 function build(overrides: Record<string, unknown> = {}) {
@@ -74,7 +75,14 @@ test('Foundry work-order identity binds target identity and canonical provenance
     targetAgent: { ...targetAgent, descriptor_ref: '/tmp/other/contracts/domain_descriptor.json' },
   });
   const changedProvenance = build({ candidateRefs: ['candidate:a', 'candidate:c'] });
+  const changedTask = build({
+    suiteSeed: {
+      ...suiteSeed,
+      tasks: [{ task_id: 'agent-lab-task:colorectal-surgery-risk-agent/transportability' }],
+    },
+  });
   assert.notEqual(changedTargetRef.work_order_id, canonical.work_order_id);
   assert.notEqual(changedDescriptor.work_order_id, canonical.work_order_id);
   assert.notEqual(changedProvenance.work_order_id, canonical.work_order_id);
+  assert.notEqual(changedTask.work_order_id, canonical.work_order_id);
 });

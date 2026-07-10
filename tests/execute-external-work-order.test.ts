@@ -27,6 +27,7 @@ function buildWorkOrder(outputRoot: string): string {
   writeJson(suitePath, buildExternalSuite({
     suiteId: 'mas-suite:high-quality-medical-manuscript',
     domainId: 'med-autoscience',
+    targetAgentDir,
     taskFamily: 'high_quality_medical_manuscript_self_evolution',
     evidenceRefs: ['rubric-gap:mas/002/medical-manuscript'],
     feedbackRefs: ['feedback-ref:mas/002/manuscript-review'],

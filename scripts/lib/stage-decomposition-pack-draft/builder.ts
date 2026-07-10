@@ -925,7 +925,8 @@ function buildFoundryAgentSeriesContract(targetAgent: TargetAgent, stageControlP
     domain_label: targetAgent.domain_label ?? domainId,
     domain_aliases: [],
     authority_owner: owner,
-    stage_control_plane_ref: 'contracts/stage_control_plane.json',
+    stage_manifest_ref: 'agent/stages/manifest.json',
+    stage_control_plane_ref: 'opl-generated:family_stage_control_plane',
     stage_control_plane_target_domain_id: stageControlPlane.target_domain_id,
     app_projection_ref: 'contracts/generated_surface_handoff.json#/product_entry',
     required_identity_fields: [
@@ -934,6 +935,7 @@ function buildFoundryAgentSeriesContract(targetAgent: TargetAgent, stageControlP
       'product_layer',
       'domain_label',
       'authority_owner',
+      'stage_manifest_ref',
       'stage_control_plane_ref',
     ],
     required_stage_packets: [

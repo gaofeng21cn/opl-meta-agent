@@ -2,7 +2,7 @@
 
 ## 目标
 
-把 Agent Lab blocked/failed evidence 转成 gated improvement candidates、developer patch work orders、target version receipts 和 regression result refs。
+把显式 OPL Foundry Lab blocked/failed result 与 reviewer evidence 转成 gated improvement candidates 和 developer patch work orders；实际 patch、verification、regression、absorb 与 owner closeout 交给 OPL / target owner。
 
 ## 输入
 
@@ -10,7 +10,7 @@
 - Failure taxonomy、rubric gaps、trajectory refs、receipt refs。
 - 结构化 AI reviewer evaluation ref/path：critique、suggestions、source_refs、verdict、provenance。
 - Target agent source repo locator、owner gate constraints、allowed editable surfaces。
-- `improve-from-external-agent-lab-suite` action inputs：`suite_path`、`agent_dir`、`output_dir`、`opl_bin`、`ai_reviewer_evaluation`、可选 `feedback_ref`。
+- `improve-from-external-agent-lab-suite` action inputs：`suite_path`、`suite_result_path`、`agent_dir`、`output_dir`、`ai_reviewer_evaluation`、可选 `feedback_ref`。
 
 ## 步骤
 
@@ -19,11 +19,11 @@
 3. 校验 AI reviewer evaluation；缺少 critique/suggestions/source refs/provenance 时 fail closed。
 4. 要求独立 reviewer 的 direct-evidence critique 进入改动依据；执行 Codex 不得在同一上下文里自审并批准自己的 patch。
 5. 为每个 gap 建立 traceability matrix：source failure ref、AI reviewer suggestion/source refs、required patch ref、editable surface、test proof、receipt proof。
-6. 只在 target owner gate 允许时修改 target agent source、tests 或 docs；修改范围必须对应 failure ref 或 reviewer suggestion ref。
+6. 把 target owner 允许的 source/tests/docs 写集编码进 developer work order；OMA 不直接执行 patch。
 7. 生成 target capability improvement candidate，声明不写 target truth、memory body、artifact body、quality verdict。
-8. 运行目标 agent 的相关验证和 Agent Lab regression suite。
-9. 写入 target agent version receipt，包含 branch/worktree refs、validation refs、absorb gate 和 cleanup requirement。
-10. 产出 mechanism patch proposal refs，供后续 adoption gate 审查。
+8. 通过 OPL work-order primitive 请求 target verification、Agent Lab regression、version/rollback、absorb 和 cleanup refs。
+9. 等待 OPL / target owner 返回 execution、version、regression 与 owner-closeout refs；不得由 OMA 自填。
+10. 产出 mechanism candidate refs，供后续 adoption gate 审查。
 
 ## 输出
 
@@ -31,9 +31,7 @@
 - `target_capability_improvement_candidate_refs`
 - `mechanism_patch_proposal_refs`
 - `developer_patch_work_order_refs`
-- `target_agent_version_receipt_refs`
-- `candidate_branch_refs`
-- `regression_result_refs`
+- optional externally returned target-version / candidate-branch / regression refs
 
 ## 质量门槛
 
@@ -50,4 +48,5 @@
 - 禁止无证据自由发挥目标 agent 改造。
 - 禁止把 mechanism proposal 自动采用为默认机制。
 - 禁止修改 target domain truth、memory body、artifact body、quality/export verdict。
+- 禁止 OMA 自行执行 target patch、Agent Lab regression、absorb/cleanup 或签 target version/owner receipt。
 - 禁止留下未清理 worktree、临时 branch 或未说明的运行副产物。

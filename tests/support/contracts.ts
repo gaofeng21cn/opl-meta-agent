@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { assertJsonSchemaPayload } from 'opl-framework-shared/json-schema-registry';
 import type { JsonObject } from '../../scripts/lib/domain-pack.ts';
 
 export type { JsonObject };
@@ -31,6 +32,15 @@ export function readJson(relativePath: string): JsonObject {
 
 export function readJsonFile(filePath: string): JsonObject {
   return parseJsonText(fs.readFileSync(filePath, 'utf8'));
+}
+
+export function assertMatchesJsonSchema(schemaRef: string, payload: unknown): void {
+  const schema = readJson(schemaRef);
+  assertJsonSchemaPayload({
+    schemaId: String(schema.$id),
+    schema,
+    sourceRef: schemaRef,
+  }, payload);
 }
 
 export function parseJsonText(text: string): JsonObject {

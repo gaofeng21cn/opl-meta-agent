@@ -56,6 +56,16 @@ export function buildFoundryLabWorkOrder({
   };
   const suiteId = requiredString(suiteSeed.suite_id, 'suite_seed.suite_id');
   const suiteKind = requiredString(suiteSeed.suite_kind, 'suite_seed.suite_kind');
+  const suiteTasks = Array.isArray(suiteSeed.tasks) ? suiteSeed.tasks : [];
+  const suiteTaskIds = suiteTasks.map((task, index) => {
+    if (typeof task !== 'object' || task === null || Array.isArray(task)) {
+      throw new Error(`Foundry Lab work order requires suite_seed.tasks[${index}].task_id.`);
+    }
+    return requiredString((task as JsonObject).task_id, `suite_seed.tasks[${index}].task_id`);
+  });
+  if (suiteTaskIds.length === 0 || new Set(suiteTaskIds).size !== suiteTaskIds.length) {
+    throw new Error('Foundry Lab work order requires unique suite_seed.tasks[].task_id values.');
+  }
   const canonicalSuiteSeedRef = requiredString(suiteSeedRef, 'suite_seed.ref');
   const canonicalSourceRefs = canonicalRefs(sourceRefs);
   const canonicalReviewerRefs = canonicalRefs(reviewerRefs);
@@ -71,6 +81,7 @@ export function buildFoundryLabWorkOrder({
       suite_id: suiteId,
       suite_kind: suiteKind,
       ref: canonicalSuiteSeedRef,
+      task_ids: [...suiteTaskIds].sort(),
     },
     source_refs: canonicalSourceRefs,
     reviewer_refs: canonicalReviewerRefs,
@@ -126,6 +137,7 @@ export function buildFoundryLabWorkOrder({
       oma_can_write_owner_receipt_body: false,
       oma_can_write_learning_candidate_ledger: false,
       oma_can_write_promotion_gate: false,
+      oma_can_write_mechanism_or_scaleout_ledger: false,
       oma_can_manage_work_order_lifecycle: false,
       oma_can_write_target_domain_truth: false,
       oma_can_write_target_domain_memory_body: false,

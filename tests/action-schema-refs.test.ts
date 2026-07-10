@@ -3,10 +3,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { validateJsonSchemaPayload } from 'opl-framework-shared/json-schema-registry';
-import {
-  buildEfficiencyTypedBlocker,
-  buildTargetImprovementPolicyTypedBlocker,
-} from '../scripts/lib/external-suite-materializer.ts';
 import { readJson, repoRoot } from './support/contracts.ts';
 
 type JsonObject = Record<string, any>;
@@ -68,22 +64,20 @@ const capabilityCandidate = {
   authority_boundary: authorityBoundary(),
 };
 
-function improveOutput(status: string, learningLoopDelta: JsonObject): JsonObject {
+function improveOutput(status: string, delta: JsonObject = {}): JsonObject {
   return {
-    surface_kind: 'opl_meta_agent_external_suite_self_evolution_result',
-    version: 'opl-meta-agent.external-suite-self-evolution.v1',
+    surface_kind: 'opl_meta_agent_external_suite_judgment',
+    version: 'opl-meta-agent.external-suite-judgment.v1',
     status,
     product_id: 'opl-meta-agent',
     target_agent: targetAgent,
+    source_agent_lab_result_ref: 'result:target-agent/external',
+    candidate_refs: ['candidate:target-agent/capability-gap'],
     authority_boundary: authorityBoundary(),
     artifacts: {
-      suite_path: '/tmp/external-suite.json',
-      result_path: '/tmp/result.json',
+      target_capability_improvement_candidate_path: '/tmp/candidate.json',
     },
-    learning_loop: {
-      target_capability_improvement_candidate: capabilityCandidate,
-      ...learningLoopDelta,
-    },
+    ...delta,
   };
 }
 
@@ -99,7 +93,7 @@ function developerPatchWorkOrder(status: 'ready_for_target_agent_source_patch' |
     reviewer_pool_refs: ['reviewer-pool:target-agent/independent'],
     patch_execution_bundle_ref: 'patch-bundle:target-agent/current',
     target_closeout_refs: ['target-owner-receipt-or-typed-blocker:target-agent/current'],
-    owner_receipt_ref: 'receipt:oma/target-agent/external-suite',
+    foundry_lab_execution_receipt_ref: 'receipt:opl-foundry-lab/target-agent/external-suite',
     authority_boundary: authorityBoundary(),
   };
 }
@@ -237,67 +231,58 @@ test('representative action inputs and outputs accept valid instances and reject
   }).ok, false);
 });
 
-test('canonical typed blocker builders match their action output branches exactly', () => {
-  const suite = { suite_id: 'suite:target-agent/external' };
-  const suiteResult = { result_id: 'result:target-agent/external', status: 'blocked' };
-  const targetImprovementBlocker = buildTargetImprovementPolicyTypedBlocker({
-    targetAgent: targetAgent as any,
-    suite,
-    suiteResult: suiteResult as any,
-    capabilityCandidate: capabilityCandidate as any,
-    missingFields: ['target_improvement_policy.canonical_paths'],
-  });
-  const efficiencyBlocker = buildEfficiencyTypedBlocker({
-    targetAgent: targetAgent as any,
-    suite,
-    suiteResult: suiteResult as any,
-    capabilityCandidate: capabilityCandidate as any,
-    missingFields: ['efficiency_non_regression_refs.quality_floor_refs'],
-  });
+test('external-suite action schema matches the three real OMA judgment branches', () => {
   const outputRef = 'contracts/schemas/improve-from-external-agent-lab-suite.output.schema.json';
+  const foundryReceipt = 'receipt:opl-foundry-lab/target-agent/external-suite';
+  const developerWorkOrder = developerPatchWorkOrder('ready_for_target_agent_source_patch');
 
   assert.equal(validate(outputRef, improveOutput(
-    'blocked_target_improvement_policy_missing',
-    { typed_blocker: targetImprovementBlocker },
+    'no_source_patch_required',
+    { foundry_lab_execution_receipt_ref: foundryReceipt },
   )).ok, true);
   assert.equal(validate(outputRef, improveOutput(
-    'blocked_efficiency_quality_floor_missing',
-    { typed_blocker: efficiencyBlocker },
-  )).ok, true);
-  assert.equal(validate(outputRef, improveOutput(
-    'passed',
-    { developer_patch_work_order: developerPatchWorkOrder('no_patch_required') },
-  )).ok, true);
-  assert.equal(validate(outputRef, improveOutput(
-    'blocked_with_developer_patch_work_order',
-    { developer_patch_work_order: developerPatchWorkOrder('ready_for_target_agent_source_patch') },
-  )).ok, true);
-
-  const targetBlockerWithEfficiencyField = structuredClone(targetImprovementBlocker);
-  delete targetBlockerWithEfficiencyField.authority_boundary.can_authorize_target_domain_quality_or_export;
-  targetBlockerWithEfficiencyField.authority_boundary.can_authorize_target_quality_or_export = false;
-  assert.equal(validate(outputRef, improveOutput(
-    'blocked_target_improvement_policy_missing',
-    { typed_blocker: targetBlockerWithEfficiencyField },
-  )).ok, false);
-
-  const efficiencyBlockerWithTargetField = structuredClone(efficiencyBlocker);
-  delete efficiencyBlockerWithTargetField.authority_boundary.can_authorize_target_quality_or_export;
-  efficiencyBlockerWithTargetField.authority_boundary.can_authorize_target_domain_quality_or_export = false;
-  assert.equal(validate(outputRef, improveOutput(
-    'blocked_efficiency_quality_floor_missing',
-    { typed_blocker: efficiencyBlockerWithTargetField },
-  )).ok, false);
-
-  assert.equal(validate(outputRef, improveOutput(
-    'passed',
-    { typed_blocker: efficiencyBlocker },
-  )).ok, false, 'passed output must not contain a typed blocker');
-  assert.equal(validate(outputRef, improveOutput(
-    'blocked_efficiency_quality_floor_missing',
+    'candidate_blocked_missing_declarative_work_order_inputs',
     {
-      typed_blocker: efficiencyBlocker,
-      developer_patch_work_order: developerPatchWorkOrder('ready_for_target_agent_source_patch'),
+      candidate_refs: [
+        'candidate:target-agent/capability-gap',
+        'expected-typed-blocker-ref:target-agent/missing-inputs',
+      ],
+      missing_required_fields: ['foundry_lab_execution_receipt_ref'],
+      authority_boundary: {
+        ...authorityBoundary(),
+        typed_blocker_body_materialized_by_oma: false,
+        executable_work_order_materialized: false,
+      },
     },
-  )).ok, false, 'typed-blocker output must not contain a developer work order');
+  )).ok, true);
+  assert.equal(validate(outputRef, improveOutput(
+    'developer_patch_work_order_ready_for_opl_foundry_lab',
+    {
+      foundry_lab_execution_receipt_ref: foundryReceipt,
+      candidate_refs: [capabilityCandidate.candidate_id, developerWorkOrder.work_order_id],
+      artifacts: {
+        target_capability_improvement_candidate_path: '/tmp/candidate.json',
+        developer_patch_work_order_path: '/tmp/work-order.json',
+      },
+      agent_building_judgment: {
+        target_capability_improvement_candidate: capabilityCandidate,
+        developer_patch_work_order: developerWorkOrder,
+      },
+    },
+  )).ok, true);
+
+  assert.equal(validate(outputRef, improveOutput(
+    'candidate_blocked_missing_declarative_work_order_inputs',
+    {
+      missing_required_fields: ['foundry_lab_execution_receipt_ref'],
+      agent_building_judgment: {
+        target_capability_improvement_candidate: capabilityCandidate,
+        developer_patch_work_order: developerWorkOrder,
+      },
+    },
+  )).ok, false, 'missing-input branch must not contain an executable developer work order');
+  assert.equal(validate(outputRef, improveOutput(
+    'developer_patch_work_order_ready_for_opl_foundry_lab',
+    { foundry_lab_execution_receipt_ref: foundryReceipt },
+  )).ok, false, 'ready branch requires the developer work-order artifact and judgment');
 });

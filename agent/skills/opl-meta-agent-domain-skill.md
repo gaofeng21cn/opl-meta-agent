@@ -17,21 +17,21 @@
 2. 执行 `web-experience-research`、用户提供参考设计读取，或消费 OPL source ingest / Codex extraction 形成的 canonical refs-only pattern packet。外部 packet 必须是 `opl.reference_design_pattern_packet.v1`，只在 packet 本地目录解引用 semantic JSON-pointer refs；raw/opaque source 不得伪造成已提炼 workflow。只吸收可迁移模式，不复制外部 runtime、私有数据或领域 truth。若用户提供论文/PDF/repo/案例系统，参考来源是设计来源，seed library/profile/catalog 只作为 fallback、secondary 或 OPL conformance 下限。
 3. 执行 `stage-decomposition` Codex stage attempt，产出 typed closeout packet；stage/action/pack files/gate policy 必须从该 closeout 来。source-derived 路线必须先生成 `ReferenceDesignPacket -> TransferMap -> AgentPackPlan` 并通过 `DesignAdmissionReceipt`；research-driven 路线必须先生成 `ResearchSynthesisPacket -> TransferMap -> AgentPackPlan -> DesignAdmissionReceipt`；两条路线都必须保留 `StageDecompositionSubpacketSet` 作为 stage 内部有序 subpacket 链，且每个 design-derived stage requirement 引用 `source_pattern_ref`/`stage_pattern_source_refs` 或 `target_only_requirement`；`AgentBuildReceipt` / `build_receipt` 只作为物化后的构建证明。
 4. 执行 `agent-skeleton-build`，只校验并物化 closeout 中的 candidate package，再跑 scaffold/interface validation；scaffold 只是物理骨架，不是目标 agent 设计来源。
-5. 执行 `eval-suite-build` 和 `baseline-run`，获得 Agent Lab evidence。
-6. 对生成后的 target agent repo 执行 takeover / Agent Lab external suite，获得 takeover receipt、online-learning candidate 和 mechanism proposal。
-7. 消费结构化 independent AI reviewer evaluation，并执行 `improve:external-suite` 或等价 self-evolution action，把 Agent Lab / reviewer evidence 转成 target capability candidate、developer patch work order、no-patch coordination receipt 或 typed blocker。
-8. 若存在可修复缺口，进入 owner-gated improvement loop 并重跑目标 repo verification / Agent Lab re-evaluation；若无 source patch required，记录 no-patch coordination work order 和 re-evaluation refs。
-9. 通过 `baseline-delivery` gate 后签发 package/runbook/receipt，并写出 `contracts/opl_agent_package_manifest.json` sidecar；Codex carrier 由 OPL generated surface 投影，sidecar 由 OPL App/Connect 管理安装、更新、依赖、repair 和按需暴露。
+5. 执行 `eval-suite-build` 和 `baseline-run`，生成 declarative suite seed 与 target-bound Foundry evaluation work order；不在 OMA 内执行 Agent Lab。
+6. 对 existing target agent 可执行 takeover producer，生成 takeover suite seed、Foundry evaluation work order 和 proposal-only candidate refs；不生成 suite result 或 takeover receipt。
+7. 由 OPL Foundry Lab 执行 evaluation work order。只有外部返回的 suite result / execution receipt 才能进入 `improve:external-suite`，生成 target capability judgment、developer patch work order、no-source-patch judgment 或 expected blocker ref。
+8. 实际 target patch、verification、Agent Lab re-evaluation、absorb/cleanup 和 owner closeout 由 OPL / target owner 执行；OMA 只消费返回 refs 并维持 no-forbidden-write boundary。
+9. 只有 OPL evaluation、independent review、self-evolution 与 target-owner closeout evidence 齐全后，才通过 downstream `baseline-delivery` gate；producer action 本身只交付 candidate Agent Pack、AgentBuildReceipt 和 Foundry handoff。
 
 ## 输出
 
 - OPL-compatible agent package refs。
 - OPL Agent Package manifest sidecar ref。
 - stage/action/memory/artifact/gate refs。
-- baseline delivery receipt refs。
-- takeover / external suite result refs。
+- AgentBuildReceipt、baseline/takeover suite seed 与 Foundry evaluation work-order refs。
+- optional OPL-returned takeover / external suite result 与 execution-receipt refs。
 - structured AI reviewer evaluation refs。
-- self-evolution receipt、target capability candidate 和 developer patch work order / typed blocker refs。
+- external-suite capability judgment、target capability candidate、developer patch work order / expected typed-blocker refs。
 - 后续 optimizer 或 online-learning candidate refs。
 
 ## 质量门槛

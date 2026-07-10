@@ -3,8 +3,8 @@
   "stage_kind": "review",
   "stage_pack_conformance_version": "standard-stage-pack.v2",
   "title": "Target Agent Takeover",
-  "summary": "Read an existing OPL-compatible agent descriptor/contracts, generate an Agent Lab external suite, run gated testing takeover, and record a self-evolution candidate without assuming target-domain authority.",
-  "goal": "Take over testing orchestration for an existing compatible agent while preserving its owner authority.",
+  "summary": "Read an existing OPL-compatible agent descriptor/contracts, consume independent reviewer evidence, and emit a declarative suite seed plus canonical OPL Foundry Lab evaluation work order without executing the suite or signing receipts.",
+  "goal": "Prepare a target-bound takeover evaluation handoff while preserving OPL execution authority and target-owner closeout authority.",
   "owner": "opl-meta-agent",
   "domain_stage_refs": [
     "target-agent-takeover"
@@ -14,7 +14,9 @@
       "ref_kind": "domain_ref",
       "ref": [
         "target_agent_descriptor_ref",
-        "target_agent_contract_refs"
+        "target_agent_contract_refs",
+        "ai_reviewer_evaluation_ref",
+        "target_agent_artifact_morphology_ref"
       ]
     }
   ],
@@ -51,10 +53,10 @@
     {
       "ref_kind": "domain_ref",
       "ref": [
-        "agent_lab_external_suite_ref",
-        "testing_takeover_receipt_ref",
+        "agent_lab_suite_seed_ref",
+        "foundry_lab_evaluation_work_order_ref",
         "gated_self_evolution_candidate_ref",
-        "mechanism_patch_proposal_ref"
+        "mechanism_candidate_ref"
       ]
     }
   ],
@@ -73,7 +75,11 @@
   "authority_boundary": {
     "domain_truth_owner": "opl-meta-agent",
     "target_domain_truth_owner_preserved": true,
-    "opl_role": "projection_only"
+    "opl_role": "foundry_evaluation_execution_and_projection",
+    "oma_can_execute_agent_lab_suite": false,
+    "oma_can_write_agent_lab_result": false,
+    "oma_can_write_owner_receipt_body": false,
+    "oma_can_write_promotion_gate": false
   },
   "selected_executor": {
     "executor_kind": "codex_cli",
@@ -119,10 +125,10 @@
     "executor-receipt-ref:target-agent-takeover/codex-cli",
     "no-forbidden-write-proof-ref:target-agent-takeover",
     "independent-ai-review-ref:target-agent-takeover",
-    "output-ref:agent_lab_external_suite_ref",
-    "output-ref:testing_takeover_receipt_ref",
+    "output-ref:agent_lab_suite_seed_ref",
+    "output-ref:foundry_lab_evaluation_work_order_ref",
     "output-ref:gated_self_evolution_candidate_ref",
-    "output-ref:mechanism_patch_proposal_ref",
+    "output-ref:mechanism_candidate_ref",
     "stage-user-log-ref:target-agent-takeover",
     "stage-closeout-packet-ref:opl-meta-agent/target-agent-takeover/{stage_attempt_id}",
     "stage-folder-contract-ref:opl-meta-agent/target-agent-takeover",
@@ -784,10 +790,10 @@
       "executor-receipt-ref:target-agent-takeover/codex-cli",
       "no-forbidden-write-proof-ref:target-agent-takeover",
       "independent-ai-review-ref:target-agent-takeover",
-      "output-ref:agent_lab_external_suite_ref",
-      "output-ref:testing_takeover_receipt_ref",
+      "output-ref:agent_lab_suite_seed_ref",
+      "output-ref:foundry_lab_evaluation_work_order_ref",
       "output-ref:gated_self_evolution_candidate_ref",
-      "output-ref:mechanism_patch_proposal_ref",
+      "output-ref:mechanism_candidate_ref",
       "stage-user-log-ref:target-agent-takeover",
       "stage-closeout-packet-ref:opl-meta-agent/target-agent-takeover/{stage_attempt_id}",
       "stage-folder-contract-ref:opl-meta-agent/target-agent-takeover",

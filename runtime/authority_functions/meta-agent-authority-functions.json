@@ -229,13 +229,12 @@
         "consumes_opl_surfaces": [
           "standard_domain_agent_scaffold",
           "generated_interface_bundle",
-          "opl_agent_lab_complete_control_plane"
+          "opl_foundry_lab_evaluation_work_order_consumer_dependency_open"
         ],
         "writes_only": [
           "candidate_agent_package_ref",
-          "owner_receipt_ref",
-          "agent_lab_suite_ref",
-          "mechanism_patch_proposal_ref"
+          "agent_lab_suite_seed_ref",
+          "foundry_lab_work_order_candidate_ref"
         ],
         "forbidden_roles": []
       },
@@ -286,13 +285,13 @@
         ],
         "authority_function_refs": [],
         "consumes_opl_surfaces": [
-          "opl_agent_lab_complete_control_plane"
+          "opl_foundry_lab_suite_result_ref",
+          "opl_work_order_execute_primitive"
         ],
         "writes_only": [
           "developer_patch_work_order_ref",
           "target_capability_improvement_candidate_ref",
-          "owner_receipt_ref",
-          "mechanism_patch_proposal_ref"
+          "expected_typed_blocker_ref"
         ],
         "forbidden_roles": []
       },
@@ -323,15 +322,14 @@
         ],
         "authority_function_refs": [],
         "consumes_opl_surfaces": [
-          "opl_agent_lab_complete_control_plane"
+          "opl_foundry_lab_evaluation_work_order_consumer_dependency_open"
         ],
         "writes_only": [
-          "agent_lab_suite_ref",
+          "agent_lab_suite_seed_ref",
           "owner_receipt_refs",
           "target_capability_improvement_candidate_ref",
-          "developer_patch_work_order_ref",
-          "mechanism_patch_proposal_ref",
-          "typed_blocker_ref"
+          "foundry_lab_work_order_candidate_ref",
+          "expected_typed_blocker_ref"
         ],
         "forbidden_roles": []
       },
@@ -344,7 +342,7 @@
         "authority_function_refs": [],
         "consumes_opl_surfaces": [],
         "writes_only": [
-          "typed_blocker_ref"
+          "expected_typed_blocker_ref"
         ],
         "forbidden_roles": []
       },
@@ -376,10 +374,24 @@
         "consumes_opl_surfaces": [],
         "writes_only": [
           "developer_patch_work_order_ref",
-          "typed_blocker_ref",
           "target_runtime_read_model_consumption_ref",
           "workspace_environment_proof_ref",
           "no_forbidden_write_proof_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
+        "script_ref": "scripts/lib/foundry-lab-work-order.ts",
+        "classes": [
+          "fixture_or_proof_helper",
+          "developer_work_order_materializer"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [
+          "opl_foundry_lab_evaluation_work_order_consumer_dependency_open"
+        ],
+        "writes_only": [
+          "foundry_lab_work_order_candidate_ref"
         ],
         "forbidden_roles": []
       },
@@ -422,17 +434,11 @@
           "developer_work_order_materializer"
         ],
         "authority_function_refs": [
-          "authority-function-ref:opl-meta-agent/candidate-agent-package-builder",
-          "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer"
+          "authority-function-ref:opl-meta-agent/candidate-agent-package-builder"
         ],
         "consumes_opl_surfaces": [],
         "writes_only": [
-          "agent_lab_suite_ref",
-          "owner_receipt_ref",
-          "online_learning_candidate_ref",
-          "mechanism_patch_proposal_ref",
-          "real_target_delivery_receipt_ref",
-          "scaleout_evidence_ledger_ref"
+          "agent_lab_suite_seed_ref"
         ],
         "forbidden_roles": []
       },
@@ -839,15 +845,12 @@
         ],
         "authority_function_refs": [],
         "consumes_opl_surfaces": [
-          "opl_agent_lab_complete_control_plane"
+          "opl_foundry_lab_evaluation_work_order_consumer_dependency_open"
         ],
         "writes_only": [
-          "agent_lab_suite_ref",
-          "testing_takeover_self_evolution_receipt",
-          "online_learning_candidate_ref",
-          "mechanism_patch_proposal_ref",
-          "new_agent_delivery_gate_ref",
-          "no_patch_coordination_receipt_ref"
+          "agent_lab_suite_seed_ref",
+          "target_capability_improvement_candidate_ref",
+          "foundry_lab_work_order_candidate_ref"
         ],
         "forbidden_roles": []
       },
@@ -876,15 +879,16 @@
           "scripts/lib/agent-evidence-materializer.ts",
           "scripts/lib/agent-evidence-typed-blocker.ts",
           "scripts/lib/external-suite-materializer.ts",
+          "scripts/lib/foundry-lab-work-order.ts",
           "scripts/lib/target-improvement-policy.ts",
           "scripts/lib/work-order-builders.ts",
           "scripts/lib/work-order-efficiency.ts",
           "scripts/lib/work-order-refs.ts",
           "scripts/lib/work-order-validation.ts"
         ],
-        "current_role": "target_agent_generic_work_order_candidate_proposal_or_typed_blocker_materializer",
+        "current_role": "target_agent_suite_result_judgment_candidate_and_declarative_work_order_materializer",
         "retention_state": "retained_current_authority_function",
-        "retention_reason": "current OMA refs-only materializer group for agent-evidence and external-suite developer work-order candidate, target improvement proposal, typed blocker shape, runtime read-model consumption, workspace proof, and no-forbidden-write proof refs without owning target truth, target worktree lifecycle, quality verdicts, owner receipt bodies, OPL runner parity, or promotion gates",
+        "retention_reason": "current OMA refs-only group emits suite seeds, Foundry Lab work orders, target capability candidates, developer work orders, and expected blocker refs, or consumes an explicit Foundry Lab suite-result ref for agent-building judgment. It does not execute Agent Lab, write suite results, owner receipt or typed blocker bodies, learning/promotion/mechanism/scaleout ledgers, delivery gates, target worktree lifecycle, target truth, or quality verdicts",
         "retention_evidence_refs": [
           "contracts/developer_work_order_policy.json",
           "contracts/developer_work_order_policy.json#/target_improvement_default_change_ref_policy",
@@ -895,7 +899,7 @@
           "tests/external-suite-reviewer-gates.test.ts",
           "tests/target-improvement-policy.test.ts"
         ],
-        "allowed_until": "active_npm_or_test_caller_requires_refs_only_artifact_materialization",
+        "allowed_until": "active_npm_or_test_caller_requires_oma_agent_building_judgment_or_declarative_work_order_emission",
         "required_before_retire_or_absorb": [
           "stable_policy_moved_to_agent_contracts_authority_or_opl_primitive_ref",
           "opl_agent_lab_runner_parity_ref",
@@ -912,6 +916,10 @@
         ],
         "forbidden_long_term_claims": [
           "agent_lab_runner",
+          "agent_lab_suite_result_or_execution_receipt_writer",
+          "learning_promotion_mechanism_or_scaleout_ledger_writer",
+          "owner_receipt_or_typed_blocker_body_writer",
+          "delivery_gate_assembler",
           "promotion_gate",
           "target_worktree_lifecycle_owner",
           "target_owner_closeout_hook_owner",
@@ -938,7 +946,7 @@
         ],
         "current_role": "typed_stage_closeout_validator_and_candidate_pack_materializer",
         "retention_state": "retained_current_authority_function",
-        "retention_reason": "current OMA thin refs-only authority surface for build-agent baseline and stage-decomposition typed closeout validation, explicit fixture or live stage-attempt consumption, candidate domain-pack materialization, stage-native artifact refs, and typed blocker refs without owning pack compiler, generated interface, target truth, runtime state, promotion, target worktree lifecycle, or owner receipt bodies",
+        "retention_reason": "current OMA thin authority surface for stage-decomposition closeout validation, candidate domain-pack materialization, suite-seed emission, and declarative Foundry Lab work-order handoff without owning Agent Lab execution/results/ledgers, pack compiler, generated interface, target truth, runtime state, promotion, target worktree lifecycle, owner receipt bodies, or typed blocker bodies",
         "retention_evidence_refs": [
           "package.json#scripts.build-agent-baseline",
           "contracts/stage_native_artifact_vocabulary.json",
@@ -1251,13 +1259,15 @@
         "repo_owned_queue_or_attempt_ledger_materializer",
         "repo_owned_target_worktree_lifecycle_materializer"
       ],
-      "retained_materializer_role": "refs_only_target_agent_semantics_work_order_candidate_or_typed_blocker_materializer",
+      "retained_materializer_role": "refs_only_target_agent_semantics_suite_seed_work_order_candidate_or_expected_blocker_ref_materializer",
       "allowed_outputs": [
         "candidate_agent_package_ref",
+        "agent_lab_suite_seed_ref",
+        "foundry_lab_work_order_candidate_ref",
         "developer_patch_work_order_ref",
         "target_capability_improvement_candidate_ref",
-        "mechanism_patch_proposal_ref",
-        "typed_blocker_ref",
+        "mechanism_patch_candidate_ref",
+        "expected_typed_blocker_ref",
         "refs_only_contract_template_ref"
       ],
       "fail_closed_conditions": [
@@ -1282,13 +1292,15 @@
   "purpose_first_owner_delta_gate": {
     "gate_id": "purpose-first-owner-delta-gate",
     "status": "active",
-    "default_output_shape": "target_agent_semantics_or_work_order_or_candidate_or_typed_blocker",
+    "default_output_shape": "target_agent_semantics_or_suite_seed_or_declarative_work_order_or_candidate_ref",
     "allowed_output_refs": [
       "target_agent_semantic_delta_ref",
+      "agent_lab_suite_seed_ref",
+      "foundry_lab_work_order_candidate_ref",
       "developer_patch_work_order_ref",
       "target_capability_improvement_candidate_ref",
-      "mechanism_patch_proposal_ref",
-      "typed_blocker_ref"
+      "mechanism_patch_candidate_ref",
+      "expected_typed_blocker_ref"
     ],
     "required_owner_delta_refs": [
       "next_forced_delta_ref",
@@ -1313,6 +1325,9 @@
       "scripts_can_own_target_worktree_lifecycle": false,
       "scripts_can_own_queue_or_attempt_ledger": false,
       "scripts_can_own_work_order_absorb_or_cleanup": false,
+      "scripts_can_write_agent_lab_suite_result": false,
+      "scripts_can_write_learning_promotion_mechanism_or_scaleout_ledger": false,
+      "scripts_can_write_typed_blocker_body": false,
       "scripts_can_create_stage_folder_runtime_state": false,
       "scripts_can_create_owner_promotion": false,
       "scripts_can_write_target_owner_receipt_body": false,
@@ -1322,13 +1337,17 @@
       "oma_is_agent_lab_or_opl_framework_replacement": false,
       "allowed_oma_products": [
         "candidate_agent_package_ref",
+        "agent_lab_suite_seed_ref",
+        "foundry_lab_work_order_candidate_ref",
         "developer_patch_work_order_ref",
         "target_capability_improvement_candidate_ref",
-        "mechanism_patch_proposal_ref",
-        "typed_blocker_ref"
+        "mechanism_patch_candidate_ref",
+        "expected_typed_blocker_ref"
       ],
       "delegated_framework_surfaces": {
         "agent_lab_runner": "one-person-lab",
+        "agent_lab_suite_materialization_and_result_ledger": "one-person-lab/OPL Foundry Lab; evaluation work-order consumer dependency open",
+        "learning_promotion_mechanism_and_scaleout_ledgers": "one-person-lab/OPL Foundry Lab",
         "promotion_gate": "one-person-lab",
         "queue_attempt_ledger": "one-person-lab",
         "physical_stage_kernel": "one-person-lab",
@@ -1341,6 +1360,9 @@
       },
       "forbidden_oma_owned_surfaces": [
         "agent_lab_runner",
+        "agent_lab_suite_result_or_execution_receipt_writer",
+        "learning_promotion_mechanism_or_scaleout_ledger_writer",
+        "target_typed_blocker_body_writer",
         "promotion_gate",
         "queue_attempt_ledger",
         "physical_stage_kernel",
@@ -1393,6 +1415,7 @@
       "scripts/lib/agent-evidence-typed-blocker.ts",
       "scripts/lib/domain-pack.ts",
       "scripts/lib/external-suite-materializer.ts",
+      "scripts/lib/foundry-lab-work-order.ts",
       "scripts/lib/meta-agent-loop-ai-reviewer.ts",
       "scripts/lib/meta-agent-loop-io.ts",
       "scripts/lib/meta-agent-loop-receipts.ts",
@@ -1436,10 +1459,8 @@
           "script_ref": "scripts/build-agent-baseline.ts",
           "active_caller_refs": [
             "package.json#scripts.build-agent-baseline",
-            "scripts/takeover-agent.ts#import",
             "tests/bootstrap-loop.test.ts#import",
             "tests/bootstrap-loop.test.ts#test_ref",
-            "tests/new-agent-delivery-gate.test.ts#import",
             "tests/new-agent-delivery-gate.test.ts#test_ref"
           ]
         },
@@ -1460,18 +1481,15 @@
           "script_ref": "scripts/execute-external-work-order.ts",
           "active_caller_refs": [
             "package.json#scripts.execute:external-work-order",
-            "tests/contracts-action-authority.test.ts#test_ref",
-            "tests/execute-external-work-order.test.ts#test_ref",
-            "tests/source-structure-lane.test.ts#test_ref"
+            "tests/execute-external-work-order.test.ts#test_ref"
           ]
         },
         {
           "script_ref": "scripts/improve-from-agent-lab-suite.ts",
           "active_caller_refs": [
             "package.json#scripts.improve:external-suite",
-            "tests/contracts-generated-surfaces.test.ts#test_ref",
-            "tests/external-suite-efficiency-handoff.test.ts#test_ref",
             "tests/external-suite-reviewer-gates.test.ts#test_ref",
+            "tests/new-agent-delivery-gate.test.ts#test_ref",
             "tests/support/external-suite-fixtures.ts#import",
             "tests/support/external-suite-fixtures.ts#test_ref"
           ]
@@ -1486,14 +1504,14 @@
           "script_ref": "scripts/lib/agent-evidence-materializer.ts",
           "active_caller_refs": [
             "package.json#scripts.agent:evidence",
-            "scripts/lib/agent-evidence-typed-blocker.ts#import",
             "tests/agent-evidence-materializer.test.ts#test_ref",
-            "tests/contracts-generated-surfaces.test.ts#test_ref"
+            "tests/new-agent-delivery-gate.test.ts#test_ref"
           ]
         },
         {
           "script_ref": "scripts/lib/agent-evidence-typed-blocker.ts",
           "active_caller_refs": [
+            "scripts/improve-from-agent-lab-suite.ts#import",
             "scripts/lib/agent-evidence-materializer.ts#import"
           ]
         },
@@ -1505,8 +1523,8 @@
             "scripts/improve-from-agent-lab-suite.ts#import",
             "scripts/lib/agent-evidence-contracts.ts#import",
             "scripts/lib/agent-evidence-materializer.ts#import",
-            "scripts/lib/agent-evidence-typed-blocker.ts#import",
             "scripts/lib/external-suite-materializer.ts#import",
+            "scripts/lib/foundry-lab-work-order.ts#import",
             "scripts/lib/meta-agent-loop-ai-reviewer.ts#import",
             "scripts/lib/meta-agent-loop-io.ts#import",
             "scripts/lib/meta-agent-loop-receipts.ts#import",
@@ -1526,24 +1544,29 @@
             "scripts/takeover-agent.ts#import",
             "tests/bootstrap-loop.test.ts#import",
             "tests/bootstrap-loop.test.ts#test_ref",
-            "tests/external-suite-efficiency-handoff.test.ts#import",
-            "tests/external-suite-efficiency-handoff.test.ts#test_ref",
-            "tests/new-agent-delivery-gate.test.ts#import",
-            "tests/new-agent-delivery-gate.test.ts#test_ref",
             "tests/stage-decomposition-materializer.test.ts#import",
             "tests/stage-decomposition-materializer.test.ts#test_ref",
             "tests/support/contracts.ts#import",
             "tests/support/contracts.ts#test_ref",
             "tests/support/external-suite-fixtures.ts#import",
-            "tests/support/external-suite-fixtures.ts#test_ref",
-            "tests/takeover-loop.test.ts#import",
-            "tests/takeover-loop.test.ts#test_ref"
+            "tests/support/external-suite-fixtures.ts#test_ref"
           ]
         },
         {
           "script_ref": "scripts/lib/external-suite-materializer.ts",
           "active_caller_refs": [
-            "scripts/improve-from-agent-lab-suite.ts#import"
+            "scripts/improve-from-agent-lab-suite.ts#import",
+            "tests/new-agent-delivery-gate.test.ts#test_ref"
+          ]
+        },
+        {
+          "script_ref": "scripts/lib/foundry-lab-work-order.ts",
+          "active_caller_refs": [
+            "scripts/build-agent-baseline.ts#import",
+            "scripts/lib/agent-evidence-materializer.ts#import",
+            "scripts/takeover-agent.ts#import",
+            "tests/new-agent-delivery-gate.test.ts#import",
+            "tests/new-agent-delivery-gate.test.ts#test_ref"
           ]
         },
         {
@@ -1567,8 +1590,8 @@
             "scripts/improve-from-agent-lab-suite.ts#import",
             "scripts/lib/agent-evidence-contracts.ts#import",
             "scripts/lib/agent-evidence-materializer.ts#import",
-            "scripts/lib/agent-evidence-typed-blocker.ts#import",
             "scripts/lib/external-suite-materializer.ts#import",
+            "scripts/lib/foundry-lab-work-order.ts#import",
             "scripts/lib/meta-agent-loop-ai-reviewer.ts#import",
             "scripts/lib/meta-agent-loop-receipts.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts#import",
@@ -1579,15 +1602,15 @@
             "scripts/lib/stage-decomposition-pack-draft/validator.ts#import",
             "scripts/lib/stage-decomposition-runner.ts#import",
             "scripts/lib/target-improvement-policy.ts#import",
-            "scripts/takeover-agent.ts#import"
+            "scripts/takeover-agent.ts#import",
+            "tests/bootstrap-loop.test.ts#import",
+            "tests/bootstrap-loop.test.ts#test_ref"
           ]
         },
         {
           "script_ref": "scripts/lib/meta-agent-loop-receipts.ts",
           "active_caller_refs": [
             "scripts/build-agent-baseline.ts#import",
-            "scripts/improve-from-agent-lab-suite.ts#import",
-            "scripts/lib/external-suite-materializer.ts#import",
             "scripts/takeover-agent.ts#import"
           ]
         },
@@ -1688,7 +1711,6 @@
           "script_ref": "scripts/lib/work-order-builders.ts",
           "active_caller_refs": [
             "scripts/improve-from-agent-lab-suite.ts#import",
-            "scripts/lib/agent-evidence-materializer.ts#import",
             "scripts/lib/external-suite-materializer.ts#import"
           ]
         },
@@ -1706,7 +1728,6 @@
           "active_caller_refs": [
             "scripts/lib/agent-evidence-contracts.ts#import",
             "scripts/lib/agent-evidence-materializer.ts#import",
-            "scripts/lib/agent-evidence-typed-blocker.ts#import",
             "scripts/lib/external-suite-materializer.ts#import",
             "scripts/lib/target-improvement-policy.ts#import",
             "scripts/lib/work-order-builders.ts#import",
@@ -1718,8 +1739,7 @@
           "script_ref": "scripts/lib/work-order-validation.ts",
           "active_caller_refs": [
             "scripts/execute-external-work-order.ts#import",
-            "scripts/improve-from-agent-lab-suite.ts#import",
-            "scripts/lib/agent-evidence-materializer.ts#import"
+            "scripts/improve-from-agent-lab-suite.ts#import"
           ]
         },
         {
@@ -1777,6 +1797,7 @@
           "script_ref": "scripts/takeover-agent.ts",
           "active_caller_refs": [
             "package.json#scripts.takeover:test",
+            "tests/new-agent-delivery-gate.test.ts#test_ref",
             "tests/takeover-loop.test.ts#import",
             "tests/takeover-loop.test.ts#test_ref"
           ]
@@ -1848,13 +1869,15 @@
         "repo_owned_queue_or_attempt_ledger_materializer",
         "repo_owned_target_worktree_lifecycle_materializer"
       ],
-      "retained_materializer_role": "refs_only_target_agent_semantics_work_order_candidate_or_typed_blocker_materializer",
+      "retained_materializer_role": "refs_only_target_agent_semantics_suite_seed_work_order_candidate_or_expected_blocker_ref_materializer",
       "allowed_outputs": [
         "candidate_agent_package_ref",
+        "agent_lab_suite_seed_ref",
+        "foundry_lab_work_order_candidate_ref",
         "developer_patch_work_order_ref",
         "target_capability_improvement_candidate_ref",
-        "mechanism_patch_proposal_ref",
-        "typed_blocker_ref",
+        "mechanism_patch_candidate_ref",
+        "expected_typed_blocker_ref",
         "refs_only_contract_template_ref"
       ],
       "retired_materializer_tails": [
@@ -1957,7 +1980,8 @@
       ],
       "output_refs": [
         "candidate_agent_package_ref",
-        "owner_receipt_ref"
+        "agent_lab_suite_seed_ref",
+        "foundry_lab_work_order_candidate_ref"
       ],
       "boundary": {
         "refs_only": true,
@@ -1973,14 +1997,13 @@
       "classification": "minimal_authority_function",
       "authority_ref": "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer",
       "implementation_refs": [
-        "scripts/lib/meta-agent-loop-receipts.ts"
+        "scripts/lib/foundry-lab-work-order.ts"
       ],
       "invoked_by_refs": [
         "action-ref:generate-mechanism-patch-proposal"
       ],
       "output_refs": [
-        "mechanism_patch_proposal_ref",
-        "owner_receipt_ref"
+        "mechanism_patch_candidate_ref"
       ],
       "boundary": {
         "refs_only": true,

@@ -11,27 +11,20 @@ import {
   readDomainPackSummary,
 } from './lib/domain-pack.ts';
 import {
-  assertNewAgentDeliveryGate,
-} from './build-agent-baseline.ts';
-import {
+  assertAiReviewerArtifactMorphologyEvidence,
   loadAiReviewerEvaluation,
 } from './lib/meta-agent-loop-ai-reviewer.ts';
 import {
-  type LearningCandidate,
-  type OwnerReceipt,
-  type SuiteResult,
-  buildAgentLabSuite,
-  buildLearningCandidate,
-  buildMechanismPatchProposal,
-  buildOwnerReceipt,
+  buildAgentLabSuiteSeed,
 } from './lib/meta-agent-loop-receipts.ts';
 import {
   type TargetAgent,
   readTargetAgent,
-  resolveOplBin,
-  runOpl,
   writeJson,
 } from './lib/meta-agent-loop-io.ts';
+import {
+  buildFoundryLabWorkOrder,
+} from './lib/foundry-lab-work-order.ts';
 import {
   buildStageNativeArtifactAttemptRefs,
 } from './lib/stage-native-artifact-contract.ts';
@@ -41,7 +34,6 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'
 export type TakeoverArgs = {
   targetAgentDir: string;
   outputDir: string;
-  oplBin: string;
   aiReviewerEvaluationPath: string;
 };
 
@@ -49,12 +41,10 @@ export function parseTakeoverAgentArgs(argv: string[]): TakeoverArgs {
   const parsed: {
     targetAgentDir: string | null;
     outputDir: string | null;
-    oplBin: string;
     aiReviewerEvaluationPath: string | null;
   } = {
     targetAgentDir: null,
     outputDir: null,
-    oplBin: resolveOplBin(),
     aiReviewerEvaluationPath: null,
   };
 
@@ -63,7 +53,6 @@ export function parseTakeoverAgentArgs(argv: string[]): TakeoverArgs {
     options: {
       'agent-dir': { type: 'string' },
       'output-dir': { type: 'string' },
-      'opl-bin': { type: 'string' },
       'ai-reviewer-evaluation': { type: 'string' },
     },
     strict: true,
@@ -74,9 +63,6 @@ export function parseTakeoverAgentArgs(argv: string[]): TakeoverArgs {
   }
   if (typeof values['output-dir'] === 'string') {
     parsed.outputDir = path.resolve(values['output-dir']);
-  }
-  if (typeof values['opl-bin'] === 'string') {
-    parsed.oplBin = resolveOplBin(values['opl-bin']);
   }
   if (typeof values['ai-reviewer-evaluation'] === 'string') {
     parsed.aiReviewerEvaluationPath = path.resolve(values['ai-reviewer-evaluation']);
@@ -96,19 +82,18 @@ export function parseTakeoverAgentArgs(argv: string[]): TakeoverArgs {
   return {
     targetAgentDir: parsed.targetAgentDir,
     outputDir: parsed.outputDir,
-    oplBin: parsed.oplBin,
     aiReviewerEvaluationPath: parsed.aiReviewerEvaluationPath,
   };
 }
 
-function buildTakeoverSuite(targetAgent: TargetAgent, targetAgentDir: string): JsonObject {
+function buildTakeoverSuiteSeed(targetAgent: TargetAgent, targetAgentDir: string): JsonObject {
   const stageNativeArtifactRefs = buildStageNativeArtifactAttemptRefs({
     domainId: targetAgent.domain_id,
     stageId: 'target-agent-takeover',
     domainTruthOwner: 'opl-meta-agent',
     attemptId: 'testing-takeover',
   });
-  const suite = buildAgentLabSuite({
+  const suite = buildAgentLabSuiteSeed({
     suiteId: `opl-meta-agent-takeover-suite:${targetAgent.domain_id}`,
     taskId: `agent-lab-task:opl-meta-agent/${targetAgent.domain_id}/takeover`,
     taskFamily: 'agent_testing_takeover',
@@ -118,8 +103,8 @@ function buildTakeoverSuite(targetAgent: TargetAgent, targetAgentDir: string): J
     agentEntryRef: `domain-agent-entry:${targetAgent.domain_id}`,
     stageRefs: [
       `stage:${targetAgent.domain_id}/descriptor-contract-read`,
-      `stage:${targetAgent.domain_id}/external-agent-lab-run`,
-      `stage:${targetAgent.domain_id}/gated-self-evolution-candidate`,
+      `stage:${targetAgent.domain_id}/external-agent-lab-evaluation-request`,
+      `stage:${targetAgent.domain_id}/gated-self-evolution-candidate-seed`,
     ],
     oracleRefs: [
       `oracle:opl-meta-agent/${targetAgent.domain_id}/descriptor-contract-valid`,
@@ -174,146 +159,63 @@ function buildTakeoverSuite(targetAgent: TargetAgent, targetAgentDir: string): J
   };
 }
 
-function buildTakeoverMechanismPatchProposal(
-  suiteResult: SuiteResult,
-  takeoverReceipt: OwnerReceipt,
-  learningCandidate: LearningCandidate,
-  targetAgent: TargetAgent,
-): JsonObject {
-  return buildMechanismPatchProposal({
-    suiteResult,
-    receipt: takeoverReceipt,
-    learningCandidate,
-    mechanismRef: `mechanism:opl-meta-agent/${targetAgent.domain_id}/testing-takeover-loop`,
-    editableSurfaces: [
-      'agent_lab_suite_policy_ref',
-      'takeover_review_policy_ref',
-      'optimizer_candidate_policy_ref',
-      'prompt_policy_ref',
-      'quality_gate_policy_ref',
-    ],
-    evidenceDeltaRef: `evidence-delta:opl-meta-agent/${targetAgent.domain_id}/takeover`,
-  });
-}
-
-export function runTakeoverAgent({ targetAgentDir, outputDir, oplBin, aiReviewerEvaluationPath }: TakeoverArgs): JsonObject {
+export function runTakeoverAgent({
+  targetAgentDir,
+  outputDir,
+  aiReviewerEvaluationPath,
+}: TakeoverArgs): JsonObject {
   fs.mkdirSync(outputDir, { recursive: true });
   const domainPackSummary: DomainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
-
   const targetAgent = readTargetAgent(targetAgentDir);
   const aiReviewerEvaluation = loadAiReviewerEvaluation(aiReviewerEvaluationPath);
+  assertAiReviewerArtifactMorphologyEvidence(aiReviewerEvaluation, 'Takeover');
 
-  const suitePath = path.join(outputDir, 'agent-lab-takeover-suite.json');
-  const receiptPath = path.join(outputDir, 'takeover-receipt.json');
-  const deliveryGatePath = path.join(outputDir, 'new-agent-delivery-gate.json');
-  const learningPath = path.join(outputDir, 'takeover-online-learning-candidate.json');
-  const mechanismPath = path.join(outputDir, 'takeover-mechanism-patch-proposal.json');
+  const suiteSeedPath = path.join(outputDir, 'agent-lab-takeover-suite-seed.json');
+  const foundryLabWorkOrderPath = path.join(outputDir, 'foundry-lab-work-order.json');
+  const suiteSeed = buildTakeoverSuiteSeed(targetAgent, targetAgentDir);
+  writeJson(suiteSeedPath, suiteSeed);
 
-  const suite = buildTakeoverSuite(targetAgent, targetAgentDir);
-  writeJson(suitePath, suite);
-
-  const agentLabRun = runOpl(oplBin, ['agent-lab', 'run', '--suite', suitePath, '--json']);
-  const suiteResult = agentLabRun.agent_lab_run.suite_result as SuiteResult;
-
-  const takeoverReceipt: OwnerReceipt = {
-    ...buildOwnerReceipt({
-      receiptClass: 'testing_takeover_self_evolution_receipt',
-      status: suiteResult.status === 'passed' ? 'testing_takeover_recorded' : 'testing_takeover_blocked',
-      targetAgent,
-      suiteResult,
-      extraAcceptanceGates: {
-        target_agent_allowed: true,
-        target_domain_truth_authority_preserved: true,
-        target_quality_authority_preserved: true,
-        target_artifact_authority_preserved: true,
-        target_memory_authority_preserved: true,
-      },
-    }),
-    ...domainPackReceiptFields(domainPackSummary),
-    source_domain_pack: domainPackSummary,
-    stage_native_artifact_refs: suite.stage_native_artifact_refs,
-    artifact_native_contract_ref: suite.stage_native_artifact_refs.artifact_native_contract_ref,
-    stage_folder_contract: suite.tasks[0].stage_folder_contract,
-    can_generate_target_domain_owner_receipt: false,
-  };
-
-  const learningCandidate = buildLearningCandidate({
-    suiteResult,
-    receipt: takeoverReceipt,
-    targetAgent,
-    candidateKind: 'gated_self_evolution',
-    targetRef: `quality-gate:opl-meta-agent/${targetAgent.domain_id}/domain-owner-boundary`,
-    proposedChangeRefs: [`candidate-ref:${targetAgent.domain_id}/gated-optimizer-policy-adjustment`],
-    promotionGateRef: `promotion-gate:opl-meta-agent/${targetAgent.domain_id}/takeover`,
-  });
-  const mechanismPatchProposal = buildTakeoverMechanismPatchProposal(
-    suiteResult,
-    takeoverReceipt,
-    learningCandidate,
-    targetAgent,
-  );
-  const noPatchCoordinationReceipt: JsonObject = {
-    surface_kind: 'opl_meta_agent_no_patch_coordination_receipt',
-    receipt_id: `no-patch-coordination-receipt:opl-meta-agent/${targetAgent.domain_id}/testing-takeover`,
-    target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
-    takeover_receipt_ref: takeoverReceipt.receipt_id,
-    agent_lab_result_ref: suiteResult.result_id,
-    status: suiteResult.status === 'passed' ? 'recorded_requires_target_owner_wait' : 'blocked',
-    authority_boundary: {
-      refs_only: true,
-      can_write_target_domain_truth: false,
-      can_write_target_owner_receipt_body: false,
-      can_mutate_target_domain_artifact_body: false,
-      can_authorize_target_domain_quality_or_export: false,
+  const candidateRefs = [
+    'improvement-candidate:opl-meta-agent/' + targetAgent.domain_id + '/gated-self-evolution',
+    'mechanism-candidate:opl-meta-agent/' + targetAgent.domain_id + '/testing-takeover-loop',
+  ];
+  const foundryLabWorkOrder = buildFoundryLabWorkOrder({
+    workOrderKind: 'target_agent_takeover_evaluation',
+    targetAgent: {
+      domain_id: targetAgent.domain_id,
+      domain_label: targetAgent.domain_label,
+      repo_dir: targetAgent.repo_dir,
+      target_agent_ref: targetAgent.target_agent_ref ?? `domain-agent:${targetAgent.domain_id}`,
+      descriptor_ref: String(targetAgent.descriptor_ref),
     },
-  };
-  const noForbiddenWriteProofRef = `no-forbidden-write:opl-meta-agent/${targetAgent.domain_id}/agent_testing_takeover`;
-  const newAgentDeliveryGate = assertNewAgentDeliveryGate({
-    targetAgent,
-    scaffoldValidationStatus: 'validated',
-    generatedInterfaceStatus: 'ready',
-    baselineSuiteResult: suiteResult as unknown as JsonObject,
-    realTargetSuiteResult: suiteResult as unknown as JsonObject,
-    aiReviewerEvaluation,
-    selfEvolutionConsumptionRef: learningCandidate.candidate_id,
-    noPatchCoordinationReceipt,
-    stageRunRefsOnlyConsumptionRef: suite.stage_native_artifact_refs.attempt_json_ref,
-    stageCompletionPolicyRef: suite.tasks[0].stage_completion_policy.policy_ref,
-    stageCloseoutPacketRef: suite.stage_native_artifact_refs.receipt_ref,
-    targetOwnerReceiptOrTypedBlockerOrHumanGateRef: noPatchCoordinationReceipt.receipt_id,
-    noForbiddenWriteProofRef,
-    sourceMorphologyRef: aiReviewerEvaluation.direct_evidence_refs
-      .find((ref: string) => ref.includes('morphology')) ?? aiReviewerEvaluation.direct_evidence_refs[0],
-    ownerRouteRef: aiReviewerEvaluation.source_refs
-      .find((ref: string) => ref.includes('owner-route')) ?? noPatchCoordinationReceipt.receipt_id,
-    generatedSurfaceConsumptionRef: `generated-surface-consumption:opl-meta-agent/${targetAgent.domain_id}/takeover`,
-    privateResidueDecisionRef: 'contracts/default_caller_deletion_evidence.json',
-    ownerAnswerShape: 'completed_and_wait_owner',
-    providerCompletionIsDomainCompletion: false,
-    omaTargetAuthorityBoundary: {
-      can_write_target_domain_truth: false,
-      can_write_target_owner_receipt_body: false,
-      can_mutate_target_domain_artifact_body: false,
-      can_authorize_target_domain_quality_or_export: false,
-    },
+    suiteSeed,
+    suiteSeedRef: path.basename(suiteSeedPath),
+    sourceRefs: [
+      targetAgent.descriptor_ref,
+      ...aiReviewerEvaluation.source_refs,
+    ].filter((ref): ref is string => typeof ref === 'string' && ref.length > 0),
+    reviewerRefs: [
+      aiReviewerEvaluationPath,
+      ...aiReviewerEvaluation.source_refs,
+      ...aiReviewerEvaluation.direct_evidence_refs,
+    ],
+    candidateRefs,
   });
-
-  writeJson(receiptPath, takeoverReceipt);
-  writeJson(deliveryGatePath, newAgentDeliveryGate);
-  writeJson(learningPath, learningCandidate);
-  writeJson(mechanismPath, mechanismPatchProposal);
+  writeJson(foundryLabWorkOrderPath, foundryLabWorkOrder);
 
   return {
-    surface_kind: 'opl_meta_agent_takeover_loop_result',
-    version: 'opl-meta-agent.takeover-loop.v1',
-    status: suiteResult.status === 'passed' ? 'passed' : 'blocked',
+    surface_kind: 'opl_meta_agent_takeover_handoff',
+    version: 'opl-meta-agent.takeover-handoff.v1',
+    status: 'takeover_candidate_materialized_ready_for_opl_foundry_lab_evaluation',
     product_id: 'opl-meta-agent',
     takeover_policy: {
       target_opl_compatible_agents_allowed: true,
+      can_execute_agent_lab_suite: false,
       can_write_target_domain_truth: false,
       can_write_target_quality_verdict: false,
       can_write_target_artifact_body: false,
       can_write_target_memory_body: false,
+      can_write_target_owner_receipt_body: false,
       can_promote_default_agent_without_gate: false,
     },
     target_agent: {
@@ -322,24 +224,25 @@ export function runTakeoverAgent({ targetAgentDir, outputDir, oplBin, aiReviewer
       delivery_domain: targetAgent.delivery_domain,
       repo_dir: targetAgent.repo_dir,
       descriptor_ref: targetAgent.descriptor_ref,
+      target_agent_ref: targetAgent.target_agent_ref,
     },
     ...domainPackReceiptFields(domainPackSummary),
     source_domain_pack: domainPackSummary,
     artifacts: {
-      suite_path: suitePath,
-      takeover_receipt_path: receiptPath,
-      new_agent_delivery_gate_path: deliveryGatePath,
-      online_learning_candidate_path: learningPath,
-      mechanism_patch_proposal_path: mechanismPath,
+      agent_lab_suite_seed_path: suiteSeedPath,
+      foundry_lab_work_order_path: foundryLabWorkOrderPath,
     },
-    opl_agent_lab: agentLabRun.agent_lab_run,
-    learning_loop: {
-      takeover_receipt: takeoverReceipt,
-      online_learning_candidate: learningCandidate,
-      online_learning_policy: learningCandidate.online_learning_policy,
-      mechanism_patch_proposal: mechanismPatchProposal,
+    agent_building_judgment: {
+      ai_reviewer_evaluation_ref: aiReviewerEvaluationPath,
+      verdict: aiReviewerEvaluation.verdict,
+      suggestions: aiReviewerEvaluation.suggestions,
+      candidate_refs: candidateRefs,
     },
-    new_agent_delivery_gate: newAgentDeliveryGate,
+    foundry_lab_handoff: {
+      suite_seed: suiteSeed,
+      work_order: foundryLabWorkOrder,
+    },
+    authority_boundary: foundryLabWorkOrder.authority_boundary,
   };
 }
 

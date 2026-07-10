@@ -2,6 +2,7 @@
   "surface_kind": "opl_domain_pack_compiler_input",
   "schema_version": 1,
   "domain_id": "opl-meta-agent",
+  "canonical_agent_id": "oma",
   "domain_pack_owner": "opl-meta-agent",
   "generated_surface_owner": "one-person-lab",
   "required_domain_pack_paths": [
@@ -43,6 +44,7 @@
     "agent/stages/baseline-run.md",
     "agent/stages/eval-suite-build.md",
     "agent/stages/intent-intake.md",
+    "agent/stages/manifest.json",
     "agent/stages/online-learning.md",
     "agent/stages/optimizer-iteration.md",
     "agent/stages/stage-decomposition.md",
@@ -263,9 +265,9 @@
     "route_can_execute_without_stage_attempt": false
   },
   "source_refs": {
-    "stage_graph_source_ref": "contracts/stage_control_plane.json",
+    "stage_graph_source_ref": "agent/stages/manifest.json",
     "quality_gate_source_ref": "agent/quality_gates/README.md",
-    "executor_policy_source_ref": "contracts/stage_control_plane.json#/stages/*/selected_executor",
+    "executor_policy_source_ref": "agent/stages/manifest.json#/stages/*/trust_lane",
     "owner_receipt_schema_source_ref": "contracts/owner_receipt_contract.json",
     "authority_functions_source_ref": "runtime/authority_functions/meta-agent-authority-functions.json",
     "functional_privatization_audit_source_ref": "contracts/functional_privatization_audit.json",
@@ -275,7 +277,7 @@
   "standard_stage_pack_conformance": {
     "version": "standard-stage-pack.v2",
     "required": true,
-    "enforcement_ref": "contracts/stage_control_plane.json#stage_pack_conformance_version"
+    "enforcement_ref": "agent/stages/manifest.json"
   },
   "standard_agent_pack_abi": {
     "surface_kind": "opl_standard_agent_pack_abi",

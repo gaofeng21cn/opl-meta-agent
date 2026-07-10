@@ -1,13 +1,16 @@
 import path from 'node:path';
 import { runImproveFromAgentLabSuite } from '../../scripts/improve-from-agent-lab-suite.ts';
 import type { JsonObject } from '../../scripts/lib/domain-pack.ts';
-import { oplBin, writeJsonFile } from './contracts.ts';
+import { readTargetAgent } from '../../scripts/lib/meta-agent-loop-io.ts';
+import { readJsonFile, writeJsonFile } from './contracts.ts';
 
 export { withTempDir as withOutputRoot } from './contracts.ts';
 
 type ExternalSuiteOptions = {
   suiteId: string;
   domainId: string;
+  targetAgentDir: string;
+  targetDescriptorRef?: string;
   taskFamily: string;
   passed?: boolean;
   evidenceRefs?: string[];
@@ -34,9 +37,17 @@ export function buildExternalSuite(options: ExternalSuiteOptions): JsonObject {
   const ref = `${options.domainId}/${options.taskFamily}`;
   const passed = options.passed === true;
   const evidenceRefs = [...(options.evidenceRefs ?? [`evidence-ref:${ref}`])];
+  const targetAgentRef = `domain-agent:${options.domainId}`;
+  const descriptorRef = options.targetDescriptorRef
+    ?? path.join(options.targetAgentDir, 'contracts/domain_descriptor.json');
   return {
     suite_id: options.suiteId,
     suite_kind: 'agent_lab_external_suite',
+    evaluation_target_agent: {
+      domain_id: options.domainId,
+      target_agent_ref: targetAgentRef,
+      descriptor_ref: descriptorRef,
+    },
     authority_boundary: {
       can_write_domain_truth: false, can_write_memory_body: false,
       can_authorize_quality_verdict: false, can_promote_default_agent_without_gate: false,
@@ -45,6 +56,8 @@ export function buildExternalSuite(options: ExternalSuiteOptions): JsonObject {
       task_id: `agent-lab-task:${ref}`,
       domain_id: options.domainId,
       task_family: options.taskFamily,
+      target_agent_ref: targetAgentRef,
+      target_agent_descriptor_ref: descriptorRef,
       environment: {
         environment_kind: 'local_workspace', workspace_locator_ref: `workspace-locator:${ref}`,
         sandbox_policy: 'refs_only_no_artifact_mutation', network_policy: 'domain_owner_policy',
@@ -138,16 +151,71 @@ export function writeTargetImprovementPolicy(
   });
 }
 
+export function buildFoundryExecutionResult(args: {
+  suite: JsonObject;
+  targetAgentDir: string;
+  status?: string;
+}): JsonObject {
+  const targetAgent = readTargetAgent(args.targetAgentDir);
+  const suiteId = String(args.suite.suite_id);
+  const taskIds = (args.suite.tasks as JsonObject[]).map((task) => String(task.task_id));
+  const evaluationPacketRef = `evaluation-receipt:${suiteId}`;
+  const taskReceiptRefs = taskIds.map((taskId) => `trajectory-observation-receipt:${taskId}`);
+  const evaluationProvenanceRefs = [evaluationPacketRef, ...taskReceiptRefs];
+  return {
+    surface_kind: 'opl_foundry_lab_evaluation_work_order_execution',
+    suite_result: {
+      surface_kind: 'opl_agent_lab_suite_result',
+      result_id: `foundry-suite-result:${suiteId}`,
+      suite_id: suiteId,
+      status: args.status ?? 'blocked',
+      evaluation_target_agent: {
+        domain_id: targetAgent.domain_id,
+        target_agent_ref: targetAgent.target_agent_ref,
+        descriptor_ref: targetAgent.descriptor_ref,
+      },
+      refs: { evaluation_provenance_refs: evaluationProvenanceRefs },
+      evaluation_provenance_bindings: [
+        { receipt_role: 'evaluation_packet', receipt_ref: evaluationPacketRef },
+        ...taskIds.map((taskId, index) => ({
+          receipt_role: 'trajectory_observation',
+          receipt_ref: taskReceiptRefs[index],
+          task_id: taskId,
+        })),
+      ],
+      runs: taskIds.map((taskId) => ({ task_id: taskId })),
+      summary: {
+        recovery_probe_count: taskIds.length,
+        recovery_passed_count: args.status === 'passed' ? taskIds.length : 0,
+        forbidden_authority_flag_count: 0,
+      },
+    },
+    receipt: {
+      foundry_lab_execution_receipt_ref: `foundry-lab-execution-receipt:${suiteId}`,
+    },
+  };
+}
+
 export function runImproveFromSuite(args: {
   suitePath: string; targetAgentDir: string; outputRoot: string;
   reviewerEvaluationPath: string; feedbackRef?: string;
 }): JsonObject {
+  const suite = readJsonFile(args.suitePath);
+  const task = Array.isArray(suite.tasks) ? suite.tasks[0] : {};
+  const passed = task?.scorecard?.passed === true
+    || task?.promotion_gate?.gate_status === 'passed';
+  const suiteResultPath = path.join(args.outputRoot, 'foundry-lab-suite-result.json');
+  writeJsonFile(suiteResultPath, buildFoundryExecutionResult({
+    suite,
+    targetAgentDir: args.targetAgentDir,
+    status: passed ? 'passed' : 'blocked',
+  }));
   return runImproveFromAgentLabSuite({
     suitePath: args.suitePath,
+    suiteResultPath,
     targetAgentDir: args.targetAgentDir,
     outputDir: args.outputRoot,
     feedbackRef: args.feedbackRef ?? null,
     aiReviewerEvaluationPath: args.reviewerEvaluationPath,
-    oplBin,
   });
 }

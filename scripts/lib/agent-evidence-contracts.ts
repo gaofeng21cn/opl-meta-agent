@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { parseArgs as parseNodeArgs } from 'node:util';
 import type { JsonObject } from './domain-pack.ts';
-import { readJson, resolveOplBin } from './meta-agent-loop-io.ts';
+import { readJson } from './meta-agent-loop-io.ts';
 import {
   DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
   firstString,
@@ -59,7 +59,6 @@ export const TARGET_AGENT_FORBIDDEN_WRITE_SURFACES = [
 type MutableAgentEvidenceArgs = {
   agentRepo: string | null;
   outputDir: string | null;
-  oplBin: string;
   productionAcceptancePath: string | null;
   aiReviewerEvaluationPath: string | null;
 };
@@ -155,7 +154,6 @@ export function parseAgentEvidenceArgs(argv: string[]) {
   const parsed: MutableAgentEvidenceArgs = {
     agentRepo: null,
     outputDir: null,
-    oplBin: resolveOplBin(),
     productionAcceptancePath: null,
     aiReviewerEvaluationPath: null,
   };
@@ -166,7 +164,6 @@ export function parseAgentEvidenceArgs(argv: string[]) {
       'agent-repo': { type: 'string' },
       'production-acceptance': { type: 'string' },
       'output-dir': { type: 'string' },
-      'opl-bin': { type: 'string' },
       'ai-reviewer-evaluation': { type: 'string' },
     },
     strict: true,
@@ -180,9 +177,6 @@ export function parseAgentEvidenceArgs(argv: string[]) {
   }
   if (typeof values['output-dir'] === 'string') {
     parsed.outputDir = requiredPathValue('--output-dir', values['output-dir']);
-  }
-  if (typeof values['opl-bin'] === 'string') {
-    parsed.oplBin = resolveOplBin(requiredValue('--opl-bin', values['opl-bin']));
   }
   if (typeof values['ai-reviewer-evaluation'] === 'string') {
     parsed.aiReviewerEvaluationPath = requiredPathValue('--ai-reviewer-evaluation', values['ai-reviewer-evaluation']);
@@ -199,7 +193,6 @@ export function parseAgentEvidenceArgs(argv: string[]) {
   return {
     agentRepo: parsed.agentRepo,
     outputDir: parsed.outputDir,
-    oplBin: parsed.oplBin,
     productionAcceptancePath: parsed.productionAcceptancePath,
     aiReviewerEvaluationPath: parsed.aiReviewerEvaluationPath,
   };

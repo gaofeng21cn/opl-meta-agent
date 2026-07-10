@@ -12,13 +12,12 @@
     "consumes_opl_surfaces": [
       "standard_domain_agent_scaffold",
       "generated_interface_bundle",
-      "opl_agent_lab_complete_control_plane"
+      "opl_foundry_lab_evaluation_work_order_consumer_dependency_open"
     ],
     "writes_only": [
       "candidate_agent_package_ref",
-      "owner_receipt_ref",
-      "agent_lab_suite_ref",
-      "mechanism_patch_proposal_ref"
+      "agent_lab_suite_seed_ref",
+      "foundry_lab_work_order_candidate_ref"
     ],
     "forbidden_roles": []
   },
@@ -69,13 +68,13 @@
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
-      "opl_agent_lab_complete_control_plane"
+      "opl_foundry_lab_suite_result_ref",
+      "opl_work_order_execute_primitive"
     ],
     "writes_only": [
       "developer_patch_work_order_ref",
       "target_capability_improvement_candidate_ref",
-      "owner_receipt_ref",
-      "mechanism_patch_proposal_ref"
+      "expected_typed_blocker_ref"
     ],
     "forbidden_roles": []
   },
@@ -106,15 +105,14 @@
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
-      "opl_agent_lab_complete_control_plane"
+      "opl_foundry_lab_evaluation_work_order_consumer_dependency_open"
     ],
     "writes_only": [
-      "agent_lab_suite_ref",
+      "agent_lab_suite_seed_ref",
       "owner_receipt_refs",
       "target_capability_improvement_candidate_ref",
-      "developer_patch_work_order_ref",
-      "mechanism_patch_proposal_ref",
-      "typed_blocker_ref"
+      "foundry_lab_work_order_candidate_ref",
+      "expected_typed_blocker_ref"
     ],
     "forbidden_roles": []
   },
@@ -127,7 +125,7 @@
     "authority_function_refs": [],
     "consumes_opl_surfaces": [],
     "writes_only": [
-      "typed_blocker_ref"
+      "expected_typed_blocker_ref"
     ],
     "forbidden_roles": []
   },
@@ -159,10 +157,24 @@
     "consumes_opl_surfaces": [],
     "writes_only": [
       "developer_patch_work_order_ref",
-      "typed_blocker_ref",
       "target_runtime_read_model_consumption_ref",
       "workspace_environment_proof_ref",
       "no_forbidden_write_proof_ref"
+    ],
+    "forbidden_roles": []
+  },
+  {
+    "script_ref": "scripts/lib/foundry-lab-work-order.ts",
+    "classes": [
+      "fixture_or_proof_helper",
+      "developer_work_order_materializer"
+    ],
+    "authority_function_refs": [],
+    "consumes_opl_surfaces": [
+      "opl_foundry_lab_evaluation_work_order_consumer_dependency_open"
+    ],
+    "writes_only": [
+      "foundry_lab_work_order_candidate_ref"
     ],
     "forbidden_roles": []
   },
@@ -205,17 +217,11 @@
       "developer_work_order_materializer"
     ],
     "authority_function_refs": [
-      "authority-function-ref:opl-meta-agent/candidate-agent-package-builder",
-      "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer"
+      "authority-function-ref:opl-meta-agent/candidate-agent-package-builder"
     ],
     "consumes_opl_surfaces": [],
     "writes_only": [
-      "agent_lab_suite_ref",
-      "owner_receipt_ref",
-      "online_learning_candidate_ref",
-      "mechanism_patch_proposal_ref",
-      "real_target_delivery_receipt_ref",
-      "scaleout_evidence_ledger_ref"
+      "agent_lab_suite_seed_ref"
     ],
     "forbidden_roles": []
   },
@@ -622,15 +628,12 @@
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
-      "opl_agent_lab_complete_control_plane"
+      "opl_foundry_lab_evaluation_work_order_consumer_dependency_open"
     ],
     "writes_only": [
-      "agent_lab_suite_ref",
-      "testing_takeover_self_evolution_receipt",
-      "online_learning_candidate_ref",
-      "mechanism_patch_proposal_ref",
-      "new_agent_delivery_gate_ref",
-      "no_patch_coordination_receipt_ref"
+      "agent_lab_suite_seed_ref",
+      "target_capability_improvement_candidate_ref",
+      "foundry_lab_work_order_candidate_ref"
     ],
     "forbidden_roles": []
   },

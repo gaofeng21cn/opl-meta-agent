@@ -285,7 +285,7 @@ function assertSingleRefArrays(surface: JsonObject, expected: Record<string, str
   Object.entries(expected).forEach(([field, value]) => assert.deepEqual(surface[field], [value], field));
 }
 
-test('build-agent-baseline writes a conformant hybrid reference-driven target package', () => {
+test('build-agent-baseline writes a conformant hybrid package and canonical Foundry handoff', () => {
   withTempDir('oma-bootstrap-pass4-', (outputRoot) => {
     const reviewerPath = path.join(outputRoot, 'reviewer.json');
     const closeoutPath = path.join(outputRoot, 'stage-closeout.json');
@@ -308,6 +308,8 @@ test('build-agent-baseline writes a conformant hybrid reference-driven target pa
     ]);
 
     const targetDir = path.join(outputRoot, targetAgent.domain_id);
+    const workOrder = readJson(path.join(outputRoot, 'foundry-lab-work-order.json'));
+    const suite = readJson(path.join(outputRoot, 'agent-lab-suite-seed.json'));
     const descriptor = readJson(path.join(targetDir, 'contracts/domain_descriptor.json'));
     const capabilityMap = readJson(path.join(targetDir, 'contracts/capability_map.json'));
     const stageControl = readJson(path.join(targetDir, 'contracts/stage_control_plane.json'));
@@ -315,7 +317,13 @@ test('build-agent-baseline writes a conformant hybrid reference-driven target pa
     const primarySkill = fs.readFileSync(path.join(targetDir, 'agent/primary_skill/SKILL.md'), 'utf8');
     const generatedPrompt = fs.readFileSync(path.join(targetDir, firstStage.prompt_refs[0].ref), 'utf8');
     const generatedKnowledge = fs.readFileSync(path.join(targetDir, firstStage.knowledge_refs[0].ref), 'utf8');
-    assert.equal(payload.status, 'passed');
+    const evidenceRefs = suite.tasks[0].scorecard_spec.evidence_refs as string[];
+    assert.deepEqual(suite.evaluation_target_agent, {
+      domain_id: targetAgent.domain_id,
+      target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
+      descriptor_ref: path.join(targetDir, 'contracts/domain_descriptor.json'),
+    });
+    assert.equal(payload.status, 'candidate_package_materialized_ready_for_opl_foundry_lab_evaluation');
     assert.equal(payload.opl_profile_conformance.status, 'passed');
     assertBuildAgentBaselineOutputSchema(payload);
     assert.equal(payload.artifacts.agent_build_receipt_path, path.join(
@@ -329,8 +337,10 @@ test('build-agent-baseline writes a conformant hybrid reference-driven target pa
     const missingBuildReceiptRef = structuredClone(payload);
     delete missingBuildReceiptRef.artifacts.agent_build_receipt_ref;
     assert.equal(validateBuildAgentBaselineOutput(missingBuildReceiptRef).ok, false);
-    assert.equal(fs.existsSync(path.join(outputRoot, 'baseline-delivery-receipt.json')), true);
-    assert.equal(fs.existsSync(path.join(outputRoot, 'agent-lab-suite.json')), true);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'baseline-delivery-receipt.json')), false);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'agent-lab-suite.json')), false);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'online-learning-candidate.json')), false);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'mechanism-patch-proposal.json')), false);
     assert.equal(descriptor.domain_id, targetAgent.domain_id);
     assert.deepEqual(descriptor.selected_opl_profile_refs, targetAgent.selected_opl_profile_refs);
     assert.equal(descriptor.profile_selection_rationale, targetAgent.profile_selection_rationale);
@@ -389,6 +399,27 @@ test('build-agent-baseline writes a conformant hybrid reference-driven target pa
         entry.ref_kind === 'reference_design_pattern_packet_refs'
       ),
     );
+    assert.ok(evidenceRefs.includes(targetAgent.reference_design_source_refs[0]));
+    assert.ok(evidenceRefs.includes(targetAgent.reference_design_pattern_packet_refs[0]));
+    assert.equal(workOrder.work_order_kind, 'agent_baseline_evaluation');
+    assert.equal(workOrder.status, 'ready_for_opl_foundry_lab_evaluation');
+    assert.equal(workOrder.consumer_dependency.status, 'available');
+    assert.equal(
+      workOrder.execution_aperture.action_ref,
+      'opl agent-lab evaluation-work-order execute --work-order <work-order.json> --output <dir>',
+    );
+    assert.equal(workOrder.target_agent.domain_id, targetAgent.domain_id);
+    assert.equal(workOrder.target_agent.target_agent_ref, `domain-agent:${targetAgent.domain_id}`);
+    assert.equal(workOrder.target_agent.descriptor_ref, path.join(targetDir, 'contracts/domain_descriptor.json'));
+    assert.equal(suite.target_agent_ref, `domain-agent:${targetAgent.domain_id}`);
+    assert.equal(suite.target_agent_descriptor_ref, path.join(targetDir, 'contracts/domain_descriptor.json'));
+    assert.equal(suite.tasks[0].target_agent_ref, `domain-agent:${targetAgent.domain_id}`);
+    assert.equal(suite.tasks[0].target_agent_descriptor_ref, path.join(targetDir, 'contracts/domain_descriptor.json'));
+    assert.equal(suite.tasks[0].scorecard_spec.passed, undefined);
+    assert.equal(suite.tasks[0].promotion_gate_request.gate_status, undefined);
+    assert.equal(suite.tasks[0].recovery_probe_specs[0].observed_status, undefined);
+    assert.equal(workOrder.authority_boundary.oma_can_execute_agent_lab_suite, false);
+    assert.equal(workOrder.authority_boundary.oma_can_write_owner_receipt_body, false);
     assert.ok(primarySkill.includes(targetAgent.reference_design_pattern_packet_refs[0]));
     assert.ok(generatedPrompt.includes(targetAgent.selected_opl_profile_refs[0]));
     assert.ok(generatedKnowledge.includes('EvidencePacket'));
@@ -425,7 +456,7 @@ test('build-agent-baseline repairs mechanical subpacket projection before confor
     const stageControl = readJson(path.join(targetDir, 'contracts/stage_control_plane.json'));
     const stage = stageControl.stages[0] as JsonObject;
     const stageContract = stage.stage_contract as JsonObject;
-    assert.equal(payload.status, 'passed');
+    assert.equal(payload.status, 'candidate_package_materialized_ready_for_opl_foundry_lab_evaluation');
     assert.equal(payload.opl_profile_conformance.status, 'passed');
     assert.equal(
       fs.existsSync(path.join(outputRoot, `${sourceDerivedTargetAgent.domain_id}-stage-decomposition-blocker.json`)),
@@ -474,10 +505,10 @@ test('build-agent-baseline materializes source-derived proof with canonical OPL 
     const primarySkill = fs.readFileSync(path.join(targetDir, 'agent/primary_skill/SKILL.md'), 'utf8');
     const generatedPrompt = fs.readFileSync(path.join(targetDir, stageControl.stages[0].prompt_refs[0].ref), 'utf8');
 
-    assert.equal(payload.status, 'passed');
+    assert.equal(payload.status, 'candidate_package_materialized_ready_for_opl_foundry_lab_evaluation');
     assert.equal(payload.opl_profile_conformance.status, 'passed');
     assertBuildAgentBaselineOutputSchema(payload);
-    assert.equal(fs.existsSync(path.join(outputRoot, 'baseline-delivery-receipt.json')), true);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'baseline-delivery-receipt.json')), false);
     assert.equal(descriptor.profile_selection_mode, 'source_derived_design');
     assert.equal(descriptor.selected_opl_profile_refs, undefined);
     assert.equal(
@@ -721,12 +752,12 @@ test('build-agent-baseline materializes a research-driven target package from va
     const descriptor = readJson(path.join(targetDir, 'contracts/domain_descriptor.json'));
     const capabilityMap = readJson(path.join(targetDir, 'contracts/capability_map.json'));
     const stageControl = readJson(path.join(targetDir, 'contracts/stage_control_plane.json'));
-    const receipt = readJson(path.join(outputRoot, 'baseline-delivery-receipt.json'));
-    const suite = readJson(path.join(outputRoot, 'agent-lab-suite.json'));
+    const workOrder = readJson(path.join(outputRoot, 'foundry-lab-work-order.json'));
+    const suite = readJson(path.join(outputRoot, 'agent-lab-suite-seed.json'));
     const primarySkill = fs.readFileSync(path.join(targetDir, 'agent/primary_skill/SKILL.md'), 'utf8');
     const generatedPrompt = fs.readFileSync(path.join(targetDir, stageControl.stages[0].prompt_refs[0].ref), 'utf8');
 
-    assert.equal(payload.status, 'passed');
+    assert.equal(payload.status, 'candidate_package_materialized_ready_for_opl_foundry_lab_evaluation');
     assert.equal(payload.opl_profile_conformance.status, 'not_applicable');
     assertBuildAgentBaselineOutputSchema(payload);
     assert.equal(payload.artifacts.agent_build_receipt_ref, researchDrivenObjectRefs.buildReceiptRef);
@@ -813,15 +844,11 @@ test('build-agent-baseline materializes a research-driven target package from va
       ),
     );
     assert.deepEqual(
-      receipt.research_driven_design.source_refs,
-      researchDrivenTargetAgent.research_source_refs,
+      workOrder.source_refs.includes(researchDrivenTargetAgent.research_source_refs[0]),
+      true,
     );
-    assert.equal(
-      receipt.research_driven_design.research_synthesis_packet_ref,
-      researchDrivenObjectRefs.researchSynthesisPacketRef,
-    );
-    assert.ok(suite.tasks[0].scorecard.evidence_refs.includes(researchDrivenTargetAgent.research_source_refs[0]));
-    assert.ok(suite.tasks[0].scorecard.evidence_refs.includes(researchDrivenTargetAgent.research_synthesis_refs[0]));
+    assert.ok(suite.tasks[0].scorecard_spec.evidence_refs.includes(researchDrivenTargetAgent.research_source_refs[0]));
+    assert.ok(suite.tasks[0].scorecard_spec.evidence_refs.includes(researchDrivenTargetAgent.research_synthesis_refs[0]));
     assert.ok(primarySkill.includes('Profile selection mode: research_driven_design'));
     assert.ok(primarySkill.includes('Selected profile ref: none; research-driven design refs are the active design input.'));
     assert.ok(primarySkill.includes(researchDrivenObjectRefs.researchSynthesisPacketRef));
@@ -1283,7 +1310,7 @@ test('build-agent-baseline fails closed without independent reviewer evidence', 
     );
     assert.notEqual(result.status, 0);
     assert.match(result.stderr, /ai reviewer evaluation/i);
-    assert.equal(fs.existsSync(path.join(outputRoot, 'baseline-delivery-receipt.json')), false);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'foundry-lab-work-order.json')), false);
   });
 });
 

@@ -294,13 +294,15 @@
       "repo_owned_queue_or_attempt_ledger_materializer",
       "repo_owned_target_worktree_lifecycle_materializer"
     ],
-    "retained_materializer_role": "refs_only_target_agent_semantics_work_order_candidate_or_typed_blocker_materializer",
+    "retained_materializer_role": "refs_only_target_agent_semantics_suite_seed_work_order_candidate_or_expected_blocker_ref_materializer",
     "allowed_outputs": [
       "candidate_agent_package_ref",
+      "agent_lab_suite_seed_ref",
+      "foundry_lab_work_order_candidate_ref",
       "developer_patch_work_order_ref",
       "target_capability_improvement_candidate_ref",
-      "mechanism_patch_proposal_ref",
-      "typed_blocker_ref",
+      "mechanism_patch_candidate_ref",
+      "expected_typed_blocker_ref",
       "refs_only_contract_template_ref"
     ],
     "fail_closed_conditions": [

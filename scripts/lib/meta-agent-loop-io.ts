@@ -22,6 +22,7 @@ export type TargetAgent = {
   research_source_refs?: string[] | null;
   expert_practice_notes?: string[] | null;
   research_synthesis_refs?: string[] | null;
+  target_agent_ref?: string;
   descriptor_ref?: string;
   repo_dir?: string;
   descriptor?: JsonObject | null;
@@ -166,6 +167,8 @@ export function readTargetAgent(targetAgentDir: string): TargetAgent {
 
   return {
     domain_id: domainId,
+    target_agent_ref: optionalString(descriptor.target_agent_ref, 'target_agent_ref', descriptorPath)
+      ?? `domain-agent:${domainId}`,
     domain_label: typeof descriptor.domain_label === 'string'
       ? descriptor.domain_label
       : typeof descriptor.capability_pack_label === 'string'

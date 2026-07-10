@@ -125,7 +125,7 @@
       ],
       "active_caller_status": "domain_authority_active",
       "role_scope": "refs_only_minimal_authority_function_not_generic_runtime_owner",
-      "cannot_absorb_reason": "OPL can generate the generic scaffold and interface bundle, but opl-meta-agent owns target-agent construction semantics and owner receipts."
+      "cannot_absorb_reason": "OPL can generate the generic scaffold and interface bundle, but opl-meta-agent owns target-agent construction semantics and candidate-package judgment. Owner receipt bodies remain outside OMA."
     },
     {
       "module_id": "opl_agent_lab_adapter",
@@ -134,16 +134,22 @@
       "code_paths": [
         "scripts/build-agent-baseline.ts",
         "scripts/takeover-agent.ts",
+        "scripts/improve-from-agent-lab-suite.ts",
+        "scripts/lib/agent-evidence-materializer.ts",
+        "scripts/lib/external-suite-materializer.ts",
         "scripts/lib/meta-agent-loop-io.ts",
-        "scripts/lib/meta-agent-loop-receipts.ts"
+        "scripts/lib/meta-agent-loop-receipts.ts",
+        "scripts/lib/foundry-lab-work-order.ts"
       ],
       "active_callers": [
         "build-agent-baseline action",
-        "takeover-target-agent-test action"
+        "takeover-target-agent-test action",
+        "agent-evidence handoff action",
+        "improve-from-external-agent-lab-suite judgment action"
       ],
       "active_caller_status": "refs_only_adapter_active",
-      "consumes_opl_surface": "opl_agent_lab_complete_control_plane",
-      "retention_reason": "The adapter assembles Agent Lab suite refs and reads suite results; OPL owns the runner."
+      "consumes_opl_surface": "opl_foundry_lab_suite_result_refs_with_evaluation_work_order_consumer_dependency_open",
+      "retention_reason": "OMA emits declarative suite seeds, candidate refs, blocked Foundry Lab evaluation work-order candidates, and executable developer patch work orders, or consumes an explicit Foundry Lab suite-result ref for agent-building judgment. OPL Foundry Lab owns suite materialization/execution, execution receipts, learning/promotion/mechanism/scaleout ledgers, work-order lifecycle, and delivery-gate assembly; its canonical evaluation-work-order consumer is still required before these candidates become executable. Target owners own owner receipt and typed blocker bodies."
     },
     {
       "module_id": "mechanism_patch_proposal_authorizer",
@@ -152,7 +158,7 @@
       "authority_function_ref": "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer",
       "authority_function_contract_ref": "runtime/authority_functions/meta-agent-authority-functions.json",
       "implementation_refs": [
-        "scripts/lib/meta-agent-loop-receipts.ts"
+        "scripts/lib/foundry-lab-work-order.ts"
       ],
       "code_paths": [
         "runtime/authority_functions/meta-agent-authority-functions.json"
@@ -162,7 +168,7 @@
       ],
       "active_caller_status": "domain_authority_active",
       "role_scope": "refs_only_minimal_authority_function_not_generic_runtime_owner",
-      "cannot_absorb_reason": "OPL cannot decide the agent-building mechanism semantics or sign proposal-only owner receipts."
+      "cannot_absorb_reason": "OMA retains agent-building mechanism judgment as candidate refs. OPL Foundry Lab owns mechanism ledger materialization and target owners own owner receipt bodies."
     },
     {
       "module_id": "opl_domain_manifest_registration",

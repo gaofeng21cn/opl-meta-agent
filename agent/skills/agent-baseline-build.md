@@ -40,11 +40,11 @@
 6. 确认 target artifact locator 引用 morphology refs，且长书、长 deck、长文、素材型交付或数据型交付的 creative source 是可分片 native source，不是脚本字符串或单一导出物。
 7. 调用 OPL scaffold validation。
 8. 调用 OPL generated interface projection。
-9. 构造 Agent Lab baseline suite 并运行；suite 必须包含 realistic target task 和 artifact-shape probes，能发现体量降级、正文入源码字符串、缺 sharding、外部资产无项目内 custody 的缺口。
-10. 对已生成的 target agent repo 运行 OMA takeover / Agent Lab external suite，生成 takeover receipt、online learning candidate 和 mechanism patch proposal。
-11. 消费结构化 independent AI reviewer evaluation，运行 `improve:external-suite` 或等价 action，把 reviewer evidence、Agent Lab result 和 target-agent source refs 转成 external-suite self-evolution receipt、target capability candidate、developer patch work order 或 typed blocker；reviewer evidence 必须覆盖 artifact morphology 风险，不能只有 scaffold/suite refs。
-12. 若 external-suite / reviewer evidence 暴露可修复缺口，执行 owner-gated improvement loop 并重新跑目标 repo 验证和 Agent Lab re-evaluation；若无 source patch required，也必须记录 no-patch work order / coordination receipt。
-13. 根据 gate 输出 delivery receipt、no-patch coordination receipt、developer work order 或 typed blocker。
+9. 构造 declarative Agent Lab baseline suite seed 与 canonical Foundry evaluation work order；suite 必须包含 realistic target task 和 artifact-shape probes，但不得包含 observation、pass/fail、gate status 或 result/receipt body。
+10. 对 existing target agent 可调用 takeover action，生成 takeover suite seed、target-bound evaluation work order、gated self-evolution candidate ref 和 mechanism candidate ref；不得本地执行 suite 或生成 takeover receipt。
+11. 把 evaluation work order 交给 OPL Foundry Lab。只有 OPL 返回的 suite result 与 execution receipt 才能作为 `improve:external-suite --suite-result` 输入；reviewer evidence 必须覆盖 artifact morphology 风险，不能只有 scaffold/suite refs。
+12. `improve:external-suite` 只生成 target capability candidate、developer patch work order、no-source-patch judgment 或 expected typed-blocker ref；实际 patch、target verification、Agent Lab re-evaluation、absorb/cleanup 和 owner closeout 由 OPL / target owner 执行。
+13. Producer 阶段以 `candidate_package_materialized_ready_for_opl_foundry_lab_evaluation` 收口；只有外部 evaluation、self-evolution 与 owner closeout evidence 齐全后，才进入 delivery receipt / no-patch / developer work order / typed blocker 的 downstream gate。
 
 ## 输出
 
@@ -58,11 +58,11 @@
 - research source refs / expert practice notes / research synthesis refs
 - artifact morphology brief ref
 - artifact morphology review / realistic target task evidence ref
-- baseline suite result ref
-- takeover suite result ref
-- takeover receipt ref
+- baseline suite seed / Foundry evaluation work-order refs
+- takeover suite seed / Foundry evaluation work-order refs
+- optional OPL-returned suite result / execution-receipt refs
 - structured AI reviewer evaluation ref
-- external-suite self-evolution receipt ref
+- external-suite capability judgment ref
 - target capability candidate ref
 - developer patch work order or typed blocker ref
 - delivery receipt, no-patch coordination receipt, or failure taxonomy ref
@@ -77,9 +77,10 @@
 - artifact morphology brief 来自 typed closeout，并被 artifact locator、suite task manifest、takeover/external-suite evidence 和 delivery receipt 引用。
 - free text closeout、partial refs、缺 independent gate policy、缺 quality gate declaration 或 self-review 必须 fail closed。
 - baseline delivery gate 通过前不签发交付。
+- `build-agent-baseline` / takeover producer 状态只表示 Foundry evaluation handoff ready，不能声明 evaluation complete 或 delivery complete。
 - 新建智能体交付必须包含 Agent Lab takeover / external suite evidence 和 independent AI reviewer evidence；只跑 scaffold validation、generated interface projection 或 baseline suite 不足以完成交付。
 - independent AI reviewer evidence 必须引用真实 target task、artifact locator、native source/shard/asset refs、diff/receipt 或 owner feedback；只有 scaffold、interface projection 或 suite pass refs 不足以证明 morphology 风险已覆盖。
-- external-suite self-evolution 若返回 developer work order，必须执行或明确转交 owner gate；若返回 no-patch coordination record，必须保留 receipt 和 re-evaluation refs。
+- external-suite judgment 若返回 developer work order，必须明确转交 OPL work-order owner；若返回 no-source-patch judgment，也必须等待 OPL/target-owner re-evaluation 与 closeout refs。
 
 ## 禁止事项
 

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://one-person-lab.local/contracts/opl-meta-agent/actions/takeover-target-agent-test.output.schema.json",
   "title": "Take Over Target Agent Test Output",
-  "description": "Takeover result with artifact paths, owner receipt, gated learning candidate, and delivery-gate authority readback.",
+  "description": "A declarative takeover suite seed and canonical OPL Foundry Lab evaluation work order. No suite result or owner receipt is created by OMA.",
   "type": "object",
   "required": [
     "surface_kind",
@@ -12,22 +12,19 @@
     "takeover_policy",
     "target_agent",
     "artifacts",
-    "learning_loop",
-    "new_agent_delivery_gate"
+    "agent_building_judgment",
+    "foundry_lab_handoff",
+    "authority_boundary"
   ],
   "properties": {
     "surface_kind": {
-      "const": "opl_meta_agent_takeover_loop_result"
+      "const": "opl_meta_agent_takeover_handoff"
     },
     "version": {
-      "const": "opl-meta-agent.takeover-loop.v1"
+      "const": "opl-meta-agent.takeover-handoff.v1"
     },
     "status": {
-      "type": "string",
-      "enum": [
-        "passed",
-        "blocked"
-      ]
+      "const": "takeover_candidate_materialized_ready_for_opl_foundry_lab_evaluation"
     },
     "product_id": {
       "const": "opl-meta-agent"
@@ -36,12 +33,20 @@
       "type": "object",
       "required": [
         "target_opl_compatible_agents_allowed",
+        "can_execute_agent_lab_suite",
+        "can_write_target_owner_receipt_body",
         "can_write_target_domain_truth",
         "can_promote_default_agent_without_gate"
       ],
       "properties": {
         "target_opl_compatible_agents_allowed": {
           "const": true
+        },
+        "can_execute_agent_lab_suite": {
+          "const": false
+        },
+        "can_write_target_owner_receipt_body": {
+          "const": false
         },
         "can_write_target_domain_truth": {
           "const": false
@@ -53,62 +58,39 @@
       "additionalProperties": true
     },
     "target_agent": {
-      "$ref": "#/$defs/targetAgent"
+      "$ref": "#/$defs/targetIdentity"
     },
     "artifacts": {
       "type": "object",
       "required": [
-        "suite_path",
-        "takeover_receipt_path",
-        "new_agent_delivery_gate_path",
-        "online_learning_candidate_path",
-        "mechanism_patch_proposal_path"
+        "agent_lab_suite_seed_path",
+        "foundry_lab_work_order_path"
       ],
       "properties": {
-        "suite_path": {
+        "agent_lab_suite_seed_path": {
           "$ref": "#/$defs/nonEmptyString"
         },
-        "takeover_receipt_path": {
-          "$ref": "#/$defs/nonEmptyString"
-        },
-        "new_agent_delivery_gate_path": {
-          "$ref": "#/$defs/nonEmptyString"
-        },
-        "online_learning_candidate_path": {
-          "$ref": "#/$defs/nonEmptyString"
-        },
-        "mechanism_patch_proposal_path": {
+        "foundry_lab_work_order_path": {
           "$ref": "#/$defs/nonEmptyString"
         }
       },
       "additionalProperties": false
     },
-    "learning_loop": {
+    "agent_building_judgment": {
       "type": "object",
       "required": [
-        "takeover_receipt",
-        "online_learning_candidate",
-        "mechanism_patch_proposal"
+        "ai_reviewer_evaluation_ref",
+        "verdict",
+        "suggestions",
+        "candidate_refs"
       ],
-      "properties": {
-        "takeover_receipt": {
-          "$ref": "#/$defs/ownerReceipt"
-        },
-        "online_learning_candidate": {
-          "$ref": "#/$defs/learningCandidate"
-        },
-        "online_learning_policy": {
-          "type": "object",
-          "minProperties": 1
-        },
-        "mechanism_patch_proposal": {
-          "$ref": "#/$defs/mechanismPatchProposal"
-        }
-      },
       "additionalProperties": true
     },
-    "new_agent_delivery_gate": {
-      "$ref": "#/$defs/newAgentDeliveryGate"
+    "foundry_lab_handoff": {
+      "$ref": "#/$defs/foundryHandoff"
+    },
+    "authority_boundary": {
+      "$ref": "#/$defs/authorityBoundary"
     }
   },
   "$defs": {
@@ -116,31 +98,22 @@
       "type": "string",
       "minLength": 1
     },
-    "nonEmptyStringArray": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "$ref": "#/$defs/nonEmptyString"
-      }
-    },
-    "targetAgentIdentity": {
+    "targetIdentity": {
       "type": "object",
       "required": [
         "domain_id",
-        "domain_label",
-        "delivery_domain"
+        "repo_dir",
+        "target_agent_ref",
+        "descriptor_ref"
       ],
       "properties": {
         "domain_id": {
           "$ref": "#/$defs/nonEmptyString"
         },
-        "domain_label": {
-          "$ref": "#/$defs/nonEmptyString"
-        },
-        "delivery_domain": {
-          "$ref": "#/$defs/nonEmptyString"
-        },
         "repo_dir": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "target_agent_ref": {
           "$ref": "#/$defs/nonEmptyString"
         },
         "descriptor_ref": {
@@ -149,220 +122,74 @@
       },
       "additionalProperties": true
     },
-    "targetAgent": {
+    "foundryHandoff": {
       "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/targetAgentIdentity"
-        }
-      ],
       "required": [
-        "repo_dir"
+        "suite_seed",
+        "work_order"
       ],
       "properties": {
-        "repo_dir": {
-          "$ref": "#/$defs/nonEmptyString"
+        "suite_seed": {
+          "type": "object",
+          "required": [
+            "surface_kind",
+            "target_agent_ref",
+            "target_agent_descriptor_ref",
+            "tasks"
+          ],
+          "properties": {
+            "surface_kind": {
+              "const": "opl_meta_agent_agent_lab_suite_seed"
+            }
+          },
+          "additionalProperties": true
+        },
+        "work_order": {
+          "type": "object",
+          "required": [
+            "surface_kind",
+            "status",
+            "target_agent",
+            "consumer_dependency",
+            "execution_aperture"
+          ],
+          "properties": {
+            "surface_kind": {
+              "const": "opl_meta_agent_foundry_lab_work_order_candidate"
+            },
+            "status": {
+              "const": "ready_for_opl_foundry_lab_evaluation"
+            }
+          },
+          "additionalProperties": true
         }
-      }
+      },
+      "additionalProperties": false
     },
     "authorityBoundary": {
       "type": "object",
       "required": [
-        "can_write_target_domain_truth",
-        "can_write_target_domain_memory_body",
-        "can_mutate_target_domain_artifact_body",
-        "can_authorize_target_domain_quality_or_export",
-        "can_promote_default_agent_without_gate"
+        "oma_can_execute_agent_lab_suite",
+        "oma_can_write_agent_lab_result",
+        "oma_can_write_owner_receipt_body",
+        "oma_can_write_target_domain_truth",
+        "oma_can_promote_default_agent_without_gate"
       ],
       "properties": {
-        "can_write_target_domain_truth": {
+        "oma_can_execute_agent_lab_suite": {
           "const": false
         },
-        "can_write_target_domain_memory_body": {
+        "oma_can_write_agent_lab_result": {
           "const": false
         },
-        "can_mutate_target_domain_artifact_body": {
+        "oma_can_write_owner_receipt_body": {
           "const": false
         },
-        "can_authorize_target_domain_quality_or_export": {
+        "oma_can_write_target_domain_truth": {
           "const": false
         },
-        "can_promote_default_agent_without_gate": {
+        "oma_can_promote_default_agent_without_gate": {
           "const": false
-        },
-        "can_train_or_deploy_model_weights": {
-          "const": false
-        },
-        "no_executable_work_order_issued": {
-          "type": "boolean"
-        }
-      },
-      "additionalProperties": true
-    },
-    "ownerReceipt": {
-      "type": "object",
-      "required": [
-        "surface_kind",
-        "receipt_id",
-        "status",
-        "target_agent",
-        "agent_lab_result_ref",
-        "authority_boundary"
-      ],
-      "properties": {
-        "surface_kind": {
-          "const": "opl_meta_agent_owner_receipt"
-        },
-        "receipt_class": {
-          "$ref": "#/$defs/nonEmptyString"
-        },
-        "receipt_id": {
-          "$ref": "#/$defs/nonEmptyString"
-        },
-        "status": {
-          "$ref": "#/$defs/nonEmptyString"
-        },
-        "target_agent": {
-          "$ref": "#/$defs/targetAgentIdentity"
-        },
-        "agent_lab_result_ref": {
-          "$ref": "#/$defs/nonEmptyString"
-        },
-        "acceptance_gates": {
-          "type": "object",
-          "minProperties": 1
-        },
-        "authority_boundary": {
-          "$ref": "#/$defs/authorityBoundary"
-        }
-      },
-      "additionalProperties": true
-    },
-    "learningCandidate": {
-      "type": "object",
-      "required": [
-        "surface_kind",
-        "candidate_id",
-        "status",
-        "proposed_change_refs",
-        "promotion_gate_ref"
-      ],
-      "properties": {
-        "surface_kind": {
-          "const": "opl_meta_agent_online_learning_candidate"
-        },
-        "candidate_id": {
-          "$ref": "#/$defs/nonEmptyString"
-        },
-        "status": {
-          "const": "candidate_recorded_requires_explicit_gate"
-        },
-        "proposed_change_refs": {
-          "$ref": "#/$defs/nonEmptyStringArray"
-        },
-        "promotion_gate_ref": {
-          "$ref": "#/$defs/nonEmptyString"
-        }
-      },
-      "additionalProperties": true
-    },
-    "mechanismPatchProposal": {
-      "type": "object",
-      "required": [
-        "surface_kind",
-        "proposal_id",
-        "status",
-        "mechanism_ref",
-        "authority_boundary"
-      ],
-      "properties": {
-        "surface_kind": {
-          "const": "opl_meta_agent_mechanism_patch_proposal"
-        },
-        "proposal_id": {
-          "$ref": "#/$defs/nonEmptyString"
-        },
-        "status": {
-          "type": "string",
-          "enum": [
-            "proposal_recorded_requires_explicit_gate",
-            "proposal_recorded_requires_target_owner_gate"
-          ]
-        },
-        "mechanism_ref": {
-          "$ref": "#/$defs/nonEmptyString"
-        },
-        "promotion_gate_ref": {
-          "$ref": "#/$defs/nonEmptyString"
-        },
-        "authority_boundary": {
-          "$ref": "#/$defs/authorityBoundary"
-        }
-      },
-      "additionalProperties": true
-    },
-    "newAgentDeliveryGate": {
-      "type": "object",
-      "required": [
-        "surface_kind",
-        "gate_status",
-        "required_evidence",
-        "authority_boundary"
-      ],
-      "properties": {
-        "surface_kind": {
-          "const": "opl_meta_agent_new_agent_delivery_gate"
-        },
-        "policy_id": {
-          "const": "opl-meta-agent.new-agent-delivery-gate.v1"
-        },
-        "gate_status": {
-          "const": "passed"
-        },
-        "required_evidence": {
-          "type": "object",
-          "required": [
-            "target_owner_receipt_or_typed_blocker_or_human_gate_ref",
-            "closeout_outcome"
-          ],
-          "properties": {
-            "target_owner_receipt_or_typed_blocker_or_human_gate_ref": {
-              "$ref": "#/$defs/nonEmptyString"
-            },
-            "no_forbidden_write_proof_ref": {
-              "$ref": "#/$defs/nonEmptyString"
-            },
-            "owner_route_ref": {
-              "$ref": "#/$defs/nonEmptyString"
-            },
-            "closeout_outcome": {
-              "$ref": "#/$defs/nonEmptyString"
-            }
-          },
-          "additionalProperties": true
-        },
-        "authority_boundary": {
-          "type": "object",
-          "required": [
-            "delegates_work_order_execution_to_opl",
-            "oma_can_write_target_domain_truth",
-            "oma_can_write_target_owner_receipt_body"
-          ],
-          "properties": {
-            "delegates_work_order_execution_to_opl": {
-              "const": true
-            },
-            "oma_can_write_target_domain_truth": {
-              "const": false
-            },
-            "oma_can_write_target_owner_receipt_body": {
-              "const": false
-            },
-            "oma_can_promote_default_agent_without_gate": {
-              "const": false
-            }
-          },
-          "additionalProperties": true
         }
       },
       "additionalProperties": true

@@ -1,6 +1,6 @@
 {
   "surface_kind": "opl_agent_package_manifest.v1",
-  "agent_id": "opl-meta-agent",
+  "agent_id": "oma",
   "package_id": "opl-meta-agent",
   "display_name": "OPL Meta Agent",
   "publisher": "one-person-lab",

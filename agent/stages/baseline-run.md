@@ -2,18 +2,18 @@
 
 ## 操作策略
 
-运行 candidate agent 的 Agent Lab baseline suite，收集 trajectory、receipt 和 failure taxonomy。该 stage 消费 `build-agent-baseline` action 的结果，不自行实现 Agent Lab runner。
+把 candidate Agent Pack、AgentBuildReceipt 和 reviewer evidence 编译成 declarative suite seed 与 target-bound Foundry evaluation work order。该 stage 不实现 Agent Lab runner，也不物化 hosted result/receipt ledger。
 
 ## Handoff
 
-向 `optimizer-iteration` 或 `baseline-delivery` 交付：
+向 OPL Foundry Lab 或后续 `improve:external-suite` 交付：
 
-- `trajectory_refs`
-- `receipt_refs`
-- `failure_taxonomy_refs`
+- `agent_lab_suite_seed_ref`
+- `foundry_lab_evaluation_work_order_ref`
+- `expected_evaluation_result_ref`
 
 ## Receipt 约束
 
-- receipt 必须引用 Agent Lab suite result，不用模型自评替代。
-- failed 或 blocked baseline 必须进入 optimizer 或 blocker closeout，不能包装成 delivery。
-- receipt 必须保留 OPL Framework 与 domain agent 的 owner split。
+- AgentBuildReceipt 只证明 Agent Pack 构建与 conformance，不是 target owner receipt。
+- suite result、Foundry execution receipt 和 promotion refs 必须由 OPL evaluation-work-order execution 返回。
+- 缺外部 result 时保持 pending/blocker route，不得由 OMA 自填后包装成 delivery。

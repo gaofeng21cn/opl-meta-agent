@@ -26,7 +26,8 @@ test('foundry agent series binds OMA to one shared lifecycle and schema owner', 
   assert.equal(series.version, 'foundry-agent-series.v1');
   assert.equal(series.owner, 'one-person-lab');
   assert.equal(series.domain_id, 'opl-meta-agent');
-  assert.equal(series.stage_control_plane_ref, 'contracts/stage_control_plane.json');
+  assert.equal(series.stage_manifest_ref, 'agent/stages/manifest.json');
+  assert.equal(series.stage_control_plane_ref, 'opl-generated:family_stage_control_plane');
 
   assert.equal(designProfile.profile_id, 'opl_foundry_agent_series_design_profile.v1');
   assertIncludesAll(asStrings(designProfile.shared_lifecycle_pipeline), [
@@ -52,6 +53,7 @@ test('foundry agent series binds OMA to one shared lifecycle and schema owner', 
 
   assert.equal(domainProfile.profile_id, 'oma_domain_specific_series_profile.v1');
   assert.equal(domainProfile.domain_design_center, 'agent_building_and_improvement');
+  assert.equal(domainProfile.shared_opl_agent_lifecycle.stage_manifest_ref, series.stage_manifest_ref);
   assert.equal(domainProfile.shared_opl_agent_lifecycle.stage_control_plane_ref, series.stage_control_plane_ref);
   assertExactFalseFlags(domainProfile.authority_boundary, [
     'can_write_target_domain_truth',

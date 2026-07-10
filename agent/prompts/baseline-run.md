@@ -1,43 +1,42 @@
-# Baseline Run Prompt
+# Baseline Evaluation Handoff Prompt
 
 ## 目标
 
-运行 candidate agent 的 Agent Lab baseline suite，收集 trajectory、receipt 和 failure taxonomy refs，为 baseline delivery gate 提供可审计证据。
+把 candidate Agent Pack、AgentBuildReceipt 和 independent reviewer evidence 组织成 declarative Agent Lab suite seed 与 target-bound OPL Foundry Lab evaluation work order。OMA 不执行 suite，也不生成 suite result、execution receipt、owner receipt、learning ledger 或 promotion result。
 
 ## 输入
 
-- candidate agent package ref 与 generated interface bundle ref。
-- Agent Lab baseline suite ref、scorecard ref 和 promotion gate ref。
-- `build-agent-baseline` action 输出的 scaffold validation 与 package locator。
-- baseline delivery quality gate 的证据要求。
+- candidate Agent Pack ref、target descriptor ref 与 AgentBuildReceipt ref。
+- declarative baseline suite seed、scorecard spec、recovery probe spec 和 promotion-gate request refs。
+- independent AI reviewer evaluation 与 artifact morphology evidence refs。
+- OPL Foundry Lab evaluation work-order contract。
 
 ## 步骤
 
-1. 确认 suite 输入都使用 refs、schema 或 locator，不复制 target memory body、truth body 或 artifact body。
-2. 运行 baseline suite，记录 run ref、segment refs、trajectory refs 和 receipt refs。
-3. 把失败分为 contract gap、stage gap、prompt gap、skill gap、quality gate gap、environment gap 或 owner gate gap。
-4. 校验 forbidden writes：不得写 target truth、memory body、artifact body 或 quality verdict。
-5. 将 scorecard、failure taxonomy 和 recovery probe 结果绑定到 baseline delivery gate。
-6. blocked 或 failed 时输出 optimizer work order refs，而不是签发 delivery receipt。
+1. 确认 suite seed 只携带 declarative specs 与 refs，不含 `observed_status`、`passed`、`gate_status` 或伪 result/receipt。
+2. 校验 target identity 同时包含 `domain_id`、`target_agent_ref` 和 `descriptor_ref`，suite/task identity 与 target 一致。
+3. 将 source、reviewer 和 candidate provenance refs 去重排序并绑定到稳定 work-order identity。
+4. 校验 `consumer_dependency.status=available`、execution owner 为 `one-person-lab/OPL Foundry Lab`，action 为 `opl agent-lab evaluation-work-order execute --work-order <work-order.json> --output <dir>`。
+5. 输出 suite seed、Foundry evaluation work order 和 expected result ref；若没有 OPL 返回的 evaluation observations，保持 pending/typed-blocker route，不生成结果。
+6. 只有显式 OPL suite result 与 execution receipt 返回后，才把它们交给 `improve:external-suite --suite-result` 和后续 owner-gated closeout。
 
 ## 输出
 
-- `trajectory_refs`
-- `receipt_refs`
-- `failure_taxonomy_refs`
-- baseline scorecard ref
-- optimizer work order refs when blocked or failed
+- `agent_lab_suite_seed_ref`
+- `foundry_lab_evaluation_work_order_ref`
+- `expected_evaluation_result_ref`
+- optional externally returned suite-result / execution-receipt refs
 
 ## 质量门槛
 
-- Agent Lab result 可以从 clean output root 重放。
-- 每个 failure 都有可行动 taxonomy 和 source ref。
-- receipt 明确声明 owner boundary、forbidden writes 和 promotion gate 状态。
-- 只有 gate 证据齐全时才允许进入 baseline delivery。
+- work-order identity 对 target、suite/task 与 canonical provenance 稳定绑定。
+- refs 顺序或重复不改变 identity，任何语义身份变化都会改变 identity。
+- suite seed 不包含 observations、pass/fail verdict 或 hosted ledger body。
+- producer 状态只能声明 ready for OPL Foundry Lab evaluation，不能声明 delivered、domain ready、production ready 或 promoted。
 
 ## 禁止事项
 
-- 禁止把单次 smoke 成功写成 baseline delivery。
-- 禁止绕过 Agent Lab suite 或 owner review gate。
-- 禁止把 blocked suite 当成成功交付。
-- 禁止修改 target domain truth、memory body、artifact body 或 quality/export verdict。
+- 禁止 OMA 本地执行 Agent Lab suite。
+- 禁止伪造 suite result、Foundry execution receipt、target owner receipt、typed-blocker body、learning ledger 或 promotion result。
+- 禁止把 AgentBuildReceipt 当成 target owner acceptance。
+- 禁止把 work-order ready 当成 evaluation complete 或 baseline delivery。

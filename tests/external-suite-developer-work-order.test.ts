@@ -1,9 +1,17 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import test from 'node:test';
 import type { JsonObject } from './support/contracts.ts';
-import { readJsonFile as readJson, writeJsonFile as writeJson } from './support/contracts.ts';
 import {
+  assertMatchesJsonSchema,
+  parseJsonText,
+  readJsonFile as readJson,
+  repoRoot,
+  writeJsonFile as writeJson,
+} from './support/contracts.ts';
+import {
+  buildFoundryExecutionResult,
   buildExternalSuite,
   runImproveFromSuite,
   withOutputRoot,
@@ -22,30 +30,98 @@ const medicalPolicy = {
   ],
 };
 
+function runImproveCli(args: {
+  suitePath: string;
+  suiteResultPath: string;
+  targetAgentDir: string;
+  outputRoot: string;
+  reviewerEvaluationPath: string;
+}): JsonObject {
+  const result = runImproveCliProcess(args);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  return parseJsonText(result.stdout);
+}
+
+function runImproveCliProcess(args: {
+  suitePath: string;
+  suiteResultPath: string;
+  targetAgentDir: string;
+  outputRoot: string;
+  reviewerEvaluationPath: string;
+}) {
+  return spawnSync(process.execPath, [
+    '--experimental-strip-types',
+    path.join(repoRoot, 'scripts/improve-from-agent-lab-suite.ts'),
+    '--suite', args.suitePath,
+    '--suite-result', args.suiteResultPath,
+    '--target-agent-dir', args.targetAgentDir,
+    '--output-dir', args.outputRoot,
+    '--ai-reviewer-evaluation', args.reviewerEvaluationPath,
+  ], { cwd: repoRoot, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
+}
+
 test('external blocked Agent Lab suite becomes a MAS developer patch work order', () => {
   withOutputRoot('oma-medical-suite-', (outputRoot) => {
     const targetAgentDir = path.join(outputRoot, 'med-autoscience');
     const suitePath = path.join(outputRoot, 'suite.json');
+    const suiteResultPath = path.join(outputRoot, 'suite-result.json');
     const reviewerEvaluationPath = path.join(outputRoot, 'reviewer.json');
     writeTargetDescriptor(targetAgentDir);
     writeTargetImprovementPolicy(targetAgentDir, medicalPolicy);
-    writeJson(suitePath, buildExternalSuite({
+    const suite = buildExternalSuite({
       suiteId: 'mas-suite:high-quality-medical-manuscript',
       domainId: 'med-autoscience',
+      targetAgentDir,
       taskFamily: 'high_quality_medical_manuscript_self_evolution',
       evidenceRefs: [
         'rubric-gap:mas/002/hdl-harmonization',
         'rubric-gap:mas/002/internal-quality-language-purge',
       ],
       feedbackRefs: ['feedback-ref:mas/002/manuscript-review'],
-    }));
+    });
+    writeJson(suitePath, suite);
     writeAiReviewerEvaluation(reviewerEvaluationPath);
+    writeJson(suiteResultPath, {
+      agent_lab_evaluation_work_order_execution: buildFoundryExecutionResult({
+        suite,
+        targetAgentDir,
+      }),
+    });
 
-    const payload = runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
-    assert.equal(payload.status, 'blocked_with_developer_patch_work_order');
+    const payload = runImproveCli({
+      suitePath,
+      suiteResultPath,
+      targetAgentDir,
+      outputRoot,
+      reviewerEvaluationPath,
+    });
+    assertMatchesJsonSchema(
+      'contracts/schemas/improve-from-external-agent-lab-suite.output.schema.json',
+      payload,
+    );
+    assert.equal(payload.status, 'developer_patch_work_order_ready_for_opl_foundry_lab');
     const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
+    const candidate = readJson(payload.artifacts.target_capability_improvement_candidate_path);
+    const expectedTarget = {
+      domain_id: 'med-autoscience',
+      target_agent_ref: 'domain-agent:med-autoscience',
+      descriptor_ref: path.join(targetAgentDir, 'contracts/domain_descriptor.json'),
+    };
+    const expectedProvenanceRefs = [
+      'evaluation-receipt:mas-suite:high-quality-medical-manuscript',
+      'trajectory-observation-receipt:agent-lab-task:med-autoscience/high_quality_medical_manuscript_self_evolution',
+    ];
     assert.equal(workOrder.status, 'ready_for_target_agent_source_patch');
     assert.equal(workOrder.target_agent.domain_id, 'med-autoscience');
+    assert.equal(workOrder.target_agent.target_agent_ref, 'domain-agent:med-autoscience');
+    assert.deepEqual(workOrder.evaluation_target_agent, expectedTarget);
+    assert.deepEqual(workOrder.evaluation_provenance_refs, expectedProvenanceRefs);
+    assert.deepEqual(candidate.evaluation_target_agent, expectedTarget);
+    assert.deepEqual(candidate.evaluation_provenance_refs, expectedProvenanceRefs);
+    assert.equal(
+      payload.foundry_lab_execution_receipt_ref,
+      'foundry-lab-execution-receipt:mas-suite:high-quality-medical-manuscript',
+    );
     const hdlTrace = (workOrder.patch_traceability_matrix as JsonObject[])
       .find((entry) => entry.gap_token === 'hdl');
     assert.ok(hdlTrace);
@@ -54,6 +130,253 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
     ]);
     assert.deepEqual(hdlTrace.target_repo_file_hints, medicalPolicy.paths);
     assert.equal(workOrder.authority_boundary.can_write_target_domain_truth, false);
+  });
+});
+
+test('external suite result rejects cross-suite, cross-target, cross-task, and unbound provenance', () => {
+  withOutputRoot('oma-foundry-result-binding-', (outputRoot) => {
+    const targetAgentDir = path.join(outputRoot, 'target-agent');
+    const suitePath = path.join(outputRoot, 'suite.json');
+    const reviewerEvaluationPath = path.join(outputRoot, 'reviewer.json');
+    writeTargetDescriptor(targetAgentDir, 'target-agent');
+    writeTargetImprovementPolicy(targetAgentDir, {
+      triggers: ['artifact morphology'],
+      refs: ['target_agent_contract_ref:target-agent/artifact-morphology'],
+      paths: ['contracts/artifact_morphology.json'],
+    });
+    const suite = buildExternalSuite({
+      suiteId: 'target-agent-suite:identity-binding',
+      domainId: 'target-agent',
+      targetAgentDir,
+      taskFamily: 'target_agent_feedback_self_evolution',
+      evidenceRefs: ['rubric-gap:target-agent/artifact-morphology'],
+      feedbackRefs: ['feedback-ref:target-agent/artifact-morphology/foundry-review'],
+    });
+    writeJson(suitePath, suite);
+    writeAiReviewerEvaluation(reviewerEvaluationPath);
+
+    const scenarios: Array<{
+      name: string;
+      mutate: (payload: JsonObject) => void;
+      expectedError: RegExp;
+    }> = [
+      {
+        name: 'suite',
+        mutate: (payload) => {
+          (payload.suite_result as JsonObject).suite_id = 'target-agent-suite:other';
+        },
+        expectedError: /suite_id does not match/,
+      },
+      {
+        name: 'target',
+        mutate: (payload) => {
+          ((payload.suite_result as JsonObject).evaluation_target_agent as JsonObject).target_agent_ref =
+            'domain-agent:other-target';
+        },
+        expectedError: /evaluation_target_agent\.target_agent_ref does not match/,
+      },
+      {
+        name: 'run-task',
+        mutate: (payload) => {
+          (((payload.suite_result as JsonObject).runs as JsonObject[])[0]).task_id =
+            'agent-lab-task:other-target/other-task';
+        },
+        expectedError: /runs\[\]\.task_id does not match/,
+      },
+      {
+        name: 'provenance-ref',
+        mutate: (payload) => {
+          ((payload.suite_result as JsonObject).refs as JsonObject).evaluation_provenance_refs =
+            ['evaluation-receipt:unbound'];
+        },
+        expectedError: /evaluation provenance refs and bindings do not match/,
+      },
+      {
+        name: 'provenance-task',
+        mutate: (payload) => {
+          const bindings = (payload.suite_result as JsonObject)
+            .evaluation_provenance_bindings as JsonObject[];
+          bindings[1].task_id = 'agent-lab-task:other-target/other-task';
+        },
+        expectedError: /evaluation_provenance_bindings\[\]\.task_id is not in the suite/,
+      },
+      {
+        name: 'non-terminal-status',
+        mutate: (payload) => {
+          (payload.suite_result as JsonObject).status = 'running';
+        },
+        expectedError: /status must be passed or blocked/,
+      },
+      {
+        name: 'missing-task-provenance',
+        mutate: (payload) => {
+          const result = payload.suite_result as JsonObject;
+          const evaluationBinding = (result.evaluation_provenance_bindings as JsonObject[])[0];
+          result.evaluation_provenance_bindings = [evaluationBinding];
+          (result.refs as JsonObject).evaluation_provenance_refs = [evaluationBinding.receipt_ref];
+        },
+        expectedError: /requires task-scoped evaluation provenance binding/,
+      },
+      {
+        name: 'duplicate-provenance-binding',
+        mutate: (payload) => {
+          const bindings = (payload.suite_result as JsonObject)
+            .evaluation_provenance_bindings as JsonObject[];
+          bindings.push(structuredClone(bindings[1]));
+        },
+        expectedError: /duplicate evaluation provenance binding/,
+      },
+    ];
+
+    for (const scenario of scenarios) {
+      const suiteResultPath = path.join(outputRoot, `${scenario.name}-result.json`);
+      const scenarioOutput = path.join(outputRoot, `${scenario.name}-output`);
+      const resultPayload = buildFoundryExecutionResult({
+        suite,
+        targetAgentDir,
+      });
+      scenario.mutate(resultPayload);
+      writeJson(suiteResultPath, resultPayload);
+      const result = runImproveCliProcess({
+        suitePath,
+        suiteResultPath,
+        targetAgentDir,
+        outputRoot: scenarioOutput,
+        reviewerEvaluationPath,
+      });
+      assert.notEqual(result.status, 0, `${scenario.name} mismatch was accepted`);
+      assert.match(result.stderr, scenario.expectedError);
+    }
+
+    const wrongTargetSuite = structuredClone(suite);
+    (wrongTargetSuite.evaluation_target_agent as JsonObject).descriptor_ref =
+      path.join(outputRoot, 'other-agent/contracts/domain_descriptor.json');
+    const wrongTargetSuitePath = path.join(outputRoot, 'wrong-target-suite.json');
+    const wrongTargetResultPath = path.join(outputRoot, 'wrong-target-suite-result.json');
+    writeJson(wrongTargetSuitePath, wrongTargetSuite);
+    writeJson(wrongTargetResultPath, buildFoundryExecutionResult({ suite, targetAgentDir }));
+    const wrongTargetResult = runImproveCliProcess({
+      suitePath: wrongTargetSuitePath,
+      suiteResultPath: wrongTargetResultPath,
+      targetAgentDir,
+      outputRoot: path.join(outputRoot, 'wrong-target-suite-output'),
+      reviewerEvaluationPath,
+    });
+    assert.notEqual(wrongTargetResult.status, 0, 'cross-target suite was accepted');
+    assert.match(wrongTargetResult.stderr, /input suite evaluation_target_agent\.descriptor_ref does not match/);
+  });
+});
+
+test('passed Foundry result without an execution receipt cannot claim no source patch is required', () => {
+  withOutputRoot('oma-foundry-result-missing-receipt-', (outputRoot) => {
+    const targetAgentDir = path.join(outputRoot, 'target-agent');
+    const suitePath = path.join(outputRoot, 'suite.json');
+    const suiteResultPath = path.join(outputRoot, 'suite-result.json');
+    const reviewerEvaluationPath = path.join(outputRoot, 'reviewer.json');
+    writeTargetDescriptor(targetAgentDir, 'target-agent');
+    const suite = buildExternalSuite({
+      suiteId: 'target-agent-suite:passed-without-receipt',
+      domainId: 'target-agent',
+      targetAgentDir,
+      taskFamily: 'owner_receipt_coordination',
+      passed: true,
+      evidenceRefs: ['owner-receipt:target-agent/accepted'],
+    });
+    writeJson(suitePath, suite);
+    writeAiReviewerEvaluation(reviewerEvaluationPath, {
+      verdict: 'accepted_no_patch_required',
+      source_refs: ['owner-receipt:target-agent/accepted'],
+      direct_evidence_refs: ['owner-receipt:target-agent/accepted'],
+    });
+    const resultPayload = buildFoundryExecutionResult({
+      suite,
+      targetAgentDir,
+      status: 'passed',
+    });
+    delete resultPayload.receipt;
+    resultPayload.execution_receipt_ref = 'foundry-lab-execution-receipt:wrong-root-alias';
+    writeJson(suiteResultPath, resultPayload);
+
+    const payload = runImproveCli({
+      suitePath,
+      suiteResultPath,
+      targetAgentDir,
+      outputRoot,
+      reviewerEvaluationPath,
+    });
+    assert.equal(payload.status, 'candidate_blocked_missing_declarative_work_order_inputs');
+    assert.deepEqual(payload.missing_required_fields, ['foundry_lab_execution_receipt_ref']);
+    assert.equal(payload.foundry_lab_execution_receipt_ref, undefined);
+    assert.equal(payload.artifacts.developer_patch_work_order_path, undefined);
+  });
+});
+
+test('candidate identity ignores provenance order while work-order identity binds the execution receipt', () => {
+  withOutputRoot('oma-foundry-stable-identity-', (outputRoot) => {
+    const targetAgentDir = path.join(outputRoot, 'target-agent');
+    const suitePath = path.join(outputRoot, 'suite.json');
+    const reviewerEvaluationPath = path.join(outputRoot, 'reviewer.json');
+    writeTargetDescriptor(targetAgentDir, 'target-agent');
+    writeTargetImprovementPolicy(targetAgentDir, {
+      triggers: ['artifact morphology'],
+      refs: ['target_agent_contract_ref:target-agent/artifact-morphology'],
+      paths: ['contracts/artifact_morphology.json'],
+    });
+    const suite = buildExternalSuite({
+      suiteId: 'target-agent-suite:stable-identity',
+      domainId: 'target-agent',
+      targetAgentDir,
+      taskFamily: 'target_agent_feedback_self_evolution',
+      evidenceRefs: ['rubric-gap:target-agent/artifact-morphology'],
+      feedbackRefs: ['feedback-ref:target-agent/artifact-morphology/stable-identity'],
+    });
+    writeJson(suitePath, suite);
+    writeAiReviewerEvaluation(reviewerEvaluationPath);
+
+    const run = (name: string, resultPayload: JsonObject) => {
+      const suiteResultPath = path.join(outputRoot, `${name}-result.json`);
+      const runOutput = path.join(outputRoot, `${name}-output`);
+      writeJson(suiteResultPath, resultPayload);
+      const payload = runImproveCli({
+        suitePath,
+        suiteResultPath,
+        targetAgentDir,
+        outputRoot: runOutput,
+        reviewerEvaluationPath,
+      });
+      return {
+        candidate: readJson(payload.artifacts.target_capability_improvement_candidate_path),
+        workOrder: readJson(payload.artifacts.developer_patch_work_order_path),
+      };
+    };
+
+    const original = buildFoundryExecutionResult({ suite, targetAgentDir });
+    const originalBindings = (original.suite_result as JsonObject)
+      .evaluation_provenance_bindings as JsonObject[];
+    const evaluationPacketBinding = originalBindings[0];
+    originalBindings.push(
+      { ...evaluationPacketBinding, extension: { variant: 'a' } },
+      { ...evaluationPacketBinding, extension: { variant: 'b' } },
+    );
+    const reordered = structuredClone(original);
+    const reorderedResult = reordered.suite_result as JsonObject;
+    (reorderedResult.refs as JsonObject).evaluation_provenance_refs =
+      [...((reorderedResult.refs as JsonObject).evaluation_provenance_refs as string[])].reverse();
+    reorderedResult.evaluation_provenance_bindings =
+      [...(reorderedResult.evaluation_provenance_bindings as JsonObject[])]
+        .reverse()
+        .map((binding) => Object.fromEntries(Object.entries(binding).reverse()));
+    const changedReceipt = structuredClone(original);
+    (changedReceipt.receipt as JsonObject).foundry_lab_execution_receipt_ref =
+      'foundry-lab-execution-receipt:target-agent-suite/stable-identity-retry';
+
+    const first = run('first', original);
+    const second = run('reordered', reordered);
+    const third = run('changed-receipt', changedReceipt);
+    assert.equal(second.candidate.candidate_id, first.candidate.candidate_id);
+    assert.equal(second.workOrder.work_order_id, first.workOrder.work_order_id);
+    assert.equal(third.candidate.candidate_id, first.candidate.candidate_id);
+    assert.notEqual(third.workOrder.work_order_id, first.workOrder.work_order_id);
   });
 });
 
@@ -72,6 +395,7 @@ test('generic target-agent feedback external suite is accepted without MAS-only 
     writeJson(suitePath, buildExternalSuite({
       suiteId: 'target-agent-feedback-suite:artifact-morphology',
       domainId: 'target-agent',
+      targetAgentDir,
       taskFamily: 'target_agent_feedback_self_evolution',
       evidenceRefs: ['rubric-gap:target-agent/artifact-morphology'],
       feedbackRefs: ['feedback-ref:target-agent/artifact-morphology/foundry-review'],
@@ -84,7 +408,7 @@ test('generic target-agent feedback external suite is accepted without MAS-only 
 
     const payload = runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
     const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
-    assert.equal(payload.status, 'blocked_with_developer_patch_work_order');
+    assert.equal(payload.status, 'developer_patch_work_order_ready_for_opl_foundry_lab');
     assert.equal(workOrder.target_agent.domain_id, 'target-agent');
     assert.deepEqual(workOrder.source_external_suite_intake.accepted_input_profiles, [
       'target_agent_feedback_external_suite',
@@ -104,6 +428,7 @@ test('MAS reviewer_revision feedback external suite is accepted as developer wor
     writeJson(suitePath, buildExternalSuite({
       suiteId: 'mas-suite:reviewer_revision-feedback',
       domainId: 'med-autoscience',
+      targetAgentDir,
       taskFamily: 'reviewer_revision_feedback_self_evolution',
       evidenceRefs: ['rubric-gap:mas/002/internal-quality-language-purge'],
       feedbackRefs: ['feedback-ref:mas/002/reviewer_revision/mentor-round-1'],

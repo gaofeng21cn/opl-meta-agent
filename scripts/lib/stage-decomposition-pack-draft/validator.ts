@@ -38,6 +38,7 @@ import {
   asString,
   asStringArray,
   assertBooleanFalse,
+  domainLabelFor,
   filesByPath,
   isRecord,
   stageNativeRefsFor,
@@ -1185,6 +1186,50 @@ export function validateStageDecompositionCloseoutPacket(
   );
   validateStageNativeArtifactContractBundle(stageNativeArtifactContract, stageControl, targetAgent);
   const foundrySeries = asRecord(draft.foundry_agent_series, 'foundry_agent_series');
+  const expectedLabel = domainLabelFor(targetAgent);
+  const expectedSeriesIdentity: Record<string, string> = {
+    domain_id: targetAgent.domain_id,
+    foundry_agent_id: targetAgent.domain_id,
+    product_layer: 'foundry_agent',
+    domain_label: expectedLabel,
+    authority_owner: expectedLabel,
+    stage_control_plane_target_domain_id: targetAgent.domain_id,
+  };
+  for (const [field, expected] of Object.entries(expectedSeriesIdentity)) {
+    if (foundrySeries[field] !== expected) {
+      throw new Error(
+        `stage-decomposition pack draft foundry_agent_series.${field} does not match the target agent.`,
+      );
+    }
+  }
+  const requiredIdentityFields = asStringArray(
+    foundrySeries.required_identity_fields,
+    'foundry_agent_series.required_identity_fields',
+  );
+  if (new Set(requiredIdentityFields).size !== requiredIdentityFields.length) {
+    throw new Error('stage-decomposition pack draft foundry_agent_series.required_identity_fields has duplicates.');
+  }
+  for (const field of [
+    'domain_id',
+    'foundry_agent_id',
+    'product_layer',
+    'domain_label',
+    'authority_owner',
+    'stage_manifest_ref',
+    'stage_control_plane_ref',
+  ]) {
+    if (!requiredIdentityFields.includes(field)) {
+      throw new Error(
+        `stage-decomposition pack draft foundry_agent_series.required_identity_fields missing ${field}.`,
+      );
+    }
+  }
+  if (foundrySeries.stage_manifest_ref !== 'agent/stages/manifest.json') {
+    throw new Error('stage-decomposition pack draft foundry_agent_series.stage_manifest_ref is invalid.');
+  }
+  if (foundrySeries.stage_control_plane_ref !== 'opl-generated:family_stage_control_plane') {
+    throw new Error('stage-decomposition pack draft foundry_agent_series.stage_control_plane_ref is invalid.');
+  }
   const seriesDesignProfile = asRecord(foundrySeries.series_design_profile, 'foundry_agent_series.series_design_profile');
   if (seriesDesignProfile.surface_kind !== SERIES_DESIGN_PROFILE.surface_kind) {
     throw new Error('stage-decomposition pack draft foundry_agent_series.series_design_profile.surface_kind is invalid.');

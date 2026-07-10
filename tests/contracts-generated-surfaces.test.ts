@@ -13,14 +13,35 @@ import {
 } from './support/contracts.ts';
 import type { JsonObject } from './support/contracts.ts';
 
+function generatedInterfaceBundle(): JsonObject {
+  const result = spawnSync(oplBin, [
+    'agents',
+    'interfaces',
+    '--repo-dir',
+    repoRoot,
+    '--json',
+  ], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    maxBuffer: 16 * 1024 * 1024,
+  });
+  assert.equal(result.status, 0, result.stderr);
+  return parseJsonText(result.stdout).generated_agent_interfaces;
+}
+
 test('generated-surface contracts remain OPL-owned refs-only projections', () => {
   const packCompilerInput = readJson('contracts/pack_compiler_input.json');
+  const packageManifest = readJson('contracts/opl_agent_package_manifest.json');
   const handoff = readJson('contracts/generated_surface_handoff.json');
   const registration = readJson('contracts/opl_domain_manifest_registration.json');
   const appProjection = readJson('contracts/app_workbench_projection.json');
   const scaleout = readJson('contracts/real_target_agent_scaleout_evidence.json');
 
   assert.equal(packCompilerInput.generated_surface_owner, 'one-person-lab');
+  assert.equal(packCompilerInput.domain_id, 'opl-meta-agent');
+  assert.equal(packCompilerInput.canonical_agent_id, 'oma');
+  assert.equal(packageManifest.agent_id, packCompilerInput.canonical_agent_id);
+  assert.equal(packageManifest.package_id, 'opl-meta-agent');
   assert.equal(handoff.generated_surface_owner, 'one-person-lab');
   assert.equal(packCompilerInput.domain_repo_can_own_generated_surface, false);
   assert.equal(handoff.domain_repo_can_own_generated_surface, false);
@@ -52,26 +73,16 @@ test('generated-surface contracts remain OPL-owned refs-only projections', () =>
   });
   assert.equal(handoff.registry_discovery_receipt_ref, registration.discovery_receipt.receipt_ref);
   assert.equal(handoff.app_drilldown_readiness_receipt_ref, appProjection.drilldown_readiness_receipt.receipt_ref);
+  const productSessionHandoff = asObjects(handoff.handoff_surfaces)
+    .find((entry) => entry.surface_id === 'product_session');
+  assert.equal(productSessionHandoff?.source_contract, 'agent/stages/manifest.json');
   assert.equal(scaleout.authority_boundary.can_treat_suite_pass_as_default_promotion, false);
   assert.equal(scaleout.multi_target_scaleout_closeout.minimum_completion_gate.suite_pass_claims_domain_ready, false);
   assert.equal(scaleout.multi_target_scaleout_closeout.minimum_completion_gate.provider_completion_claims_domain_ready, false);
 });
 
 test('OPL generated interfaces expose current descriptors and omit retired takeover aliases', () => {
-  const result = spawnSync(oplBin, [
-    'agents',
-    'interfaces',
-    '--repo-dir',
-    repoRoot,
-    '--json',
-  ], {
-    cwd: repoRoot,
-    encoding: 'utf8',
-    maxBuffer: 16 * 1024 * 1024,
-  });
-
-  assert.equal(result.status, 0, result.stderr);
-  const bundle = parseJsonText(result.stdout).generated_agent_interfaces;
+  const bundle = generatedInterfaceBundle();
   assert.equal(bundle.surface_kind, 'opl_generated_agent_interface_bundle');
   assert.equal(bundle.owner, 'one-person-lab');
   assert.equal(bundle.domain_repo_can_own_generated_surface, false);
@@ -86,6 +97,30 @@ test('OPL generated interfaces expose current descriptors and omit retired takeo
   assert.doesNotMatch(JSON.stringify(bundle), /takeover-external-agent-test|opl_meta_agent_takeover_external_agent_test/);
   assert.equal(bundle.authority_boundary.generated_interface_can_write_domain_truth, false);
   assert.equal(bundle.authority_boundary.generated_interface_can_authorize_quality_or_export, false);
+});
+
+test('Pack canonical generated interfaces consume OMA identity and stage manifest', {
+  skip: process.env.OPL_BIN
+    ? false
+    : 'requires an explicit Pack-canonical OPL_BIN; the shared release pin predates this ABI',
+}, () => {
+  const bundle = generatedInterfaceBundle();
+  assert.equal(bundle.target_domain_id, 'opl-meta-agent');
+  assert.equal(bundle.agent_id, 'oma');
+  const consumedContracts = asObjects(bundle.source_contract_consumption.consumed_contracts);
+  assert.ok(consumedContracts.some((entry) =>
+    entry.contract_id === 'declarative_stage_manifest'
+    && entry.path === 'agent/stages/manifest.json'
+    && entry.status === 'resolved_and_compiled'
+  ));
+  assert.ok(consumedContracts.some((entry) =>
+    entry.contract_id === 'family_stage_control_plane'
+    && entry.path === 'opl-generated:family_stage_control_plane'
+    && entry.status === 'generated_from_declarative_stage_manifest'
+  ));
+  assert.equal(consumedContracts.some((entry) => entry.path === 'contracts/stage_control_plane.json'), false);
+  assert.equal(bundle.product_entry.family_stage_control_plane.target_domain_id, 'opl-meta-agent');
+  assert.equal(asObjects(bundle.product_entry.family_stage_control_plane.stages).length, 11);
 });
 
 test('default-caller readback cannot authorize physical deletion', () => {

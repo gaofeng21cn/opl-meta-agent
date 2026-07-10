@@ -15,15 +15,17 @@ External learning notes, suite findings, scorecards, optimizer candidates, and p
 ## 本仓可以做
 
 - 生成目标 agent 的 domain pack。
-- 组织 Agent Lab suite、scorecard、recovery probe 和 promotion gate。
-- 生成 baseline delivery receipt、takeover receipt、developer patch work order 和 mechanism patch proposal。
-- 在 target owner gate 允许时修改 target agent source/tests/docs。
+- 组织 declarative Agent Lab suite seed、scorecard spec、recovery probe spec 和 promotion-gate request。
+- 生成 target-bound Foundry evaluation work order、developer patch work order 和 mechanism candidate。
+- 消费 OPL / target owner 返回的 suite result、execution receipt、verification 与 closeout refs。
 
 ## 本仓不能做
 
 - 实现第二套 generic runtime、queue、scheduler、daemon、attempt ledger 或 workbench。
+- 本地执行 Agent Lab evaluation、target patch、regression、absorb/cleanup 或 owner closeout。
 - 拥有私有 CLI/MCP/Skill/product-entry wrapper。
 - 写 target domain truth、memory body、artifact body 或 quality verdict。
+- 写 Agent Lab result、Foundry execution receipt、target owner receipt、target-domain typed-blocker body、learning ledger 或 promotion result。
 - 无 gate promote default agent。
 - 训练或部署模型权重。
 - 把 external learning memory、suite pass、scorecard、checklist、benchmark result 或 promotion signal 当成 target owner verdict。

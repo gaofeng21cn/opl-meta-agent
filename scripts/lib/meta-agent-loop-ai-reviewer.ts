@@ -36,6 +36,30 @@ function suiteOrScaffoldOnlyRef(ref: string): boolean {
   return normalized.includes('suite') || normalized.includes('scaffold');
 }
 
+function artifactMorphologyRef(ref: string): boolean {
+  const normalized = ref.toLowerCase();
+  return normalized.includes('artifact-morphology')
+    || normalized.includes('artifact_morphology')
+    || normalized.includes('morphology-evidence')
+    || normalized.includes('realistic-target-task-review')
+    || normalized.includes('artifact-native-source-format')
+    || normalized.includes('artifact-shard-unit')
+    || normalized.includes('target-extent-contract')
+    || normalized.includes('asset-custody');
+}
+
+export function assertAiReviewerArtifactMorphologyEvidence(
+  evaluation: AiReviewerEvaluation,
+  context: string,
+): void {
+  if (!evaluation.source_refs.some(artifactMorphologyRef)
+    || !evaluation.direct_evidence_refs.some(artifactMorphologyRef)) {
+    throw new Error(
+      `${context} requires AI reviewer artifact morphology evidence in source_refs and direct_evidence_refs.`,
+    );
+  }
+}
+
 function validateAiReviewerEvaluation(
   payload: JsonObject,
   sourceRef: string,

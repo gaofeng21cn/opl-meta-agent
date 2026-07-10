@@ -59,12 +59,25 @@ test('stage-decomposition materializer writes refs-only stage pack surfaces', ()
     materializeStageDecompositionPackDraft(targetAgentDir, draft);
 
     const stageControl = readJson(path.join(targetAgentDir, 'contracts/stage_control_plane.json'));
+    const stageManifest = readJson(path.join(targetAgentDir, 'agent/stages/manifest.json'));
+    const foundrySeries = readJson(path.join(targetAgentDir, 'contracts/foundry_agent_series.json'));
     const artifactMorphology = readJson(path.join(targetAgentDir, 'contracts/artifact_morphology_contract.json'));
     const stage = (stageControl.stages as JsonObject[])[0];
     assert.equal(stage.stage_id, 'evidence-synthesis-plan');
     assert.equal(stage.selected_executor.executor_kind, 'codex_cli');
     assert.equal(stage.authority_boundary.can_write_target_domain_truth, false);
     assert.equal(stage.stage_contract.stage_completion_policy.provider_completion_is_domain_completion, false);
+    assert.equal(stageManifest.target_domain_id, targetAgent.domain_id);
+    assert.equal(stageManifest.owner, targetAgent.domain_id);
+    assert.deepEqual(stageManifest.stages.map((entry: JsonObject) => entry.stage_id), [
+      'evidence-synthesis-plan',
+    ]);
+    assert.deepEqual(stageManifest.stages[0].allowed_action_refs, ['plan-evidence-synthesis']);
+    assert.equal(stageManifest.stages[0].policy_ref, 'agent/stages/evidence-synthesis-plan.md');
+    assert.equal(stageManifest.stages[0].prompt_ref, 'agent/prompts/evidence-synthesis-plan.md');
+    assert.equal(foundrySeries.stage_manifest_ref, 'agent/stages/manifest.json');
+    assert.equal(foundrySeries.stage_control_plane_ref, 'opl-generated:family_stage_control_plane');
+    assert.ok(foundrySeries.required_identity_fields.includes('stage_manifest_ref'));
     assert.equal(artifactMorphology.native_source_policy.creative_source_must_not_be_generator_code, true);
     assert.equal(stageControl.stage_decomposition_subpacket_set, null);
     assert.equal(
@@ -89,6 +102,58 @@ test('stage-decomposition validator fails closed on untyped or unsafe closeout',
   assert.throws(
     () => validateStageDecompositionCloseoutPacket(packet, { targetAgent }),
     /independent_gate_policy/i,
+  );
+});
+
+test('stage-decomposition bounded repair upgrades stale Foundry stage identity refs', () => {
+  const packet = buildFixtureStageDecompositionCloseout({ targetAgent });
+  const draft = packet.stage_decomposition_pack_draft as JsonObject;
+  const foundrySeries = draft.foundry_agent_series as JsonObject;
+  delete foundrySeries.stage_manifest_ref;
+  foundrySeries.stage_control_plane_ref = 'contracts/stage_control_plane.json';
+  foundrySeries.required_identity_fields = (foundrySeries.required_identity_fields as string[])
+    .filter((field) => field !== 'stage_manifest_ref');
+
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(packet, { targetAgent }),
+    /foundry_agent_series\.(?:stage_manifest_ref|required_identity_fields)/i,
+  );
+  const repair = repairStageDecompositionCloseoutPacket(packet, { targetAgent });
+  assert.equal(repair.repaired, true);
+  assert.match(repair.repair_notes.join('\n'), /foundry_agent_series\.stage_manifest_ref/);
+  const repairedDraft = validateStageDecompositionCloseoutPacket(repair.packet, { targetAgent });
+  assert.equal(repairedDraft.foundry_agent_series.stage_manifest_ref, 'agent/stages/manifest.json');
+  assert.equal(
+    repairedDraft.foundry_agent_series.stage_control_plane_ref,
+    'opl-generated:family_stage_control_plane',
+  );
+  assert.ok(repairedDraft.foundry_agent_series.required_identity_fields.includes('stage_manifest_ref'));
+});
+
+test('stage-decomposition bounded repair cannot reconstruct malformed Foundry core identity', () => {
+  const malformedFieldsPacket = buildFixtureStageDecompositionCloseout({ targetAgent });
+  const malformedFieldsSeries = (malformedFieldsPacket.stage_decomposition_pack_draft as JsonObject)
+    .foundry_agent_series as JsonObject;
+  malformedFieldsSeries.stage_control_plane_ref = 'contracts/stage_control_plane.json';
+  delete malformedFieldsSeries.stage_manifest_ref;
+  malformedFieldsSeries.required_identity_fields = 'invalid';
+  const malformedFieldsRepair = repairStageDecompositionCloseoutPacket(malformedFieldsPacket, { targetAgent });
+  assert.equal(malformedFieldsRepair.repaired, false);
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(malformedFieldsRepair.packet, { targetAgent }),
+    /foundry_agent_series\.stage_manifest_ref|foundry_agent_series\.required_identity_fields/i,
+  );
+
+  const missingIdentityPacket = buildFixtureStageDecompositionCloseout({ targetAgent });
+  const missingIdentitySeries = (missingIdentityPacket.stage_decomposition_pack_draft as JsonObject)
+    .foundry_agent_series as JsonObject;
+  delete missingIdentitySeries.domain_id;
+  missingIdentitySeries.stage_control_plane_ref = 'contracts/stage_control_plane.json';
+  const missingIdentityRepair = repairStageDecompositionCloseoutPacket(missingIdentityPacket, { targetAgent });
+  assert.equal(missingIdentityRepair.repaired, false);
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(missingIdentityRepair.packet, { targetAgent }),
+    /foundry_agent_series\.domain_id/i,
   );
 });
 

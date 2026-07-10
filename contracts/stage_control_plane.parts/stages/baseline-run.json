@@ -3,13 +3,23 @@
   "stage_kind": "review",
   "stage_pack_conformance_version": "standard-stage-pack.v2",
   "title": "Baseline Run",
-  "summary": "Run the candidate agent through OPL Agent Lab and collect trajectories, receipts, and failure taxonomy.",
-  "goal": "Turn Agent Lab results into auditable baseline run refs.",
+  "summary": "Prepare a target-bound OPL Foundry Lab baseline evaluation handoff without executing the suite or materializing hosted result and receipt ledgers.",
+  "goal": "Turn the candidate Agent Pack, build proof, and reviewer evidence into a declarative suite seed and canonical Foundry evaluation work order.",
   "owner": "opl-meta-agent",
   "domain_stage_refs": [
     "baseline-run"
   ],
-  "inputs": [],
+  "inputs": [
+    {
+      "ref_kind": "domain_ref",
+      "ref": [
+        "candidate_agent_package_ref",
+        "agent_build_receipt_ref",
+        "ai_reviewer_evaluation_ref",
+        "target_agent_artifact_morphology_ref"
+      ]
+    }
+  ],
   "knowledge_refs": [
     {
       "ref_kind": "domain_knowledge_ref",
@@ -39,9 +49,9 @@
     {
       "ref_kind": "domain_ref",
       "ref": [
-        "trajectory_refs",
-        "receipt_refs",
-        "failure_taxonomy_refs"
+        "agent_lab_suite_seed_ref",
+        "foundry_lab_evaluation_work_order_ref",
+        "expected_evaluation_result_ref"
       ]
     }
   ],
@@ -55,7 +65,11 @@
   "source_refs": [],
   "authority_boundary": {
     "domain_truth_owner": "opl-meta-agent",
-    "opl_role": "projection_only"
+    "opl_role": "foundry_evaluation_execution_and_projection",
+    "oma_can_execute_agent_lab_suite": false,
+    "oma_can_write_agent_lab_result": false,
+    "oma_can_write_owner_receipt_body": false,
+    "oma_can_write_promotion_gate": false
   },
   "selected_executor": {
     "executor_kind": "codex_cli",
@@ -99,9 +113,9 @@
     "executor-receipt-ref:baseline-run/codex-cli",
     "no-forbidden-write-proof-ref:baseline-run",
     "independent-ai-review-ref:baseline-run",
-    "output-ref:trajectory_refs",
-    "output-ref:receipt_refs",
-    "output-ref:failure_taxonomy_refs",
+    "output-ref:agent_lab_suite_seed_ref",
+    "output-ref:foundry_lab_evaluation_work_order_ref",
+    "output-ref:expected_evaluation_result_ref",
     "stage-user-log-ref:baseline-run",
     "stage-closeout-packet-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
     "stage-folder-contract-ref:opl-meta-agent/baseline-run",
@@ -761,9 +775,9 @@
       "executor-receipt-ref:baseline-run/codex-cli",
       "no-forbidden-write-proof-ref:baseline-run",
       "independent-ai-review-ref:baseline-run",
-      "output-ref:trajectory_refs",
-      "output-ref:receipt_refs",
-      "output-ref:failure_taxonomy_refs",
+      "output-ref:agent_lab_suite_seed_ref",
+      "output-ref:foundry_lab_evaluation_work_order_ref",
+      "output-ref:expected_evaluation_result_ref",
       "stage-user-log-ref:baseline-run",
       "stage-closeout-packet-ref:opl-meta-agent/baseline-run/{stage_attempt_id}",
       "stage-folder-contract-ref:opl-meta-agent/baseline-run",

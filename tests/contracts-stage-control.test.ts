@@ -17,6 +17,7 @@ const stageControlAuthorityKeys = 'opl_can_write_domain_truth opl_can_write_memo
 
 test('opl-meta-agent stage plan owns domain routes without framework authority', () => {
   const stageControl = readJson('contracts/stage_control_plane.json');
+  const stageManifest = readJson('agent/stages/manifest.json');
   const stages = asObjects(stageControl.stages);
   const stageArtifactKernelAdoption = readJson('contracts/stage_artifact_kernel_adoption.json');
   const stateIndexKernelAdoption = stageArtifactKernelAdoption.state_index_kernel_adoption;
@@ -37,6 +38,7 @@ test('opl-meta-agent stage plan owns domain routes without framework authority',
 
   assert.equal(stageControl.surface_kind, 'family_stage_control_plane');
   assert.equal(stageControl.version, 'family-stage-control-plane.v1');
+  assert.deepEqual(asObjects(stageManifest.stages).map((stage) => stage.stage_id), stageIds);
   assert.deepEqual(stages.map((stage) => stage.stage_id), stageIds);
   assert.doesNotMatch(JSON.stringify(stageControl), /external-agent-takeover|takeover-external-agent-test/);
 
@@ -48,6 +50,27 @@ test('opl-meta-agent stage plan owns domain routes without framework authority',
     const stage = stages.find((candidate) => candidate.stage_id === stageId);
     assert.deepEqual(stage?.allowed_action_refs, [actionId]);
   });
+  const takeoverStage = stages.find((stage) => stage.stage_id === 'target-agent-takeover');
+  assert.ok(takeoverStage);
+  const takeoverOutputs = asStrings(asObjects(takeoverStage.outputs)[0].ref);
+  assert.deepEqual(takeoverOutputs, [
+    'agent_lab_suite_seed_ref',
+    'foundry_lab_evaluation_work_order_ref',
+    'gated_self_evolution_candidate_ref',
+    'mechanism_candidate_ref',
+  ]);
+  assert.equal(takeoverOutputs.includes('testing_takeover_receipt_ref'), false);
+  assert.equal(takeoverStage.authority_boundary.oma_can_execute_agent_lab_suite, false);
+  assert.equal(takeoverStage.authority_boundary.oma_can_write_owner_receipt_body, false);
+  const baselineRunStage = stages.find((stage) => stage.stage_id === 'baseline-run');
+  assert.ok(baselineRunStage);
+  assert.deepEqual(asStrings(asObjects(baselineRunStage.outputs)[0].ref), [
+    'agent_lab_suite_seed_ref',
+    'foundry_lab_evaluation_work_order_ref',
+    'expected_evaluation_result_ref',
+  ]);
+  assert.equal(baselineRunStage.authority_boundary.oma_can_execute_agent_lab_suite, false);
+  assert.equal(baselineRunStage.authority_boundary.oma_can_write_agent_lab_result, false);
   [
     'agent_lab_complete_control_plane',
     'standard_domain_agent_scaffold',

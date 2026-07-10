@@ -2,33 +2,33 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://one-person-lab.local/contracts/opl-meta-agent/actions/build-agent-baseline.output.schema.json",
   "title": "Build Agent Baseline Output",
-  "description": "Core result, receipt, artifact, and authority shapes emitted by build-agent-baseline.",
+  "description": "A materialized target Agent Pack and declarative OPL Foundry Lab evaluation handoff. It is not an Agent Lab result, owner receipt, or readiness verdict.",
   "type": "object",
   "required": [
     "surface_kind",
     "version",
     "status",
     "product_id",
+    "meta_agent_kind",
     "target_agent",
     "artifacts",
-    "learning_loop",
+    "opl_agent_package_manifest_validation",
+    "opl_generated_interfaces",
     "opl_profile_conformance",
-    "new_agent_delivery_gate",
-    "real_target_delivery"
+    "stage_decomposition_attempt",
+    "agent_building_judgment",
+    "foundry_lab_handoff",
+    "authority_boundary"
   ],
   "properties": {
     "surface_kind": {
-      "const": "opl_meta_agent_self_learning_loop_result"
+      "const": "opl_meta_agent_candidate_package_handoff"
     },
     "version": {
-      "const": "opl-meta-agent.self-learning-loop.v1"
+      "const": "opl-meta-agent.candidate-package-handoff.v1"
     },
     "status": {
-      "type": "string",
-      "enum": [
-        "passed",
-        "blocked"
-      ]
+      "const": "candidate_package_materialized_ready_for_opl_foundry_lab_evaluation"
     },
     "product_id": {
       "const": "opl-meta-agent"
@@ -37,18 +37,38 @@
       "const": "opl_compatible_meta_agent"
     },
     "target_agent": {
-      "$ref": "#/$defs/targetAgent"
+      "type": "object",
+      "required": [
+        "domain_id",
+        "repo_dir",
+        "scaffold_status",
+        "scaffold_validation_status",
+        "generated_interface_status",
+        "domain_pack_status",
+        "stage_decomposition_status"
+      ],
+      "properties": {
+        "domain_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "repo_dir": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      },
+      "additionalProperties": true
     },
     "artifacts": {
       "type": "object",
       "required": [
         "stage_decomposition_attempt_receipt_path",
         "stage_decomposition_closeout_packet_path",
-        "suite_path",
-        "baseline_delivery_receipt_path",
-        "online_learning_candidate_path",
-        "mechanism_patch_proposal_path",
-        "real_target_delivery_receipt_path"
+        "agent_lab_suite_seed_path",
+        "foundry_lab_work_order_path",
+        "opl_agent_package_manifest_path",
+        "target_agent_capability_map_path",
+        "target_agent_primary_skill_path",
+        "agent_build_receipt_path",
+        "agent_build_receipt_ref"
       ],
       "properties": {
         "stage_decomposition_attempt_receipt_path": {
@@ -57,19 +77,19 @@
         "stage_decomposition_closeout_packet_path": {
           "$ref": "#/$defs/nonEmptyString"
         },
-        "suite_path": {
+        "agent_lab_suite_seed_path": {
           "$ref": "#/$defs/nonEmptyString"
         },
-        "baseline_delivery_receipt_path": {
+        "foundry_lab_work_order_path": {
           "$ref": "#/$defs/nonEmptyString"
         },
-        "online_learning_candidate_path": {
+        "opl_agent_package_manifest_path": {
           "$ref": "#/$defs/nonEmptyString"
         },
-        "mechanism_patch_proposal_path": {
+        "target_agent_capability_map_path": {
           "$ref": "#/$defs/nonEmptyString"
         },
-        "real_target_delivery_receipt_path": {
+        "target_agent_primary_skill_path": {
           "$ref": "#/$defs/nonEmptyString"
         },
         "agent_build_receipt_path": {
@@ -79,145 +99,79 @@
           "$ref": "#/$defs/nonEmptyString"
         }
       },
-      "additionalProperties": {
-        "$ref": "#/$defs/nonEmptyString"
-      }
+      "additionalProperties": false
     },
-    "learning_loop": {
-      "type": "object",
-      "required": [
-        "baseline_receipt",
-        "online_learning_candidate",
-        "mechanism_patch_proposal"
-      ],
-      "properties": {
-        "baseline_receipt": {
-          "$ref": "#/$defs/ownerReceipt"
-        },
-        "online_learning_candidate": {
-          "$ref": "#/$defs/learningCandidate"
-        },
-        "online_learning_policy": {
-          "type": "object",
-          "minProperties": 1
-        },
-        "mechanism_patch_proposal": {
-          "$ref": "#/$defs/mechanismPatchProposal"
-        }
-      },
-      "additionalProperties": true
+    "opl_agent_package_manifest_validation": {
+      "type": "object"
+    },
+    "opl_generated_interfaces": {
+      "type": "object"
     },
     "opl_profile_conformance": {
-      "$ref": "#/$defs/oplProfileConformance"
-    },
-    "new_agent_delivery_gate": {
-      "$ref": "#/$defs/newAgentDeliveryGate"
-    },
-    "real_target_delivery": {
       "type": "object",
       "required": [
-        "target_agent",
-        "delivery_receipt",
-        "new_agent_delivery_gate",
-        "scaleout_evidence_ledger"
+        "status"
       ],
       "properties": {
-        "target_agent": {
-          "$ref": "#/$defs/targetAgent"
-        },
-        "delivery_receipt": {
-          "type": "object",
-          "required": [
-            "receipt_id",
-            "status",
-            "owner_receipt_refs",
-            "no_forbidden_write_proof_refs"
-          ],
-          "properties": {
-            "receipt_id": {
-              "$ref": "#/$defs/nonEmptyString"
-            },
-            "status": {
-              "$ref": "#/$defs/nonEmptyString"
-            },
-            "owner_receipt_refs": {
-              "$ref": "#/$defs/nonEmptyStringArray"
-            },
-            "no_forbidden_write_proof_refs": {
-              "$ref": "#/$defs/nonEmptyStringArray"
-            }
-          },
-          "additionalProperties": true
-        },
-        "new_agent_delivery_gate": {
-          "$ref": "#/$defs/newAgentDeliveryGate"
-        },
-        "scaleout_evidence_ledger": {
-          "type": "object",
-          "minProperties": 1
+        "status": {
+          "enum": [
+            "passed",
+            "not_applicable"
+          ]
         }
       },
       "additionalProperties": true
-    }
-  },
-  "allOf": [
-    {
-      "if": {
-        "properties": {
-          "target_agent": {
-            "anyOf": [
-              { "required": ["reference_design_source_refs"] },
-              { "required": ["reference_design_pattern_notes"] },
-              { "required": ["reference_design_pattern_packet_refs"] },
-              { "required": ["research_source_refs"] },
-              { "required": ["expert_practice_notes"] },
-              { "required": ["research_synthesis_refs"] }
-            ]
-          }
+    },
+    "stage_decomposition_attempt": {
+      "type": "object"
+    },
+    "agent_building_judgment": {
+      "type": "object",
+      "required": [
+        "ai_reviewer_evaluation_ref",
+        "verdict",
+        "source_refs",
+        "direct_evidence_refs"
+      ],
+      "additionalProperties": true
+    },
+    "foundry_lab_handoff": {
+      "type": "object",
+      "required": [
+        "suite_seed",
+        "work_order"
+      ],
+      "properties": {
+        "suite_seed": {
+          "$ref": "#/$defs/suiteSeed"
+        },
+        "work_order": {
+          "$ref": "#/$defs/workOrder"
         }
       },
-      "then": {
-        "properties": {
-          "artifacts": {
-            "required": [
-              "agent_build_receipt_path",
-              "agent_build_receipt_ref"
-            ]
-          }
-        }
-      }
+      "additionalProperties": false
+    },
+    "authority_boundary": {
+      "$ref": "#/$defs/authorityBoundary"
     }
-  ],
+  },
   "$defs": {
     "nonEmptyString": {
       "type": "string",
       "minLength": 1
     },
-    "nonEmptyStringArray": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "$ref": "#/$defs/nonEmptyString"
-      }
-    },
-    "targetAgentIdentity": {
+    "targetIdentity": {
       "type": "object",
       "required": [
         "domain_id",
-        "domain_label",
-        "delivery_domain"
+        "target_agent_ref",
+        "descriptor_ref"
       ],
       "properties": {
         "domain_id": {
           "$ref": "#/$defs/nonEmptyString"
         },
-        "domain_label": {
-          "$ref": "#/$defs/nonEmptyString"
-        },
-        "delivery_domain": {
-          "$ref": "#/$defs/nonEmptyString"
-        },
-        "repo_dir": {
+        "target_agent_ref": {
           "$ref": "#/$defs/nonEmptyString"
         },
         "descriptor_ref": {
@@ -226,344 +180,190 @@
       },
       "additionalProperties": true
     },
-    "targetAgent": {
+    "suiteSeed": {
       "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/targetAgentIdentity"
-        }
-      ],
       "required": [
-        "repo_dir"
+        "surface_kind",
+        "version",
+        "suite_id",
+        "suite_kind",
+        "execution_owner",
+        "target_agent_ref",
+        "target_agent_descriptor_ref",
+        "tasks"
       ],
       "properties": {
-        "repo_dir": {
+        "surface_kind": {
+          "const": "opl_meta_agent_agent_lab_suite_seed"
+        },
+        "version": {
+          "const": "opl-meta-agent.agent-lab-suite-seed.v1"
+        },
+        "execution_owner": {
+          "const": "one-person-lab/OPL Foundry Lab"
+        },
+        "target_agent_ref": {
           "$ref": "#/$defs/nonEmptyString"
+        },
+        "target_agent_descriptor_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "tasks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "task_id",
+              "domain_id",
+              "target_agent_ref",
+              "target_agent_descriptor_ref",
+              "recovery_probe_specs",
+              "trajectory_plan",
+              "scorecard_spec",
+              "improvement_candidate_seed",
+              "promotion_gate_request"
+            ],
+            "properties": {
+              "domain_id": {
+                "const": "opl-meta-agent"
+              }
+            },
+            "additionalProperties": true
+          }
         }
-      }
+      },
+      "additionalProperties": true
+    },
+    "workOrder": {
+      "type": "object",
+      "required": [
+        "surface_kind",
+        "version",
+        "work_order_id",
+        "work_order_kind",
+        "status",
+        "execution_owner",
+        "target_agent",
+        "suite_seed",
+        "consumer_dependency",
+        "execution_aperture",
+        "authority_boundary"
+      ],
+      "properties": {
+        "surface_kind": {
+          "const": "opl_meta_agent_foundry_lab_work_order_candidate"
+        },
+        "version": {
+          "const": "opl-meta-agent.foundry-lab-work-order-candidate.v1"
+        },
+        "status": {
+          "const": "ready_for_opl_foundry_lab_evaluation"
+        },
+        "execution_owner": {
+          "const": "one-person-lab/OPL Foundry Lab"
+        },
+        "target_agent": {
+          "$ref": "#/$defs/targetIdentity"
+        },
+        "consumer_dependency": {
+          "type": "object",
+          "required": [
+            "status",
+            "owner",
+            "required_consumer_role"
+          ],
+          "properties": {
+            "status": {
+              "const": "available"
+            },
+            "owner": {
+              "const": "one-person-lab/OPL Foundry Lab"
+            },
+            "required_consumer_role": {
+              "const": "compile_evaluation_work_order_to_agent_lab_suite_and_execute"
+            }
+          },
+          "additionalProperties": false
+        },
+        "execution_aperture": {
+          "type": "object",
+          "required": [
+            "action_ref",
+            "work_order_lifecycle_owner",
+            "result_ledger_owner",
+            "target_owner_closeout_owner"
+          ],
+          "properties": {
+            "action_ref": {
+              "const": "opl agent-lab evaluation-work-order execute --work-order <work-order.json> --output <dir>"
+            },
+            "work_order_lifecycle_owner": {
+              "const": "one-person-lab/OPL Foundry Lab"
+            },
+            "result_ledger_owner": {
+              "const": "one-person-lab/OPL Foundry Lab"
+            },
+            "target_owner_closeout_owner": {
+              "const": "target-domain"
+            }
+          },
+          "additionalProperties": false
+        },
+        "authority_boundary": {
+          "$ref": "#/$defs/authorityBoundary"
+        }
+      },
+      "additionalProperties": true
     },
     "authorityBoundary": {
       "type": "object",
       "required": [
-        "can_write_target_domain_truth",
-        "can_write_target_domain_memory_body",
-        "can_mutate_target_domain_artifact_body",
-        "can_authorize_target_domain_quality_or_export",
-        "can_promote_default_agent_without_gate"
+        "oma_can_execute_agent_lab_suite",
+        "oma_can_write_agent_lab_result",
+        "oma_can_write_owner_receipt_body",
+        "oma_can_write_learning_candidate_ledger",
+        "oma_can_write_promotion_gate",
+        "oma_can_manage_work_order_lifecycle",
+        "oma_can_write_target_domain_truth",
+        "oma_can_write_target_domain_memory_body",
+        "oma_can_mutate_target_domain_artifact_body",
+        "oma_can_authorize_target_domain_quality_or_export",
+        "oma_can_promote_default_agent_without_gate"
       ],
       "properties": {
-        "can_write_target_domain_truth": {
+        "oma_can_execute_agent_lab_suite": {
           "const": false
         },
-        "can_write_target_domain_memory_body": {
+        "oma_can_write_agent_lab_result": {
           "const": false
         },
-        "can_mutate_target_domain_artifact_body": {
+        "oma_can_write_owner_receipt_body": {
           "const": false
         },
-        "can_authorize_target_domain_quality_or_export": {
+        "oma_can_write_learning_candidate_ledger": {
           "const": false
         },
-        "can_promote_default_agent_without_gate": {
+        "oma_can_write_promotion_gate": {
           "const": false
         },
-        "can_train_or_deploy_model_weights": {
+        "oma_can_manage_work_order_lifecycle": {
           "const": false
         },
-        "no_executable_work_order_issued": {
-          "type": "boolean"
-        }
-      },
-      "additionalProperties": true
-    },
-    "oplProfileConformance": {
-      "oneOf": [
-        {
-          "type": "object",
-          "required": [
-            "surface_kind",
-            "version",
-            "repo_dir",
-            "profile_id",
-            "profile_ref",
-            "status",
-            "observed",
-            "blockers",
-            "authority_boundary"
-          ],
-          "properties": {
-            "surface_kind": {
-              "const": "opl_agent_profile_conformance"
-            },
-            "version": {
-              "const": "agent-profile-conformance.v1"
-            },
-            "repo_dir": {
-              "$ref": "#/$defs/nonEmptyString"
-            },
-            "profile_id": {
-              "$ref": "#/$defs/nonEmptyString"
-            },
-            "profile_ref": {
-              "$ref": "#/$defs/nonEmptyString"
-            },
-            "status": {
-              "const": "passed"
-            },
-            "observed": {
-              "type": "object",
-              "minProperties": 1
-            },
-            "blockers": {
-              "type": "array",
-              "maxItems": 0
-            },
-            "authority_boundary": {
-              "type": "object",
-              "required": [
-                "refs_only",
-                "conformance_can_write_domain_truth",
-                "conformance_can_create_owner_receipt",
-                "conformance_can_claim_domain_ready",
-                "conformance_can_claim_production_ready"
-              ],
-              "properties": {
-                "refs_only": {
-                  "const": true
-                },
-                "conformance_can_write_domain_truth": {
-                  "const": false
-                },
-                "conformance_can_create_owner_receipt": {
-                  "const": false
-                },
-                "conformance_can_claim_domain_ready": {
-                  "const": false
-                },
-                "conformance_can_claim_production_ready": {
-                  "const": false
-                }
-              },
-              "additionalProperties": true
-            }
-          },
-          "additionalProperties": true
+        "oma_can_write_target_domain_truth": {
+          "const": false
         },
-        {
-          "type": "object",
-          "required": [
-            "surface_kind",
-            "version",
-            "repo_dir",
-            "status",
-            "reason",
-            "authority_boundary"
-          ],
-          "properties": {
-            "surface_kind": {
-              "const": "opl_agent_profile_conformance_not_applicable"
-            },
-            "version": {
-              "const": "agent-profile-conformance-not-applicable.v1"
-            },
-            "repo_dir": {
-              "$ref": "#/$defs/nonEmptyString"
-            },
-            "status": {
-              "const": "not_applicable"
-            },
-            "reason": {
-              "$ref": "#/$defs/nonEmptyString"
-            },
-            "authority_boundary": {
-              "type": "object",
-              "required": [
-                "conformance_skipped_as_success",
-                "domain_ready_claimed",
-                "production_ready_claimed"
-              ],
-              "properties": {
-                "conformance_skipped_as_success": {
-                  "const": false
-                },
-                "domain_ready_claimed": {
-                  "const": false
-                },
-                "production_ready_claimed": {
-                  "const": false
-                }
-              },
-              "additionalProperties": true
-            }
-          },
-          "additionalProperties": true
-        }
-      ]
-    },
-    "ownerReceipt": {
-      "type": "object",
-      "required": [
-        "surface_kind",
-        "receipt_id",
-        "status",
-        "target_agent",
-        "agent_lab_result_ref",
-        "authority_boundary"
-      ],
-      "properties": {
-        "surface_kind": {
-          "const": "opl_meta_agent_owner_receipt"
+        "oma_can_write_target_domain_memory_body": {
+          "const": false
         },
-        "receipt_class": {
-          "$ref": "#/$defs/nonEmptyString"
+        "oma_can_mutate_target_domain_artifact_body": {
+          "const": false
         },
-        "receipt_id": {
-          "$ref": "#/$defs/nonEmptyString"
+        "oma_can_authorize_target_domain_quality_or_export": {
+          "const": false
         },
-        "status": {
-          "$ref": "#/$defs/nonEmptyString"
-        },
-        "target_agent": {
-          "$ref": "#/$defs/targetAgentIdentity"
-        },
-        "agent_lab_result_ref": {
-          "$ref": "#/$defs/nonEmptyString"
-        },
-        "acceptance_gates": {
-          "type": "object",
-          "minProperties": 1
-        },
-        "authority_boundary": {
-          "$ref": "#/$defs/authorityBoundary"
-        }
-      },
-      "additionalProperties": true
-    },
-    "learningCandidate": {
-      "type": "object",
-      "required": [
-        "surface_kind",
-        "candidate_id",
-        "status",
-        "proposed_change_refs",
-        "promotion_gate_ref"
-      ],
-      "properties": {
-        "surface_kind": {
-          "const": "opl_meta_agent_online_learning_candidate"
-        },
-        "candidate_id": {
-          "$ref": "#/$defs/nonEmptyString"
-        },
-        "status": {
-          "const": "candidate_recorded_requires_explicit_gate"
-        },
-        "proposed_change_refs": {
-          "$ref": "#/$defs/nonEmptyStringArray"
-        },
-        "promotion_gate_ref": {
-          "$ref": "#/$defs/nonEmptyString"
-        }
-      },
-      "additionalProperties": true
-    },
-    "mechanismPatchProposal": {
-      "type": "object",
-      "required": [
-        "surface_kind",
-        "proposal_id",
-        "status",
-        "mechanism_ref",
-        "authority_boundary"
-      ],
-      "properties": {
-        "surface_kind": {
-          "const": "opl_meta_agent_mechanism_patch_proposal"
-        },
-        "proposal_id": {
-          "$ref": "#/$defs/nonEmptyString"
-        },
-        "status": {
-          "type": "string",
-          "enum": [
-            "proposal_recorded_requires_explicit_gate",
-            "proposal_recorded_requires_target_owner_gate"
-          ]
-        },
-        "mechanism_ref": {
-          "$ref": "#/$defs/nonEmptyString"
-        },
-        "promotion_gate_ref": {
-          "$ref": "#/$defs/nonEmptyString"
-        },
-        "authority_boundary": {
-          "$ref": "#/$defs/authorityBoundary"
-        }
-      },
-      "additionalProperties": true
-    },
-    "newAgentDeliveryGate": {
-      "type": "object",
-      "required": [
-        "surface_kind",
-        "gate_status",
-        "required_evidence",
-        "authority_boundary"
-      ],
-      "properties": {
-        "surface_kind": {
-          "const": "opl_meta_agent_new_agent_delivery_gate"
-        },
-        "policy_id": {
-          "const": "opl-meta-agent.new-agent-delivery-gate.v1"
-        },
-        "gate_status": {
-          "const": "passed"
-        },
-        "required_evidence": {
-          "type": "object",
-          "required": [
-            "target_owner_receipt_or_typed_blocker_or_human_gate_ref",
-            "closeout_outcome"
-          ],
-          "properties": {
-            "target_owner_receipt_or_typed_blocker_or_human_gate_ref": {
-              "$ref": "#/$defs/nonEmptyString"
-            },
-            "no_forbidden_write_proof_ref": {
-              "$ref": "#/$defs/nonEmptyString"
-            },
-            "owner_route_ref": {
-              "$ref": "#/$defs/nonEmptyString"
-            },
-            "closeout_outcome": {
-              "$ref": "#/$defs/nonEmptyString"
-            }
-          },
-          "additionalProperties": true
-        },
-        "authority_boundary": {
-          "type": "object",
-          "required": [
-            "delegates_work_order_execution_to_opl",
-            "oma_can_write_target_domain_truth",
-            "oma_can_write_target_owner_receipt_body"
-          ],
-          "properties": {
-            "delegates_work_order_execution_to_opl": {
-              "const": true
-            },
-            "oma_can_write_target_domain_truth": {
-              "const": false
-            },
-            "oma_can_write_target_owner_receipt_body": {
-              "const": false
-            },
-            "oma_can_promote_default_agent_without_gate": {
-              "const": false
-            }
-          },
-          "additionalProperties": true
+        "oma_can_promote_default_agent_without_gate": {
+          "const": false
         }
       },
       "additionalProperties": true

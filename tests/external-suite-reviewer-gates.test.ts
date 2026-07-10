@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { parseImproveFromAgentLabSuiteArgs } from '../scripts/improve-from-agent-lab-suite.ts';
-import { writeJsonFile as writeJson } from './support/contracts.ts';
+import { readJsonFile as readJson, writeJsonFile as writeJson } from './support/contracts.ts';
 import {
   buildExternalSuite,
   runImproveFromSuite,
@@ -12,10 +12,17 @@ import {
   writeTargetDescriptor,
 } from './support/external-suite-fixtures.ts';
 
-function writeMedicalSuite(suitePath: string): void {
+function writeMedicalSuite(
+  suitePath: string,
+  targetAgentDir: string,
+  domainId = 'med-autoscience',
+  targetDescriptorRef?: string,
+): void {
   writeJson(suitePath, buildExternalSuite({
     suiteId: 'mas-suite:high-quality-medical-manuscript',
-    domainId: 'med-autoscience',
+    domainId,
+    targetAgentDir,
+    ...(targetDescriptorRef ? { targetDescriptorRef } : {}),
     taskFamily: 'high_quality_medical_manuscript_self_evolution',
     evidenceRefs: ['rubric-gap:mas/002/medical_journal_prose_quality'],
     feedbackRefs: ['feedback-ref:mas/002/manuscript-review'],
@@ -26,10 +33,17 @@ test('external suite improvement fails closed when AI reviewer evaluation is mis
   withOutputRoot('oma-missing-reviewer-', (outputRoot) => {
     const targetAgentDir = path.join(outputRoot, 'med-autoscience');
     const suitePath = path.join(outputRoot, 'suite.json');
+    const suiteResultPath = path.join(outputRoot, 'suite-result.json');
     writeTargetDescriptor(targetAgentDir);
-    writeMedicalSuite(suitePath);
+    writeMedicalSuite(suitePath, targetAgentDir);
+    writeJson(suiteResultPath, {
+      result_id: 'foundry-suite-result:missing-reviewer',
+      status: 'blocked',
+      foundry_lab_execution_receipt_ref: 'foundry-lab-execution-receipt:missing-reviewer',
+    });
     assert.throws(() => parseImproveFromAgentLabSuiteArgs([
       '--suite', suitePath,
+      '--suite-result', suiteResultPath,
       '--target-agent-dir', targetAgentDir,
     ]), /ai reviewer evaluation/i);
   });
@@ -53,7 +67,7 @@ for (const testCase of reviewerFailureCases) {
         writeJson(path.join(targetAgentDir, 'contracts/domain_descriptor.json'), { domain_label: 'MedAutoScience' });
       }
       if (testCase.descriptor === 'missing') fs.mkdirSync(targetAgentDir, { recursive: true });
-      writeMedicalSuite(suitePath);
+      writeMedicalSuite(suitePath, targetAgentDir);
       writeAiReviewerEvaluation(reviewerEvaluationPath, testCase.reviewer);
 
       assert.throws(
@@ -83,11 +97,16 @@ test('external suite improvement accepts capability pack target descriptor', () 
         forbidden_surfaces: ['target owner receipt body'],
       }],
     });
-    writeMedicalSuite(suitePath);
+    writeMedicalSuite(
+      suitePath,
+      targetAgentDir,
+      'mas-scholar-skills',
+      path.join(targetAgentDir, 'contracts/capability_pack_descriptor.json'),
+    );
     writeAiReviewerEvaluation(reviewerEvaluationPath);
 
     const payload = runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
-    const workOrder = payload.learning_loop.developer_patch_work_order;
+    const workOrder = payload.agent_building_judgment.developer_patch_work_order;
     assert.equal(workOrder.target_agent.domain_id, 'mas-scholar-skills');
     assert.deepEqual(workOrder.proposed_change_refs, ['professional_skill_medical_manuscript_writing']);
     assert.deepEqual(workOrder.target_repo_file_hints, ['skills/medical-manuscript-writing/SKILL.md']);
@@ -119,11 +138,11 @@ test('external suite improvement uses capability map as patch-target source when
         forbidden_surfaces: ['target owner receipt body'],
       }],
     });
-    writeMedicalSuite(suitePath);
+    writeMedicalSuite(suitePath, targetAgentDir);
     writeAiReviewerEvaluation(reviewerEvaluationPath);
 
     const payload = runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
-    const candidate = payload.learning_loop.target_capability_improvement_candidate;
+    const candidate = payload.agent_building_judgment.target_capability_improvement_candidate;
     assert.deepEqual(candidate.proposed_change_refs, ['professional_skill_medical_journal_prose_quality']);
     assert.deepEqual(candidate.patch_traceability_matrix[0].target_repo_file_hints, [
       'skills/medical-journal-prose-quality/SKILL.md',
@@ -133,23 +152,23 @@ test('external suite improvement uses capability map as patch-target source when
   });
 });
 
-test('external blocked suite writes typed blocker when target-owned improvement policy is missing', () => {
+test('external blocked suite emits a blocker ref when target-owned improvement policy is missing', () => {
   withOutputRoot('oma-missing-target-policy-', (outputRoot) => {
     const targetAgentDir = path.join(outputRoot, 'med-autoscience');
     const suitePath = path.join(outputRoot, 'suite.json');
     const reviewerEvaluationPath = path.join(outputRoot, 'reviewer.json');
     writeTargetDescriptor(targetAgentDir);
-    writeMedicalSuite(suitePath);
+    writeMedicalSuite(suitePath, targetAgentDir);
     writeAiReviewerEvaluation(reviewerEvaluationPath);
 
     const payload = runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
-    const candidate = payload.learning_loop.target_capability_improvement_candidate;
-    const blocker = payload.learning_loop.typed_blocker;
-    assert.equal(payload.status, 'blocked_target_improvement_policy_missing');
+    const candidate = readJson(payload.artifacts.target_capability_improvement_candidate_path);
+    assert.equal(payload.status, 'candidate_blocked_missing_declarative_work_order_inputs');
     assert.equal(fs.existsSync(path.join(outputRoot, 'developer-patch-work-order.json')), false);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'typed-blocker.json')), false);
     assert.deepEqual(candidate.proposed_change_refs, []);
     assert.equal(candidate.traceability_status, 'target_owned_patch_refs_missing');
-    assert.equal(blocker.blocked_reason, 'target_owned_change_refs_required');
-    assert.equal(blocker.authority_boundary.no_executable_work_order_issued, true);
+    assert.match(candidate.expected_typed_blocker_ref, /^expected-typed-blocker-ref:/);
+    assert.equal(payload.authority_boundary.executable_work_order_materialized, false);
   });
 });
