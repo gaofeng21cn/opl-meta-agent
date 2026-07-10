@@ -20,6 +20,13 @@ function scriptRef(...parts: string[]): string {
   return ['scripts', ...parts].join('/');
 }
 
+test('false-flag assertions fail closed when a predicate selects no keys', () => {
+  assert.throws(
+    () => assertEveryFlagFalse({ allowed: true }, 'filtered boundary', () => false),
+    /filtered boundary should include at least one false flag/,
+  );
+});
+
 test('runtime source shape keeps generated and generic wrappers out of the repo', () => {
   const packageJson = readJson('package.json');
   const authorityFunctions = readJson('runtime/authority_functions/meta-agent-authority-functions.json');

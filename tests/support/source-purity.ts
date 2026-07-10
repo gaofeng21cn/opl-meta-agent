@@ -176,7 +176,9 @@ export function assertEveryFlagFalse(
   label: string,
   predicate: (flag: string) => boolean = () => true,
 ): void {
-  assertFalseFlags(record, Object.keys(record).filter(predicate), label);
+  const flags = Object.keys(record).filter(predicate);
+  assert.ok(flags.length > 0, `${label} should include at least one false flag`);
+  assertFalseFlags(record, flags, label);
 }
 
 export function assertIncludesAll(actual: string[], expected: string[], label: string): void {

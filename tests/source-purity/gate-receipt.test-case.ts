@@ -9,12 +9,26 @@ import {
   type JsonObject,
 } from '../support/contracts.ts';
 import {
+  assertExactFalseFlags,
   assertEveryFlagFalse,
   assertIncludesAll,
   assertPolicyObject,
   asBooleanRecord,
   valuesAtDottedPath,
 } from '../support/source-purity.ts';
+
+const CLEANUP_READBACK_FALSE_AUTHORITY_KEYS = [
+  'guard_can_authorize_physical_delete',
+  'guard_can_sign_owner_receipt',
+  'guard_can_create_typed_blocker',
+  'guard_can_claim_opl_primitive_parity',
+  'guard_can_claim_target_agent_ready',
+  'guard_can_claim_domain_ready',
+  'guard_can_claim_production_ready',
+  'guard_can_claim_app_or_registry_readiness',
+  'guard_can_claim_generated_hosted_readiness',
+  'guard_can_claim_default_promotion_or_cutover',
+];
 
 test('script-to-pack receipt projects the canonical morphology gate without owning it', () => {
   const gateReceipt = readJson('contracts/script_to_pack_gate_receipt.json');
@@ -67,6 +81,18 @@ test('script-to-pack receipt projects the canonical morphology gate without owni
   assert.equal(readbackGuard.executable_readback_command_ref, 'npm run script-to-pack:readback');
   assert.equal(readbackGuard.full_readback_command_ref, 'npm run script-to-pack:readback:full');
   assertEveryFlagFalse(asBooleanRecord(readbackGuard.claims), 'cleanup readback claims');
+  const {
+    guard_can_identify_cleanup_candidates: canIdentifyCleanupCandidates,
+    guard_can_route_owner_delta: canRouteOwnerDelta,
+    ...cleanupReadbackDeniedAuthority
+  } = asBooleanRecord(readbackGuard.authority_boundary);
+  assert.equal(canIdentifyCleanupCandidates, true);
+  assert.equal(canRouteOwnerDelta, true);
+  assertExactFalseFlags(
+    cleanupReadbackDeniedAuthority,
+    CLEANUP_READBACK_FALSE_AUTHORITY_KEYS,
+    'cleanup readback authority boundary',
+  );
 
   assertIncludesAll(asStrings(gateReceipt.not_claimed_by_this_receipt), [
     'physical script retirement',
