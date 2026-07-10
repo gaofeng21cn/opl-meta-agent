@@ -97,3 +97,27 @@ test('OMA rejects OPL semantic JSON pointers outside the packet directory', () =
     fs.rmSync(tempDir, { recursive: true, force: true });
   }
 });
+
+test('OMA delegates the OPL handoff envelope ABI to the canonical validator', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-reference-design-schema-'));
+  try {
+    const packet = JSON.parse(fs.readFileSync(
+      path.join(repoRoot, 'tests/fixtures/opl-reference-design-pattern-packet.json'),
+      'utf8',
+    ));
+    packet.authority_boundary.opl_can_claim_target_ready = true;
+    const packetPath = path.join(tempDir, 'packet.json');
+    fs.writeFileSync(packetPath, `${JSON.stringify(packet, null, 2)}\n`);
+
+    assert.throws(
+      () => buildReferenceDesignPacket({
+        domain_id: 'authority-overclaiming-reference-packet',
+        reference_design_source_refs: ['source-material:sha256:surgical-risk-fixture'],
+        reference_design_pattern_packet_refs: [packetPath],
+      }),
+      /opl_pattern_packet_schema_invalid:.*can_claim_target_ready.*:const/,
+    );
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+});

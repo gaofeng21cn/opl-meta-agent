@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { validateReferenceDesignPatternPacket } from 'opl-framework-shared/reference-design-pattern-packet';
 
 type JsonObject = Record<string, any>;
 
@@ -203,134 +204,14 @@ function resolveSeedPattern(packetRef: string): JsonObject {
   });
 }
 
-function assertExactKeys(value: JsonObject, expected: string[], field: string): void {
-  if (JSON.stringify(Object.keys(value).sort()) !== JSON.stringify([...expected].sort())) {
-    throw new Error(`reference_design_resolution_failed:${field}_shape_invalid`);
-  }
-}
-
-function assertFalseFields(value: JsonObject, fields: string[], field: string): void {
-  fields.forEach((key) => {
-    if (value[key] !== false) {
-      throw new Error(`reference_design_resolution_failed:${field}.${key}_must_be_false`);
-    }
-  });
-}
-
 function validateOplPatternPacket(packet: JsonObject): void {
-  assertExactKeys(packet, [
-    'surface_kind',
-    'schema_version',
-    'packet_id',
-    'packet_ref',
-    'source_material_ref',
-    'source_material_receipt_ref',
-    'source_fingerprint_ref',
-    'extraction_attempt_refs',
-    'extraction_receipt_refs',
-    'source_anchor_refs',
-    'pattern_summary_ref',
-    'transferable_pattern_refs',
-    'non_transferable_constraint_refs',
-    'authority_boundary_notes_ref',
-    'consumer_route',
-    'authority_boundary',
-    'non_claims',
-  ], 'opl_reference_design_pattern_packet');
-  if (
-    packet.surface_kind !== 'opl_reference_design_pattern_packet'
-    || packet.schema_version !== 'reference-design-pattern-packet.v1'
-  ) {
-    throw new Error('reference_design_resolution_failed:opl_reference_design_pattern_packet_identity_invalid');
+  const validation = validateReferenceDesignPatternPacket(packet);
+  if (!validation.ok) {
+    const issue = validation.errors[0];
+    throw new Error(
+      `reference_design_resolution_failed:opl_pattern_packet_schema_invalid:${issue.instance_path || '/'}:${issue.keyword}`,
+    );
   }
-  [
-    'packet_id',
-    'packet_ref',
-    'source_material_ref',
-    'source_material_receipt_ref',
-    'source_fingerprint_ref',
-    'pattern_summary_ref',
-    'authority_boundary_notes_ref',
-  ].forEach((field) => requiredString(packet[field], `opl_packet.${field}`));
-  [
-    'extraction_attempt_refs',
-    'extraction_receipt_refs',
-    'source_anchor_refs',
-    'transferable_pattern_refs',
-    'non_transferable_constraint_refs',
-  ].forEach((field) => {
-    const refs = requiredStringArray(packet[field], `opl_packet.${field}`);
-    if (new Set(refs).size !== refs.length) {
-      throw new Error(`reference_design_resolution_failed:opl_packet.${field}_must_be_unique`);
-    }
-  });
-  const consumerRoute = packet.consumer_route;
-  if (typeof consumerRoute !== 'object' || consumerRoute === null || Array.isArray(consumerRoute)) {
-    throw new Error('reference_design_resolution_failed:opl_packet.consumer_route_invalid');
-  }
-  assertExactKeys(consumerRoute, [
-    'consumer',
-    'next_owner',
-    'next_owner_action',
-    'required_return_shape',
-    'required_return_contract_ref',
-    'required_return_fields_ref',
-  ], 'opl_packet.consumer_route');
-  if (
-    consumerRoute.consumer !== 'oma'
-    || consumerRoute.required_return_shape !== 'ReferenceDesignPacket'
-    || consumerRoute.required_return_contract_ref !== 'oma-contract:reference-design-packet.v1'
-    || consumerRoute.required_return_fields_ref !== 'oma-contract:reference-design-packet.v1#/required_fields'
-  ) {
-    throw new Error('reference_design_resolution_failed:opl_packet.consumer_route_invalid');
-  }
-  requiredString(consumerRoute.next_owner, 'opl_packet.consumer_route.next_owner');
-  requiredString(consumerRoute.next_owner_action, 'opl_packet.consumer_route.next_owner_action');
-  const authorityBoundary = packet.authority_boundary;
-  if (typeof authorityBoundary !== 'object' || authorityBoundary === null || Array.isArray(authorityBoundary)) {
-    throw new Error('reference_design_resolution_failed:opl_packet.authority_boundary_invalid');
-  }
-  assertExactKeys(authorityBoundary, [
-    'refs_only',
-    'body_free',
-    'opl_can_write_domain_truth',
-    'opl_can_copy_source_body_into_contract',
-    'opl_can_sign_owner_receipt',
-    'opl_can_create_typed_blocker',
-    'opl_can_claim_pattern_quality_ready',
-    'opl_can_claim_target_ready',
-    'opl_can_claim_domain_ready',
-    'opl_can_claim_production_ready',
-  ], 'opl_packet.authority_boundary');
-  if (authorityBoundary.refs_only !== true || authorityBoundary.body_free !== true) {
-    throw new Error('reference_design_resolution_failed:opl_packet.authority_boundary_refs_only_invalid');
-  }
-  assertFalseFields(authorityBoundary, [
-    'opl_can_write_domain_truth',
-    'opl_can_copy_source_body_into_contract',
-    'opl_can_sign_owner_receipt',
-    'opl_can_create_typed_blocker',
-    'opl_can_claim_pattern_quality_ready',
-    'opl_can_claim_target_ready',
-    'opl_can_claim_domain_ready',
-    'opl_can_claim_production_ready',
-  ], 'opl_packet.authority_boundary');
-  const nonClaims = packet.non_claims;
-  if (typeof nonClaims !== 'object' || nonClaims === null || Array.isArray(nonClaims)) {
-    throw new Error('reference_design_resolution_failed:opl_packet.non_claims_invalid');
-  }
-  assertExactKeys(nonClaims, [
-    'pattern_quality_ready',
-    'target_ready',
-    'domain_ready',
-    'production_ready',
-  ], 'opl_packet.non_claims');
-  assertFalseFields(nonClaims, [
-    'pattern_quality_ready',
-    'target_ready',
-    'domain_ready',
-    'production_ready',
-  ], 'opl_packet.non_claims');
 }
 
 function localJsonPointerValue(packetPath: string, ref: string, field: string): unknown {
