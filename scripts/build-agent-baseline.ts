@@ -20,7 +20,6 @@ import {
   materializeAgentBuildReceipt,
   materializeStageDecompositionPackDraft,
   repairStageDecompositionCloseoutPacket,
-  writeAgentBuildReceiptExpectation,
 } from './lib/stage-decomposition-pack-draft/materializer.ts';
 import type {
   StageDecompositionPackDraft,
@@ -669,13 +668,57 @@ function stringArray(value: unknown): string[] {
     : [];
 }
 
+function jsonObject(value: unknown, field: string): JsonObject {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    throw new Error(`${field} must be a JSON object.`);
+  }
+  return value as JsonObject;
+}
+
+function canonicalBuiltinProfileRef(value: string): string {
+  if (value.startsWith('opl-profile-route:')) {
+    throw new Error(`Selected OPL profile must be a builtin profile, not a route ref: ${value}`);
+  }
+  const profileId = value.startsWith('opl-profile:')
+    ? value.slice('opl-profile:'.length)
+    : value;
+  if (!/^[A-Za-z0-9._-]+$/.test(profileId)) {
+    throw new Error(`Selected OPL profile ref is invalid: ${value}`);
+  }
+  return `opl-profile:${profileId}`;
+}
+
+function validatedExplicitProfileRefs(targetAgent: TargetAgent, oplBin: string): string[] {
+  const profileRefs = [...new Set(
+    stringArray(targetAgent.selected_opl_profile_refs).map(canonicalBuiltinProfileRef),
+  )];
+  for (const profileRef of profileRefs) {
+    const profileId = profileRef.slice('opl-profile:'.length);
+    const readback = runOpl(oplBin, ['profiles', 'inspect', profileId, '--json']);
+    const inspect = jsonObject(readback.agent_profile_inspect, 'OPL profile inspect readback');
+    const profile = inspect.status === 'found'
+      ? jsonObject(inspect.profile, 'OPL profile inspect profile')
+      : null;
+    if (!profile || profile.profile_ref !== profileRef) {
+      throw new Error(`Selected OPL profile is unknown or unavailable: ${profileRef}`);
+    }
+  }
+  return profileRefs;
+}
+
 export function resolveTargetAgentProfileSelection(
   targetAgent: TargetAgent,
   oplBin: string,
 ): TargetAgent {
+  const explicitProfileRefs = validatedExplicitProfileRefs(targetAgent, oplBin);
+  if (explicitProfileRefs.length > 1) {
+    throw new Error(`Multiple builtin OPL profiles are not supported for one target agent: ${explicitProfileRefs.join(', ')}`);
+  }
   const intent = targetAgent.target_brief?.trim();
   if (!intent) {
-    return targetAgent;
+    return explicitProfileRefs.length > 0
+      ? { ...targetAgent, selected_opl_profile_refs: explicitProfileRefs }
+      : targetAgent;
   }
   const selectorArgs = ['profiles', 'select', '--intent', intent];
   stringArray(targetAgent.intent_signals).forEach((signal) => {
@@ -693,12 +736,15 @@ export function resolveTargetAgentProfileSelection(
     throw new Error('OPL profile selector readback is missing profile_selection_receipt.');
   }
   const selectorProfileRefs = stringArray((receipt as JsonObject).selected_profile_refs)
-    .filter((profileRef) => profileRef.startsWith('opl-profile:') && !profileRef.startsWith('opl-profile-route:'));
+    .filter((profileRef) => profileRef.startsWith('opl-profile:') && !profileRef.startsWith('opl-profile-route:'))
+    .map(canonicalBuiltinProfileRef);
   const selectedProfileRefs = [...new Set([
-    ...stringArray(targetAgent.selected_opl_profile_refs)
-      .filter((profileRef) => !profileRef.startsWith('opl-profile-route:')),
+    ...explicitProfileRefs,
     ...selectorProfileRefs,
   ])];
+  if (selectedProfileRefs.length > 1) {
+    throw new Error(`Multiple builtin OPL profiles are not supported for one target agent: ${selectedProfileRefs.join(', ')}`);
+  }
   const matchedSignals = stringArray((receipt as JsonObject).matched_trigger_signals);
   return {
     ...targetAgent,
@@ -1023,16 +1069,12 @@ export function runBuildAgentBaseline({
       `Stage decomposition failed closed; typed blocker written to ${blockerPath}: ${blocker.blocker_message}`,
     );
   }
-  writeAgentBuildReceiptExpectation(targetAgentDir, targetAgent);
-  writeTargetAgentCapabilityMap(targetAgentDir, targetAgent);
-  materializeAgentBuildReceipt(targetAgentDir, targetAgent);
+  writeTargetAgentCapabilityMap(targetAgentDir, targetAgent, null);
+  const agentBuildReceipt = materializeAgentBuildReceipt(targetAgentDir, targetAgent);
   const descriptorPath = path.join(targetAgentDir, 'contracts', 'domain_descriptor.json');
   const descriptor = JSON.parse(fs.readFileSync(descriptorPath, 'utf8'));
   const profileSelectionReceipt = buildProfileSelectionReceipt(targetAgent);
   const agentBuildReceiptPath = path.join(targetAgentDir, 'contracts', 'agent_build_receipt.json');
-  const agentBuildReceipt = fs.existsSync(agentBuildReceiptPath)
-    ? JSON.parse(fs.readFileSync(agentBuildReceiptPath, 'utf8')) as JsonObject
-    : null;
   const agentBuildReceiptRef = agentBuildReceipt?.receipt_ref ?? null;
   if (
     profileSelectionReceipt.expected_build_receipt_ref
@@ -1102,7 +1144,11 @@ export function runBuildAgentBaseline({
     transferable_pattern_requirements: profileSelectionReceipt.transferable_pattern_requirements,
     capability_plan_requirements: profileSelectionReceipt.capability_plan_requirements,
   });
-  const targetAgentCapabilityMapPath = writeTargetAgentCapabilityMap(targetAgentDir, targetAgent);
+  const targetAgentCapabilityMapPath = writeTargetAgentCapabilityMap(
+    targetAgentDir,
+    targetAgent,
+    agentBuildReceipt,
+  );
   const targetDomainPackSummary = readDomainPackSummary(targetAgentDir, {
     domainId: targetAgent.domain_id,
   });
@@ -1271,6 +1317,10 @@ export function runBuildAgentBaseline({
       opl_agent_package_manifest_path: targetAgentPackageManifestPath,
       target_agent_capability_map_path: targetAgentCapabilityMapPath,
       target_agent_primary_skill_path: targetPrimarySkillPath,
+      ...(agentBuildReceipt ? {
+        agent_build_receipt_path: agentBuildReceiptPath,
+        agent_build_receipt_ref: String(agentBuildReceiptRef),
+      } : {}),
     },
     opl_agent_package_manifest_validation:
       targetAgentPackageManifestValidation.opl_agent_package_manifest,

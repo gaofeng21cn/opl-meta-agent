@@ -296,13 +296,6 @@ function designObjectRefs(targetAgent: MinimalTargetAgent): JsonObject | null {
     : null;
 }
 
-function primarySourcePatternRef(targetAgent: MinimalTargetAgent): string {
-  return activeDesignPatternInputs(targetAgent)[0]?.source_pattern_ref
-    ?? stringList(targetAgent.reference_design_source_refs)[0]
-    ?? stringList(targetAgent.research_source_refs)[0]
-    ?? `target-only-requirement:${targetAgent.domain_id}`;
-}
-
 function expertPracticeNoteRef(targetAgent: MinimalTargetAgent, index: number): string {
   return `expert-practice-note:${targetAgent.domain_id}/${index + 1}`;
 }
@@ -807,13 +800,6 @@ function buildReferenceDesignBoundary(targetAgent: MinimalTargetAgent): JsonObje
     can_write_target_domain_truth: false,
     can_replace_target_owner_judgment: false,
   };
-}
-
-function sourceDerivedDesignRefs(targetAgent: MinimalTargetAgent): string[] {
-  return [
-    ...stringList(targetAgent.reference_design_source_refs),
-    ...stringList(targetAgent.reference_design_pattern_packet_refs),
-  ];
 }
 
 function hasSourceDerivedDesign(targetAgent: MinimalTargetAgent): boolean {
@@ -1529,16 +1515,18 @@ function buildTargetAgentPrimarySkillCapability(targetAgent: MinimalTargetAgent)
   };
 }
 
-export function writeTargetAgentCapabilityMap(targetAgentDir: string, targetAgent: MinimalTargetAgent): string {
+export function writeTargetAgentCapabilityMap(
+  targetAgentDir: string,
+  targetAgent: MinimalTargetAgent,
+  buildReceipt: JsonObject | null,
+): string {
   const capabilityMapPath = path.join(targetAgentDir, 'contracts', 'capability_map.json');
   const capabilityMap = JSON.parse(fs.readFileSync(capabilityMapPath, 'utf8')) as JsonObject;
   const profileSelectionReceipt = buildProfileSelectionReceipt(targetAgent);
-  const buildReceiptPath = path.join(targetAgentDir, 'contracts', 'agent_build_receipt.json');
-  const buildReceipt = fs.existsSync(buildReceiptPath)
-    ? JSON.parse(fs.readFileSync(buildReceiptPath, 'utf8')) as JsonObject
-    : null;
   const buildReceiptRef = buildReceipt?.receipt_ref ?? null;
   if (
+    buildReceipt
+    &&
     profileSelectionReceipt.expected_build_receipt_ref
     && buildReceiptRef !== profileSelectionReceipt.expected_build_receipt_ref
   ) {

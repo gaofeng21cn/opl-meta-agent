@@ -60,7 +60,6 @@ export function validateReferenceDesignPacketObject(
   targetAgent: TargetAgent,
   packetRef: string,
   transferMapRef: string,
-  agentPackPlanRef: string,
   field: string,
 ): void {
   if (actualPacket.surface_kind !== 'opl_meta_agent_reference_design_packet' || actualPacket.packet_ref !== packetRef) {
@@ -150,8 +149,6 @@ export function validateResearchSynthesisPacketObject(
   actualPacket: JsonObject,
   targetAgent: TargetAgent,
   packetRef: string,
-  transferMapRef: string,
-  agentPackPlanRef: string,
   field: string,
 ): void {
   if (actualPacket.surface_kind !== 'opl_meta_agent_research_synthesis_packet' || actualPacket.packet_ref !== packetRef) {
@@ -458,102 +455,6 @@ export function validateDesignAdmissionReceiptObject(
     'can_create_target_owner_receipt',
     'can_promote_live_or_default_agent',
   ].forEach((fieldName) => assertBooleanFalse(boundary, fieldName, `${field}.design_admission_receipt.authority_boundary.${fieldName}`));
-}
-
-export function validateBuildReceiptObject(
-  actualBuildReceipt: JsonObject,
-  targetAgent: TargetAgent,
-  packetRef: string,
-  transferMapRef: string,
-  agentPackPlanRef: string,
-  designAdmissionReceiptRef: string,
-  buildReceiptRef: string,
-  field: string,
-): void {
-  if (
-    actualBuildReceipt.surface_kind !== 'opl_meta_agent_build_receipt'
-    || actualBuildReceipt.receipt_ref !== buildReceiptRef
-    || actualBuildReceipt.receipt_kind !== 'AgentBuildReceipt'
-  ) {
-    throw new Error(`stage-decomposition pack draft ${field}.build_receipt identity is invalid.`);
-  }
-  if (
-    (
-      actualBuildReceipt.reference_design_packet_ref !== packetRef
-      && actualBuildReceipt.research_synthesis_packet_ref !== packetRef
-      && actualBuildReceipt.design_basis_ref !== packetRef
-    )
-    || actualBuildReceipt.transfer_map_ref !== transferMapRef
-    || actualBuildReceipt.agent_pack_plan_ref !== agentPackPlanRef
-    || actualBuildReceipt.design_admission_receipt_ref !== designAdmissionReceiptRef
-  ) {
-    throw new Error(`stage-decomposition pack draft ${field}.build_receipt source object refs are invalid.`);
-  }
-  [
-    buildReferenceDesignPacket(targetAgent) ? 'ReferenceDesignPacket' : 'ResearchSynthesisPacket',
-    'TransferMap',
-    'AgentPackPlan',
-  ].forEach((objectName) => assertHasStringRef(
-    actualBuildReceipt.required_design_objects,
-    objectName,
-    `${field}.build_receipt.required_design_objects`,
-  ));
-  if (optionalStringArray(
-    actualBuildReceipt.required_machine_objects,
-    `${field}.build_receipt.required_machine_objects`,
-  ).includes('BuildReceipt')) {
-    throw new Error(`stage-decomposition pack draft ${field}.build_receipt must not list BuildReceipt as a design object.`);
-  }
-  assertHasStringRef(
-    actualBuildReceipt.required_admission_receipts,
-    'DesignAdmissionReceipt',
-    `${field}.build_receipt.required_admission_receipts`,
-  );
-  const sourceStageRefs = asRecordArray(
-    actualBuildReceipt.design_derived_stage_refs ?? actualBuildReceipt.source_derived_stage_refs,
-    `${field}.build_receipt.design_derived_stage_refs`,
-  );
-  expectedSourcePatternRefs(targetAgent).forEach((expectedRef) => {
-    if (!sourceStageRefs.some((stageRef) => stageRef.source_pattern_ref === expectedRef)) {
-      throw new Error(`stage-decomposition pack draft ${field}.build_receipt missing source-derived stage ${expectedRef}.`);
-    }
-  });
-  if (asStringArray(
-    actualBuildReceipt.target_only_requirement_refs,
-    `${field}.build_receipt.target_only_requirement_refs`,
-  ).length === 0) {
-    throw new Error(`stage-decomposition pack draft ${field}.build_receipt target-only requirements must not be empty.`);
-  }
-  if (!asStringArray(
-    actualBuildReceipt.rejected_source_pattern_refs,
-    `${field}.build_receipt.rejected_source_pattern_refs`,
-  ).some((entry) => entry.startsWith(`non-transferable:${targetAgent.domain_id}/`))) {
-    throw new Error(`stage-decomposition pack draft ${field}.build_receipt missing rejected source pattern refs.`);
-  }
-  [
-    'target_domain_ready',
-    'production_ready',
-    'owner_accepted',
-    'quality_or_export_approved',
-    'runtime_live_promoted',
-  ].forEach((claim) => assertHasStringRef(
-    actualBuildReceipt.forbidden_claims,
-    claim,
-    `${field}.build_receipt.forbidden_claims`,
-  ));
-  const boundary = asRecord(actualBuildReceipt.authority_boundary, `${field}.build_receipt.authority_boundary`);
-  if (boundary.refs_only !== true) {
-    throw new Error(`stage-decomposition pack draft ${field}.build_receipt.authority_boundary.refs_only must be true.`);
-  }
-  [
-    'can_copy_external_runtime',
-    'can_write_target_domain_truth',
-    'can_write_target_domain_memory_body',
-    'can_mutate_target_domain_artifact_body',
-    'can_authorize_target_domain_quality_or_export',
-    'can_create_target_owner_receipt',
-    'can_promote_live_or_default_agent',
-  ].forEach((fieldName) => assertBooleanFalse(boundary, fieldName, `${field}.build_receipt.authority_boundary.${fieldName}`));
 }
 
 export function validateStageDecompositionSubpacketSetObject(

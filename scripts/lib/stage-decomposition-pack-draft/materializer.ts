@@ -1,6 +1,9 @@
-import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import {
+  buildReferenceBuildDigestTargets,
+  materializeReferenceBuildFileDigest,
+} from 'opl-framework-shared/reference-build-proof';
 import {
   buildAgentBuildReceipt,
   buildAgentBuildReceiptRef,
@@ -31,201 +34,10 @@ function cloneJson<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
-type DigestTarget = {
-  ref: string;
-  local_file_ref: string;
-  json_pointer?: string;
-  source_kinds: string[];
-};
-
-const receiptProjectionFields = new Set([
-  'build_receipt',
-  'build_receipt_ref',
-  'build_receipt_refs',
-]);
-
 function uniqueStrings(values: unknown[]): string[] {
   return [...new Set(values.filter((value): value is string =>
     typeof value === 'string' && value.trim().length > 0
   ).map((value) => value.trim()))];
-}
-
-function targetPath(targetAgentDir: string, fileRef: string): string {
-  const root = path.resolve(targetAgentDir);
-  const resolved = path.resolve(root, fileRef);
-  if (resolved !== root && !resolved.startsWith(`${root}${path.sep}`)) {
-    throw new Error(`AgentBuildReceipt local ref escapes target agent root: ${fileRef}`);
-  }
-  return resolved;
-}
-
-function parseDirectLocalRef(ref: string): { fileRef: string; jsonPointer?: string } | null {
-  const hashIndex = ref.indexOf('#');
-  const fileRef = hashIndex >= 0 ? ref.slice(0, hashIndex) : ref;
-  const jsonPointer = hashIndex >= 0 ? ref.slice(hashIndex + 1) : undefined;
-  if (
-    !fileRef
-    || path.isAbsolute(fileRef)
-    || fileRef.includes(':')
-    || (!fileRef.startsWith('agent/') && !fileRef.startsWith('contracts/'))
-  ) {
-    return null;
-  }
-  return { fileRef, ...(jsonPointer ? { jsonPointer } : {}) };
-}
-
-function actionDigestTarget(targetAgentDir: string, ref: string): Omit<DigestTarget, 'source_kinds'> {
-  const actionId = ref.slice('action-ref:'.length);
-  const actionCatalogRef = 'contracts/action_catalog.json';
-  const actionCatalog = JSON.parse(fs.readFileSync(targetPath(targetAgentDir, actionCatalogRef), 'utf8')) as JsonObject;
-  const actions = asRecordArray(actionCatalog.actions, 'action_catalog.actions');
-  const actionIndex = actions.findIndex((action) => action.action_id === actionId);
-  if (actionIndex < 0) {
-    throw new Error(`AgentBuildReceipt cannot resolve planned action capability ref: ${ref}`);
-  }
-  return {
-    ref,
-    local_file_ref: actionCatalogRef,
-    json_pointer: `/actions/${actionIndex}`,
-  };
-}
-
-function digestTargetForRef(
-  targetAgentDir: string,
-  ref: string,
-  sourceKind: string,
-): DigestTarget | null {
-  if (ref.startsWith('action-ref:')) {
-    return { ...actionDigestTarget(targetAgentDir, ref), source_kinds: [sourceKind] };
-  }
-  const directRef = parseDirectLocalRef(
-    ref.startsWith('domain-skill-ref:') ? ref.slice('domain-skill-ref:'.length) : ref,
-  );
-  if (!directRef) {
-    return null;
-  }
-  return {
-    ref,
-    local_file_ref: directRef.fileRef,
-    ...(directRef.jsonPointer ? { json_pointer: directRef.jsonPointer } : {}),
-    source_kinds: [sourceKind],
-  };
-}
-
-function mergeDigestTarget(targets: DigestTarget[], next: DigestTarget): void {
-  const current = targets.find((target) =>
-    target.ref === next.ref
-    && target.local_file_ref === next.local_file_ref
-    && target.json_pointer === next.json_pointer
-  );
-  if (current) {
-    current.source_kinds = uniqueStrings([...current.source_kinds, ...next.source_kinds]);
-    return;
-  }
-  targets.push(next);
-}
-
-function addRefs(
-  targets: DigestTarget[],
-  targetAgentDir: string,
-  refs: unknown,
-  sourceKind: string,
-  requireResolution: boolean,
-): void {
-  for (const ref of uniqueStrings(Array.isArray(refs) ? refs : [refs])) {
-    const target = digestTargetForRef(targetAgentDir, ref, sourceKind);
-    if (!target) {
-      if (requireResolution) {
-        throw new Error(`AgentBuildReceipt cannot resolve required local ref: ${ref}`);
-      }
-      continue;
-    }
-    mergeDigestTarget(targets, target);
-  }
-}
-
-function buildDigestTargets(targetAgentDir: string, agentPackPlan: JsonObject): DigestTarget[] {
-  const targets: DigestTarget[] = [];
-  addRefs(targets, targetAgentDir, agentPackPlan.planned_control_refs, 'planned_control_ref', true);
-  addRefs(targets, targetAgentDir, agentPackPlan.planned_capability_refs, 'planned_capability_ref', false);
-  addRefs(targets, targetAgentDir, agentPackPlan.planned_knowledge_refs, 'planned_knowledge_ref', true);
-  addRefs(targets, targetAgentDir, agentPackPlan.planned_tool_refs, 'planned_tool_ref', true);
-  addRefs(targets, targetAgentDir, agentPackPlan.planned_quality_gate_refs, 'planned_quality_gate_ref', true);
-
-  const plannedStages = asRecordArray(agentPackPlan.planned_stage_refs, 'agent_pack_plan.planned_stage_refs');
-  plannedStages.forEach((stage) => {
-    addRefs(targets, targetAgentDir, stage.prompt_ref, 'planned_stage_prompt_ref', true);
-    addRefs(targets, targetAgentDir, stage.stage_path, 'planned_stage_ref', true);
-    addRefs(targets, targetAgentDir, stage.skill_ref, 'planned_stage_skill_ref', true);
-    addRefs(targets, targetAgentDir, stage.knowledge_refs, 'planned_stage_knowledge_ref', true);
-    addRefs(targets, targetAgentDir, stage.tool_refs, 'planned_stage_tool_ref', true);
-    addRefs(targets, targetAgentDir, stage.quality_gate_refs, 'planned_stage_quality_gate_ref', true);
-  });
-  return targets;
-}
-
-function withoutReceiptProjection(value: unknown): unknown {
-  if (Array.isArray(value)) {
-    return value.map(withoutReceiptProjection);
-  }
-  if (!isRecord(value)) {
-    return value;
-  }
-  return Object.fromEntries(Object.entries(value)
-    .filter(([key]) => !receiptProjectionFields.has(key))
-    .map(([key, entry]) => [key, withoutReceiptProjection(entry)]));
-}
-
-function jsonPointerValue(payload: unknown, pointer: string, ref: string): unknown {
-  if (!pointer.startsWith('/')) {
-    throw new Error(`AgentBuildReceipt JSON pointer must start with /: ${ref}`);
-  }
-  let current = payload;
-  for (const rawToken of pointer.slice(1).split('/')) {
-    const token = rawToken.replace(/~1/g, '/').replace(/~0/g, '~');
-    if (Array.isArray(current)) {
-      const index = Number(token);
-      if (!Number.isInteger(index) || index < 0 || index >= current.length) {
-        throw new Error(`AgentBuildReceipt JSON pointer is unresolved: ${ref}`);
-      }
-      current = current[index];
-      continue;
-    }
-    if (!isRecord(current) || !Object.hasOwn(current, token)) {
-      throw new Error(`AgentBuildReceipt JSON pointer is unresolved: ${ref}`);
-    }
-    current = current[token];
-  }
-  return current;
-}
-
-function materializedFileDigest(targetAgentDir: string, target: DigestTarget): JsonObject {
-  const filePath = targetPath(targetAgentDir, target.local_file_ref);
-  if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
-    throw new Error(`AgentBuildReceipt cannot be issued because planned file is missing: ${target.ref}`);
-  }
-  const isJson = target.local_file_ref.endsWith('.json');
-  let digestInput: string | Buffer;
-  if (isJson) {
-    const payload = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    const selected = target.json_pointer
-      ? jsonPointerValue(payload, target.json_pointer, target.ref)
-      : withoutReceiptProjection(payload);
-    digestInput = JSON.stringify(selected);
-  } else {
-    digestInput = fs.readFileSync(filePath);
-  }
-  return {
-    ref: target.ref,
-    local_file_ref: target.local_file_ref,
-    ...(target.json_pointer ? { json_pointer: target.json_pointer } : {}),
-    source_kinds: target.source_kinds,
-    digest_scope: target.json_pointer ? 'json_pointer_value' : 'file_content',
-    digest_normalization: isJson
-      ? 'canonical_json_without_agent_build_receipt_projection'
-      : 'raw_file_bytes',
-    sha256: crypto.createHash('sha256').update(digestInput).digest('hex'),
-  };
 }
 
 function installBuildReceipt(surface: JsonObject, receipt: JsonObject): void {
@@ -234,26 +46,6 @@ function installBuildReceipt(surface: JsonObject, receipt: JsonObject): void {
   surface.build_receipt = receipt;
   surface.build_receipt_ref = receiptRef;
   surface.build_receipt_refs = [receiptRef];
-}
-
-export function writeAgentBuildReceiptExpectation(
-  targetAgentDir: string,
-  targetAgent: TargetAgent,
-): JsonObject | null {
-  const baseReceipt = buildAgentBuildReceipt(targetAgent);
-  if (!baseReceipt) {
-    return null;
-  }
-  const expectation: JsonObject = {
-    surface_kind: 'opl_meta_agent_build_receipt_expectation',
-    receipt_kind: 'AgentBuildReceiptExpectation',
-    version: 'opl-meta-agent.agent-build-receipt-expectation.v1',
-    status: 'pending_post_materialization',
-    target_agent_ref: baseReceipt.target_agent_ref,
-    receipt_ref: baseReceipt.receipt_ref,
-  };
-  writeJson(path.join(targetAgentDir, 'contracts', 'agent_build_receipt.json'), expectation);
-  return expectation;
 }
 
 export function materializeAgentBuildReceipt(
@@ -281,7 +73,7 @@ export function materializeAgentBuildReceipt(
   if (JSON.stringify(plannedStageIds) !== JSON.stringify(materializedStageIds)) {
     throw new Error('AgentBuildReceipt cannot be issued before every AgentPackPlan stage is materialized exactly once.');
   }
-  const digestTargets = buildDigestTargets(targetAgentDir, agentPackPlan);
+  const digestTargets = buildReferenceBuildDigestTargets(targetAgentDir, agentPackPlan);
   const receipt: JsonObject = {
     ...baseReceipt,
     receipt_timing: 'post_materialization',
@@ -289,7 +81,9 @@ export function materializeAgentBuildReceipt(
       status: 'passed',
       planned_stage_ids: plannedStageIds,
       materialized_stage_ids: materializedStageIds,
-      materialized_file_digests: digestTargets.map((target) => materializedFileDigest(targetAgentDir, target)),
+      materialized_file_digests: digestTargets.map((target) =>
+        materializeReferenceBuildFileDigest(targetAgentDir, target)
+      ),
       all_planned_stages_materialized_exactly_once: true,
       all_planned_control_refs_resolved: true,
       all_resolvable_planned_capability_refs_digested: true,
@@ -307,9 +101,15 @@ export function materializeAgentBuildReceipt(
 }
 
 function conformanceProfileId(targetAgent: TargetAgent): string | null {
-  const selectedProfileRef = uniqueStrings(targetAgent.selected_opl_profile_refs ?? [])
-    .find((ref) => ref.startsWith('opl-profile:') && !ref.startsWith('opl-profile-route:'));
+  const selectedProfileRefs = uniqueStrings(targetAgent.selected_opl_profile_refs ?? []);
+  if (selectedProfileRefs.length > 1) {
+    throw new Error(`OPL profile conformance requires exactly one builtin profile, found: ${selectedProfileRefs.join(', ')}`);
+  }
+  const selectedProfileRef = selectedProfileRefs[0];
   if (selectedProfileRef) {
+    if (!selectedProfileRef.startsWith('opl-profile:') || selectedProfileRef.startsWith('opl-profile-route:')) {
+      throw new Error(`OPL profile conformance received an invalid builtin profile ref: ${selectedProfileRef}`);
+    }
     return selectedProfileRef.slice('opl-profile:'.length);
   }
   if (
@@ -318,7 +118,14 @@ function conformanceProfileId(targetAgent: TargetAgent): string | null {
   ) {
     return 'source_derived_design_profile_route.v1';
   }
-  return null;
+  if (
+    (targetAgent.research_source_refs?.length ?? 0) > 0
+    || (targetAgent.expert_practice_notes?.length ?? 0) > 0
+    || (targetAgent.research_synthesis_refs?.length ?? 0) > 0
+  ) {
+    return null;
+  }
+  throw new Error('OPL profile conformance requires one builtin profile or an explicit design-basis route.');
 }
 
 export function assertTargetProfileConformance(

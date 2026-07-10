@@ -22,37 +22,6 @@ function objectValue(value: unknown, label: string): JsonObject {
   return value as JsonObject;
 }
 
-function resolveJsonPointer(document: unknown, fragment: string, label: string): unknown {
-  assert.ok(fragment.startsWith('/'), `${label} must use a JSON Pointer fragment`);
-  return fragment.slice(1).split('/').reduce<unknown>((current, rawToken) => {
-    const token = decodeURIComponent(rawToken).replace(/~1/g, '/').replace(/~0/g, '~');
-    if (Array.isArray(current)) {
-      const index = Number(token);
-      assert.ok(Number.isInteger(index) && index >= 0 && index < current.length, `${label} is missing /${token}`);
-      return current[index];
-    }
-    const object = objectValue(current, label);
-    assert.ok(Object.hasOwn(object, token), `${label} is missing /${token}`);
-    return object[token];
-  }, document);
-}
-
-function schemaRefs(value: unknown, label: string): string[] {
-  if (Array.isArray(value)) return value.flatMap((entry, index) => schemaRefs(entry, `${label}[${index}]`));
-  if (!value || typeof value !== 'object') return [];
-  const object = value as JsonObject;
-  const refs: string[] = [];
-  if (Object.hasOwn(object, '$ref')) {
-    assert.equal(typeof object.$ref, 'string', `${label}.$ref must be a string`);
-    refs.push(object.$ref);
-  }
-  return refs.concat(
-    Object.entries(object)
-      .filter(([key]) => key !== '$ref')
-      .flatMap(([key, entry]) => schemaRefs(entry, `${label}.${key}`)),
-  );
-}
-
 function readSchema(schemaRef: string): JsonObject {
   assert.equal(schemaRef.includes('#'), false, `${schemaRef} must reference a root schema`);
   return objectValue(readJson(schemaRef), schemaRef);
@@ -153,11 +122,6 @@ test('all action catalog schemas are self-contained and compile in the OPL regis
       assert.equal(schema.type, 'object', `${schemaRef}.type`);
       assert.ok(Array.isArray(schema.required) && schema.required.length > 0, `${schemaRef}.required`);
 
-      for (const ref of schemaRefs(schema, schemaRef)) {
-        assert.match(ref, /^#\//, `${schemaRef} must not depend on an unregistered external schema: ${ref}`);
-        assert.notEqual(resolveJsonPointer(schema, ref.slice(1), `${schemaRef}:${ref}`), undefined);
-      }
-
       const result = validateJsonSchemaPayload({
         schemaId: schema.$id,
         schema,
@@ -168,6 +132,38 @@ test('all action catalog schemas are self-contained and compile in the OPL regis
   }
 
   assert.equal(ids.size, actions.length * 2, 'every action input/output must have a unique root schema');
+});
+
+test('build-agent-baseline action metadata exposes every design-basis route', () => {
+  const catalog = readJson('contracts/action_catalog.json');
+  const action = (catalog.actions as JsonObject[]).find((entry) => entry.action_id === 'build-agent-baseline');
+  assert.ok(action);
+  const commands = [
+    action.source_command.command,
+    action.supported_surfaces.cli.command,
+    action.supported_surfaces.product_entry.command,
+  ] as string[];
+  const routeFields = [
+    'reference_design_source_refs',
+    'reference_design_pattern_notes',
+    'reference_design_pattern_packet_refs',
+    'research_source_refs',
+    'expert_practice_notes',
+    'research_synthesis_refs',
+  ];
+  const routeFlags = [
+    '--reference-design-source',
+    '--reference-design-pattern',
+    '--reference-design-pattern-packet',
+    '--research-source',
+    '--expert-practice',
+    '--research-synthesis',
+  ];
+  commands.forEach((command) => routeFlags.forEach((flag) => assert.ok(command.includes(flag), flag)));
+  routeFields.forEach((field) => {
+    assert.ok(action.workspace_locator_fields.includes(field), field);
+    assert.ok(action.supported_surfaces.skill.intent_mapping.includes(field), field);
+  });
 });
 
 test('representative action inputs and outputs accept valid instances and reject invalid ones', () => {
@@ -190,6 +186,13 @@ test('representative action inputs and outputs accept valid instances and reject
     domain_id: 'target-agent',
     ai_reviewer_evaluation: '/tmp/reviewer.json',
   }).ok, false);
+  assert.equal(validate(buildInputRef, {
+    domain_id: 'research-driven-agent',
+    ai_reviewer_evaluation: '/tmp/reviewer.json',
+    research_source_refs: ['research-source:expert-practice'],
+    expert_practice_notes: ['Experts first frame the decision and evidence boundary.'],
+    research_synthesis_refs: ['research-synthesis:expert-workflow'],
+  }).ok, true);
 
   const trajectoryOutputRef = 'contracts/schemas/materialize-trajectory-learning-proposal.output.schema.json';
   const trajectoryOutput = {

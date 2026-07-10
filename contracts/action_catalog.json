@@ -130,7 +130,7 @@
       "owner": "opl-meta-agent",
       "effect": "mutating",
       "source_command": {
-        "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief> --selected-opl-profile <selected_opl_profile_ref> --profile-selection-rationale <profile_selection_rationale> [--profile-requirement <profile_requirement_ref>] [--reference-design-source <reference_design_source_ref>] [--reference-design-pattern <reference_design_pattern_note>] [--reference-design-pattern-packet <reference_design_pattern_packet_ref>]",
+        "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief> [--selected-opl-profile <selected_opl_profile_ref>] [--profile-selection-rationale <profile_selection_rationale>] [--profile-requirement <profile_requirement_ref>] [--reference-design-source <reference_design_source_ref>] [--reference-design-pattern <reference_design_pattern_note>] [--reference-design-pattern-packet <reference_design_pattern_packet_ref>] [--research-source <research_source_ref>] [--expert-practice <expert_practice_note>] [--research-synthesis <research_synthesis_ref>]",
         "surface_kind": "domain_smoke_cli"
       },
       "input_schema_ref": "contracts/schemas/build-agent-baseline.input.schema.json",
@@ -148,14 +148,17 @@
         "profile_requirement_refs",
         "reference_design_source_refs",
         "reference_design_pattern_notes",
-        "reference_design_pattern_packet_refs"
+        "reference_design_pattern_packet_refs",
+        "research_source_refs",
+        "expert_practice_notes",
+        "research_synthesis_refs"
       ],
       "human_gate_ids": [
         "baseline_delivery_owner_review"
       ],
       "supported_surfaces": {
         "cli": {
-          "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief> --selected-opl-profile <selected_opl_profile_ref> --profile-selection-rationale <profile_selection_rationale> [--profile-requirement <profile_requirement_ref>] [--reference-design-source <reference_design_source_ref>] [--reference-design-pattern <reference_design_pattern_note>] [--reference-design-pattern-packet <reference_design_pattern_packet_ref>]",
+          "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief> [--selected-opl-profile <selected_opl_profile_ref>] [--profile-selection-rationale <profile_selection_rationale>] [--profile-requirement <profile_requirement_ref>] [--reference-design-source <reference_design_source_ref>] [--reference-design-pattern <reference_design_pattern_note>] [--reference-design-pattern-packet <reference_design_pattern_packet_ref>] [--research-source <research_source_ref>] [--expert-practice <expert_practice_note>] [--research-synthesis <research_synthesis_ref>]",
           "surface_kind": "domain_smoke_cli"
         },
         "mcp": {
@@ -167,11 +170,11 @@
         "skill": {
           "command_contract_id": "opl-meta-agent.build-agent-baseline",
           "surface_kind": "opl_generated_skill_contract",
-          "intent_mapping": "Codex extracts domain_id, domain_label, delivery_domain, target_brief, selected_opl_profile_refs, profile_selection_rationale, optional profile_requirement_refs, optional reference_design_source_refs, optional reference_design_pattern_notes, optional reference_design_pattern_packet_refs, output_dir, opl_bin, and ai_reviewer_evaluation from the user natural-language request before invoking this action."
+          "intent_mapping": "Codex extracts domain_id, domain_label, delivery_domain, target_brief, optional selected_opl_profile_refs, optional profile_selection_rationale, optional profile_requirement_refs, optional reference_design_source_refs, optional reference_design_pattern_notes, optional reference_design_pattern_packet_refs, optional research_source_refs, optional expert_practice_notes, optional research_synthesis_refs, output_dir, opl_bin, and ai_reviewer_evaluation from the user natural-language request before invoking this action."
         },
         "product_entry": {
           "action_key": "build-agent-baseline",
-          "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief> --selected-opl-profile <selected_opl_profile_ref> --profile-selection-rationale <profile_selection_rationale> [--profile-requirement <profile_requirement_ref>] [--reference-design-source <reference_design_source_ref>] [--reference-design-pattern <reference_design_pattern_note>] [--reference-design-pattern-packet <reference_design_pattern_packet_ref>]",
+          "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief> [--selected-opl-profile <selected_opl_profile_ref>] [--profile-selection-rationale <profile_selection_rationale>] [--profile-requirement <profile_requirement_ref>] [--reference-design-source <reference_design_source_ref>] [--reference-design-pattern <reference_design_pattern_note>] [--reference-design-pattern-packet <reference_design_pattern_packet_ref>] [--research-source <research_source_ref>] [--expert-practice <expert_practice_note>] [--research-synthesis <research_synthesis_ref>]",
           "surface_kind": "domain_product_entry_action"
         },
         "openai": {

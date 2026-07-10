@@ -1,3 +1,4 @@
+import { STANDARD_AGENT_PACK_ABI } from 'opl-framework-shared/standard-agent-pack-abi';
 import {
   buildAgentPackPlan,
   buildAgentBuildReceiptRef,
@@ -27,7 +28,6 @@ import {
 import {
   DEFAULT_STAGE_EXECUTOR_BINDING_REF,
   SERIES_DESIGN_PROFILE,
-  STANDARD_AGENT_PACK_ABI,
   STANDARD_STAGE_PACK_CONFORMANCE_VERSION,
   STAGE_COMPLETION_POLICY,
   STAGE_PROGRESS_DELTA_POLICY,
@@ -220,10 +220,10 @@ function assertReferenceDesignObjectRefs(value: JsonObject, targetAgent: TargetA
       `${field}.stage_decomposition_subpacket_set`,
     );
     if (actualReferencePacket && referencePacketRef) {
-      validateReferenceDesignPacketObject(actualReferencePacket, targetAgent, referencePacketRef, transferMapRef, agentPackPlanRef, field);
+      validateReferenceDesignPacketObject(actualReferencePacket, targetAgent, referencePacketRef, transferMapRef, field);
     }
     if (actualResearchPacket && researchPacketRef) {
-      validateResearchSynthesisPacketObject(actualResearchPacket, targetAgent, researchPacketRef, transferMapRef, agentPackPlanRef, field);
+      validateResearchSynthesisPacketObject(actualResearchPacket, targetAgent, researchPacketRef, field);
     }
     validateTransferMapObject(actualTransferMap, targetAgent, packetRef, transferMapRef, field);
     validateAgentPackPlanObject(actualAgentPackPlan, targetAgent, packetRef, transferMapRef, agentPackPlanRef, field);

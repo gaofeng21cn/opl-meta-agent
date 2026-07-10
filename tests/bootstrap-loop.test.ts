@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
+import { validateJsonSchemaPayload } from 'opl-framework-shared/json-schema-registry';
 import {
   oplOwnerRepoRoot,
   readJsonFile as readJson,
@@ -261,6 +262,21 @@ function runBaselineFixture(
   ]));
 }
 
+function validateBuildAgentBaselineOutput(payload: unknown) {
+  const schemaRef = 'contracts/schemas/build-agent-baseline.output.schema.json';
+  const schema = readJson(path.join(repoRoot, schemaRef));
+  return validateJsonSchemaPayload({
+    schemaId: String(schema.$id),
+    schema,
+    sourceRef: schemaRef,
+  }, payload);
+}
+
+function assertBuildAgentBaselineOutputSchema(payload: unknown): void {
+  const result = validateBuildAgentBaselineOutput(payload);
+  assert.equal(result.ok, true, JSON.stringify(result));
+}
+
 function assertRefFields(surface: JsonObject, expected: Record<string, string>): void {
   Object.entries(expected).forEach(([field, value]) => assert.equal(surface[field], value, field));
 }
@@ -269,30 +285,27 @@ function assertSingleRefArrays(surface: JsonObject, expected: Record<string, str
   Object.entries(expected).forEach(([field, value]) => assert.deepEqual(surface[field], [value], field));
 }
 
-test('build-agent-baseline writes an explicit target package before OPL main rejects the receipt digest scope', () => {
+test('build-agent-baseline writes a conformant hybrid reference-driven target package', () => {
   withTempDir('oma-bootstrap-pass4-', (outputRoot) => {
     const reviewerPath = path.join(outputRoot, 'reviewer.json');
     const closeoutPath = path.join(outputRoot, 'stage-closeout.json');
     writeReviewerEvaluation(reviewerPath);
     writeStageCloseout(closeoutPath);
 
-    assert.throws(
-      () => runBaselineFixture(outputRoot, reviewerPath, closeoutPath, targetAgent, [
-        '--selected-opl-profile',
-        targetAgent.selected_opl_profile_refs[0],
-        '--profile-selection-rationale',
-        targetAgent.profile_selection_rationale,
-        '--reference-design-source',
-        targetAgent.reference_design_source_refs[0],
-        '--reference-design-pattern',
-        targetAgent.reference_design_pattern_notes[0],
-        '--reference-design-pattern',
-        targetAgent.reference_design_pattern_notes[1],
-        '--reference-design-pattern-packet',
-        targetAgent.reference_design_pattern_packet_refs[0],
-      ]),
-      /materialized_file_digest_mismatch:contracts\/stage_control_plane\.json.*materialized_file_digest_mismatch:contracts\/capability_map\.json/is,
-    );
+    const payload = runBaselineFixture(outputRoot, reviewerPath, closeoutPath, targetAgent, [
+      '--selected-opl-profile',
+      targetAgent.selected_opl_profile_refs[0],
+      '--profile-selection-rationale',
+      targetAgent.profile_selection_rationale,
+      '--reference-design-source',
+      targetAgent.reference_design_source_refs[0],
+      '--reference-design-pattern',
+      targetAgent.reference_design_pattern_notes[0],
+      '--reference-design-pattern',
+      targetAgent.reference_design_pattern_notes[1],
+      '--reference-design-pattern-packet',
+      targetAgent.reference_design_pattern_packet_refs[0],
+    ]);
 
     const targetDir = path.join(outputRoot, targetAgent.domain_id);
     const descriptor = readJson(path.join(targetDir, 'contracts/domain_descriptor.json'));
@@ -302,8 +315,22 @@ test('build-agent-baseline writes an explicit target package before OPL main rej
     const primarySkill = fs.readFileSync(path.join(targetDir, 'agent/primary_skill/SKILL.md'), 'utf8');
     const generatedPrompt = fs.readFileSync(path.join(targetDir, firstStage.prompt_refs[0].ref), 'utf8');
     const generatedKnowledge = fs.readFileSync(path.join(targetDir, firstStage.knowledge_refs[0].ref), 'utf8');
-    assert.equal(fs.existsSync(path.join(outputRoot, 'baseline-delivery-receipt.json')), false);
-    assert.equal(fs.existsSync(path.join(outputRoot, 'agent-lab-suite.json')), false);
+    assert.equal(payload.status, 'passed');
+    assert.equal(payload.opl_profile_conformance.status, 'passed');
+    assertBuildAgentBaselineOutputSchema(payload);
+    assert.equal(payload.artifacts.agent_build_receipt_path, path.join(
+      targetDir,
+      'contracts/agent_build_receipt.json',
+    ));
+    assert.equal(
+      payload.artifacts.agent_build_receipt_ref,
+      `build-receipt-ref:opl-meta-agent/${targetAgent.domain_id}`,
+    );
+    const missingBuildReceiptRef = structuredClone(payload);
+    delete missingBuildReceiptRef.artifacts.agent_build_receipt_ref;
+    assert.equal(validateBuildAgentBaselineOutput(missingBuildReceiptRef).ok, false);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'baseline-delivery-receipt.json')), true);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'agent-lab-suite.json')), true);
     assert.equal(descriptor.domain_id, targetAgent.domain_id);
     assert.deepEqual(descriptor.selected_opl_profile_refs, targetAgent.selected_opl_profile_refs);
     assert.equal(descriptor.profile_selection_rationale, targetAgent.profile_selection_rationale);
@@ -378,29 +405,28 @@ test('build-agent-baseline writes an explicit target package before OPL main rej
   });
 });
 
-test('build-agent-baseline repairs mechanical subpacket projection before conformance blocks delivery', () => {
+test('build-agent-baseline repairs mechanical subpacket projection before conformant delivery', () => {
   withTempDir('oma-bootstrap-source-derived-repair-', (outputRoot) => {
     const reviewerPath = path.join(outputRoot, 'reviewer.json');
     const closeoutPath = path.join(outputRoot, 'stage-closeout.json');
     writeReviewerEvaluation(reviewerPath, {}, sourceDerivedTargetAgent.domain_id);
     writeStageCloseoutWithoutSubpacketProjection(closeoutPath, sourceDerivedTargetAgent);
 
-    assert.throws(
-      () => runBaselineFixture(outputRoot, reviewerPath, closeoutPath, sourceDerivedTargetAgent, [
-        '--reference-design-source',
-        sourceDerivedTargetAgent.reference_design_source_refs[0],
-        '--reference-design-pattern',
-        sourceDerivedTargetAgent.reference_design_pattern_notes[0],
-        '--reference-design-pattern-packet',
-        sourceDerivedTargetAgent.reference_design_pattern_packet_refs[0],
-      ]),
-      /profile conformance.*materialized_file_digest/is,
-    );
+    const payload = runBaselineFixture(outputRoot, reviewerPath, closeoutPath, sourceDerivedTargetAgent, [
+      '--reference-design-source',
+      sourceDerivedTargetAgent.reference_design_source_refs[0],
+      '--reference-design-pattern',
+      sourceDerivedTargetAgent.reference_design_pattern_notes[0],
+      '--reference-design-pattern-packet',
+      sourceDerivedTargetAgent.reference_design_pattern_packet_refs[0],
+    ]);
 
     const targetDir = path.join(outputRoot, sourceDerivedTargetAgent.domain_id);
     const stageControl = readJson(path.join(targetDir, 'contracts/stage_control_plane.json'));
     const stage = stageControl.stages[0] as JsonObject;
     const stageContract = stage.stage_contract as JsonObject;
+    assert.equal(payload.status, 'passed');
+    assert.equal(payload.opl_profile_conformance.status, 'passed');
     assert.equal(
       fs.existsSync(path.join(outputRoot, `${sourceDerivedTargetAgent.domain_id}-stage-decomposition-blocker.json`)),
       false,
@@ -423,24 +449,21 @@ test('build-agent-baseline repairs mechanical subpacket projection before confor
   });
 });
 
-test('build-agent-baseline materializes source-derived proof then fails closed on OPL main digest scope mismatch', () => {
+test('build-agent-baseline materializes source-derived proof with canonical OPL conformance', () => {
   withTempDir('oma-bootstrap-source-derived-', (outputRoot) => {
     const reviewerPath = path.join(outputRoot, 'reviewer.json');
     const closeoutPath = path.join(outputRoot, 'stage-closeout.json');
     writeReviewerEvaluation(reviewerPath, {}, sourceDerivedTargetAgent.domain_id);
     writeStageCloseout(closeoutPath, sourceDerivedTargetAgent);
 
-    assert.throws(
-      () => runBaselineFixture(outputRoot, reviewerPath, closeoutPath, sourceDerivedTargetAgent, [
-        '--reference-design-source',
-        sourceDerivedTargetAgent.reference_design_source_refs[0],
-        '--reference-design-pattern',
-        sourceDerivedTargetAgent.reference_design_pattern_notes[0],
-        '--reference-design-pattern-packet',
-        sourceDerivedTargetAgent.reference_design_pattern_packet_refs[0],
-      ]),
-      /profile conformance.*materialized_file_digest/is,
-    );
+    const payload = runBaselineFixture(outputRoot, reviewerPath, closeoutPath, sourceDerivedTargetAgent, [
+      '--reference-design-source',
+      sourceDerivedTargetAgent.reference_design_source_refs[0],
+      '--reference-design-pattern',
+      sourceDerivedTargetAgent.reference_design_pattern_notes[0],
+      '--reference-design-pattern-packet',
+      sourceDerivedTargetAgent.reference_design_pattern_packet_refs[0],
+    ]);
 
     const targetDir = path.join(outputRoot, sourceDerivedTargetAgent.domain_id);
     const descriptor = readJson(path.join(targetDir, 'contracts/domain_descriptor.json'));
@@ -451,7 +474,10 @@ test('build-agent-baseline materializes source-derived proof then fails closed o
     const primarySkill = fs.readFileSync(path.join(targetDir, 'agent/primary_skill/SKILL.md'), 'utf8');
     const generatedPrompt = fs.readFileSync(path.join(targetDir, stageControl.stages[0].prompt_refs[0].ref), 'utf8');
 
-    assert.equal(fs.existsSync(path.join(outputRoot, 'baseline-delivery-receipt.json')), false);
+    assert.equal(payload.status, 'passed');
+    assert.equal(payload.opl_profile_conformance.status, 'passed');
+    assertBuildAgentBaselineOutputSchema(payload);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'baseline-delivery-receipt.json')), true);
     assert.equal(descriptor.profile_selection_mode, 'source_derived_design');
     assert.equal(descriptor.selected_opl_profile_refs, undefined);
     assert.equal(
@@ -702,6 +728,8 @@ test('build-agent-baseline materializes a research-driven target package from va
 
     assert.equal(payload.status, 'passed');
     assert.equal(payload.opl_profile_conformance.status, 'not_applicable');
+    assertBuildAgentBaselineOutputSchema(payload);
+    assert.equal(payload.artifacts.agent_build_receipt_ref, researchDrivenObjectRefs.buildReceiptRef);
     assert.equal(descriptor.profile_selection_mode, 'research_driven_design');
     assert.equal(descriptor.selected_opl_profile_refs, undefined);
     assert.equal(
@@ -844,6 +872,23 @@ test('OMA executes OPL selector signals for a Chinese hybrid reference-driven in
   ]);
   assert.equal(buildProfileSelectionReceipt(selected).profile_selection_mode, 'hybrid');
   assert.match(String(selected.profile_selection_rationale), /risk.*guideline|guideline.*risk/);
+});
+
+test('OMA canonicalizes and validates explicit builtin profile refs', () => {
+  const selected = resolveTargetAgentProfileSelection({
+    ...targetAgent,
+    selected_opl_profile_refs: ['evidence_grounded_decision_agent_profile.v1'],
+  }, oplBin);
+  assert.deepEqual(selected.selected_opl_profile_refs, [
+    'opl-profile:evidence_grounded_decision_agent_profile.v1',
+  ]);
+  assert.throws(
+    () => resolveTargetAgentProfileSelection({
+      ...targetAgent,
+      selected_opl_profile_refs: ['unknown_profile.v1'],
+    }, oplBin),
+    /unknown or unavailable/i,
+  );
 });
 
 test('canonical OPL refs-only pattern packet produces its own stable workflow stages', () => {

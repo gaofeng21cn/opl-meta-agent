@@ -135,11 +135,6 @@ export const SERIES_DESIGN_PROFILE = objectField(
   'series_design_profile',
 );
 
-export const STANDARD_AGENT_PACK_ABI = objectField(
-  STANDARD_FOUNDRY_POLICIES,
-  'standard_agent_pack_abi',
-);
-
 export const AGENT_MEMBERSHIP_PROJECTION_POLICY = objectField(
   STANDARD_FOUNDRY_POLICIES,
   'agent_membership_projection_policy',

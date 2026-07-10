@@ -1,3 +1,4 @@
+import { STANDARD_AGENT_PACK_ABI } from 'opl-framework-shared/standard-agent-pack-abi';
 import {
   buildAgentPackPlan,
   buildAgentBuildReceiptRef,
@@ -30,7 +31,6 @@ import {
   FORBIDDEN_GENERIC_OWNER_ROLES,
   SERIES_DESIGN_PROFILE,
   SHARED_POLICY_RELEASE,
-  STANDARD_AGENT_PACK_ABI,
   STANDARD_PUBLIC_PROJECTION_POLICY,
   STANDARD_STAGE_PACK_CONFORMANCE_VERSION,
   STAGE_COMPLETION_POLICY,

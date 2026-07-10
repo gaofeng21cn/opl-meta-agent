@@ -12,6 +12,7 @@
     "target_agent",
     "artifacts",
     "learning_loop",
+    "opl_profile_conformance",
     "new_agent_delivery_gate",
     "real_target_delivery"
   ],
@@ -70,6 +71,12 @@
         },
         "real_target_delivery_receipt_path": {
           "$ref": "#/$defs/nonEmptyString"
+        },
+        "agent_build_receipt_path": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "agent_build_receipt_ref": {
+          "$ref": "#/$defs/nonEmptyString"
         }
       },
       "additionalProperties": {
@@ -99,6 +106,9 @@
         }
       },
       "additionalProperties": true
+    },
+    "opl_profile_conformance": {
+      "$ref": "#/$defs/oplProfileConformance"
     },
     "new_agent_delivery_gate": {
       "$ref": "#/$defs/newAgentDeliveryGate"
@@ -150,6 +160,34 @@
       "additionalProperties": true
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "target_agent": {
+            "anyOf": [
+              { "required": ["reference_design_source_refs"] },
+              { "required": ["reference_design_pattern_notes"] },
+              { "required": ["reference_design_pattern_packet_refs"] },
+              { "required": ["research_source_refs"] },
+              { "required": ["expert_practice_notes"] },
+              { "required": ["research_synthesis_refs"] }
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifacts": {
+            "required": [
+              "agent_build_receipt_path",
+              "agent_build_receipt_ref"
+            ]
+          }
+        }
+      }
+    }
+  ],
   "$defs": {
     "nonEmptyString": {
       "type": "string",
@@ -237,6 +275,130 @@
         }
       },
       "additionalProperties": true
+    },
+    "oplProfileConformance": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "surface_kind",
+            "version",
+            "repo_dir",
+            "profile_id",
+            "profile_ref",
+            "status",
+            "observed",
+            "blockers",
+            "authority_boundary"
+          ],
+          "properties": {
+            "surface_kind": {
+              "const": "opl_agent_profile_conformance"
+            },
+            "version": {
+              "const": "agent-profile-conformance.v1"
+            },
+            "repo_dir": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "profile_id": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "profile_ref": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "status": {
+              "const": "passed"
+            },
+            "observed": {
+              "type": "object",
+              "minProperties": 1
+            },
+            "blockers": {
+              "type": "array",
+              "maxItems": 0
+            },
+            "authority_boundary": {
+              "type": "object",
+              "required": [
+                "refs_only",
+                "conformance_can_write_domain_truth",
+                "conformance_can_create_owner_receipt",
+                "conformance_can_claim_domain_ready",
+                "conformance_can_claim_production_ready"
+              ],
+              "properties": {
+                "refs_only": {
+                  "const": true
+                },
+                "conformance_can_write_domain_truth": {
+                  "const": false
+                },
+                "conformance_can_create_owner_receipt": {
+                  "const": false
+                },
+                "conformance_can_claim_domain_ready": {
+                  "const": false
+                },
+                "conformance_can_claim_production_ready": {
+                  "const": false
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": true
+        },
+        {
+          "type": "object",
+          "required": [
+            "surface_kind",
+            "version",
+            "repo_dir",
+            "status",
+            "reason",
+            "authority_boundary"
+          ],
+          "properties": {
+            "surface_kind": {
+              "const": "opl_agent_profile_conformance_not_applicable"
+            },
+            "version": {
+              "const": "agent-profile-conformance-not-applicable.v1"
+            },
+            "repo_dir": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "status": {
+              "const": "not_applicable"
+            },
+            "reason": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "authority_boundary": {
+              "type": "object",
+              "required": [
+                "conformance_skipped_as_success",
+                "domain_ready_claimed",
+                "production_ready_claimed"
+              ],
+              "properties": {
+                "conformance_skipped_as_success": {
+                  "const": false
+                },
+                "domain_ready_claimed": {
+                  "const": false
+                },
+                "production_ready_claimed": {
+                  "const": false
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": true
+        }
+      ]
     },
     "ownerReceipt": {
       "type": "object",
