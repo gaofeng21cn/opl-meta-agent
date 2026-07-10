@@ -54,6 +54,14 @@ test('OMA ReferenceDesignPacket materialization matches its owned handoff contra
     contract.input_handoff_schema_ref,
     'https://one-person-lab.local/contracts/opl-framework/reference-design-pattern-packet.schema.json',
   );
+  assert.equal(
+    contract.seed_provenance_policy_ref,
+    'contracts/expert_workflow_pattern_library.json#/provenance_policy',
+  );
+  assert.deepEqual(contract.seed_pattern_materialization_required_fields, [
+    'authority_tier',
+    'resolved_source_anchors',
+  ]);
   assert.equal(Object.hasOwn(contract, 'typed_pattern_input'), false);
   assert.ok(transferMap);
   transferMap.mappings.forEach((mapping: Record<string, unknown>) => {
@@ -71,6 +79,62 @@ test('OMA ReferenceDesignPacket materialization matches its owned handoff contra
   assert.equal(workflowStages.some((stage: Record<string, unknown>) => stage.stage_id === 'agent-output-draft'), false);
   assert.equal(contract.authority_boundary.can_write_target_domain_truth, false);
   assert.equal(contract.authority_boundary.can_claim_target_ready, false);
+});
+
+test('OMA materializes seed provenance from the root anchor catalog', () => {
+  const targetAgent = {
+    domain_id: 'seed-provenance-fixture',
+    reference_design_pattern_packet_refs: [
+      'expert-workflow-pattern:oma/case-grounded-expert-decision-workflow.v1',
+    ],
+  };
+  const packet = buildReferenceDesignPacket(targetAgent);
+  const agentPackPlan = buildAgentPackPlan(targetAgent);
+
+  assert.ok(packet);
+  assert.equal(packet.design_origin.origin_kind, 'oma_seed_library_fallback');
+  const pattern = packet.transferable_design_patterns[0];
+  assert.equal(pattern.authority_tier, 'A');
+  const resolvedAnchors = pattern.resolved_source_anchors as Array<Record<string, unknown>>;
+  assert.equal(resolvedAnchors.length, pattern.source_anchor_refs.length);
+  assert.deepEqual(
+    resolvedAnchors.map((anchor) => anchor.anchor_ref),
+    pattern.source_anchor_refs,
+  );
+  assert.ok(resolvedAnchors.every((anchor) =>
+    typeof anchor.stable_locator === 'string'
+    && typeof anchor.section_title === 'string'
+    && typeof anchor.selector === 'string'
+    && typeof anchor.support_role === 'string'
+    && typeof anchor.verification_status === 'string'
+    && typeof anchor.source_version_or_fingerprint === 'string'
+  ));
+  const steps = pattern.transferable_workflow_steps as Array<Record<string, unknown>>;
+  assert.ok(steps.length > 0);
+  assert.ok(steps.every((step) =>
+    (step.source_anchor_refs as string[]).every((anchorRef) => anchorRef.startsWith('seed-anchor:oma/'))
+  ));
+  const synthesisSteps = steps.filter((step) => step.provenance_kind === 'internal_synthesis');
+  assert.ok(synthesisSteps.length > 0);
+  assert.ok(synthesisSteps.every((step) =>
+    typeof step.synthesis_rationale === 'string' && step.synthesis_rationale.trim().length > 0
+  ));
+  assert.ok(agentPackPlan);
+  const synthesisStages = agentPackPlan.planned_stage_refs.filter(
+    (stage: Record<string, unknown>) => stage.provenance_kind === 'internal_synthesis',
+  );
+  assert.equal(synthesisStages.length, synthesisSteps.length);
+  assert.ok(synthesisStages.every((stage: Record<string, unknown>) =>
+    typeof stage.synthesis_rationale === 'string' && stage.synthesis_rationale.trim().length > 0
+  ));
+  const sourceStages = agentPackPlan.planned_stage_refs.filter(
+    (stage: Record<string, unknown>) => stage.origin === 'source_pattern_ref',
+  );
+  assert.ok(sourceStages.every((stage: Record<string, unknown>) => stage.source_authority_tier === 'A'));
+  assert.ok(sourceStages.every((stage: Record<string, unknown>) =>
+    Array.isArray(stage.resolved_source_anchors)
+    && stage.resolved_source_anchors.length === (stage.source_anchor_refs as string[]).length
+  ));
 });
 
 test('OMA rejects OPL semantic JSON pointers outside the packet directory', () => {

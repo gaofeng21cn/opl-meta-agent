@@ -39,14 +39,40 @@
     "B": "Mature engineering or professional operating playbook. Use for workflow discipline and handoff patterns.",
     "C": "OPL internal verified case or receipt. Use for OPL compatibility and stage-pack realization patterns."
   },
+  "provenance_policy": {
+    "step_source_anchor_refs_abi": "opaque_catalog_key",
+    "anchor_catalog_owner": "opl-meta-agent",
+    "source_derived_requires_verified_direct_workflow_anchor": true,
+    "source_derived_may_include_non_direct_supporting_anchors": true,
+    "direct_workflow_source_role": "workflow_source",
+    "internal_synthesis_requires_explicit_rationale": true,
+    "internal_synthesis_cannot_claim_direct_workflow_authority": true,
+    "internal_synthesis_allowed_support_roles": [
+      "synthesis_basis",
+      "quality_gate",
+      "evaluation_constraint"
+    ],
+    "source_ref_must_match_pattern_source_refs": true,
+    "source_version_or_fingerprint_must_match_catalog": true,
+    "active_anchor_verification_statuses": [
+      "verified",
+      "needs_manual_review"
+    ],
+    "forbidden_active_anchor_verification_statuses": [
+      "stale",
+      "unknown"
+    ],
+    "materialized_pattern_preserves_authority_tier": true,
+    "materialized_pattern_embeds_resolved_anchor_subset": true
+  },
   "source_catalog": {
     "doi:10.1038/s41591-026-04494-4": {
-      "locator": "https://doi.org/10.1038/s41591-026-04494-4",
-      "version_or_year": "2026",
+      "locator": "https://www.nature.com/articles/s41591-026-04494-4",
+      "version_or_year": "published 2026-06-30",
       "role": "workflow_source"
     },
     "doi:10.1136/bmj.i2016": {
-      "locator": "https://doi.org/10.1136/bmj.i2016",
+      "locator": "https://www.bmj.com/content/353/bmj.i2016",
       "version_or_year": "2016",
       "role": "workflow_source"
     },
@@ -56,7 +82,7 @@
       "role": "evaluation_framework"
     },
     "source-ref:cochrane-handbook-v6.5-2024": {
-      "locator": "https://training.cochrane.org/handbook/current",
+      "locator": "https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current",
       "version_or_year": "v6.5 (2024)",
       "role": "workflow_source"
     },
@@ -106,8 +132,8 @@
       "role": "evaluation_framework",
       "freshness": "needs_manual_review"
     },
-    "url:https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review#ch3D": {
-      "locator": "https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review#ch3D",
+    "url:https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review": {
+      "locator": "https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review",
       "version_or_year": "PAPPG 24-1, effective 2024-05-20",
       "role": "evaluation_framework"
     },
@@ -116,10 +142,550 @@
       "version_or_year": "2018",
       "role": "workflow_source"
     },
+    "url:https://cloud.google.com/architecture/framework/reliability/conduct-postmortems": {
+      "locator": "https://cloud.google.com/architecture/framework/reliability/conduct-postmortems",
+      "version_or_year": "current, accessed 2026-07-10",
+      "role": "workflow_source"
+    },
     "doi:10.6028/NIST.SP.800-61r3": {
       "locator": "https://doi.org/10.6028/NIST.SP.800-61r3",
       "version_or_year": "Revision 3",
       "role": "quality_gate_source"
+    }
+  },
+  "anchor_catalog": {
+    "seed-anchor:oma/nature-hemaguide/pre-runtime-memory-construction": {
+      "source_ref": "doi:10.1038/s41591-026-04494-4",
+      "stable_locator": "https://www.nature.com/articles/s41591-026-04494-4",
+      "section_title": "System architecture",
+      "selector": "pipeline architecture step 1: pre-runtime memory-construction",
+      "support_role": "direct_workflow",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "published 2026-06-30",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/nature-hemaguide/structured-extraction": {
+      "source_ref": "doi:10.1038/s41591-026-04494-4",
+      "stable_locator": "https://www.nature.com/articles/s41591-026-04494-4",
+      "section_title": "System architecture",
+      "selector": "pipeline architecture step 2: structured extraction from input cases",
+      "support_role": "direct_workflow",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "published 2026-06-30",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/nature-hemaguide/decision-problem-framing-basis": {
+      "source_ref": "doi:10.1038/s41591-026-04494-4",
+      "stable_locator": "https://www.nature.com/articles/s41591-026-04494-4",
+      "section_title": "System architecture",
+      "selector": "expanded clinical question and therapy summary within the structured case representation",
+      "support_role": "synthesis_basis",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "published 2026-06-30",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/nature-hemaguide/contextual-enrichment-and-routing": {
+      "source_ref": "doi:10.1038/s41591-026-04494-4",
+      "stable_locator": "https://www.nature.com/articles/s41591-026-04494-4",
+      "section_title": "Agent orchestration for contextual enrichment of attention-focused retrieval; Agent orchestration for agentic routing",
+      "selector": "pipeline architecture step 3: contextual enrichment and routing",
+      "support_role": "direct_workflow",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "published 2026-06-30",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/nature-hemaguide/decision-tool-selection-and-execution": {
+      "source_ref": "doi:10.1038/s41591-026-04494-4",
+      "stable_locator": "https://www.nature.com/articles/s41591-026-04494-4",
+      "section_title": "System architecture",
+      "selector": "pipeline architecture step 4: agentic decision tool selection and execution",
+      "support_role": "direct_workflow",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "published 2026-06-30",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/nature-hemaguide/context-aggregation-transparent-reasoning": {
+      "source_ref": "doi:10.1038/s41591-026-04494-4",
+      "stable_locator": "https://www.nature.com/articles/s41591-026-04494-4",
+      "section_title": "Agent orchestration for context aggregation and transparent reasoning",
+      "selector": "pipeline architecture step 5: context aggregation with transparent reasoning",
+      "support_role": "direct_workflow",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "published 2026-06-30",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/nature-hemaguide/uncertainty-and-blocker-synthesis-basis": {
+      "source_ref": "doi:10.1038/s41591-026-04494-4",
+      "stable_locator": "https://www.nature.com/articles/s41591-026-04494-4",
+      "section_title": "Agent orchestration for context aggregation and transparent reasoning",
+      "selector": "transparent reasoning output used as a basis for OMA uncertainty and blocker review",
+      "support_role": "synthesis_basis",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "published 2026-06-30",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/nature-hemaguide/independent-review-evaluation": {
+      "source_ref": "doi:10.1038/s41591-026-04494-4",
+      "stable_locator": "https://www.nature.com/articles/s41591-026-04494-4",
+      "section_title": "Evaluation",
+      "selector": "independent scoring by two hematologists",
+      "support_role": "evaluation_constraint",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "published 2026-06-30",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/bmj-etd/formulating-the-question": {
+      "source_ref": "doi:10.1136/bmj.i2016",
+      "stable_locator": "https://www.bmj.com/content/353/bmj.i2016",
+      "section_title": "Formulating the question",
+      "selector": "EtD section: Formulating the question",
+      "support_role": "direct_workflow",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "2016",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/bmj-etd/formulating-question-scope-synthesis-basis": {
+      "source_ref": "doi:10.1136/bmj.i2016",
+      "stable_locator": "https://www.bmj.com/content/353/bmj.i2016",
+      "section_title": "Formulating the question",
+      "selector": "question scope used as synthesis basis for target-context guideline fit",
+      "support_role": "synthesis_basis",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "2016",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/bmj-etd/making-an-assessment": {
+      "source_ref": "doi:10.1136/bmj.i2016",
+      "stable_locator": "https://www.bmj.com/content/353/bmj.i2016",
+      "section_title": "Making an assessment",
+      "selector": "EtD section: Making an assessment",
+      "support_role": "direct_workflow",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "2016",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/bmj-etd/drawing-conclusions": {
+      "source_ref": "doi:10.1136/bmj.i2016",
+      "stable_locator": "https://www.bmj.com/content/353/bmj.i2016",
+      "section_title": "Drawing conclusions",
+      "selector": "EtD section: Drawing conclusions",
+      "support_role": "direct_workflow",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "2016",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/bmj-etd/drawing-conclusions-synthesis-basis": {
+      "source_ref": "doi:10.1136/bmj.i2016",
+      "stable_locator": "https://www.bmj.com/content/353/bmj.i2016",
+      "section_title": "Drawing conclusions",
+      "selector": "applicability and implementation considerations used as synthesis basis",
+      "support_role": "synthesis_basis",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "2016",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/agree-ii/applicability": {
+      "source_ref": "source-ref:agree-ii-2017",
+      "stable_locator": "https://www.agreetrust.org/resource-centre/agree-ii/",
+      "section_title": "Domain 5: Applicability",
+      "selector": "AGREE II applicability domain",
+      "support_role": "evaluation_constraint",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "2017"
+    },
+    "seed-anchor:oma/cochrane-handbook/chapter-02-section-2-3": {
+      "source_ref": "source-ref:cochrane-handbook-v6.5-2024",
+      "stable_locator": "https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-02",
+      "section_title": "2.3 Defining the scope of the review and the questions it will address",
+      "selector": "chapter 02 section 2.3",
+      "support_role": "direct_workflow",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "v6.5 (2024)",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/cochrane-handbook/chapter-01-section-1-5": {
+      "source_ref": "source-ref:cochrane-handbook-v6.5-2024",
+      "stable_locator": "https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-01",
+      "section_title": "1.5 Protocol development",
+      "selector": "chapter 01 section 1.5",
+      "support_role": "direct_workflow",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "v6.5 (2024)",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/cochrane-handbook/chapter-04-searching-and-selecting-studies": {
+      "source_ref": "source-ref:cochrane-handbook-v6.5-2024",
+      "stable_locator": "https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-04",
+      "section_title": "Searching for and selecting studies",
+      "selector": "chapter 04 workflow",
+      "support_role": "direct_workflow",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "v6.5 (2024)",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/cochrane-handbook/chapter-05-collecting-data": {
+      "source_ref": "source-ref:cochrane-handbook-v6.5-2024",
+      "stable_locator": "https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-05",
+      "section_title": "Collecting data",
+      "selector": "chapter 05 workflow",
+      "support_role": "direct_workflow",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "v6.5 (2024)",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/cochrane-handbook/chapter-08-risk-of-bias": {
+      "source_ref": "source-ref:cochrane-handbook-v6.5-2024",
+      "stable_locator": "https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-08",
+      "section_title": "Assessing risk of bias in a randomized trial",
+      "selector": "chapter 08 workflow",
+      "support_role": "direct_workflow",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "v6.5 (2024)",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/cochrane-handbook/chapter-14-certainty-and-summary-of-findings": {
+      "source_ref": "source-ref:cochrane-handbook-v6.5-2024",
+      "stable_locator": "https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-14",
+      "section_title": "Completing Summary of findings tables and grading the certainty of the evidence",
+      "selector": "chapter 14 workflow",
+      "support_role": "direct_workflow",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "v6.5 (2024)",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/cochrane-handbook/chapter-15-interpretation-and-conclusions": {
+      "source_ref": "source-ref:cochrane-handbook-v6.5-2024",
+      "stable_locator": "https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-15",
+      "section_title": "Interpreting results and drawing conclusions",
+      "selector": "chapter 15 workflow",
+      "support_role": "direct_workflow",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "v6.5 (2024)",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/prisma-2020/protocol-and-search-reporting": {
+      "source_ref": "doi:10.1136/bmj.n71",
+      "stable_locator": "https://doi.org/10.1136/bmj.n71",
+      "section_title": "PRISMA 2020 checklist",
+      "selector": "protocol, information sources, and search strategy reporting items",
+      "support_role": "quality_gate",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "2021"
+    },
+    "seed-anchor:oma/prisma-2020/synthesis-reporting": {
+      "source_ref": "doi:10.1136/bmj.n71",
+      "stable_locator": "https://doi.org/10.1136/bmj.n71",
+      "section_title": "PRISMA 2020 checklist",
+      "selector": "synthesis methods, certainty assessment, and results reporting items",
+      "support_role": "quality_gate",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "2021"
+    },
+    "seed-anchor:oma/tripod-ai/intended-use-and-population": {
+      "source_ref": "doi:10.1136/bmj-2023-078378",
+      "stable_locator": "https://doi.org/10.1136/bmj-2023-078378",
+      "section_title": "TRIPOD+AI reporting checklist",
+      "selector": "intended use, target population, and setting items",
+      "support_role": "quality_gate",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "2024"
+    },
+    "seed-anchor:oma/tripod-ai/predictors": {
+      "source_ref": "doi:10.1136/bmj-2023-078378",
+      "stable_locator": "https://doi.org/10.1136/bmj-2023-078378",
+      "section_title": "TRIPOD+AI reporting checklist",
+      "selector": "predictor definition, measurement, and availability items",
+      "support_role": "quality_gate",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "2024"
+    },
+    "seed-anchor:oma/tripod-ai/model-performance-and-risk-estimates": {
+      "source_ref": "doi:10.1136/bmj-2023-078378",
+      "stable_locator": "https://doi.org/10.1136/bmj-2023-078378",
+      "section_title": "TRIPOD+AI reporting checklist",
+      "selector": "model performance, risk estimates, and interpretation items",
+      "support_role": "quality_gate",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "2024"
+    },
+    "seed-anchor:oma/probast-ai/analysis-and-applicability": {
+      "source_ref": "doi:10.1136/bmj-2024-082505",
+      "stable_locator": "https://doi.org/10.1136/bmj-2024-082505",
+      "section_title": "PROBAST+AI domains",
+      "selector": "participants, predictors, analysis, and applicability domains",
+      "support_role": "evaluation_constraint",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "2025"
+    },
+    "seed-anchor:oma/probast-ai/overall-applicability": {
+      "source_ref": "doi:10.1136/bmj-2024-082505",
+      "stable_locator": "https://doi.org/10.1136/bmj-2024-082505",
+      "section_title": "PROBAST+AI applicability assessment",
+      "selector": "overall applicability judgment",
+      "support_role": "evaluation_constraint",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "2025"
+    },
+    "seed-anchor:oma/decide-ai/intended-use-and-workflow-context": {
+      "source_ref": "doi:10.1038/s41591-022-01772-9",
+      "stable_locator": "https://doi.org/10.1038/s41591-022-01772-9",
+      "section_title": "DECIDE-AI reporting framework",
+      "selector": "intended use, users, setting, and clinical workflow context",
+      "support_role": "evaluation_constraint",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "2022"
+    },
+    "seed-anchor:oma/decide-ai/human-ai-interaction": {
+      "source_ref": "doi:10.1038/s41591-022-01772-9",
+      "stable_locator": "https://doi.org/10.1038/s41591-022-01772-9",
+      "section_title": "DECIDE-AI reporting framework",
+      "selector": "human-AI interaction and workflow integration items",
+      "support_role": "evaluation_constraint",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "2022"
+    },
+    "seed-anchor:oma/decide-ai/safety-and-failure-modes": {
+      "source_ref": "doi:10.1038/s41591-022-01772-9",
+      "stable_locator": "https://doi.org/10.1038/s41591-022-01772-9",
+      "section_title": "DECIDE-AI reporting framework",
+      "selector": "safety, errors, failure modes, and mitigation items",
+      "support_role": "evaluation_constraint",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "2022"
+    },
+    "seed-anchor:oma/decide-ai/evaluation-endpoints": {
+      "source_ref": "doi:10.1038/s41591-022-01772-9",
+      "stable_locator": "https://doi.org/10.1038/s41591-022-01772-9",
+      "section_title": "DECIDE-AI reporting framework",
+      "selector": "evaluation endpoints and implementation outcomes",
+      "support_role": "evaluation_constraint",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "2022"
+    },
+    "seed-anchor:oma/decide-ai/deployment-or-trial-gate": {
+      "source_ref": "doi:10.1038/s41591-022-01772-9",
+      "stable_locator": "https://doi.org/10.1038/s41591-022-01772-9",
+      "section_title": "DECIDE-AI reporting framework",
+      "selector": "readiness for larger-scale evaluation or deployment",
+      "support_role": "evaluation_constraint",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "2022"
+    },
+    "seed-anchor:oma/consort-ai/human-ai-interaction-and-endpoints": {
+      "source_ref": "doi:10.1038/s41591-020-1034-x",
+      "stable_locator": "https://doi.org/10.1038/s41591-020-1034-x",
+      "section_title": "CONSORT-AI extension",
+      "selector": "human-AI interaction and trial endpoint reporting items",
+      "support_role": "quality_gate",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "2020"
+    },
+    "seed-anchor:oma/spirit-ai/safety-and-trial-readiness": {
+      "source_ref": "doi:10.1038/s41591-020-1037-7",
+      "stable_locator": "https://doi.org/10.1038/s41591-020-1037-7",
+      "section_title": "SPIRIT-AI extension",
+      "selector": "safety protocol and trial readiness items",
+      "support_role": "quality_gate",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "2020"
+    },
+    "seed-anchor:oma/icmje/claim-integrity-and-author-responsibility": {
+      "source_ref": "url:https://www.icmje.org/recommendations/",
+      "stable_locator": "https://www.icmje.org/recommendations/",
+      "section_title": "Recommendations for the Conduct, Reporting, Editing, and Publication of Scholarly Work in Medical Journals",
+      "selector": "claim integrity, authorship, disclosure, and responsibility recommendations",
+      "support_role": "quality_gate",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "updated 2026-01"
+    },
+    "seed-anchor:oma/icmje/journal-and-audience-fit-synthesis-basis": {
+      "source_ref": "url:https://www.icmje.org/recommendations/",
+      "stable_locator": "https://www.icmje.org/recommendations/",
+      "section_title": "Preparing a Manuscript for Submission to a Medical Journal",
+      "selector": "journal instructions and audience-fit considerations used as synthesis basis",
+      "support_role": "synthesis_basis",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "updated 2026-01"
+    },
+    "seed-anchor:oma/icmje/editorial-review-and-submission-responsibility": {
+      "source_ref": "url:https://www.icmje.org/recommendations/",
+      "stable_locator": "https://www.icmje.org/recommendations/",
+      "section_title": "Editorial Freedom and Integrity; Manuscript Preparation and Submission",
+      "selector": "editorial review risk and submission responsibility recommendations",
+      "support_role": "quality_gate",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "updated 2026-01"
+    },
+    "seed-anchor:oma/equator/reporting-guideline-selection-and-structure": {
+      "source_ref": "url:https://www.equator-network.org/",
+      "stable_locator": "https://www.equator-network.org/",
+      "section_title": "Reporting guidelines",
+      "selector": "select the design-appropriate reporting guideline and required structure",
+      "support_role": "quality_gate",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "current reporting-guideline registry"
+    },
+    "seed-anchor:oma/equator/results-displays-and-completeness": {
+      "source_ref": "url:https://www.equator-network.org/",
+      "stable_locator": "https://www.equator-network.org/",
+      "section_title": "Reporting guidelines",
+      "selector": "results, figures, tables, and completeness items from the selected guideline",
+      "support_role": "quality_gate",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "current reporting-guideline registry"
+    },
+    "seed-anchor:oma/nih-review/importance-of-research": {
+      "source_ref": "url:https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework",
+      "stable_locator": "https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework",
+      "section_title": "Factor 1: Importance of the Research",
+      "selector": "importance and mission-relevant significance criteria used as synthesis basis",
+      "support_role": "evaluation_constraint",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "effective 2025"
+    },
+    "seed-anchor:oma/nih-review/rigor-and-feasibility": {
+      "source_ref": "url:https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework",
+      "stable_locator": "https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework",
+      "section_title": "Factor 2: Rigor and Feasibility",
+      "selector": "approach, rigor, feasibility, and risk criteria used as synthesis basis",
+      "support_role": "evaluation_constraint",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "effective 2025"
+    },
+    "seed-anchor:oma/nih-review/expertise-and-resources": {
+      "source_ref": "url:https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework",
+      "stable_locator": "https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework",
+      "section_title": "Factor 3: Expertise and Resources",
+      "selector": "investigator, environment, and resource criteria used as synthesis basis",
+      "support_role": "evaluation_constraint",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "effective 2025"
+    },
+    "seed-anchor:oma/nsf-merit-review/intellectual-merit": {
+      "source_ref": "url:https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review",
+      "stable_locator": "https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review",
+      "section_title": "Section III.A Merit Review Principles and Criteria",
+      "selector": "Intellectual Merit criterion",
+      "support_role": "synthesis_basis",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "PAPPG 24-1, effective 2024-05-20"
+    },
+    "seed-anchor:oma/nsf-merit-review/broader-impacts": {
+      "source_ref": "url:https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review",
+      "stable_locator": "https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review",
+      "section_title": "Section III.A Merit Review Principles and Criteria",
+      "selector": "Broader Impacts criterion",
+      "support_role": "synthesis_basis",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "PAPPG 24-1, effective 2024-05-20"
+    },
+    "seed-anchor:oma/nsf-merit-review/merit-review-process": {
+      "source_ref": "url:https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review",
+      "stable_locator": "https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review",
+      "section_title": "Section III.A Merit Review Principles and Criteria",
+      "selector": "merit review process and reviewer considerations used as synthesis basis",
+      "support_role": "synthesis_basis",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "PAPPG 24-1, effective 2024-05-20"
+    },
+    "seed-anchor:oma/google-cloud-postmortem/create-and-capture-facts": {
+      "source_ref": "url:https://cloud.google.com/architecture/framework/reliability/conduct-postmortems",
+      "stable_locator": "https://cloud.google.com/architecture/framework/reliability/conduct-postmortems",
+      "section_title": "Conduct postmortems",
+      "selector": "workflow: Create postmortem; Capture facts",
+      "support_role": "direct_workflow",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "current, accessed 2026-07-10",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/google-cloud-postmortem/identify-and-analyze-root-causes": {
+      "source_ref": "url:https://cloud.google.com/architecture/framework/reliability/conduct-postmortems",
+      "stable_locator": "https://cloud.google.com/architecture/framework/reliability/conduct-postmortems",
+      "section_title": "Conduct postmortems",
+      "selector": "workflow: Identify and analyze the root causes",
+      "support_role": "direct_workflow",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "current, accessed 2026-07-10",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/google-cloud-postmortem/plan-for-the-future": {
+      "source_ref": "url:https://cloud.google.com/architecture/framework/reliability/conduct-postmortems",
+      "stable_locator": "https://cloud.google.com/architecture/framework/reliability/conduct-postmortems",
+      "section_title": "Conduct postmortems",
+      "selector": "workflow: Plan for the future",
+      "support_role": "direct_workflow",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "current, accessed 2026-07-10",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/google-cloud-postmortem/execute-the-plan": {
+      "source_ref": "url:https://cloud.google.com/architecture/framework/reliability/conduct-postmortems",
+      "stable_locator": "https://cloud.google.com/architecture/framework/reliability/conduct-postmortems",
+      "section_title": "Conduct postmortems",
+      "selector": "workflow: Execute the plan",
+      "support_role": "synthesis_basis",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "current, accessed 2026-07-10",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/google-sre-postmortem/incident-timeline": {
+      "source_ref": "url:https://sre.google/workbook/postmortem-culture/",
+      "stable_locator": "https://sre.google/workbook/postmortem-culture/",
+      "section_title": "Incident timeline",
+      "selector": "postmortem section: Incident timeline",
+      "support_role": "direct_workflow",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "2018",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/google-sre-postmortem/root-causes-and-trigger": {
+      "source_ref": "url:https://sre.google/workbook/postmortem-culture/",
+      "stable_locator": "https://sre.google/workbook/postmortem-culture/",
+      "section_title": "Root Causes and Trigger",
+      "selector": "postmortem section: Root Causes and Trigger",
+      "support_role": "direct_workflow",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "2018",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/google-sre-postmortem/root-causes-synthesis-basis": {
+      "source_ref": "url:https://sre.google/workbook/postmortem-culture/",
+      "stable_locator": "https://sre.google/workbook/postmortem-culture/",
+      "section_title": "Root Causes and Trigger",
+      "selector": "root cause detail used as basis for OMA contributing-factor classification",
+      "support_role": "synthesis_basis",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "2018",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/google-sre-postmortem/action-items": {
+      "source_ref": "url:https://sre.google/workbook/postmortem-culture/",
+      "stable_locator": "https://sre.google/workbook/postmortem-culture/",
+      "section_title": "Action Items",
+      "selector": "action item planning, ownership, priority, and tracking requirements",
+      "support_role": "direct_workflow",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "2018",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/google-sre-postmortem/review-share-and-follow-up": {
+      "source_ref": "url:https://sre.google/workbook/postmortem-culture/",
+      "stable_locator": "https://sre.google/workbook/postmortem-culture/",
+      "section_title": "Postmortem culture and checklist",
+      "selector": "review, share, assign owner, follow up, and complete action items",
+      "support_role": "synthesis_basis",
+      "verification_status": "verified",
+      "source_version_or_fingerprint": "2018",
+      "verified_on": "2026-07-10"
+    },
+    "seed-anchor:oma/nist-800-61r3/post-incident-quality-gates": {
+      "source_ref": "doi:10.6028/NIST.SP.800-61r3",
+      "stable_locator": "https://doi.org/10.6028/NIST.SP.800-61r3",
+      "section_title": "Post-incident activity and continuous improvement",
+      "selector": "scope, timeline, lessons learned, and improvement-action quality gates",
+      "support_role": "quality_gate",
+      "verification_status": "needs_manual_review",
+      "source_version_or_fingerprint": "Revision 3"
     }
   },
   "seed_patterns": [
@@ -151,54 +717,64 @@
           "expert_question": "What materials define the case, and what is the decision the owner is actually asking for?",
           "stage_archetype": "material_or_case_intake",
           "provenance_kind": "source_derived",
-          "source_anchor_refs": ["doi:10.1038/s41591-026-04494-4#workflow/case_material_intake"]
+          "source_anchor_refs": ["seed-anchor:oma/nature-hemaguide/pre-runtime-memory-construction"]
         },
         {
           "step_id": "structured_case_extraction",
           "expert_question": "Which variables, constraints, chronology, and missing data points matter for this decision?",
           "stage_archetype": "structured_extraction",
           "provenance_kind": "source_derived",
-          "source_anchor_refs": ["doi:10.1038/s41591-026-04494-4#workflow/structured_case_extraction"]
+          "source_anchor_refs": ["seed-anchor:oma/nature-hemaguide/structured-extraction"]
         },
         {
           "step_id": "decision_problem_framing",
           "expert_question": "What decision options, risks, and human gate points are in scope?",
           "stage_archetype": "mode_routing",
           "provenance_kind": "internal_synthesis",
-          "source_anchor_refs": ["doi:10.1038/s41591-026-04494-4#criteria/decision_problem_framing"]
+          "synthesis_rationale": "OMA turns the source-described structured case representation into an explicit owner decision question; the article does not prescribe this as a standalone pipeline stage.",
+          "source_anchor_refs": ["seed-anchor:oma/nature-hemaguide/decision-problem-framing-basis"]
         },
         {
           "step_id": "evidence_contextualization",
           "expert_question": "Which references apply to this case, and where do they not apply?",
           "stage_archetype": "evidence_and_tool_execution",
           "provenance_kind": "source_derived",
-          "source_anchor_refs": ["doi:10.1038/s41591-026-04494-4#workflow/evidence_contextualization"]
+          "source_anchor_refs": ["seed-anchor:oma/nature-hemaguide/contextual-enrichment-and-routing"]
+        },
+        {
+          "step_id": "decision_tool_selection_and_execution",
+          "expert_question": "Which decision mode or tool should be selected and executed for this case?",
+          "stage_archetype": "decision_tool_selection_and_execution",
+          "provenance_kind": "source_derived",
+          "source_anchor_refs": ["seed-anchor:oma/nature-hemaguide/decision-tool-selection-and-execution"]
         },
         {
           "step_id": "case_grounded_synthesis",
           "expert_question": "How do the case facts and applicable evidence change the reasoning?",
           "stage_archetype": "synthesis",
           "provenance_kind": "source_derived",
-          "source_anchor_refs": ["doi:10.1038/s41591-026-04494-4#workflow/case_grounded_synthesis"]
+          "source_anchor_refs": ["seed-anchor:oma/nature-hemaguide/context-aggregation-transparent-reasoning"]
         },
         {
           "step_id": "uncertainty_and_blocker_review",
           "expert_question": "Which conclusions are unsupported, unsafe, or require more owner input?",
           "stage_archetype": "unsupported_evidence_blocker",
           "provenance_kind": "internal_synthesis",
-          "source_anchor_refs": ["doi:10.1038/s41591-026-04494-4#criteria/uncertainty_and_blocker_review"]
+          "synthesis_rationale": "OMA adds an explicit uncertainty and blocker review around the source's transparent reasoning output; the article does not define it as a separate work-order step.",
+          "source_anchor_refs": ["seed-anchor:oma/nature-hemaguide/uncertainty-and-blocker-synthesis-basis"]
         },
         {
           "step_id": "independent_review_or_human_gate",
           "expert_question": "Would an independent reviewer or domain owner accept the reasoning trace?",
           "stage_archetype": "independent_review_or_human_gate",
           "provenance_kind": "internal_synthesis",
-          "source_anchor_refs": ["doi:10.1038/s41591-026-04494-4#criteria/independent_review_or_human_gate"]
+          "synthesis_rationale": "OMA converts independent evaluation evidence and the target authority boundary into a review or human gate; it is not direct workflow authority from the article.",
+          "source_anchor_refs": ["seed-anchor:oma/nature-hemaguide/independent-review-evaluation"]
         }
       ],
       "suggested_oma_inputs": {
         "reference_design_pattern_packet_ref": "expert-workflow-pattern:oma/case-grounded-expert-decision-workflow.v1",
-        "reference_design_pattern_note": "Use case-grounded expert decision workflow: intake, structured extraction, decision framing, evidence contextualization, synthesis, unsupported-evidence blocker, and human gate."
+        "reference_design_pattern_note": "Use case-grounded expert decision workflow: pre-runtime memory intake, structured extraction, contextual enrichment and routing, decision-tool execution, context aggregation, internal decision framing, blocker review, and human gate."
       },
       "quality_gate_refs": [
         "quality-gate-ref:decision-support-forbidden-claims",
@@ -237,37 +813,39 @@
           "expert_question": "What decision, population, setting, stakeholder, and constraints are being considered?",
           "stage_archetype": "decision_context_intake",
           "provenance_kind": "source_derived",
-          "source_anchor_refs": ["doi:10.1136/bmj.i2016#workflow/decision_context_intake"]
+          "source_anchor_refs": ["seed-anchor:oma/bmj-etd/formulating-the-question"]
         },
         {
           "step_id": "guideline_scope_fit",
           "expert_question": "Does this guideline actually apply to the target context?",
           "stage_archetype": "reference_scope_appraisal",
-          "provenance_kind": "source_derived",
-          "source_anchor_refs": ["doi:10.1136/bmj.i2016#workflow/guideline_scope_fit"]
+          "provenance_kind": "internal_synthesis",
+          "synthesis_rationale": "OMA compares the source-framed guideline question with the target context to judge scope fit; the EtD article does not define guideline applicability review as a separate direct workflow section.",
+          "source_anchor_refs": ["seed-anchor:oma/bmj-etd/formulating-question-scope-synthesis-basis"]
         },
         {
           "step_id": "evidence_to_decision_factor_review",
           "expert_question": "What is known about benefits, harms, certainty, resources, values, feasibility, and equity?",
           "stage_archetype": "evidence_factor_review",
           "provenance_kind": "source_derived",
-          "source_anchor_refs": ["doi:10.1136/bmj.i2016#workflow/evidence_to_decision_factor_review"]
+          "source_anchor_refs": ["seed-anchor:oma/bmj-etd/making-an-assessment"]
         },
         {
           "step_id": "recommendation_shape_design",
           "expert_question": "What recommendation strength, caveats, and owner choices follow from the factors?",
           "stage_archetype": "recommendation_synthesis",
           "provenance_kind": "source_derived",
-          "source_anchor_refs": ["doi:10.1136/bmj.i2016#workflow/recommendation_shape_design"]
+          "source_anchor_refs": ["seed-anchor:oma/bmj-etd/drawing-conclusions"]
         },
         {
           "step_id": "applicability_and_update_check",
           "expert_question": "What version, freshness, local protocol, or exception should block or qualify the output?",
           "stage_archetype": "freshness_and_scope_gate",
           "provenance_kind": "internal_synthesis",
+          "synthesis_rationale": "OMA combines EtD conclusion framing with AGREE II applicability checks into a maintenance gate; neither source defines this combined step as direct work order.",
           "source_anchor_refs": [
-            "doi:10.1136/bmj.i2016#criteria/applicability_and_update_check",
-            "source-ref:agree-ii-2017#evaluation/applicability"
+            "seed-anchor:oma/bmj-etd/drawing-conclusions-synthesis-basis",
+            "seed-anchor:oma/agree-ii/applicability"
           ]
         }
       ],
@@ -306,11 +884,11 @@
       ],
       "transferable_workflow_steps": [
         {
-          "step_id": "review_question_feasibility",
-          "expert_question": "Is the review question answerable, useful, and scoped tightly enough?",
-          "stage_archetype": "question_feasibility",
+          "step_id": "review_scope_and_question_definition",
+          "expert_question": "What scope and review question will the review address?",
+          "stage_archetype": "review_scope_and_question_definition",
           "provenance_kind": "source_derived",
-          "source_anchor_refs": ["source-ref:cochrane-handbook-v6.5-2024#workflow/review_question_feasibility"]
+          "source_anchor_refs": ["seed-anchor:oma/cochrane-handbook/chapter-02-section-2-3"]
         },
         {
           "step_id": "protocol_and_search_strategy",
@@ -318,8 +896,9 @@
           "stage_archetype": "search_protocol_design",
           "provenance_kind": "source_derived",
           "source_anchor_refs": [
-            "source-ref:cochrane-handbook-v6.5-2024#workflow/protocol_and_search_strategy",
-            "doi:10.1136/bmj.n71#quality/protocol_and_search_reporting"
+            "seed-anchor:oma/cochrane-handbook/chapter-01-section-1-5",
+            "seed-anchor:oma/cochrane-handbook/chapter-04-searching-and-selecting-studies",
+            "seed-anchor:oma/prisma-2020/protocol-and-search-reporting"
           ]
         },
         {
@@ -327,21 +906,24 @@
           "expert_question": "Which records should be included, excluded, or escalated for adjudication?",
           "stage_archetype": "screening_and_adjudication",
           "provenance_kind": "source_derived",
-          "source_anchor_refs": ["source-ref:cochrane-handbook-v6.5-2024#workflow/screening_decision_process"]
+          "source_anchor_refs": ["seed-anchor:oma/cochrane-handbook/chapter-04-searching-and-selecting-studies"]
         },
         {
-          "step_id": "data_extraction_and_normalization",
-          "expert_question": "What facts must be extracted consistently enough to support synthesis?",
-          "stage_archetype": "structured_extraction",
+          "step_id": "data_collection_and_extraction",
+          "expert_question": "What data should be collected and extracted consistently for the review?",
+          "stage_archetype": "data_collection_and_extraction",
           "provenance_kind": "source_derived",
-          "source_anchor_refs": ["source-ref:cochrane-handbook-v6.5-2024#workflow/data_extraction_and_normalization"]
+          "source_anchor_refs": ["seed-anchor:oma/cochrane-handbook/chapter-05-collecting-data"]
         },
         {
           "step_id": "bias_and_certainty_assessment",
           "expert_question": "How reliable is the evidence, and what downgrades or limitations matter?",
           "stage_archetype": "risk_of_bias_and_certainty",
           "provenance_kind": "source_derived",
-          "source_anchor_refs": ["source-ref:cochrane-handbook-v6.5-2024#workflow/bias_and_certainty_assessment"]
+          "source_anchor_refs": [
+            "seed-anchor:oma/cochrane-handbook/chapter-08-risk-of-bias",
+            "seed-anchor:oma/cochrane-handbook/chapter-14-certainty-and-summary-of-findings"
+          ]
         },
         {
           "step_id": "synthesis_and_gap_statement",
@@ -349,14 +931,14 @@
           "stage_archetype": "evidence_synthesis",
           "provenance_kind": "source_derived",
           "source_anchor_refs": [
-            "source-ref:cochrane-handbook-v6.5-2024#workflow/synthesis_and_gap_statement",
-            "doi:10.1136/bmj.n71#quality/synthesis_reporting"
+            "seed-anchor:oma/cochrane-handbook/chapter-15-interpretation-and-conclusions",
+            "seed-anchor:oma/prisma-2020/synthesis-reporting"
           ]
         }
       ],
       "suggested_oma_inputs": {
         "reference_design_pattern_packet_ref": "expert-workflow-pattern:oma/systematic-evidence-synthesis-workflow.v1",
-        "reference_design_pattern_note": "Use systematic evidence synthesis workflow: feasibility, protocol/search, screening, extraction, bias/certainty, synthesis and gap statement."
+        "reference_design_pattern_note": "Use systematic evidence synthesis workflow: scope/question definition, protocol/search, screening, data collection/extraction, bias/certainty, interpretation and conclusions."
       },
       "quality_gate_refs": [
         "quality-gate-ref:search-strategy-reproducibility",
@@ -393,9 +975,10 @@
           "expert_question": "Does the model's intended use match this target population and decision?",
           "stage_archetype": "intended_use_match",
           "provenance_kind": "internal_synthesis",
+          "synthesis_rationale": "OMA combines reporting and applicability criteria to form a target use-case fit check; the sources do not prescribe this as a workflow sequence.",
           "source_anchor_refs": [
-            "doi:10.1136/bmj-2023-078378#quality/intended_use",
-            "doi:10.1136/bmj-2024-082505#evaluation/participants_and_setting"
+            "seed-anchor:oma/tripod-ai/intended-use-and-population",
+            "seed-anchor:oma/probast-ai/overall-applicability"
           ]
         },
         {
@@ -403,9 +986,10 @@
           "expert_question": "Are required predictors present, measured consistently, and safe to use?",
           "stage_archetype": "input_variable_check",
           "provenance_kind": "internal_synthesis",
+          "synthesis_rationale": "OMA turns predictor reporting and applicability criteria into an input-availability check; this is an internal adaptation rather than source-authored work order.",
           "source_anchor_refs": [
-            "doi:10.1136/bmj-2023-078378#quality/predictors",
-            "doi:10.1136/bmj-2024-082505#evaluation/predictors"
+            "seed-anchor:oma/tripod-ai/predictors",
+            "seed-anchor:oma/probast-ai/analysis-and-applicability"
           ]
         },
         {
@@ -413,9 +997,10 @@
           "expert_question": "What development, validation, calibration, and discrimination evidence exists?",
           "stage_archetype": "model_evidence_review",
           "provenance_kind": "internal_synthesis",
+          "synthesis_rationale": "OMA combines reporting and risk-of-bias criteria into a provenance and performance review; the sources provide evaluation criteria, not direct workflow order.",
           "source_anchor_refs": [
-            "doi:10.1136/bmj-2023-078378#quality/performance",
-            "doi:10.1136/bmj-2024-082505#evaluation/analysis"
+            "seed-anchor:oma/tripod-ai/model-performance-and-risk-estimates",
+            "seed-anchor:oma/probast-ai/analysis-and-applicability"
           ]
         },
         {
@@ -423,9 +1008,10 @@
           "expert_question": "What does the risk estimate mean for the target decision threshold?",
           "stage_archetype": "risk_interpretation",
           "provenance_kind": "internal_synthesis",
+          "synthesis_rationale": "OMA translates reported risk estimates and applicability criteria into target threshold interpretation; neither source defines this as a direct operating step.",
           "source_anchor_refs": [
-            "doi:10.1136/bmj-2023-078378#quality/risk_interpretation",
-            "doi:10.1136/bmj-2024-082505#evaluation/applicability"
+            "seed-anchor:oma/tripod-ai/model-performance-and-risk-estimates",
+            "seed-anchor:oma/probast-ai/analysis-and-applicability"
           ]
         },
         {
@@ -433,7 +1019,8 @@
           "expert_question": "What missing data, drift, or mismatch should block the result or require owner review?",
           "stage_archetype": "applicability_gate",
           "provenance_kind": "internal_synthesis",
-          "source_anchor_refs": ["doi:10.1136/bmj-2024-082505#evaluation/overall_applicability"]
+          "synthesis_rationale": "OMA converts the source's applicability judgment into an explicit blocker or owner handoff; the source does not authorize target use or prescribe this workflow step.",
+          "source_anchor_refs": ["seed-anchor:oma/probast-ai/overall-applicability"]
         }
       ],
       "suggested_oma_inputs": {
@@ -476,16 +1063,18 @@
           "expert_question": "What human workflow is this AI expected to affect?",
           "stage_archetype": "workflow_context_intake",
           "provenance_kind": "internal_synthesis",
-          "source_anchor_refs": ["doi:10.1038/s41591-022-01772-9#evaluation/intended_use_and_context"]
+          "synthesis_rationale": "OMA turns DECIDE-AI evaluation criteria into an intended-use and workflow-context intake; the framework does not prescribe this as direct workflow order.",
+          "source_anchor_refs": ["seed-anchor:oma/decide-ai/intended-use-and-workflow-context"]
         },
         {
           "step_id": "human_ai_interaction_mapping",
           "expert_question": "Who sees what, when, and with what ability to override or contest it?",
           "stage_archetype": "human_ai_interaction_mapping",
           "provenance_kind": "internal_synthesis",
+          "synthesis_rationale": "OMA combines DECIDE-AI and CONSORT-AI criteria into a human-AI interaction map; both sources provide evaluation and reporting constraints rather than operating sequence.",
           "source_anchor_refs": [
-            "doi:10.1038/s41591-022-01772-9#evaluation/human_ai_interaction",
-            "doi:10.1038/s41591-020-1034-x#quality/human_ai_interaction"
+            "seed-anchor:oma/decide-ai/human-ai-interaction",
+            "seed-anchor:oma/consort-ai/human-ai-interaction-and-endpoints"
           ]
         },
         {
@@ -493,9 +1082,10 @@
           "expert_question": "What failures are plausible and what controls detect or contain them?",
           "stage_archetype": "safety_failure_review",
           "provenance_kind": "internal_synthesis",
+          "synthesis_rationale": "OMA synthesizes evaluation and protocol criteria into a safety and failure-mode review; the sources do not define this target workflow step.",
           "source_anchor_refs": [
-            "doi:10.1038/s41591-022-01772-9#evaluation/safety_and_failure_modes",
-            "doi:10.1038/s41591-020-1037-7#quality/safety_protocol"
+            "seed-anchor:oma/decide-ai/safety-and-failure-modes",
+            "seed-anchor:oma/spirit-ai/safety-and-trial-readiness"
           ]
         },
         {
@@ -503,9 +1093,10 @@
           "expert_question": "Which endpoints prove usefulness, safety, usability, and workflow fit?",
           "stage_archetype": "evaluation_design",
           "provenance_kind": "internal_synthesis",
+          "synthesis_rationale": "OMA converts reporting criteria into an endpoint-design activity for the target agent; this is internal synthesis, not source-authored work order.",
           "source_anchor_refs": [
-            "doi:10.1038/s41591-022-01772-9#evaluation/endpoints",
-            "doi:10.1038/s41591-020-1034-x#quality/trial_endpoints"
+            "seed-anchor:oma/decide-ai/evaluation-endpoints",
+            "seed-anchor:oma/consort-ai/human-ai-interaction-and-endpoints"
           ]
         },
         {
@@ -513,9 +1104,10 @@
           "expert_question": "What evidence is missing before the owner can trial, deploy, or reject it?",
           "stage_archetype": "owner_gate",
           "provenance_kind": "internal_synthesis",
+          "synthesis_rationale": "OMA combines evaluation and trial-protocol constraints into an owner gate; neither source grants deployment authority or prescribes this step as workflow.",
           "source_anchor_refs": [
-            "doi:10.1038/s41591-022-01772-9#evaluation/deployment_or_trial_gate",
-            "doi:10.1038/s41591-020-1037-7#quality/trial_readiness"
+            "seed-anchor:oma/decide-ai/deployment-or-trial-gate",
+            "seed-anchor:oma/spirit-ai/safety-and-trial-readiness"
           ]
         }
       ],
@@ -558,9 +1150,10 @@
           "expert_question": "What claims can the data actually support, and what must be removed?",
           "stage_archetype": "claim_evidence_mapping",
           "provenance_kind": "internal_synthesis",
+          "synthesis_rationale": "OMA turns publication integrity and reporting requirements into a claim-evidence inventory; the sources are quality constraints rather than manuscript workflow authority.",
           "source_anchor_refs": [
-            "url:https://www.icmje.org/recommendations/#quality/manuscript_claim_integrity",
-            "url:https://www.equator-network.org/#quality/reporting_requirements"
+            "seed-anchor:oma/icmje/claim-integrity-and-author-responsibility",
+            "seed-anchor:oma/equator/reporting-guideline-selection-and-structure"
           ]
         },
         {
@@ -568,30 +1161,34 @@
           "expert_question": "Who is the reader, what does the journal value, and what framing is credible?",
           "stage_archetype": "audience_and_venue_fit",
           "provenance_kind": "internal_synthesis",
-          "source_anchor_refs": ["url:https://www.icmje.org/recommendations/#quality/journal_and_audience_fit"]
+          "synthesis_rationale": "OMA adds a venue and audience fit judgment around ICMJE submission guidance; ICMJE does not define this as direct workflow order.",
+          "source_anchor_refs": ["seed-anchor:oma/icmje/journal-and-audience-fit-synthesis-basis"]
         },
         {
           "step_id": "scientific_storyline_design",
           "expert_question": "What is the simplest defensible story that connects question, evidence, and contribution?",
           "stage_archetype": "storyline_architecture",
           "provenance_kind": "internal_synthesis",
-          "source_anchor_refs": ["url:https://www.equator-network.org/#criteria/reporting_structure"]
+          "synthesis_rationale": "OMA uses the selected reporting guideline as a structural constraint while designing a scientific storyline; the registry itself is not a writing workflow.",
+          "source_anchor_refs": ["seed-anchor:oma/equator/reporting-guideline-selection-and-structure"]
         },
         {
           "step_id": "figure_table_and_result_logic",
           "expert_question": "Which displays make the evidence inspectable and reviewer-proof?",
           "stage_archetype": "display_and_result_logic",
           "provenance_kind": "internal_synthesis",
-          "source_anchor_refs": ["url:https://www.equator-network.org/#criteria/result_and_display_reporting"]
+          "synthesis_rationale": "OMA turns reporting completeness requirements into display and result logic; EQUATOR remains a quality source, not direct work-order authority.",
+          "source_anchor_refs": ["seed-anchor:oma/equator/results-displays-and-completeness"]
         },
         {
           "step_id": "reviewer_risk_simulation",
           "expert_question": "Where will reviewers attack methods, novelty, claims, or reporting completeness?",
           "stage_archetype": "reviewer_simulation",
           "provenance_kind": "internal_synthesis",
+          "synthesis_rationale": "OMA combines editorial and reporting constraints into reviewer-risk simulation; this adversarial review step is OMA synthesis.",
           "source_anchor_refs": [
-            "url:https://www.icmje.org/recommendations/#criteria/editorial_review",
-            "url:https://www.equator-network.org/#criteria/reporting_completeness"
+            "seed-anchor:oma/icmje/editorial-review-and-submission-responsibility",
+            "seed-anchor:oma/equator/results-displays-and-completeness"
           ]
         },
         {
@@ -599,7 +1196,8 @@
           "expert_question": "Is the package complete, consistent, and owner-approved for submission or response?",
           "stage_archetype": "owner_submission_gate",
           "provenance_kind": "internal_synthesis",
-          "source_anchor_refs": ["url:https://www.icmje.org/recommendations/#quality/submission_responsibility"]
+          "synthesis_rationale": "OMA converts submission responsibilities into an explicit owner gate; ICMJE does not grant submission authority or prescribe this package workflow.",
+          "source_anchor_refs": ["seed-anchor:oma/icmje/editorial-review-and-submission-responsibility"]
         }
       ],
       "suggested_oma_inputs": {
@@ -624,7 +1222,7 @@
       "authority_tier": "S",
       "source_refs": [
         "url:https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework",
-        "url:https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review#ch3D"
+        "url:https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review"
       ],
       "applicable_constraints": [
         "grant_strategy_and_proposal_review_context",
@@ -641,9 +1239,10 @@
           "expert_question": "What does the PI want, what assets exist, and what constraints cannot move?",
           "stage_archetype": "goal_and_asset_intake",
           "provenance_kind": "internal_synthesis",
+          "synthesis_rationale": "OMA uses review criteria to decide which owner goals and assets matter; the funder criteria do not prescribe an intake workflow.",
           "source_anchor_refs": [
-            "url:https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework#evaluation/importance_and_rigor",
-            "url:https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review#ch3D#evaluation/intellectual_merit"
+            "seed-anchor:oma/nih-review/importance-of-research",
+            "seed-anchor:oma/nsf-merit-review/intellectual-merit"
           ]
         },
         {
@@ -651,9 +1250,10 @@
           "expert_question": "Does the funder/program fit, and what hard or implicit constraints matter?",
           "stage_archetype": "opportunity_fit",
           "provenance_kind": "internal_synthesis",
+          "synthesis_rationale": "OMA combines funder evaluation criteria with the owner's opportunity context to identify fit and hidden constraints; this is not a source-authored sequence.",
           "source_anchor_refs": [
-            "url:https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework#evaluation/mission_relevance",
-            "url:https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review#ch3D#evaluation/merit_review"
+            "seed-anchor:oma/nih-review/importance-of-research",
+            "seed-anchor:oma/nsf-merit-review/merit-review-process"
           ]
         },
         {
@@ -661,9 +1261,10 @@
           "expert_question": "Why this question, why now, why this team, and why should reviewers care?",
           "stage_archetype": "strategic_positioning",
           "provenance_kind": "internal_synthesis",
+          "synthesis_rationale": "OMA turns importance, intellectual merit, and broader impacts criteria into strategic positioning; the sources remain evaluation frameworks.",
           "source_anchor_refs": [
-            "url:https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework#evaluation/importance_of_research",
-            "url:https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review#ch3D#evaluation/broader_impacts"
+            "seed-anchor:oma/nih-review/importance-of-research",
+            "seed-anchor:oma/nsf-merit-review/broader-impacts"
           ]
         },
         {
@@ -671,16 +1272,18 @@
           "expert_question": "What central story makes the project coherent before any section is drafted?",
           "stage_archetype": "scientific_storyline",
           "provenance_kind": "internal_synthesis",
-          "source_anchor_refs": ["url:https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework#evaluation/rigor_and_feasibility"]
+          "synthesis_rationale": "OMA uses rigor and feasibility criteria to shape a central storyline and hypothesis; NIH does not define this writing step as workflow authority.",
+          "source_anchor_refs": ["seed-anchor:oma/nih-review/rigor-and-feasibility"]
         },
         {
           "step_id": "aim_architecture_and_risk_distribution",
           "expert_question": "Do the aims create a feasible, non-fragile plan rather than a table of contents?",
           "stage_archetype": "aim_architecture",
           "provenance_kind": "internal_synthesis",
+          "synthesis_rationale": "OMA translates rigor, feasibility, and merit criteria into aim architecture and risk distribution; the source material is evaluative, not procedural.",
           "source_anchor_refs": [
-            "url:https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework#evaluation/approach",
-            "url:https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review#ch3D#evaluation/plan_quality"
+            "seed-anchor:oma/nih-review/rigor-and-feasibility",
+            "seed-anchor:oma/nsf-merit-review/intellectual-merit"
           ]
         },
         {
@@ -688,16 +1291,23 @@
           "expert_question": "What preliminary data, methods, team assets, and alternatives make reviewers believe it?",
           "stage_archetype": "feasibility_buildout",
           "provenance_kind": "internal_synthesis",
-          "source_anchor_refs": ["url:https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework#evaluation/investigator_and_environment"]
+          "synthesis_rationale": "OMA turns expertise, resources, and feasibility criteria into an evidence-buildout activity; the source does not prescribe this step directly.",
+          "source_anchor_refs": [
+            "seed-anchor:oma/nih-review/expertise-and-resources",
+            "seed-anchor:oma/nih-review/rigor-and-feasibility"
+          ]
         },
         {
           "step_id": "reviewer_simulation_and_revision",
           "expert_question": "What would a study section attack first, and how should the proposal be revised?",
           "stage_archetype": "reviewer_simulation",
           "provenance_kind": "internal_synthesis",
+          "synthesis_rationale": "OMA uses funder review criteria to simulate reviewer objections and revisions; reviewer simulation is an internal synthesis workflow.",
           "source_anchor_refs": [
-            "url:https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework#evaluation/reviewer_factors",
-            "url:https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review#ch3D#evaluation/reviewer_considerations"
+            "seed-anchor:oma/nih-review/importance-of-research",
+            "seed-anchor:oma/nih-review/rigor-and-feasibility",
+            "seed-anchor:oma/nih-review/expertise-and-resources",
+            "seed-anchor:oma/nsf-merit-review/merit-review-process"
           ]
         }
       ],
@@ -723,6 +1333,7 @@
       "authority_tier": "B",
       "source_refs": [
         "url:https://sre.google/workbook/postmortem-culture/",
+        "url:https://cloud.google.com/architecture/framework/reliability/conduct-postmortems",
         "doi:10.6028/NIST.SP.800-61r3"
       ],
       "applicable_constraints": [
@@ -741,8 +1352,8 @@
           "stage_archetype": "fact_freeze",
           "provenance_kind": "source_derived",
           "source_anchor_refs": [
-            "url:https://sre.google/workbook/postmortem-culture/#workflow/fact_freeze_and_scope",
-            "doi:10.6028/NIST.SP.800-61r3#quality/incident_scope"
+            "seed-anchor:oma/google-cloud-postmortem/create-and-capture-facts",
+            "seed-anchor:oma/nist-800-61r3/post-incident-quality-gates"
           ]
         },
         {
@@ -751,8 +1362,8 @@
           "stage_archetype": "timeline_reconstruction",
           "provenance_kind": "source_derived",
           "source_anchor_refs": [
-            "url:https://sre.google/workbook/postmortem-culture/#workflow/timeline_and_impact_reconstruction",
-            "doi:10.6028/NIST.SP.800-61r3#quality/incident_timeline"
+            "seed-anchor:oma/google-sre-postmortem/incident-timeline",
+            "seed-anchor:oma/nist-800-61r3/post-incident-quality-gates"
           ]
         },
         {
@@ -760,16 +1371,20 @@
           "expert_question": "What technical, process, and decision mechanisms connected trigger to impact?",
           "stage_archetype": "mechanism_chain",
           "provenance_kind": "source_derived",
-          "source_anchor_refs": ["url:https://sre.google/workbook/postmortem-culture/#workflow/mechanism_chain_analysis"]
+          "source_anchor_refs": [
+            "seed-anchor:oma/google-sre-postmortem/root-causes-and-trigger",
+            "seed-anchor:oma/google-cloud-postmortem/identify-and-analyze-root-causes"
+          ]
         },
         {
           "step_id": "contributing_factor_classification",
           "expert_question": "Which factors were necessary, amplifying, or merely coincidental?",
           "stage_archetype": "contributing_factor_analysis",
           "provenance_kind": "internal_synthesis",
+          "synthesis_rationale": "OMA adds a contributing-factor classification over root-cause evidence and post-incident quality criteria; neither source defines this taxonomy as direct workflow order.",
           "source_anchor_refs": [
-            "url:https://sre.google/workbook/postmortem-culture/#criteria/contributing_factor_classification",
-            "doi:10.6028/NIST.SP.800-61r3#quality/lessons_learned"
+            "seed-anchor:oma/google-sre-postmortem/root-causes-synthesis-basis",
+            "seed-anchor:oma/nist-800-61r3/post-incident-quality-gates"
           ]
         },
         {
@@ -778,16 +1393,21 @@
           "stage_archetype": "corrective_action_design",
           "provenance_kind": "source_derived",
           "source_anchor_refs": [
-            "url:https://sre.google/workbook/postmortem-culture/#workflow/corrective_action_design",
-            "doi:10.6028/NIST.SP.800-61r3#quality/improvement_actions"
+            "seed-anchor:oma/google-sre-postmortem/action-items",
+            "seed-anchor:oma/google-cloud-postmortem/plan-for-the-future",
+            "seed-anchor:oma/nist-800-61r3/post-incident-quality-gates"
           ]
         },
         {
           "step_id": "owner_followup_and_closeout_gate",
           "expert_question": "Who owns each action, how will it be verified, and when is the incident truly closed?",
           "stage_archetype": "owner_followup_gate",
-          "provenance_kind": "source_derived",
-          "source_anchor_refs": ["url:https://sre.google/workbook/postmortem-culture/#workflow/owner_followup_and_closeout_gate"]
+          "provenance_kind": "internal_synthesis",
+          "synthesis_rationale": "OMA combines source-backed action follow-up with its own owner-receipt and verification policy to define when a lane is truly closed; Google and NIST do not grant OMA closure authority.",
+          "source_anchor_refs": [
+            "seed-anchor:oma/google-sre-postmortem/review-share-and-follow-up",
+            "seed-anchor:oma/google-cloud-postmortem/execute-the-plan"
+          ]
         }
       ],
       "suggested_oma_inputs": {

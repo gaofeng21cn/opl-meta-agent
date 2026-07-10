@@ -526,6 +526,19 @@ export function buildDesignAdmissionReceipt(
   const plannedStages = Array.isArray(agentPackPlan.planned_stage_refs)
     ? agentPackPlan.planned_stage_refs as JsonObject[]
     : [];
+  const designDerivedStageRefs = plannedStages
+    .filter((stage) => stage.origin === 'source_pattern_ref')
+    .map((stage) => ({
+      stage_id: stage.stage_id,
+      stage_ref: stage.stage_ref,
+      pattern_id: stage.pattern_id,
+      step_id: stage.step_id,
+      provenance_kind: stage.provenance_kind,
+      source_authority_tier: stage.source_authority_tier,
+      source_pattern_ref: stage.source_pattern_ref,
+      source_anchor_refs: stage.source_anchor_refs,
+      resolved_source_anchors: stage.resolved_source_anchors,
+    }));
   const selectedProfileRefs = stringList(targetAgent.selected_opl_profile_refs);
   return {
     surface_kind: 'opl_meta_agent_design_admission_receipt',
@@ -552,28 +565,8 @@ export function buildDesignAdmissionReceipt(
       'AgentPackPlan',
     ],
     required_admission_receipts: ['DesignAdmissionReceipt'],
-    design_derived_stage_refs: plannedStages
-      .filter((stage) => stage.origin === 'source_pattern_ref')
-      .map((stage) => ({
-        stage_id: stage.stage_id,
-        stage_ref: stage.stage_ref,
-        pattern_id: stage.pattern_id,
-        step_id: stage.step_id,
-        provenance_kind: stage.provenance_kind,
-        source_pattern_ref: stage.source_pattern_ref,
-        source_anchor_refs: stage.source_anchor_refs,
-      })),
-    source_derived_stage_refs: plannedStages
-      .filter((stage) => stage.origin === 'source_pattern_ref')
-      .map((stage) => ({
-        stage_id: stage.stage_id,
-        stage_ref: stage.stage_ref,
-        pattern_id: stage.pattern_id,
-        step_id: stage.step_id,
-        provenance_kind: stage.provenance_kind,
-        source_pattern_ref: stage.source_pattern_ref,
-        source_anchor_refs: stage.source_anchor_refs,
-      })),
+    design_derived_stage_refs: designDerivedStageRefs,
+    source_derived_stage_refs: designDerivedStageRefs,
     target_only_requirement_refs: plannedStages
       .filter((stage) => stage.origin === 'target_only_requirement')
       .map((stage) => String(stage.target_only_requirement_ref))

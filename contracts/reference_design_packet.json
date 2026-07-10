@@ -71,6 +71,11 @@
     "seed_library_is_context_only_when_user_packet_present": true,
     "secondary_seed_must_not_expand_active_stage_graph": true
   },
+  "seed_provenance_policy_ref": "contracts/expert_workflow_pattern_library.json#/provenance_policy",
+  "seed_pattern_materialization_required_fields": [
+    "authority_tier",
+    "resolved_source_anchors"
+  ],
   "stage_materialization_policy": {
     "every_source_workflow_step_must_exist_in_stage_control_plane": true,
     "stage_prompt_skill_knowledge_and_quality_gate_refs_required": true,

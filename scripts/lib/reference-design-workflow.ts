@@ -56,6 +56,13 @@ function requiredObjectArray(value: unknown, field: string): JsonObject[] {
   });
 }
 
+function requiredObject(value: unknown, field: string): JsonObject {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    throw new Error(`reference_design_resolution_failed:${field}_missing`);
+  }
+  return value as JsonObject;
+}
+
 function uniqueStrings(values: string[]): string[] {
   return [...new Set(values)];
 }
@@ -91,13 +98,19 @@ function canonicalSeedReferenceDesignPattern({
   pattern,
   sourceInputRef,
   sourceMetadata,
+  anchorCatalog,
 }: {
   pattern: JsonObject;
   sourceInputRef: string;
   sourceMetadata: JsonObject[];
+  anchorCatalog: JsonObject;
 }): JsonObject {
   const patternId = requiredString(pattern.pattern_id, 'pattern_id');
   const patternRef = requiredString(pattern.pattern_ref, `${patternId}.pattern_ref`);
+  const authorityTier = requiredString(pattern.authority_tier, `${patternId}.authority_tier`);
+  if (!['S', 'A', 'B', 'C'].includes(authorityTier)) {
+    throw new Error(`reference_design_resolution_failed:${patternId}.authority_tier_invalid`);
+  }
   const metadata = sourceMetadata.map((entry, index) => ({
     source_ref: requiredString(entry.source_ref, `${patternId}.source_metadata[${index}].source_ref`),
     locator: requiredString(entry.locator, `${patternId}.source_metadata[${index}].locator`),
@@ -110,10 +123,7 @@ function canonicalSeedReferenceDesignPattern({
       ? { freshness: entry.freshness.trim() }
       : {}),
   }));
-  const workflowSourceRefs = metadata
-    .filter((entry) => entry.role === 'workflow_source')
-    .map((entry) => entry.source_ref);
-  const knownSourceRefs = metadata.map((entry) => entry.source_ref);
+  const knownSourceRefs = new Set(metadata.map((entry) => entry.source_ref));
   const steps = requiredObjectArray(
     pattern.transferable_workflow_steps,
     `${patternId}.transferable_workflow_steps`,
@@ -130,23 +140,83 @@ function canonicalSeedReferenceDesignPattern({
     if (!['source_derived', 'internal_synthesis'].includes(provenanceKind)) {
       throw new Error(`reference_design_resolution_failed:${patternId}.${stepId}.provenance_kind_invalid`);
     }
-    const anchorMatches = (sourceRefs: string[]) => sourceAnchorRefs.some((anchor) =>
-      sourceRefs.some((sourceRef) => anchor === sourceRef || anchor.startsWith(`${sourceRef}#`))
-    );
-    if (!anchorMatches(knownSourceRefs)) {
-      throw new Error(`reference_design_resolution_failed:${patternId}.${stepId}.source_anchor_unknown`);
-    }
-    if (provenanceKind === 'source_derived' && !anchorMatches(workflowSourceRefs)) {
-      throw new Error(
-        `reference_design_resolution_failed:${patternId}.${stepId}.workflow_source_anchor_missing`,
+    const resolvedAnchors = sourceAnchorRefs.map((anchorRef) => {
+      const anchor = anchorCatalog[anchorRef];
+      if (typeof anchor !== 'object' || anchor === null || Array.isArray(anchor)) {
+        throw new Error(
+          `reference_design_resolution_failed:${patternId}.${stepId}.source_anchor_unresolved:${anchorRef}`,
+        );
+      }
+      const sourceRef = requiredString(
+        anchor.source_ref,
+        `${patternId}.${stepId}.${anchorRef}.source_ref`,
       );
+      if (!knownSourceRefs.has(sourceRef)) {
+        throw new Error(
+          `reference_design_resolution_failed:${patternId}.${stepId}.source_anchor_source_mismatch:${anchorRef}`,
+        );
+      }
+      return anchor as JsonObject;
+    });
+    const directWorkflowAnchors = resolvedAnchors.filter(
+      (anchor) => anchor.support_role === 'direct_workflow',
+    );
+    if (provenanceKind === 'source_derived' && directWorkflowAnchors.length === 0) {
+      throw new Error(
+        `reference_design_resolution_failed:${patternId}.${stepId}.source_derived_direct_workflow_anchor_missing`,
+      );
+    }
+    let synthesisRationale: string | null = null;
+    if (provenanceKind === 'internal_synthesis') {
+      synthesisRationale = requiredString(
+        step.synthesis_rationale,
+        `${patternId}.${stepId}.synthesis_rationale`,
+      );
+      if (directWorkflowAnchors.length > 0) {
+        throw new Error(
+          `reference_design_resolution_failed:${patternId}.${stepId}.internal_synthesis_direct_workflow_anchor_forbidden`,
+        );
+      }
     }
     return {
       step_id: stepId,
       expert_question: requiredString(step.expert_question, `${patternId}.${stepId}.expert_question`),
       stage_archetype: requiredString(step.stage_archetype, `${patternId}.${stepId}.stage_archetype`),
       provenance_kind: provenanceKind,
+      ...(synthesisRationale ? { synthesis_rationale: synthesisRationale } : {}),
       source_anchor_refs: sourceAnchorRefs,
+    };
+  });
+  const sourceAnchorRefs = uniqueStrings(steps.flatMap((step) => step.source_anchor_refs));
+  const resolvedSourceAnchors = sourceAnchorRefs.map((anchorRef) => {
+    const anchor = requiredObject(anchorCatalog[anchorRef], `anchor_catalog.${anchorRef}`);
+    return {
+      anchor_ref: anchorRef,
+      source_ref: requiredString(anchor.source_ref, `anchor_catalog.${anchorRef}.source_ref`),
+      stable_locator: requiredString(
+        anchor.stable_locator,
+        `anchor_catalog.${anchorRef}.stable_locator`,
+      ),
+      section_title: requiredString(
+        anchor.section_title,
+        `anchor_catalog.${anchorRef}.section_title`,
+      ),
+      selector: requiredString(anchor.selector, `anchor_catalog.${anchorRef}.selector`),
+      support_role: requiredString(
+        anchor.support_role,
+        `anchor_catalog.${anchorRef}.support_role`,
+      ),
+      verification_status: requiredString(
+        anchor.verification_status,
+        `anchor_catalog.${anchorRef}.verification_status`,
+      ),
+      source_version_or_fingerprint: requiredString(
+        anchor.source_version_or_fingerprint,
+        `anchor_catalog.${anchorRef}.source_version_or_fingerprint`,
+      ),
+      ...(typeof anchor.verified_on === 'string' && anchor.verified_on.trim()
+        ? { verified_on: anchor.verified_on.trim() }
+        : {}),
     };
   });
   return {
@@ -157,8 +227,10 @@ function canonicalSeedReferenceDesignPattern({
     source_kind: 'oma_expert_workflow_seed',
     display_name: requiredString(pattern.display_name, `${patternId}.display_name`),
     primary_use: requiredString(pattern.primary_use, `${patternId}.primary_use`),
+    authority_tier: authorityTier,
     source_metadata: metadata,
-    source_anchor_refs: uniqueStrings(steps.flatMap((step) => step.source_anchor_refs)),
+    source_anchor_refs: sourceAnchorRefs,
+    resolved_source_anchors: resolvedSourceAnchors,
     transferable_workflow_steps: steps,
     applicable_constraints: requiredStringArray(
       pattern.applicable_constraints,
@@ -173,35 +245,145 @@ function canonicalSeedReferenceDesignPattern({
   };
 }
 
-function resolveSeedPattern(packetRef: string): JsonObject {
-  const library = readJsonObject(expertWorkflowPatternLibraryPath, 'expert_workflow_pattern_library');
+function validatedExpertWorkflowPatternLibrary(library: JsonObject): {
+  patterns: JsonObject[];
+} {
   if (
     library.surface_kind !== 'opl_meta_agent_expert_workflow_pattern_library'
     || library.state !== 'seed_library_active'
   ) {
     throw new Error('reference_design_resolution_failed:expert_workflow_pattern_library_invalid');
   }
-  const patterns = requiredObjectArray(library.seed_patterns, 'expert_workflow_pattern_library.seed_patterns');
-  const pattern = patterns.find((entry) => entry.pattern_ref === packetRef);
+  const provenancePolicy = requiredObject(
+    library.provenance_policy,
+    'expert_workflow_pattern_library.provenance_policy',
+  );
+  if (
+    provenancePolicy.step_source_anchor_refs_abi !== 'opaque_catalog_key'
+    || provenancePolicy.source_derived_requires_verified_direct_workflow_anchor !== true
+    || provenancePolicy.source_derived_may_include_non_direct_supporting_anchors !== true
+    || provenancePolicy.internal_synthesis_requires_explicit_rationale !== true
+    || provenancePolicy.internal_synthesis_cannot_claim_direct_workflow_authority !== true
+    || provenancePolicy.materialized_pattern_preserves_authority_tier !== true
+    || provenancePolicy.materialized_pattern_embeds_resolved_anchor_subset !== true
+  ) {
+    throw new Error('reference_design_resolution_failed:expert_workflow_pattern_library.provenance_policy_invalid');
+  }
+  const sourceCatalog = requiredObject(
+    library.source_catalog,
+    'expert_workflow_pattern_library.source_catalog',
+  );
+  Object.entries(sourceCatalog).forEach(([sourceRef, value]) => {
+    const source = requiredObject(value, `source_catalog.${sourceRef}`);
+    requiredString(source.locator, `source_catalog.${sourceRef}.locator`);
+    requiredString(source.version_or_year, `source_catalog.${sourceRef}.version_or_year`);
+    const role = requiredString(source.role, `source_catalog.${sourceRef}.role`);
+    if (!['workflow_source', 'evaluation_framework', 'quality_gate_source'].includes(role)) {
+      throw new Error(`reference_design_resolution_failed:source_catalog_role_invalid:${sourceRef}`);
+    }
+  });
+  const anchorCatalog = requiredObject(
+    library.anchor_catalog,
+    'expert_workflow_pattern_library.anchor_catalog',
+  );
+  Object.entries(anchorCatalog).forEach(([anchorRef, value]) => {
+    if (!anchorRef.startsWith('seed-anchor:oma/')) {
+      throw new Error(`reference_design_resolution_failed:source_anchor_ref_invalid:${anchorRef}`);
+    }
+    const anchor = requiredObject(value, `anchor_catalog.${anchorRef}`);
+    const sourceRef = requiredString(anchor.source_ref, `anchor_catalog.${anchorRef}.source_ref`);
+    const source = sourceCatalog[sourceRef];
+    if (typeof source !== 'object' || source === null || Array.isArray(source)) {
+      throw new Error(`reference_design_resolution_failed:source_metadata_missing:${sourceRef}`);
+    }
+    const supportRole = requiredString(
+      anchor.support_role,
+      `anchor_catalog.${anchorRef}.support_role`,
+    );
+    if (!['direct_workflow', 'synthesis_basis', 'quality_gate', 'evaluation_constraint'].includes(supportRole)) {
+      throw new Error(`reference_design_resolution_failed:source_anchor_support_role_invalid:${anchorRef}`);
+    }
+    const verificationStatus = requiredString(
+      anchor.verification_status,
+      `anchor_catalog.${anchorRef}.verification_status`,
+    );
+    if (!['verified', 'needs_manual_review', 'stale', 'unknown'].includes(verificationStatus)) {
+      throw new Error(`reference_design_resolution_failed:source_anchor_verification_status_invalid:${anchorRef}`);
+    }
+    requiredString(anchor.stable_locator, `anchor_catalog.${anchorRef}.stable_locator`);
+    requiredString(anchor.section_title, `anchor_catalog.${anchorRef}.section_title`);
+    requiredString(anchor.selector, `anchor_catalog.${anchorRef}.selector`);
+    const sourceVersion = requiredString(
+      (source as JsonObject).version_or_year,
+      `source_catalog.${sourceRef}.version_or_year`,
+    );
+    if (
+      requiredString(
+        anchor.source_version_or_fingerprint,
+        `anchor_catalog.${anchorRef}.source_version_or_fingerprint`,
+      ) !== sourceVersion
+    ) {
+      throw new Error(`reference_design_resolution_failed:source_anchor_version_mismatch:${anchorRef}`);
+    }
+    if (supportRole === 'direct_workflow' && (source as JsonObject).role !== 'workflow_source') {
+      throw new Error(
+        `reference_design_resolution_failed:direct_workflow_source_role_mismatch:${anchorRef}`,
+      );
+    }
+    if (supportRole === 'direct_workflow' && verificationStatus !== 'verified') {
+      throw new Error(
+        `reference_design_resolution_failed:direct_workflow_anchor_not_verified:${anchorRef}`,
+      );
+    }
+    if (verificationStatus === 'verified') {
+      requiredString(anchor.verified_on, `anchor_catalog.${anchorRef}.verified_on`);
+    } else if (['stale', 'unknown'].includes(verificationStatus)) {
+      throw new Error(`reference_design_resolution_failed:source_anchor_not_active:${anchorRef}`);
+    }
+  });
+  const usedAnchorRefs = new Set<string>();
+  const patterns = requiredObjectArray(
+    library.seed_patterns,
+    'expert_workflow_pattern_library.seed_patterns',
+  ).map((pattern) => {
+    const patternId = requiredString(pattern.pattern_id, 'pattern_id');
+    const patternRef = requiredString(pattern.pattern_ref, `${patternId}.pattern_ref`);
+    const metadata = requiredStringArray(pattern.source_refs, `${patternId}.source_refs`).map((sourceRef) => {
+      const entry = sourceCatalog[sourceRef];
+      if (typeof entry !== 'object' || entry === null || Array.isArray(entry)) {
+        throw new Error(`reference_design_resolution_failed:source_metadata_missing:${sourceRef}`);
+      }
+      return { source_ref: sourceRef, ...(entry as JsonObject) };
+    });
+    const canonicalPattern = canonicalSeedReferenceDesignPattern({
+      pattern,
+      sourceInputRef: patternRef,
+      sourceMetadata: metadata,
+      anchorCatalog,
+    });
+    stringList(canonicalPattern.source_anchor_refs).forEach((anchorRef) => usedAnchorRefs.add(anchorRef));
+    return canonicalPattern;
+  });
+  Object.keys(anchorCatalog).forEach((anchorRef) => {
+    if (!usedAnchorRefs.has(anchorRef)) {
+      throw new Error(`reference_design_resolution_failed:source_anchor_unused:${anchorRef}`);
+    }
+  });
+  return { patterns };
+}
+
+export function validateExpertWorkflowPatternLibrary(library: JsonObject): void {
+  validatedExpertWorkflowPatternLibrary(library);
+}
+
+function resolveSeedPattern(packetRef: string): JsonObject {
+  const library = readJsonObject(expertWorkflowPatternLibraryPath, 'expert_workflow_pattern_library');
+  const { patterns } = validatedExpertWorkflowPatternLibrary(library);
+  const pattern = patterns.find((entry) => entry.source_pattern_ref === packetRef);
   if (!pattern) {
     throw new Error(`reference_design_resolution_failed:expert_workflow_pattern_not_found:${packetRef}`);
   }
-  const sourceCatalog = library.source_catalog;
-  if (typeof sourceCatalog !== 'object' || sourceCatalog === null || Array.isArray(sourceCatalog)) {
-    throw new Error('reference_design_resolution_failed:expert_workflow_pattern_library.source_catalog_missing');
-  }
-  const metadata = requiredStringArray(pattern.source_refs, `${pattern.pattern_id}.source_refs`).map((sourceRef) => {
-    const entry = (sourceCatalog as JsonObject)[sourceRef];
-    if (typeof entry !== 'object' || entry === null || Array.isArray(entry)) {
-      throw new Error(`reference_design_resolution_failed:source_metadata_missing:${sourceRef}`);
-    }
-    return { source_ref: sourceRef, ...(entry as JsonObject) };
-  });
-  return canonicalSeedReferenceDesignPattern({
-    pattern,
-    sourceInputRef: packetRef,
-    sourceMetadata: metadata,
-  });
+  return pattern;
 }
 
 function validateOplPatternPacket(packet: JsonObject): void {
@@ -538,6 +720,12 @@ export function buildWorkflowStagePlans(
 ): JsonObject[] {
   return patterns.flatMap((pattern) => workflowStepsForPattern(pattern).map((step) => {
     const stageId = `${stageSlug(String(pattern.pattern_id))}-${stageSlug(String(step.step_id))}`;
+    const stepAnchorRefs = stringList(step.source_anchor_refs);
+    const resolvedSourceAnchors = Array.isArray(pattern.resolved_source_anchors)
+      ? (pattern.resolved_source_anchors as JsonObject[]).filter((anchor) =>
+          stepAnchorRefs.includes(String(anchor.anchor_ref))
+        )
+      : [];
     return {
       stage_id: stageId,
       stage_ref: `stage:${targetAgent.domain_id}/${stageId}`,
@@ -547,8 +735,11 @@ export function buildWorkflowStagePlans(
       pattern_id: pattern.pattern_id,
       step_id: step.step_id,
       provenance_kind: step.provenance_kind,
+      synthesis_rationale: step.synthesis_rationale ?? null,
+      source_authority_tier: pattern.authority_tier ?? null,
       source_pattern_ref: pattern.source_pattern_ref,
-      source_anchor_refs: step.source_anchor_refs,
+      source_anchor_refs: stepAnchorRefs,
+      resolved_source_anchors: resolvedSourceAnchors,
       transferable_pattern: step.transferable_pattern ?? null,
       target_adaptation: step.target_adaptation ?? null,
       known_limits: stringList(step.known_limits),
