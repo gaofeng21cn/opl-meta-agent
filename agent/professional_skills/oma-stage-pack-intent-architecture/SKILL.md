@@ -41,6 +41,20 @@ Shape a target-agent request into an auditable intent packet, research dispositi
 8. Define artifact morphology from realistic target tasks: native source format, sharding, extent/scale contract, asset custody, assembler boundary, and export refs.
 9. Delete orphan outputs and compatibility aliases unless a contract explicitly needs a migration bridge.
 
+## Reference Design Intake Protocol
+
+When the user supplies a PDF, paper, repo, product document, or comparable design reference:
+
+1. Ingest the original file through `opl workspace source ingest` and retain its sha256-addressed source material ref, stored-file ref, and workspace receipt ref. OPL owns source custody and fingerprinting, not semantic interpretation.
+2. Extract the source once with the available document-extraction capability, normally `mineru-document-extractor` / `mineru-open-api` for PDFs. Record the extractor, extraction attempt or receipt ref, extracted artifact locator, and extracted artifact sha256. Reuse this extraction unless the source bytes or extraction method change.
+3. Use Codex/OMA judgment to distill local semantic artifacts for pattern summary, transferable workflow steps, non-transferable constraints, source anchors, and authority notes. Keep the source body outside contracts and do not treat extracted prose as target truth.
+4. Assemble the canonical OPL refs-only `reference-design-pattern-packet.v1` envelope. Its semantic refs must resolve inside the packet directory, its source fingerprint must match the ingested source, and its authority/non-claim flags must remain false. Do not invent an OMA-owned external packet ABI.
+5. Route the validated packet into source-derived design. Materialize a content-rich OMA `ReferenceDesignPacket`, then `TransferMap`, `AgentPackPlan`, `DesignAdmissionReceipt`, and `StageDecompositionSubpacketSet` before target pack materialization. After materialization, retain `AgentBuildReceipt` and OPL scaffold/profile/generated-interface readbacks.
+6. Hand the declarative suite seed and canonical evaluation work order to `opl agent-lab evaluation-work-order execute`. First verify that omitting observations returns a target-bound OPL platform typed blocker without a suite result. A synthetic observation packet may then verify ABI compatibility, but must be labeled non-authoritative and must not produce a promotable or target-ready claim.
+7. Record an evidence inventory containing the OMA and OPL commit ids, source/extraction/packet hashes, target pack identity, stage manifest, work-order id, blocker or result id, execution receipt ref, provenance bindings, consumer judgment, verification commands, and remaining target-owner closeout. Ephemeral paths are locators, not durable evidence by themselves.
+
+Fail closed before target pack materialization when source bytes are unavailable, the extraction receipt cannot be bound to them, semantic refs escape the packet directory, required semantic artifacts are empty, source anchors do not support a claimed workflow step, or authority/non-claim fields are invalid. Do not hide these failures behind a default stage graph, generic pattern note, or fixed packet template.
+
 ## Forbidden Authority
 
 - Do not create generic scheduler, daemon, queue, workbench, private runtime, compatibility facade, target owner authority, or generated-surface ownership.
