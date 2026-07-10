@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://one-person-lab.local/contracts/opl-meta-agent/actions/improve-from-external-agent-lab-suite.input.schema.json",
+  "title": "Improve From External Agent Lab Suite Input",
+  "description": "Inputs for consuming an external Agent Lab suite and preparing an owner-gated target-agent patch work order.",
+  "type": "object",
+  "required": [
+    "suite_path",
+    "agent_dir",
+    "ai_reviewer_evaluation"
+  ],
+  "properties": {
+    "suite_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "agent_dir": {
+      "type": "string",
+      "minLength": 1
+    },
+    "output_dir": {
+      "type": "string",
+      "minLength": 1
+    },
+    "feedback_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "opl_bin": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ai_reviewer_evaluation": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Path to the structured independent AI reviewer evaluation."
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://one-person-lab.local/contracts/opl-meta-agent/actions/materialize-trajectory-learning-proposal.output.schema.json",
+  "title": "Materialize Trajectory Learning Proposal Output",
+  "description": "Refs-only trajectory atom, candidate buffer, proposal, or typed-blocker outputs without runtime or promotion authority.",
+  "type": "object",
+  "required": [
+    "trajectory_atom_refs",
+    "single_intent_atom_task_refs",
+    "candidate_buffer_refs",
+    "redaction_team_sync_boundary_refs",
+    "authority_boundary"
+  ],
+  "properties": {
+    "trajectory_atom_refs": {
+      "$ref": "#/$defs/nonEmptyStringArray"
+    },
+    "single_intent_atom_task_refs": {
+      "$ref": "#/$defs/nonEmptyStringArray"
+    },
+    "candidate_buffer_refs": {
+      "$ref": "#/$defs/nonEmptyStringArray"
+    },
+    "skill_policy_proposal_refs": {
+      "$ref": "#/$defs/nonEmptyStringArray"
+    },
+    "prompt_policy_proposal_refs": {
+      "$ref": "#/$defs/nonEmptyStringArray"
+    },
+    "stage_policy_proposal_refs": {
+      "$ref": "#/$defs/nonEmptyStringArray"
+    },
+    "mechanism_patch_proposal_refs": {
+      "$ref": "#/$defs/nonEmptyStringArray"
+    },
+    "ux_canary_signal_refs": {
+      "$ref": "#/$defs/nonEmptyStringArray"
+    },
+    "redaction_team_sync_boundary_refs": {
+      "$ref": "#/$defs/nonEmptyStringArray"
+    },
+    "typed_blocker_refs": {
+      "$ref": "#/$defs/nonEmptyStringArray"
+    },
+    "authority_boundary": {
+      "type": "object",
+      "required": [
+        "refs_only",
+        "proposals_only",
+        "can_run_trajectory_daemon",
+        "can_install_user_scope_skills",
+        "can_write_target_domain_truth",
+        "can_write_target_domain_memory_body",
+        "can_mutate_target_domain_artifact_body",
+        "can_authorize_target_domain_quality_or_export",
+        "can_claim_ux_score_as_quality_verdict",
+        "can_promote_default_agent_without_gate"
+      ],
+      "properties": {
+        "refs_only": {
+          "const": true
+        },
+        "proposals_only": {
+          "const": true
+        },
+        "can_run_trajectory_daemon": {
+          "const": false
+        },
+        "can_install_user_scope_skills": {
+          "const": false
+        },
+        "can_write_target_domain_truth": {
+          "const": false
+        },
+        "can_write_target_domain_memory_body": {
+          "const": false
+        },
+        "can_mutate_target_domain_artifact_body": {
+          "const": false
+        },
+        "can_authorize_target_domain_quality_or_export": {
+          "const": false
+        },
+        "can_claim_ux_score_as_quality_verdict": {
+          "const": false
+        },
+        "can_promote_default_agent_without_gate": {
+          "const": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    {
+      "required": [
+        "skill_policy_proposal_refs"
+      ],
+      "properties": {
+        "skill_policy_proposal_refs": true
+      }
+    },
+    {
+      "required": [
+        "prompt_policy_proposal_refs"
+      ],
+      "properties": {
+        "prompt_policy_proposal_refs": true
+      }
+    },
+    {
+      "required": [
+        "stage_policy_proposal_refs"
+      ],
+      "properties": {
+        "stage_policy_proposal_refs": true
+      }
+    },
+    {
+      "required": [
+        "mechanism_patch_proposal_refs"
+      ],
+      "properties": {
+        "mechanism_patch_proposal_refs": true
+      }
+    },
+    {
+      "required": [
+        "typed_blocker_refs"
+      ],
+      "properties": {
+        "typed_blocker_refs": true
+      }
+    }
+  ],
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "nonEmptyStringArray": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/nonEmptyString"
+      }
+    }
+  },
+  "additionalProperties": false
+}

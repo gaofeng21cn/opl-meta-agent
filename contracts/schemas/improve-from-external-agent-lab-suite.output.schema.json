@@ -1,0 +1,754 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://one-person-lab.local/contracts/opl-meta-agent/actions/improve-from-external-agent-lab-suite.output.schema.json",
+  "title": "Improve From External Agent Lab Suite Output",
+  "description": "External-suite self-evolution result with a status-bound owner-gated developer work order or canonical typed blocker.",
+  "type": "object",
+  "required": [
+    "surface_kind",
+    "version",
+    "status",
+    "product_id",
+    "target_agent",
+    "authority_boundary",
+    "artifacts",
+    "learning_loop"
+  ],
+  "properties": {
+    "surface_kind": {
+      "const": "opl_meta_agent_external_suite_self_evolution_result"
+    },
+    "version": {
+      "const": "opl-meta-agent.external-suite-self-evolution.v1"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "passed",
+        "blocked_with_developer_patch_work_order",
+        "blocked_efficiency_quality_floor_missing",
+        "blocked_target_improvement_policy_missing"
+      ]
+    },
+    "product_id": {
+      "const": "opl-meta-agent"
+    },
+    "target_agent": {
+      "$ref": "#/$defs/targetAgent"
+    },
+    "authority_boundary": {
+      "$ref": "#/$defs/authorityBoundary"
+    },
+    "artifacts": {
+      "type": "object",
+      "required": [
+        "suite_path"
+      ],
+      "properties": {
+        "suite_path": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      },
+      "minProperties": 2,
+      "additionalProperties": {
+        "$ref": "#/$defs/nonEmptyString"
+      }
+    },
+    "learning_loop": {
+      "type": "object",
+      "required": [
+        "target_capability_improvement_candidate"
+      ],
+      "properties": {
+        "improvement_receipt": {
+          "$ref": "#/$defs/ownerReceipt"
+        },
+        "online_learning_candidate": {
+          "$ref": "#/$defs/learningCandidate"
+        },
+        "mechanism_patch_proposal": {
+          "$ref": "#/$defs/mechanismPatchProposal"
+        },
+        "target_capability_improvement_candidate": {
+          "$ref": "#/$defs/capabilityCandidate"
+        },
+        "developer_patch_work_order": {
+          "$ref": "#/$defs/developerPatchWorkOrder"
+        },
+        "typed_blocker": {
+          "$ref": "#/$defs/typedBlocker"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "oneOf": [
+    {
+      "required": [
+        "status",
+        "learning_loop"
+      ],
+      "properties": {
+        "status": {
+          "const": "passed"
+        },
+        "learning_loop": {
+          "type": "object",
+          "required": [
+            "developer_patch_work_order"
+          ],
+          "properties": {
+            "developer_patch_work_order": {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/developerPatchWorkOrder"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "const": "no_patch_required"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "not": {
+            "required": [
+              "typed_blocker"
+            ],
+            "properties": {
+              "typed_blocker": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "required": [
+        "status",
+        "learning_loop"
+      ],
+      "properties": {
+        "status": {
+          "const": "blocked_with_developer_patch_work_order"
+        },
+        "learning_loop": {
+          "type": "object",
+          "required": [
+            "developer_patch_work_order"
+          ],
+          "properties": {
+            "developer_patch_work_order": {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/developerPatchWorkOrder"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "const": "ready_for_target_agent_source_patch"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "not": {
+            "required": [
+              "typed_blocker"
+            ],
+            "properties": {
+              "typed_blocker": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "required": [
+        "status",
+        "learning_loop"
+      ],
+      "properties": {
+        "status": {
+          "const": "blocked_efficiency_quality_floor_missing"
+        },
+        "learning_loop": {
+          "type": "object",
+          "required": [
+            "typed_blocker"
+          ],
+          "properties": {
+            "typed_blocker": {
+              "$ref": "#/$defs/efficiencyTypedBlocker"
+            }
+          },
+          "not": {
+            "required": [
+              "developer_patch_work_order"
+            ],
+            "properties": {
+              "developer_patch_work_order": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "required": [
+        "status",
+        "learning_loop"
+      ],
+      "properties": {
+        "status": {
+          "const": "blocked_target_improvement_policy_missing"
+        },
+        "learning_loop": {
+          "type": "object",
+          "required": [
+            "typed_blocker"
+          ],
+          "properties": {
+            "typed_blocker": {
+              "$ref": "#/$defs/targetImprovementPolicyTypedBlocker"
+            }
+          },
+          "not": {
+            "required": [
+              "developer_patch_work_order"
+            ],
+            "properties": {
+              "developer_patch_work_order": true
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "nonEmptyStringArray": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/nonEmptyString"
+      }
+    },
+    "targetAgentIdentity": {
+      "type": "object",
+      "required": [
+        "domain_id",
+        "domain_label",
+        "delivery_domain"
+      ],
+      "properties": {
+        "domain_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "domain_label": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "delivery_domain": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "repo_dir": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "descriptor_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      },
+      "additionalProperties": true
+    },
+    "targetAgent": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/targetAgentIdentity"
+        }
+      ],
+      "required": [
+        "repo_dir"
+      ],
+      "properties": {
+        "repo_dir": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      }
+    },
+    "authorityBoundary": {
+      "type": "object",
+      "required": [
+        "can_write_target_domain_truth",
+        "can_write_target_domain_memory_body",
+        "can_mutate_target_domain_artifact_body",
+        "can_authorize_target_domain_quality_or_export",
+        "can_promote_default_agent_without_gate"
+      ],
+      "properties": {
+        "can_write_target_domain_truth": {
+          "const": false
+        },
+        "can_write_target_domain_memory_body": {
+          "const": false
+        },
+        "can_mutate_target_domain_artifact_body": {
+          "const": false
+        },
+        "can_authorize_target_domain_quality_or_export": {
+          "const": false
+        },
+        "can_promote_default_agent_without_gate": {
+          "const": false
+        },
+        "can_train_or_deploy_model_weights": {
+          "const": false
+        },
+        "no_executable_work_order_issued": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+    "ownerReceipt": {
+      "type": "object",
+      "required": [
+        "surface_kind",
+        "receipt_id",
+        "status",
+        "target_agent",
+        "agent_lab_result_ref",
+        "authority_boundary"
+      ],
+      "properties": {
+        "surface_kind": {
+          "const": "opl_meta_agent_owner_receipt"
+        },
+        "receipt_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "status": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "target_agent": {
+          "$ref": "#/$defs/targetAgentIdentity"
+        },
+        "agent_lab_result_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "authority_boundary": {
+          "$ref": "#/$defs/authorityBoundary"
+        }
+      },
+      "additionalProperties": true
+    },
+    "learningCandidate": {
+      "type": "object",
+      "required": [
+        "surface_kind",
+        "candidate_id",
+        "status",
+        "proposed_change_refs",
+        "promotion_gate_ref"
+      ],
+      "properties": {
+        "surface_kind": {
+          "const": "opl_meta_agent_online_learning_candidate"
+        },
+        "candidate_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "status": {
+          "const": "candidate_recorded_requires_explicit_gate"
+        },
+        "proposed_change_refs": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        },
+        "promotion_gate_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      },
+      "additionalProperties": true
+    },
+    "mechanismPatchProposal": {
+      "type": "object",
+      "required": [
+        "surface_kind",
+        "proposal_id",
+        "status",
+        "mechanism_ref",
+        "authority_boundary"
+      ],
+      "properties": {
+        "surface_kind": {
+          "const": "opl_meta_agent_mechanism_patch_proposal"
+        },
+        "proposal_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "proposal_recorded_requires_explicit_gate",
+            "proposal_recorded_requires_target_owner_gate"
+          ]
+        },
+        "mechanism_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "authority_boundary": {
+          "$ref": "#/$defs/authorityBoundary"
+        }
+      },
+      "additionalProperties": true
+    },
+    "capabilityCandidate": {
+      "type": "object",
+      "required": [
+        "surface_kind",
+        "version",
+        "candidate_id",
+        "status",
+        "product_id",
+        "target_agent",
+        "owner_receipt_ref",
+        "authority_boundary"
+      ],
+      "properties": {
+        "surface_kind": {
+          "const": "opl_meta_agent_target_agent_capability_improvement_candidate"
+        },
+        "version": {
+          "const": "opl-meta-agent.target-capability-improvement-candidate.v1"
+        },
+        "candidate_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "status": {
+          "const": "candidate_recorded_requires_target_owner_gate"
+        },
+        "product_id": {
+          "const": "opl-meta-agent"
+        },
+        "target_agent": {
+          "$ref": "#/$defs/targetAgent"
+        },
+        "owner_receipt_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "authority_boundary": {
+          "$ref": "#/$defs/authorityBoundary"
+        }
+      },
+      "additionalProperties": true
+    },
+    "developerPatchWorkOrder": {
+      "type": "object",
+      "required": [
+        "surface_kind",
+        "version",
+        "work_order_id",
+        "status",
+        "product_id",
+        "target_agent",
+        "executor_lease_ref",
+        "reviewer_pool_refs",
+        "patch_execution_bundle_ref",
+        "target_closeout_refs",
+        "owner_receipt_ref",
+        "authority_boundary"
+      ],
+      "properties": {
+        "surface_kind": {
+          "const": "opl_meta_agent_developer_patch_work_order"
+        },
+        "version": {
+          "const": "opl-meta-agent.developer-patch-work-order.v1"
+        },
+        "work_order_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "ready_for_target_agent_source_patch",
+            "no_patch_required"
+          ]
+        },
+        "product_id": {
+          "const": "opl-meta-agent"
+        },
+        "target_agent": {
+          "$ref": "#/$defs/targetAgent"
+        },
+        "executor_lease_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "reviewer_pool_refs": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        },
+        "patch_execution_bundle_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "target_closeout_refs": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        },
+        "owner_receipt_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "authority_boundary": {
+          "$ref": "#/$defs/authorityBoundary"
+        }
+      },
+      "additionalProperties": true
+    },
+    "repeatBudget": {
+      "type": "object",
+      "required": [
+        "max_attempts",
+        "remaining_attempts",
+        "repeat_scope"
+      ],
+      "properties": {
+        "max_attempts": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "remaining_attempts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "repeat_scope": {
+          "const": "same_target_eval_work_order_owner_route_tuple"
+        }
+      },
+      "additionalProperties": false
+    },
+    "typedBlockerBase": {
+      "type": "object",
+      "required": [
+        "surface_kind",
+        "version",
+        "blocker_id",
+        "status",
+        "blocked_reason",
+        "repeat_budget",
+        "dead_letter_refs",
+        "escalation_refs",
+        "next_allowed_action",
+        "target_agent",
+        "source_agent_lab_result_ref",
+        "target_capability_improvement_candidate_ref",
+        "work_order_ref",
+        "missing_required_fields",
+        "required_input_refs",
+        "authority_boundary"
+      ],
+      "properties": {
+        "surface_kind": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "version": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "blocker_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "status": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "blocked_reason": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "repeat_budget": {
+          "$ref": "#/$defs/repeatBudget"
+        },
+        "dead_letter_refs": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        },
+        "escalation_refs": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        },
+        "next_allowed_action": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "target_agent": {
+          "$ref": "#/$defs/targetAgent"
+        },
+        "source_agent_lab_result_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "target_capability_improvement_candidate_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "work_order_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "missing_required_fields": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        },
+        "required_input_refs": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        },
+        "authority_boundary": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": true
+    },
+    "efficiencyTypedBlockerAuthority": {
+      "type": "object",
+      "required": [
+        "typed_blocker_only",
+        "no_executable_work_order_issued",
+        "can_write_target_domain_truth",
+        "can_write_target_domain_memory_body",
+        "can_mutate_target_domain_artifact_body",
+        "can_authorize_target_quality_or_export",
+        "can_promote_default_agent_without_gate"
+      ],
+      "properties": {
+        "typed_blocker_only": {
+          "const": true
+        },
+        "no_executable_work_order_issued": {
+          "const": true
+        },
+        "can_write_target_domain_truth": {
+          "const": false
+        },
+        "can_write_target_domain_memory_body": {
+          "const": false
+        },
+        "can_mutate_target_domain_artifact_body": {
+          "const": false
+        },
+        "can_authorize_target_quality_or_export": {
+          "const": false
+        },
+        "can_promote_default_agent_without_gate": {
+          "const": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "targetImprovementTypedBlockerAuthority": {
+      "type": "object",
+      "required": [
+        "typed_blocker_only",
+        "no_executable_work_order_issued",
+        "can_write_target_domain_truth",
+        "can_write_target_domain_memory_body",
+        "can_mutate_target_domain_artifact_body",
+        "can_authorize_target_domain_quality_or_export",
+        "can_promote_default_agent_without_gate"
+      ],
+      "properties": {
+        "typed_blocker_only": {
+          "const": true
+        },
+        "no_executable_work_order_issued": {
+          "const": true
+        },
+        "can_write_target_domain_truth": {
+          "const": false
+        },
+        "can_write_target_domain_memory_body": {
+          "const": false
+        },
+        "can_mutate_target_domain_artifact_body": {
+          "const": false
+        },
+        "can_authorize_target_domain_quality_or_export": {
+          "const": false
+        },
+        "can_promote_default_agent_without_gate": {
+          "const": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "efficiencyTypedBlocker": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/typedBlockerBase"
+        },
+        {
+          "type": "object",
+          "required": [
+            "surface_kind",
+            "version",
+            "status",
+            "efficiency_non_regression_refs",
+            "authority_boundary"
+          ],
+          "properties": {
+            "surface_kind": {
+              "const": "opl_meta_agent_efficiency_work_order_typed_blocker"
+            },
+            "version": {
+              "const": "opl-meta-agent.efficiency-work-order-typed-blocker.v1"
+            },
+            "status": {
+              "const": "blocked_efficiency_quality_floor_missing"
+            },
+            "efficiency_non_regression_refs": {
+              "type": "object",
+              "minProperties": 1
+            },
+            "authority_boundary": {
+              "$ref": "#/$defs/efficiencyTypedBlockerAuthority"
+            }
+          }
+        }
+      ]
+    },
+    "targetImprovementPolicyTypedBlocker": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/typedBlockerBase"
+        },
+        {
+          "type": "object",
+          "required": [
+            "surface_kind",
+            "version",
+            "status",
+            "authority_boundary"
+          ],
+          "properties": {
+            "surface_kind": {
+              "const": "opl_meta_agent_target_improvement_policy_typed_blocker"
+            },
+            "version": {
+              "const": "opl-meta-agent.target-improvement-policy-typed-blocker.v1"
+            },
+            "status": {
+              "const": "blocked_target_improvement_policy_missing"
+            },
+            "authority_boundary": {
+              "$ref": "#/$defs/targetImprovementTypedBlockerAuthority"
+            }
+          }
+        }
+      ]
+    },
+    "typedBlocker": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/efficiencyTypedBlocker"
+        },
+        {
+          "$ref": "#/$defs/targetImprovementPolicyTypedBlocker"
+        }
+      ]
+    }
+  },
+  "additionalProperties": true
+}

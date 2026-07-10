@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://one-person-lab.local/contracts/opl-meta-agent/actions/generate-mechanism-patch-proposal.output.schema.json",
+  "title": "Generate Mechanism Patch Proposal Output",
+  "description": "Proposal-only mechanism patch record with evidence lineage, promotion gate, and explicit no-authority boundary.",
+  "type": "object",
+  "required": [
+    "surface_kind",
+    "version",
+    "proposal_id",
+    "status",
+    "mechanism_ref",
+    "editable_surfaces",
+    "observe",
+    "diagnose",
+    "edit",
+    "segment_run_ref",
+    "evidence_delta_ref",
+    "next_mechanism_candidate_ref",
+    "promotion_gate_ref",
+    "authority_boundary"
+  ],
+  "properties": {
+    "surface_kind": {
+      "const": "opl_meta_agent_mechanism_patch_proposal"
+    },
+    "version": {
+      "const": "opl-meta-agent.mechanism-patch-proposal.v1"
+    },
+    "proposal_id": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "proposal_recorded_requires_explicit_gate",
+        "proposal_recorded_requires_target_owner_gate"
+      ]
+    },
+    "mechanism_ref": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "editable_surfaces": {
+      "$ref": "#/$defs/nonEmptyStringArray"
+    },
+    "observe": {
+      "$ref": "#/$defs/observe"
+    },
+    "diagnose": {
+      "$ref": "#/$defs/diagnose"
+    },
+    "edit": {
+      "$ref": "#/$defs/edit"
+    },
+    "segment_run_ref": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "evidence_delta_ref": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "next_mechanism_candidate_ref": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "promotion_gate_ref": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "authority_boundary": {
+      "type": "object",
+      "required": [
+        "can_write_target_domain_truth",
+        "can_write_target_domain_memory_body",
+        "can_mutate_target_domain_artifact_body",
+        "can_authorize_target_domain_quality_or_export",
+        "can_promote_default_agent_without_gate"
+      ],
+      "properties": {
+        "proposal_only": {
+          "const": true
+        },
+        "refs_only": {
+          "const": true
+        },
+        "can_write_target_domain_truth": {
+          "const": false
+        },
+        "can_write_target_memory_body": {
+          "const": false
+        },
+        "can_write_target_domain_memory_body": {
+          "const": false
+        },
+        "can_mutate_target_domain_artifact_body": {
+          "const": false
+        },
+        "can_authorize_target_domain_quality_or_export": {
+          "const": false
+        },
+        "can_promote_default_agent_without_gate": {
+          "const": false
+        },
+        "can_train_or_deploy_model_weights": {
+          "const": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "nonEmptyStringArray": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/nonEmptyString"
+      }
+    },
+    "observe": {
+      "type": "object",
+      "required": [
+        "segment_run_ref",
+        "source_refs"
+      ],
+      "properties": {
+        "segment_run_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "source_refs": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "diagnose": {
+      "type": "object",
+      "required": [
+        "evidence_delta_ref",
+        "source_refs"
+      ],
+      "properties": {
+        "evidence_delta_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "source_refs": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "edit": {
+      "type": "object",
+      "required": [
+        "next_mechanism_candidate_ref",
+        "proposed_change_refs",
+        "editable_surfaces",
+        "source_refs"
+      ],
+      "properties": {
+        "next_mechanism_candidate_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "proposed_change_refs": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        },
+        "editable_surfaces": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        },
+        "source_refs": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}

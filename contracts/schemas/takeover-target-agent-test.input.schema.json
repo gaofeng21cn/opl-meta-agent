@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://one-person-lab.local/contracts/opl-meta-agent/actions/takeover-target-agent-test.input.schema.json",
+  "title": "Take Over Target Agent Test Input",
+  "description": "Inputs for testing takeover of an existing OPL-compatible target agent.",
+  "type": "object",
+  "required": [
+    "agent_dir",
+    "ai_reviewer_evaluation"
+  ],
+  "properties": {
+    "agent_dir": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Path to the existing target agent repository."
+    },
+    "output_dir": {
+      "type": "string",
+      "minLength": 1
+    },
+    "opl_bin": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ai_reviewer_evaluation": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Path to the structured independent AI reviewer evaluation."
+    }
+  },
+  "additionalProperties": false
+}

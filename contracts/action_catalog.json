@@ -655,8 +655,8 @@
         "command": "contract-ref:contracts/trajectory_learning_contract.json#/candidate_surfaces",
         "surface_kind": "minimal_authority_function_ref_only_contract"
       },
-      "input_schema_ref": "contracts/trajectory_learning_contract.json#/learning_flow",
-      "output_schema_ref": "contracts/trajectory_learning_contract.json#/candidate_surfaces",
+      "input_schema_ref": "contracts/schemas/materialize-trajectory-learning-proposal.input.schema.json",
+      "output_schema_ref": "contracts/schemas/materialize-trajectory-learning-proposal.output.schema.json",
       "workspace_locator_fields": [
         "redacted_trajectory_ref",
         "trajectory_atom_refs",
