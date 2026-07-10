@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
+import { pathToFileURL } from 'node:url';
 import { validateJsonSchemaPayload } from 'opl-framework-shared/json-schema-registry';
 import {
   buildAiReviewerEvaluation,
@@ -291,7 +292,7 @@ function writeNormalizedBuildStageRunReadbacks(
       : `${domainId}-${stageId}-closeout`;
     const payloadPath = path.join(payloadDir, `${stageId}.json`);
     writeJson(payloadPath, sourcePacket);
-    const payloadRef = `oma-stage-closeout-payload:stage-closeout-payloads/${stageId}.json`;
+    const payloadRef = pathToFileURL(payloadPath).href;
     const payloadSha256 = createHash('sha256').update(fs.readFileSync(payloadPath)).digest('hex');
     const readbackPath = path.join(outputRoot, `${index + 1}-${stageId}-normalized-stage-run-readback.json`);
     writeJson(readbackPath, {
@@ -315,6 +316,12 @@ function writeNormalizedBuildStageRunReadbacks(
               surface_kind: 'stage_attempt_closeout_packet',
               closeout_id: closeoutId,
               closeout_refs: [payloadRef],
+              domain_output: {
+                surface_kind: 'domain_owned_stage_output_ref',
+                version: 'domain-owned-stage-output-ref.v1',
+                domain_id: 'opl-meta-agent',
+                output_ref: payloadRef,
+              },
               closeout_ref_metadata: [{
                 ref: payloadRef,
                 role: 'oma_stage_closeout_payload',
@@ -528,10 +535,19 @@ test('build-agent-baseline resolves SHA-bound domain payload refs from normalize
 });
 
 test('build-agent-baseline rejects drifted or escaping StageRun domain payload refs', () => {
-  const mutations: Array<[string, (metadata: JsonObject) => void, RegExp]> = [
-    ['sha drift', (metadata) => { metadata.sha256 = '0'.repeat(64); }, /payload sha256 mismatch/i],
-    ['workspace escape', (metadata) => {
-      metadata.ref = 'oma-stage-closeout-payload:../outside.json';
+  const mutations: Array<[
+    string,
+    (readback: JsonObject, metadata: JsonObject, outputRoot: string) => void,
+    RegExp,
+  ]> = [
+    ['sha drift', (_readback, metadata) => { metadata.sha256 = '0'.repeat(64); }, /payload sha256 mismatch/i],
+    ['workspace escape', (readback, metadata, outputRoot) => {
+      const outsideRef = pathToFileURL(path.join(outputRoot, '..', 'outside.json')).href;
+      const packet = readback.family_runtime_stage_attempt_query
+        .stage_attempt_query.closeouts[0].packet as JsonObject;
+      metadata.ref = outsideRef;
+      packet.closeout_refs = [outsideRef];
+      (packet.domain_output as JsonObject).output_ref = outsideRef;
     }, /payload ref escapes workspace_root/i],
   ];
   for (const [label, mutate, expected] of mutations) {
@@ -547,7 +563,7 @@ test('build-agent-baseline rejects drifted or escaping StageRun domain payload r
       const readback = readJson(stageRunReadbackPaths[1]);
       const metadata = readback.family_runtime_stage_attempt_query
         .stage_attempt_query.closeouts[0].packet.closeout_ref_metadata[0] as JsonObject;
-      mutate(metadata);
+      mutate(readback, metadata, outputRoot);
       writeJson(stageRunReadbackPaths[1], readback);
 
       assert.throws(

@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { JsonObject } from './domain-pack.ts';
 
 export type ActionStageRoute = {
@@ -55,8 +56,6 @@ function readJson(filePath: string): JsonObject {
   return value;
 }
 
-const OMA_STAGE_CLOSEOUT_PAYLOAD_PREFIX = 'oma-stage-closeout-payload:';
-
 function sha256File(filePath: string): string {
   return createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
 }
@@ -66,17 +65,42 @@ function domainCloseoutPayload(
   attempt: JsonObject,
   stageId: string,
   closeoutId: string,
+  targetDomainId: string,
   readbackPath: string,
 ): JsonObject | null {
+  const domainOutput = isRecord(packet.domain_output) ? packet.domain_output : null;
+  if (!domainOutput) return null;
+  if (
+    domainOutput.surface_kind !== 'domain_owned_stage_output_ref'
+    || domainOutput.version !== 'domain-owned-stage-output-ref.v1'
+  ) {
+    throw new Error(`OPL StageRun ${stageId} domain_output uses an unsupported refs-only shape.`);
+  }
+  const domainOutputDomainId = nonEmptyString(
+    domainOutput.domain_id,
+    `${readbackPath}: closeout_packet.domain_output.domain_id`,
+  );
+  if (domainOutputDomainId !== targetDomainId) {
+    throw new Error(`OPL StageRun ${stageId} domain_output domain mismatch.`);
+  }
+  const outputRef = nonEmptyString(
+    domainOutput.output_ref,
+    `${readbackPath}: closeout_packet.domain_output.output_ref`,
+  );
+  const closeoutRefs = stringArray(packet.closeout_refs, `${readbackPath}: closeout_packet.closeout_refs`);
+  if (!closeoutRefs.includes(outputRef)) {
+    throw new Error(`OPL StageRun ${stageId} domain_output ref is missing from closeout_refs.`);
+  }
   const metadata = Array.isArray(packet.closeout_ref_metadata)
     ? packet.closeout_ref_metadata.filter(isRecord)
     : [];
   const payloadMetadata = metadata.find((entry) =>
     entry.role === 'oma_stage_closeout_payload'
-    && typeof entry.ref === 'string'
-    && entry.ref.startsWith(OMA_STAGE_CLOSEOUT_PAYLOAD_PREFIX)
+    && entry.ref === outputRef
   );
-  if (!payloadMetadata) return null;
+  if (!payloadMetadata) {
+    throw new Error(`OPL StageRun ${stageId} domain_output requires SHA-bound OMA payload metadata.`);
+  }
 
   const workspaceLocator = isRecord(attempt.workspace_locator) ? attempt.workspace_locator : null;
   const workspaceRoot = workspaceLocator
@@ -85,17 +109,22 @@ function domainCloseoutPayload(
   if (!workspaceRoot || !path.isAbsolute(workspaceRoot)) {
     throw new Error(`OPL StageRun ${stageId} payload resolution requires an absolute workspace_root.`);
   }
-  const relativePayloadPath = nonEmptyString(payloadMetadata.ref, 'closeout_ref_metadata.ref')
-    .slice(OMA_STAGE_CLOSEOUT_PAYLOAD_PREFIX.length);
-  if (path.isAbsolute(relativePayloadPath)) {
-    throw new Error(`OPL StageRun ${stageId} payload ref must be workspace-relative.`);
+  let outputUrl: URL;
+  try {
+    outputUrl = new URL(outputRef);
+  } catch {
+    throw new Error(`OPL StageRun ${stageId} domain_output ref must be a valid URL.`);
   }
-  const resolvedRoot = fs.realpathSync(workspaceRoot);
-  const resolvedPayloadPath = path.resolve(resolvedRoot, relativePayloadPath);
-  const relativeToRoot = path.relative(resolvedRoot, resolvedPayloadPath);
+  if (outputUrl.protocol !== 'file:') {
+    throw new Error(`OPL StageRun ${stageId} domain_output currently requires a file URL.`);
+  }
+  const declaredRoot = path.resolve(workspaceRoot);
+  const resolvedPayloadPath = fileURLToPath(outputUrl);
+  const relativeToRoot = path.relative(declaredRoot, resolvedPayloadPath);
   if (relativeToRoot.startsWith('..') || path.isAbsolute(relativeToRoot)) {
     throw new Error(`OPL StageRun ${stageId} payload ref escapes workspace_root.`);
   }
+  const resolvedRoot = fs.realpathSync(declaredRoot);
   const realPayloadPath = fs.realpathSync(resolvedPayloadPath);
   const realRelativeToRoot = path.relative(resolvedRoot, realPayloadPath);
   if (realRelativeToRoot.startsWith('..') || path.isAbsolute(realRelativeToRoot)) {
@@ -249,7 +278,14 @@ function stageRunCloseout(readbackPath: string, targetDomainId: string): StageRu
     throw new Error(`OPL StageRun ${stageId} closeout contains rejected writes.`);
   }
   stringArray(packet.closeout_refs, `${readbackPath}: closeout_packet.closeout_refs`);
-  const closeoutPacket = domainCloseoutPayload(packet, attempt, stageId, closeoutId, readbackPath) ?? packet;
+  const closeoutPacket = domainCloseoutPayload(
+    packet,
+    attempt,
+    stageId,
+    closeoutId,
+    targetDomainId,
+    readbackPath,
+  ) ?? packet;
   return {
     stage_id: stageId,
     stage_attempt_ref: stageAttemptRef,
