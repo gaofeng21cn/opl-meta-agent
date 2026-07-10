@@ -18,6 +18,7 @@ test('generated-surface contracts remain OPL-owned refs-only projections', () =>
   const handoff = readJson('contracts/generated_surface_handoff.json');
   const registration = readJson('contracts/opl_domain_manifest_registration.json');
   const appProjection = readJson('contracts/app_workbench_projection.json');
+  const scaleout = readJson('contracts/real_target_agent_scaleout_evidence.json');
 
   assert.equal(packCompilerInput.generated_surface_owner, 'one-person-lab');
   assert.equal(handoff.generated_surface_owner, 'one-person-lab');
@@ -51,6 +52,9 @@ test('generated-surface contracts remain OPL-owned refs-only projections', () =>
   });
   assert.equal(handoff.registry_discovery_receipt_ref, registration.discovery_receipt.receipt_ref);
   assert.equal(handoff.app_drilldown_readiness_receipt_ref, appProjection.drilldown_readiness_receipt.receipt_ref);
+  assert.equal(scaleout.authority_boundary.can_treat_suite_pass_as_default_promotion, false);
+  assert.equal(scaleout.multi_target_scaleout_closeout.minimum_completion_gate.suite_pass_claims_domain_ready, false);
+  assert.equal(scaleout.multi_target_scaleout_closeout.minimum_completion_gate.provider_completion_claims_domain_ready, false);
 });
 
 test('OPL generated interfaces expose current descriptors and omit retired takeover aliases', () => {

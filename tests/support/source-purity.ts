@@ -166,6 +166,11 @@ export function assertFalseFlags(record: Record<string, boolean>, flags: string[
   });
 }
 
+export function assertExactFalseFlags(record: Record<string, boolean>, flags: string[], label: string): void {
+  assert.deepEqual(Object.keys(record).sort(), [...flags].sort(), `${label} keys`);
+  assertFalseFlags(record, flags, label);
+}
+
 export function assertEveryFlagFalse(
   record: Record<string, boolean>,
   label: string,

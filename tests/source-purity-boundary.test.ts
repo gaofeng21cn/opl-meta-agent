@@ -91,15 +91,14 @@ test('minimal authority functions are explicit refs, not generic runtime owners'
       invokedByRefs: ['action-ref:generate-mechanism-patch-proposal'],
     },
   ];
+  const expectedFunctionIds = expectedAuthorityFunctions.map((entry) => entry.moduleId);
 
   assert.equal(authorityFunctions.surface_kind, 'meta_agent_authority_function_refs');
   assert.equal(authorityFunctions.role, 'refs_only_minimal_authority_functions');
   assert.equal(authorityFunctions.not_generic_runtime_owner, true);
   assert.equal(authorityFunctions.opl_runtime_owner, 'one-person-lab');
-  assert.deepEqual(
-    asStrings(packCompilerInput.minimal_authority_functions),
-    expectedAuthorityFunctions.map((entry) => entry.moduleId),
-  );
+  assert.deepEqual(asStrings(packCompilerInput.minimal_authority_functions), expectedFunctionIds);
+  assert.deepEqual(asObjects(authorityFunctions.functions).map((entry) => entry.function_id), expectedFunctionIds);
 
   expectedAuthorityFunctions.forEach((expected) => {
     const functionRef = asObjects(authorityFunctions.functions)

@@ -7,9 +7,16 @@ import {
 } from './support/contracts.ts';
 import type { JsonObject } from './support/contracts.ts';
 import {
-  assertEveryFlagFalse,
+  assertExactFalseFlags,
+  assertFalseFlags,
   assertIncludesAll,
 } from './support/source-purity.ts';
+
+const stageRunStateKeys = 'provider_completion_counts_as_domain_accepted file_presence_counts_as_stage_complete latest_json_counts_as_domain_accepted read_model_counts_as_transition_authority'.split(' ');
+const retirementAuthorityKeys = 'legacy_surfaces_can_be_active_workflow legacy_surfaces_can_be_default_caller legacy_surfaces_can_write_runtime_state legacy_surfaces_can_write_read_model legacy_surfaces_can_authorize_owner_receipt legacy_surfaces_can_restore_repo_owned_wrapper legacy_surfaces_can_create_fallback_or_compatibility_route'.split(' ');
+const toolAuthorityKeys = 'tool_refs_can_define_fixed_workflow_order tool_refs_can_replace_stage_reasoning tool_refs_can_authorize_domain_verdict tool_refs_can_bypass_owner_approval_or_typed_blocker'.split(' ');
+const overclaimAuthorityKeys = 'allowed_claims_can_authorize_closeout controlled_canary_can_claim_live_domain_progress operator_summary_can_upgrade_readiness contract_completeness_can_claim_quality_or_export'.split(' ');
+const evidenceAuthorityFalseKeys = 'controlled_canary_claims_live_domain_progress provider_completion_counts_as_closeout file_presence_counts_as_closeout read_model_counts_as_closeout conformance_pass_counts_as_closeout opl_can_write_domain_truth opl_can_mutate_artifact_body opl_can_sign_owner_receipt opl_can_create_typed_blocker opl_can_authorize_quality_or_export'.split(' ');
 
 test('StageRun Kernel profile delegates schemas and rejects wrapper authority', () => {
   const profile = readJson('contracts/stage_run_kernel_profile.json');
@@ -26,7 +33,7 @@ test('StageRun Kernel profile delegates schemas and rejects wrapper authority', 
   assert.equal(profile.surface_kind, 'opl_stage_run_kernel_profile');
   assert.equal(profile.owner, 'opl-meta-agent');
   assert.equal(profile.kernel_role, 'minimal_state_shell_not_domain_controller_system');
-  assertEveryFlagFalse(profile.stage_run_state_machine, 'stage-run state machine');
+  assertExactFalseFlags(profile.stage_run_state_machine, stageRunStateKeys, 'stage-run state machine');
 
   assert.equal(oplRefs.owner, 'one-person-lab');
   assert.equal(oplRefs.domain_repo_role, 'consumer_profile_ref_only');
@@ -41,7 +48,7 @@ test('StageRun Kernel profile delegates schemas and rejects wrapper authority', 
     'generic_workbench_wrapper_owner',
     'compatibility_materialization_route_owner',
   ], 'retired wrapper roles');
-  assertEveryFlagFalse(retirementPolicy.authority_boundary, 'legacy retirement authority');
+  assertExactFalseFlags(retirementPolicy.authority_boundary, retirementAuthorityKeys, 'legacy retirement authority');
 });
 
 test('controlled StageRun canary requires an owner closeout and forbids readiness overclaims', () => {
@@ -65,11 +72,11 @@ test('controlled StageRun canary requires an owner closeout and forbids readines
   ], 'canary stages');
 
   assert.equal(toolPolicy.tool_refs_role, 'advisory_affordance_refs_only');
-  assertEveryFlagFalse(
-    toolPolicy,
-    'tool affordance policy',
-    (field) => field.startsWith('tool_refs_can_'),
+  assert.deepEqual(
+    Object.keys(toolPolicy).sort(),
+    [...toolAuthorityKeys, 'tool_refs_role', 'allowed_tool_ref_classes'].sort(),
   );
+  assertFalseFlags(toolPolicy, toolAuthorityKeys, 'tool affordance policy');
   assert.equal(passCondition.terminal_output, 'oma_owner_receipt_or_typed_blocker');
   assert.equal(passCondition.requires_owner_delta, true);
   assert.equal(passCondition.provider_completion_counts_as_pass, false);
@@ -83,7 +90,7 @@ test('controlled StageRun canary requires an owner closeout and forbids readines
     'production_ready',
     'default_agent_promotion',
   ], 'canary forbidden claims');
-  assertEveryFlagFalse(overclaimBoundary.authority_boundary, 'canary overclaim authority');
+  assertExactFalseFlags(overclaimBoundary.authority_boundary, overclaimAuthorityKeys, 'canary overclaim authority');
 
   assert.equal(evidence.surface_kind, 'opl_stage_run_controlled_canary_evidence');
   assert.equal(evidence.domain_id, 'opl-meta-agent');
@@ -124,9 +131,9 @@ test('controlled StageRun canary requires an owner closeout and forbids readines
   assert.equal(operatorSummary.owner_receipt_ref_or_typed_blocker_ref, terminalRef);
 
   assert.equal(evidence.authority_boundary.refs_only, true);
-  assertEveryFlagFalse(
-    evidence.authority_boundary,
-    'controlled canary authority',
-    (field) => field !== 'refs_only',
+  assert.deepEqual(
+    Object.keys(evidence.authority_boundary).sort(),
+    [...evidenceAuthorityFalseKeys, 'refs_only'].sort(),
   );
+  assertFalseFlags(evidence.authority_boundary, evidenceAuthorityFalseKeys, 'controlled canary authority');
 });

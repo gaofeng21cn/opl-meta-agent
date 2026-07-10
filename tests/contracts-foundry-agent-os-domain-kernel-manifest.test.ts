@@ -5,9 +5,8 @@ import {
   asStrings,
   readJson,
 } from './support/contracts.ts';
-import type { JsonObject } from './support/contracts.ts';
 import {
-  assertEveryFlagFalse,
+  assertExactFalseFlags,
   assertIncludesAll,
 } from './support/source-purity.ts';
 
@@ -45,16 +44,6 @@ test('OMA Foundry Agent OS manifest retains domain authority and upcollects fram
 
 test('OMA Foundry Agent OS manifest forbids framework and target-agent authority', () => {
   const manifest = readJson('contracts/foundry-agent-os-domain-kernel-manifest.json');
-
-  asObjects(Object.values(manifest.forbidden_authority_flags)).forEach((boundary, index) => {
-    assertEveryFlagFalse(boundary as Record<string, boolean>, `forbidden_authority_flags[${index}]`);
-  });
-  assertEveryFlagFalse(
-    manifest.target_agent_forbidden_authority as Record<string, boolean>,
-    'target_agent_forbidden_authority',
-  );
-  assertEveryFlagFalse(manifest.non_claims as Record<string, boolean>, 'non_claims');
-
   const expectedFrameworkSurfaces = [
     'opl',
     'agent_lab',
@@ -64,11 +53,36 @@ test('OMA Foundry Agent OS manifest forbids framework and target-agent authority
     'pack',
     'capability_registry',
   ];
-  assert.deepEqual(Object.keys(manifest.forbidden_authority_flags), expectedFrameworkSurfaces);
-  expectedFrameworkSurfaces.forEach((surface) => {
-    const boundary = manifest.forbidden_authority_flags[surface] as JsonObject;
-    assert.equal(boundary.can_write_domain_truth, false);
-    assert.equal(boundary.can_sign_owner_receipt, false);
-    assert.equal(boundary.can_create_domain_typed_blocker, false);
+  const frameworkAuthorityKeys = [
+    'can_write_domain_truth',
+    'can_sign_owner_receipt',
+    'can_create_domain_typed_blocker',
+    'can_authorize_quality_export_publication_or_review_verdict',
+  ];
+  const targetAuthorityKeys = [
+    'can_write_target_domain_truth',
+    'can_mutate_target_domain_artifact_body',
+    'can_write_target_memory_body',
+    'can_authorize_target_quality_or_export_verdict',
+    'can_write_target_owner_receipt_body',
+    'can_promote_default_agent_without_gate',
+  ];
+  const nonClaimKeys = [
+    'target_agent_ready',
+    'domain_ready',
+    'quality_export_ready',
+    'app_live_rendering_ready',
+    'human_approval',
+    'default_promotion',
+    'physical_delete_authorized',
+    'family_production_ready',
+    'production_ready',
+  ];
+
+  assert.deepEqual(Object.keys(manifest.forbidden_authority_flags).sort(), [...expectedFrameworkSurfaces].sort());
+  asObjects(Object.values(manifest.forbidden_authority_flags)).forEach((boundary, index) => {
+    assertExactFalseFlags(boundary as Record<string, boolean>, frameworkAuthorityKeys, `forbidden_authority_flags[${index}]`);
   });
+  assertExactFalseFlags(manifest.target_agent_forbidden_authority, targetAuthorityKeys, 'target authority');
+  assertExactFalseFlags(manifest.non_claims, nonClaimKeys, 'non-claims');
 });

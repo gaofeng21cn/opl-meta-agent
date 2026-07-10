@@ -6,7 +6,14 @@ import {
   asStrings,
   readJson,
 } from './support/contracts.ts';
-import { assertEveryFlagFalse } from './support/source-purity.ts';
+import {
+  assertExactFalseFlags,
+  assertFalseFlags,
+} from './support/source-purity.ts';
+
+const stateIndexAuthorityKeys = 'oma_can_own_state_index_kernel oma_can_own_sqlite_sidecar_index oma_can_manage_queue oma_can_manage_attempt_ledger oma_can_manage_target_runtime oma_can_manage_target_worktree_lifecycle oma_can_manage_promotion_gate oma_can_write_target_truth oma_can_write_target_artifact_body oma_can_write_target_memory_body oma_can_write_target_quality_or_export_verdict oma_can_write_target_owner_receipt_body'.split(' ');
+const stageNativeAuthorityKeys = 'oma_can_own_agent_lab_runner oma_can_own_queue oma_can_own_attempt_ledger oma_can_own_worktree_lifecycle oma_can_own_promotion_gate oma_can_own_app_shell oma_can_write_target_owner_closeout oma_can_create_stage_folder_runtime_state oma_can_write_stage_folder_runtime_state oma_can_generate_target_domain_owner_receipt oma_can_write_target_owner_receipt_body oma_can_write_target_domain_truth oma_can_write_target_domain_memory_body oma_can_mutate_target_domain_artifact_body oma_can_authorize_target_quality_or_export oma_can_owner_promote_target_agent oma_can_promote_default_agent_without_gate oma_can_manage_target_worktree_lifecycle'.split(' ');
+const stageControlAuthorityKeys = 'opl_can_write_domain_truth opl_can_write_memory_body opl_can_authorize_quality_or_export opl_can_switch_default_executor oma_can_switch_default_executor oma_can_own_state_index_kernel oma_can_own_sqlite_sidecar_index oma_can_manage_target_runtime oma_can_manage_queue oma_can_manage_attempt_ledger oma_can_manage_promotion_gate oma_can_manage_target_worktree_lifecycle oma_can_write_target_owner_receipt_body'.split(' ');
 
 test('opl-meta-agent stage plan owns domain routes without framework authority', () => {
   const stageControl = readJson('contracts/stage_control_plane.json');
@@ -51,20 +58,22 @@ test('opl-meta-agent stage plan owns domain routes without framework authority',
   assert.equal(stateIndexKernelAdoption.index_owner, 'one-person-lab');
   assert.equal(stateIndexKernelAdoption.oma_role, 'refs_only_index_source');
   assert.equal(stateIndexKernelAdoption.sidecar_index_authority, 'derived_read_model_only');
-  assertEveryFlagFalse(stateIndexKernelAdoption.authority_boundary, 'state index authority boundary');
+  assertExactFalseFlags(stateIndexKernelAdoption.authority_boundary, stateIndexAuthorityKeys, 'state index authority boundary');
 
   assert.equal(stageNativeContract.surface_kind, 'opl_stage_native_artifact_contract_bundle');
   assert.equal(stageNativeContract.target_domain_id, 'opl-meta-agent');
-  assertEveryFlagFalse(
-    stageNativeContract.authority_boundary,
-    'stage-native authority boundary',
-    (field) => field.startsWith('oma_can_'),
+  assert.deepEqual(
+    Object.keys(stageNativeContract.authority_boundary).sort(),
+    [...stageNativeAuthorityKeys, 'opl_framework_owns_stage_folder_lifecycle', 'oma_role'].sort(),
   );
-  assertEveryFlagFalse(
-    stageControl.authority_boundary,
-    'stage-control authority boundary',
-    (field) => field.startsWith('oma_can_') || field.startsWith('opl_can_'),
+  assert.equal(stageNativeContract.authority_boundary.opl_framework_owns_stage_folder_lifecycle, true);
+  assert.equal(stageNativeContract.authority_boundary.oma_role, 'contract_compiler_and_refs_materializer');
+  assertFalseFlags(stageNativeContract.authority_boundary, stageNativeAuthorityKeys, 'stage-native authority boundary');
+  assert.deepEqual(
+    Object.keys(stageControl.authority_boundary).sort(),
+    [...stageControlAuthorityKeys, 'domain_truth_owner', 'opl_role'].sort(),
   );
+  assertFalseFlags(stageControl.authority_boundary, stageControlAuthorityKeys, 'stage-control authority boundary');
 });
 
 test('stage executor candidates fail closed without explicit non-default bindings', () => {
