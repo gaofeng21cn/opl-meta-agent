@@ -736,10 +736,14 @@ export function buildWorkflowStagePlans(
       step_id: step.step_id,
       provenance_kind: step.provenance_kind,
       synthesis_rationale: step.synthesis_rationale ?? null,
-      source_authority_tier: pattern.authority_tier ?? null,
+      ...(typeof pattern.authority_tier === 'string' && pattern.authority_tier.trim()
+        ? { source_authority_tier: pattern.authority_tier.trim() }
+        : {}),
       source_pattern_ref: pattern.source_pattern_ref,
       source_anchor_refs: stepAnchorRefs,
-      resolved_source_anchors: resolvedSourceAnchors,
+      ...(resolvedSourceAnchors.length > 0
+        ? { resolved_source_anchors: resolvedSourceAnchors }
+        : {}),
       transferable_pattern: step.transferable_pattern ?? null,
       target_adaptation: step.target_adaptation ?? null,
       known_limits: stringList(step.known_limits),

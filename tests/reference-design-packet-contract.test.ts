@@ -6,7 +6,9 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import {
+  buildAgentBuildReceipt,
   buildAgentPackPlan,
+  buildDesignAdmissionReceipt,
   buildReferenceDesignPacket,
   buildTransferMap,
 } from '../scripts/lib/domain-pack.ts';
@@ -28,6 +30,8 @@ test('OMA ReferenceDesignPacket materialization matches its owned handoff contra
   const packet = buildReferenceDesignPacket(targetAgent);
   const transferMap = buildTransferMap(targetAgent);
   const agentPackPlan = buildAgentPackPlan(targetAgent);
+  const designAdmissionReceipt = buildDesignAdmissionReceipt(targetAgent);
+  const agentBuildReceipt = buildAgentBuildReceipt(targetAgent);
 
   assert.ok(packet);
   assert.equal(packet.surface_kind, contract.object_surface_kind);
@@ -77,6 +81,19 @@ test('OMA ReferenceDesignPacket materialization matches its owned handoff contra
   assert.equal(workflowStages.length, 4);
   assert.equal(new Set(workflowStages.map((stage: Record<string, unknown>) => stage.stage_id)).size, 4);
   assert.equal(workflowStages.some((stage: Record<string, unknown>) => stage.stage_id === 'agent-output-draft'), false);
+  assert.ok(workflowStages.every((stage: Record<string, unknown>) =>
+    !Object.hasOwn(stage, 'source_authority_tier')
+    && !Object.hasOwn(stage, 'resolved_source_anchors')
+  ));
+  assert.ok(designAdmissionReceipt);
+  assert.ok(agentBuildReceipt);
+  [designAdmissionReceipt.design_derived_stage_refs, agentBuildReceipt.design_derived_stage_refs]
+    .forEach((stageRefs: Array<Record<string, unknown>>) => {
+      assert.ok(stageRefs.every((stage) =>
+        !Object.hasOwn(stage, 'source_authority_tier')
+        && !Object.hasOwn(stage, 'resolved_source_anchors')
+      ));
+    });
   assert.equal(contract.authority_boundary.can_write_target_domain_truth, false);
   assert.equal(contract.authority_boundary.can_claim_target_ready, false);
 });

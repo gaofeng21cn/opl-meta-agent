@@ -534,10 +534,14 @@ export function buildDesignAdmissionReceipt(
       pattern_id: stage.pattern_id,
       step_id: stage.step_id,
       provenance_kind: stage.provenance_kind,
-      source_authority_tier: stage.source_authority_tier,
+      ...(typeof stage.source_authority_tier === 'string' && stage.source_authority_tier.trim()
+        ? { source_authority_tier: stage.source_authority_tier.trim() }
+        : {}),
       source_pattern_ref: stage.source_pattern_ref,
       source_anchor_refs: stage.source_anchor_refs,
-      resolved_source_anchors: stage.resolved_source_anchors,
+      ...(Array.isArray(stage.resolved_source_anchors) && stage.resolved_source_anchors.length > 0
+        ? { resolved_source_anchors: stage.resolved_source_anchors }
+        : {}),
     }));
   const selectedProfileRefs = stringList(targetAgent.selected_opl_profile_refs);
   return {
