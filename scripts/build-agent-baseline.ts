@@ -23,15 +23,17 @@ import {
 } from './lib/stage-decomposition-pack-draft/materializer.ts';
 import type {
   StageDecompositionPackDraft,
-  StageRunnerKind,
 } from './lib/stage-decomposition-pack-draft/shared.ts';
 import {
+  validateAgentSkeletonBuildCloseoutPacket,
   validateStageDecompositionCloseoutPacket,
 } from './lib/stage-decomposition-pack-draft/validator.ts';
 import {
-  type StageDecompositionAttemptReceipt,
-  runStageDecompositionAttempt,
-} from './lib/stage-decomposition-runner.ts';
+  buildActionStageContinuation,
+  buildActionStageRouteCloseoutGate,
+  closeoutForStage,
+  evaluateActionStageRoute,
+} from './lib/action-stage-route.ts';
 import {
   type AiReviewerEvaluation,
   aiReviewerAcceptanceGates,
@@ -59,8 +61,7 @@ export type BuildAgentBaselineArgs = {
   oplBin: string;
   aiReviewerEvaluationPath: string;
   targetAgent: TargetAgent;
-  stageRunner: StageRunnerKind;
-  stageCloseoutPacketPath: string | null;
+  stageRunReadbackPaths: string[];
 };
 
 function nonEmptyValue(flag: string, value: string | undefined): string {
@@ -133,8 +134,7 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
     researchSourceRefs: string[];
     expertPracticeNotes: string[];
     researchSynthesisRefs: string[];
-    stageRunner: StageRunnerKind;
-    stageCloseoutPacketPath: string | null;
+    stageRunReadbackPaths: string[];
   } = {
     outputDir: null,
     oplBin: resolveOplBin(),
@@ -153,11 +153,10 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
     researchSourceRefs: [],
     expertPracticeNotes: [],
     researchSynthesisRefs: [],
-    stageRunner: 'live',
-    stageCloseoutPacketPath: null,
+    stageRunReadbackPaths: [],
   };
 
-  const { values, tokens } = parseNodeArgs({
+  const { values } = parseNodeArgs({
     args: argv,
     options: {
       'output-dir': { type: 'string' },
@@ -177,13 +176,10 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
       'research-source': { type: 'string', multiple: true },
       'expert-practice': { type: 'string', multiple: true },
       'research-synthesis': { type: 'string', multiple: true },
-      'stage-runner': { type: 'string' },
-      'stage-closeout-packet': { type: 'string' },
-      'stage-decomposition-closeout': { type: 'string' },
+      'stage-run-readback': { type: 'string', multiple: true },
     },
     strict: true,
     allowPositionals: false,
-    tokens: true,
   });
   if (typeof values['output-dir'] === 'string') {
     parsed.outputDir = path.resolve(nonEmptyValue('--output-dir', values['output-dir']));
@@ -248,22 +244,10 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
     '--research-synthesis',
     values['research-synthesis'],
   );
-  if (typeof values['stage-runner'] === 'string') {
-    const runner = nonEmptyValue('--stage-runner', values['stage-runner']);
-    if (runner !== 'fixture' && runner !== 'live') {
-      throw new Error('Value for --stage-runner must be fixture or live.');
-    }
-    parsed.stageRunner = runner;
-  }
-  const stageCloseoutPacket = tokens
-    .filter((token) =>
-      token.kind === 'option'
-      && (token.name === 'stage-closeout-packet' || token.name === 'stage-decomposition-closeout')
-    )
-    .at(-1);
-  if (stageCloseoutPacket?.kind === 'option') {
-    parsed.stageCloseoutPacketPath = path.resolve(nonEmptyValue(stageCloseoutPacket.rawName, stageCloseoutPacket.value));
-  }
+  parsed.stageRunReadbackPaths = nonEmptyStringList(
+    '--stage-run-readback',
+    values['stage-run-readback'],
+  ).map((readbackPath) => path.resolve(readbackPath));
 
   if (!parsed.aiReviewerEvaluationPath) {
     throw new Error(
@@ -283,11 +267,6 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
   if (parsed.selectedOplProfileRefs.length > 0 && !parsed.profileSelectionRationale) {
     throw new Error(
       'Missing required --profile-selection-rationale <rationale>; target agent generation requires profile selection rationale.',
-    );
-  }
-  if (parsed.stageRunner === 'fixture' && !parsed.stageCloseoutPacketPath) {
-    throw new Error(
-      'Missing required --stage-decomposition-closeout <path>; fixture runner only consumes an explicit typed closeout packet.',
     );
   }
   parsed.outputDir ??= fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-bootstrap-'));
@@ -334,37 +313,8 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
     oplBin: parsed.oplBin,
     aiReviewerEvaluationPath: parsed.aiReviewerEvaluationPath,
     targetAgent,
-    stageRunner: parsed.stageRunner,
-    stageCloseoutPacketPath: parsed.stageCloseoutPacketPath,
+    stageRunReadbackPaths: parsed.stageRunReadbackPaths,
   };
-}
-
-function materializeStageDecompositionAttempt({
-  targetAgent,
-  targetAgentDir,
-  outputDir,
-  oplBin,
-  stageRunner,
-  stageCloseoutPacketPath,
-}: {
-  targetAgent: TargetAgent;
-  targetAgentDir: string;
-  outputDir: string;
-  oplBin: string;
-  stageRunner: StageRunnerKind;
-  stageCloseoutPacketPath?: string | null;
-}): StageDecompositionAttemptReceipt {
-  const attempt = runStageDecompositionAttempt({
-    targetAgent,
-    targetAgentDir,
-    outputDir,
-    oplBin,
-    runnerKind: stageRunner,
-    closeoutPacketPath: stageCloseoutPacketPath ?? null,
-  });
-  const packDraft = validateOrRepairStageDecompositionCloseoutPacket(attempt.closeoutPacket, { targetAgent });
-  materializeStageDecompositionPackDraft(targetAgentDir, packDraft);
-  return attempt.receipt;
 }
 
 function errorMessage(error: unknown): string {
@@ -603,9 +553,19 @@ export function runBuildAgentBaseline({
     oplBin,
     aiReviewerEvaluationPath,
     targetAgent,
-    stageRunner,
-    stageCloseoutPacketPath,
+    stageRunReadbackPaths,
   }: BuildAgentBaselineArgs): JsonObject {
+  const routeProgress = evaluateActionStageRoute({
+    repoRoot,
+    actionId: 'build-agent-baseline',
+    stageRunReadbackPaths,
+  });
+  if (!routeProgress.complete) {
+    return buildActionStageContinuation(routeProgress);
+  }
+  const routeCloseoutGate = buildActionStageRouteCloseoutGate(routeProgress);
+  const stageDecompositionCloseout = closeoutForStage(routeProgress, 'stage-decomposition');
+  const agentSkeletonBuildCloseout = closeoutForStage(routeProgress, 'agent-skeleton-build');
   fs.mkdirSync(outputDir, { recursive: true });
   const domainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
   const aiReviewerEvaluation = loadAiReviewerEvaluation(aiReviewerEvaluationPath);
@@ -641,16 +601,24 @@ export function runBuildAgentBaseline({
   ]);
   writeMinimalAgentDomainPack(targetAgentDir, targetAgent);
   const targetPrimarySkillPath = writeTargetAgentPrimarySkill(targetAgentDir, targetAgent);
-  let stageDecompositionAttempt: StageDecompositionAttemptReceipt;
+  let stageDecompositionPackDraft: StageDecompositionPackDraft;
   try {
-    stageDecompositionAttempt = materializeStageDecompositionAttempt({
-      targetAgent,
+    stageDecompositionPackDraft = validateOrRepairStageDecompositionCloseoutPacket(
+      stageDecompositionCloseout.closeout_packet,
+      { targetAgent },
+    );
+    const materializedFiles = validateAgentSkeletonBuildCloseoutPacket(
+      agentSkeletonBuildCloseout.closeout_packet,
+      {
+        targetAgent,
+        packDraft: stageDecompositionPackDraft,
+      },
+    );
+    materializeStageDecompositionPackDraft(
       targetAgentDir,
-      outputDir,
-      oplBin,
-      stageRunner,
-      stageCloseoutPacketPath,
-    });
+      stageDecompositionPackDraft,
+      materializedFiles,
+    );
   } catch (error) {
     const blocker = stageDecompositionBlockerFromError(error, targetAgent);
     const blockerPath = writeStageDecompositionBlocker(outputDir, targetAgent, blocker);
@@ -789,8 +757,10 @@ export function runBuildAgentBaseline({
       descriptorPath,
       targetAgentPackageManifestPath,
       targetAgentCapabilityMapPath,
-      stageDecompositionAttempt.attempt_ref,
-      stageDecompositionAttempt.closeout_packet_ref,
+      stageDecompositionCloseout.stage_attempt_ref,
+      stageDecompositionCloseout.closeout_packet_ref,
+      agentSkeletonBuildCloseout.stage_attempt_ref,
+      agentSkeletonBuildCloseout.closeout_packet_ref,
       ...referenceDesignEvidenceRefs(targetAgent),
     ].filter((ref): ref is string => typeof ref === 'string' && ref.length > 0),
     reviewerRefs: [
@@ -818,17 +788,14 @@ export function runBuildAgentBaseline({
       scaffold_validation_status: scaffoldValidation.standard_domain_agent_scaffold.validation.status,
       generated_interface_status: generatedInterfaces.generated_agent_interfaces.status,
       domain_pack_status: targetDomainPackSummary.status,
-      stage_decomposition_status: stageDecompositionAttempt.status,
+      stage_decomposition_status: 'typed_closeout_received',
     },
     ...domainPackReceiptFields(domainPackSummary),
     source_domain_pack: domainPackSummary,
     target_agent_domain_pack: targetDomainPackSummary,
     artifacts: {
-      stage_decomposition_attempt_receipt_path: path.join(
-        outputDir,
-        targetAgent.domain_id + '-stage-decomposition-attempt-receipt.json',
-      ),
-      stage_decomposition_closeout_packet_path: stageDecompositionAttempt.closeout_packet_path,
+      stage_decomposition_stage_run_readback_path: stageDecompositionCloseout.readback_path,
+      agent_skeleton_build_stage_run_readback_path: agentSkeletonBuildCloseout.readback_path,
       agent_lab_suite_seed_path: suiteSeedPath,
       foundry_lab_work_order_path: foundryLabWorkOrderPath,
       opl_agent_package_manifest_path: targetAgentPackageManifestPath,
@@ -843,7 +810,19 @@ export function runBuildAgentBaseline({
       targetAgentPackageManifestValidation.opl_agent_package_manifest,
     opl_generated_interfaces: generatedInterfaces.generated_agent_interfaces,
     opl_profile_conformance: targetProfileConformance,
-    stage_decomposition_attempt: stageDecompositionAttempt,
+    stage_decomposition_attempt: {
+      stage_id: stageDecompositionCloseout.stage_id,
+      stage_attempt_ref: stageDecompositionCloseout.stage_attempt_ref,
+      closeout_packet_ref: stageDecompositionCloseout.closeout_packet_ref,
+      closeout_refs: stageDecompositionCloseout.closeout_packet.closeout_refs,
+    },
+    agent_skeleton_build_attempt: {
+      stage_id: agentSkeletonBuildCloseout.stage_id,
+      stage_attempt_ref: agentSkeletonBuildCloseout.stage_attempt_ref,
+      closeout_packet_ref: agentSkeletonBuildCloseout.closeout_packet_ref,
+      closeout_refs: agentSkeletonBuildCloseout.closeout_packet.closeout_refs,
+    },
+    action_stage_route_closeout: routeCloseoutGate,
     agent_building_judgment: {
       ai_reviewer_evaluation_ref: aiReviewerEvaluationPath,
       verdict: aiReviewerEvaluation.verdict,

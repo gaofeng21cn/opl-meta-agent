@@ -20,9 +20,11 @@ import {
   buildStageNativeArtifactContractBundle,
 } from '../stage-native-artifact-contract.ts';
 import type {
+  AgentSkeletonBuildCloseoutPacket,
+  AgentSkeletonBuildFile,
   FixtureStageSpec,
   StageDecompositionCloseoutPacket,
-  StageDecompositionFileDraft,
+  StageDecompositionFilePlan,
   StageDecompositionPackDraft,
 } from './shared.ts';
 import {
@@ -992,7 +994,7 @@ function buildFiles({
   knowledgePath,
   qualityGatePath,
   owner,
-}: Required<FixtureStageSpec> & { owner: string }): StageDecompositionFileDraft[] {
+}: Required<FixtureStageSpec> & { owner: string }): AgentSkeletonBuildFile[] {
   const brief = targetBriefFor(targetAgent);
   const referenceDesignSourceRefs = stringList(targetAgent.reference_design_source_refs);
   const referenceDesignPatternNotes = stringList(targetAgent.reference_design_pattern_notes);
@@ -1140,6 +1142,28 @@ function buildFiles({
   ];
 }
 
+function actionSchemaFiles(targetAgent: TargetAgent, actionId: string): AgentSkeletonBuildFile[] {
+  const schema = (kind: 'input' | 'output', properties: JsonObject): AgentSkeletonBuildFile => ({
+    path: `contracts/schemas/${actionId}.${kind}.schema.json`,
+    body: `${JSON.stringify({
+      $schema: 'https://json-schema.org/draft/2020-12/schema',
+      $id: `https://one-person-lab.local/contracts/${targetAgent.domain_id}/actions/${actionId}.${kind}.schema.json`,
+      title: `${actionId} ${kind}`,
+      type: 'object',
+      properties,
+      additionalProperties: true,
+    }, null, 2)}\n`,
+  });
+  return [
+    schema('input', {
+      workspace_root: { type: 'string', minLength: 1 },
+    }),
+    schema('output', {
+      surface_kind: { type: 'string', minLength: 1 },
+    }),
+  ];
+}
+
 function stageFileDrafts({
   targetAgent,
   stageControlPlane,
@@ -1150,7 +1174,7 @@ function stageFileDrafts({
   stageControlPlane: JsonObject;
   actionId: string;
   owner: string;
-}): StageDecompositionFileDraft[] {
+}): AgentSkeletonBuildFile[] {
   const files = (stageControlPlane.stages as JsonObject[]).flatMap((stage) => {
     const stageId = requiredMachineString(stage.stage_id, 'stage_control_plane.stages[].stage_id');
     const promptPath = requiredMachineString(
@@ -1183,7 +1207,23 @@ function stageFileDrafts({
       owner,
     });
   });
-  return [...new Map(files.map((file) => [file.path, file])).values()];
+  return [...new Map([
+    ...files,
+    ...actionSchemaFiles(targetAgent, actionId),
+  ].map((file) => [file.path, file])).values()];
+}
+
+function stageFilePlans(
+  files: AgentSkeletonBuildFile[],
+  targetAgent: TargetAgent,
+): StageDecompositionFilePlan[] {
+  return files.map((file) => ({
+    path: file.path,
+    materialization_stage_ref: 'agent-skeleton-build',
+    body_requirement_refs: [
+      `body-requirement-ref:${targetAgent.domain_id}/${file.path}`,
+    ],
+  }));
 }
 
 export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec): StageDecompositionCloseoutPacket {
@@ -1225,6 +1265,12 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
     domainTruthOwner: owner,
     stageIds: materializedStageIds,
   });
+  const materializedFiles = stageFileDrafts({
+    targetAgent,
+    stageControlPlane,
+    actionId,
+    owner,
+  });
   const draft: StageDecompositionPackDraft = {
     surface_kind: 'opl_meta_agent_stage_decomposition_pack_draft',
     version: 'opl-meta-agent.stage-decomposition-pack-draft.v1',
@@ -1244,12 +1290,12 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
     stage_decomposition_subpacket_set: stageControlPlane.stage_decomposition_subpacket_set,
     stage_decomposition_subpacket_set_ref: stageControlPlane.stage_decomposition_subpacket_set_ref,
     stage_decomposition_subpacket_set_refs: stageControlPlane.stage_decomposition_subpacket_set_refs,
-    files: stageFileDrafts({
-      targetAgent,
-      stageControlPlane,
-      actionId,
-      owner,
-    }),
+    file_materialization_plan: {
+      surface_kind: 'opl_meta_agent_file_materialization_plan',
+      version: 'opl-meta-agent.file-materialization-plan.v1',
+      materialization_stage_ref: 'agent-skeleton-build',
+      files: stageFilePlans(materializedFiles, targetAgent),
+    },
   };
   return {
     surface_kind: 'stage_attempt_closeout_packet',
@@ -1333,5 +1379,34 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
       target_domain: 'truth_quality_artifact_gate_owner',
     },
     stage_decomposition_pack_draft: draft,
+  };
+}
+
+export function buildFixtureAgentSkeletonBuildCloseout(
+  input: FixtureStageSpec,
+): AgentSkeletonBuildCloseoutPacket {
+  const decomposition = buildFixtureStageDecompositionCloseout(input);
+  const draft = decomposition.stage_decomposition_pack_draft;
+  const targetAgent = input.targetAgent;
+  const owner = domainLabelFor(targetAgent);
+  const actionId = input.actionId ?? 'draft-agent-output';
+  return {
+    surface_kind: 'stage_attempt_closeout_packet',
+    stage_id: 'agent-skeleton-build',
+    closeout_id: `agent-skeleton-build-closeout:${targetAgent.domain_id}`,
+    closeout_refs: [
+      `receipt:opl-meta-agent/${targetAgent.domain_id}/agent-skeleton-build`,
+    ],
+    materialized_files: stageFileDrafts({
+      targetAgent,
+      stageControlPlane: draft.stage_control_plane,
+      actionId,
+      owner,
+    }),
+    authority_boundary: {
+      opl: 'stage_attempt_closeout_transport_only',
+      oma: 'agent_file_body_materialization',
+      target_domain: 'truth_quality_artifact_gate_owner',
+    },
   };
 }

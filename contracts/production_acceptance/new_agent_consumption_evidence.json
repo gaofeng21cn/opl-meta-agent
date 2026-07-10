@@ -159,7 +159,7 @@
     "scripts/lib/stage-decomposition-pack-draft/materializer.ts",
     "scripts/lib/stage-decomposition-pack-draft/shared.ts",
     "scripts/lib/stage-decomposition-pack-draft/validator.ts",
-    "scripts/lib/stage-decomposition-runner.ts",
+    "scripts/lib/action-stage-route.ts",
     "tests/bootstrap-loop.test.ts",
     "tests/stage-decomposition-materializer.test.ts",
     "contracts/production_acceptance/meta-agent-production-acceptance.json",
@@ -170,11 +170,11 @@
   "historical_fixture_proof_lane": {
     "status": "historical_provenance_only",
     "used_fixture_runner": true,
-    "explicit_closeout_path_required_now": true,
+    "ordered_opl_stage_run_readbacks_required_now": true,
     "implicit_fixture_graph_retired": true,
     "current_behavior_verification_refs": [
-      "tests/stage-decomposition-materializer.test.ts#/build-agent-baseline rejects implicit fixture closeout materialization",
-      "tests/bootstrap-loop.test.ts#/explicit stage-decomposition closeout fixture setup"
+      "tests/bootstrap-loop.test.ts#/build-agent-baseline returns a typed continuation before StageRun closeout evidence exists",
+      "tests/bootstrap-loop.test.ts#/build-agent-baseline rejects StageRun evidence that skips the route entry stage"
     ],
     "cannot_claim_current_public_entry": true,
     "cannot_generate_default_stage_graph_without_closeout": true

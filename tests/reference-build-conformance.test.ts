@@ -29,6 +29,10 @@ function writeConformantProfileFixture(targetDir: string): void {
   const profileSelectionReceipt = buildProfileSelectionReceipt(targetAgent);
   const profileRequirements = profileSelectionReceipt.profile_requirements;
   const domainId = targetAgent.domain_id;
+  const schemaRefs = [
+    'contracts/schemas/evaluate-evidence.input.schema.json',
+    'contracts/schemas/evaluate-evidence.output.schema.json',
+  ];
   const stageRefs = [
     'agent/stages/evidence-review.md',
     'agent/prompts/evidence-review.md',
@@ -40,6 +44,13 @@ function writeConformantProfileFixture(targetDir: string): void {
     const file = path.join(targetDir, ref);
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(file, `materialized:${ref}\n`);
+  }
+  for (const ref of schemaRefs) {
+    writeJson(path.join(targetDir, ref), {
+      $schema: 'https://json-schema.org/draft/2020-12/schema',
+      type: 'object',
+      additionalProperties: true,
+    });
   }
   fs.mkdirSync(path.join(targetDir, 'runtime', 'authority_functions'), { recursive: true });
   fs.writeFileSync(
@@ -85,10 +96,17 @@ function writeConformantProfileFixture(targetDir: string): void {
       owner: domainId,
       effect: 'mutating',
       source_command: { command: `${domainId} evaluate-evidence`, surface_kind: 'domain_cli' },
-      input_schema_ref: 'contracts/evaluate-evidence.input.schema.json',
-      output_schema_ref: 'contracts/evaluate-evidence.output.schema.json',
+      input_schema_ref: schemaRefs[0],
+      output_schema_ref: schemaRefs[1],
       workspace_locator_fields: ['workspace_root'],
       human_gate_ids: [],
+      stage_route: {
+        entry_stage_ref: 'evidence-review',
+        required_stage_refs: ['evidence-review'],
+        optional_stage_refs: [],
+        terminal_stage_refs: ['evidence-review'],
+        route_policy: 'ordered_stage_attempts_no_skip',
+      },
       supported_surfaces: {
         cli: { command: `${domainId} evaluate-evidence`, surface_kind: 'domain_cli' },
         mcp: { tool_name: 'evaluate_evidence', surface_kind: 'domain_mcp' },
@@ -101,6 +119,10 @@ function writeConformantProfileFixture(targetDir: string): void {
         openai: { tool_name: 'evaluate_evidence' },
         ai_sdk: { tool_name: 'evaluate_evidence' },
       },
+      authority_boundary: {
+        can_write_target_domain_truth: false,
+        can_authorize_target_domain_quality_or_export: false,
+      },
     }],
     notes: [],
   });
@@ -108,7 +130,7 @@ function writeConformantProfileFixture(targetDir: string): void {
     surface_kind: 'opl_domain_pack_compiler_input',
     domain_id: domainId,
     canonical_agent_id: domainId,
-    required_domain_pack_paths: ['agent/stages/manifest.json', ...stageRefs],
+    required_domain_pack_paths: ['agent/stages/manifest.json', ...stageRefs, ...schemaRefs],
   });
   writeJson(path.join(targetDir, 'agent', 'stages', 'manifest.json'), {
     surface_kind: 'opl_standard_agent_declarative_stage_manifest',
@@ -120,6 +142,26 @@ function writeConformantProfileFixture(targetDir: string): void {
       opl_can_write_domain_truth: false,
       opl_can_authorize_quality_or_export: false,
     },
+    stages: [{
+      stage_id: 'evidence-review',
+      stage_kind: 'creation',
+      title: 'Evidence Review',
+      summary: 'Review target evidence with an explicit owner gate.',
+      goal: 'Produce an evidence-grounded owner-gated review packet.',
+      policy_ref: 'agent/stages/evidence-review.md',
+      prompt_ref: 'agent/prompts/evidence-review.md',
+      knowledge_refs: ['agent/knowledge/evidence.md'],
+      quality_gate_refs: ['agent/quality_gates/evidence.md'],
+      allowed_action_refs: ['evaluate-evidence'],
+      requires: ['structured-evidence-ref'],
+      ensures: ['owner-receipt-or-typed-blocker-ref'],
+      next_stage_refs: [],
+      trust_lane: 'domain_agent',
+    }],
+  });
+  writeJson(path.join(targetDir, 'contracts', 'stage_control_plane.json'), {
+    selected_profile_refs: [profileRef],
+    profile_requirements: profileRequirements,
     stages: [{
       stage_id: 'evidence-review',
       stage_kind: 'creation',

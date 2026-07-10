@@ -69,10 +69,10 @@
       "scripts/lib/stage-decomposition-pack-draft/shared.ts",
       "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts",
       "scripts/lib/stage-decomposition-pack-draft/validator.ts",
-      "scripts/lib/stage-decomposition-runner.ts",
+      "scripts/lib/action-stage-route.ts",
       "scripts/lib/stage-native-artifact-contract.ts"
     ],
-    "current_role": "typed_stage_closeout_validator_and_candidate_pack_materializer",
+    "current_role": "typed_stage_closeout_validator_action_stage_route_readback_and_candidate_pack_materializer",
     "retention_state": "retained_current_authority_function",
     "retention_reason": "current OMA thin authority surface for stage-decomposition closeout validation, candidate domain-pack materialization, suite-seed emission, and declarative Foundry Lab work-order handoff without owning Agent Lab execution/results/ledgers, pack compiler, generated interface, target truth, runtime state, promotion, target worktree lifecycle, owner receipt bodies, or typed blocker bodies",
     "retention_evidence_refs": [

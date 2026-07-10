@@ -14,7 +14,10 @@ import {
   type JsonObject,
 } from '../domain-pack.ts';
 import type { TargetAgent } from '../meta-agent-loop-io.ts';
-import type { StageDecompositionPackDraft } from './shared.ts';
+import type {
+  AgentSkeletonBuildFile,
+  StageDecompositionPackDraft,
+} from './shared.ts';
 import { validateArtifactMorphologyContract } from './artifact-morphology-validator.ts';
 import {
   expectedSourcePatternRefs,
@@ -39,6 +42,7 @@ import {
   asStringArray,
   assertBooleanFalse,
   domainLabelFor,
+  filePlansByPath,
   filesByPath,
   isRecord,
   stageNativeRefsFor,
@@ -595,6 +599,7 @@ function validateStageControlPlane(
   artifactMorphologyContract: JsonObject,
   targetAgent: TargetAgent,
   files: Map<string, string>,
+  validateFileBodies = false,
 ): void {
   if (stageControl.surface_kind !== 'family_stage_control_plane') {
     throw new Error('stage-decomposition pack draft stage_control_plane.surface_kind must be family_stage_control_plane.');
@@ -786,10 +791,12 @@ function validateStageControlPlane(
     const toolRefs = validateToolAffordanceBoundary(stageId, stage, files);
     const knowledgeRefs = validateStageRefs(stage, 'knowledge_refs', 'domain_knowledge_ref', 'agent/knowledge/', files);
     const qualityGateRefs = validateStageRefs(stage, 'evaluation', 'domain_quality_gate_ref', 'agent/quality_gates/', files);
-    [...promptRefs, ...knowledgeRefs, ...qualityGateRefs].forEach((relPath) =>
-      validateProfileRequirementBody(files, relPath, targetAgent, `${relPath}`)
-    );
-    qualityGateRefs.forEach((qualityGatePath) => validateQualityGateBody(files, qualityGatePath));
+    if (validateFileBodies) {
+      [...promptRefs, ...knowledgeRefs, ...qualityGateRefs].forEach((relPath) =>
+        validateProfileRequirementBody(files, relPath, targetAgent, `${relPath}`)
+      );
+      qualityGateRefs.forEach((qualityGatePath) => validateQualityGateBody(files, qualityGatePath));
+    }
 
     const allowedActions = asStringArray(stage.allowed_action_refs, `stage ${stageId}.allowed_action_refs`);
     allowedActions.forEach((actionId) => {
@@ -1170,7 +1177,8 @@ export function validateStageDecompositionCloseoutPacket(
       'stage_decomposition_pack_draft',
     );
   }
-  const files = filesByPath(draft.files);
+  const filePlans = filePlansByPath(draft.file_materialization_plan);
+  const plannedFiles = new Map([...filePlans.keys()].map((filePath) => [filePath, '']));
   const artifactMorphologyContract = asRecord(
     draft.artifact_morphology_contract,
     'artifact_morphology_contract',
@@ -1179,7 +1187,21 @@ export function validateStageDecompositionCloseoutPacket(
   const stageControl = asRecord(draft.stage_control_plane, 'stage_control_plane');
   validateArtifactMorphologyContract(artifactMorphologyContract, targetAgent);
   validateActionCatalog(actionCatalog, targetAgent);
-  validateStageControlPlane(stageControl, actionCatalog, artifactMorphologyContract, targetAgent, files);
+  asRecordArray(actionCatalog.actions, 'action_catalog.actions').forEach((action, index) => {
+    for (const field of ['input_schema_ref', 'output_schema_ref']) {
+      const schemaRef = asString(action[field], `action_catalog.actions[${index}].${field}`);
+      if (!plannedFiles.has(schemaRef)) {
+        throw new Error(`stage-decomposition file plan missing action schema: ${schemaRef}`);
+      }
+    }
+  });
+  validateStageControlPlane(
+    stageControl,
+    actionCatalog,
+    artifactMorphologyContract,
+    targetAgent,
+    plannedFiles,
+  );
   const stageNativeArtifactContract = asRecord(
     draft.stage_native_artifact_contract,
     'stage_native_artifact_contract',
@@ -1263,6 +1285,51 @@ export function validateStageDecompositionCloseoutPacket(
     artifact_morphology_contract: artifactMorphologyContract,
     stage_native_artifact_contract: stageNativeArtifactContract,
     foundry_agent_series: foundrySeries,
-    files: [...files.entries()].map(([filePath, body]) => ({ path: filePath, body })),
+    file_materialization_plan: {
+      ...draft.file_materialization_plan,
+      files: [...filePlans.values()],
+    },
   };
+}
+
+export function validateAgentSkeletonBuildCloseoutPacket(
+  packet: unknown,
+  {
+    targetAgent,
+    packDraft,
+  }: {
+    targetAgent: TargetAgent;
+    packDraft: StageDecompositionPackDraft;
+  },
+): AgentSkeletonBuildFile[] {
+  if (!isRecord(packet)) {
+    throw new Error('agent-skeleton-build closeout must be a typed JSON object.');
+  }
+  if (packet.surface_kind !== 'stage_attempt_closeout_packet' || packet.stage_id !== 'agent-skeleton-build') {
+    throw new Error('agent-skeleton-build closeout identity is invalid.');
+  }
+  if (asStringArray(packet.closeout_refs, 'agent-skeleton-build.closeout_refs').length === 0) {
+    throw new Error('agent-skeleton-build closeout must include closeout_refs.');
+  }
+  const files = filesByPath(packet.materialized_files);
+  const plannedFiles = filePlansByPath(packDraft.file_materialization_plan);
+  if (JSON.stringify([...files.keys()]) !== JSON.stringify([...plannedFiles.keys()])) {
+    throw new Error('agent-skeleton-build materialized files must exactly cover the stage-decomposition file plan.');
+  }
+  for (const [filePath, body] of files) {
+    if (!filePath.endsWith('.schema.json')) continue;
+    const schema = JSON.parse(body) as JsonObject;
+    if (schema.$schema !== 'https://json-schema.org/draft/2020-12/schema' || schema.type !== 'object') {
+      throw new Error(`agent-skeleton-build action schema is invalid: ${filePath}`);
+    }
+  }
+  validateStageControlPlane(
+    asRecord(packDraft.stage_control_plane, 'stage_control_plane'),
+    asRecord(packDraft.action_catalog, 'action_catalog'),
+    asRecord(packDraft.artifact_morphology_contract, 'artifact_morphology_contract'),
+    targetAgent,
+    files,
+    true,
+  );
+  return [...files.entries()].map(([filePath, body]) => ({ path: filePath, body }));
 }

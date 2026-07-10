@@ -4,8 +4,12 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import type { JsonObject } from '../scripts/lib/domain-pack.ts';
-import { readJsonFile as readJson } from './support/contracts.ts';
 import {
+  readJsonFile as readJson,
+  writeJsonFile as writeJson,
+} from './support/contracts.ts';
+import {
+  buildFixtureAgentSkeletonBuildCloseout,
   buildFixtureStageDecompositionCloseout,
 } from '../scripts/lib/stage-decomposition-pack-draft/builder.ts';
 import {
@@ -13,6 +17,7 @@ import {
   repairStageDecompositionCloseoutPacket,
 } from '../scripts/lib/stage-decomposition-pack-draft/materializer.ts';
 import {
+  validateAgentSkeletonBuildCloseoutPacket,
   validateStageDecompositionCloseoutPacket,
 } from '../scripts/lib/stage-decomposition-pack-draft/validator.ts';
 
@@ -43,6 +48,10 @@ test('stage-decomposition materializer writes refs-only stage pack surfaces', ()
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-stage-materializer-pass4-'));
   try {
     const targetAgentDir = path.join(outputRoot, targetAgent.domain_id);
+    writeJson(path.join(targetAgentDir, 'contracts/pack_compiler_input.json'), {
+      surface_kind: 'opl_domain_pack_compiler_input',
+      required_domain_pack_paths: [],
+    });
     const packet = buildFixtureStageDecompositionCloseout({
       targetAgent,
       stageId: 'evidence-synthesis-plan',
@@ -55,13 +64,29 @@ test('stage-decomposition materializer writes refs-only stage pack surfaces', ()
       qualityGatePath: 'agent/quality_gates/evidence-synthesis-plan-gate.md',
     });
 
+    const skeletonCloseout = buildFixtureAgentSkeletonBuildCloseout({
+      targetAgent,
+      stageId: 'evidence-synthesis-plan',
+      actionId: 'plan-evidence-synthesis',
+      title: 'Evidence Synthesis Plan',
+      promptPath: 'agent/prompts/evidence-synthesis-plan.md',
+      stagePath: 'agent/stages/evidence-synthesis-plan.md',
+      skillPath: 'agent/skills/evidence-synthesis-domain-skill.md',
+      knowledgePath: 'agent/knowledge/evidence-synthesis-boundary.md',
+      qualityGatePath: 'agent/quality_gates/evidence-synthesis-plan-gate.md',
+    });
     const draft = validateStageDecompositionCloseoutPacket(packet, { targetAgent });
-    materializeStageDecompositionPackDraft(targetAgentDir, draft);
+    const files = validateAgentSkeletonBuildCloseoutPacket(skeletonCloseout, {
+      targetAgent,
+      packDraft: draft,
+    });
+    materializeStageDecompositionPackDraft(targetAgentDir, draft, files);
 
     const stageControl = readJson(path.join(targetAgentDir, 'contracts/stage_control_plane.json'));
     const stageManifest = readJson(path.join(targetAgentDir, 'agent/stages/manifest.json'));
     const foundrySeries = readJson(path.join(targetAgentDir, 'contracts/foundry_agent_series.json'));
     const artifactMorphology = readJson(path.join(targetAgentDir, 'contracts/artifact_morphology_contract.json'));
+    const compilerInput = readJson(path.join(targetAgentDir, 'contracts/pack_compiler_input.json'));
     const stage = (stageControl.stages as JsonObject[])[0];
     assert.equal(stage.stage_id, 'evidence-synthesis-plan');
     assert.equal(stage.selected_executor.executor_kind, 'codex_cli');
@@ -98,6 +123,12 @@ test('stage-decomposition materializer writes refs-only stage pack surfaces', ()
     assert.equal(foundrySeries.stage_control_plane_ref, 'opl-generated:family_stage_control_plane');
     assert.ok(foundrySeries.required_identity_fields.includes('stage_manifest_ref'));
     assert.equal(artifactMorphology.native_source_policy.creative_source_must_not_be_generator_code, true);
+    assert.ok(compilerInput.required_domain_pack_paths.includes(
+      'contracts/schemas/plan-evidence-synthesis.input.schema.json',
+    ));
+    assert.ok(compilerInput.required_domain_pack_paths.includes(
+      'contracts/schemas/plan-evidence-synthesis.output.schema.json',
+    ));
     assert.equal(stageControl.stage_decomposition_subpacket_set, null);
     assert.equal(
       fs.existsSync(path.join(targetAgentDir, 'contracts/stage_native_artifacts/evidence-synthesis-plan/attempt.json')),
@@ -106,6 +137,38 @@ test('stage-decomposition materializer writes refs-only stage pack surfaces', ()
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }
+});
+
+test('stage-decomposition plans files while agent-skeleton-build owns file bodies', () => {
+  const decomposition = buildFixtureStageDecompositionCloseout({ targetAgent });
+  const draft = decomposition.stage_decomposition_pack_draft as JsonObject;
+  const plan = draft.file_materialization_plan as JsonObject;
+  const plannedFiles = plan.files as JsonObject[];
+  assert.equal(plan.materialization_stage_ref, 'agent-skeleton-build');
+  assert.ok(plannedFiles.length > 0);
+  plannedFiles.forEach((file) => {
+    assert.equal(file.materialization_stage_ref, 'agent-skeleton-build');
+    assert.equal(Object.hasOwn(file, 'body'), false);
+  });
+
+  const skeleton = buildFixtureAgentSkeletonBuildCloseout({ targetAgent });
+  const materializedFiles = skeleton.materialized_files as JsonObject[];
+  assert.deepEqual(
+    materializedFiles.map((file) => file.path),
+    plannedFiles.map((file) => file.path),
+  );
+  materializedFiles.forEach((file) => assert.equal(typeof file.body, 'string'));
+});
+
+test('stage-decomposition file plan rejects embedded file bodies', () => {
+  const packet = buildFixtureStageDecompositionCloseout({ targetAgent });
+  const draft = packet.stage_decomposition_pack_draft as JsonObject;
+  const plan = draft.file_materialization_plan as JsonObject;
+  (plan.files as JsonObject[])[0].body = 'forged file body';
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(packet, { targetAgent }),
+    /file plan.*must not contain.*body/i,
+  );
 });
 
 test('stage-decomposition validator fails closed on untyped or unsafe closeout', () => {

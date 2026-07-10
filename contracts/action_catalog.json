@@ -130,7 +130,7 @@
       "owner": "opl-meta-agent",
       "effect": "mutating",
       "source_command": {
-        "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief> [--intent-signal <intent_signal>] [--selected-opl-profile <selected_opl_profile_ref>] [--profile-selection-rationale <profile_selection_rationale>] [--profile-requirement <profile_requirement_ref>] [--reference-design-source <reference_design_source_ref>] [--reference-design-pattern <reference_design_pattern_note>] [--reference-design-pattern-packet <reference_design_pattern_packet_ref>] [--research-source <research_source_ref>] [--expert-practice <expert_practice_note>] [--research-synthesis <research_synthesis_ref>]",
+        "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief> [--intent-signal <intent_signal>] [--selected-opl-profile <selected_opl_profile_ref>] [--profile-selection-rationale <profile_selection_rationale>] [--profile-requirement <profile_requirement_ref>] [--reference-design-source <reference_design_source_ref>] [--reference-design-pattern <reference_design_pattern_note>] [--reference-design-pattern-packet <reference_design_pattern_packet_ref>] [--research-source <research_source_ref>] [--expert-practice <expert_practice_note>] [--research-synthesis <research_synthesis_ref>] [--stage-run-readback <opl_stage_run_readback_path>]...",
         "surface_kind": "domain_smoke_cli"
       },
       "input_schema_ref": "contracts/schemas/build-agent-baseline.input.schema.json",
@@ -151,14 +151,33 @@
         "reference_design_pattern_packet_refs",
         "research_source_refs",
         "expert_practice_notes",
-        "research_synthesis_refs"
+        "research_synthesis_refs",
+        "stage_run_readback_refs"
       ],
       "human_gate_ids": [
         "baseline_delivery_owner_review"
       ],
+      "stage_route": {
+        "entry_stage_ref": "intent-intake",
+        "required_stage_refs": [
+          "intent-intake",
+          "stage-decomposition",
+          "agent-skeleton-build",
+          "eval-suite-build",
+          "baseline-run",
+          "baseline-delivery"
+        ],
+        "optional_stage_refs": [
+          "web-experience-research"
+        ],
+        "terminal_stage_refs": [
+          "baseline-delivery"
+        ],
+        "route_policy": "ordered_stage_attempts_no_skip"
+      },
       "supported_surfaces": {
         "cli": {
-          "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief> [--intent-signal <intent_signal>] [--selected-opl-profile <selected_opl_profile_ref>] [--profile-selection-rationale <profile_selection_rationale>] [--profile-requirement <profile_requirement_ref>] [--reference-design-source <reference_design_source_ref>] [--reference-design-pattern <reference_design_pattern_note>] [--reference-design-pattern-packet <reference_design_pattern_packet_ref>] [--research-source <research_source_ref>] [--expert-practice <expert_practice_note>] [--research-synthesis <research_synthesis_ref>]",
+          "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief> [--intent-signal <intent_signal>] [--selected-opl-profile <selected_opl_profile_ref>] [--profile-selection-rationale <profile_selection_rationale>] [--profile-requirement <profile_requirement_ref>] [--reference-design-source <reference_design_source_ref>] [--reference-design-pattern <reference_design_pattern_note>] [--reference-design-pattern-packet <reference_design_pattern_packet_ref>] [--research-source <research_source_ref>] [--expert-practice <expert_practice_note>] [--research-synthesis <research_synthesis_ref>] [--stage-run-readback <opl_stage_run_readback_path>]...",
           "surface_kind": "domain_smoke_cli"
         },
         "mcp": {
@@ -174,7 +193,7 @@
         },
         "product_entry": {
           "action_key": "build-agent-baseline",
-          "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief> [--intent-signal <intent_signal>] [--selected-opl-profile <selected_opl_profile_ref>] [--profile-selection-rationale <profile_selection_rationale>] [--profile-requirement <profile_requirement_ref>] [--reference-design-source <reference_design_source_ref>] [--reference-design-pattern <reference_design_pattern_note>] [--reference-design-pattern-packet <reference_design_pattern_packet_ref>] [--research-source <research_source_ref>] [--expert-practice <expert_practice_note>] [--research-synthesis <research_synthesis_ref>]",
+          "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief> [--intent-signal <intent_signal>] [--selected-opl-profile <selected_opl_profile_ref>] [--profile-selection-rationale <profile_selection_rationale>] [--profile-requirement <profile_requirement_ref>] [--reference-design-source <reference_design_source_ref>] [--reference-design-pattern <reference_design_pattern_note>] [--reference-design-pattern-packet <reference_design_pattern_packet_ref>] [--research-source <research_source_ref>] [--expert-practice <expert_practice_note>] [--research-synthesis <research_synthesis_ref>] [--stage-run-readback <opl_stage_run_readback_path>]...",
           "intent_mapping": "The product entry preserves the original target_brief and forwards optional canonical intent_signals as repeatable --intent-signal values. Signals only affect lower-bound OPL profile matching and do not replace source-derived design.",
           "surface_kind": "domain_product_entry_action"
         },
@@ -214,6 +233,20 @@
       "human_gate_ids": [
         "testing_takeover_owner_review"
       ],
+      "stage_route": {
+        "entry_stage_ref": "intent-intake",
+        "required_stage_refs": [
+          "intent-intake",
+          "target-agent-takeover",
+          "eval-suite-build",
+          "baseline-run"
+        ],
+        "optional_stage_refs": [],
+        "terminal_stage_refs": [
+          "baseline-run"
+        ],
+        "route_policy": "ordered_stage_attempts_no_skip"
+      },
       "supported_surfaces": {
         "cli": {
           "command": "npm run takeover:test -- --agent-dir <agent_dir> --output-dir <output_dir> --ai-reviewer-evaluation <ai_reviewer_evaluation>",
@@ -275,6 +308,17 @@
         "target_agent_owner_patch_gate",
         "target_agent_version_absorb_gate"
       ],
+      "stage_route": {
+        "entry_stage_ref": "optimizer-iteration",
+        "required_stage_refs": [
+          "optimizer-iteration"
+        ],
+        "optional_stage_refs": [],
+        "terminal_stage_refs": [
+          "optimizer-iteration"
+        ],
+        "route_policy": "ordered_stage_attempts_no_skip"
+      },
       "accepted_external_suite_inputs": {
         "surface_kind": "opl_meta_agent_external_suite_input_contract",
         "accepted_suite_kind": "agent_lab_external_suite",
@@ -394,6 +438,17 @@
         "opl_work_order_execute_gate",
         "target_domain_owner_closeout_hook_gate"
       ],
+      "stage_route": {
+        "entry_stage_ref": "optimizer-iteration",
+        "required_stage_refs": [
+          "optimizer-iteration"
+        ],
+        "optional_stage_refs": [],
+        "terminal_stage_refs": [
+          "optimizer-iteration"
+        ],
+        "route_policy": "ordered_stage_attempts_no_skip"
+      },
       "supported_surfaces": {
         "cli": {
           "command": "npm run execute:external-work-order -- --work-order <work_order_path> --opl-bin <opl_bin> [--output <output_path>] -- [opl_work_order_passthrough_args]",
@@ -462,6 +517,17 @@
       "human_gate_ids": [
         "mechanism_patch_owner_review"
       ],
+      "stage_route": {
+        "entry_stage_ref": "online-learning",
+        "required_stage_refs": [
+          "online-learning"
+        ],
+        "optional_stage_refs": [],
+        "terminal_stage_refs": [
+          "online-learning"
+        ],
+        "route_policy": "ordered_stage_attempts_no_skip"
+      },
       "supported_surfaces": {
         "cli": {
           "command": "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer",
@@ -524,6 +590,19 @@
         "agent_lab_promotion_gate",
         "no_user_scope_skill_install_gate"
       ],
+      "stage_route": {
+        "entry_stage_ref": "intent-intake",
+        "required_stage_refs": [
+          "intent-intake",
+          "trajectory-learning-intake",
+          "online-learning"
+        ],
+        "optional_stage_refs": [],
+        "terminal_stage_refs": [
+          "online-learning"
+        ],
+        "route_policy": "ordered_stage_attempts_no_skip"
+      },
       "supported_surfaces": {
         "cli": {
           "command": "contract-ref:contracts/trajectory_learning_contract.json#/candidate_surfaces",

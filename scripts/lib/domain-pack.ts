@@ -488,6 +488,8 @@ export function buildAgentPackPlan(
       'contracts/action_catalog.json',
       'contracts/artifact_morphology_contract.json',
       'contracts/stage_native_artifact_contract.json',
+      `contracts/schemas/${actionId}.input.schema.json`,
+      `contracts/schemas/${actionId}.output.schema.json`,
     ],
     planned_capability_refs: [
       'contracts/capability_map.json#/primary_skill_capability',

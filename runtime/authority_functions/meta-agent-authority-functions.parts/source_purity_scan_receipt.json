@@ -40,7 +40,7 @@
     "scripts/lib/stage-decomposition-pack-draft/shared.ts",
     "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts",
     "scripts/lib/stage-decomposition-pack-draft/validator.ts",
-    "scripts/lib/stage-decomposition-runner.ts",
+    "scripts/lib/action-stage-route.ts",
     "scripts/lib/stage-native-artifact-contract.ts",
     "scripts/lib/sync-json-bundle.ts",
     "scripts/lib/target-improvement-policy.ts",
@@ -147,7 +147,7 @@
           "scripts/lib/stage-decomposition-pack-draft/shared.ts#import",
           "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts#import",
           "scripts/lib/stage-decomposition-pack-draft/validator.ts#import",
-          "scripts/lib/stage-decomposition-runner.ts#import",
+          "scripts/lib/action-stage-route.ts#import",
           "scripts/lib/stage-native-artifact-contract.ts#import",
           "scripts/lib/target-improvement-policy.ts#import",
           "scripts/lib/work-order-builders.ts#import",
@@ -213,7 +213,6 @@
           "scripts/lib/stage-decomposition-pack-draft/shared.ts#import",
           "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts#import",
           "scripts/lib/stage-decomposition-pack-draft/validator.ts#import",
-          "scripts/lib/stage-decomposition-runner.ts#import",
           "scripts/lib/target-improvement-policy.ts#import",
           "scripts/takeover-agent.ts#import",
           "tests/bootstrap-loop.test.ts#import",
@@ -271,8 +270,7 @@
           "scripts/lib/stage-decomposition-pack-draft/builder.ts#import",
           "scripts/lib/stage-decomposition-pack-draft/materializer.ts#import",
           "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts#import",
-          "scripts/lib/stage-decomposition-pack-draft/validator.ts#import",
-          "scripts/lib/stage-decomposition-runner.ts#import"
+          "scripts/lib/stage-decomposition-pack-draft/validator.ts#import"
         ]
       },
       {
@@ -290,7 +288,7 @@
         ]
       },
       {
-        "script_ref": "scripts/lib/stage-decomposition-runner.ts",
+        "script_ref": "scripts/lib/action-stage-route.ts",
         "active_caller_refs": [
           "scripts/build-agent-baseline.ts#import"
         ]
@@ -300,7 +298,6 @@
         "active_caller_refs": [
           "scripts/lib/agent-evidence-materializer.ts#import",
           "scripts/lib/stage-decomposition-pack-draft/builder.ts#import",
-          "scripts/lib/stage-decomposition-runner.ts#import",
           "scripts/takeover-agent.ts#import"
         ]
       },

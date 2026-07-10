@@ -392,25 +392,18 @@
     "forbidden_roles": []
   },
   {
-    "script_ref": "scripts/lib/stage-decomposition-runner.ts",
+    "script_ref": "scripts/lib/action-stage-route.ts",
     "classes": [
       "smoke_helper",
       "fixture_or_proof_helper"
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
-      "opl_family_runtime_stage_attempt",
-      "codex_cli_stage_runner"
+      "opl_family_runtime_stage_attempt_query_readback"
     ],
     "writes_only": [
-      "stage_packet_ref",
-      "stage_decomposition_closeout_ref",
-      "stage_decomposition_attempt_receipt_ref",
-      "fixture_closeout_packet_required_typed_blocker_ref",
-      "typed_blocker_ref"
-    ],
-    "retired_tail_refs": [
-      "retired-tail:opl-meta-agent/build-agent-baseline/no-closeout-implicit-fixture-graph"
+      "action_stage_continuation_ref",
+      "action_stage_route_closeout_gate_ref"
     ],
     "forbidden_roles": []
   },

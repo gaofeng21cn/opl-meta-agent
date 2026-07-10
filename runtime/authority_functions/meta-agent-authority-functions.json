@@ -609,25 +609,18 @@
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/lib/stage-decomposition-runner.ts",
+        "script_ref": "scripts/lib/action-stage-route.ts",
         "classes": [
           "smoke_helper",
           "fixture_or_proof_helper"
         ],
         "authority_function_refs": [],
         "consumes_opl_surfaces": [
-          "opl_family_runtime_stage_attempt",
-          "codex_cli_stage_runner"
+          "opl_family_runtime_stage_attempt_query_readback"
         ],
         "writes_only": [
-          "stage_packet_ref",
-          "stage_decomposition_closeout_ref",
-          "stage_decomposition_attempt_receipt_ref",
-          "fixture_closeout_packet_required_typed_blocker_ref",
-          "typed_blocker_ref"
-        ],
-        "retired_tail_refs": [
-          "retired-tail:opl-meta-agent/build-agent-baseline/no-closeout-implicit-fixture-graph"
+          "action_stage_continuation_ref",
+          "action_stage_route_closeout_gate_ref"
         ],
         "forbidden_roles": []
       },
@@ -941,10 +934,10 @@
           "scripts/lib/stage-decomposition-pack-draft/shared.ts",
           "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts",
           "scripts/lib/stage-decomposition-pack-draft/validator.ts",
-          "scripts/lib/stage-decomposition-runner.ts",
+          "scripts/lib/action-stage-route.ts",
           "scripts/lib/stage-native-artifact-contract.ts"
         ],
-        "current_role": "typed_stage_closeout_validator_and_candidate_pack_materializer",
+        "current_role": "typed_stage_closeout_validator_action_stage_route_readback_and_candidate_pack_materializer",
         "retention_state": "retained_current_authority_function",
         "retention_reason": "current OMA thin authority surface for stage-decomposition closeout validation, candidate domain-pack materialization, suite-seed emission, and declarative Foundry Lab work-order handoff without owning Agent Lab execution/results/ledgers, pack compiler, generated interface, target truth, runtime state, promotion, target worktree lifecycle, owner receipt bodies, or typed blocker bodies",
         "retention_evidence_refs": [
@@ -1427,7 +1420,7 @@
       "scripts/lib/stage-decomposition-pack-draft/shared.ts",
       "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts",
       "scripts/lib/stage-decomposition-pack-draft/validator.ts",
-      "scripts/lib/stage-decomposition-runner.ts",
+      "scripts/lib/action-stage-route.ts",
       "scripts/lib/stage-native-artifact-contract.ts",
       "scripts/lib/sync-json-bundle.ts",
       "scripts/lib/target-improvement-policy.ts",
@@ -1534,7 +1527,7 @@
             "scripts/lib/stage-decomposition-pack-draft/shared.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/validator.ts#import",
-            "scripts/lib/stage-decomposition-runner.ts#import",
+            "scripts/lib/action-stage-route.ts#import",
             "scripts/lib/stage-native-artifact-contract.ts#import",
             "scripts/lib/target-improvement-policy.ts#import",
             "scripts/lib/work-order-builders.ts#import",
@@ -1600,7 +1593,6 @@
             "scripts/lib/stage-decomposition-pack-draft/shared.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/validator.ts#import",
-            "scripts/lib/stage-decomposition-runner.ts#import",
             "scripts/lib/target-improvement-policy.ts#import",
             "scripts/takeover-agent.ts#import",
             "tests/bootstrap-loop.test.ts#import",
@@ -1658,8 +1650,7 @@
             "scripts/lib/stage-decomposition-pack-draft/builder.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/materializer.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts#import",
-            "scripts/lib/stage-decomposition-pack-draft/validator.ts#import",
-            "scripts/lib/stage-decomposition-runner.ts#import"
+            "scripts/lib/stage-decomposition-pack-draft/validator.ts#import"
           ]
         },
         {
@@ -1677,7 +1668,7 @@
           ]
         },
         {
-          "script_ref": "scripts/lib/stage-decomposition-runner.ts",
+          "script_ref": "scripts/lib/action-stage-route.ts",
           "active_caller_refs": [
             "scripts/build-agent-baseline.ts#import"
           ]
@@ -1687,7 +1678,6 @@
           "active_caller_refs": [
             "scripts/lib/agent-evidence-materializer.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/builder.ts#import",
-            "scripts/lib/stage-decomposition-runner.ts#import",
             "scripts/takeover-agent.ts#import"
           ]
         },

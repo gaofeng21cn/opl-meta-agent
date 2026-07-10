@@ -71,17 +71,9 @@
     "research_synthesis_refs": {
       "$ref": "#/$defs/nonEmptyStringArray"
     },
-    "stage_runner": {
-      "type": "string",
-      "enum": [
-        "live",
-        "fixture"
-      ],
-      "default": "live"
-    },
-    "stage_closeout_packet": {
-      "type": "string",
-      "minLength": 1
+    "stage_run_readback_refs": {
+      "$ref": "#/$defs/nonEmptyStringArray",
+      "description": "Ordered OPL family-runtime attempt query readbacks for completed Action StageRuns. Missing refs produce a typed continuation instead of a receipt."
     }
   },
   "anyOf": [
@@ -155,26 +147,6 @@
         ],
         "properties": {
           "profile_selection_rationale": true
-        }
-      }
-    },
-    {
-      "if": {
-        "required": [
-          "stage_runner"
-        ],
-        "properties": {
-          "stage_runner": {
-            "const": "fixture"
-          }
-        }
-      },
-      "then": {
-        "required": [
-          "stage_closeout_packet"
-        ],
-        "properties": {
-          "stage_closeout_packet": true
         }
       }
     }

@@ -147,7 +147,7 @@
         "takeover-target-agent-test"
       ],
       "requires": [
-        "candidate_agent_pack_and_build_receipt_ready"
+        "candidate_pack_or_takeover_assessment_ready"
       ],
       "ensures": [
         "target_bound_suite_seed_ready"
@@ -173,7 +173,8 @@
         "agent/quality_gates/baseline-delivery.md"
       ],
       "allowed_action_refs": [
-        "build-agent-baseline"
+        "build-agent-baseline",
+        "takeover-target-agent-test"
       ],
       "requires": [
         "target_bound_suite_seed_ready"
@@ -191,8 +192,8 @@
       "stage_id": "target-agent-takeover",
       "stage_kind": "review",
       "title": "Target Agent takeover review",
-      "summary": "Review an existing target Agent and emit a target-bound takeover evaluation work order.",
-      "goal": "Prepare takeover evidence without executing the suite or signing a target owner receipt.",
+      "summary": "Review an existing target Agent and emit a typed takeover assessment for evaluation design.",
+      "goal": "Prepare takeover evidence without designing the suite, executing it, or signing a target owner receipt.",
       "policy_ref": "agent/stages/target-agent-takeover.md",
       "prompt_ref": "agent/prompts/target-agent-takeover.md",
       "knowledge_refs": [
@@ -209,9 +210,10 @@
         "existing_target_descriptor_and_reviewer_evidence_ready"
       ],
       "ensures": [
-        "target_bound_takeover_work_order_ready"
+        "target_takeover_assessment_ready"
       ],
       "next_stage_refs": [
+        "eval-suite-build",
         "optimizer-iteration",
         "baseline-delivery"
       ],

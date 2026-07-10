@@ -152,7 +152,13 @@ export const WORKSPACE_TOPOLOGY_PROFILE = objectField(
 
 export type StageRunnerKind = 'fixture' | 'live';
 
-export type StageDecompositionFileDraft = {
+export type StageDecompositionFilePlan = {
+  path: string;
+  materialization_stage_ref: 'agent-skeleton-build';
+  body_requirement_refs: string[];
+};
+
+export type AgentSkeletonBuildFile = {
   path: string;
   body: string;
 };
@@ -171,7 +177,12 @@ export type StageDecompositionPackDraft = {
   stage_decomposition_subpacket_set?: JsonObject | null;
   stage_decomposition_subpacket_set_ref?: string | null;
   stage_decomposition_subpacket_set_refs?: string[];
-  files: StageDecompositionFileDraft[];
+  file_materialization_plan: {
+    surface_kind: 'opl_meta_agent_file_materialization_plan';
+    version: 'opl-meta-agent.file-materialization-plan.v1';
+    materialization_stage_ref: 'agent-skeleton-build';
+    files: StageDecompositionFilePlan[];
+  };
 };
 
 export type StageDecompositionCloseoutPacket = JsonObject & {
@@ -179,6 +190,13 @@ export type StageDecompositionCloseoutPacket = JsonObject & {
   stage_id: 'stage-decomposition';
   closeout_refs: string[];
   stage_decomposition_pack_draft: StageDecompositionPackDraft;
+};
+
+export type AgentSkeletonBuildCloseoutPacket = JsonObject & {
+  surface_kind: 'stage_attempt_closeout_packet';
+  stage_id: 'agent-skeleton-build';
+  closeout_refs: string[];
+  materialized_files: AgentSkeletonBuildFile[];
 };
 
 export type FixtureStageSpec = {
@@ -281,6 +299,20 @@ export function validateRelativeMarkdownPath(filePath: unknown, field: string): 
   return relPath;
 }
 
+export function validateMaterializationPath(filePath: unknown, field: string): string {
+  const relPath = asString(filePath, field);
+  if (path.isAbsolute(relPath) || relPath.includes('..')) {
+    throw new Error(`stage-decomposition pack draft ${field} must be a relative path.`);
+  }
+  if (
+    (relPath.startsWith('agent/') && relPath.endsWith('.md'))
+    || (relPath.startsWith('contracts/schemas/') && relPath.endsWith('.schema.json'))
+  ) {
+    return relPath;
+  }
+  throw new Error(`stage-decomposition pack draft ${field} must be an agent markdown or action schema path.`);
+}
+
 export function validateBody(body: unknown, relPath: string): string {
   const text = asString(body, `${relPath}.body`);
   if (placeholderPattern.test(text)) {
@@ -293,11 +325,51 @@ export function filesByPath(files: unknown): Map<string, string> {
   const entries = asRecordArray(files, 'files');
   const byPath = new Map<string, string>();
   for (const entry of entries) {
-    const relPath = validateRelativeMarkdownPath(entry.path, 'files[].path');
+    const relPath = validateMaterializationPath(entry.path, 'files[].path');
     if (byPath.has(relPath)) {
       throw new Error(`stage-decomposition pack draft file path is duplicated: ${relPath}`);
     }
     byPath.set(relPath, validateBody(entry.body, relPath));
+  }
+  return byPath;
+}
+
+export function filePlansByPath(plan: unknown): Map<string, StageDecompositionFilePlan> {
+  const value = asRecord(plan, 'file_materialization_plan');
+  if (value.surface_kind !== 'opl_meta_agent_file_materialization_plan') {
+    throw new Error('stage-decomposition pack draft file_materialization_plan.surface_kind is invalid.');
+  }
+  if (value.version !== 'opl-meta-agent.file-materialization-plan.v1') {
+    throw new Error('stage-decomposition pack draft file_materialization_plan.version is invalid.');
+  }
+  if (value.materialization_stage_ref !== 'agent-skeleton-build') {
+    throw new Error('stage-decomposition pack draft file materialization belongs to agent-skeleton-build.');
+  }
+  const entries = asRecordArray(value.files, 'file_materialization_plan.files');
+  const byPath = new Map<string, StageDecompositionFilePlan>();
+  for (const entry of entries) {
+    const relPath = validateMaterializationPath(entry.path, 'file_materialization_plan.files[].path');
+    if (Object.hasOwn(entry, 'body')) {
+      throw new Error(`stage-decomposition file plan must not contain file body: ${relPath}`);
+    }
+    if (byPath.has(relPath)) {
+      throw new Error(`stage-decomposition file materialization path is duplicated: ${relPath}`);
+    }
+    if (entry.materialization_stage_ref !== 'agent-skeleton-build') {
+      throw new Error(`stage-decomposition file body owner must be agent-skeleton-build: ${relPath}`);
+    }
+    const bodyRequirementRefs = asStringArray(
+      entry.body_requirement_refs,
+      `file_materialization_plan.files[${relPath}].body_requirement_refs`,
+    );
+    if (bodyRequirementRefs.length === 0) {
+      throw new Error(`stage-decomposition file materialization plan requires body refs: ${relPath}`);
+    }
+    byPath.set(relPath, {
+      path: relPath,
+      materialization_stage_ref: 'agent-skeleton-build',
+      body_requirement_refs: bodyRequirementRefs,
+    });
   }
   return byPath;
 }

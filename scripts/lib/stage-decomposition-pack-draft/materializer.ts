@@ -13,6 +13,7 @@ import {
 import type { TargetAgent } from '../meta-agent-loop-io.ts';
 import { runOpl, writeJson } from '../meta-agent-loop-io.ts';
 import type {
+  AgentSkeletonBuildFile,
   StageDecompositionCloseoutPacket,
   StageDecompositionPackDraft,
 } from './shared.ts';
@@ -22,6 +23,7 @@ import {
   asStringArray,
   isRecord,
   validateBody,
+  validateMaterializationPath,
   validateRelativeMarkdownPath,
 } from './shared.ts';
 
@@ -95,7 +97,7 @@ function buildDeclarativeStageManifest(draft: StageDecompositionPackDraft): Json
       const stageOrigin = optionalString(stage.stage_origin);
       const sourcePatternRef = stageOrigin === 'source_pattern_ref' ? patternRefs[0] : null;
       const policyRef = `agent/stages/${stageId}.md`;
-      if (!draft.files.some((file) => file.path === policyRef)) {
+      if (!draft.file_materialization_plan.files.some((file) => file.path === policyRef)) {
         throw new Error(`stage-decomposition pack draft stage ${stageId} is missing ${policyRef}.`);
       }
       const trustLane = isRecord(stage.trust_boundary)
@@ -522,12 +524,31 @@ function materializeStageNativeArtifactRefFiles(targetAgentDir: string, draft: S
   }
 }
 
-export function materializeStageDecompositionPackDraft(
+function installActionSchemaRequiredPaths(
   targetAgentDir: string,
   draft: StageDecompositionPackDraft,
 ): void {
-  for (const file of draft.files) {
-    const relPath = validateRelativeMarkdownPath(file.path, 'files[].path');
+  const compilerInputPath = path.join(targetAgentDir, 'contracts', 'pack_compiler_input.json');
+  const compilerInput = JSON.parse(fs.readFileSync(compilerInputPath, 'utf8')) as JsonObject;
+  const requiredPaths = Array.isArray(compilerInput.required_domain_pack_paths)
+    ? compilerInput.required_domain_pack_paths.filter((entry): entry is string => typeof entry === 'string')
+    : [];
+  const actions = asRecordArray(draft.action_catalog.actions, 'action_catalog.actions');
+  const schemaRefs = actions.flatMap((action, index) => [
+    asString(action.input_schema_ref, `action_catalog.actions[${index}].input_schema_ref`),
+    asString(action.output_schema_ref, `action_catalog.actions[${index}].output_schema_ref`),
+  ]);
+  compilerInput.required_domain_pack_paths = [...new Set([...requiredPaths, ...schemaRefs])];
+  writeJson(compilerInputPath, compilerInput);
+}
+
+export function materializeStageDecompositionPackDraft(
+  targetAgentDir: string,
+  draft: StageDecompositionPackDraft,
+  materializedFiles: AgentSkeletonBuildFile[],
+): void {
+  for (const file of materializedFiles) {
+    const relPath = validateMaterializationPath(file.path, 'materialized_files[].path');
     const body = validateBody(file.body, relPath);
     const filePath = path.join(targetAgentDir, relPath);
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
@@ -541,6 +562,7 @@ export function materializeStageDecompositionPackDraft(
     path.join(targetAgentDir, 'contracts', 'stage_native_artifact_contract.json'),
     draft.stage_native_artifact_contract,
   );
+  installActionSchemaRequiredPaths(targetAgentDir, draft);
   materializeStageNativeArtifactRefFiles(targetAgentDir, draft);
   writeJson(path.join(targetAgentDir, 'contracts', 'foundry_agent_series.json'), draft.foundry_agent_series);
 }

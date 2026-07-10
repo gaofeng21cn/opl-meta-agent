@@ -4,31 +4,73 @@
   "title": "Build Agent Baseline Output",
   "description": "A materialized target Agent Pack and declarative OPL Foundry Lab evaluation handoff. It is not an Agent Lab result, owner receipt, or readiness verdict.",
   "type": "object",
+  "oneOf": [
+    {
+      "properties": {
+        "surface_kind": { "const": "opl_meta_agent_candidate_package_handoff" },
+        "version": { "const": "opl-meta-agent.candidate-package-handoff.v1" },
+        "status": { "const": "candidate_package_materialized_ready_for_opl_foundry_lab_evaluation" },
+        "authority_boundary": { "$ref": "#/$defs/authorityBoundary" }
+      },
+      "required": [
+        "product_id",
+        "meta_agent_kind",
+        "target_agent",
+        "artifacts",
+        "opl_agent_package_manifest_validation",
+        "opl_generated_interfaces",
+        "opl_profile_conformance",
+        "stage_decomposition_attempt",
+        "agent_skeleton_build_attempt",
+        "action_stage_route_closeout",
+        "agent_building_judgment",
+        "foundry_lab_handoff",
+        "authority_boundary"
+      ]
+    },
+    {
+      "properties": {
+        "surface_kind": { "const": "opl_meta_agent_action_stage_continuation" },
+        "version": { "const": "opl-meta-agent.action-stage-continuation.v1" },
+        "status": { "const": "continuation_required" },
+        "receipt_emitted": { "const": false },
+        "authority_boundary": { "$ref": "#/$defs/continuationAuthorityBoundary" }
+      },
+      "required": [
+        "action_id",
+        "route_policy",
+        "completed_stage_refs",
+        "next_stage_ref",
+        "stage_run_owner",
+        "receipt_emitted",
+        "authority_boundary"
+      ],
+      "$ref": "#/$defs/buildBaselineContinuationState"
+    }
+  ],
   "required": [
     "surface_kind",
     "version",
-    "status",
-    "product_id",
-    "meta_agent_kind",
-    "target_agent",
-    "artifacts",
-    "opl_agent_package_manifest_validation",
-    "opl_generated_interfaces",
-    "opl_profile_conformance",
-    "stage_decomposition_attempt",
-    "agent_building_judgment",
-    "foundry_lab_handoff",
-    "authority_boundary"
+    "status"
   ],
   "properties": {
     "surface_kind": {
-      "const": "opl_meta_agent_candidate_package_handoff"
+      "enum": [
+        "opl_meta_agent_candidate_package_handoff",
+        "opl_meta_agent_action_stage_continuation"
+      ]
     },
     "version": {
-      "const": "opl-meta-agent.candidate-package-handoff.v1"
+      "enum": [
+        "opl-meta-agent.candidate-package-handoff.v1",
+        "opl-meta-agent.action-stage-continuation.v1"
+      ]
     },
     "status": {
-      "const": "candidate_package_materialized_ready_for_opl_foundry_lab_evaluation"
+      "enum": [
+        "candidate_package_materialized_ready_for_opl_foundry_lab_evaluation",
+        "continuation_required"
+      ]
     },
     "product_id": {
       "const": "opl-meta-agent"
@@ -60,8 +102,8 @@
     "artifacts": {
       "type": "object",
       "required": [
-        "stage_decomposition_attempt_receipt_path",
-        "stage_decomposition_closeout_packet_path",
+        "stage_decomposition_stage_run_readback_path",
+        "agent_skeleton_build_stage_run_readback_path",
         "agent_lab_suite_seed_path",
         "foundry_lab_work_order_path",
         "opl_agent_package_manifest_path",
@@ -71,10 +113,10 @@
         "agent_build_receipt_ref"
       ],
       "properties": {
-        "stage_decomposition_attempt_receipt_path": {
+        "stage_decomposition_stage_run_readback_path": {
           "$ref": "#/$defs/nonEmptyString"
         },
-        "stage_decomposition_closeout_packet_path": {
+        "agent_skeleton_build_stage_run_readback_path": {
           "$ref": "#/$defs/nonEmptyString"
         },
         "agent_lab_suite_seed_path": {
@@ -125,6 +167,31 @@
     "stage_decomposition_attempt": {
       "type": "object"
     },
+    "agent_skeleton_build_attempt": {
+      "type": "object"
+    },
+    "action_stage_route_closeout": {
+      "type": "object"
+    },
+    "action_id": {
+      "const": "build-agent-baseline"
+    },
+    "route_policy": {
+      "const": "ordered_stage_attempts_no_skip"
+    },
+    "completed_stage_refs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/nonEmptyString" }
+    },
+    "next_stage_ref": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "stage_run_owner": {
+      "const": "one-person-lab"
+    },
+    "receipt_emitted": {
+      "type": "boolean"
+    },
     "agent_building_judgment": {
       "type": "object",
       "required": [
@@ -152,7 +219,7 @@
       "additionalProperties": false
     },
     "authority_boundary": {
-      "$ref": "#/$defs/authorityBoundary"
+      "type": "object"
     }
   },
   "$defs": {
@@ -315,6 +382,92 @@
         }
       },
       "additionalProperties": true
+    },
+    "buildBaselineContinuationState": {
+      "oneOf": [
+        {
+          "properties": {
+            "completed_stage_refs": { "const": [] },
+            "next_stage_ref": { "const": "intent-intake" }
+          }
+        },
+        {
+          "properties": {
+            "completed_stage_refs": { "const": ["intent-intake"] },
+            "next_stage_ref": { "const": "stage-decomposition" }
+          }
+        },
+        {
+          "properties": {
+            "completed_stage_refs": { "const": ["intent-intake", "web-experience-research"] },
+            "next_stage_ref": { "const": "stage-decomposition" }
+          }
+        },
+        {
+          "properties": {
+            "completed_stage_refs": { "const": ["intent-intake", "stage-decomposition"] },
+            "next_stage_ref": { "const": "agent-skeleton-build" }
+          }
+        },
+        {
+          "properties": {
+            "completed_stage_refs": { "const": ["intent-intake", "web-experience-research", "stage-decomposition"] },
+            "next_stage_ref": { "const": "agent-skeleton-build" }
+          }
+        },
+        {
+          "properties": {
+            "completed_stage_refs": { "const": ["intent-intake", "stage-decomposition", "agent-skeleton-build"] },
+            "next_stage_ref": { "const": "eval-suite-build" }
+          }
+        },
+        {
+          "properties": {
+            "completed_stage_refs": { "const": ["intent-intake", "web-experience-research", "stage-decomposition", "agent-skeleton-build"] },
+            "next_stage_ref": { "const": "eval-suite-build" }
+          }
+        },
+        {
+          "properties": {
+            "completed_stage_refs": { "const": ["intent-intake", "stage-decomposition", "agent-skeleton-build", "eval-suite-build"] },
+            "next_stage_ref": { "const": "baseline-run" }
+          }
+        },
+        {
+          "properties": {
+            "completed_stage_refs": { "const": ["intent-intake", "web-experience-research", "stage-decomposition", "agent-skeleton-build", "eval-suite-build"] },
+            "next_stage_ref": { "const": "baseline-run" }
+          }
+        },
+        {
+          "properties": {
+            "completed_stage_refs": { "const": ["intent-intake", "stage-decomposition", "agent-skeleton-build", "eval-suite-build", "baseline-run"] },
+            "next_stage_ref": { "const": "baseline-delivery" }
+          }
+        },
+        {
+          "properties": {
+            "completed_stage_refs": { "const": ["intent-intake", "web-experience-research", "stage-decomposition", "agent-skeleton-build", "eval-suite-build", "baseline-run"] },
+            "next_stage_ref": { "const": "baseline-delivery" }
+          }
+        }
+      ]
+    },
+    "continuationAuthorityBoundary": {
+      "type": "object",
+      "required": [
+        "oma_can_create_stage_run_receipt",
+        "oma_can_skip_required_stage",
+        "optional_stage_can_replace_required_stage",
+        "continuation_is_action_completion"
+      ],
+      "properties": {
+        "oma_can_create_stage_run_receipt": { "const": false },
+        "oma_can_skip_required_stage": { "const": false },
+        "optional_stage_can_replace_required_stage": { "const": false },
+        "continuation_is_action_completion": { "const": false }
+      },
+      "additionalProperties": false
     },
     "authorityBoundary": {
       "type": "object",
