@@ -10,12 +10,19 @@ import {
   assertRefsOnlyAuthorityBoundary,
 } from './support/contracts.ts';
 import type { JsonObject } from './support/contracts.ts';
+import { assertEveryFlagFalse, assertIncludesAll, asBooleanRecord } from './support/source-purity.ts';
 
 const newAgentConsumptionEvidenceRef = 'contracts/production_acceptance/new_agent_consumption_evidence.json';
+const liveProgressEvidenceRef = 'contracts/live_stage_run_progress_evidence.json';
+const productionLongSoakBlockerRef = 'typed_blocker_ref://opl-meta-agent/production-consumption/long-soak-pending';
+const currentCohortIds = ['publication-brief-agent', 'handoff-analyst-agent'];
+const currentScaffoldChecks = 'stage_pack_v2_conformance_passed progress_delta_policy_present typed_blocker_lineage_policy_present foundry_series_design_profile_present generated_interface_ready readiness_passed_with_production_evidence_tail'.split(' ');
+const acceptanceChainRefFields = 'intake_refs test_handoff_refs proposal_materializer_refs review_audit_receipt_refs real_target_delivery_receipt_refs new_agent_consumption_evidence_refs'.split(' ');
 
 test('new-agent consumption evidence proves repeat scaffold consumption without readiness upgrade', () => {
   const acceptance = readJson('contracts/production_acceptance/meta-agent-production-acceptance.json');
   const evidence = readJson(newAgentConsumptionEvidenceRef);
+  const liveProgress = readJson(liveProgressEvidenceRef);
 
   assert.equal(evidence.surface_kind, 'opl_meta_agent_new_agent_consumption_evidence');
   assert.equal(evidence.evidence_status, 'verified_new_agent_consumption_with_stage_pack_v2_conformance');
@@ -51,22 +58,14 @@ test('new-agent consumption evidence proves repeat scaffold consumption without 
   assert.equal(scaleout.cohort_count, cohorts.length);
   assert.equal(scaleout.generator_drift_closed, true);
   assert.ok(asStrings(scaleout.closed_generator_drift_refs).includes('blocker:generated-target-stage-progress-delta-policy-missing'));
-  assert.deepEqual(cohorts.map((cohort) => cohort.target_agent_id), [
-    'publication-brief-agent',
-    'handoff-analyst-agent',
-  ]);
+  assert.deepEqual(cohorts.map((cohort) => cohort.target_agent_id), currentCohortIds);
   assert.equal(latestCohort.readiness_status, 'passed_with_production_evidence_tail');
   assertOptionalFalseFlags(latestCohort, 'latestCohort');
-  [
-    'stage_pack_v2_conformance_passed',
-    'progress_delta_policy_present',
-    'typed_blocker_lineage_policy_present',
-    'foundry_series_design_profile_present',
-    'generated_interface_ready',
-    'readiness_passed_with_production_evidence_tail',
-  ].forEach((check) => {
-    assert.ok(asStrings(scaleout.minimum_current_scaffold_consumption_checks).includes(check), check);
-  });
+  assertIncludesAll(
+    asStrings(scaleout.minimum_current_scaffold_consumption_checks),
+    currentScaffoldChecks,
+    'current scaffold checks',
+  );
   assertRefsOnlyAuthorityBoundary(scaleout.authority_boundary as JsonObject, 'repeatConsumptionScaleout.authority_boundary', [
     'can_claim_domain_ready',
     'can_claim_production_ready',
@@ -80,17 +79,30 @@ test('new-agent consumption evidence proves repeat scaffold consumption without 
   assert.equal(historicalFixtureLane.cannot_claim_current_public_entry, true);
   assert.equal(historicalFixtureLane.cannot_generate_default_stage_graph_without_closeout, true);
   assertNoForbiddenAuthority(evidence, 'newAgentConsumptionEvidence');
-  assertRefsOnlyAuthorityBoundary(evidence.authority_boundary as JsonObject, 'newAgentConsumptionEvidence.authority_boundary', [
-    'can_write_target_domain_truth',
-    'can_write_target_domain_memory_body',
-    'can_mutate_target_domain_artifact_body',
-    'can_authorize_target_domain_quality_or_export',
-    'can_promote_default_agent_without_gate',
-    'can_claim_domain_ready',
-    'can_claim_production_ready',
-    'can_close_long_soak_gate',
-    'can_write_opl_runtime_state',
-  ]);
+  const boundary = asBooleanRecord(evidence.authority_boundary);
+  assert.equal(boundary.refs_only, true);
+  assert.equal(boundary.not_generic_runtime_owner, true);
+  assertEveryFlagFalse(
+    boundary,
+    'newAgentConsumptionEvidence.authority_boundary',
+    (field) => !['refs_only', 'not_generic_runtime_owner'].includes(field),
+  );
   assert.ok(asStrings(evidence.forbidden_claims).includes('new_agent_consumption_equals_long_soak_success'));
   asStrings(evidence.source_refs).forEach(assertContractRefExists);
+
+  const acceptanceChain = acceptance.target_agent_acceptance_chain as JsonObject;
+  assert.equal(acceptanceChain.chain_status, 'receipt_chain_present');
+  acceptanceChainRefFields.forEach((field) => {
+    const refs = asStrings(acceptanceChain[field]);
+    assert.ok(refs.length > 0, `target_agent_acceptance_chain.${field}`);
+    if (field !== 'real_target_delivery_receipt_refs') refs.forEach(assertContractRefExists);
+  });
+  assert.deepEqual(asStrings(acceptanceChain.new_agent_consumption_evidence_refs), [newAgentConsumptionEvidenceRef]);
+  assert.deepEqual(asStrings(acceptanceChain.active_typed_blocker_refs), []);
+  assert.ok(asStrings(acceptanceChain.historical_typed_blocker_refs).includes(productionLongSoakBlockerRef));
+
+  const progressSummary = acceptance.target_agent_live_stage_progress_summary as JsonObject;
+  const liveProgressRefs = liveProgress.refs as JsonObject;
+  assert.deepEqual(asStrings(progressSummary.owner_receipt_refs), asStrings(liveProgressRefs.owner_receipt_refs));
+  assert.deepEqual(asStrings(progressSummary.human_gate_refs), asStrings(liveProgressRefs.human_gate_refs));
 });

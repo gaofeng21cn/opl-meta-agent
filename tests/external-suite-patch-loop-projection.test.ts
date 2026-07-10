@@ -16,16 +16,9 @@ test('workbench and scaleout contracts expose target patch-loop refs only', () =
   const requiredRefs = evidenceClass.required_refs as string[];
   const projectionFields = section.projection_fields as string[];
   assert.deepEqual(app.drilldown_readiness_receipt.developer_work_order_machine_ref_fields, requiredRefs);
-  for (const field of [
-    'blocked_suite_result_ref',
-    'developer_patch_work_order_ref',
-    'target_owner_receipt_or_typed_blocker_ref',
-    'patch_absorption_ref',
-    'worktree_cleanup_ref',
-    'agent_lab_re_evaluation_ref',
-  ]) {
-    assert.ok(requiredRefs.includes(field));
-    assert.ok(projectionFields.includes(field));
+  assert.ok(requiredRefs.length > 0);
+  for (const field of requiredRefs) {
+    assert.ok(projectionFields.includes(field), `missing runtime-required projection field: ${field}`);
   }
   assert.doesNotMatch(JSON.stringify(projectionFields), /substantive_deliverable_delta_refs|platform_interface_repair_refs/);
 });

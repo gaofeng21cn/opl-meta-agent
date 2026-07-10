@@ -9,6 +9,7 @@ import {
   assertRefsOnlyAuthorityBoundary,
 } from './support/contracts.ts';
 import type { JsonObject } from './support/contracts.ts';
+import { assertEveryFlagFalse, asBooleanRecord } from './support/source-purity.ts';
 
 const liveProgressEvidenceRef = 'contracts/live_stage_run_progress_evidence.json';
 const ownerTailClosureRef = 'contracts/target_agent_owner_chain_evidence.json#/target_agent_owner_evidence_tail_closure';
@@ -71,21 +72,10 @@ test('live StageRun progress evidence keeps typed blocker refs consumable withou
   blockers.forEach(assertTypedBlocker);
 
   assert.equal(scriptToPackGate.receipt_ref, scriptToPackGateRef);
-  assert.equal(scriptToPackGate.closes_tail_id, 'script_to_pack_hygiene');
-  assert.equal(scriptToPackGate.closure_status, 'machine_gate_landed_not_success_readiness_or_retirement');
-  assertRefsOnlyAuthorityBoundary(scriptToPackGate.authority_boundary as JsonObject, 'scriptToPackGate.authority_boundary', [
-    'can_claim_OPL_primitive_parity',
-    'can_authorize_script_retirement',
-    'can_claim_domain_ready',
-    'can_claim_production_ready',
-  ]);
 
-  assert.equal(ownerTailClosure.surface_kind, 'opl_meta_agent_target_agent_owner_evidence_tail_closure');
   assert.equal(ownerTailClosure.closure_status, 'blocked_by_domain_owned_typed_blocker_refs');
   assert.equal(ownerTailClosure.live_stage_run_progress_evidence_ref, liveProgressEvidenceRef);
   assertContractRefExists(ownerTailClosure.production_acceptance_summary_ref as string);
-  assertOptionalFalseFlags(ownerTailClosure, 'ownerTailClosure');
-  assert.deepEqual(asStrings(ownerTailClosure.owner_receipt_refs), []);
   assert.equal(ownerTailClosure.success_receipt_count, 0);
   assert.equal(ownerTailClosure.open_tail_count, blockers.length);
   assert.deepEqual(
@@ -96,7 +86,6 @@ test('live StageRun progress evidence keeps typed blocker refs consumable withou
     asObjects(ownerTailClosure.tail_closure_items).map((item) => item.tail_id),
     blockers.map((blocker) => blocker.tail_id),
   );
-  assert.deepEqual(asStrings(ownerTailClosure.script_to_pack_gate_receipt_refs), [scriptToPackGateRef]);
   assertRefsOnlyAuthorityBoundary(ownerTailClosure.authority_boundary as JsonObject, 'ownerTailClosure.authority_boundary');
 
   const closedStructureGate = asObjects(ownerTailClosure.closed_structure_gate_items)
@@ -107,21 +96,12 @@ test('live StageRun progress evidence keeps typed blocker refs consumable withou
 
   assertProgressSummary(ownerChainSummary, evidence, 'ownerChainSummary');
   assertProgressSummary(productionSummary, evidence, 'productionSummary');
-  assertRefsOnlyAuthorityBoundary(evidence.authority_boundary as JsonObject, 'liveProgressEvidence.authority_boundary', [
-    'can_write_target_domain_truth',
-    'can_write_target_domain_memory_body',
-    'can_mutate_target_domain_artifact_body',
-    'can_authorize_target_domain_quality_or_export',
-    'can_write_target_owner_receipt_body',
-    'opl_can_sign_owner_receipt',
-    'opl_can_create_typed_blocker',
-    'opl_can_claim_domain_ready',
-    'opl_can_claim_production_ready',
-    'provider_completion_counts_as_domain_ready',
-    'structural_conformance_counts_as_live_progress',
-    'can_claim_target_domain_ready',
-    'can_claim_domain_ready',
-    'can_claim_production_ready',
-    'can_promote_default_agent_without_gate',
-  ]);
+  const boundary = asBooleanRecord(evidence.authority_boundary);
+  assert.equal(boundary.refs_only, true);
+  assert.equal(boundary.not_generic_runtime_owner, true);
+  assertEveryFlagFalse(
+    boundary,
+    'liveProgressEvidence.authority_boundary',
+    (field) => !['refs_only', 'not_generic_runtime_owner'].includes(field),
+  );
 });

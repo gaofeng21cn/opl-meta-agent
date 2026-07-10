@@ -52,6 +52,26 @@ export function writeJsonFile(filePath: string, payload: unknown): void {
   fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`);
 }
 
+export function buildAiReviewerEvaluation(overrides: JsonObject = {}): JsonObject {
+  return {
+    reviewer_kind: 'ai_reviewer',
+    model_or_provider: 'gpt-5.5',
+    run_ref: 'run:ai-reviewer/external-suite',
+    execution_attempt_ref: 'attempt:executor/external-suite',
+    review_attempt_ref: 'attempt:reviewer/external-suite',
+    no_shared_context: true,
+    independent_attempt: true,
+    critique: 'The external suite exposes a target-owned capability gap.',
+    suggestions: ['Patch the target-owned source and rerun the suite.'],
+    source_refs: ['rubric-gap:reviewer/quality'],
+    direct_evidence_refs: ['evidence-ref:reviewer/direct'],
+    verdict: 'blocked_requires_developer_patch',
+    predicted_impact: 'The target-owned patch should close the observed gap without moving authority to OMA.',
+    provenance: { created_by: 'test-fixture' },
+    ...overrides,
+  };
+}
+
 export function withTempDir<T>(prefix: string, run: (dir: string) => T): T {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
   try {

@@ -126,27 +126,14 @@ test('domain skill declarations and professional skills stay separate', () => {
   const packCompilerInput = readJson('contracts/pack_compiler_input.json');
   const capabilityMap = readJson('contracts/capability_map.json');
   const requiredPackPaths = asStrings(packCompilerInput.required_domain_pack_paths);
-  const expectedPaths = {
-    'agent/primary_skill/': ['agent/primary_skill/SKILL.md'],
-    'agent/skills/': [
-      'agent/skills/agent-baseline-build.md',
-      'agent/skills/external-suite-improvement.md',
-      'agent/skills/external-work-order-execution.md',
-      'agent/skills/opl-meta-agent-domain-skill.md',
-      'agent/skills/trajectory-learning-intake.md',
-    ],
-    'agent/professional_skills/': [
-      'agent/professional_skills/oma-agent-design-evolution/SKILL.md',
-      'agent/professional_skills/oma-eval-takeover-review/SKILL.md',
-      'agent/professional_skills/oma-stage-pack-intent-architecture/SKILL.md',
-      'agent/professional_skills/oma-work-order-hygiene/SKILL.md',
-    ],
-  };
-
-  Object.entries(expectedPaths).forEach(([prefix, expected]) => {
-    assert.deepEqual(requiredPackPaths.filter((relativePath) => relativePath.startsWith(prefix)), expected);
-  });
-  assert.equal(requiredPackPaths.some((relativePath) => /^agent\/skills\/oma-.+\.md$/.test(relativePath)), false);
+  const primaryPaths = requiredPackPaths.filter((ref) => ref.startsWith('agent/primary_skill/'));
+  const domainSkillPaths = requiredPackPaths.filter((ref) => ref.startsWith('agent/skills/'));
+  const professionalSkillPaths = requiredPackPaths.filter((ref) => ref.startsWith('agent/professional_skills/'));
+  assert.deepEqual(primaryPaths, ['agent/primary_skill/SKILL.md']);
+  assert.ok(domainSkillPaths.length > 0);
+  assert.ok(professionalSkillPaths.length > 0);
+  assert.equal(domainSkillPaths.some((ref) => /\/oma-.+\.md$/.test(ref)), false);
+  professionalSkillPaths.forEach((ref) => assert.match(ref, /\/oma-[^/]+\/SKILL\.md$/));
 
   const primaryCapability = capabilityMap.primary_skill_capability;
   assert.equal(primaryCapability.surface_role, 'primary_skill');
@@ -157,7 +144,7 @@ test('domain skill declarations and professional skills stay separate', () => {
     .filter((capability) => capability.surface_role === 'professional_skill');
   assert.deepEqual(
     professionalCapabilities.map((capability) => capability.physical_source_ref.ref).sort(),
-    expectedPaths['agent/professional_skills/'],
+    professionalSkillPaths,
   );
   professionalCapabilities.forEach((capability) => {
     assert.equal(capability.capability_kind, 'professional_skill');

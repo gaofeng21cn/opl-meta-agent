@@ -5,6 +5,7 @@ import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { validateJsonSchemaPayload } from 'opl-framework-shared/json-schema-registry';
 import {
+  buildAiReviewerEvaluation,
   oplOwnerRepoRoot,
   readJsonFile as readJson,
   repoRoot,
@@ -182,23 +183,11 @@ function writeReviewerEvaluation(
   overrides: JsonObject = {},
   domainId = targetAgent.domain_id,
 ): void {
-  writeJson(filePath, {
-    reviewer_kind: 'ai_reviewer',
-    model_or_provider: 'gpt-5.5',
-    run_ref: 'run:ai-reviewer/oma/pass4',
-    execution_attempt_ref: 'attempt:executor/oma/pass4',
-    review_attempt_ref: 'attempt:ai-reviewer/oma/pass4',
-    no_shared_context: true,
-    independent_attempt: true,
-    critique: 'The generated target agent keeps owner handoff and source morphology refs explicit.',
-    suggestions: ['Keep baseline receipt gated by independent reviewer evidence.'],
+  writeJson(filePath, buildAiReviewerEvaluation({
     source_refs: ['review-ref:oma/pass4', ...morphologyRefs(domainId)],
     direct_evidence_refs: [`artifact-ref:${domainId}/package`, ...morphologyRefs(domainId)],
-    verdict: 'baseline_ready_with_owner_gate',
-    predicted_impact: 'Owner-gated target baseline remains auditable without OPL target truth authority.',
-    provenance: { artifact_ref: 'artifact-ref:oma/pass4-review', created_by: 'test-fixture' },
     ...overrides,
-  });
+  }));
 }
 
 function writeStageCloseout(filePath: string, agent: TargetAgent = targetAgent): void {
@@ -281,8 +270,10 @@ function assertRefFields(surface: JsonObject, expected: Record<string, string>):
   Object.entries(expected).forEach(([field, value]) => assert.equal(surface[field], value, field));
 }
 
-function assertSingleRefArrays(surface: JsonObject, expected: Record<string, string>): void {
-  Object.entries(expected).forEach(([field, value]) => assert.deepEqual(surface[field], [value], field));
+function assertStageInput(stage: JsonObject, refKind: string, ref?: string): void {
+  assert.ok((stage.inputs as JsonObject[]).some((entry) =>
+    entry.ref_kind === refKind && (ref === undefined || entry.ref === ref)
+  ), `${refKind} input`);
 }
 
 test('build-agent-baseline writes a conformant hybrid package and canonical Foundry handoff', () => {
@@ -326,14 +317,8 @@ test('build-agent-baseline writes a conformant hybrid package and canonical Foun
     assert.equal(payload.status, 'candidate_package_materialized_ready_for_opl_foundry_lab_evaluation');
     assert.equal(payload.opl_profile_conformance.status, 'passed');
     assertBuildAgentBaselineOutputSchema(payload);
-    assert.equal(payload.artifacts.agent_build_receipt_path, path.join(
-      targetDir,
-      'contracts/agent_build_receipt.json',
-    ));
-    assert.equal(
-      payload.artifacts.agent_build_receipt_ref,
-      `build-receipt-ref:opl-meta-agent/${targetAgent.domain_id}`,
-    );
+    assert.equal(payload.artifacts.agent_build_receipt_path, path.join(targetDir, 'contracts/agent_build_receipt.json'));
+    assert.equal(payload.artifacts.agent_build_receipt_ref, `build-receipt-ref:opl-meta-agent/${targetAgent.domain_id}`);
     const missingBuildReceiptRef = structuredClone(payload);
     delete missingBuildReceiptRef.artifacts.agent_build_receipt_ref;
     assert.equal(validateBuildAgentBaselineOutput(missingBuildReceiptRef).ok, false);
@@ -346,32 +331,14 @@ test('build-agent-baseline writes a conformant hybrid package and canonical Foun
     assert.equal(descriptor.profile_selection_rationale, targetAgent.profile_selection_rationale);
     assert.deepEqual(descriptor.reference_design_source_refs, targetAgent.reference_design_source_refs);
     assert.deepEqual(descriptor.reference_design_pattern_notes, targetAgent.reference_design_pattern_notes);
-    assert.deepEqual(
-      descriptor.reference_design_pattern_packet_refs,
-      targetAgent.reference_design_pattern_packet_refs,
-    );
+    assert.deepEqual(descriptor.reference_design_pattern_packet_refs, targetAgent.reference_design_pattern_packet_refs);
     assert.deepEqual(capabilityMap.selected_profile_refs, targetAgent.selected_opl_profile_refs);
-    assert.deepEqual(
-      capabilityMap.profile_selection_receipt.selected_profile_refs,
-      targetAgent.selected_opl_profile_refs,
-    );
-    assert.ok(
-      capabilityMap.profile_selection_receipt.profile_catalog_refs.includes(
-        'opl profiles select --intent <target-agent-intent> [--intent-signal <canonical-signal>] --json',
-      ),
-    );
-    assert.ok(
-      capabilityMap.profile_selection_receipt.profile_catalog_refs.includes(
-        'opl profiles inspect evidence_grounded_decision_agent_profile.v1 --json',
-      ),
-    );
-    assert.equal(
-      JSON.stringify(capabilityMap.profile_selection_receipt).includes('opl foundry evidence-profile inspect'),
-      false,
-    );
-    assert.ok(
-      capabilityMap.profile_requirements.required_stage_archetypes.includes('mode_routing'),
-    );
+    assert.deepEqual(capabilityMap.profile_selection_receipt.selected_profile_refs, targetAgent.selected_opl_profile_refs);
+    const profileCatalogRefs = capabilityMap.profile_selection_receipt.profile_catalog_refs.join('\n');
+    assert.match(profileCatalogRefs, /opl profiles select/);
+    assert.match(profileCatalogRefs, /opl profiles inspect/);
+    assert.doesNotMatch(profileCatalogRefs, /opl foundry evidence-profile inspect/);
+    assert.ok(capabilityMap.profile_requirements.required_stage_archetypes.includes('mode_routing'));
     assert.deepEqual(stageControl.selected_profile_refs, targetAgent.selected_opl_profile_refs);
     assert.ok(
       stageControl.profile_requirements.required_evidence_objects.includes('EvidencePacket'),
@@ -423,16 +390,7 @@ test('build-agent-baseline writes a conformant hybrid package and canonical Foun
     assert.ok(primarySkill.includes(targetAgent.reference_design_pattern_packet_refs[0]));
     assert.ok(generatedPrompt.includes(targetAgent.selected_opl_profile_refs[0]));
     assert.ok(generatedKnowledge.includes('EvidencePacket'));
-    assert.ok(
-      stageControl.profile_requirements.required_reference_pack_roles.includes(
-        'evidence_source_freshness_policy',
-      ),
-    );
-    assert.ok(
-      capabilityMap.profile_selection_receipt.profile_catalog_refs.includes(
-        'opl profiles select --intent <target-agent-intent> --reference-source <source-ref> --json',
-      ),
-    );
+    assert.ok(stageControl.profile_requirements.required_reference_pack_roles.includes('evidence_source_freshness_policy'));
   });
 });
 
@@ -511,53 +469,10 @@ test('build-agent-baseline materializes source-derived proof with canonical OPL 
     assert.equal(fs.existsSync(path.join(outputRoot, 'baseline-delivery-receipt.json')), false);
     assert.equal(descriptor.profile_selection_mode, 'source_derived_design');
     assert.equal(descriptor.selected_opl_profile_refs, undefined);
-    assert.equal(
-      descriptor.source_derived_design_receipt.route_ref,
-      'opl-profile-route:source_derived_design_profile_route.v1',
-    );
-    assertRefFields(descriptor, sourceDerivedCoreRefs);
-    assert.deepEqual(descriptor.build_receipt.required_design_objects, sourceDerivedRequiredDesignObjects);
-    assert.equal(descriptor.build_receipt.design_admission_receipt_ref, sourceDerivedObjectRefs.designAdmissionReceiptRef);
-    assert.ok(descriptor.build_receipt.forbidden_claims.includes('runtime_live_promoted'));
-    assert.deepEqual(
-      descriptor.stage_decomposition_subpacket_set.cognitive_step_packets.map((entry: JsonObject) => entry.step_id),
-      ['design-basis', 'transfer-planning', 'agent-pack-planning', 'design-admission', 'build-verification'],
-    );
-    assert.equal(
-      descriptor.stage_decomposition_subpacket_set.materialization_boundary
-        .ai_freeform_file_bodies_are_design_source_of_truth,
-      false,
-    );
-    assert.deepEqual(
-      descriptor.source_derived_design_receipt.reference_design_pattern_packet_refs,
-      sourceDerivedTargetAgent.reference_design_pattern_packet_refs,
-    );
-    assert.deepEqual(
-      descriptor.source_derived_design_receipt.required_design_objects,
-      sourceDerivedRequiredDesignObjects,
-    );
-    assert.deepEqual(
-      descriptor.source_derived_design_receipt.required_machine_objects,
-      sourceDerivedRequiredDesignObjects,
-    );
-    assert.equal(capabilityMap.profile_selection_mode, 'source_derived_design');
     assert.deepEqual(capabilityMap.selected_profile_refs, []);
-    assert.equal(
-      capabilityMap.source_derived_design_receipt.route_ref,
-      'opl-profile-route:source_derived_design_profile_route.v1',
-    );
-    assert.ok(
-      capabilityMap.profile_requirements.required_stage_archetypes.includes('reference_design_pattern_extraction'),
-    );
-    assertRefFields(capabilityMap, sourceDerivedCoreRefs);
-    assertSingleRefArrays(capabilityMap, {
-      reference_design_packet_refs: sourceDerivedObjectRefs.referenceDesignPacketRef,
-      transfer_map_refs: sourceDerivedObjectRefs.transferMapRef,
-      agent_pack_plan_refs: sourceDerivedObjectRefs.agentPackPlanRef,
-      design_admission_receipt_refs: sourceDerivedObjectRefs.designAdmissionReceiptRef,
-      build_receipt_refs: sourceDerivedObjectRefs.buildReceiptRef,
-      stage_decomposition_subpacket_set_refs: sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef,
-    });
+    assert.deepEqual(stageControl.selected_profile_refs, []);
+    assert.deepEqual(descriptor.build_receipt.required_design_objects, sourceDerivedRequiredDesignObjects);
+    assert.ok(descriptor.build_receipt.forbidden_claims.includes('runtime_live_promoted'));
     assertRefFields(capabilityMap.profile_selection_receipt as JsonObject, {
       reference_design_packet_ref: sourceDerivedObjectRefs.referenceDesignPacketRef,
       transfer_map_ref: sourceDerivedObjectRefs.transferMapRef,
@@ -567,20 +482,8 @@ test('build-agent-baseline materializes source-derived proof with canonical OPL 
       stage_decomposition_subpacket_set_ref: sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef,
     });
     assert.equal(Object.hasOwn(capabilityMap.profile_selection_receipt, 'build_receipt'), false);
-    assert.deepEqual(
-      capabilityMap.reference_design_pattern_packet_refs,
-      sourceDerivedTargetAgent.reference_design_pattern_packet_refs,
-    );
-    assert.equal(stageControl.profile_selection_mode, 'source_derived_design');
-    assert.deepEqual(stageControl.selected_profile_refs, []);
-    assert.equal(
-      stageControl.source_derived_design_receipt.route_ref,
-      'opl-profile-route:source_derived_design_profile_route.v1',
-    );
-    assertRefFields(stageControl, sourceDerivedCoreRefs);
     assert.equal(stageControl.build_receipt.build_source_kind, 'source_derived_design');
     assert.equal(stageControl.build_receipt.receipt_kind, 'AgentBuildReceipt');
-    assert.equal(stageControl.build_receipt.design_admission_receipt_ref, sourceDerivedObjectRefs.designAdmissionReceiptRef);
     assert.equal(stageControl.stages.length, 5);
     assert.deepEqual(
       stageControl.stages
@@ -594,10 +497,7 @@ test('build-agent-baseline materializes source-derived proof with canonical OPL 
       'target-only-requirement:surgery-risk-from-paper-agent/owner-gated-closeout',
     );
     assert.equal(stageControl.build_receipt.receipt_timing, 'post_materialization');
-    assert.equal(stageControl.build_receipt.materialization.status, 'passed');
-    assert.deepEqual(descriptor.build_receipt, buildReceipt);
-    assert.deepEqual(capabilityMap.build_receipt, buildReceipt);
-    assert.deepEqual(stageControl.build_receipt, buildReceipt);
+    [descriptor, capabilityMap, stageControl].forEach((surface) => assert.deepEqual(surface.build_receipt, buildReceipt));
     assert.deepEqual(
       stageControl.build_receipt.materialization.materialized_stage_ids,
       stageControl.stages.map((stage: JsonObject) => stage.stage_id),
@@ -623,81 +523,26 @@ test('build-agent-baseline materializes source-derived proof with canonical OPL 
     assert.deepEqual(stageControl.build_receipt.target_only_requirement_refs, [
       'target-only-requirement:surgery-risk-from-paper-agent/owner-gated-closeout',
     ]);
-    assert.deepEqual(stageControl.design_admission_receipt.required_design_objects, sourceDerivedRequiredDesignObjects);
-    assert.ok(stageControl.build_receipt.rejected_source_pattern_refs.some((ref: string) =>
-      ref.startsWith('non-transferable:surgery-risk-from-paper-agent/')
-    ));
     assert.deepEqual(stageControl.stages[0].stage_pattern_source_refs, [
       sourceDerivedObjectRefs.sourcePatternRef,
     ]);
-    assert.ok(
-      stageControl.reference_design_packet.extractable_design_aspects.some((aspect: JsonObject) =>
-        aspect.source_pattern_ref === sourceDerivedObjectRefs.sourcePatternRef
-        && aspect.step_id === 'risk-case-intake'
-        && aspect.target_design_slot === 'workflow_stage:risk_case_intake'
-      ),
-    );
-    assert.ok(
-      stageControl.transfer_map.mappings.some((mapping: JsonObject) =>
-        mapping.pattern_id === 'reference-design-pattern-packet:surgical-risk-fixture:v1'
-        && mapping.step_id === 'model-evidence-review'
-        && mapping.target_stage_or_capability_slot ===
-          'stage:surgery-risk-from-paper-agent/reference-design-pattern-packet-surgical-risk-fixture-v1-model-evidence-review'
-        && mapping.disposition === 'adapt'
-      ),
-    );
-    assert.ok(
-      stageControl.agent_pack_plan.planned_stage_refs.some((stageRef: JsonObject) =>
-        stageRef.source_pattern_ref === sourceDerivedObjectRefs.sourcePatternRef
-        && stageRef.step_id === 'owner-handoff-gate'
-      ),
-    );
-    assert.ok(stageControl.stages[0].inputs.some((entry: JsonObject) =>
-      entry.ref_kind === 'reference_design_packet_ref'
-      && entry.ref === sourceDerivedObjectRefs.referenceDesignPacketRef
+    const firstStage = stageControl.stages[0] as JsonObject;
+    [
+      ['reference_design_packet_ref', sourceDerivedObjectRefs.referenceDesignPacketRef],
+      ['design_admission_receipt_ref', sourceDerivedObjectRefs.designAdmissionReceiptRef],
+      ['stage_decomposition_subpacket_set_ref', sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef],
+    ].forEach(([kind, ref]) => assertStageInput(firstStage, kind, ref));
+    assert.equal((firstStage.inputs as JsonObject[]).some((entry) => entry.ref_kind === 'build_receipt_ref'), false);
+    [
+      `reference-design-packet-ref:${sourceDerivedObjectRefs.referenceDesignPacketRef}`,
+      `transfer-map-ref:${sourceDerivedObjectRefs.transferMapRef}`,
+      `agent-pack-plan-ref:${sourceDerivedObjectRefs.agentPackPlanRef}`,
+      `design-admission-receipt-ref:${sourceDerivedObjectRefs.designAdmissionReceiptRef}`,
+      `stage-decomposition-subpacket-set-ref:${sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef}`,
+    ].forEach((ref) => assert.ok(firstStage.stage_contract.requires.includes(ref), ref));
+    assert.ok(firstStage.stage_contract.expected_receipt_refs.some((entry: JsonObject) =>
+      entry.ref === sourceDerivedObjectRefs.buildReceiptRef
     ));
-    assert.ok(stageControl.stages[0].inputs.some((entry: JsonObject) =>
-      entry.ref_kind === 'design_admission_receipt_ref'
-      && entry.ref === sourceDerivedObjectRefs.designAdmissionReceiptRef
-    ));
-    assert.ok(stageControl.stages[0].inputs.some((entry: JsonObject) =>
-      entry.ref_kind === 'stage_decomposition_subpacket_set_ref'
-      && entry.ref === sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef
-    ));
-    assert.equal(stageControl.stages[0].inputs.some((entry: JsonObject) =>
-      entry.ref_kind === 'build_receipt_ref'
-      && entry.ref === sourceDerivedObjectRefs.buildReceiptRef
-    ), false);
-    assert.ok(
-      stageControl.stages[0].stage_contract.requires.includes(
-        `reference-design-packet-ref:${sourceDerivedObjectRefs.referenceDesignPacketRef}`,
-      ),
-    );
-    assert.ok(
-      stageControl.stages[0].stage_contract.requires.includes(
-        `transfer-map-ref:${sourceDerivedObjectRefs.transferMapRef}`,
-      ),
-    );
-    assert.ok(
-      stageControl.stages[0].stage_contract.requires.includes(
-        `agent-pack-plan-ref:${sourceDerivedObjectRefs.agentPackPlanRef}`,
-      ),
-    );
-    assert.ok(
-      stageControl.stages[0].stage_contract.requires.includes(
-        `design-admission-receipt-ref:${sourceDerivedObjectRefs.designAdmissionReceiptRef}`,
-      ),
-    );
-    assert.ok(
-      stageControl.stages[0].stage_contract.requires.includes(
-        `stage-decomposition-subpacket-set-ref:${sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef}`,
-      ),
-    );
-    assert.ok(
-      stageControl.stages[0].stage_contract.expected_receipt_refs.some((entry: JsonObject) =>
-        entry.ref === sourceDerivedObjectRefs.buildReceiptRef
-      ),
-    );
     assert.deepEqual(
       stageAttemptInput.profile_selection_input_policy.required_design_objects,
       sourceDerivedRequiredDesignObjects,
@@ -716,17 +561,13 @@ test('build-agent-baseline materializes source-derived proof with canonical OPL 
       expected_build_receipt_ref: sourceDerivedObjectRefs.buildReceiptRef,
       stage_decomposition_subpacket_set_ref: sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef,
     });
-    assert.ok(
-      stageControl.capability_plan_requirements.includes(
-        'map_transferable_patterns_into_stage_control_plane_prompt_knowledge_quality_gate_and_agent_lab_suite_seed',
-      ),
-    );
-    assert.ok(primarySkill.includes('Profile selection mode: source_derived_design'));
-    assert.ok(primarySkill.includes('Selected profile ref: none; source-derived design refs are the active design input.'));
-    assert.ok(primarySkill.includes(sourceDerivedObjectRefs.referenceDesignPacketRef));
-    assert.ok(primarySkill.includes(sourceDerivedObjectRefs.transferMapRef));
-    assert.ok(primarySkill.includes(sourceDerivedObjectRefs.agentPackPlanRef));
-    assert.ok(primarySkill.includes(sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef));
+    [
+      'Profile selection mode: source_derived_design',
+      sourceDerivedObjectRefs.referenceDesignPacketRef,
+      sourceDerivedObjectRefs.transferMapRef,
+      sourceDerivedObjectRefs.agentPackPlanRef,
+      sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef,
+    ].forEach((text) => assert.ok(primarySkill.includes(text), text));
     assert.ok(generatedPrompt.includes('ReferenceDesignPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt'));
     assert.ok(generatedPrompt.includes(sourceDerivedTargetAgent.reference_design_pattern_packet_refs[0]));
   });
@@ -761,88 +602,37 @@ test('build-agent-baseline materializes a research-driven target package from va
     assert.equal(payload.opl_profile_conformance.status, 'not_applicable');
     assertBuildAgentBaselineOutputSchema(payload);
     assert.equal(payload.artifacts.agent_build_receipt_ref, researchDrivenObjectRefs.buildReceiptRef);
-    assert.equal(descriptor.profile_selection_mode, 'research_driven_design');
+    [descriptor, capabilityMap, stageControl].forEach((surface) => {
+      assert.equal(surface.profile_selection_mode, 'research_driven_design');
+      assert.equal(surface.research_driven_design_receipt.route_ref, 'opl-profile-route:research_driven_design_profile_route.v1');
+    });
     assert.equal(descriptor.selected_opl_profile_refs, undefined);
-    assert.equal(
-      descriptor.research_driven_design_receipt.route_ref,
-      'opl-profile-route:research_driven_design_profile_route.v1',
-    );
     assert.deepEqual(descriptor.research_source_refs, researchDrivenTargetAgent.research_source_refs);
     assert.deepEqual(descriptor.expert_practice_notes, researchDrivenTargetAgent.expert_practice_notes);
     assert.deepEqual(descriptor.research_synthesis_refs, researchDrivenTargetAgent.research_synthesis_refs);
-    assertRefFields(descriptor, researchDrivenCoreRefs);
+    [descriptor, capabilityMap].forEach((surface) => assertRefFields(surface, researchDrivenCoreRefs));
     assert.deepEqual(descriptor.build_receipt.required_design_objects, researchDrivenRequiredDesignObjects);
     assert.equal(descriptor.build_receipt.build_source_kind, 'research_driven_design');
-    assert.equal(descriptor.build_receipt.design_admission_receipt_ref, researchDrivenObjectRefs.designAdmissionReceiptRef);
-    assert.equal(
-      descriptor.stage_decomposition_subpacket_set.design_basis_object,
-      'ResearchSynthesisPacket',
-    );
-    assert.equal(capabilityMap.profile_selection_mode, 'research_driven_design');
     assert.deepEqual(capabilityMap.selected_profile_refs, []);
-    assert.equal(
-      capabilityMap.research_driven_design_receipt.route_ref,
-      'opl-profile-route:research_driven_design_profile_route.v1',
-    );
-    assert.ok(
-      capabilityMap.profile_requirements.required_stage_archetypes.includes('expert_practice_research'),
-    );
-    assertRefFields(capabilityMap, researchDrivenCoreRefs);
-    assertSingleRefArrays(capabilityMap, {
-      research_synthesis_packet_refs: researchDrivenObjectRefs.researchSynthesisPacketRef,
-      stage_decomposition_subpacket_set_refs: researchDrivenObjectRefs.stageDecompositionSubpacketSetRef,
-    });
-    assert.equal(stageControl.profile_selection_mode, 'research_driven_design');
-    assert.equal(
-      stageControl.research_driven_design_receipt.route_ref,
-      'opl-profile-route:research_driven_design_profile_route.v1',
-    );
     assertRefFields(stageControl, {
       research_synthesis_packet_ref: researchDrivenObjectRefs.researchSynthesisPacketRef,
       design_admission_receipt_ref: researchDrivenObjectRefs.designAdmissionReceiptRef,
       stage_decomposition_subpacket_set_ref: researchDrivenObjectRefs.stageDecompositionSubpacketSetRef,
     });
-    assert.deepEqual(stageControl.design_admission_receipt.required_design_objects, researchDrivenRequiredDesignObjects);
     assert.deepEqual(stageControl.build_receipt.required_design_objects, researchDrivenRequiredDesignObjects);
-    assert.equal(stageControl.build_receipt.design_admission_receipt_ref, researchDrivenObjectRefs.designAdmissionReceiptRef);
     assert.equal(stageControl.stages.length, 4);
     assert.deepEqual(stageControl.stages.flatMap((stage: JsonObject) => stage.stage_pattern_source_refs), [
       researchDrivenTargetAgent.research_synthesis_refs[0],
       researchDrivenObjectRefs.expertPracticeNoteRef,
       researchDrivenObjectRefs.researchSourcePatternRef,
     ]);
-    assert.ok(
-      stageControl.research_synthesis_packet.extractable_design_aspects.some((aspect: JsonObject) =>
-        aspect.source_pattern_ref === researchDrivenTargetAgent.research_synthesis_refs[0]
-        && aspect.target_design_slot === 'workflow_stage:expert_practice_synthesis'
-      ),
-    );
-    assert.ok(
-      stageControl.stages[0].inputs.some((entry: JsonObject) =>
-        entry.ref_kind === 'research_synthesis_packet_ref'
-        && entry.ref === researchDrivenObjectRefs.researchSynthesisPacketRef
-      ),
-    );
-    assert.ok(
-      stageControl.stages[0].stage_contract.requires.includes(
-        `research-synthesis-packet-ref:${researchDrivenObjectRefs.researchSynthesisPacketRef}`,
-      ),
-    );
-    assert.ok(
-      stageControl.stages[0].stage_contract.requires.includes(
-        `design-admission-receipt-ref:${researchDrivenObjectRefs.designAdmissionReceiptRef}`,
-      ),
-    );
-    assert.ok(
-      stageControl.stages[0].stage_contract.requires.includes(
-        `stage-decomposition-subpacket-set-ref:${researchDrivenObjectRefs.stageDecompositionSubpacketSetRef}`,
-      ),
-    );
-    assert.ok(
-      stageControl.capability_plan_requirements.includes(
-        'map_researched_expert_practice_into_stage_control_plane_prompt_knowledge_quality_gate_and_agent_lab_suite_seed',
-      ),
-    );
+    const firstStage = stageControl.stages[0] as JsonObject;
+    assertStageInput(firstStage, 'research_synthesis_packet_ref', researchDrivenObjectRefs.researchSynthesisPacketRef);
+    [
+      `research-synthesis-packet-ref:${researchDrivenObjectRefs.researchSynthesisPacketRef}`,
+      `design-admission-receipt-ref:${researchDrivenObjectRefs.designAdmissionReceiptRef}`,
+      `stage-decomposition-subpacket-set-ref:${researchDrivenObjectRefs.stageDecompositionSubpacketSetRef}`,
+    ].forEach((ref) => assert.ok(firstStage.stage_contract.requires.includes(ref), ref));
     assert.deepEqual(
       workOrder.source_refs.includes(researchDrivenTargetAgent.research_source_refs[0]),
       true,

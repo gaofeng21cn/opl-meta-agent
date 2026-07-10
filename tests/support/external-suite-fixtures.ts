@@ -2,7 +2,7 @@ import path from 'node:path';
 import { runImproveFromAgentLabSuite } from '../../scripts/improve-from-agent-lab-suite.ts';
 import type { JsonObject } from '../../scripts/lib/domain-pack.ts';
 import { readTargetAgent } from '../../scripts/lib/meta-agent-loop-io.ts';
-import { readJsonFile, writeJsonFile } from './contracts.ts';
+import { buildAiReviewerEvaluation, readJsonFile, writeJsonFile } from './contracts.ts';
 
 export { withTempDir as withOutputRoot } from './contracts.ts';
 
@@ -113,23 +113,7 @@ export function writeTargetDescriptor(targetAgentDir: string, domainId = 'med-au
 }
 
 export function writeAiReviewerEvaluation(filePath: string, overrides: JsonObject = {}): void {
-  const payload = {
-    reviewer_kind: 'ai_reviewer', model_or_provider: 'gpt-5.5',
-    run_ref: 'run:ai-reviewer/external-suite',
-    execution_attempt_ref: 'attempt:executor/external-suite',
-    review_attempt_ref: 'attempt:reviewer/external-suite',
-    no_shared_context: true,
-    independent_attempt: true,
-    critique: 'The external suite exposes a target-owned capability gap.',
-    suggestions: ['Patch the target-owned source and rerun the suite.'],
-    source_refs: ['rubric-gap:reviewer/quality'],
-    direct_evidence_refs: ['evidence-ref:reviewer/direct'],
-    verdict: 'blocked_requires_developer_patch',
-    predicted_impact: 'The target-owned patch should close the observed gap without moving authority to OMA.',
-    provenance: { created_by: 'test-fixture' },
-    ...overrides,
-  };
-  writeJsonFile(filePath, payload);
+  writeJsonFile(filePath, buildAiReviewerEvaluation(overrides));
 }
 
 export function writeTargetImprovementPolicy(

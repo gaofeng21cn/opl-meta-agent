@@ -1,17 +1,13 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
 import type { AiReviewerEvaluation } from '../scripts/lib/meta-agent-loop-ai-reviewer.ts';
 import {
   buildPatchTraceabilityMatrix,
   inferProposedChangeRefs,
   targetImprovementPolicy,
 } from '../scripts/lib/target-improvement-policy.ts';
-
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+import { readJson, withTempDir, writeJsonFile as writeJson } from './support/contracts.ts';
 
 function reviewerEvaluation(overrides: Partial<AiReviewerEvaluation> = {}): AiReviewerEvaluation {
   return {
@@ -42,12 +38,7 @@ function reviewerEvaluation(overrides: Partial<AiReviewerEvaluation> = {}): AiRe
 }
 
 function developerWorkOrderPolicyDefaults(): string[] {
-  const contract = JSON.parse(
-    fs.readFileSync(
-      path.join(repoRoot, 'contracts/developer_work_order_policy.json'),
-      'utf8',
-    ),
-  ) as Record<string, unknown>;
+  const contract = readJson('contracts/developer_work_order_policy.json');
   assert.equal(contract.surface_kind, 'developer_work_order_policy');
   assert.equal(contract.state, 'active_contract');
 
@@ -61,17 +52,12 @@ function developerWorkOrderPolicyDefaults(): string[] {
 }
 
 test('target improvement policy does not synthesize generic external-agent change refs', () => {
-  const targetAgentDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-target-policy-'));
-  try {
-    fs.mkdirSync(path.join(targetAgentDir, 'contracts'), { recursive: true });
-    fs.writeFileSync(
-      path.join(targetAgentDir, 'contracts/domain_descriptor.json'),
-      `${JSON.stringify({
-        domain_id: 'external-agent',
-        domain_label: 'External Agent',
-        delivery_domain: 'external_opl_compatible_agent',
-      }, null, 2)}\n`,
-    );
+  withTempDir('oma-target-policy-', (targetAgentDir) => {
+    writeJson(path.join(targetAgentDir, 'contracts/domain_descriptor.json'), {
+      domain_id: 'external-agent',
+      domain_label: 'External Agent',
+      delivery_domain: 'external_opl_compatible_agent',
+    });
 
     const policy = targetImprovementPolicy(targetAgentDir);
     assert.deepEqual(policy.defaultChangeRefs, []);
@@ -87,26 +73,17 @@ test('target improvement policy does not synthesize generic external-agent chang
 
     assert.deepEqual(proposedChangeRefs, []);
     assert.deepEqual(policy.forbiddenTargetPathsOrSurfaces, developerWorkOrderPolicyDefaults());
-  } finally {
-    fs.rmSync(targetAgentDir, { recursive: true, force: true });
-  }
+  });
 });
 
 test('target improvement policy still applies explicit target-owned owner receipt refs', () => {
-  const targetAgentDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-target-policy-'));
-  try {
-    fs.mkdirSync(path.join(targetAgentDir, 'contracts/production_acceptance'), { recursive: true });
-    fs.writeFileSync(
-      path.join(targetAgentDir, 'contracts/production_acceptance/owner-receipt.json'),
-      `${JSON.stringify({
-        meta_agent_work_order_contract: {
-          default_change_ref_triggers: ['target-owner'],
-          default_change_refs: [
-            'target_agent_owner_receipt_contract_ref:target-agent/live-acceptance',
-          ],
-        },
-      }, null, 2)}\n`,
-    );
+  withTempDir('oma-target-policy-', (targetAgentDir) => {
+    writeJson(path.join(targetAgentDir, 'contracts/production_acceptance/owner-receipt.json'), {
+      meta_agent_work_order_contract: {
+        default_change_ref_triggers: ['target-owner'],
+        default_change_refs: ['target_agent_owner_receipt_contract_ref:target-agent/live-acceptance'],
+      },
+    });
 
     const policy = targetImprovementPolicy(targetAgentDir);
     const proposedChangeRefs = inferProposedChangeRefs({
@@ -125,23 +102,16 @@ test('target improvement policy still applies explicit target-owned owner receip
       proposedChangeRefs.includes('target_agent_owner_route_ref:target_agent/owner-receipt-projection'),
       false,
     );
-  } finally {
-    fs.rmSync(targetAgentDir, { recursive: true, force: true });
-  }
+  });
 });
 
 test('owner receipt wording without target policy does not become a generic patch target', () => {
-  const targetAgentDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-target-policy-'));
-  try {
-    fs.mkdirSync(path.join(targetAgentDir, 'contracts'), { recursive: true });
-    fs.writeFileSync(
-      path.join(targetAgentDir, 'contracts/domain_descriptor.json'),
-      `${JSON.stringify({
-        domain_id: 'target-agent',
-        domain_label: 'Target Agent',
-        delivery_domain: 'opl_compatible_target_agent',
-      }, null, 2)}\n`,
-    );
+  withTempDir('oma-target-policy-', (targetAgentDir) => {
+    writeJson(path.join(targetAgentDir, 'contracts/domain_descriptor.json'), {
+      domain_id: 'target-agent',
+      domain_label: 'Target Agent',
+      delivery_domain: 'opl_compatible_target_agent',
+    });
 
     const policy = targetImprovementPolicy(targetAgentDir);
     const proposedChangeRefs = inferProposedChangeRefs({
@@ -157,18 +127,12 @@ test('owner receipt wording without target policy does not become a generic patc
     assert.deepEqual(policy.defaultChangeRefTriggers, []);
     assert.deepEqual(policy.changeRefMappings, []);
     assert.deepEqual(proposedChangeRefs, []);
-  } finally {
-    fs.rmSync(targetAgentDir, { recursive: true, force: true });
-  }
+  });
 });
 
 test('capability map routes reviewer gaps to exact canonical skill paths', () => {
-  const targetAgentDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-target-policy-'));
-  try {
-    fs.mkdirSync(path.join(targetAgentDir, 'contracts'), { recursive: true });
-    fs.writeFileSync(
-      path.join(targetAgentDir, 'contracts/capability_map.json'),
-      `${JSON.stringify({
+  withTempDir('oma-target-policy-', (targetAgentDir) => {
+    writeJson(path.join(targetAgentDir, 'contracts/capability_map.json'), {
         surface_kind: 'target_capability_map',
         capabilities: [
           {
@@ -187,8 +151,7 @@ test('capability map routes reviewer gaps to exact canonical skill paths', () =>
         authority_boundary: {
           forbidden_surfaces: ['owner_receipt_body'],
         },
-      }, null, 2)}\n`,
-    );
+      });
 
     const policy = targetImprovementPolicy(targetAgentDir);
     const proposedChangeRefs = inferProposedChangeRefs({
@@ -224,7 +187,5 @@ test('capability map routes reviewer gaps to exact canonical skill paths', () =>
     assert.deepEqual(matrix[0]?.failure_token_registry_refs, ['failure-token-registry:mas/figures']);
     assert.ok(matrix[0]?.improvement_tokens.includes('figure_quality'));
     assert.equal(matrix[0]?.capability_authority_boundary.can_write_target_owner_receipt_body, false);
-  } finally {
-    fs.rmSync(targetAgentDir, { recursive: true, force: true });
-  }
+  });
 });

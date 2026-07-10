@@ -13,7 +13,8 @@ import {
 import {
   DEVELOPER_WORK_ORDER_POLICY_CONTRACT_REF,
   STANDARD_FOUNDRY_POLICIES_CONTRACT_REF,
-  assertFalseFlags,
+  assertEveryFlagFalse,
+  asBooleanRecord,
   assertPolicyObject,
 } from '../support/source-purity.ts';
 
@@ -22,7 +23,6 @@ function assertContractOwnedProjection(args: {
   retiredScriptRef: string;
   activeConsumerRef: string;
   gateId: string;
-  boundaryFalseFlags: string[];
 }): { contract: JsonObject; activeConsumer: JsonObject } {
   const contract = readJson(args.contractRef);
   const authorityFunctions = readJson('runtime/authority_functions/meta-agent-authority-functions.json');
@@ -38,7 +38,7 @@ function assertContractOwnedProjection(args: {
   assert.equal(contract.retired_script_projection_no_resurrection, true);
   assert.equal(Object.hasOwn(contract, 'retired_script_projection_ref'), false);
   assert.deepEqual(asStrings(contract.active_policy_consumer_refs), [args.activeConsumerRef]);
-  assertFalseFlags(contract.authority_boundary, args.boundaryFalseFlags, `${args.contractRef} boundary`);
+  assertEveryFlagFalse(asBooleanRecord(contract.authority_boundary), `${args.contractRef} boundary`);
 
   assert.equal(fs.existsSync(path.join(repoRoot, args.retiredScriptRef)), false);
   assert.equal(
@@ -61,13 +61,6 @@ test('retired policy helpers cannot resurrect beside their contract owners', () 
       retiredScriptRef: 'scripts/lib/work-order-policy-constants.ts',
       activeConsumerRef: 'scripts/lib/work-order-refs.ts',
       gateId: 'agent_evidence_and_external_suite_materializers',
-      boundaryFalseFlags: [
-        'can_write_target_domain_truth',
-        'can_write_target_memory_body',
-        'can_write_target_artifact_body',
-        'can_authorize_target_quality_or_export',
-        'can_promote_default_agent',
-      ],
       verify(contract: JsonObject, activeConsumer: JsonObject): void {
         assert.equal(contract.surface_kind, 'developer_work_order_policy');
         assert.ok(asStrings(activeConsumer.writes_only).includes('developer_work_order_policy_contract_consumer_ref'));
@@ -82,13 +75,6 @@ test('retired policy helpers cannot resurrect beside their contract owners', () 
       retiredScriptRef: 'scripts/lib/standard-foundry-policies.ts',
       activeConsumerRef: 'scripts/lib/stage-decomposition-pack-draft/shared.ts',
       gateId: 'build_agent_baseline_and_stage_decomposition_materializers',
-      boundaryFalseFlags: [
-        'can_write_target_domain_truth',
-        'can_read_target_domain_body',
-        'can_authorize_target_quality_or_export',
-        'can_promote_default_agent',
-        'can_replace_opl_framework_or_agent_lab',
-      ],
       verify(contract: JsonObject, activeConsumer: JsonObject): void {
         assert.equal(contract.surface_kind, 'standard_foundry_policies');
         assert.ok(asStrings(activeConsumer.writes_only).includes('standard_foundry_policy_ref'));
