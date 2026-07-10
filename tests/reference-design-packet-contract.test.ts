@@ -82,7 +82,8 @@ test('OMA ReferenceDesignPacket materialization matches its owned handoff contra
   assert.equal(new Set(workflowStages.map((stage: Record<string, unknown>) => stage.stage_id)).size, 4);
   assert.equal(workflowStages.some((stage: Record<string, unknown>) => stage.stage_id === 'agent-output-draft'), false);
   assert.ok(workflowStages.every((stage: Record<string, unknown>) =>
-    !Object.hasOwn(stage, 'source_authority_tier')
+    !Object.hasOwn(stage, 'synthesis_rationale')
+    && !Object.hasOwn(stage, 'source_authority_tier')
     && !Object.hasOwn(stage, 'resolved_source_anchors')
   ));
   assert.ok(designAdmissionReceipt);

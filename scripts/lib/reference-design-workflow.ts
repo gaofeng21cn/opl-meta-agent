@@ -735,7 +735,9 @@ export function buildWorkflowStagePlans(
       pattern_id: pattern.pattern_id,
       step_id: step.step_id,
       provenance_kind: step.provenance_kind,
-      synthesis_rationale: step.synthesis_rationale ?? null,
+      ...(typeof step.synthesis_rationale === 'string' && step.synthesis_rationale.trim()
+        ? { synthesis_rationale: step.synthesis_rationale.trim() }
+        : {}),
       ...(typeof pattern.authority_tier === 'string' && pattern.authority_tier.trim()
         ? { source_authority_tier: pattern.authority_tier.trim() }
         : {}),
