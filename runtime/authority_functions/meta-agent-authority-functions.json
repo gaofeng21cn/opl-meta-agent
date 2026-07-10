@@ -437,6 +437,20 @@
         "forbidden_roles": []
       },
       {
+        "script_ref": "scripts/lib/reference-design-workflow.ts",
+        "classes": [
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": [
+          "reference_design_workflow_resolution_ref",
+          "workflow_step_stage_plan_ref",
+          "transfer_map_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
         "script_ref": "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts",
         "classes": [
           "fixture_or_proof_helper",
@@ -499,6 +513,21 @@
           "opl_physical_kernel_locator_ref",
           "stage_artifact_conformance_ref",
           "stage_artifact_workbench_consumption_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
+        "script_ref": "scripts/lib/stage-decomposition-pack-draft/reference-design-validator.ts",
+        "classes": [
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [],
+        "writes_only": [
+          "reference_design_packet_validation_ref",
+          "transfer_map_validation_ref",
+          "agent_pack_plan_validation_ref",
+          "typed_blocker_ref"
         ],
         "forbidden_roles": []
       },
@@ -895,15 +924,17 @@
         "gate_id": "build_agent_baseline_and_stage_decomposition_materializers",
         "tracked_script_refs": [
           "scripts/build-agent-baseline.ts",
-          "scripts/lib/stage-decomposition-runner.ts",
+          "scripts/lib/domain-pack.ts",
+          "scripts/lib/reference-design-workflow.ts",
+          "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts",
           "scripts/lib/stage-decomposition-pack-draft/builder.ts",
           "scripts/lib/stage-decomposition-pack-draft/materializer.ts",
+          "scripts/lib/stage-decomposition-pack-draft/reference-design-validator.ts",
           "scripts/lib/stage-decomposition-pack-draft/shared.ts",
-          "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts",
           "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts",
           "scripts/lib/stage-decomposition-pack-draft/validator.ts",
-          "scripts/lib/stage-native-artifact-contract.ts",
-          "scripts/lib/domain-pack.ts"
+          "scripts/lib/stage-decomposition-runner.ts",
+          "scripts/lib/stage-native-artifact-contract.ts"
         ],
         "current_role": "typed_stage_closeout_validator_and_candidate_pack_materializer",
         "retention_state": "retained_current_authority_function",
@@ -1365,9 +1396,11 @@
       "scripts/lib/meta-agent-loop-ai-reviewer.ts",
       "scripts/lib/meta-agent-loop-io.ts",
       "scripts/lib/meta-agent-loop-receipts.ts",
+      "scripts/lib/reference-design-workflow.ts",
       "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts",
       "scripts/lib/stage-decomposition-pack-draft/builder.ts",
       "scripts/lib/stage-decomposition-pack-draft/materializer.ts",
+      "scripts/lib/stage-decomposition-pack-draft/reference-design-validator.ts",
       "scripts/lib/stage-decomposition-pack-draft/shared.ts",
       "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts",
       "scripts/lib/stage-decomposition-pack-draft/validator.ts",
@@ -1559,6 +1592,12 @@
           ]
         },
         {
+          "script_ref": "scripts/lib/reference-design-workflow.ts",
+          "active_caller_refs": [
+            "scripts/lib/domain-pack.ts#import"
+          ]
+        },
+        {
           "script_ref": "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts",
           "active_caller_refs": [
             "scripts/lib/stage-decomposition-pack-draft/validator.ts#import"
@@ -1579,6 +1618,12 @@
             "scripts/build-agent-baseline.ts#import",
             "tests/stage-decomposition-materializer.test.ts#import",
             "tests/stage-decomposition-materializer.test.ts#test_ref"
+          ]
+        },
+        {
+          "script_ref": "scripts/lib/stage-decomposition-pack-draft/reference-design-validator.ts",
+          "active_caller_refs": [
+            "scripts/lib/stage-decomposition-pack-draft/validator.ts#import"
           ]
         },
         {

@@ -1,5 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {
+  buildReferenceDesignAspects,
+  buildReferenceDesignPacketContent,
+  buildWorkflowStagePlans,
+  buildWorkflowTransferMappings,
+  resolveReferenceDesignPatterns as resolveReferenceDesignWorkflowPatterns,
+} from './reference-design-workflow.ts';
 
 export type JsonObject = Record<string, any>;
 
@@ -53,6 +60,7 @@ export type MinimalTargetAgent = {
   domain_id: string;
   domain_label?: string | null;
   target_brief?: string | null;
+  intent_signals?: string[] | null;
   selected_opl_profile_refs?: string[] | null;
   profile_selection_rationale?: string | null;
   profile_requirement_refs?: string[] | null;
@@ -289,14 +297,10 @@ function designObjectRefs(targetAgent: MinimalTargetAgent): JsonObject | null {
 }
 
 function primarySourcePatternRef(targetAgent: MinimalTargetAgent): string {
-  return designPatternInputs(targetAgent)[0]?.source_pattern_ref
+  return activeDesignPatternInputs(targetAgent)[0]?.source_pattern_ref
     ?? stringList(targetAgent.reference_design_source_refs)[0]
     ?? stringList(targetAgent.research_source_refs)[0]
     ?? `target-only-requirement:${targetAgent.domain_id}`;
-}
-
-function sourcePatternNoteRef(targetAgent: MinimalTargetAgent, index: number): string {
-  return `reference-design-pattern-note:${targetAgent.domain_id}/${index + 1}`;
 }
 
 function expertPracticeNoteRef(targetAgent: MinimalTargetAgent, index: number): string {
@@ -307,21 +311,14 @@ function researchSourcePatternRef(targetAgent: MinimalTargetAgent, index: number
   return `research-source-ref:${targetAgent.domain_id}/${index + 1}`;
 }
 
+export function resolveReferenceDesignPatterns(targetAgent: MinimalTargetAgent): JsonObject[] {
+  return resolveReferenceDesignWorkflowPatterns(targetAgent);
+}
+
 function referenceDesignPatternInputs(targetAgent: MinimalTargetAgent): JsonObject[] {
-  return [
-    ...stringList(targetAgent.reference_design_pattern_packet_refs).map((packetRef, index) => ({
-      pattern_id: `pattern-packet-${index + 1}`,
-      source_pattern_ref: packetRef,
-      source_kind: 'reference_design_pattern_packet',
-      pattern_summary_ref: packetRef,
-    })),
-    ...stringList(targetAgent.reference_design_pattern_notes).map((note, index) => ({
-      pattern_id: `pattern-note-${index + 1}`,
-      source_pattern_ref: sourcePatternNoteRef(targetAgent, index),
-      source_kind: 'reference_design_pattern_note',
-      pattern_summary: note,
-    })),
-  ];
+  const patterns = resolveReferenceDesignPatterns(targetAgent);
+  const userPatterns = patterns.filter((pattern) => pattern.pattern_origin === 'user_typed_pattern_packet');
+  return userPatterns.length > 0 ? userPatterns : patterns;
 }
 
 function researchDrivenPatternInputs(targetAgent: MinimalTargetAgent): JsonObject[] {
@@ -331,12 +328,26 @@ function researchDrivenPatternInputs(targetAgent: MinimalTargetAgent): JsonObjec
       source_pattern_ref: synthesisRef,
       source_kind: 'research_synthesis_packet',
       pattern_summary_ref: synthesisRef,
+      transferable_workflow_steps: [{
+        step_id: `research-synthesis-${index + 1}`,
+        expert_question: `What expert workflow is supported by ${synthesisRef}?`,
+        stage_archetype: 'expert_practice_synthesis',
+        provenance_kind: 'internal_synthesis',
+        source_anchor_refs: [synthesisRef],
+      }],
     })),
     ...stringList(targetAgent.expert_practice_notes).map((note, index) => ({
       pattern_id: `expert-practice-note-${index + 1}`,
       source_pattern_ref: expertPracticeNoteRef(targetAgent, index),
       source_kind: 'expert_practice_note',
       pattern_summary: note,
+      transferable_workflow_steps: [{
+        step_id: `expert-practice-note-${index + 1}`,
+        expert_question: note,
+        stage_archetype: 'expert_practice_synthesis',
+        provenance_kind: 'internal_synthesis',
+        source_anchor_refs: [expertPracticeNoteRef(targetAgent, index)],
+      }],
     })),
     ...stringList(targetAgent.research_source_refs).map((sourceRef, index) => ({
       pattern_id: `research-source-${index + 1}`,
@@ -344,84 +355,33 @@ function researchDrivenPatternInputs(targetAgent: MinimalTargetAgent): JsonObjec
       source_kind: 'research_source_ref',
       source_ref: sourceRef,
       pattern_summary_ref: sourceRef,
+      transferable_workflow_steps: [{
+        step_id: `research-source-${index + 1}`,
+        expert_question: `What expert workflow evidence can be synthesized from ${sourceRef}?`,
+        stage_archetype: 'expert_practice_synthesis',
+        provenance_kind: 'internal_synthesis',
+        source_anchor_refs: [researchSourcePatternRef(targetAgent, index)],
+      }],
     })),
   ];
 }
 
-function designPatternInputs(targetAgent: MinimalTargetAgent): JsonObject[] {
-  return [
-    ...referenceDesignPatternInputs(targetAgent),
-    ...researchDrivenPatternInputs(targetAgent),
-  ];
+function activeDesignPatternInputs(targetAgent: MinimalTargetAgent): JsonObject[] {
+  return hasReferenceDesignInput(targetAgent)
+    ? referenceDesignPatternInputs(targetAgent)
+    : researchDrivenPatternInputs(targetAgent);
 }
 
 function buildExtractableDesignAspects(
-  targetAgent: MinimalTargetAgent,
   refs: JsonObject,
-  patterns = designPatternInputs(targetAgent),
+  patterns: JsonObject[],
 ): JsonObject[] {
-  return patterns.flatMap((pattern) => [
-    {
-      aspect_id: `${pattern.pattern_id}:stage_graph_and_handoff`,
-      source_pattern_ref: pattern.source_pattern_ref,
-      pattern_summary_ref: pattern.pattern_summary_ref ?? null,
-      pattern_summary: pattern.pattern_summary ?? null,
-      target_design_slot: 'stage_control_plane',
-      required_output_ref: refs.transfer_map_ref,
-      extracted_design_claim: 'source pattern informs stage sequence, handoff, and route-back shape',
-    },
-    {
-      aspect_id: `${pattern.pattern_id}:grounding_tool_evaluation_pattern`,
-      source_pattern_ref: pattern.source_pattern_ref,
-      pattern_summary_ref: pattern.pattern_summary_ref ?? null,
-      pattern_summary: pattern.pattern_summary ?? null,
-      target_design_slot: 'knowledge_tool_quality_gate_refs',
-      required_output_ref: refs.agent_pack_plan_ref,
-      extracted_design_claim: 'source pattern informs grounding, tool affordance, rubric, validation, and review refs',
-    },
-    {
-      aspect_id: `${pattern.pattern_id}:failure_taxonomy_and_route_back`,
-      source_pattern_ref: pattern.source_pattern_ref,
-      pattern_summary_ref: pattern.pattern_summary_ref ?? null,
-      pattern_summary: pattern.pattern_summary ?? null,
-      target_design_slot: 'typed_blocker_and_owner_handoff_policy',
-      required_output_ref: refs.transfer_map_ref,
-      extracted_design_claim: 'source pattern informs failure taxonomy, unsupported-evidence blocker, and owner handoff',
-    },
-  ]);
+  return buildReferenceDesignAspects(refs, patterns);
 }
 
 export function buildReferenceDesignPacket(targetAgent: MinimalTargetAgent): JsonObject | null {
   const refs = referenceDesignObjectRefs(targetAgent);
-  if (!refs) {
-    return null;
-  }
-  const transferableDesignPatterns = referenceDesignPatternInputs(targetAgent);
-  return {
-    surface_kind: 'opl_meta_agent_reference_design_packet',
-    version: 'opl-meta-agent.reference-design-packet.v1',
-    packet_ref: refs.reference_design_packet_ref,
-    target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
-    reference_source_refs: stringList(targetAgent.reference_design_source_refs),
-    reference_design_pattern_packet_refs: stringList(targetAgent.reference_design_pattern_packet_refs),
-    reference_design_pattern_notes: stringList(targetAgent.reference_design_pattern_notes),
-    transferable_design_patterns: transferableDesignPatterns,
-    extractable_design_aspects: buildExtractableDesignAspects(targetAgent, refs, transferableDesignPatterns),
-    non_transferable_constraints: [
-      'external_runtime_or_scheduler_not_importable',
-      'external_private_data_not_importable',
-      'external_domain_truth_or_verdict_not_importable',
-      'external_owner_receipt_or_promotion_authority_not_importable',
-    ],
-    source_body_policy: {
-      refs_only: true,
-      source_bodies_copied: false,
-      pattern_packet_body_copied: false,
-      packet_body_required_for_target_truth: false,
-      extracted_pattern_refs_required: true,
-      route_back_when_extractable_design_aspects_are_missing: true,
-    },
-  };
+  return refs ? buildReferenceDesignPacketContent(targetAgent, refs) : null;
 }
 
 export function buildResearchSynthesisPacket(targetAgent: MinimalTargetAgent): JsonObject | null {
@@ -435,11 +395,12 @@ export function buildResearchSynthesisPacket(targetAgent: MinimalTargetAgent): J
     version: 'opl-meta-agent.research-synthesis-packet.v1',
     packet_ref: refs.research_synthesis_packet_ref,
     target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
+    intent_signals: stringList(targetAgent.intent_signals),
     research_source_refs: stringList(targetAgent.research_source_refs),
     expert_practice_notes: stringList(targetAgent.expert_practice_notes),
     research_synthesis_refs: stringList(targetAgent.research_synthesis_refs),
     transferable_design_patterns: transferableDesignPatterns,
-    extractable_design_aspects: buildExtractableDesignAspects(targetAgent, refs, transferableDesignPatterns),
+    extractable_design_aspects: buildExtractableDesignAspects(refs, transferableDesignPatterns),
     non_transferable_constraints: [
       'researched_public_practice_is_not_target_domain_truth',
       'external_runtime_or_scheduler_not_importable',
@@ -465,9 +426,8 @@ export function buildTransferMap(
   if (!refs) {
     return null;
   }
-  const stageId = options.stageId ?? 'agent-output-draft';
+  const fallbackStageId = options.stageId ?? 'agent-output-draft';
   const actionId = options.actionId ?? 'draft-agent-output';
-  const patterns = designPatternInputs(targetAgent);
   return {
     surface_kind: 'opl_meta_agent_transfer_map',
     version: 'opl-meta-agent.transfer-map.v1',
@@ -477,50 +437,12 @@ export function buildTransferMap(
     design_basis_ref: refs.design_basis_ref,
     design_basis_kind: refs.design_basis_kind,
     target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
-    mappings: [
-      ...patterns.flatMap((pattern) => [
-        {
-          map_id: `${pattern.pattern_id}:source_pattern_to_stage_graph`,
-          source_pattern_ref: pattern.source_pattern_ref,
-          source_pattern_summary_ref: pattern.pattern_summary_ref ?? null,
-          source_pattern_summary: pattern.pattern_summary ?? null,
-          target_stage_ref: `stage:${targetAgent.domain_id}/${stageId}`,
-          target_capability_slot: 'stage_control_plane',
-          disposition: 'adapt',
-          rationale: 'Reference design informs the target stage sequence, while target owner authority and OPL stage runtime stay local.',
-          known_limits: ['source stage names and runtime topology are not copied verbatim'],
-        },
-        {
-          map_id: `${pattern.pattern_id}:source_pattern_to_agent_pack_refs`,
-          source_pattern_ref: pattern.source_pattern_ref,
-          source_pattern_summary_ref: pattern.pattern_summary_ref ?? null,
-          source_pattern_summary: pattern.pattern_summary ?? null,
-          target_stage_ref: `stage:${targetAgent.domain_id}/${stageId}`,
-          target_capability_slot: 'prompt_knowledge_tool_quality_gate_refs',
-          disposition: 'adopt',
-          rationale: 'Transferable grounding, route, validation, handoff, and failure-taxonomy requirements become explicit pack refs.',
-          known_limits: ['domain facts and quality verdicts remain target-owner owned'],
-        },
-      ]),
-      {
-        map_id: 'source_runtime_and_truth_boundary',
-        source_pattern_ref: `non-transferable:${targetAgent.domain_id}/external-runtime-truth-authority`,
-        target_stage_ref: `stage:${targetAgent.domain_id}/${stageId}`,
-        target_capability_slot: 'authority_boundary',
-        disposition: 'reject',
-        rationale: 'External runtime, private data, target truth, verdicts, owner receipts, and promotion authority cannot transfer.',
-        known_limits: ['requires route-back if design cannot be expressed without forbidden imports'],
-      },
-      {
-        map_id: 'target_requirement_to_action',
-        source_pattern_ref: `target-only-requirement:${targetAgent.domain_id}/${actionId}`,
-        target_stage_ref: `stage:${targetAgent.domain_id}/${stageId}`,
-        target_capability_slot: 'domain_action_catalog',
-        disposition: 'adapt',
-        rationale: 'Target action naming and owner handoff derive from the requested target job, not from the reference source.',
-        known_limits: ['target owner must still accept the resulting action semantics'],
-      },
-    ],
+    mappings: buildWorkflowTransferMappings({
+      targetAgent,
+      patterns: activeDesignPatternInputs(targetAgent),
+      fallbackStageId,
+      actionId,
+    }),
   };
 }
 
@@ -535,17 +457,28 @@ export function buildAgentPackPlan(
   }
   const stageId = options.stageId ?? 'agent-output-draft';
   const actionId = options.actionId ?? 'draft-agent-output';
-  const promptPath = options.promptPath ?? 'agent/prompts/agent-output-draft.md';
-  const skillPath = options.skillPath ?? 'agent/skills/target-agent-domain-skill.md';
-  const knowledgePath = options.knowledgePath ?? 'agent/knowledge/target-agent-boundary-policy.md';
   const toolPath = options.toolPath ?? 'agent/tools/domain_affordances.md';
-  const qualityGatePath = options.qualityGatePath ?? 'agent/quality_gates/agent-output-draft-quality-gate.md';
-  const sourcePatternStageRefs = designPatternInputs(targetAgent).map((pattern) => ({
-    stage_id: stageId,
-    stage_ref: `stage:${targetAgent.domain_id}/${stageId}`,
-    origin: 'source_pattern_ref',
-    source_pattern_ref: pattern.source_pattern_ref,
-  }));
+  const withStageFiles = (stage: JsonObject): JsonObject => ({
+    ...stage,
+    prompt_ref: `agent/prompts/${stage.stage_id}.md`,
+    stage_path: `agent/stages/${stage.stage_id}.md`,
+    skill_ref: `agent/skills/${stage.stage_id}-skill.md`,
+    knowledge_refs: [`agent/knowledge/${stage.stage_id}-knowledge.md`],
+    tool_refs: [toolPath],
+    quality_gate_refs: [`agent/quality_gates/${stage.stage_id}-quality-gate.md`],
+  });
+  const sourcePatternStageRefs = buildWorkflowStagePlans(targetAgent, activeDesignPatternInputs(targetAgent))
+    .map(withStageFiles);
+  const ownerGateStage = withStageFiles({
+    stage_id: `${stageId}-owner-gate`,
+    stage_ref: `stage:${targetAgent.domain_id}/${stageId}-owner-gate`,
+    stage_archetype: 'owner_handoff_gate',
+    stage_goal: 'Route the candidate Agent Pack to the target owner without claiming target quality, readiness, or acceptance.',
+    origin: 'target_only_requirement',
+    target_only_requirement_ref:
+      `target-only-requirement:${targetAgent.domain_id}/owner-gated-closeout`,
+  });
+  const plannedStages = [...sourcePatternStageRefs, ownerGateStage];
   return {
     surface_kind: 'opl_meta_agent_agent_pack_plan',
     version: 'opl-meta-agent.agent-pack-plan.v1',
@@ -556,15 +489,7 @@ export function buildAgentPackPlan(
     design_basis_kind: refs.design_basis_kind,
     transfer_map_ref: refs.transfer_map_ref,
     target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
-    planned_stage_refs: [
-      ...sourcePatternStageRefs,
-      {
-        stage_id: `${stageId}-owner-gate`,
-        stage_ref: `stage:${targetAgent.domain_id}/${stageId}/owner-gate`,
-        origin: 'target_only_requirement',
-        target_only_requirement_ref: `target-only-requirement:${targetAgent.domain_id}/owner-gated-closeout`,
-      },
-    ],
+    planned_stage_refs: plannedStages,
     planned_control_refs: [
       'contracts/stage_control_plane.json',
       'contracts/action_catalog.json',
@@ -574,11 +499,11 @@ export function buildAgentPackPlan(
     planned_capability_refs: [
       'contracts/capability_map.json#/primary_skill_capability',
       `action-ref:${actionId}`,
-      `domain-skill-ref:${skillPath}`,
+      ...plannedStages.map((stage) => `domain-skill-ref:${stage.skill_ref}`),
     ],
-    planned_knowledge_refs: [knowledgePath],
+    planned_knowledge_refs: plannedStages.flatMap((stage) => stage.knowledge_refs),
     planned_tool_refs: [toolPath],
-    planned_quality_gate_refs: [qualityGatePath],
+    planned_quality_gate_refs: plannedStages.flatMap((stage) => stage.quality_gate_refs),
     source_pattern_ref_requirements: [
       refs.design_basis_ref,
       refs.transfer_map_ref,
@@ -639,14 +564,22 @@ export function buildDesignAdmissionReceipt(
       .map((stage) => ({
         stage_id: stage.stage_id,
         stage_ref: stage.stage_ref,
+        pattern_id: stage.pattern_id,
+        step_id: stage.step_id,
+        provenance_kind: stage.provenance_kind,
         source_pattern_ref: stage.source_pattern_ref,
+        source_anchor_refs: stage.source_anchor_refs,
       })),
     source_derived_stage_refs: plannedStages
       .filter((stage) => stage.origin === 'source_pattern_ref')
       .map((stage) => ({
         stage_id: stage.stage_id,
         stage_ref: stage.stage_ref,
+        pattern_id: stage.pattern_id,
+        step_id: stage.step_id,
+        provenance_kind: stage.provenance_kind,
         source_pattern_ref: stage.source_pattern_ref,
+        source_anchor_refs: stage.source_anchor_refs,
       })),
     target_only_requirement_refs: plannedStages
       .filter((stage) => stage.origin === 'target_only_requirement')
@@ -654,8 +587,9 @@ export function buildDesignAdmissionReceipt(
       .filter((entry) => entry.trim()),
     rejected_source_pattern_refs: mappings
       .filter((mapping) => mapping.disposition === 'reject')
-      .map((mapping) => String(mapping.source_pattern_ref))
+      .map((mapping) => String(mapping.source_anchor_ref))
       .filter((entry) => entry.trim()),
+    pattern_dispositions: referenceDesignPacket?.pattern_dispositions ?? [],
     transferable_pattern_requirements: buildTransferablePatternRequirements(targetAgent),
     capability_plan_requirements: buildCapabilityPlanRequirements(targetAgent),
     forbidden_claims: [
@@ -702,7 +636,7 @@ export function buildAgentBuildReceipt(
     receipt_kind: 'AgentBuildReceipt',
     version: 'opl-meta-agent.agent-build-receipt.v1',
     receipt_id: `build-receipt:opl-meta-agent/${targetAgent.domain_id}`,
-    receipt_ref: `build-receipt-ref:opl-meta-agent/${targetAgent.domain_id}`,
+    receipt_ref: buildAgentBuildReceiptRef(targetAgent),
     target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
     build_source_kind: sourceDerivedDesignReceipt ? 'source_derived_design' : 'research_driven_design',
     build_mode: sourceDerivedDesignReceipt ? 'source_derived_design' : 'research_driven_design',
@@ -725,6 +659,7 @@ export function buildAgentBuildReceipt(
     source_derived_stage_refs: designAdmissionReceipt.design_derived_stage_refs,
     target_only_requirement_refs: designAdmissionReceipt.target_only_requirement_refs,
     rejected_source_pattern_refs: designAdmissionReceipt.rejected_source_pattern_refs,
+    pattern_dispositions: designAdmissionReceipt.pattern_dispositions,
     transferable_pattern_requirements: buildTransferablePatternRequirements(targetAgent),
     capability_plan_requirements: buildCapabilityPlanRequirements(targetAgent),
     forbidden_claims: designAdmissionReceipt.forbidden_claims,
@@ -743,6 +678,10 @@ export function buildAgentBuildReceipt(
   };
 }
 
+export function buildAgentBuildReceiptRef(targetAgent: MinimalTargetAgent): string {
+  return `build-receipt-ref:opl-meta-agent/${targetAgent.domain_id}`;
+}
+
 export function buildSourceDerivedBuildReceipt(
   targetAgent: MinimalTargetAgent,
   options: AgentPackPlanOptions = {},
@@ -759,9 +698,8 @@ export function buildStageDecompositionSubpacketSet(
   const transferMap = buildTransferMap(targetAgent, options);
   const agentPackPlan = buildAgentPackPlan(targetAgent, options);
   const designAdmissionReceipt = buildDesignAdmissionReceipt(targetAgent, options);
-  const buildReceipt = buildAgentBuildReceipt(targetAgent, options);
   const designBasisPacket = referenceDesignPacket ?? researchSynthesisPacket;
-  if (!designBasisPacket || !transferMap || !agentPackPlan || !designAdmissionReceipt || !buildReceipt) {
+  if (!designBasisPacket || !transferMap || !agentPackPlan || !designAdmissionReceipt) {
     return null;
   }
   const designBasisKind = referenceDesignPacket ? 'source_derived_design' : 'research_driven_design';
@@ -770,7 +708,7 @@ export function buildStageDecompositionSubpacketSet(
   const transferMapRef = String(transferMap.transfer_map_ref);
   const agentPackPlanRef = String(agentPackPlan.plan_ref);
   const designAdmissionReceiptRef = String(designAdmissionReceipt.receipt_ref);
-  const buildReceiptRef = String(buildReceipt.receipt_ref);
+  const buildReceiptRef = buildAgentBuildReceiptRef(targetAgent);
   return {
     surface_kind: 'opl_meta_agent_stage_decomposition_subpacket_set',
     version: 'opl-meta-agent.stage-decomposition-subpacket-set.v1',
@@ -899,43 +837,39 @@ export function buildProfileSelectionMode(targetAgent: MinimalTargetAgent): Prof
 }
 
 export function buildTransferablePatternRequirements(targetAgent: MinimalTargetAgent): string[] {
-  return [
-    ...(hasSourceDerivedDesign(targetAgent)
-      ? [
-        'preserve_reference_design_packet_transfer_map_and_agent_pack_plan_refs',
-        'extract_transferable_stage_graph_inputs_outputs_grounding_evaluation_handoff_failure_taxonomy',
-        'reject_external_runtime_private_data_domain_truth_verdict_or_promotion_authority_imports',
+  if (hasSourceDerivedDesign(targetAgent)) {
+    return [
+      'preserve_reference_design_packet_transfer_map_and_agent_pack_plan_refs',
+      'extract_transferable_stage_graph_inputs_outputs_grounding_evaluation_handoff_failure_taxonomy',
+      'reject_external_runtime_private_data_domain_truth_verdict_or_promotion_authority_imports',
+    ];
+  }
+  return hasResearchDrivenDesignInput(targetAgent)
+    ? [
+        'preserve_research_synthesis_packet_transfer_map_and_agent_pack_plan_refs',
+        'synthesize_expert_practice_research_into_stage_graph_grounding_evaluation_handoff_failure_taxonomy',
+        'reject_public_research_as_target_truth_owner_verdict_or_promotion_authority',
       ]
-      : []),
-    ...(hasResearchDrivenDesignInput(targetAgent)
-      ? [
-          'preserve_research_synthesis_packet_transfer_map_and_agent_pack_plan_refs',
-          'synthesize_expert_practice_research_into_stage_graph_grounding_evaluation_handoff_failure_taxonomy',
-          'reject_public_research_as_target_truth_owner_verdict_or_promotion_authority',
-        ]
-      : []),
-  ];
+    : [];
 }
 
 export function buildCapabilityPlanRequirements(targetAgent: MinimalTargetAgent): string[] {
-  return [
-    ...(hasSourceDerivedDesign(targetAgent)
-      ? [
-        'map_transferable_patterns_into_stage_control_plane_prompt_knowledge_quality_gate_and_agent_lab_suite_seed',
-        'mark_each_planned_stage_as_source_pattern_ref_or_target_only_requirement',
-        'preserve_owner_boundary_and_refs_only_source_design_receipt',
-        'route_back_when_reference_design_packet_is_insufficient_for_target_agent_design',
+  if (hasSourceDerivedDesign(targetAgent)) {
+    return [
+      'map_transferable_patterns_into_stage_control_plane_prompt_knowledge_quality_gate_and_agent_lab_suite_seed',
+      'mark_each_planned_stage_as_source_pattern_ref_or_target_only_requirement',
+      'preserve_owner_boundary_and_refs_only_source_design_receipt',
+      'route_back_when_reference_design_packet_is_insufficient_for_target_agent_design',
+    ];
+  }
+  return hasResearchDrivenDesignInput(targetAgent)
+    ? [
+        'map_researched_expert_practice_into_stage_control_plane_prompt_knowledge_quality_gate_and_agent_lab_suite_seed',
+        'mark_each_planned_stage_as_research_pattern_ref_or_target_only_requirement',
+        'preserve_owner_boundary_and_refs_only_research_design_receipt',
+        'route_back_when_research_synthesis_is_insufficient_for_target_agent_design',
       ]
-      : []),
-    ...(hasResearchDrivenDesignInput(targetAgent)
-      ? [
-          'map_researched_expert_practice_into_stage_control_plane_prompt_knowledge_quality_gate_and_agent_lab_suite_seed',
-          'mark_each_planned_stage_as_research_pattern_ref_or_target_only_requirement',
-          'preserve_owner_boundary_and_refs_only_research_design_receipt',
-          'route_back_when_research_synthesis_is_insufficient_for_target_agent_design',
-        ]
-      : []),
-  ];
+    : [];
 }
 
 export function buildSourceDerivedDesignReceipt(targetAgent: MinimalTargetAgent): JsonObject | null {
@@ -1086,7 +1020,7 @@ export function buildProfileRequirements(targetAgent: MinimalTargetAgent): JsonO
     hasSourceDerivedDesign(targetAgent)
       ? SOURCE_DERIVED_DESIGN_PROFILE_REQUIREMENTS
       : {},
-    hasResearchDrivenDesignInput(targetAgent)
+    !hasSourceDerivedDesign(targetAgent) && hasResearchDrivenDesignInput(targetAgent)
       ? RESEARCH_DRIVEN_DESIGN_PROFILE_REQUIREMENTS
       : {},
   );
@@ -1102,7 +1036,9 @@ export function buildProfileSelectionReceipt(targetAgent: MinimalTargetAgent): J
   const transferMap = buildTransferMap(targetAgent);
   const agentPackPlan = buildAgentPackPlan(targetAgent);
   const designAdmissionReceipt = buildDesignAdmissionReceipt(targetAgent);
-  const buildReceipt = buildAgentBuildReceipt(targetAgent);
+  const expectedBuildReceiptRef = sourceDerivedDesignReceipt || researchDrivenDesignReceipt
+    ? buildAgentBuildReceiptRef(targetAgent)
+    : null;
   const stageDecompositionSubpacketSet = buildStageDecompositionSubpacketSet(targetAgent);
   if (selectedProfileRefs.length === 0 && !sourceDerivedDesignReceipt && !researchDrivenDesignReceipt) {
     throw new Error('profile_selection_required:selected_opl_profile_refs_or_design_basis_refs_missing');
@@ -1142,8 +1078,7 @@ export function buildProfileSelectionReceipt(targetAgent: MinimalTargetAgent): J
     agent_pack_plan_ref: agentPackPlan?.plan_ref ?? null,
     design_admission_receipt: designAdmissionReceipt,
     design_admission_receipt_ref: designAdmissionReceipt?.receipt_ref ?? null,
-    build_receipt: buildReceipt,
-    build_receipt_ref: buildReceipt?.receipt_ref ?? null,
+    expected_build_receipt_ref: expectedBuildReceiptRef,
     stage_decomposition_subpacket_set: stageDecompositionSubpacketSet,
     stage_decomposition_subpacket_set_ref: stageDecompositionSubpacketSet?.packet_set_ref ?? null,
     stage_decomposition_subpacket_set_refs: stageDecompositionSubpacketSet?.packet_set_ref
@@ -1160,7 +1095,7 @@ export function buildProfileSelectionReceipt(targetAgent: MinimalTargetAgent): J
       LEGACY_EVIDENCE_GROUNDED_DECISION_AGENT_PROFILE_REF,
       SOURCE_DERIVED_DESIGN_PROFILE_ROUTE_REF,
       RESEARCH_DRIVEN_DESIGN_PROFILE_ROUTE_REF,
-      'opl profiles select --intent <target-agent-intent> --json',
+      'opl profiles select --intent <target-agent-intent> [--intent-signal <canonical-signal>] --json',
       'opl profiles select --intent <target-agent-intent> --reference-source <source-ref> --json',
       'opl profiles select --intent <target-agent-intent> --research-source <source-ref> --json',
       'opl profiles inspect evidence_grounded_decision_agent_profile.v1 --json',
@@ -1262,7 +1197,9 @@ function profileSelectionMarkdown(targetAgent: MinimalTargetAgent): string[] {
     ...(receipt.transfer_map_ref ? [`- TransferMap ref: ${receipt.transfer_map_ref}`] : []),
     ...(receipt.agent_pack_plan_ref ? [`- AgentPackPlan ref: ${receipt.agent_pack_plan_ref}`] : []),
     ...(receipt.design_admission_receipt_ref ? [`- DesignAdmissionReceipt ref: ${receipt.design_admission_receipt_ref}`] : []),
-    ...(receipt.build_receipt_ref ? [`- AgentBuildReceipt ref: ${receipt.build_receipt_ref}`] : []),
+    ...(receipt.expected_build_receipt_ref
+      ? [`- Expected AgentBuildReceipt ref after materialization: ${receipt.expected_build_receipt_ref}`]
+      : []),
     ...(receipt.stage_decomposition_subpacket_set_ref
       ? [`- StageDecompositionSubpacketSet ref: ${receipt.stage_decomposition_subpacket_set_ref}`]
       : []),
@@ -1541,7 +1478,7 @@ function buildTargetAgentPrimarySkillCapability(targetAgent: MinimalTargetAgent)
     transfer_map_ref: profileSelectionReceipt.transfer_map_ref,
     agent_pack_plan_ref: profileSelectionReceipt.agent_pack_plan_ref,
     design_admission_receipt_ref: profileSelectionReceipt.design_admission_receipt_ref,
-    build_receipt_ref: profileSelectionReceipt.build_receipt_ref,
+    expected_build_receipt_ref: profileSelectionReceipt.expected_build_receipt_ref,
     stage_decomposition_subpacket_set_ref: profileSelectionReceipt.stage_decomposition_subpacket_set_ref,
     reference_design_pattern_packet_refs: profileSelectionReceipt.reference_design_pattern_packet_refs,
     research_source_refs: profileSelectionReceipt.research_source_refs,
@@ -1596,6 +1533,17 @@ export function writeTargetAgentCapabilityMap(targetAgentDir: string, targetAgen
   const capabilityMapPath = path.join(targetAgentDir, 'contracts', 'capability_map.json');
   const capabilityMap = JSON.parse(fs.readFileSync(capabilityMapPath, 'utf8')) as JsonObject;
   const profileSelectionReceipt = buildProfileSelectionReceipt(targetAgent);
+  const buildReceiptPath = path.join(targetAgentDir, 'contracts', 'agent_build_receipt.json');
+  const buildReceipt = fs.existsSync(buildReceiptPath)
+    ? JSON.parse(fs.readFileSync(buildReceiptPath, 'utf8')) as JsonObject
+    : null;
+  const buildReceiptRef = buildReceipt?.receipt_ref ?? null;
+  if (
+    profileSelectionReceipt.expected_build_receipt_ref
+    && buildReceiptRef !== profileSelectionReceipt.expected_build_receipt_ref
+  ) {
+    throw new Error('Target capability map requires the post-materialization AgentBuildReceipt.');
+  }
   const selectedProfileRefs = profileSelectionReceipt.selected_profile_refs as string[];
   const resolverIndex = typeof capabilityMap.resolver_index === 'object'
     && capabilityMap.resolver_index !== null
@@ -1631,9 +1579,12 @@ export function writeTargetAgentCapabilityMap(targetAgentDir: string, targetAgen
     design_admission_receipt_refs: profileSelectionReceipt.design_admission_receipt_ref
       ? [profileSelectionReceipt.design_admission_receipt_ref]
       : [],
-    build_receipt: profileSelectionReceipt.build_receipt,
-    build_receipt_ref: profileSelectionReceipt.build_receipt_ref,
-    build_receipt_refs: profileSelectionReceipt.build_receipt_ref ? [profileSelectionReceipt.build_receipt_ref] : [],
+    expected_build_receipt_ref: profileSelectionReceipt.expected_build_receipt_ref,
+    ...(buildReceipt ? {
+      build_receipt: buildReceipt,
+      build_receipt_ref: buildReceiptRef,
+      build_receipt_refs: [buildReceiptRef],
+    } : {}),
     stage_decomposition_subpacket_set: profileSelectionReceipt.stage_decomposition_subpacket_set,
     stage_decomposition_subpacket_set_ref: profileSelectionReceipt.stage_decomposition_subpacket_set_ref,
     stage_decomposition_subpacket_set_refs: profileSelectionReceipt.stage_decomposition_subpacket_set_ref
@@ -1670,7 +1621,7 @@ export function writeTargetAgentCapabilityMap(targetAgentDir: string, targetAgen
       design_admission_receipt_refs: profileSelectionReceipt.design_admission_receipt_ref
         ? [profileSelectionReceipt.design_admission_receipt_ref]
         : [],
-      build_receipt_refs: profileSelectionReceipt.build_receipt_ref ? [profileSelectionReceipt.build_receipt_ref] : [],
+      build_receipt_refs: buildReceiptRef ? [buildReceiptRef] : [],
       stage_decomposition_subpacket_set_refs: profileSelectionReceipt.stage_decomposition_subpacket_set_ref
         ? [profileSelectionReceipt.stage_decomposition_subpacket_set_ref]
         : [],

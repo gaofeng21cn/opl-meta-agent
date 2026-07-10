@@ -33,12 +33,9 @@ const sourceDerivedTargetAgent = {
   domain_label: 'Surgery Risk From Paper Agent',
   delivery_domain: 'surgical_risk_support',
   target_brief: 'Create an owner-gated surgical risk support agent from a supplied reference paper design.',
-  reference_design_source_refs: ['paper-ref:uploaded-surgical-risk-agent-framework'],
-  reference_design_pattern_notes: [
-    'extract source case representation, route selection, grounding, rubric, validation, and handoff patterns',
-  ],
+  reference_design_source_refs: ['source-material:sha256:surgical-risk-fixture'],
   reference_design_pattern_packet_refs: [
-    'pattern-packet-ref:oma/reference-designs/uploaded-surgical-risk-agent-framework/distilled-agent-design',
+    'tests/fixtures/opl-reference-design-pattern-packet.json',
   ],
 };
 

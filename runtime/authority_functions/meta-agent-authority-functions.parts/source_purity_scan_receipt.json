@@ -31,9 +31,11 @@
     "scripts/lib/meta-agent-loop-ai-reviewer.ts",
     "scripts/lib/meta-agent-loop-io.ts",
     "scripts/lib/meta-agent-loop-receipts.ts",
+    "scripts/lib/reference-design-workflow.ts",
     "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts",
     "scripts/lib/stage-decomposition-pack-draft/builder.ts",
     "scripts/lib/stage-decomposition-pack-draft/materializer.ts",
+    "scripts/lib/stage-decomposition-pack-draft/reference-design-validator.ts",
     "scripts/lib/stage-decomposition-pack-draft/shared.ts",
     "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts",
     "scripts/lib/stage-decomposition-pack-draft/validator.ts",
@@ -225,6 +227,12 @@
         ]
       },
       {
+        "script_ref": "scripts/lib/reference-design-workflow.ts",
+        "active_caller_refs": [
+          "scripts/lib/domain-pack.ts#import"
+        ]
+      },
+      {
         "script_ref": "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts",
         "active_caller_refs": [
           "scripts/lib/stage-decomposition-pack-draft/validator.ts#import"
@@ -245,6 +253,12 @@
           "scripts/build-agent-baseline.ts#import",
           "tests/stage-decomposition-materializer.test.ts#import",
           "tests/stage-decomposition-materializer.test.ts#test_ref"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/stage-decomposition-pack-draft/reference-design-validator.ts",
+        "active_caller_refs": [
+          "scripts/lib/stage-decomposition-pack-draft/validator.ts#import"
         ]
       },
       {

@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import path from 'node:path';
 import type { JsonObject } from './domain-pack.ts';
 
-const DEFAULT_OPL_BIN = '/Users/gaofeng/workspace/one-person-lab/bin/opl';
+const DEFAULT_OPL_BIN = 'opl';
 
 export type TargetAgent = {
   domain_id: string;
@@ -12,6 +12,7 @@ export type TargetAgent = {
   delivery_domain?: string | null;
   target_kind?: string | null;
   target_brief?: string | null;
+  intent_signals?: string[] | null;
   selected_opl_profile_refs?: string[] | null;
   profile_selection_rationale?: string | null;
   profile_requirement_refs?: string[] | null;
@@ -27,7 +28,7 @@ export type TargetAgent = {
 };
 
 export function resolveOplBin(value = process.env.OPL_BIN ?? DEFAULT_OPL_BIN): string {
-  return path.resolve(value);
+  return value.includes(path.sep) ? path.resolve(value) : value;
 }
 
 export function runOpl(oplBin: string, args: string[]): JsonObject {
@@ -142,6 +143,11 @@ export function readTargetAgent(targetAgentDir: string): TargetAgent {
     'selected_opl_profile_refs',
     descriptorPath,
   );
+  const intentSignals = optionalStringArray(
+    descriptor.intent_signals,
+    'intent_signals',
+    descriptorPath,
+  );
   const profileRequirementRefs = optionalStringArray(
     descriptor.profile_requirement_refs,
     'profile_requirement_refs',
@@ -172,6 +178,7 @@ export function readTargetAgent(targetAgentDir: string): TargetAgent {
         : null,
     target_kind: targetKind,
     target_brief: typeof descriptor.target_brief === 'string' ? descriptor.target_brief : null,
+    ...(intentSignals ? { intent_signals: intentSignals } : {}),
     ...(selectedOplProfileRefs ? { selected_opl_profile_refs: selectedOplProfileRefs } : {}),
     ...(optionalString(descriptor.profile_selection_rationale, 'profile_selection_rationale', descriptorPath)
       ? { profile_selection_rationale: optionalString(descriptor.profile_selection_rationale, 'profile_selection_rationale', descriptorPath) }

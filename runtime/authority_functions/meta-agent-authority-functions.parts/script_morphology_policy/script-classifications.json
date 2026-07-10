@@ -220,6 +220,20 @@
     "forbidden_roles": []
   },
   {
+    "script_ref": "scripts/lib/reference-design-workflow.ts",
+    "classes": [
+      "fixture_or_proof_helper"
+    ],
+    "authority_function_refs": [],
+    "consumes_opl_surfaces": [],
+    "writes_only": [
+      "reference_design_workflow_resolution_ref",
+      "workflow_step_stage_plan_ref",
+      "transfer_map_ref"
+    ],
+    "forbidden_roles": []
+  },
+  {
     "script_ref": "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts",
     "classes": [
       "fixture_or_proof_helper",
@@ -282,6 +296,21 @@
       "opl_physical_kernel_locator_ref",
       "stage_artifact_conformance_ref",
       "stage_artifact_workbench_consumption_ref"
+    ],
+    "forbidden_roles": []
+  },
+  {
+    "script_ref": "scripts/lib/stage-decomposition-pack-draft/reference-design-validator.ts",
+    "classes": [
+      "fixture_or_proof_helper"
+    ],
+    "authority_function_refs": [],
+    "consumes_opl_surfaces": [],
+    "writes_only": [
+      "reference_design_packet_validation_ref",
+      "transfer_map_validation_ref",
+      "agent_pack_plan_validation_ref",
+      "typed_blocker_ref"
     ],
     "forbidden_roles": []
   },

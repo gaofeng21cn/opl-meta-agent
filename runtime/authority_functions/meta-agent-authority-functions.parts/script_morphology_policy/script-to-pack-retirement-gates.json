@@ -55,15 +55,17 @@
     "gate_id": "build_agent_baseline_and_stage_decomposition_materializers",
     "tracked_script_refs": [
       "scripts/build-agent-baseline.ts",
-      "scripts/lib/stage-decomposition-runner.ts",
+      "scripts/lib/domain-pack.ts",
+      "scripts/lib/reference-design-workflow.ts",
+      "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts",
       "scripts/lib/stage-decomposition-pack-draft/builder.ts",
       "scripts/lib/stage-decomposition-pack-draft/materializer.ts",
+      "scripts/lib/stage-decomposition-pack-draft/reference-design-validator.ts",
       "scripts/lib/stage-decomposition-pack-draft/shared.ts",
-      "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts",
       "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts",
       "scripts/lib/stage-decomposition-pack-draft/validator.ts",
-      "scripts/lib/stage-native-artifact-contract.ts",
-      "scripts/lib/domain-pack.ts"
+      "scripts/lib/stage-decomposition-runner.ts",
+      "scripts/lib/stage-native-artifact-contract.ts"
     ],
     "current_role": "typed_stage_closeout_validator_and_candidate_pack_materializer",
     "retention_state": "retained_current_authority_function",

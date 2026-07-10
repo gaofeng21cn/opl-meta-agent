@@ -4,27 +4,68 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import {
-  oplBin,
+  oplOwnerRepoRoot,
   readJsonFile as readJson,
   repoRoot,
   withTempDir,
   writeJsonFile as writeJson,
 } from './support/contracts.ts';
-import type { JsonObject } from '../scripts/lib/domain-pack.ts';
+import {
+  buildAgentPackPlan,
+  buildDesignAdmissionReceipt,
+  buildProfileSelectionReceipt,
+  buildReferenceDesignPacket,
+  buildResearchSynthesisPacket,
+  buildTransferMap,
+  type JsonObject,
+} from '../scripts/lib/domain-pack.ts';
 import type { TargetAgent } from '../scripts/lib/meta-agent-loop-io.ts';
 import {
   parseBuildAgentBaselineArgs,
+  resolveTargetAgentProfileSelection,
   runBuildAgentBaseline,
 } from '../scripts/build-agent-baseline.ts';
 import {
   buildFixtureStageDecompositionCloseout,
 } from '../scripts/lib/stage-decomposition-pack-draft/builder.ts';
+import { runStageDecompositionAttempt } from '../scripts/lib/stage-decomposition-runner.ts';
+
+const oplBin = path.join(oplOwnerRepoRoot, 'bin', 'opl');
 
 type BaselineFixtureTargetAgent = TargetAgent & {
   domain_label: NonNullable<TargetAgent['domain_label']>;
   delivery_domain: NonNullable<TargetAgent['delivery_domain']>;
   target_brief: NonNullable<TargetAgent['target_brief']>;
 };
+
+const canonicalOplPatternPacketPath = path.join(
+  repoRoot,
+  'tests/fixtures/opl-reference-design-pattern-packet.json',
+);
+const canonicalOplSourceMaterialRef = 'source-material:sha256:surgical-risk-fixture';
+
+function writeReferenceDesignPacketFixture(
+  dir: string,
+  mutatePacket?: (packet: JsonObject, notesPath: string) => void,
+  mutateNotes?: (notes: JsonObject) => void,
+): string {
+  const packetPath = path.join(dir, 'pattern-packet.json');
+  const notesPath = path.join(dir, 'opl-reference-design-pattern-notes.json');
+  const packet = readJson(canonicalOplPatternPacketPath);
+  const notes = readJson(path.join(repoRoot, 'tests/fixtures/opl-reference-design-pattern-notes.json'));
+  mutatePacket?.(packet, notesPath);
+  mutateNotes?.(notes);
+  writeJson(notesPath, notes);
+  writeJson(packetPath, packet);
+  return packetPath;
+}
+
+function packetTarget(packetPath: string): typeof sourceDerivedTargetAgent {
+  return {
+    ...sourceDerivedTargetAgent,
+    reference_design_pattern_packet_refs: [packetPath],
+  };
+}
 
 const targetAgent = {
   domain_id: 'research-workbench-agent',
@@ -37,15 +78,14 @@ const targetAgent = {
   profile_selection_rationale:
     'The target agent needs refs-only grounding, mode routing, and owner-gated decision support.',
   reference_design_source_refs: [
-    'paper-ref:Zoller-2026-HemaGuide-case-grounded-agent',
-    'repo-ref:https://github.com/Friedrich-Lab/HemaGuide',
+    canonicalOplSourceMaterialRef,
   ],
   reference_design_pattern_notes: [
     'structured case extraction plus autonomous mode routing',
     'blinded benchmark, ablation, external validation, and silent-trial gates',
   ],
   reference_design_pattern_packet_refs: [
-    'pattern-packet-ref:oma/reference-designs/HemaGuide/distilled-agent-design',
+    canonicalOplPatternPacketPath,
   ],
 };
 
@@ -53,15 +93,15 @@ const sourceDerivedTargetAgent = {
   domain_id: 'surgery-risk-from-paper-agent',
   domain_label: 'Surgery Risk From Paper Agent',
   delivery_domain: 'surgical_risk_support',
-  target_brief: 'Create an owner-gated surgical risk support agent from a supplied reference paper design.',
+  target_brief: 'Create an owner-gated expert workflow transfer agent from a supplied reference paper design.',
   reference_design_source_refs: [
-    'paper-ref:uploaded-surgical-risk-agent-framework',
+    canonicalOplSourceMaterialRef,
   ],
   reference_design_pattern_notes: [
     'extract source case representation, route selection, grounding, rubric, validation, and handoff patterns',
   ],
   reference_design_pattern_packet_refs: [
-    'pattern-packet-ref:oma/reference-designs/uploaded-surgical-risk-agent-framework/distilled-agent-design',
+    canonicalOplPatternPacketPath,
   ],
 };
 
@@ -73,7 +113,7 @@ const sourceDerivedObjectRefs = {
   buildReceiptRef: 'build-receipt-ref:opl-meta-agent/surgery-risk-from-paper-agent',
   stageDecompositionSubpacketSetRef:
     'stage-decomposition-subpacket-set:opl-meta-agent/surgery-risk-from-paper-agent',
-  patternNoteRef: 'reference-design-pattern-note:surgery-risk-from-paper-agent/1',
+  sourcePatternRef: 'tests/fixtures/opl-reference-design-pattern-packet.json',
 };
 
 const researchDrivenTargetAgent = {
@@ -229,41 +269,41 @@ function assertSingleRefArrays(surface: JsonObject, expected: Record<string, str
   Object.entries(expected).forEach(([field, value]) => assert.deepEqual(surface[field], [value], field));
 }
 
-test('build-agent-baseline materializes an explicit target package and owner-gated receipt', () => {
+test('build-agent-baseline writes an explicit target package before OPL main rejects the receipt digest scope', () => {
   withTempDir('oma-bootstrap-pass4-', (outputRoot) => {
     const reviewerPath = path.join(outputRoot, 'reviewer.json');
     const closeoutPath = path.join(outputRoot, 'stage-closeout.json');
     writeReviewerEvaluation(reviewerPath);
     writeStageCloseout(closeoutPath);
 
-    const payload = runBaselineFixture(outputRoot, reviewerPath, closeoutPath, targetAgent, [
-      '--selected-opl-profile',
-      targetAgent.selected_opl_profile_refs[0],
-      '--profile-selection-rationale',
-      targetAgent.profile_selection_rationale,
-      '--reference-design-source',
-      targetAgent.reference_design_source_refs[0],
-      '--reference-design-source',
-      targetAgent.reference_design_source_refs[1],
-      '--reference-design-pattern',
-      targetAgent.reference_design_pattern_notes[0],
-      '--reference-design-pattern',
-      targetAgent.reference_design_pattern_notes[1],
-      '--reference-design-pattern-packet',
-      targetAgent.reference_design_pattern_packet_refs[0],
-    ]);
+    assert.throws(
+      () => runBaselineFixture(outputRoot, reviewerPath, closeoutPath, targetAgent, [
+        '--selected-opl-profile',
+        targetAgent.selected_opl_profile_refs[0],
+        '--profile-selection-rationale',
+        targetAgent.profile_selection_rationale,
+        '--reference-design-source',
+        targetAgent.reference_design_source_refs[0],
+        '--reference-design-pattern',
+        targetAgent.reference_design_pattern_notes[0],
+        '--reference-design-pattern',
+        targetAgent.reference_design_pattern_notes[1],
+        '--reference-design-pattern-packet',
+        targetAgent.reference_design_pattern_packet_refs[0],
+      ]),
+      /materialized_file_digest_mismatch:contracts\/stage_control_plane\.json.*materialized_file_digest_mismatch:contracts\/capability_map\.json/is,
+    );
 
     const targetDir = path.join(outputRoot, targetAgent.domain_id);
-    const receipt = readJson(path.join(outputRoot, 'baseline-delivery-receipt.json'));
-    const suite = readJson(path.join(outputRoot, 'agent-lab-suite.json'));
     const descriptor = readJson(path.join(targetDir, 'contracts/domain_descriptor.json'));
     const capabilityMap = readJson(path.join(targetDir, 'contracts/capability_map.json'));
     const stageControl = readJson(path.join(targetDir, 'contracts/stage_control_plane.json'));
+    const firstStage = stageControl.stages[0] as JsonObject;
     const primarySkill = fs.readFileSync(path.join(targetDir, 'agent/primary_skill/SKILL.md'), 'utf8');
-    const generatedPrompt = fs.readFileSync(path.join(targetDir, 'agent/prompts/agent-output-draft.md'), 'utf8');
-    const generatedKnowledge = fs.readFileSync(path.join(targetDir, 'agent/knowledge/target-agent-boundary-policy.md'), 'utf8');
-    const evidenceRefs = suite.tasks[0].scorecard.evidence_refs as string[];
-    assert.equal(payload.status, 'passed');
+    const generatedPrompt = fs.readFileSync(path.join(targetDir, firstStage.prompt_refs[0].ref), 'utf8');
+    const generatedKnowledge = fs.readFileSync(path.join(targetDir, firstStage.knowledge_refs[0].ref), 'utf8');
+    assert.equal(fs.existsSync(path.join(outputRoot, 'baseline-delivery-receipt.json')), false);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'agent-lab-suite.json')), false);
     assert.equal(descriptor.domain_id, targetAgent.domain_id);
     assert.deepEqual(descriptor.selected_opl_profile_refs, targetAgent.selected_opl_profile_refs);
     assert.equal(descriptor.profile_selection_rationale, targetAgent.profile_selection_rationale);
@@ -280,7 +320,7 @@ test('build-agent-baseline materializes an explicit target package and owner-gat
     );
     assert.ok(
       capabilityMap.profile_selection_receipt.profile_catalog_refs.includes(
-        'opl profiles select --intent <target-agent-intent> --json',
+        'opl profiles select --intent <target-agent-intent> [--intent-signal <canonical-signal>] --json',
       ),
     );
     assert.ok(
@@ -322,22 +362,6 @@ test('build-agent-baseline materializes an explicit target package and owner-gat
         entry.ref_kind === 'reference_design_pattern_packet_refs'
       ),
     );
-    assert.ok(evidenceRefs.includes(targetAgent.reference_design_source_refs[0]));
-    assert.ok(evidenceRefs.includes(targetAgent.reference_design_pattern_packet_refs[0]));
-    assert.equal(receipt.status, 'baseline_delivered');
-    assert.deepEqual(receipt.reference_design.source_refs, targetAgent.reference_design_source_refs);
-    assert.deepEqual(
-      receipt.reference_design.pattern_packet_refs,
-      targetAgent.reference_design_pattern_packet_refs,
-    );
-    assert.equal(
-      receipt.reference_design.reference_design_packet_ref,
-      'reference-design-packet:opl-meta-agent/research-workbench-agent',
-    );
-    assert.equal(receipt.reference_design.transfer_map_ref, 'transfer-map:opl-meta-agent/research-workbench-agent');
-    assert.equal(receipt.reference_design.agent_pack_plan_ref, 'agent-pack-plan:opl-meta-agent/research-workbench-agent');
-    assert.equal(receipt.authority_boundary.can_write_target_domain_truth, false);
-    assert.equal(receipt.authority_boundary.can_authorize_target_domain_quality_or_export, false);
     assert.ok(primarySkill.includes(targetAgent.reference_design_pattern_packet_refs[0]));
     assert.ok(generatedPrompt.includes(targetAgent.selected_opl_profile_refs[0]));
     assert.ok(generatedKnowledge.includes('EvidencePacket'));
@@ -354,27 +378,29 @@ test('build-agent-baseline materializes an explicit target package and owner-gat
   });
 });
 
-test('build-agent-baseline repairs mechanical subpacket projection without blocking materialization', () => {
+test('build-agent-baseline repairs mechanical subpacket projection before conformance blocks delivery', () => {
   withTempDir('oma-bootstrap-source-derived-repair-', (outputRoot) => {
     const reviewerPath = path.join(outputRoot, 'reviewer.json');
     const closeoutPath = path.join(outputRoot, 'stage-closeout.json');
     writeReviewerEvaluation(reviewerPath, {}, sourceDerivedTargetAgent.domain_id);
     writeStageCloseoutWithoutSubpacketProjection(closeoutPath, sourceDerivedTargetAgent);
 
-    const payload = runBaselineFixture(outputRoot, reviewerPath, closeoutPath, sourceDerivedTargetAgent, [
-      '--reference-design-source',
-      sourceDerivedTargetAgent.reference_design_source_refs[0],
-      '--reference-design-pattern',
-      sourceDerivedTargetAgent.reference_design_pattern_notes[0],
-      '--reference-design-pattern-packet',
-      sourceDerivedTargetAgent.reference_design_pattern_packet_refs[0],
-    ]);
+    assert.throws(
+      () => runBaselineFixture(outputRoot, reviewerPath, closeoutPath, sourceDerivedTargetAgent, [
+        '--reference-design-source',
+        sourceDerivedTargetAgent.reference_design_source_refs[0],
+        '--reference-design-pattern',
+        sourceDerivedTargetAgent.reference_design_pattern_notes[0],
+        '--reference-design-pattern-packet',
+        sourceDerivedTargetAgent.reference_design_pattern_packet_refs[0],
+      ]),
+      /profile conformance.*materialized_file_digest/is,
+    );
 
     const targetDir = path.join(outputRoot, sourceDerivedTargetAgent.domain_id);
     const stageControl = readJson(path.join(targetDir, 'contracts/stage_control_plane.json'));
     const stage = stageControl.stages[0] as JsonObject;
     const stageContract = stage.stage_contract as JsonObject;
-    assert.equal(payload.status, 'passed');
     assert.equal(
       fs.existsSync(path.join(outputRoot, `${sourceDerivedTargetAgent.domain_id}-stage-decomposition-blocker.json`)),
       false,
@@ -397,31 +423,35 @@ test('build-agent-baseline repairs mechanical subpacket projection without block
   });
 });
 
-test('build-agent-baseline materializes a source-derived target package without a builtin profile', () => {
+test('build-agent-baseline materializes source-derived proof then fails closed on OPL main digest scope mismatch', () => {
   withTempDir('oma-bootstrap-source-derived-', (outputRoot) => {
     const reviewerPath = path.join(outputRoot, 'reviewer.json');
     const closeoutPath = path.join(outputRoot, 'stage-closeout.json');
     writeReviewerEvaluation(reviewerPath, {}, sourceDerivedTargetAgent.domain_id);
     writeStageCloseout(closeoutPath, sourceDerivedTargetAgent);
 
-    const payload = runBaselineFixture(outputRoot, reviewerPath, closeoutPath, sourceDerivedTargetAgent, [
-      '--reference-design-source',
-      sourceDerivedTargetAgent.reference_design_source_refs[0],
-      '--reference-design-pattern',
-      sourceDerivedTargetAgent.reference_design_pattern_notes[0],
-      '--reference-design-pattern-packet',
-      sourceDerivedTargetAgent.reference_design_pattern_packet_refs[0],
-    ]);
+    assert.throws(
+      () => runBaselineFixture(outputRoot, reviewerPath, closeoutPath, sourceDerivedTargetAgent, [
+        '--reference-design-source',
+        sourceDerivedTargetAgent.reference_design_source_refs[0],
+        '--reference-design-pattern',
+        sourceDerivedTargetAgent.reference_design_pattern_notes[0],
+        '--reference-design-pattern-packet',
+        sourceDerivedTargetAgent.reference_design_pattern_packet_refs[0],
+      ]),
+      /profile conformance.*materialized_file_digest/is,
+    );
 
     const targetDir = path.join(outputRoot, sourceDerivedTargetAgent.domain_id);
     const descriptor = readJson(path.join(targetDir, 'contracts/domain_descriptor.json'));
     const capabilityMap = readJson(path.join(targetDir, 'contracts/capability_map.json'));
     const stageControl = readJson(path.join(targetDir, 'contracts/stage_control_plane.json'));
+    const buildReceipt = readJson(path.join(targetDir, 'contracts/agent_build_receipt.json'));
     const stageAttemptInput = readJson(path.join(outputRoot, 'stage-decomposition-attempt-input.json'));
     const primarySkill = fs.readFileSync(path.join(targetDir, 'agent/primary_skill/SKILL.md'), 'utf8');
-    const generatedPrompt = fs.readFileSync(path.join(targetDir, 'agent/prompts/agent-output-draft.md'), 'utf8');
+    const generatedPrompt = fs.readFileSync(path.join(targetDir, stageControl.stages[0].prompt_refs[0].ref), 'utf8');
 
-    assert.equal(payload.status, 'passed');
+    assert.equal(fs.existsSync(path.join(outputRoot, 'baseline-delivery-receipt.json')), false);
     assert.equal(descriptor.profile_selection_mode, 'source_derived_design');
     assert.equal(descriptor.selected_opl_profile_refs, undefined);
     assert.equal(
@@ -471,7 +501,15 @@ test('build-agent-baseline materializes a source-derived target package without 
       build_receipt_refs: sourceDerivedObjectRefs.buildReceiptRef,
       stage_decomposition_subpacket_set_refs: sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef,
     });
-    assertRefFields(capabilityMap.profile_selection_receipt as JsonObject, sourceDerivedCoreRefs);
+    assertRefFields(capabilityMap.profile_selection_receipt as JsonObject, {
+      reference_design_packet_ref: sourceDerivedObjectRefs.referenceDesignPacketRef,
+      transfer_map_ref: sourceDerivedObjectRefs.transferMapRef,
+      agent_pack_plan_ref: sourceDerivedObjectRefs.agentPackPlanRef,
+      design_admission_receipt_ref: sourceDerivedObjectRefs.designAdmissionReceiptRef,
+      expected_build_receipt_ref: sourceDerivedObjectRefs.buildReceiptRef,
+      stage_decomposition_subpacket_set_ref: sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef,
+    });
+    assert.equal(Object.hasOwn(capabilityMap.profile_selection_receipt, 'build_receipt'), false);
     assert.deepEqual(
       capabilityMap.reference_design_pattern_packet_refs,
       sourceDerivedTargetAgent.reference_design_pattern_packet_refs,
@@ -486,6 +524,45 @@ test('build-agent-baseline materializes a source-derived target package without 
     assert.equal(stageControl.build_receipt.build_source_kind, 'source_derived_design');
     assert.equal(stageControl.build_receipt.receipt_kind, 'AgentBuildReceipt');
     assert.equal(stageControl.build_receipt.design_admission_receipt_ref, sourceDerivedObjectRefs.designAdmissionReceiptRef);
+    assert.equal(stageControl.stages.length, 5);
+    assert.deepEqual(
+      stageControl.stages
+        .filter((stage: JsonObject) => stage.stage_origin === 'source_pattern_ref')
+        .map((stage: JsonObject) => stage.step_id),
+      ['risk-case-intake', 'model-evidence-review', 'risk-interpretation', 'owner-handoff-gate'],
+    );
+    assert.equal(stageControl.stages.at(-1).stage_origin, 'target_only_requirement');
+    assert.equal(
+      stageControl.stages.at(-1).target_only_requirement_ref,
+      'target-only-requirement:surgery-risk-from-paper-agent/owner-gated-closeout',
+    );
+    assert.equal(stageControl.build_receipt.receipt_timing, 'post_materialization');
+    assert.equal(stageControl.build_receipt.materialization.status, 'passed');
+    assert.deepEqual(descriptor.build_receipt, buildReceipt);
+    assert.deepEqual(capabilityMap.build_receipt, buildReceipt);
+    assert.deepEqual(stageControl.build_receipt, buildReceipt);
+    assert.deepEqual(
+      stageControl.build_receipt.materialization.materialized_stage_ids,
+      stageControl.stages.map((stage: JsonObject) => stage.stage_id),
+    );
+    const plan = stageControl.agent_pack_plan as JsonObject;
+    const digestRefs = new Set(
+      stageControl.build_receipt.materialization.materialized_file_digests
+        .map((entry: JsonObject) => entry.ref),
+    );
+    const plannedRefs = [
+      ...(plan.planned_control_refs as string[]),
+      ...(plan.planned_capability_refs as string[]),
+      ...(plan.planned_stage_refs as JsonObject[]).flatMap((stage) => [
+        stage.prompt_ref,
+        stage.stage_path,
+        stage.skill_ref,
+        ...(stage.knowledge_refs as string[]),
+        ...(stage.tool_refs as string[]),
+        ...(stage.quality_gate_refs as string[]),
+      ]),
+    ];
+    plannedRefs.forEach((ref) => assert.ok(digestRefs.has(ref), `missing build receipt digest: ${ref}`));
     assert.deepEqual(stageControl.build_receipt.target_only_requirement_refs, [
       'target-only-requirement:surgery-risk-from-paper-agent/owner-gated-closeout',
     ]);
@@ -494,24 +571,28 @@ test('build-agent-baseline materializes a source-derived target package without 
       ref.startsWith('non-transferable:surgery-risk-from-paper-agent/')
     ));
     assert.deepEqual(stageControl.stages[0].stage_pattern_source_refs, [
-      sourceDerivedTargetAgent.reference_design_pattern_packet_refs[0],
-      sourceDerivedObjectRefs.patternNoteRef,
+      sourceDerivedObjectRefs.sourcePatternRef,
     ]);
     assert.ok(
       stageControl.reference_design_packet.extractable_design_aspects.some((aspect: JsonObject) =>
-        aspect.source_pattern_ref === sourceDerivedTargetAgent.reference_design_pattern_packet_refs[0]
-        && aspect.target_design_slot === 'stage_control_plane'
+        aspect.source_pattern_ref === sourceDerivedObjectRefs.sourcePatternRef
+        && aspect.step_id === 'risk-case-intake'
+        && aspect.target_design_slot === 'workflow_stage:risk_case_intake'
       ),
     );
     assert.ok(
       stageControl.transfer_map.mappings.some((mapping: JsonObject) =>
-        mapping.source_pattern_ref === sourceDerivedObjectRefs.patternNoteRef
-        && mapping.target_capability_slot === 'prompt_knowledge_tool_quality_gate_refs'
+        mapping.pattern_id === 'reference-design-pattern-packet:surgical-risk-fixture:v1'
+        && mapping.step_id === 'model-evidence-review'
+        && mapping.target_stage_or_capability_slot ===
+          'stage:surgery-risk-from-paper-agent/reference-design-pattern-packet-surgical-risk-fixture-v1-model-evidence-review'
+        && mapping.disposition === 'adapt'
       ),
     );
     assert.ok(
       stageControl.agent_pack_plan.planned_stage_refs.some((stageRef: JsonObject) =>
-        stageRef.source_pattern_ref === sourceDerivedTargetAgent.reference_design_pattern_packet_refs[0]
+        stageRef.source_pattern_ref === sourceDerivedObjectRefs.sourcePatternRef
+        && stageRef.step_id === 'owner-handoff-gate'
       ),
     );
     assert.ok(stageControl.stages[0].inputs.some((entry: JsonObject) =>
@@ -570,12 +651,12 @@ test('build-agent-baseline materializes a source-derived target package without 
     );
     assertRefFields(stageAttemptInput.profile_selection_input_policy as JsonObject, {
       design_admission_receipt_ref: sourceDerivedObjectRefs.designAdmissionReceiptRef,
-      build_receipt_ref: sourceDerivedObjectRefs.buildReceiptRef,
+      expected_build_receipt_ref: sourceDerivedObjectRefs.buildReceiptRef,
       stage_decomposition_subpacket_set_ref: sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef,
     });
     assertRefFields(stageAttemptInput.reference_design_input_policy as JsonObject, {
       design_admission_receipt_ref: sourceDerivedObjectRefs.designAdmissionReceiptRef,
-      build_receipt_ref: sourceDerivedObjectRefs.buildReceiptRef,
+      expected_build_receipt_ref: sourceDerivedObjectRefs.buildReceiptRef,
       stage_decomposition_subpacket_set_ref: sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef,
     });
     assert.ok(
@@ -591,7 +672,6 @@ test('build-agent-baseline materializes a source-derived target package without 
     assert.ok(primarySkill.includes(sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef));
     assert.ok(generatedPrompt.includes('ReferenceDesignPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt'));
     assert.ok(generatedPrompt.includes(sourceDerivedTargetAgent.reference_design_pattern_packet_refs[0]));
-    assert.equal(payload.target_agent.selected_opl_profile_refs, undefined);
   });
 });
 
@@ -618,9 +698,10 @@ test('build-agent-baseline materializes a research-driven target package from va
     const receipt = readJson(path.join(outputRoot, 'baseline-delivery-receipt.json'));
     const suite = readJson(path.join(outputRoot, 'agent-lab-suite.json'));
     const primarySkill = fs.readFileSync(path.join(targetDir, 'agent/primary_skill/SKILL.md'), 'utf8');
-    const generatedPrompt = fs.readFileSync(path.join(targetDir, 'agent/prompts/agent-output-draft.md'), 'utf8');
+    const generatedPrompt = fs.readFileSync(path.join(targetDir, stageControl.stages[0].prompt_refs[0].ref), 'utf8');
 
     assert.equal(payload.status, 'passed');
+    assert.equal(payload.opl_profile_conformance.status, 'not_applicable');
     assert.equal(descriptor.profile_selection_mode, 'research_driven_design');
     assert.equal(descriptor.selected_opl_profile_refs, undefined);
     assert.equal(
@@ -665,7 +746,8 @@ test('build-agent-baseline materializes a research-driven target package from va
     assert.deepEqual(stageControl.design_admission_receipt.required_design_objects, researchDrivenRequiredDesignObjects);
     assert.deepEqual(stageControl.build_receipt.required_design_objects, researchDrivenRequiredDesignObjects);
     assert.equal(stageControl.build_receipt.design_admission_receipt_ref, researchDrivenObjectRefs.designAdmissionReceiptRef);
-    assert.deepEqual(stageControl.stages[0].stage_pattern_source_refs, [
+    assert.equal(stageControl.stages.length, 4);
+    assert.deepEqual(stageControl.stages.flatMap((stage: JsonObject) => stage.stage_pattern_source_refs), [
       researchDrivenTargetAgent.research_synthesis_refs[0],
       researchDrivenObjectRefs.expertPracticeNoteRef,
       researchDrivenObjectRefs.researchSourcePatternRef,
@@ -673,7 +755,7 @@ test('build-agent-baseline materializes a research-driven target package from va
     assert.ok(
       stageControl.research_synthesis_packet.extractable_design_aspects.some((aspect: JsonObject) =>
         aspect.source_pattern_ref === researchDrivenTargetAgent.research_synthesis_refs[0]
-        && aspect.target_design_slot === 'stage_control_plane'
+        && aspect.target_design_slot === 'workflow_stage:expert_practice_synthesis'
       ),
     );
     assert.ok(
@@ -719,6 +801,351 @@ test('build-agent-baseline materializes a research-driven target package from va
     assert.ok(generatedPrompt.includes('ResearchSynthesisPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt'));
     assert.ok(generatedPrompt.includes(researchDrivenTargetAgent.research_synthesis_refs[0]));
     assert.equal(payload.target_agent.selected_opl_profile_refs, undefined);
+  });
+});
+
+test('expert workflow seeds produce different workflow-step stage graphs for the same target goal', () => {
+  const targetGoal = {
+    domain_id: 'same-goal-agent',
+    target_brief: 'Create an owner-gated expert analysis agent for the same target goal.',
+  };
+  const casePlan = buildAgentPackPlan({
+    ...targetGoal,
+    reference_design_pattern_packet_refs: [
+      'expert-workflow-pattern:oma/case-grounded-expert-decision-workflow.v1',
+    ],
+  });
+  const rcaPlan = buildAgentPackPlan({
+    ...targetGoal,
+    reference_design_pattern_packet_refs: [
+      'expert-workflow-pattern:oma/incident-rca-postmortem-workflow.v1',
+    ],
+  });
+
+  assert.ok(casePlan);
+  assert.ok(rcaPlan);
+  const stageIds = (plan: JsonObject) => (plan.planned_stage_refs as JsonObject[])
+    .filter((stage) => stage.origin === 'source_pattern_ref')
+    .map((stage) => stage.stage_id);
+  assert.notDeepEqual(stageIds(casePlan), stageIds(rcaPlan));
+  assert.ok(stageIds(casePlan).some((stageId) => String(stageId).includes('case-material-intake')));
+  assert.ok(stageIds(rcaPlan).some((stageId) => String(stageId).includes('timeline-and-impact-reconstruction')));
+});
+
+test('OMA executes OPL selector signals for a Chinese hybrid reference-driven intent', () => {
+  const selected = resolveTargetAgentProfileSelection({
+    ...sourceDerivedTargetAgent,
+    target_brief: '参考这篇论文的设计思路，构建一个肠癌手术风险决策支持智能体。',
+    intent_signals: ['risk', 'guideline'],
+  }, oplBin);
+
+  assert.deepEqual(selected.selected_opl_profile_refs, [
+    'opl-profile:evidence_grounded_decision_agent_profile.v1',
+  ]);
+  assert.equal(buildProfileSelectionReceipt(selected).profile_selection_mode, 'hybrid');
+  assert.match(String(selected.profile_selection_rationale), /risk.*guideline|guideline.*risk/);
+});
+
+test('canonical OPL refs-only pattern packet produces its own stable workflow stages', () => {
+  const packet = buildReferenceDesignPacket(sourceDerivedTargetAgent);
+  const plan = buildAgentPackPlan(sourceDerivedTargetAgent);
+
+  assert.ok(packet);
+  assert.ok(plan);
+  assert.deepEqual(
+    packet.transferable_design_patterns[0].transferable_workflow_steps.map((step: JsonObject) => step.step_id),
+    ['risk-case-intake', 'model-evidence-review', 'risk-interpretation', 'owner-handoff-gate'],
+  );
+  assert.deepEqual(
+    (plan.planned_stage_refs as JsonObject[])
+      .filter((stage) => stage.origin === 'source_pattern_ref')
+      .map((stage) => stage.stage_id),
+    [
+      'reference-design-pattern-packet-surgical-risk-fixture-v1-risk-case-intake',
+      'reference-design-pattern-packet-surgical-risk-fixture-v1-model-evidence-review',
+      'reference-design-pattern-packet-surgical-risk-fixture-v1-risk-interpretation',
+      'reference-design-pattern-packet-surgical-risk-fixture-v1-owner-handoff-gate',
+    ],
+  );
+});
+
+test('user typed packet remains design origin when a seed is also supplied', () => {
+  const target = {
+    ...sourceDerivedTargetAgent,
+    reference_design_pattern_packet_refs: [
+      canonicalOplPatternPacketPath,
+      'expert-workflow-pattern:oma/case-grounded-expert-decision-workflow.v1',
+    ],
+  };
+  const packet = buildReferenceDesignPacket(target);
+  const plan = buildAgentPackPlan(target);
+
+  assert.ok(packet);
+  assert.ok(plan);
+  assert.equal(packet.design_origin.origin_kind, 'user_supplied_reference_design');
+  assert.deepEqual(packet.design_origin.primary_pattern_refs, [sourceDerivedObjectRefs.sourcePatternRef]);
+  assert.deepEqual(packet.design_origin.secondary_seed_pattern_refs, [
+    'expert-workflow-pattern:oma/case-grounded-expert-decision-workflow.v1',
+  ]);
+  assert.ok(packet.pattern_dispositions.some((entry: JsonObject) =>
+    entry.pattern_ref === sourceDerivedObjectRefs.sourcePatternRef
+    && entry.pattern_origin === 'user_typed_pattern_packet'
+    && entry.disposition === 'adopt'
+  ));
+  assert.ok(packet.pattern_dispositions.some((entry: JsonObject) =>
+    entry.pattern_ref === 'expert-workflow-pattern:oma/case-grounded-expert-decision-workflow.v1'
+    && entry.pattern_origin === 'oma_seed_library'
+    && entry.disposition === 'adapt'
+  ));
+  assert.ok(packet.pattern_dispositions.some((entry: JsonObject) => entry.disposition === 'reject'));
+  assert.deepEqual(
+    packet.transferable_design_patterns.map((pattern: JsonObject) => pattern.pattern_origin),
+    ['user_typed_pattern_packet'],
+  );
+  assert.equal(
+    (plan.planned_stage_refs as JsonObject[]).some((stage) =>
+      String(stage.source_pattern_ref).includes('case-grounded-expert-decision-workflow')
+    ),
+    false,
+  );
+});
+
+test('every declared reference source requires its own typed pattern packet', () => {
+  assert.throws(
+    () => buildReferenceDesignPacket({
+      ...sourceDerivedTargetAgent,
+      reference_design_source_refs: [
+        canonicalOplSourceMaterialRef,
+        'source-material:sha256:unextracted-secondary-source',
+      ],
+    }),
+    /reference_sources_missing_typed_pattern_packets.*unextracted-secondary-source/,
+  );
+});
+
+test('local semantic pointers reject absolute paths and URIs', () => {
+  withTempDir('oma-reference-pointer-absolute-', (dir) => {
+    const absolutePacketPath = writeReferenceDesignPacketFixture(dir, (packet, notesPath) => {
+      packet.pattern_summary_ref = `${notesPath}#/summary`;
+    });
+    assert.throws(
+      () => buildReferenceDesignPacket(packetTarget(absolutePacketPath)),
+      /pattern_summary_ref_(?:relative_path_required|local_path_required)/,
+    );
+
+    const uriPacketPath = writeReferenceDesignPacketFixture(path.join(dir, 'uri'), (packet, notesPath) => {
+      packet.pattern_summary_ref = `${new URL(`file://${notesPath}`).href}#/summary`;
+    });
+    assert.throws(
+      () => buildReferenceDesignPacket(packetTarget(uriPacketPath)),
+      /pattern_summary_ref_local_path_required/,
+    );
+  });
+});
+
+test('local semantic pointers reject traversal outside the packet directory', () => {
+  withTempDir('oma-reference-pointer-traversal-', (dir) => {
+    const packetDir = path.join(dir, 'packet');
+    const outsidePath = path.join(dir, 'outside-notes.json');
+    writeJson(outsidePath, readJson(path.join(repoRoot, 'tests/fixtures/opl-reference-design-pattern-notes.json')));
+    const packetPath = writeReferenceDesignPacketFixture(packetDir, (packet) => {
+      packet.pattern_summary_ref = '../outside-notes.json#/summary';
+    });
+
+    assert.throws(
+      () => buildReferenceDesignPacket(packetTarget(packetPath)),
+      /pattern_summary_ref_(?:path_traversal_forbidden|path_outside_packet_directory)/,
+    );
+  });
+});
+
+test('local semantic pointers reject file symlink escape', () => {
+  withTempDir('oma-reference-pointer-file-symlink-', (dir) => {
+    const packetDir = path.join(dir, 'packet');
+    const outsidePath = path.join(dir, 'outside-notes.json');
+    writeJson(outsidePath, readJson(path.join(repoRoot, 'tests/fixtures/opl-reference-design-pattern-notes.json')));
+    const packetPath = writeReferenceDesignPacketFixture(packetDir, (packet) => {
+      packet.pattern_summary_ref = 'linked-notes.json#/summary';
+    });
+    fs.symlinkSync(outsidePath, path.join(packetDir, 'linked-notes.json'));
+
+    assert.throws(
+      () => buildReferenceDesignPacket(packetTarget(packetPath)),
+      /pattern_summary_ref_real_path_outside_packet_directory/,
+    );
+  });
+});
+
+test('local semantic pointers reject directory symlink escape', () => {
+  withTempDir('oma-reference-pointer-dir-symlink-', (dir) => {
+    const packetDir = path.join(dir, 'packet');
+    const outsideDir = path.join(dir, 'outside');
+    const outsidePath = path.join(outsideDir, 'pattern-notes.json');
+    writeJson(outsidePath, readJson(path.join(repoRoot, 'tests/fixtures/opl-reference-design-pattern-notes.json')));
+    const packetPath = writeReferenceDesignPacketFixture(packetDir, (packet) => {
+      packet.pattern_summary_ref = 'linked/pattern-notes.json#/summary';
+    });
+    fs.symlinkSync(outsideDir, path.join(packetDir, 'linked'));
+
+    assert.throws(
+      () => buildReferenceDesignPacket(packetTarget(packetPath)),
+      /pattern_summary_ref_real_path_outside_packet_directory/,
+    );
+  });
+});
+
+test('semantic anchors and source fingerprint stay bound to the OPL envelope', () => {
+  withTempDir('oma-reference-anchor-boundary-', (dir) => {
+    const badAnchorPacketPath = writeReferenceDesignPacketFixture(
+      path.join(dir, 'anchor'),
+      undefined,
+      (notes) => {
+        (notes.patterns as JsonObject[])[0].source_anchor_refs = ['unrelated-source:other-paper#L1-L2'];
+      },
+    );
+    assert.throws(
+      () => buildReferenceDesignPacket(packetTarget(badAnchorPacketPath)),
+      /semantic_anchor_outside_envelope_namespace/,
+    );
+
+    const badFingerprintPacketPath = writeReferenceDesignPacketFixture(
+      path.join(dir, 'fingerprint'),
+      (packet) => {
+        packet.source_fingerprint_ref = 'sha256:different-source';
+      },
+    );
+    assert.throws(
+      () => buildReferenceDesignPacket(packetTarget(badFingerprintPacketPath)),
+      /source_fingerprint_ref_mismatch/,
+    );
+  });
+});
+
+test('primary reference design remains the only required design basis when research context is also supplied', () => {
+  const hybridTarget = {
+    ...sourceDerivedTargetAgent,
+    research_source_refs: researchDrivenTargetAgent.research_source_refs,
+    expert_practice_notes: researchDrivenTargetAgent.expert_practice_notes,
+    research_synthesis_refs: researchDrivenTargetAgent.research_synthesis_refs,
+  };
+  const referencePacket = buildReferenceDesignPacket(hybridTarget);
+  const researchPacket = buildResearchSynthesisPacket(hybridTarget);
+  const transferMap = buildTransferMap(hybridTarget);
+  const plan = buildAgentPackPlan(hybridTarget);
+  const admission = buildDesignAdmissionReceipt(hybridTarget);
+
+  assert.ok(referencePacket);
+  assert.ok(researchPacket);
+  assert.ok(transferMap);
+  assert.ok(plan);
+  assert.ok(admission);
+  assert.equal(transferMap.design_basis_kind, 'source_derived_design');
+  assert.equal(plan.design_basis_kind, 'source_derived_design');
+  assert.deepEqual(admission.required_design_objects, sourceDerivedRequiredDesignObjects);
+  assert.deepEqual(
+    (plan.planned_stage_refs as JsonObject[])
+      .filter((stage) => stage.origin === 'source_pattern_ref')
+      .map((stage) => stage.source_pattern_ref),
+    (referencePacket.transferable_design_patterns as JsonObject[]).flatMap((pattern) =>
+      (pattern.transferable_workflow_steps as JsonObject[]).map(() => pattern.source_pattern_ref)
+    ),
+  );
+});
+
+test('every planned stage and non-reject TransferMap target is materialized exactly once', () => {
+  const plan = buildAgentPackPlan(sourceDerivedTargetAgent);
+  const transferMap = buildTransferMap(sourceDerivedTargetAgent);
+  const closeout = buildFixtureStageDecompositionCloseout({ targetAgent: sourceDerivedTargetAgent });
+  const draft = closeout.stage_decomposition_pack_draft as JsonObject;
+  const stageControl = draft.stage_control_plane as JsonObject;
+  const nativeBundle = draft.stage_native_artifact_contract as JsonObject;
+  assert.ok(plan);
+  assert.ok(transferMap);
+
+  const plannedStages = plan.planned_stage_refs as JsonObject[];
+  const materializedStages = stageControl.stages as JsonObject[];
+  assert.deepEqual(
+    materializedStages.map((stage) => stage.stage_id),
+    plannedStages.map((stage) => stage.stage_id),
+  );
+  assert.deepEqual(
+    (nativeBundle.contracts as JsonObject[]).map((contract) => contract.stage_id),
+    plannedStages.map((stage) => stage.stage_id),
+  );
+  assert.deepEqual(
+    [...new Set((transferMap.mappings as JsonObject[])
+      .filter((mapping) => mapping.disposition !== 'reject')
+      .map((mapping) => mapping.target_stage_or_capability_slot))],
+    plannedStages.map((stage) => stage.stage_ref),
+  );
+  const files = new Set((draft.files as JsonObject[]).map((file) => file.path));
+  plannedStages.forEach((stage) => {
+    assert.ok(files.has(stage.prompt_ref));
+    assert.ok(files.has(stage.stage_path));
+    assert.ok(files.has(stage.skill_ref));
+    assert.ok((stage.knowledge_refs as string[]).every((ref) => files.has(ref)));
+    assert.ok((stage.quality_gate_refs as string[]).every((ref) => files.has(ref)));
+  });
+});
+
+test('pre-materialization packets carry only the expected AgentBuildReceipt ref', () => {
+  withTempDir('oma-build-receipt-pre-materialization-', (dir) => {
+    const closeoutPath = path.join(dir, 'closeout.json');
+    writeStageCloseout(closeoutPath, sourceDerivedTargetAgent);
+    const attempt = runStageDecompositionAttempt({
+      targetAgent: sourceDerivedTargetAgent,
+      outputDir: dir,
+      targetAgentDir: path.join(dir, sourceDerivedTargetAgent.domain_id),
+      oplBin,
+      runnerKind: 'fixture',
+      closeoutPacketPath: closeoutPath,
+    });
+    const stageInput = readJson(path.join(dir, 'stage-decomposition-attempt-input.json'));
+    const draft = attempt.closeoutPacket.stage_decomposition_pack_draft as JsonObject;
+    const policy = stageInput.profile_selection_input_policy as JsonObject;
+    const referencePolicy = stageInput.reference_design_input_policy as JsonObject;
+    const stageControl = draft.stage_control_plane as JsonObject;
+
+    [policy, referencePolicy, stageControl, ...(stageControl.stages as JsonObject[])].forEach((surface) => {
+      assert.equal(Object.hasOwn(surface, 'build_receipt'), false);
+      assert.equal(surface.expected_build_receipt_ref, sourceDerivedObjectRefs.buildReceiptRef);
+    });
+  });
+});
+
+test('raw reference source and opaque packet fail closed with a typed blocker', () => {
+  withTempDir('oma-bootstrap-raw-reference-design-', (outputRoot) => {
+    const rawTargetAgent: BaselineFixtureTargetAgent = {
+      domain_id: 'raw-reference-design-agent',
+      domain_label: 'Raw Reference Design Agent',
+      delivery_domain: 'knowledge_delivery',
+      target_brief: 'Create an owner-gated agent from an unextracted raw source.',
+      reference_design_source_refs: ['paper-ref:raw-unextracted-source'],
+      reference_design_pattern_notes: ['opaque summary without typed steps or source anchors'],
+      reference_design_pattern_packet_refs: ['packet-ref:opaque-unresolved-pattern'],
+    };
+    const reviewerPath = path.join(outputRoot, 'reviewer.json');
+    writeReviewerEvaluation(reviewerPath, {}, rawTargetAgent.domain_id);
+
+    assert.throws(
+      () => runBuildAgentBaseline({
+        outputDir: outputRoot,
+        oplBin,
+        aiReviewerEvaluationPath: reviewerPath,
+        targetAgent: rawTargetAgent,
+        stageRunner: 'fixture',
+        stageCloseoutPacketPath: null,
+      }),
+      /typed blocker written/i,
+    );
+    const blocker = readJson(path.join(
+      outputRoot,
+      `${rawTargetAgent.domain_id}-stage-decomposition-blocker.json`,
+    ));
+    assert.equal(blocker.blocked_reason, 'reference_design_resolution_failed');
+    assert.match(blocker.blocker_message, /opaque_pattern_packet_unresolved/);
+    assert.equal(blocker.route_impact.materialization_allowed, false);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'profile-selection.json')), false);
   });
 });
 

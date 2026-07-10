@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
   buildAgentPackPlan,
-  buildAgentBuildReceipt,
+  buildAgentBuildReceiptRef,
   buildCapabilityPlanRequirements,
   buildDesignAdmissionReceipt,
   buildProfileRequirements,
@@ -88,7 +88,9 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
   const transferMap = buildTransferMap(input.targetAgent);
   const agentPackPlan = buildAgentPackPlan(input.targetAgent);
   const designAdmissionReceipt = buildDesignAdmissionReceipt(input.targetAgent);
-  const buildReceipt = buildAgentBuildReceipt(input.targetAgent);
+  const expectedBuildReceiptRef = designAdmissionReceipt
+    ? buildAgentBuildReceiptRef(input.targetAgent)
+    : null;
   const stageDecompositionSubpacketSet = buildStageDecompositionSubpacketSet(input.targetAgent);
   return {
     surface_kind: 'opl_meta_agent_stage_decomposition_attempt_input',
@@ -117,8 +119,7 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
       agent_pack_plan_ref: agentPackPlan?.plan_ref ?? null,
       design_admission_receipt: designAdmissionReceipt,
       design_admission_receipt_ref: designAdmissionReceipt?.receipt_ref ?? null,
-      build_receipt: buildReceipt,
-      build_receipt_ref: buildReceipt?.receipt_ref ?? null,
+      expected_build_receipt_ref: expectedBuildReceiptRef,
       stage_decomposition_subpacket_set: stageDecompositionSubpacketSet,
       stage_decomposition_subpacket_set_ref: stageDecompositionSubpacketSet?.packet_set_ref ?? null,
       stage_decomposition_subpacket_set_refs: stageDecompositionSubpacketSet?.packet_set_ref
@@ -169,8 +170,7 @@ function stagePacketPayload(input: StageDecompositionAttemptInput): JsonObject {
       agent_pack_plan_ref: agentPackPlan?.plan_ref ?? null,
       design_admission_receipt: designAdmissionReceipt,
       design_admission_receipt_ref: designAdmissionReceipt?.receipt_ref ?? null,
-      build_receipt: buildReceipt,
-      build_receipt_ref: buildReceipt?.receipt_ref ?? null,
+      expected_build_receipt_ref: expectedBuildReceiptRef,
       stage_decomposition_subpacket_set: stageDecompositionSubpacketSet,
       stage_decomposition_subpacket_set_ref: stageDecompositionSubpacketSet?.packet_set_ref ?? null,
       stage_decomposition_subpacket_set_refs: stageDecompositionSubpacketSet?.packet_set_ref

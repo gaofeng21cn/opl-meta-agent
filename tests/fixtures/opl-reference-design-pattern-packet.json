@@ -1,0 +1,57 @@
+{
+  "surface_kind": "opl_reference_design_pattern_packet",
+  "schema_version": "reference-design-pattern-packet.v1",
+  "packet_id": "reference-design-pattern-packet:surgical-risk-fixture:v1",
+  "packet_ref": "tests/fixtures/opl-reference-design-pattern-packet.json",
+  "source_material_ref": "source-material:sha256:surgical-risk-fixture",
+  "source_material_receipt_ref": "tests/fixtures/opl-reference-design-extraction-receipt.json",
+  "source_fingerprint_ref": "sha256:surgical-risk-fixture",
+  "extraction_attempt_refs": [
+    "fixture-extract:surgical-risk:v1"
+  ],
+  "extraction_receipt_refs": [
+    "tests/fixtures/opl-reference-design-extraction-receipt.json"
+  ],
+  "source_anchor_refs": [
+    "fixture-source:surgical-risk#L1-L120"
+  ],
+  "pattern_summary_ref": "opl-reference-design-pattern-notes.json#/summary",
+  "transferable_pattern_refs": [
+    "opl-reference-design-pattern-notes.json#/patterns/0",
+    "opl-reference-design-pattern-notes.json#/patterns/1",
+    "opl-reference-design-pattern-notes.json#/patterns/2",
+    "opl-reference-design-pattern-notes.json#/patterns/3"
+  ],
+  "non_transferable_constraint_refs": [
+    "opl-reference-design-pattern-notes.json#/non_transferable_constraints/0",
+    "opl-reference-design-pattern-notes.json#/non_transferable_constraints/1",
+    "opl-reference-design-pattern-notes.json#/non_transferable_constraints/2"
+  ],
+  "authority_boundary_notes_ref": "opl-reference-design-pattern-notes.json#/authority_boundary_notes",
+  "consumer_route": {
+    "consumer": "oma",
+    "next_owner": "oma:stage-decomposition",
+    "next_owner_action": "materialize_reference_design_packet_transfer_map_and_agent_pack_plan",
+    "required_return_shape": "ReferenceDesignPacket",
+    "required_return_contract_ref": "oma-contract:reference-design-packet.v1",
+    "required_return_fields_ref": "oma-contract:reference-design-packet.v1#/required_fields"
+  },
+  "authority_boundary": {
+    "refs_only": true,
+    "body_free": true,
+    "opl_can_write_domain_truth": false,
+    "opl_can_copy_source_body_into_contract": false,
+    "opl_can_sign_owner_receipt": false,
+    "opl_can_create_typed_blocker": false,
+    "opl_can_claim_pattern_quality_ready": false,
+    "opl_can_claim_target_ready": false,
+    "opl_can_claim_domain_ready": false,
+    "opl_can_claim_production_ready": false
+  },
+  "non_claims": {
+    "pattern_quality_ready": false,
+    "target_ready": false,
+    "domain_ready": false,
+    "production_ready": false
+  }
+}

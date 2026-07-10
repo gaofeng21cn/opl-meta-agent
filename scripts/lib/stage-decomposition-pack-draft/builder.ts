@@ -1,6 +1,6 @@
 import {
   buildAgentPackPlan,
-  buildAgentBuildReceipt,
+  buildAgentBuildReceiptRef,
   buildCapabilityPlanRequirements,
   buildDesignAdmissionReceipt,
   buildProfileRequirements,
@@ -392,16 +392,29 @@ function optionalString(value: unknown): string | null {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
 }
 
+function requiredMachineString(value: unknown, field: string): string {
+  const parsed = optionalString(value);
+  if (!parsed) {
+    throw new Error(`stage-decomposition builder ${field} must be a non-empty string.`);
+  }
+  return parsed;
+}
+
 function plannedSourcePatternRefs(agentPackPlan: JsonObject | null): string[] {
   const plannedStageRefs = Array.isArray(agentPackPlan?.planned_stage_refs)
     ? agentPackPlan.planned_stage_refs
     : [];
-  return plannedStageRefs
+  return [...new Set(plannedStageRefs
     .map((entry) => optionalString((entry as JsonObject).source_pattern_ref))
-    .filter((entry): entry is string => Boolean(entry));
+    .filter((entry): entry is string => Boolean(entry)))];
 }
 
-function buildStageControlPlane({
+type StageControlPlaneArgs = Required<FixtureStageSpec> & {
+  owner: string;
+  artifactMorphologyContract: JsonObject;
+};
+
+function buildSingleStageControlPlane({
   targetAgent,
   stageId,
   actionId,
@@ -413,7 +426,7 @@ function buildStageControlPlane({
   qualityGatePath,
   owner,
   artifactMorphologyContract,
-}: Required<FixtureStageSpec> & { owner: string; artifactMorphologyContract: JsonObject }): JsonObject {
+}: StageControlPlaneArgs): JsonObject {
   const domainId = targetAgent.domain_id;
   const stageNativeArtifactContract = buildStageNativeArtifactContract({
     domainId,
@@ -450,14 +463,15 @@ function buildStageControlPlane({
   const transferMap = buildTransferMap(targetAgent, agentPackPlanOptions);
   const agentPackPlan = buildAgentPackPlan(targetAgent, agentPackPlanOptions);
   const designAdmissionReceipt = buildDesignAdmissionReceipt(targetAgent, agentPackPlanOptions);
-  const buildReceipt = buildAgentBuildReceipt(targetAgent, agentPackPlanOptions);
   const stageDecompositionSubpacketSet = buildStageDecompositionSubpacketSet(targetAgent, agentPackPlanOptions);
   const referenceDesignPacketRef = optionalString(referenceDesignPacket?.packet_ref);
   const researchSynthesisPacketRef = optionalString(researchSynthesisPacket?.packet_ref);
   const transferMapRef = optionalString(transferMap?.transfer_map_ref);
   const agentPackPlanRef = optionalString(agentPackPlan?.plan_ref);
   const designAdmissionReceiptRef = optionalString(designAdmissionReceipt?.receipt_ref);
-  const buildReceiptRef = optionalString(buildReceipt?.receipt_ref);
+  const expectedBuildReceiptRef = designAdmissionReceipt
+    ? buildAgentBuildReceiptRef(targetAgent)
+    : null;
   const stageDecompositionSubpacketSetRef = optionalString(stageDecompositionSubpacketSet?.packet_set_ref);
   const stagePatternSourceRefs = plannedSourcePatternRefs(agentPackPlan);
   const referenceDesignSourceRefs = stringList(targetAgent.reference_design_source_refs);
@@ -535,9 +549,7 @@ function buildStageControlPlane({
     design_admission_receipt: designAdmissionReceipt,
     design_admission_receipt_ref: designAdmissionReceiptRef,
     design_admission_receipt_refs: designAdmissionReceiptRef ? [designAdmissionReceiptRef] : [],
-    build_receipt: buildReceipt,
-    build_receipt_ref: buildReceiptRef,
-    build_receipt_refs: buildReceiptRef ? [buildReceiptRef] : [],
+    expected_build_receipt_ref: expectedBuildReceiptRef,
     stage_decomposition_subpacket_set: stageDecompositionSubpacketSet,
     stage_decomposition_subpacket_set_ref: stageDecompositionSubpacketSetRef,
     stage_decomposition_subpacket_set_refs: stageDecompositionSubpacketSetRef
@@ -588,9 +600,7 @@ function buildStageControlPlane({
         design_admission_receipt: designAdmissionReceipt,
         design_admission_receipt_ref: designAdmissionReceiptRef,
         design_admission_receipt_refs: designAdmissionReceiptRef ? [designAdmissionReceiptRef] : [],
-        build_receipt: buildReceipt,
-        build_receipt_ref: buildReceiptRef,
-        build_receipt_refs: buildReceiptRef ? [buildReceiptRef] : [],
+        expected_build_receipt_ref: expectedBuildReceiptRef,
         stage_decomposition_subpacket_set: stageDecompositionSubpacketSet,
         stage_decomposition_subpacket_set_ref: stageDecompositionSubpacketSetRef,
         stage_decomposition_subpacket_set_refs: stageDecompositionSubpacketSetRef
@@ -710,7 +720,7 @@ function buildStageControlPlane({
             ...(stageDecompositionSubpacketSetRef
               ? [ref('stage_decomposition_subpacket_set_ref', stageDecompositionSubpacketSetRef)]
               : []),
-            ...(buildReceiptRef ? [ref('agent_build_receipt_ref', buildReceiptRef)] : []),
+            ...(expectedBuildReceiptRef ? [ref('agent_build_receipt_ref', expectedBuildReceiptRef)] : []),
             ref('independent_gate_receipt_ref', `independent-gate-receipt-ref:${stageId}`),
             ref('user_stage_log_ref', `stage-user-log-ref:${stageId}`),
             ref('artifact_native_contract_ref', stageNativeRefs.artifactNativeContractRef),
@@ -773,6 +783,107 @@ function buildStageControlPlane({
       },
     ],
   };
+}
+
+function stageTitle(value: unknown): string {
+  const source = optionalString(value) ?? 'workflow-stage';
+  return source
+    .split(/[-_]+/)
+    .filter(Boolean)
+    .map((part) => `${part[0]?.toUpperCase() ?? ''}${part.slice(1)}`)
+    .join(' ');
+}
+
+function canonicalizeStageDesignObjects(stage: JsonObject, controlPlane: JsonObject): void {
+  [
+    'source_derived_design_receipt',
+    'research_driven_design_receipt',
+    'reference_design_packet',
+    'reference_design_packet_ref',
+    'reference_design_packet_refs',
+    'research_synthesis_packet',
+    'research_synthesis_packet_ref',
+    'research_synthesis_packet_refs',
+    'transfer_map',
+    'transfer_map_ref',
+    'transfer_map_refs',
+    'agent_pack_plan',
+    'agent_pack_plan_ref',
+    'agent_pack_plan_refs',
+    'design_admission_receipt',
+    'design_admission_receipt_ref',
+    'design_admission_receipt_refs',
+    'expected_build_receipt_ref',
+    'stage_decomposition_subpacket_set',
+    'stage_decomposition_subpacket_set_ref',
+    'stage_decomposition_subpacket_set_refs',
+  ].forEach((field) => {
+    stage[field] = controlPlane[field];
+  });
+}
+
+function buildStageControlPlane(args: StageControlPlaneArgs): JsonObject {
+  const controlPlane = buildSingleStageControlPlane(args);
+  const agentPackPlan = controlPlane.agent_pack_plan as JsonObject | null;
+  const plannedStages = Array.isArray(agentPackPlan?.planned_stage_refs)
+    ? agentPackPlan.planned_stage_refs.filter((entry): entry is JsonObject =>
+        typeof entry === 'object'
+        && entry !== null
+        && !Array.isArray(entry)
+        && ['source_pattern_ref', 'target_only_requirement'].includes(String(entry.origin))
+      )
+    : [];
+  if (plannedStages.length === 0) {
+    return controlPlane;
+  }
+
+  controlPlane.stages = plannedStages.map((plannedStage) => {
+    const plannedStageId = requiredMachineString(
+      plannedStage.stage_id,
+      'agent_pack_plan.planned_stage_refs[].stage_id',
+    );
+    const plannedStageTitle = stageTitle(plannedStage.step_id ?? plannedStage.stage_archetype ?? plannedStageId);
+    const plannedStageSummary = requiredMachineString(
+      plannedStage.stage_goal,
+      `agent_pack_plan.planned_stage_refs.${plannedStageId}.stage_goal`,
+    );
+    const stagePlane = buildSingleStageControlPlane({
+      ...args,
+      stageId: plannedStageId,
+      title: plannedStageTitle,
+      summary: plannedStageSummary,
+      promptPath: requiredMachineString(plannedStage.prompt_ref, `${plannedStageId}.prompt_ref`),
+      stagePath: requiredMachineString(plannedStage.stage_path, `${plannedStageId}.stage_path`),
+      skillPath: requiredMachineString(plannedStage.skill_ref, `${plannedStageId}.skill_ref`),
+      knowledgePath: requiredMachineString(
+        (plannedStage.knowledge_refs as unknown[])?.[0],
+        `${plannedStageId}.knowledge_refs[0]`,
+      ),
+      qualityGatePath: requiredMachineString(
+        (plannedStage.quality_gate_refs as unknown[])?.[0],
+        `${plannedStageId}.quality_gate_refs[0]`,
+      ),
+    });
+    const stage = (stagePlane.stages as JsonObject[])[0];
+    canonicalizeStageDesignObjects(stage, controlPlane);
+    stage.goal = plannedStageSummary;
+    stage.summary = plannedStageSummary;
+    stage.stage_origin = plannedStage.origin;
+    stage.stage_archetype = plannedStage.stage_archetype;
+    if (plannedStage.origin === 'source_pattern_ref') {
+      stage.pattern_id = plannedStage.pattern_id;
+      stage.step_id = plannedStage.step_id;
+      stage.provenance_kind = plannedStage.provenance_kind;
+      stage.stage_pattern_source_refs = [plannedStage.source_pattern_ref];
+      stage.source_anchor_refs = plannedStage.source_anchor_refs;
+    } else {
+      stage.stage_pattern_source_refs = [];
+      stage.source_anchor_refs = [];
+      stage.target_only_requirement_ref = plannedStage.target_only_requirement_ref;
+    }
+    return stage;
+  });
+  return controlPlane;
 }
 
 function buildFoundryAgentSeriesContract(targetAgent: TargetAgent, stageControlPlane: JsonObject, owner: string): JsonObject {
@@ -1027,6 +1138,52 @@ function buildFiles({
   ];
 }
 
+function stageFileDrafts({
+  targetAgent,
+  stageControlPlane,
+  actionId,
+  owner,
+}: {
+  targetAgent: TargetAgent;
+  stageControlPlane: JsonObject;
+  actionId: string;
+  owner: string;
+}): StageDecompositionFileDraft[] {
+  const files = (stageControlPlane.stages as JsonObject[]).flatMap((stage) => {
+    const stageId = requiredMachineString(stage.stage_id, 'stage_control_plane.stages[].stage_id');
+    const promptPath = requiredMachineString(
+      (stage.prompt_refs as JsonObject[])[0]?.ref,
+      `${stageId}.prompt_refs[0].ref`,
+    );
+    const skillPath = requiredMachineString(
+      (stage.skills as JsonObject[])[0]?.ref,
+      `${stageId}.skills[0].ref`,
+    );
+    const knowledgePath = requiredMachineString(
+      (stage.knowledge_refs as JsonObject[])[0]?.ref,
+      `${stageId}.knowledge_refs[0].ref`,
+    );
+    const qualityGatePath = requiredMachineString(
+      (stage.evaluation as JsonObject[])[0]?.ref,
+      `${stageId}.evaluation[0].ref`,
+    );
+    return buildFiles({
+      targetAgent,
+      stageId,
+      actionId,
+      title: requiredMachineString(stage.title, `${stageId}.title`),
+      summary: requiredMachineString(stage.summary, `${stageId}.summary`),
+      promptPath,
+      stagePath: `agent/stages/${stageId}.md`,
+      skillPath,
+      knowledgePath,
+      qualityGatePath,
+      owner,
+    });
+  });
+  return [...new Map(files.map((file) => [file.path, file])).values()];
+}
+
 export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec): StageDecompositionCloseoutPacket {
   const targetAgent = input.targetAgent;
   const owner = domainLabelFor(targetAgent);
@@ -1058,10 +1215,13 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
   };
   const artifactMorphologyContract = buildArtifactMorphologyContract({ targetAgent, owner, stageId });
   const stageControlPlane = buildStageControlPlane({ ...spec, artifactMorphologyContract });
+  const materializedStageIds = (stageControlPlane.stages as JsonObject[]).map((stage) =>
+    requiredMachineString(stage.stage_id, 'stage_control_plane.stages[].stage_id')
+  );
   const stageNativeArtifactContract = buildStageNativeArtifactContractBundle({
     domainId: targetAgent.domain_id,
     domainTruthOwner: owner,
-    stageIds: [stageId],
+    stageIds: materializedStageIds,
   });
   const draft: StageDecompositionPackDraft = {
     surface_kind: 'opl_meta_agent_stage_decomposition_pack_draft',
@@ -1082,7 +1242,12 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
     stage_decomposition_subpacket_set: stageControlPlane.stage_decomposition_subpacket_set,
     stage_decomposition_subpacket_set_ref: stageControlPlane.stage_decomposition_subpacket_set_ref,
     stage_decomposition_subpacket_set_refs: stageControlPlane.stage_decomposition_subpacket_set_refs,
-    files: buildFiles(spec),
+    files: stageFileDrafts({
+      targetAgent,
+      stageControlPlane,
+      actionId,
+      owner,
+    }),
   };
   return {
     surface_kind: 'stage_attempt_closeout_packet',
@@ -1090,8 +1255,10 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
     closeout_id: `stage-decomposition-closeout:${targetAgent.domain_id}`,
     closeout_refs: [
       `receipt:opl-meta-agent/${targetAgent.domain_id}/stage-decomposition-pack-draft`,
-      `artifact-native-contract-ref:${targetAgent.domain_id}/${stageId}`,
-      `stage-folder-contract-ref:${targetAgent.domain_id}/${stageId}`,
+      ...materializedStageIds.flatMap((materializedStageId) => [
+        `artifact-native-contract-ref:${targetAgent.domain_id}/${materializedStageId}`,
+        `stage-folder-contract-ref:${targetAgent.domain_id}/${materializedStageId}`,
+      ]),
     ],
     consumed_refs: [`stage-packet:opl-meta-agent/${targetAgent.domain_id}/stage-decomposition-input`],
     consumed_memory_refs: [],

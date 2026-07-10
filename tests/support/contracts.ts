@@ -9,7 +9,7 @@ export type { JsonObject };
 
 export const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 export const oplBin = process.env.OPL_BIN
-  ?? '/Users/gaofeng/workspace/one-person-lab/bin/opl';
+  ?? 'opl';
 export const oplOwnerRepoRoot = process.env.OPL_OWNER_REPO_ROOT
   ?? '/Users/gaofeng/workspace/one-person-lab';
 export const placeholderPattern = new RegExp(`\\b(?:TO${'DO'}|T${'BD'})\\b`, 'i');

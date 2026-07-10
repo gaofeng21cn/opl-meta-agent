@@ -14,7 +14,7 @@
 ## 流程
 
 1. 执行 `intent-intake`，冻结目标、边界和 acceptance criteria，并把自然语言需求归一为 target-agent descriptor 字段。
-2. 执行 `web-experience-research`、用户提供参考设计读取，或消费 OPL source ingest / Codex extraction 形成的 pattern packet refs；只吸收可迁移模式，不复制外部 runtime、私有数据或领域 truth。若用户提供论文/PDF/repo/案例系统，参考来源是设计来源，profile/catalog/template 只作为 OPL conformance 下限或 route readback。
+2. 执行 `web-experience-research`、用户提供参考设计读取，或消费 OPL source ingest / Codex extraction 形成的 canonical refs-only pattern packet。外部 packet 必须是 `opl.reference_design_pattern_packet.v1`，只在 packet 本地目录解引用 semantic JSON-pointer refs；raw/opaque source 不得伪造成已提炼 workflow。只吸收可迁移模式，不复制外部 runtime、私有数据或领域 truth。若用户提供论文/PDF/repo/案例系统，参考来源是设计来源，seed library/profile/catalog 只作为 fallback、secondary 或 OPL conformance 下限。
 3. 执行 `stage-decomposition` Codex stage attempt，产出 typed closeout packet；stage/action/pack files/gate policy 必须从该 closeout 来。source-derived 路线必须先生成 `ReferenceDesignPacket -> TransferMap -> AgentPackPlan` 并通过 `DesignAdmissionReceipt`；research-driven 路线必须先生成 `ResearchSynthesisPacket -> TransferMap -> AgentPackPlan -> DesignAdmissionReceipt`；两条路线都必须保留 `StageDecompositionSubpacketSet` 作为 stage 内部有序 subpacket 链，且每个 design-derived stage requirement 引用 `source_pattern_ref`/`stage_pattern_source_refs` 或 `target_only_requirement`；`AgentBuildReceipt` / `build_receipt` 只作为物化后的构建证明。
 4. 执行 `agent-skeleton-build`，只校验并物化 closeout 中的 candidate package，再跑 scaffold/interface validation；scaffold 只是物理骨架，不是目标 agent 设计来源。
 5. 执行 `eval-suite-build` 和 `baseline-run`，获得 Agent Lab evidence。

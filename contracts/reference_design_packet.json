@@ -1,0 +1,93 @@
+{
+  "surface_kind": "opl_meta_agent_reference_design_packet_contract",
+  "version": "opl-meta-agent.reference-design-packet-contract.v1",
+  "contract_ref": "oma-contract:reference-design-packet.v1",
+  "owner": "opl-meta-agent",
+  "purpose": "Own the machine shape that OMA materializes from refs-only reference-design pattern handoffs before target Agent Pack planning.",
+  "state": "active_contract",
+  "implementation_ref": "scripts/lib/domain-pack.ts#buildReferenceDesignPacket",
+  "input_handoff_schema_id": "opl.reference_design_pattern_packet.v1",
+  "input_handoff_schema_ref": "https://one-person-lab.local/contracts/opl-framework/reference-design-pattern-packet.schema.json",
+  "input_handoff_policy": "Validate the OPL-owned refs-only envelope, resolve only its local JSON-pointer semantic refs, then materialize the OMA-owned content-rich ReferenceDesignPacket.",
+  "object_surface_kind": "opl_meta_agent_reference_design_packet",
+  "object_version": "opl-meta-agent.reference-design-packet.v1",
+  "required_fields": [
+    "surface_kind",
+    "version",
+    "packet_ref",
+    "target_agent_ref",
+    "reference_source_refs",
+    "reference_design_pattern_packet_refs",
+    "reference_design_pattern_notes",
+    "design_origin",
+    "pattern_dispositions",
+    "source_anchor_refs",
+    "transferable_design_patterns",
+    "extractable_design_aspects",
+    "applicable_constraints",
+    "non_transferable_constraints",
+    "source_body_policy"
+  ],
+  "required_non_empty_fields": [
+    "transferable_design_patterns",
+    "extractable_design_aspects",
+    "source_anchor_refs",
+    "applicable_constraints",
+    "non_transferable_constraints"
+  ],
+  "required_any_non_empty_fields": [
+    "reference_source_refs",
+    "reference_design_pattern_packet_refs",
+    "reference_design_pattern_notes"
+  ],
+  "transfer_map_canonical_fields": [
+    "pattern_id",
+    "step_id",
+    "source_anchor_ref",
+    "target_stage_or_capability_slot",
+    "transfer_rationale",
+    "known_limits",
+    "disposition"
+  ],
+  "transfer_map_allowed_dispositions": [
+    "adopt",
+    "adapt",
+    "reject"
+  ],
+  "agent_pack_plan_policy": {
+    "one_stable_target_stage_per_workflow_step": true,
+    "all_steps_must_not_collapse_to_agent_output_draft": true,
+    "design_admission_receipt_before_materialization": true,
+    "agent_build_receipt_after_materialization": true
+  },
+  "source_coverage_policy": {
+    "every_declared_reference_source_requires_typed_pattern_packet": true,
+    "unresolved_secondary_source_is_not_primary_provenance": true,
+    "opaque_or_raw_only_source_fails_closed": true
+  },
+  "design_precedence_policy": {
+    "user_typed_packet_is_primary_design_origin": true,
+    "seed_library_is_fallback_when_user_packet_absent": true,
+    "seed_library_is_context_only_when_user_packet_present": true,
+    "secondary_seed_must_not_expand_active_stage_graph": true
+  },
+  "stage_materialization_policy": {
+    "every_source_workflow_step_must_exist_in_stage_control_plane": true,
+    "stage_prompt_skill_knowledge_and_quality_gate_refs_required": true,
+    "shared_tool_affordance_catalog_allowed": true,
+    "plan_only_or_generic_single_stage_projection_fails_closed": true
+  },
+  "authority_boundary": {
+    "refs_only": true,
+    "can_copy_source_body": false,
+    "can_import_external_runtime": false,
+    "can_write_target_domain_truth": false,
+    "can_write_target_artifact_body": false,
+    "can_sign_target_owner_receipt": false,
+    "can_create_target_typed_blocker": false,
+    "can_claim_pattern_quality_ready": false,
+    "can_claim_target_ready": false,
+    "can_claim_domain_ready": false,
+    "can_claim_production_ready": false
+  }
+}

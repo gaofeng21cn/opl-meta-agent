@@ -16,8 +16,11 @@ import {
   writeTargetAgentPrimarySkill,
 } from './lib/domain-pack.ts';
 import {
+  assertTargetProfileConformance,
+  materializeAgentBuildReceipt,
   materializeStageDecompositionPackDraft,
   repairStageDecompositionCloseoutPacket,
+  writeAgentBuildReceiptExpectation,
 } from './lib/stage-decomposition-pack-draft/materializer.ts';
 import type {
   StageDecompositionPackDraft,
@@ -331,6 +334,7 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
     domainLabel: string | null;
     deliveryDomain: string | null;
     targetBrief: string | null;
+    intentSignals: string[];
     selectedOplProfileRefs: string[];
     profileSelectionRationale: string | null;
     profileRequirementRefs: string[];
@@ -350,6 +354,7 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
     domainLabel: null,
     deliveryDomain: null,
     targetBrief: null,
+    intentSignals: [],
     selectedOplProfileRefs: [],
     profileSelectionRationale: null,
     profileRequirementRefs: [],
@@ -373,6 +378,7 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
       'domain-label': { type: 'string' },
       'delivery-domain': { type: 'string' },
       'target-brief': { type: 'string' },
+      'intent-signal': { type: 'string', multiple: true },
       'selected-opl-profile': { type: 'string', multiple: true },
       'profile-selection-rationale': { type: 'string' },
       'profile-requirement': { type: 'string', multiple: true },
@@ -411,6 +417,10 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
   if (typeof values['target-brief'] === 'string') {
     parsed.targetBrief = nonEmptyValue('--target-brief', values['target-brief']);
   }
+  parsed.intentSignals = nonEmptyStringList(
+    '--intent-signal',
+    values['intent-signal'],
+  );
   parsed.selectedOplProfileRefs = nonEmptyStringList(
     '--selected-opl-profile',
     values['selected-opl-profile'],
@@ -499,6 +509,9 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
     delivery_domain: parsed.deliveryDomain ?? 'knowledge_delivery',
     target_brief: parsed.targetBrief
       ?? `Create an owner-gated ${domainLabel} delivery from declared workspace refs.`,
+    ...(parsed.intentSignals.length > 0
+      ? { intent_signals: parsed.intentSignals }
+      : {}),
     ...(parsed.selectedOplProfileRefs.length > 0
       ? { selected_opl_profile_refs: parsed.selectedOplProfileRefs }
       : {}),
@@ -597,6 +610,7 @@ function validateOrRepairStageDecompositionCloseoutPacket(
 
 function stageDecompositionBlockerFromError(error: unknown, targetAgent: TargetAgent): JsonObject {
   const message = errorMessage(error);
+  const referenceDesignResolutionFailed = message.startsWith('reference_design_resolution_failed:');
   try {
     const parsed = JSON.parse(message);
     if (
@@ -615,9 +629,13 @@ function stageDecompositionBlockerFromError(error: unknown, targetAgent: TargetA
     surface_kind: 'stage_attempt_closeout_packet',
     stage_id: 'stage-decomposition',
     closeout_refs: [
-      `typed-blocker:opl-meta-agent/${targetAgent.domain_id}/stage-decomposition/materialization_failed`,
+      `typed-blocker:opl-meta-agent/${targetAgent.domain_id}/stage-decomposition/${referenceDesignResolutionFailed
+        ? 'reference_design_resolution_failed'
+        : 'materialization_failed'}`,
     ],
-    blocked_reason: 'stage_decomposition_materialization_failed',
+    blocked_reason: referenceDesignResolutionFailed
+      ? 'reference_design_resolution_failed'
+      : 'stage_decomposition_materialization_failed',
     blocker_message: message,
     domain_ready_verdict: 'blocked',
     next_owner: 'opl-meta-agent',
@@ -642,6 +660,59 @@ function writeStageDecompositionBlocker(
   const blockerPath = path.join(outputDir, `${targetAgent.domain_id}-stage-decomposition-blocker.json`);
   writeJson(blockerPath, blocker);
   return blockerPath;
+}
+
+function stringArray(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((entry): entry is string => typeof entry === 'string' && Boolean(entry.trim()))
+      .map((entry) => entry.trim())
+    : [];
+}
+
+export function resolveTargetAgentProfileSelection(
+  targetAgent: TargetAgent,
+  oplBin: string,
+): TargetAgent {
+  const intent = targetAgent.target_brief?.trim();
+  if (!intent) {
+    return targetAgent;
+  }
+  const selectorArgs = ['profiles', 'select', '--intent', intent];
+  stringArray(targetAgent.intent_signals).forEach((signal) => {
+    selectorArgs.push('--intent-signal', signal);
+  });
+  stringArray(targetAgent.reference_design_source_refs).forEach((sourceRef) => {
+    selectorArgs.push('--reference-source', sourceRef);
+  });
+  stringArray(targetAgent.reference_design_pattern_packet_refs).forEach((packetRef) => {
+    selectorArgs.push('--pattern-packet', packetRef);
+  });
+  const readback = runOpl(oplBin, [...selectorArgs, '--json']);
+  const receipt = readback.profile_selection_receipt;
+  if (typeof receipt !== 'object' || receipt === null || Array.isArray(receipt)) {
+    throw new Error('OPL profile selector readback is missing profile_selection_receipt.');
+  }
+  const selectorProfileRefs = stringArray((receipt as JsonObject).selected_profile_refs)
+    .filter((profileRef) => profileRef.startsWith('opl-profile:') && !profileRef.startsWith('opl-profile-route:'));
+  const selectedProfileRefs = [...new Set([
+    ...stringArray(targetAgent.selected_opl_profile_refs)
+      .filter((profileRef) => !profileRef.startsWith('opl-profile-route:')),
+    ...selectorProfileRefs,
+  ])];
+  const matchedSignals = stringArray((receipt as JsonObject).matched_trigger_signals);
+  return {
+    ...targetAgent,
+    ...(selectedProfileRefs.length > 0
+      ? {
+          selected_opl_profile_refs: selectedProfileRefs,
+          profile_selection_rationale: targetAgent.profile_selection_rationale?.trim()
+            || `OPL profile selector matched lower-bound signals: ${matchedSignals.join(', ') || 'explicit profile selection'}.`,
+        }
+      : {
+          selected_opl_profile_refs: undefined,
+          profile_selection_rationale: undefined,
+        }),
+  };
 }
 
 function buildAgentLabSuite({
@@ -900,6 +971,7 @@ export function runBuildAgentBaseline({
   const domainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
   const aiReviewerEvaluation = loadAiReviewerEvaluation(aiReviewerEvaluationPath);
   assertBaselineReviewerMorphologyEvidence(aiReviewerEvaluation);
+  targetAgent = resolveTargetAgentProfileSelection(targetAgent, oplBin);
 
   const targetAgentLabel = targetAgent.domain_label ?? targetAgent.domain_id;
   const targetAgentDir = path.join(outputDir, targetAgent.domain_id);
@@ -909,6 +981,16 @@ export function runBuildAgentBaseline({
   const mechanismPath = path.join(outputDir, 'mechanism-patch-proposal.json');
   const realTargetReceiptPath = path.join(outputDir, 'real-target-delivery-receipt.json');
   const scaleoutLedgerPath = path.join(outputDir, 'real-target-scaleout-evidence-ledger.json');
+
+  try {
+    buildProfileSelectionReceipt(targetAgent);
+  } catch (error) {
+    const blocker = stageDecompositionBlockerFromError(error, targetAgent);
+    const blockerPath = writeStageDecompositionBlocker(outputDir, targetAgent, blocker);
+    throw new Error(
+      `Stage decomposition failed closed; typed blocker written to ${blockerPath}: ${blocker.blocker_message}`,
+    );
+  }
 
   const scaffold = runOpl(oplBin, [
     'agents',
@@ -937,15 +1019,34 @@ export function runBuildAgentBaseline({
   } catch (error) {
     const blocker = stageDecompositionBlockerFromError(error, targetAgent);
     const blockerPath = writeStageDecompositionBlocker(outputDir, targetAgent, blocker);
-    throw new Error(`Stage decomposition failed closed; typed blocker written to ${blockerPath}.`);
+    throw new Error(
+      `Stage decomposition failed closed; typed blocker written to ${blockerPath}: ${blocker.blocker_message}`,
+    );
   }
+  writeAgentBuildReceiptExpectation(targetAgentDir, targetAgent);
+  writeTargetAgentCapabilityMap(targetAgentDir, targetAgent);
+  materializeAgentBuildReceipt(targetAgentDir, targetAgent);
   const descriptorPath = path.join(targetAgentDir, 'contracts', 'domain_descriptor.json');
   const descriptor = JSON.parse(fs.readFileSync(descriptorPath, 'utf8'));
   const profileSelectionReceipt = buildProfileSelectionReceipt(targetAgent);
+  const agentBuildReceiptPath = path.join(targetAgentDir, 'contracts', 'agent_build_receipt.json');
+  const agentBuildReceipt = fs.existsSync(agentBuildReceiptPath)
+    ? JSON.parse(fs.readFileSync(agentBuildReceiptPath, 'utf8')) as JsonObject
+    : null;
+  const agentBuildReceiptRef = agentBuildReceipt?.receipt_ref ?? null;
+  if (
+    profileSelectionReceipt.expected_build_receipt_ref
+    && agentBuildReceiptRef !== profileSelectionReceipt.expected_build_receipt_ref
+  ) {
+    throw new Error('Target descriptor requires the post-materialization AgentBuildReceipt.');
+  }
   writeJson(descriptorPath, {
     ...descriptor,
     delivery_domain: targetAgent.delivery_domain,
     target_brief: targetAgent.target_brief,
+    ...((targetAgent.intent_signals?.length ?? 0) > 0
+      ? { intent_signals: targetAgent.intent_signals }
+      : {}),
     profile_selection_mode: profileSelectionReceipt.profile_selection_mode,
     ...((targetAgent.selected_opl_profile_refs?.length ?? 0) > 0
       ? { selected_opl_profile_refs: targetAgent.selected_opl_profile_refs }
@@ -988,8 +1089,11 @@ export function runBuildAgentBaseline({
     agent_pack_plan_ref: profileSelectionReceipt.agent_pack_plan_ref,
     design_admission_receipt: profileSelectionReceipt.design_admission_receipt,
     design_admission_receipt_ref: profileSelectionReceipt.design_admission_receipt_ref,
-    build_receipt: profileSelectionReceipt.build_receipt,
-    build_receipt_ref: profileSelectionReceipt.build_receipt_ref,
+    expected_build_receipt_ref: profileSelectionReceipt.expected_build_receipt_ref,
+    ...(agentBuildReceipt ? {
+      build_receipt: agentBuildReceipt,
+      build_receipt_ref: agentBuildReceiptRef,
+    } : {}),
     stage_decomposition_subpacket_set: profileSelectionReceipt.stage_decomposition_subpacket_set,
     stage_decomposition_subpacket_set_ref: profileSelectionReceipt.stage_decomposition_subpacket_set_ref,
     stage_decomposition_subpacket_set_refs: profileSelectionReceipt.stage_decomposition_subpacket_set_ref
@@ -1026,6 +1130,7 @@ export function runBuildAgentBaseline({
     '--source-kind', 'local_file',
     '--json',
   ]);
+  const targetProfileConformance = assertTargetProfileConformance(oplBin, targetAgentDir, targetAgent);
 
   const suite = buildAgentLabSuite({
     targetAgent,
@@ -1171,6 +1276,7 @@ export function runBuildAgentBaseline({
       targetAgentPackageManifestValidation.opl_agent_package_manifest,
     opl_agent_lab: agentLabRun.agent_lab_run,
     opl_generated_interfaces: generatedInterfaces.generated_agent_interfaces,
+    opl_profile_conformance: targetProfileConformance,
     stage_decomposition_attempt: stageDecompositionAttempt,
     learning_loop: {
       baseline_receipt: baselineReceipt,

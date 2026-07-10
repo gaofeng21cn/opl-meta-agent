@@ -10,7 +10,7 @@
 - 用户声明的质量门槛、禁止事项、可用工具、外部系统和运行限制。
 - 用户提供的论文、PDF、GitHub repo、产品文档、案例系统或其他参考设计来源。
 - 已有 agent repo/package 的路径或描述文件引用；如果没有，按新建 agent 处理。
-- OPL profile selector/readback：新建 agent 时先消费 `opl profiles select --intent ... --json`；若命中内置 profile，再消费 `opl profiles inspect ... --json` 并选择 profile ref、rationale 和 requirements。若没有内置 profile 命中但用户提供论文/PDF/repo/产品案例等参考设计，消费 `profile_selection_mode=source_derived_design` route receipt；若用户只有模糊想法且没有参考设计，进入 `profile_selection_mode=research_driven_design`，先调研专家实践并形成 research synthesis refs。两条设计依据路线都把 refs 转成设计思路输入，而不是强行套用现有模板。
+- OPL profile selector/readback：新建 agent 时先消费 `opl profiles select --intent ... --json`；非英文或混合语言请求还要把用户意图归一成 catalog 中明确存在的 canonical trigger signals，并用可重复的 `--intent-signal <signal>` 传入，原始 intent 仍是目标语义，signals 只参与 lower-bound profile 匹配。若命中内置 profile，再消费 `opl profiles inspect ... --json` 并选择 profile ref、rationale 和 requirements。若没有内置 profile 命中但用户提供论文/PDF/repo/产品案例等参考设计，消费 `profile_selection_mode=source_derived_design` route receipt；若用户只有模糊想法且没有参考设计，进入 `profile_selection_mode=research_driven_design`，先调研专家实践并形成 research synthesis refs。两条设计依据路线都把 refs 转成设计思路输入，而不是强行套用现有模板。
 - `opl-meta-agent.agent-building-memory` 中稳定的 agent-building 经验引用。
 
 ## 步骤
@@ -21,7 +21,7 @@
 4. 主动寻找反例：哪些要求会把 OPL 写成领域裁判、把 smoke 当交付、把 suite pass 当 promotion，或限制 AI executor 的专家判断空间。
 5. 把用户约束写成正向 acceptance criteria：交付物必须包含什么、运行必须证明什么、receipt 必须声明什么。
 6. 把禁止事项写成 explicit non-goals：不得写目标 domain truth、不得改 memory body、不得无 gate promote default agent、不得训练或部署模型权重。
-7. 对新建 agent，先记录 OPL profile selector 结果：命中内置 profile 时输出 `selected_opl_profile_refs`、`profile_selection_rationale` 和 profile requirement refs；无内置匹配但有参考设计时输出 `profile_selection_mode=source_derived_design`、`source_derived_design_receipt_ref`、`reference_design_pattern_packet_refs`、transferable pattern requirements 和 capability plan requirements；无内置匹配且只有模糊想法时输出 `profile_selection_mode=research_driven_design`、`research_driven_design_receipt_ref`、`research_source_refs`、`expert_practice_notes`、`research_synthesis_refs`、transferable pattern requirements 和 capability plan requirements。上述字段必须来自 OPL selector / inspect readback、source-derived pattern packet 或外部调研综合，不从 OMA 记忆推断。
+7. 对新建 agent，先记录 OPL profile selector 结果；非英文或混合语言 intent 同时记录实际传入的 canonical `intent_signals`。命中内置 profile 时输出 `selected_opl_profile_refs`、`profile_selection_rationale` 和 profile requirement refs；无内置匹配但有参考设计时输出 `profile_selection_mode=source_derived_design`、`source_derived_design_receipt_ref`、`reference_design_pattern_packet_refs`、transferable pattern requirements 和 capability plan requirements；无内置匹配且只有模糊想法时输出 `profile_selection_mode=research_driven_design`、`research_driven_design_receipt_ref`、`research_source_refs`、`expert_practice_notes`、`research_synthesis_refs`、transferable pattern requirements 和 capability plan requirements。上述字段必须来自 OPL selector / inspect readback、source-derived pattern packet 或外部调研综合，不从 OMA 记忆推断。
 8. 若存在参考设计，输出 `reference_design_source_refs`、短 `reference_design_pattern_notes`，或由 OPL source ingest / Codex extraction 形成的 `reference_design_pattern_packet_refs`；只记录可迁移架构、workflow、grounding、evaluation、handoff、failure taxonomy refs，不把外部系统 runtime 或领域结论写成目标 truth。若是模糊想法，输出 `research_source_refs`、`expert_practice_notes` 和 `research_synthesis_refs`，只记录专家实践设计模式，不把 public research 当目标 truth。
 9. 标注待澄清项；只有会改变 authority boundary 或交付物定义的问题才阻塞下一阶段。
 10. 输出 intake refs 的正文摘要和稳定 locator，供 stage-decomposition 消费。

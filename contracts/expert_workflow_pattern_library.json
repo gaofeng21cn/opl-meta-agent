@@ -15,7 +15,10 @@
       "ReferenceDesignPacket or ResearchSynthesisPacket",
       "TransferMap",
       "AgentPackPlan",
-      "BuildReceipt"
+      "DesignAdmissionReceipt"
+    ],
+    "oma_must_materialize_after_target_pack": [
+      "AgentBuildReceipt"
     ],
     "each_design_derived_stage_requires": [
       "source_pattern_ref",
@@ -36,6 +39,89 @@
     "B": "Mature engineering or professional operating playbook. Use for workflow discipline and handoff patterns.",
     "C": "OPL internal verified case or receipt. Use for OPL compatibility and stage-pack realization patterns."
   },
+  "source_catalog": {
+    "doi:10.1038/s41591-026-04494-4": {
+      "locator": "https://doi.org/10.1038/s41591-026-04494-4",
+      "version_or_year": "2026",
+      "role": "workflow_source"
+    },
+    "doi:10.1136/bmj.i2016": {
+      "locator": "https://doi.org/10.1136/bmj.i2016",
+      "version_or_year": "2016",
+      "role": "workflow_source"
+    },
+    "source-ref:agree-ii-2017": {
+      "locator": "https://www.agreetrust.org/resource-centre/agree-ii/",
+      "version_or_year": "2017",
+      "role": "evaluation_framework"
+    },
+    "source-ref:cochrane-handbook-v6.5-2024": {
+      "locator": "https://training.cochrane.org/handbook/current",
+      "version_or_year": "v6.5 (2024)",
+      "role": "workflow_source"
+    },
+    "doi:10.1136/bmj.n71": {
+      "locator": "https://doi.org/10.1136/bmj.n71",
+      "version_or_year": "2021",
+      "role": "quality_gate_source"
+    },
+    "doi:10.1136/bmj-2023-078378": {
+      "locator": "https://doi.org/10.1136/bmj-2023-078378",
+      "version_or_year": "2024",
+      "role": "quality_gate_source"
+    },
+    "doi:10.1136/bmj-2024-082505": {
+      "locator": "https://doi.org/10.1136/bmj-2024-082505",
+      "version_or_year": "2025",
+      "role": "evaluation_framework"
+    },
+    "doi:10.1038/s41591-022-01772-9": {
+      "locator": "https://doi.org/10.1038/s41591-022-01772-9",
+      "version_or_year": "2022",
+      "role": "evaluation_framework"
+    },
+    "doi:10.1038/s41591-020-1034-x": {
+      "locator": "https://doi.org/10.1038/s41591-020-1034-x",
+      "version_or_year": "2020",
+      "role": "quality_gate_source"
+    },
+    "doi:10.1038/s41591-020-1037-7": {
+      "locator": "https://doi.org/10.1038/s41591-020-1037-7",
+      "version_or_year": "2020",
+      "role": "quality_gate_source"
+    },
+    "url:https://www.icmje.org/recommendations/": {
+      "locator": "https://www.icmje.org/recommendations/",
+      "version_or_year": "updated 2026-01",
+      "role": "quality_gate_source"
+    },
+    "url:https://www.equator-network.org/": {
+      "locator": "https://www.equator-network.org/",
+      "version_or_year": "current reporting-guideline registry",
+      "role": "quality_gate_source"
+    },
+    "url:https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework": {
+      "locator": "https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework",
+      "version_or_year": "effective 2025",
+      "role": "evaluation_framework",
+      "freshness": "needs_manual_review"
+    },
+    "url:https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review#ch3D": {
+      "locator": "https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review#ch3D",
+      "version_or_year": "PAPPG 24-1, effective 2024-05-20",
+      "role": "evaluation_framework"
+    },
+    "url:https://sre.google/workbook/postmortem-culture/": {
+      "locator": "https://sre.google/workbook/postmortem-culture/",
+      "version_or_year": "2018",
+      "role": "workflow_source"
+    },
+    "doi:10.6028/NIST.SP.800-61r3": {
+      "locator": "https://doi.org/10.6028/NIST.SP.800-61r3",
+      "version_or_year": "Revision 3",
+      "role": "quality_gate_source"
+    }
+  },
   "seed_patterns": [
     {
       "pattern_id": "case_grounded_expert_decision_workflow.v1",
@@ -48,44 +134,66 @@
       "primary_use": "Complex case or material grounded expert decision support where the target owner keeps final authority.",
       "authority_tier": "A",
       "source_refs": [
-        "doi:10.1038/s41591-026-04494-4",
-        "source-ref:nature-medicine-2026-case-grounded-ai-agent"
+        "doi:10.1038/s41591-026-04494-4"
+      ],
+      "applicable_constraints": [
+        "case_or_material_grounded_expert_decision",
+        "human_owner_retains_final_authority"
+      ],
+      "non_transferable_constraints": [
+        "source_runtime_topology",
+        "private_case_data",
+        "clinical_or_professional_verdict"
       ],
       "transferable_workflow_steps": [
         {
           "step_id": "case_material_intake",
           "expert_question": "What materials define the case, and what is the decision the owner is actually asking for?",
-          "stage_archetype": "material_or_case_intake"
+          "stage_archetype": "material_or_case_intake",
+          "provenance_kind": "source_derived",
+          "source_anchor_refs": ["doi:10.1038/s41591-026-04494-4#workflow/case_material_intake"]
         },
         {
           "step_id": "structured_case_extraction",
           "expert_question": "Which variables, constraints, chronology, and missing data points matter for this decision?",
-          "stage_archetype": "structured_extraction"
+          "stage_archetype": "structured_extraction",
+          "provenance_kind": "source_derived",
+          "source_anchor_refs": ["doi:10.1038/s41591-026-04494-4#workflow/structured_case_extraction"]
         },
         {
           "step_id": "decision_problem_framing",
           "expert_question": "What decision options, risks, and human gate points are in scope?",
-          "stage_archetype": "mode_routing"
+          "stage_archetype": "mode_routing",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": ["doi:10.1038/s41591-026-04494-4#criteria/decision_problem_framing"]
         },
         {
           "step_id": "evidence_contextualization",
           "expert_question": "Which references apply to this case, and where do they not apply?",
-          "stage_archetype": "evidence_and_tool_execution"
+          "stage_archetype": "evidence_and_tool_execution",
+          "provenance_kind": "source_derived",
+          "source_anchor_refs": ["doi:10.1038/s41591-026-04494-4#workflow/evidence_contextualization"]
         },
         {
           "step_id": "case_grounded_synthesis",
           "expert_question": "How do the case facts and applicable evidence change the reasoning?",
-          "stage_archetype": "synthesis"
+          "stage_archetype": "synthesis",
+          "provenance_kind": "source_derived",
+          "source_anchor_refs": ["doi:10.1038/s41591-026-04494-4#workflow/case_grounded_synthesis"]
         },
         {
           "step_id": "uncertainty_and_blocker_review",
           "expert_question": "Which conclusions are unsupported, unsafe, or require more owner input?",
-          "stage_archetype": "unsupported_evidence_blocker"
+          "stage_archetype": "unsupported_evidence_blocker",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": ["doi:10.1038/s41591-026-04494-4#criteria/uncertainty_and_blocker_review"]
         },
         {
           "step_id": "independent_review_or_human_gate",
           "expert_question": "Would an independent reviewer or domain owner accept the reasoning trace?",
-          "stage_archetype": "independent_review_or_human_gate"
+          "stage_archetype": "independent_review_or_human_gate",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": ["doi:10.1038/s41591-026-04494-4#criteria/independent_review_or_human_gate"]
         }
       ],
       "suggested_oma_inputs": {
@@ -111,34 +219,56 @@
       "primary_use": "Translate guideline or policy evidence into an owner-gated recommendation artifact.",
       "authority_tier": "S",
       "source_refs": [
-        "source-ref:grade-evidence-to-decision-framework",
-        "source-ref:agree-ii-guideline-appraisal"
+        "doi:10.1136/bmj.i2016",
+        "source-ref:agree-ii-2017"
+      ],
+      "applicable_constraints": [
+        "guideline_or_policy_evidence_to_owner_decision",
+        "decision_context_and_scope_are_explicit"
+      ],
+      "non_transferable_constraints": [
+        "guideline_recommendation_as_target_owner_verdict",
+        "stale_guideline_version",
+        "source_context_without_target_applicability_review"
       ],
       "transferable_workflow_steps": [
         {
           "step_id": "decision_context_intake",
           "expert_question": "What decision, population, setting, stakeholder, and constraints are being considered?",
-          "stage_archetype": "decision_context_intake"
+          "stage_archetype": "decision_context_intake",
+          "provenance_kind": "source_derived",
+          "source_anchor_refs": ["doi:10.1136/bmj.i2016#workflow/decision_context_intake"]
         },
         {
           "step_id": "guideline_scope_fit",
           "expert_question": "Does this guideline actually apply to the target context?",
-          "stage_archetype": "reference_scope_appraisal"
+          "stage_archetype": "reference_scope_appraisal",
+          "provenance_kind": "source_derived",
+          "source_anchor_refs": ["doi:10.1136/bmj.i2016#workflow/guideline_scope_fit"]
         },
         {
           "step_id": "evidence_to_decision_factor_review",
           "expert_question": "What is known about benefits, harms, certainty, resources, values, feasibility, and equity?",
-          "stage_archetype": "evidence_factor_review"
+          "stage_archetype": "evidence_factor_review",
+          "provenance_kind": "source_derived",
+          "source_anchor_refs": ["doi:10.1136/bmj.i2016#workflow/evidence_to_decision_factor_review"]
         },
         {
           "step_id": "recommendation_shape_design",
           "expert_question": "What recommendation strength, caveats, and owner choices follow from the factors?",
-          "stage_archetype": "recommendation_synthesis"
+          "stage_archetype": "recommendation_synthesis",
+          "provenance_kind": "source_derived",
+          "source_anchor_refs": ["doi:10.1136/bmj.i2016#workflow/recommendation_shape_design"]
         },
         {
           "step_id": "applicability_and_update_check",
           "expert_question": "What version, freshness, local protocol, or exception should block or qualify the output?",
-          "stage_archetype": "freshness_and_scope_gate"
+          "stage_archetype": "freshness_and_scope_gate",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": [
+            "doi:10.1136/bmj.i2016#criteria/applicability_and_update_check",
+            "source-ref:agree-ii-2017#evaluation/applicability"
+          ]
         }
       ],
       "suggested_oma_inputs": {
@@ -162,39 +292,66 @@
       "primary_use": "Evidence review, systematic review, scoping review, or literature evidence package.",
       "authority_tier": "S",
       "source_refs": [
-        "source-ref:prisma-2020",
-        "source-ref:cochrane-handbook"
+        "source-ref:cochrane-handbook-v6.5-2024",
+        "doi:10.1136/bmj.n71"
+      ],
+      "applicable_constraints": [
+        "systematic_evidence_question_with_reproducible_search_and_selection",
+        "bias_and_certainty_must_be_explicit"
+      ],
+      "non_transferable_constraints": [
+        "reporting_checklist_as_workflow_sequence",
+        "unstated_screening_or_exclusion_logic",
+        "certainty_claim_without_evidence_assessment"
       ],
       "transferable_workflow_steps": [
         {
           "step_id": "review_question_feasibility",
           "expert_question": "Is the review question answerable, useful, and scoped tightly enough?",
-          "stage_archetype": "question_feasibility"
+          "stage_archetype": "question_feasibility",
+          "provenance_kind": "source_derived",
+          "source_anchor_refs": ["source-ref:cochrane-handbook-v6.5-2024#workflow/review_question_feasibility"]
         },
         {
           "step_id": "protocol_and_search_strategy",
           "expert_question": "What sources, terms, dates, languages, and inclusion logic define the search?",
-          "stage_archetype": "search_protocol_design"
+          "stage_archetype": "search_protocol_design",
+          "provenance_kind": "source_derived",
+          "source_anchor_refs": [
+            "source-ref:cochrane-handbook-v6.5-2024#workflow/protocol_and_search_strategy",
+            "doi:10.1136/bmj.n71#quality/protocol_and_search_reporting"
+          ]
         },
         {
           "step_id": "screening_decision_process",
           "expert_question": "Which records should be included, excluded, or escalated for adjudication?",
-          "stage_archetype": "screening_and_adjudication"
+          "stage_archetype": "screening_and_adjudication",
+          "provenance_kind": "source_derived",
+          "source_anchor_refs": ["source-ref:cochrane-handbook-v6.5-2024#workflow/screening_decision_process"]
         },
         {
           "step_id": "data_extraction_and_normalization",
           "expert_question": "What facts must be extracted consistently enough to support synthesis?",
-          "stage_archetype": "structured_extraction"
+          "stage_archetype": "structured_extraction",
+          "provenance_kind": "source_derived",
+          "source_anchor_refs": ["source-ref:cochrane-handbook-v6.5-2024#workflow/data_extraction_and_normalization"]
         },
         {
           "step_id": "bias_and_certainty_assessment",
           "expert_question": "How reliable is the evidence, and what downgrades or limitations matter?",
-          "stage_archetype": "risk_of_bias_and_certainty"
+          "stage_archetype": "risk_of_bias_and_certainty",
+          "provenance_kind": "source_derived",
+          "source_anchor_refs": ["source-ref:cochrane-handbook-v6.5-2024#workflow/bias_and_certainty_assessment"]
         },
         {
           "step_id": "synthesis_and_gap_statement",
           "expert_question": "What can be concluded, what conflicts remain, and what cannot be claimed?",
-          "stage_archetype": "evidence_synthesis"
+          "stage_archetype": "evidence_synthesis",
+          "provenance_kind": "source_derived",
+          "source_anchor_refs": [
+            "source-ref:cochrane-handbook-v6.5-2024#workflow/synthesis_and_gap_statement",
+            "doi:10.1136/bmj.n71#quality/synthesis_reporting"
+          ]
         }
       ],
       "suggested_oma_inputs": {
@@ -218,34 +375,65 @@
       "primary_use": "Apply, interpret, or critique a risk score or prediction model for a target case or cohort.",
       "authority_tier": "S",
       "source_refs": [
-        "source-ref:tripod-ai",
-        "source-ref:prediction-model-applicability-review"
+        "doi:10.1136/bmj-2023-078378",
+        "doi:10.1136/bmj-2024-082505"
+      ],
+      "applicable_constraints": [
+        "prediction_model_use_case_and_target_population_are_explicit",
+        "criteria_informed_applicability_review"
+      ],
+      "non_transferable_constraints": [
+        "reporting_or_bias_framework_as_direct_workflow_sequence",
+        "model_performance_claim_without_target_validation",
+        "risk_threshold_as_owner_verdict"
       ],
       "transferable_workflow_steps": [
         {
           "step_id": "use_case_and_population_match",
           "expert_question": "Does the model's intended use match this target population and decision?",
-          "stage_archetype": "intended_use_match"
+          "stage_archetype": "intended_use_match",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": [
+            "doi:10.1136/bmj-2023-078378#quality/intended_use",
+            "doi:10.1136/bmj-2024-082505#evaluation/participants_and_setting"
+          ]
         },
         {
           "step_id": "input_variable_availability",
           "expert_question": "Are required predictors present, measured consistently, and safe to use?",
-          "stage_archetype": "input_variable_check"
+          "stage_archetype": "input_variable_check",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": [
+            "doi:10.1136/bmj-2023-078378#quality/predictors",
+            "doi:10.1136/bmj-2024-082505#evaluation/predictors"
+          ]
         },
         {
           "step_id": "model_origin_and_performance_review",
           "expert_question": "What development, validation, calibration, and discrimination evidence exists?",
-          "stage_archetype": "model_evidence_review"
+          "stage_archetype": "model_evidence_review",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": [
+            "doi:10.1136/bmj-2023-078378#quality/performance",
+            "doi:10.1136/bmj-2024-082505#evaluation/analysis"
+          ]
         },
         {
           "step_id": "risk_interpretation_and_thresholding",
           "expert_question": "What does the risk estimate mean for the target decision threshold?",
-          "stage_archetype": "risk_interpretation"
+          "stage_archetype": "risk_interpretation",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": [
+            "doi:10.1136/bmj-2023-078378#quality/risk_interpretation",
+            "doi:10.1136/bmj-2024-082505#evaluation/applicability"
+          ]
         },
         {
           "step_id": "applicability_blocker_or_handoff",
           "expert_question": "What missing data, drift, or mismatch should block the result or require owner review?",
-          "stage_archetype": "applicability_gate"
+          "stage_archetype": "applicability_gate",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": ["doi:10.1136/bmj-2024-082505#evaluation/overall_applicability"]
         }
       ],
       "suggested_oma_inputs": {
@@ -269,35 +457,66 @@
       "primary_use": "Evaluate a clinical AI workflow, early deployment, or trial-readiness package.",
       "authority_tier": "S",
       "source_refs": [
-        "source-ref:decide-ai",
-        "source-ref:consort-ai",
-        "source-ref:spirit-ai"
+        "doi:10.1038/s41591-022-01772-9",
+        "doi:10.1038/s41591-020-1034-x",
+        "doi:10.1038/s41591-020-1037-7"
+      ],
+      "applicable_constraints": [
+        "clinical_ai_evaluation_context_and_human_workflow_are_explicit",
+        "criteria_informed_safety_and_trial_review"
+      ],
+      "non_transferable_constraints": [
+        "evaluation_or_reporting_framework_as_direct_workflow_sequence",
+        "deployment_readiness_claim",
+        "clinical_quality_verdict"
       ],
       "transferable_workflow_steps": [
         {
           "step_id": "intended_use_and_workflow_context",
           "expert_question": "What human workflow is this AI expected to affect?",
-          "stage_archetype": "workflow_context_intake"
+          "stage_archetype": "workflow_context_intake",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": ["doi:10.1038/s41591-022-01772-9#evaluation/intended_use_and_context"]
         },
         {
           "step_id": "human_ai_interaction_mapping",
           "expert_question": "Who sees what, when, and with what ability to override or contest it?",
-          "stage_archetype": "human_ai_interaction_mapping"
+          "stage_archetype": "human_ai_interaction_mapping",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": [
+            "doi:10.1038/s41591-022-01772-9#evaluation/human_ai_interaction",
+            "doi:10.1038/s41591-020-1034-x#quality/human_ai_interaction"
+          ]
         },
         {
           "step_id": "safety_and_failure_mode_review",
           "expert_question": "What failures are plausible and what controls detect or contain them?",
-          "stage_archetype": "safety_failure_review"
+          "stage_archetype": "safety_failure_review",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": [
+            "doi:10.1038/s41591-022-01772-9#evaluation/safety_and_failure_modes",
+            "doi:10.1038/s41591-020-1037-7#quality/safety_protocol"
+          ]
         },
         {
           "step_id": "evaluation_endpoint_design",
           "expert_question": "Which endpoints prove usefulness, safety, usability, and workflow fit?",
-          "stage_archetype": "evaluation_design"
+          "stage_archetype": "evaluation_design",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": [
+            "doi:10.1038/s41591-022-01772-9#evaluation/endpoints",
+            "doi:10.1038/s41591-020-1034-x#quality/trial_endpoints"
+          ]
         },
         {
           "step_id": "deployment_or_trial_gate",
           "expert_question": "What evidence is missing before the owner can trial, deploy, or reject it?",
-          "stage_archetype": "owner_gate"
+          "stage_archetype": "owner_gate",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": [
+            "doi:10.1038/s41591-022-01772-9#evaluation/deployment_or_trial_gate",
+            "doi:10.1038/s41591-020-1037-7#quality/trial_readiness"
+          ]
         }
       ],
       "suggested_oma_inputs": {
@@ -321,39 +540,66 @@
       "primary_use": "High-value academic manuscript, reviewer response, or submission package.",
       "authority_tier": "S",
       "source_refs": [
-        "source-ref:icmje-recommendations",
-        "source-ref:equator-reporting-guidelines"
+        "url:https://www.icmje.org/recommendations/",
+        "url:https://www.equator-network.org/"
+      ],
+      "applicable_constraints": [
+        "academic_manuscript_or_submission_package",
+        "criteria_informed_publication_workflow"
+      ],
+      "non_transferable_constraints": [
+        "quality_or_reporting_guideline_as_direct_workflow_sequence",
+        "submission_readiness_without_owner_gate",
+        "claim_support_without_source_trace"
       ],
       "transferable_workflow_steps": [
         {
           "step_id": "claim_and_evidence_inventory",
           "expert_question": "What claims can the data actually support, and what must be removed?",
-          "stage_archetype": "claim_evidence_mapping"
+          "stage_archetype": "claim_evidence_mapping",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": [
+            "url:https://www.icmje.org/recommendations/#quality/manuscript_claim_integrity",
+            "url:https://www.equator-network.org/#quality/reporting_requirements"
+          ]
         },
         {
           "step_id": "target_journal_and_audience_fit",
           "expert_question": "Who is the reader, what does the journal value, and what framing is credible?",
-          "stage_archetype": "audience_and_venue_fit"
+          "stage_archetype": "audience_and_venue_fit",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": ["url:https://www.icmje.org/recommendations/#quality/journal_and_audience_fit"]
         },
         {
           "step_id": "scientific_storyline_design",
           "expert_question": "What is the simplest defensible story that connects question, evidence, and contribution?",
-          "stage_archetype": "storyline_architecture"
+          "stage_archetype": "storyline_architecture",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": ["url:https://www.equator-network.org/#criteria/reporting_structure"]
         },
         {
           "step_id": "figure_table_and_result_logic",
           "expert_question": "Which displays make the evidence inspectable and reviewer-proof?",
-          "stage_archetype": "display_and_result_logic"
+          "stage_archetype": "display_and_result_logic",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": ["url:https://www.equator-network.org/#criteria/result_and_display_reporting"]
         },
         {
           "step_id": "reviewer_risk_simulation",
           "expert_question": "Where will reviewers attack methods, novelty, claims, or reporting completeness?",
-          "stage_archetype": "reviewer_simulation"
+          "stage_archetype": "reviewer_simulation",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": [
+            "url:https://www.icmje.org/recommendations/#criteria/editorial_review",
+            "url:https://www.equator-network.org/#criteria/reporting_completeness"
+          ]
         },
         {
           "step_id": "submission_or_response_package_gate",
           "expert_question": "Is the package complete, consistent, and owner-approved for submission or response?",
-          "stage_archetype": "owner_submission_gate"
+          "stage_archetype": "owner_submission_gate",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": ["url:https://www.icmje.org/recommendations/#quality/submission_responsibility"]
         }
       ],
       "suggested_oma_inputs": {
@@ -377,44 +623,82 @@
       "primary_use": "Grant planning, proposal strategy, aims design, and reviewer-risk revision.",
       "authority_tier": "S",
       "source_refs": [
-        "source-ref:nih-peer-review-framework",
-        "source-ref:nsf-merit-review-criteria"
+        "url:https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework",
+        "url:https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review#ch3D"
+      ],
+      "applicable_constraints": [
+        "grant_strategy_and_proposal_review_context",
+        "criteria_informed_workflow_with_funder_specific_freshness_review"
+      ],
+      "non_transferable_constraints": [
+        "evaluation_framework_as_direct_workflow_sequence",
+        "funding_likelihood_guarantee",
+        "submission_readiness_without_owner_gate"
       ],
       "transferable_workflow_steps": [
         {
           "step_id": "owner_goal_and_asset_intake",
           "expert_question": "What does the PI want, what assets exist, and what constraints cannot move?",
-          "stage_archetype": "goal_and_asset_intake"
+          "stage_archetype": "goal_and_asset_intake",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": [
+            "url:https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework#evaluation/importance_and_rigor",
+            "url:https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review#ch3D#evaluation/intellectual_merit"
+          ]
         },
         {
           "step_id": "opportunity_fit_and_hidden_constraints",
           "expert_question": "Does the funder/program fit, and what hard or implicit constraints matter?",
-          "stage_archetype": "opportunity_fit"
+          "stage_archetype": "opportunity_fit",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": [
+            "url:https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework#evaluation/mission_relevance",
+            "url:https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review#ch3D#evaluation/merit_review"
+          ]
         },
         {
           "step_id": "strategic_positioning",
           "expert_question": "Why this question, why now, why this team, and why should reviewers care?",
-          "stage_archetype": "strategic_positioning"
+          "stage_archetype": "strategic_positioning",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": [
+            "url:https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework#evaluation/importance_of_research",
+            "url:https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review#ch3D#evaluation/broader_impacts"
+          ]
         },
         {
           "step_id": "central_storyline_and_hypothesis",
           "expert_question": "What central story makes the project coherent before any section is drafted?",
-          "stage_archetype": "scientific_storyline"
+          "stage_archetype": "scientific_storyline",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": ["url:https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework#evaluation/rigor_and_feasibility"]
         },
         {
           "step_id": "aim_architecture_and_risk_distribution",
           "expert_question": "Do the aims create a feasible, non-fragile plan rather than a table of contents?",
-          "stage_archetype": "aim_architecture"
+          "stage_archetype": "aim_architecture",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": [
+            "url:https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework#evaluation/approach",
+            "url:https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review#ch3D#evaluation/plan_quality"
+          ]
         },
         {
           "step_id": "feasibility_evidence_buildout",
           "expert_question": "What preliminary data, methods, team assets, and alternatives make reviewers believe it?",
-          "stage_archetype": "feasibility_buildout"
+          "stage_archetype": "feasibility_buildout",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": ["url:https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework#evaluation/investigator_and_environment"]
         },
         {
           "step_id": "reviewer_simulation_and_revision",
           "expert_question": "What would a study section attack first, and how should the proposal be revised?",
-          "stage_archetype": "reviewer_simulation"
+          "stage_archetype": "reviewer_simulation",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": [
+            "url:https://grants.nih.gov/policy-and-compliance/policy-topics/peer-review/simplifying-review/framework#evaluation/reviewer_factors",
+            "url:https://www.nsf.gov/policies/pappg/24-1/ch-3-proposal-processing-review#ch3D#evaluation/reviewer_considerations"
+          ]
         }
       ],
       "suggested_oma_inputs": {
@@ -438,39 +722,72 @@
       "primary_use": "Operational incident review, root cause analysis, corrective action, and owner follow-up.",
       "authority_tier": "B",
       "source_refs": [
-        "source-ref:nist-sp-800-61-rev3",
-        "source-ref:google-sre-postmortem-culture"
+        "url:https://sre.google/workbook/postmortem-culture/",
+        "doi:10.6028/NIST.SP.800-61r3"
+      ],
+      "applicable_constraints": [
+        "operational_incident_postmortem_and_corrective_action",
+        "facts_inference_and_owner_followup_are_separated"
+      ],
+      "non_transferable_constraints": [
+        "quality_gate_source_as_complete_postmortem_workflow",
+        "root_cause_final_without_cross_surface_evidence",
+        "incident_closeout_without_owner_readback"
       ],
       "transferable_workflow_steps": [
         {
           "step_id": "fact_freeze_and_scope",
           "expert_question": "What happened, what is confirmed, and what is still unknown?",
-          "stage_archetype": "fact_freeze"
+          "stage_archetype": "fact_freeze",
+          "provenance_kind": "source_derived",
+          "source_anchor_refs": [
+            "url:https://sre.google/workbook/postmortem-culture/#workflow/fact_freeze_and_scope",
+            "doi:10.6028/NIST.SP.800-61r3#quality/incident_scope"
+          ]
         },
         {
           "step_id": "timeline_and_impact_reconstruction",
           "expert_question": "When did detection, response, mitigation, and recovery happen, and who was affected?",
-          "stage_archetype": "timeline_reconstruction"
+          "stage_archetype": "timeline_reconstruction",
+          "provenance_kind": "source_derived",
+          "source_anchor_refs": [
+            "url:https://sre.google/workbook/postmortem-culture/#workflow/timeline_and_impact_reconstruction",
+            "doi:10.6028/NIST.SP.800-61r3#quality/incident_timeline"
+          ]
         },
         {
           "step_id": "mechanism_chain_analysis",
           "expert_question": "What technical, process, and decision mechanisms connected trigger to impact?",
-          "stage_archetype": "mechanism_chain"
+          "stage_archetype": "mechanism_chain",
+          "provenance_kind": "source_derived",
+          "source_anchor_refs": ["url:https://sre.google/workbook/postmortem-culture/#workflow/mechanism_chain_analysis"]
         },
         {
           "step_id": "contributing_factor_classification",
           "expert_question": "Which factors were necessary, amplifying, or merely coincidental?",
-          "stage_archetype": "contributing_factor_analysis"
+          "stage_archetype": "contributing_factor_analysis",
+          "provenance_kind": "internal_synthesis",
+          "source_anchor_refs": [
+            "url:https://sre.google/workbook/postmortem-culture/#criteria/contributing_factor_classification",
+            "doi:10.6028/NIST.SP.800-61r3#quality/lessons_learned"
+          ]
         },
         {
           "step_id": "corrective_action_design",
           "expert_question": "Which actions prevent recurrence, reduce blast radius, or improve detection?",
-          "stage_archetype": "corrective_action_design"
+          "stage_archetype": "corrective_action_design",
+          "provenance_kind": "source_derived",
+          "source_anchor_refs": [
+            "url:https://sre.google/workbook/postmortem-culture/#workflow/corrective_action_design",
+            "doi:10.6028/NIST.SP.800-61r3#quality/improvement_actions"
+          ]
         },
         {
           "step_id": "owner_followup_and_closeout_gate",
           "expert_question": "Who owns each action, how will it be verified, and when is the incident truly closed?",
-          "stage_archetype": "owner_followup_gate"
+          "stage_archetype": "owner_followup_gate",
+          "provenance_kind": "source_derived",
+          "source_anchor_refs": ["url:https://sre.google/workbook/postmortem-culture/#workflow/owner_followup_and_closeout_gate"]
         }
       ],
       "suggested_oma_inputs": {
