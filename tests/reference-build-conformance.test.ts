@@ -28,6 +28,24 @@ const targetAgent = {
 function writeConformantProfileFixture(targetDir: string): void {
   const profileSelectionReceipt = buildProfileSelectionReceipt(targetAgent);
   const profileRequirements = profileSelectionReceipt.profile_requirements;
+  const domainId = targetAgent.domain_id;
+  const stageRefs = [
+    'agent/stages/evidence-review.md',
+    'agent/prompts/evidence-review.md',
+    'agent/knowledge/evidence.md',
+    'agent/quality_gates/evidence.md',
+    'agent/tools/evidence.md',
+  ];
+  for (const ref of stageRefs) {
+    const file = path.join(targetDir, ref);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, `materialized:${ref}\n`);
+  }
+  fs.mkdirSync(path.join(targetDir, 'runtime', 'authority_functions'), { recursive: true });
+  fs.writeFileSync(
+    path.join(targetDir, 'runtime', 'authority_functions', 'README.md'),
+    '# Authority functions\n',
+  );
   writeJson(path.join(targetDir, 'contracts', 'capability_map.json'), {
     selected_profile_refs: [profileRef],
     profile_requirements: profileRequirements,
@@ -40,13 +58,83 @@ function writeConformantProfileFixture(targetDir: string): void {
       { capability_kind: 'contract_module', surface_role: 'eval_suite' },
     ],
   });
-  writeJson(path.join(targetDir, 'contracts', 'stage_control_plane.json'), {
-    selected_profile_refs: [profileRef],
-    profile_requirements: profileRequirements,
+  writeJson(path.join(targetDir, 'contracts', 'owner_receipt_contract.json'), {
+    surface_kind: 'owner_receipt_contract',
+  });
+  writeJson(path.join(targetDir, 'contracts', 'domain_descriptor.json'), {
+    surface_kind: 'domain_agent_descriptor',
+    domain_id: domainId,
+    domain_label: 'Reference Build Conformance Agent',
+    authority_boundary: {
+      opl_can_write_domain_truth: false,
+      opl_can_write_memory_body: false,
+      opl_can_authorize_quality_or_export: false,
+    },
+  });
+  writeJson(path.join(targetDir, 'contracts', 'action_catalog.json'), {
+    surface_kind: 'family_action_catalog',
+    version: 'family-action-catalog.v1',
+    catalog_id: `${domainId}.profile-actions`,
+    target_domain_id: domainId,
+    owner: domainId,
+    authority_boundary: { opl_role: 'projection_consumer_only' },
+    actions: [{
+      action_id: 'evaluate-evidence',
+      title: 'Evaluate evidence',
+      summary: 'Evaluate evidence under the target owner gate.',
+      owner: domainId,
+      effect: 'mutating',
+      source_command: { command: `${domainId} evaluate-evidence`, surface_kind: 'domain_cli' },
+      input_schema_ref: 'contracts/evaluate-evidence.input.schema.json',
+      output_schema_ref: 'contracts/evaluate-evidence.output.schema.json',
+      workspace_locator_fields: ['workspace_root'],
+      human_gate_ids: [],
+      supported_surfaces: {
+        cli: { command: `${domainId} evaluate-evidence`, surface_kind: 'domain_cli' },
+        mcp: { tool_name: 'evaluate_evidence', surface_kind: 'domain_mcp' },
+        skill: { command_contract_id: 'evaluate-evidence', surface_kind: 'domain_skill' },
+        product_entry: {
+          action_key: 'evaluate-evidence',
+          command: `${domainId} evaluate-evidence`,
+          surface_kind: 'domain_product_entry',
+        },
+        openai: { tool_name: 'evaluate_evidence' },
+        ai_sdk: { tool_name: 'evaluate_evidence' },
+      },
+    }],
+    notes: [],
+  });
+  writeJson(path.join(targetDir, 'contracts', 'pack_compiler_input.json'), {
+    surface_kind: 'opl_domain_pack_compiler_input',
+    domain_id: domainId,
+    canonical_agent_id: domainId,
+    required_domain_pack_paths: ['agent/stages/manifest.json', ...stageRefs],
+  });
+  writeJson(path.join(targetDir, 'agent', 'stages', 'manifest.json'), {
+    surface_kind: 'opl_standard_agent_declarative_stage_manifest',
+    version: 'opl-standard-agent-declarative-stage-manifest.v1',
+    target_domain_id: domainId,
+    owner: domainId,
+    authority_boundary: {
+      domain_truth_owner: domainId,
+      opl_can_write_domain_truth: false,
+      opl_can_authorize_quality_or_export: false,
+    },
     stages: [{
+      stage_id: 'evidence-review',
+      stage_kind: 'creation',
+      title: 'Evidence Review',
+      summary: 'Review target evidence with an explicit owner gate.',
+      goal: 'Produce an evidence-grounded owner-gated review packet.',
+      policy_ref: 'agent/stages/evidence-review.md',
+      prompt_ref: 'agent/prompts/evidence-review.md',
       knowledge_refs: ['agent/knowledge/evidence.md'],
-      tool_refs: ['agent/tools/evidence.md'],
-      evaluation: ['agent/quality_gates/evidence.md'],
+      quality_gate_refs: ['agent/quality_gates/evidence.md'],
+      allowed_action_refs: ['evaluate-evidence'],
+      requires: ['structured-evidence-ref'],
+      ensures: ['owner-receipt-or-typed-blocker-ref'],
+      next_stage_refs: [],
+      trust_lane: 'domain_agent',
     }],
   });
 }
