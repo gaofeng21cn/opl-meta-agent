@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { JsonObject } from './domain-pack.ts';
@@ -52,6 +53,72 @@ function readJson(filePath: string): JsonObject {
     throw new Error(`StageRun readback must be a JSON object: ${filePath}`);
   }
   return value;
+}
+
+const OMA_STAGE_CLOSEOUT_PAYLOAD_PREFIX = 'oma-stage-closeout-payload:';
+
+function sha256File(filePath: string): string {
+  return createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+}
+
+function domainCloseoutPayload(
+  packet: JsonObject,
+  attempt: JsonObject,
+  stageId: string,
+  closeoutId: string,
+  readbackPath: string,
+): JsonObject | null {
+  const metadata = Array.isArray(packet.closeout_ref_metadata)
+    ? packet.closeout_ref_metadata.filter(isRecord)
+    : [];
+  const payloadMetadata = metadata.find((entry) =>
+    entry.role === 'oma_stage_closeout_payload'
+    && typeof entry.ref === 'string'
+    && entry.ref.startsWith(OMA_STAGE_CLOSEOUT_PAYLOAD_PREFIX)
+  );
+  if (!payloadMetadata) return null;
+
+  const workspaceLocator = isRecord(attempt.workspace_locator) ? attempt.workspace_locator : null;
+  const workspaceRoot = workspaceLocator
+    ? nonEmptyString(workspaceLocator.workspace_root, `${readbackPath}: attempt.workspace_locator.workspace_root`)
+    : null;
+  if (!workspaceRoot || !path.isAbsolute(workspaceRoot)) {
+    throw new Error(`OPL StageRun ${stageId} payload resolution requires an absolute workspace_root.`);
+  }
+  const relativePayloadPath = nonEmptyString(payloadMetadata.ref, 'closeout_ref_metadata.ref')
+    .slice(OMA_STAGE_CLOSEOUT_PAYLOAD_PREFIX.length);
+  if (path.isAbsolute(relativePayloadPath)) {
+    throw new Error(`OPL StageRun ${stageId} payload ref must be workspace-relative.`);
+  }
+  const resolvedRoot = fs.realpathSync(workspaceRoot);
+  const resolvedPayloadPath = path.resolve(resolvedRoot, relativePayloadPath);
+  const relativeToRoot = path.relative(resolvedRoot, resolvedPayloadPath);
+  if (relativeToRoot.startsWith('..') || path.isAbsolute(relativeToRoot)) {
+    throw new Error(`OPL StageRun ${stageId} payload ref escapes workspace_root.`);
+  }
+  const realPayloadPath = fs.realpathSync(resolvedPayloadPath);
+  const realRelativeToRoot = path.relative(resolvedRoot, realPayloadPath);
+  if (realRelativeToRoot.startsWith('..') || path.isAbsolute(realRelativeToRoot)) {
+    throw new Error(`OPL StageRun ${stageId} payload file resolves outside workspace_root.`);
+  }
+  const expectedSha256 = nonEmptyString(
+    payloadMetadata.sha256,
+    `${readbackPath}: closeout_ref_metadata.sha256`,
+  );
+  if (!/^[a-f0-9]{64}$/.test(expectedSha256) || sha256File(realPayloadPath) !== expectedSha256) {
+    throw new Error(`OPL StageRun ${stageId} payload sha256 mismatch.`);
+  }
+  const payload = readJson(realPayloadPath);
+  if (payload.surface_kind !== 'stage_attempt_closeout_packet') {
+    throw new Error(`OPL StageRun ${stageId} payload must be a stage_attempt_closeout_packet.`);
+  }
+  if (payload.stage_id !== stageId) {
+    throw new Error(`OPL StageRun payload stage_id mismatch: attempt=${stageId}, payload=${String(payload.stage_id)}.`);
+  }
+  if (typeof payload.closeout_id === 'string' && payload.closeout_id !== closeoutId) {
+    throw new Error(`OPL StageRun ${stageId} payload closeout_id mismatch.`);
+  }
+  return payload;
 }
 
 function loadRoute(repoRoot: string, actionId: string): {
@@ -169,7 +236,7 @@ function stageRunCloseout(readbackPath: string, targetDomainId: string): StageRu
   if (packet.surface_kind !== 'stage_attempt_closeout_packet') {
     throw new Error(`OPL StageRun ${stageId} closeout must use surface_kind stage_attempt_closeout_packet.`);
   }
-  if (packet.stage_id !== stageId) {
+  if (typeof packet.stage_id === 'string' && packet.stage_id !== stageId) {
     throw new Error(`OPL StageRun closeout stage_id mismatch: attempt=${stageId}, closeout=${String(packet.stage_id)}.`);
   }
   if (typeof packet.stage_attempt_id === 'string' && packet.stage_attempt_id !== stageAttemptId) {
@@ -182,12 +249,13 @@ function stageRunCloseout(readbackPath: string, targetDomainId: string): StageRu
     throw new Error(`OPL StageRun ${stageId} closeout contains rejected writes.`);
   }
   stringArray(packet.closeout_refs, `${readbackPath}: closeout_packet.closeout_refs`);
+  const closeoutPacket = domainCloseoutPayload(packet, attempt, stageId, closeoutId, readbackPath) ?? packet;
   return {
     stage_id: stageId,
     stage_attempt_ref: stageAttemptRef,
     closeout_id: closeoutId,
     closeout_packet_ref: `${stageAttemptRef}/closeouts/${encodeURIComponent(closeoutId)}`,
-    closeout_packet: packet,
+    closeout_packet: closeoutPacket,
     readback_path: readbackPath,
   };
 }

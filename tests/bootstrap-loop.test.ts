@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -272,6 +273,72 @@ function writeBuildStageRunReadbacks(
   });
 }
 
+function writeNormalizedBuildStageRunReadbacks(
+  outputRoot: string,
+  domainId: string,
+  stagePackets: Map<string, JsonObject>,
+): string[] {
+  const payloadDir = path.join(outputRoot, 'stage-closeout-payloads');
+  fs.mkdirSync(payloadDir, { recursive: true });
+  return buildBaselineRouteStageIds.map((stageId, index) => {
+    const sourcePacket = stagePackets.get(stageId) ?? {
+      surface_kind: 'stage_attempt_closeout_packet',
+      stage_id: stageId,
+      closeout_refs: [`receipt:opl-meta-agent/${domainId}/${stageId}`],
+    };
+    const closeoutId = typeof sourcePacket.closeout_id === 'string'
+      ? sourcePacket.closeout_id
+      : `${domainId}-${stageId}-closeout`;
+    const payloadPath = path.join(payloadDir, `${stageId}.json`);
+    writeJson(payloadPath, sourcePacket);
+    const payloadRef = `oma-stage-closeout-payload:stage-closeout-payloads/${stageId}.json`;
+    const payloadSha256 = createHash('sha256').update(fs.readFileSync(payloadPath)).digest('hex');
+    const readbackPath = path.join(outputRoot, `${index + 1}-${stageId}-normalized-stage-run-readback.json`);
+    writeJson(readbackPath, {
+      family_runtime_stage_attempt_query: {
+        attempt_ref: `opl://stage_attempts/${domainId}-${stageId}`,
+        stage_attempt_query: {
+          attempt: {
+            stage_attempt_id: `${domainId}-${stageId}`,
+            domain_id: 'opl-meta-agent',
+            stage_id: stageId,
+            workspace_locator: { workspace_root: outputRoot },
+            status: 'completed',
+            closeout_receipt_status: 'accepted_typed_closeout',
+          },
+          canonical_outcome: 'completed_with_receipt',
+          conflict_or_blocker_envelopes: [],
+          closeouts: [{
+            closeout_id: closeoutId,
+            stage_attempt_id: `${domainId}-${stageId}`,
+            packet: {
+              surface_kind: 'stage_attempt_closeout_packet',
+              closeout_id: closeoutId,
+              closeout_refs: [payloadRef],
+              closeout_ref_metadata: [{
+                ref: payloadRef,
+                role: 'oma_stage_closeout_payload',
+                sha256: payloadSha256,
+              }],
+              consumed_refs: [],
+              consumed_memory_refs: [],
+              writeback_receipt_refs: [],
+              rejected_writes: [],
+              next_owner: 'opl-meta-agent',
+              domain_ready_verdict: 'domain_gate_pending',
+              authority_boundary: {
+                opl: 'closeout_transport_only',
+                oma: 'domain_payload_owner',
+              },
+            },
+          }],
+        },
+      },
+    });
+    return readbackPath;
+  });
+}
+
 function runBaselineFixture(
   outputRoot: string,
   reviewerPath: string,
@@ -428,6 +495,70 @@ test('build-agent-baseline rejects foreign, nonterminal, conflicted, or mismatch
           stageRunReadbackPaths: [readbackPath],
         }),
         /StageRun|attempt|closeout|domain|canonical|conflict/i,
+        label,
+      );
+    });
+  }
+});
+
+test('build-agent-baseline resolves SHA-bound domain payload refs from normalized OPL StageRun readbacks', () => {
+  withTempDir('oma-bootstrap-normalized-opl-readbacks-', (outputRoot) => {
+    const reviewerPath = path.join(outputRoot, 'reviewer.json');
+    writeReviewerEvaluation(reviewerPath);
+    const stageRunReadbackPaths = writeNormalizedBuildStageRunReadbacks(
+      outputRoot,
+      targetAgent.domain_id,
+      new Map<string, JsonObject>([
+        ['stage-decomposition', buildFixtureStageDecompositionCloseout({ targetAgent })],
+        ['agent-skeleton-build', buildFixtureAgentSkeletonBuildCloseout({ targetAgent })],
+      ]),
+    );
+
+    const payload = runBuildAgentBaseline({
+      outputDir: outputRoot,
+      oplBin,
+      aiReviewerEvaluationPath: reviewerPath,
+      targetAgent,
+      stageRunReadbackPaths,
+    });
+
+    assert.equal(payload.status, 'candidate_package_materialized_ready_for_opl_foundry_lab_evaluation');
+    assert.equal(payload.action_stage_route_closeout.per_stage_typed_closeout_verified, true);
+  });
+});
+
+test('build-agent-baseline rejects drifted or escaping StageRun domain payload refs', () => {
+  const mutations: Array<[string, (metadata: JsonObject) => void, RegExp]> = [
+    ['sha drift', (metadata) => { metadata.sha256 = '0'.repeat(64); }, /payload sha256 mismatch/i],
+    ['workspace escape', (metadata) => {
+      metadata.ref = 'oma-stage-closeout-payload:../outside.json';
+    }, /payload ref escapes workspace_root/i],
+  ];
+  for (const [label, mutate, expected] of mutations) {
+    withTempDir(`oma-bootstrap-stage-payload-${label.replaceAll(' ', '-')}-`, (outputRoot) => {
+      const stageRunReadbackPaths = writeNormalizedBuildStageRunReadbacks(
+        outputRoot,
+        targetAgent.domain_id,
+        new Map<string, JsonObject>([
+          ['stage-decomposition', buildFixtureStageDecompositionCloseout({ targetAgent })],
+          ['agent-skeleton-build', buildFixtureAgentSkeletonBuildCloseout({ targetAgent })],
+        ]),
+      );
+      const readback = readJson(stageRunReadbackPaths[1]);
+      const metadata = readback.family_runtime_stage_attempt_query
+        .stage_attempt_query.closeouts[0].packet.closeout_ref_metadata[0] as JsonObject;
+      mutate(metadata);
+      writeJson(stageRunReadbackPaths[1], readback);
+
+      assert.throws(
+        () => runBuildAgentBaseline({
+          outputDir: outputRoot,
+          oplBin,
+          aiReviewerEvaluationPath: path.join(outputRoot, 'not-consumed-before-payload-validation.json'),
+          targetAgent,
+          stageRunReadbackPaths,
+        }),
+        expected,
         label,
       );
     });
