@@ -51,6 +51,24 @@ function optionalString(value: unknown): string | null {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
 }
 
+const frameworkOwnedStageContractFields = new Set([
+  'expected_receipt_refs',
+  'receipt_schema_refs',
+  'authority_function_refs',
+  'l4_entry_gate',
+  'l5_entry_gate',
+  'stage_completion_policy',
+  'user_stage_log_contract',
+  'progress_delta_policy',
+  'typed_blocker_lineage_policy',
+]);
+
+function declarativeStageContract(stageContract: JsonObject): JsonObject {
+  return Object.fromEntries(
+    Object.entries(stageContract).filter(([field]) => !frameworkOwnedStageContractFields.has(field)),
+  );
+}
+
 function buildDeclarativeStageManifest(draft: StageDecompositionPackDraft): JsonObject {
   const domainId = draft.target_agent.domain_id;
   const stages = asRecordArray(draft.stage_control_plane.stages, 'stage_control_plane.stages');
@@ -126,7 +144,7 @@ function buildDeclarativeStageManifest(draft: StageDecompositionPackDraft): Json
         ...(optionalString(stage.target_only_requirement_ref)
           ? { target_only_requirement_ref: optionalString(stage.target_only_requirement_ref) }
           : {}),
-        stage_contract: stageContract,
+        stage_contract: declarativeStageContract(stageContract),
       };
     }),
   };

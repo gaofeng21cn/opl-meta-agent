@@ -75,6 +75,25 @@ test('stage-decomposition materializer writes refs-only stage pack surfaces', ()
     assert.deepEqual(stageManifest.stages[0].allowed_action_refs, ['plan-evidence-synthesis']);
     assert.equal(stageManifest.stages[0].policy_ref, 'agent/stages/evidence-synthesis-plan.md');
     assert.equal(stageManifest.stages[0].prompt_ref, 'agent/prompts/evidence-synthesis-plan.md');
+    const manifestStageContract = stageManifest.stages[0].stage_contract as JsonObject;
+    for (const frameworkOwnedField of [
+      'expected_receipt_refs',
+      'receipt_schema_refs',
+      'authority_function_refs',
+      'l4_entry_gate',
+      'l5_entry_gate',
+      'stage_completion_policy',
+      'user_stage_log_contract',
+      'progress_delta_policy',
+      'typed_blocker_lineage_policy',
+    ]) {
+      assert.equal(
+        Object.hasOwn(manifestStageContract, frameworkOwnedField),
+        false,
+        `declarative stage manifest must delegate ${frameworkOwnedField} to OPL Pack`,
+      );
+    }
+    assert.ok(Object.hasOwn(manifestStageContract, 'artifact_morphology_contract'));
     assert.equal(foundrySeries.stage_manifest_ref, 'agent/stages/manifest.json');
     assert.equal(foundrySeries.stage_control_plane_ref, 'opl-generated:family_stage_control_plane');
     assert.ok(foundrySeries.required_identity_fields.includes('stage_manifest_ref'));
