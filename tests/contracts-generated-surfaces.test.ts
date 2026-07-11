@@ -102,11 +102,7 @@ test('OPL generated interfaces expose current descriptors and omit retired takeo
   assert.equal(bundle.authority_boundary.generated_interface_can_authorize_quality_or_export, false);
 });
 
-test('Pack canonical generated interfaces consume OMA identity and stage manifest', {
-  skip: process.env.OPL_BIN
-    ? false
-    : 'requires an explicit Pack-canonical OPL_BIN; the shared release pin predates this ABI',
-}, () => {
+test('Pack canonical generated interfaces consume OMA identity and stage manifest', () => {
   const bundle = generatedInterfaceBundle();
   assert.equal(bundle.target_domain_id, 'opl-meta-agent');
   assert.equal(bundle.agent_id, 'oma');
