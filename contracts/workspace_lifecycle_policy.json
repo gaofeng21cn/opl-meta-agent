@@ -39,6 +39,15 @@
       "restore_or_retention_receipt_ref"
     ]
   },
+  "agent_build_workspace_policy": {
+    "default_workspace_mode": "series",
+    "reuse_workspace_by_target_agent": true,
+    "reference_source_ingest_required": true,
+    "reference_source_role": "reference_design",
+    "reuse_extraction_when_source_bytes_and_method_are_unchanged": true,
+    "one_off_workspace_requires_explicit_user_intent": true,
+    "temporary_directory_is_not_default_project_authority": true
+  },
   "byproduct_policy": {
     "caches_and_install_artifacts_externalized": true,
     "ignored_only_is_fallback_not_authority": true,

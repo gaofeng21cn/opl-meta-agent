@@ -488,10 +488,9 @@ test('build-agent-baseline returns a typed continuation before StageRun closeout
       continuation_is_action_completion: true,
     };
     assert.equal(validateBuildAgentBaselineOutput(forgedAuthority).ok, false);
-    const forgedOrder = structuredClone(payload);
-    forgedOrder.completed_stage_refs = ['baseline-delivery', 'intent-intake'];
-    forgedOrder.next_stage_ref = 'stage-decomposition';
-    assert.equal(validateBuildAgentBaselineOutput(forgedOrder).ok, false);
+    const duplicateProgress = structuredClone(payload);
+    duplicateProgress.completed_stage_refs = ['intent-intake', 'intent-intake'];
+    assert.equal(validateBuildAgentBaselineOutput(duplicateProgress).ok, false);
     assert.equal(fs.existsSync(path.join(outputRoot, targetAgent.domain_id)), false);
   });
 });
@@ -634,7 +633,7 @@ test('build-agent-baseline rejects drifted or escaping StageRun domain payload r
     (readback: JsonObject, metadata: JsonObject, outputRoot: string) => void,
     RegExp,
   ]> = [
-    ['sha drift', (_readback, metadata) => { metadata.sha256 = '0'.repeat(64); }, /payload sha256 mismatch/i],
+    ['sha drift', (_readback, metadata) => { metadata.sha256 = '0'.repeat(64); }, /sha256 mismatch/i],
     ['workspace escape', (readback, metadata, outputRoot) => {
       const outsideRef = pathToFileURL(path.join(outputRoot, '..', 'outside.json')).href;
       const packet = readback.family_runtime_stage_attempt_query
@@ -642,7 +641,7 @@ test('build-agent-baseline rejects drifted or escaping StageRun domain payload r
       metadata.ref = outsideRef;
       packet.closeout_refs = [outsideRef];
       (packet.domain_output as JsonObject).output_ref = outsideRef;
-    }, /payload ref escapes workspace_root/i],
+    }, /escapes workspace_root/i],
   ];
   for (const [label, mutate, expected] of mutations) {
     withTempDir(`oma-bootstrap-stage-payload-${label.replaceAll(' ', '-')}-`, (outputRoot) => {

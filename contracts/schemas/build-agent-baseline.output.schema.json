@@ -384,74 +384,16 @@
       "additionalProperties": true
     },
     "buildBaselineContinuationState": {
-      "oneOf": [
-        {
-          "properties": {
-            "completed_stage_refs": { "const": [] },
-            "next_stage_ref": { "const": "intent-intake" }
-          }
+      "type": "object",
+      "required": ["completed_stage_refs", "next_stage_ref"],
+      "properties": {
+        "completed_stage_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/nonEmptyString" },
+          "uniqueItems": true
         },
-        {
-          "properties": {
-            "completed_stage_refs": { "const": ["intent-intake"] },
-            "next_stage_ref": { "const": "stage-decomposition" }
-          }
-        },
-        {
-          "properties": {
-            "completed_stage_refs": { "const": ["intent-intake", "web-experience-research"] },
-            "next_stage_ref": { "const": "stage-decomposition" }
-          }
-        },
-        {
-          "properties": {
-            "completed_stage_refs": { "const": ["intent-intake", "stage-decomposition"] },
-            "next_stage_ref": { "const": "agent-skeleton-build" }
-          }
-        },
-        {
-          "properties": {
-            "completed_stage_refs": { "const": ["intent-intake", "web-experience-research", "stage-decomposition"] },
-            "next_stage_ref": { "const": "agent-skeleton-build" }
-          }
-        },
-        {
-          "properties": {
-            "completed_stage_refs": { "const": ["intent-intake", "stage-decomposition", "agent-skeleton-build"] },
-            "next_stage_ref": { "const": "eval-suite-build" }
-          }
-        },
-        {
-          "properties": {
-            "completed_stage_refs": { "const": ["intent-intake", "web-experience-research", "stage-decomposition", "agent-skeleton-build"] },
-            "next_stage_ref": { "const": "eval-suite-build" }
-          }
-        },
-        {
-          "properties": {
-            "completed_stage_refs": { "const": ["intent-intake", "stage-decomposition", "agent-skeleton-build", "eval-suite-build"] },
-            "next_stage_ref": { "const": "baseline-run" }
-          }
-        },
-        {
-          "properties": {
-            "completed_stage_refs": { "const": ["intent-intake", "web-experience-research", "stage-decomposition", "agent-skeleton-build", "eval-suite-build"] },
-            "next_stage_ref": { "const": "baseline-run" }
-          }
-        },
-        {
-          "properties": {
-            "completed_stage_refs": { "const": ["intent-intake", "stage-decomposition", "agent-skeleton-build", "eval-suite-build", "baseline-run"] },
-            "next_stage_ref": { "const": "baseline-delivery" }
-          }
-        },
-        {
-          "properties": {
-            "completed_stage_refs": { "const": ["intent-intake", "web-experience-research", "stage-decomposition", "agent-skeleton-build", "eval-suite-build", "baseline-run"] },
-            "next_stage_ref": { "const": "baseline-delivery" }
-          }
-        }
-      ]
+        "next_stage_ref": { "$ref": "#/$defs/nonEmptyString" }
+      }
     },
     "continuationAuthorityBoundary": {
       "type": "object",

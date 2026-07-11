@@ -137,6 +137,18 @@ test('standard-agent principles bind the declarative manifest and explicit proof
   assert.equal(skeletonBuild?.lane_kind, 'proof');
 });
 
+test('agent builds reuse a persistent workspace and ingest user reference files through OPL', () => {
+  const policy = readJson('contracts/workspace_lifecycle_policy.json');
+  const agentBuild = policy.agent_build_workspace_policy;
+
+  assert.equal(agentBuild.default_workspace_mode, 'series');
+  assert.equal(agentBuild.reuse_workspace_by_target_agent, true);
+  assert.equal(agentBuild.reference_source_ingest_required, true);
+  assert.equal(agentBuild.reference_source_role, 'reference_design');
+  assert.equal(agentBuild.one_off_workspace_requires_explicit_user_intent, true);
+  assert.equal(agentBuild.temporary_directory_is_not_default_project_authority, true);
+});
+
 test('declared action routes publish every required predecessor condition', () => {
   const manifest = readJson('agent/stages/manifest.json');
   const actionCatalog = readJson('contracts/action_catalog.json');
