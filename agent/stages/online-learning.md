@@ -2,7 +2,7 @@
 
 ## 操作策略
 
-把真实轨迹转成 reviewed learning refs 和 mechanism patch proposals。所有候选保持 gated，进入后续 Agent Lab 或 owner review，不直接采用。
+消费 trajectory-learning-intake 已产出的 candidate refs，再转成 reviewed learning refs 和 mechanism patch proposals。所有候选保持 gated，进入后续 Agent Lab 或 owner review，不直接采用。
 
 ## Handoff
 

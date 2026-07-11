@@ -28,7 +28,11 @@
         "target_agent_request"
       ],
       "ensures": [
-        "target_agent_intent_and_route_selected"
+        "target_agent_intent_and_route_selected",
+        "research_driven_design_route_selected",
+        "design_basis_and_target_requirements_ready",
+        "existing_target_descriptor_and_reviewer_evidence_ready",
+        "redacted_trajectory_and_owner_feedback_refs_ready"
       ],
       "next_stage_refs": [
         "web-experience-research",
@@ -60,7 +64,8 @@
         "research_driven_design_route_selected"
       ],
       "ensures": [
-        "research_synthesis_refs_ready"
+        "research_synthesis_refs_ready",
+        "design_basis_and_target_requirements_ready"
       ],
       "next_stage_refs": [
         "stage-decomposition"
@@ -119,7 +124,8 @@
         "agent_pack_plan_admitted"
       ],
       "ensures": [
-        "candidate_agent_pack_and_build_receipt_ready"
+        "candidate_agent_pack_and_build_receipt_ready",
+        "candidate_pack_or_takeover_assessment_ready"
       ],
       "next_stage_refs": [
         "eval-suite-build"
@@ -180,7 +186,8 @@
         "target_bound_suite_seed_ready"
       ],
       "ensures": [
-        "foundry_evaluation_work_order_ready"
+        "foundry_evaluation_work_order_ready",
+        "external_evaluation_and_owner_route_refs_ready"
       ],
       "next_stage_refs": [
         "optimizer-iteration",
@@ -210,7 +217,8 @@
         "existing_target_descriptor_and_reviewer_evidence_ready"
       ],
       "ensures": [
-        "target_takeover_assessment_ready"
+        "target_takeover_assessment_ready",
+        "candidate_pack_or_takeover_assessment_ready"
       ],
       "next_stage_refs": [
         "eval-suite-build",
@@ -330,7 +338,7 @@
         "materialize-trajectory-learning-proposal"
       ],
       "requires": [
-        "reviewed_learning_candidate_refs_ready"
+        "trajectory_learning_candidates_ready"
       ],
       "ensures": [
         "proposal_refs_ready_for_owner_gate"

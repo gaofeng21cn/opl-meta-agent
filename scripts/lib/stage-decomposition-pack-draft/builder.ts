@@ -1313,7 +1313,6 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
     writeback_receipt_refs: [],
     rejected_writes: [],
     next_owner: 'opl-meta-agent',
-    domain_ready_verdict: 'domain_gate_pending',
     user_stage_log: {
       stage_name: 'Stage decomposition pack draft',
       problem_summary: `The ${owner} target agent needs an OPL-compatible declarative domain pack before baseline generation.`,
@@ -1348,7 +1347,7 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
         'agent/knowledge',
         'agent/quality_gates',
       ],
-      outcome: 'domain_gate_pending',
+      outcome: 'stage_pack_ready_for_next_stage',
       remaining_blockers: ['target owner gate and baseline validation still required before promotion'],
       evidence_refs: [
         `receipt:opl-meta-agent/${targetAgent.domain_id}/stage-decomposition-pack-draft`,

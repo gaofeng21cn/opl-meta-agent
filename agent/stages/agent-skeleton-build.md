@@ -16,6 +16,7 @@
 - `candidate_agent_package_ref`
 - scaffold validation refs
 - generated interface refs
+- `candidate_pack_or_takeover_assessment_ready`
 
 ## Receipt 约束
 

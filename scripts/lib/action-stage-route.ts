@@ -337,6 +337,18 @@ export function evaluateActionStageRoute(input: {
   if (complete && !route.terminal_stage_refs.includes(completedStageRefs.at(-1) ?? '')) {
     throw new Error(`${input.actionId}: complete route must end at a declared terminal Stage.`);
   }
+  for (let index = 1; index < stageCloseouts.length; index += 1) {
+    const previous = stageCloseouts[index - 1]!;
+    const current = stageCloseouts[index]!;
+    const consumedRefs = Array.isArray(current.closeout_packet.consumed_refs)
+      ? current.closeout_packet.consumed_refs.filter((ref): ref is string => typeof ref === 'string')
+      : [];
+    if (!consumedRefs.includes(previous.closeout_packet_ref)) {
+      throw new Error(
+        `${input.actionId}: StageRun ${current.stage_id} must consume preceding accepted closeout ref ${previous.closeout_packet_ref}.`,
+      );
+    }
+  }
   return {
     action_id: input.actionId,
     route,

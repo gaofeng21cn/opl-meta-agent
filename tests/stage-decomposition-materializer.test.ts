@@ -160,6 +160,12 @@ test('stage-decomposition plans files while agent-skeleton-build owns file bodie
   materializedFiles.forEach((file) => assert.equal(typeof file.body, 'string'));
 });
 
+test('stage-decomposition closeout leaves domain readiness to the terminal target-owner route', () => {
+  const closeout = buildFixtureStageDecompositionCloseout({ targetAgent });
+  assert.equal(Object.hasOwn(closeout, 'domain_ready_verdict'), false);
+  assert.equal(closeout.user_stage_log.outcome, 'stage_pack_ready_for_next_stage');
+});
+
 test('stage-decomposition file plan rejects embedded file bodies', () => {
   const packet = buildFixtureStageDecompositionCloseout({ targetAgent });
   const draft = packet.stage_decomposition_pack_draft as JsonObject;

@@ -11,6 +11,7 @@
 - `research_brief_ref`
 - `source_refs`
 - `pattern_disposition_refs`
+- `design_basis_and_target_requirements_ready`，仅在 research synthesis 已覆盖 stage-decomposition 所需设计依据时声明。
 
 ## Receipt 约束
 

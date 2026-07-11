@@ -12,6 +12,7 @@
 - `foundry_lab_evaluation_work_order_ref`
 - `gated_self_evolution_candidate_ref`
 - `mechanism_candidate_ref`
+- `candidate_pack_or_takeover_assessment_ready`
 
 ## Receipt 约束
 

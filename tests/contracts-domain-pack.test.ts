@@ -122,6 +122,39 @@ test('declarative stage manifest is the OPL Pack compiler source', () => {
   );
 });
 
+test('declared action routes publish every required predecessor condition', () => {
+  const manifest = readJson('agent/stages/manifest.json');
+  const actionCatalog = readJson('contracts/action_catalog.json');
+  const stagesById = new Map(
+    asObjects(manifest.stages).map((stage) => [String(stage.stage_id), stage]),
+  );
+  asObjects(actionCatalog.actions).forEach((action) => {
+    const actionId = String(action.action_id);
+    const route = action.stage_route;
+    const requiredStages = asStrings(route.required_stage_refs);
+    for (let index = 1; index < requiredStages.length; index += 1) {
+      const predecessorId = requiredStages[index - 1]!;
+      const stageId = requiredStages[index]!;
+      const predecessor = stagesById.get(predecessorId);
+      const stage = stagesById.get(stageId);
+      assert.ok(predecessor, `${actionId}: missing route predecessor ${predecessorId}`);
+      assert.ok(stage, `${actionId}: missing route stage ${stageId}`);
+      assert.ok(
+        asStrings(predecessor.ensures).some((condition) => asStrings(stage.requires).includes(condition)),
+        `${actionId}: ${predecessorId} must ensure at least one requirement of ${stageId}`,
+      );
+    }
+  });
+
+  const decomposition = stagesById.get('stage-decomposition');
+  const research = stagesById.get('web-experience-research');
+  assert.ok(decomposition && research);
+  assert.ok(
+    asStrings(research.ensures).some((condition) => asStrings(decomposition.requires).includes(condition)),
+    'optional research branch must also satisfy stage-decomposition input requirements',
+  );
+});
+
 test('domain skill declarations and professional skills stay separate', () => {
   const packCompilerInput = readJson('contracts/pack_compiler_input.json');
   const capabilityMap = readJson('contracts/capability_map.json');

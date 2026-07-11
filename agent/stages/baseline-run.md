@@ -11,6 +11,7 @@
 - `agent_lab_suite_seed_ref`
 - `foundry_lab_evaluation_work_order_ref`
 - `expected_evaluation_result_ref`
+- target-owner route and external-evaluation refs required by `baseline-delivery`; these are work-order / route refs, not a fabricated evaluation result or owner verdict.
 
 ## Receipt 约束
 

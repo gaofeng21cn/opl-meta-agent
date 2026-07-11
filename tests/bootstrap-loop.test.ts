@@ -240,15 +240,32 @@ function writeBuildStageRunReadbacks(
 ): string[] {
   return stageIds.map((stageId, index) => {
     const readbackPath = path.join(outputRoot, `${index + 1}-${stageId}-stage-run-readback.json`);
-    const packet = stagePackets.get(stageId) ?? {
+    const sourcePacket = stagePackets.get(stageId) ?? {
       surface_kind: 'stage_attempt_closeout_packet',
       stage_id: stageId,
       closeout_refs: [`receipt:opl-meta-agent/${domainId}/${stageId}`],
     };
-    const closeoutId = typeof packet.closeout_id === 'string'
-      ? packet.closeout_id
+    const closeoutId = typeof sourcePacket.closeout_id === 'string'
+      ? sourcePacket.closeout_id
       : `${domainId}-${stageId}-closeout`;
-    packet.closeout_id = closeoutId;
+    const previousStageId = stageIds[index - 1];
+    const previousPacket = previousStageId ? stagePackets.get(previousStageId) : undefined;
+    const previousCloseoutId = typeof previousPacket?.closeout_id === 'string'
+      ? previousPacket.closeout_id
+      : previousStageId ? `${domainId}-${previousStageId}-closeout` : null;
+    const previousCloseoutRef = previousStageId && previousCloseoutId
+      ? `opl://stage_attempts/${domainId}-${previousStageId}/closeouts/${encodeURIComponent(previousCloseoutId)}`
+      : null;
+    const consumedRefs = Array.isArray(sourcePacket.consumed_refs)
+      ? sourcePacket.consumed_refs.filter((ref): ref is string => typeof ref === 'string')
+      : [];
+    const packet = {
+      ...sourcePacket,
+      closeout_id: closeoutId,
+      consumed_refs: previousCloseoutRef
+        ? [...new Set([...consumedRefs, previousCloseoutRef])]
+        : consumedRefs,
+    };
     writeJson(readbackPath, {
       family_runtime_stage_attempt_query: {
         attempt_ref: `opl://stage_attempts/${domainId}-${stageId}`,
@@ -278,6 +295,7 @@ function writeNormalizedBuildStageRunReadbacks(
   outputRoot: string,
   domainId: string,
   stagePackets: Map<string, JsonObject>,
+  options: { omitPredecessorConsumptionFor?: string } = {},
 ): string[] {
   const payloadDir = path.join(outputRoot, 'stage-closeout-payloads');
   fs.mkdirSync(payloadDir, { recursive: true });
@@ -291,7 +309,23 @@ function writeNormalizedBuildStageRunReadbacks(
       ? sourcePacket.closeout_id
       : `${domainId}-${stageId}-closeout`;
     const payloadPath = path.join(payloadDir, `${stageId}.json`);
-    writeJson(payloadPath, sourcePacket);
+    const previousStageId = buildBaselineRouteStageIds[index - 1];
+    const previousPacket = previousStageId ? stagePackets.get(previousStageId) : undefined;
+    const previousCloseoutId = typeof previousPacket?.closeout_id === 'string'
+      ? previousPacket.closeout_id
+      : previousStageId ? `${domainId}-${previousStageId}-closeout` : null;
+    const previousCloseoutRef = previousStageId
+      ? `opl://stage_attempts/${domainId}-${previousStageId}/closeouts/${encodeURIComponent(previousCloseoutId!)}`
+      : null;
+    const consumedRefs = Array.isArray(sourcePacket.consumed_refs)
+      ? sourcePacket.consumed_refs.filter((ref): ref is string => typeof ref === 'string')
+      : [];
+    writeJson(payloadPath, {
+      ...sourcePacket,
+      consumed_refs: previousCloseoutRef && options.omitPredecessorConsumptionFor !== stageId
+        ? [...new Set([...consumedRefs, previousCloseoutRef])]
+        : consumedRefs,
+    });
     const payloadRef = pathToFileURL(payloadPath).href;
     const payloadSha256 = createHash('sha256').update(fs.readFileSync(payloadPath)).digest('hex');
     const readbackPath = path.join(outputRoot, `${index + 1}-${stageId}-normalized-stage-run-readback.json`);
@@ -332,7 +366,6 @@ function writeNormalizedBuildStageRunReadbacks(
               writeback_receipt_refs: [],
               rejected_writes: [],
               next_owner: 'opl-meta-agent',
-              domain_ready_verdict: 'domain_gate_pending',
               authority_boundary: {
                 opl: 'closeout_transport_only',
                 oma: 'domain_payload_owner',
@@ -531,6 +564,33 @@ test('build-agent-baseline resolves SHA-bound domain payload refs from normalize
 
     assert.equal(payload.status, 'candidate_package_materialized_ready_for_opl_foundry_lab_evaluation');
     assert.equal(payload.action_stage_route_closeout.per_stage_typed_closeout_verified, true);
+  });
+});
+
+test('build-agent-baseline rejects a later StageRun payload that omits its preceding accepted closeout ref', () => {
+  withTempDir('oma-bootstrap-stage-predecessor-consumption-', (outputRoot) => {
+    const reviewerPath = path.join(outputRoot, 'reviewer.json');
+    writeReviewerEvaluation(reviewerPath);
+    const stageRunReadbackPaths = writeNormalizedBuildStageRunReadbacks(
+      outputRoot,
+      targetAgent.domain_id,
+      new Map<string, JsonObject>([
+        ['stage-decomposition', buildFixtureStageDecompositionCloseout({ targetAgent })],
+        ['agent-skeleton-build', buildFixtureAgentSkeletonBuildCloseout({ targetAgent })],
+      ]),
+      { omitPredecessorConsumptionFor: 'stage-decomposition' },
+    );
+
+    assert.throws(
+      () => runBuildAgentBaseline({
+        outputDir: outputRoot,
+        oplBin,
+        aiReviewerEvaluationPath: reviewerPath,
+        targetAgent,
+        stageRunReadbackPaths,
+      }),
+      /must consume preceding accepted closeout ref/i,
+    );
   });
 });
 
@@ -834,6 +894,10 @@ test('build-agent-baseline materializes source-derived proof with canonical OPL 
       ]),
     ];
     plannedRefs.forEach((ref) => assert.ok(digestRefs.has(ref), `missing build receipt digest: ${ref}`));
+    [
+      'contracts/schemas/draft-agent-output.input.schema.json',
+      'contracts/schemas/draft-agent-output.output.schema.json',
+    ].forEach((ref) => assert.ok(digestRefs.has(ref), `missing action schema build receipt digest: ${ref}`));
     assert.deepEqual(stageControl.build_receipt.target_only_requirement_refs, [
       'target-only-requirement:surgery-risk-from-paper-agent/owner-gated-closeout',
     ]);
