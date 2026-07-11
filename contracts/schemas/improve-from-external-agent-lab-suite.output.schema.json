@@ -12,7 +12,7 @@
     "target_agent",
     "source_agent_lab_result_ref",
     "candidate_refs",
-    "artifacts",
+    "agent_building_judgment",
     "authority_boundary"
   ],
   "properties": {
@@ -51,16 +51,33 @@
     "missing_required_fields": {
       "$ref": "#/$defs/nonEmptyStringArray"
     },
-    "artifacts": {
+    "semantic_requests": {
       "type": "object",
       "required": [
-        "target_capability_improvement_candidate_path"
+        "developer_patch_work_order",
+        "physical_materialization_owner",
+        "materialization_surface",
+        "oma_writes_request_files",
+        "requested_file_name",
+        "execution_surface"
       ],
       "properties": {
-        "target_capability_improvement_candidate_path": {
+        "developer_patch_work_order": {
+          "type": "object"
+        },
+        "physical_materialization_owner": {
           "$ref": "#/$defs/nonEmptyString"
         },
-        "developer_patch_work_order_path": {
+        "materialization_surface": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "oma_writes_request_files": {
+          "const": false
+        },
+        "requested_file_name": {
+          "const": "developer-patch-work-order.json"
+        },
+        "execution_surface": {
           "$ref": "#/$defs/nonEmptyString"
         }
       },
@@ -68,10 +85,7 @@
     },
     "agent_building_judgment": {
       "type": "object",
-      "required": [
-        "target_capability_improvement_candidate",
-        "developer_patch_work_order"
-      ],
+      "required": ["target_capability_improvement_candidate"],
       "additionalProperties": true
     },
     "authority_boundary": {
@@ -95,11 +109,7 @@
               "missing_required_fields"
             ]
           },
-          {
-            "required": [
-              "agent_building_judgment"
-            ]
-          }
+          { "required": ["semantic_requests"] }
         ]
       }
     },
@@ -127,26 +137,21 @@
       "required": [
         "missing_required_fields"
       ],
-      "not": {
-        "required": [
-          "agent_building_judgment"
-        ]
-      }
+      "not": { "required": ["semantic_requests"] }
     },
     {
       "properties": {
         "status": {
           "const": "developer_patch_work_order_ready_for_opl_foundry_lab"
         },
-        "artifacts": {
-          "required": [
-            "developer_patch_work_order_path"
-          ]
+        "semantic_requests": {
+          "required": ["developer_patch_work_order"]
         }
       },
       "required": [
         "foundry_lab_execution_receipt_ref",
-        "agent_building_judgment"
+        "agent_building_judgment",
+        "semantic_requests"
       ],
       "not": {
         "required": [

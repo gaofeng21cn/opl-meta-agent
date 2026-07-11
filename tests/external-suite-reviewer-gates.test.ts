@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { parseImproveFromAgentLabSuiteArgs } from '../scripts/improve-from-agent-lab-suite.ts';
-import { readJsonFile as readJson, writeJsonFile as writeJson } from './support/contracts.ts';
+import { writeJsonFile as writeJson } from './support/contracts.ts';
 import {
   buildExternalSuite,
   runImproveFromSuite,
@@ -162,7 +162,7 @@ test('external blocked suite emits a blocker ref when target-owned improvement p
     writeAiReviewerEvaluation(reviewerEvaluationPath);
 
     const payload = runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
-    const candidate = readJson(payload.artifacts.target_capability_improvement_candidate_path);
+    const candidate = payload.agent_building_judgment.target_capability_improvement_candidate;
     assert.equal(payload.status, 'candidate_blocked_missing_declarative_work_order_inputs');
     assert.equal(fs.existsSync(path.join(outputRoot, 'developer-patch-work-order.json')), false);
     assert.equal(fs.existsSync(path.join(outputRoot, 'typed-blocker.json')), false);

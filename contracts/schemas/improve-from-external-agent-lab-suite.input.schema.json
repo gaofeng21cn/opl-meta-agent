@@ -24,10 +24,6 @@
       "type": "string",
       "minLength": 1
     },
-    "output_dir": {
-      "type": "string",
-      "minLength": 1
-    },
     "feedback_ref": {
       "type": "string",
       "minLength": 1

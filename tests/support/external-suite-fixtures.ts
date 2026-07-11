@@ -198,7 +198,6 @@ export function runImproveFromSuite(args: {
     suitePath: args.suitePath,
     suiteResultPath,
     targetAgentDir: args.targetAgentDir,
-    outputDir: args.outputRoot,
     feedbackRef: args.feedbackRef ?? null,
     aiReviewerEvaluationPath: args.reviewerEvaluationPath,
   });

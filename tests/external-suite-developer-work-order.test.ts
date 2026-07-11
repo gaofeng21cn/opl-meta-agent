@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import type { JsonObject } from './support/contracts.ts';
 import {
   assertMatchesJsonSchema,
   parseJsonText,
-  readJsonFile as readJson,
   repoRoot,
   writeJsonFile as writeJson,
 } from './support/contracts.ts';
@@ -54,7 +54,6 @@ function runImproveCliProcess(args: {
     '--suite', args.suitePath,
     '--suite-result', args.suiteResultPath,
     '--target-agent-dir', args.targetAgentDir,
-    '--output-dir', args.outputRoot,
     '--ai-reviewer-evaluation', args.reviewerEvaluationPath,
   ], { cwd: repoRoot, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
 }
@@ -99,8 +98,11 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
       payload,
     );
     assert.equal(payload.status, 'developer_patch_work_order_ready_for_opl_foundry_lab');
-    const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
-    const candidate = readJson(payload.artifacts.target_capability_improvement_candidate_path);
+    const workOrder = payload.agent_building_judgment.developer_patch_work_order;
+    const candidate = payload.agent_building_judgment.target_capability_improvement_candidate;
+    assert.equal(payload.semantic_requests.oma_writes_request_files, false);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'developer-patch-work-order.json')), false);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'target-capability-improvement-candidate.json')), false);
     const expectedTarget = {
       domain_id: 'med-autoscience',
       target_agent_ref: 'domain-agent:med-autoscience',
@@ -306,7 +308,7 @@ test('passed Foundry result without an execution receipt cannot claim no source 
     assert.equal(payload.status, 'candidate_blocked_missing_declarative_work_order_inputs');
     assert.deepEqual(payload.missing_required_fields, ['foundry_lab_execution_receipt_ref']);
     assert.equal(payload.foundry_lab_execution_receipt_ref, undefined);
-    assert.equal(payload.artifacts.developer_patch_work_order_path, undefined);
+    assert.equal(payload.semantic_requests, undefined);
   });
 });
 
@@ -344,8 +346,8 @@ test('candidate identity ignores provenance order while work-order identity bind
         reviewerEvaluationPath,
       });
       return {
-        candidate: readJson(payload.artifacts.target_capability_improvement_candidate_path),
-        workOrder: readJson(payload.artifacts.developer_patch_work_order_path),
+        candidate: payload.agent_building_judgment.target_capability_improvement_candidate,
+        workOrder: payload.agent_building_judgment.developer_patch_work_order,
       };
     };
 
@@ -406,7 +408,7 @@ test('generic target-agent feedback external suite is accepted without MAS-only 
     });
 
     const payload = runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
-    const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
+    const workOrder = payload.agent_building_judgment.developer_patch_work_order;
     assert.equal(payload.status, 'developer_patch_work_order_ready_for_opl_foundry_lab');
     assert.equal(workOrder.target_agent.domain_id, 'target-agent');
     assert.deepEqual(workOrder.source_external_suite_intake.accepted_input_profiles, [
@@ -439,7 +441,7 @@ test('MAS reviewer_revision feedback external suite is accepted as developer wor
     });
 
     const payload = runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
-    const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
+    const workOrder = payload.agent_building_judgment.developer_patch_work_order;
     assert.deepEqual(workOrder.source_external_suite_intake.accepted_input_profiles, [
       'target_agent_feedback_external_suite',
       'mas_feedback_agent_lab_external_suite',

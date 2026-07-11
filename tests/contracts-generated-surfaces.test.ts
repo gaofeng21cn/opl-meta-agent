@@ -95,9 +95,9 @@ test('OPL generated interfaces expose current descriptors and omit retired takeo
   assert.equal(bundle.domain_repo_can_own_generated_surface, false);
   assert.equal(bundle.status, 'ready');
   assert.ok(asObjects(bundle.cli.descriptors).some((entry) => entry.action_id === 'build-agent-baseline'));
-  assert.ok(asObjects(bundle.skill.descriptors).some((entry) =>
+  assert.equal(asObjects(bundle.skill.descriptors).some((entry) =>
     entry.command_contract_id === 'opl-meta-agent.execute-external-work-order'
-  ));
+  ), false);
   assert.ok(asObjects(bundle.product_entry.descriptors).some((entry) =>
     entry.action_key === 'improve-from-external-agent-lab-suite'
   ));

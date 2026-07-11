@@ -40,26 +40,6 @@
     "forbidden_roles": []
   },
   {
-    "script_ref": "scripts/execute-external-work-order.ts",
-    "classes": [
-      "smoke_helper",
-      "developer_work_order_materializer",
-      "fixture_or_proof_helper"
-    ],
-    "authority_function_refs": [],
-    "consumes_opl_surfaces": [
-      "opl_work_order_execute_primitive"
-    ],
-    "writes_only": [
-      "external_work_order_execution_delegation_ref",
-      "opl_work_order_execution_result_ref",
-      "no_oma_target_worktree_lifecycle_proof_ref",
-      "owner_closeout_hook_delegated_ref",
-      "no_oma_owner_receipt_write_proof_ref"
-    ],
-    "forbidden_roles": []
-  },
-  {
     "script_ref": "scripts/improve-from-agent-lab-suite.ts",
     "classes": [
       "smoke_helper",

@@ -62,12 +62,6 @@ test('target-agent owner-chain evidence preserves action ref shapes and live-pro
       'target_owner_receipt_or_typed_blocker_ref',
       'no_regression_ref',
     ],
-    'execute-external-work-order': [
-      'external_work_order_delegation_ref',
-      'work_order_execution_receipt_ref',
-      'target_owner_receipt_or_typed_blocker_ref',
-      'no_regression_ref',
-    ],
   };
   Object.entries(expectedActionRefShapes).forEach(([actionId, acceptedRefShapes]) => {
     assert.ok(actionIds.has(actionId), `${actionId} should stay in action catalog`);

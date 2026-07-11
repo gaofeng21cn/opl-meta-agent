@@ -25,7 +25,6 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
     'build-agent-baseline',
     'takeover-target-agent-test',
     'improve-from-external-agent-lab-suite',
-    'execute-external-work-order',
     'generate-mechanism-patch-proposal',
     'materialize-trajectory-learning-proposal',
   ];
@@ -53,7 +52,6 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   const baselineAction = actionById(actions, 'build-agent-baseline');
   const takeoverAction = actionById(actions, 'takeover-target-agent-test');
   const externalSuiteAction = actionById(actions, 'improve-from-external-agent-lab-suite');
-  const executeWorkOrderAction = actionById(actions, 'execute-external-work-order');
   const trajectoryAction = actionById(actions, 'materialize-trajectory-learning-proposal');
 
   assert.match(String(baselineAction.source_command.command), /^npm run build-agent-baseline --/);
@@ -68,21 +66,8 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
     'can_modify_target_agent_source_repo',
     'can_modify_target_agent_tests',
     'can_modify_target_agent_docs',
-  ].forEach((field) => assert.equal(externalSuiteAction.authority_boundary[field], true, field));
+  ].forEach((field) => assert.equal(externalSuiteAction.authority_boundary[field], false, field));
   assert.equal(externalSuiteAction.accepted_external_suite_inputs.accepted_suite_kind, 'agent_lab_external_suite');
-
-  assert.equal(executeWorkOrderAction.authority_boundary.delegates_to_opl_work_order_execute, true);
-  assert.equal(executeWorkOrderAction.authority_boundary.owner_closeout_hook_delegated, true);
-  assertFalseFlags(executeWorkOrderAction.authority_boundary as JsonObject, [
-    'can_own_generic_runner',
-    'can_own_generic_queue_or_attempt_ledger',
-    'can_manage_target_worktree_lifecycle',
-    'can_absorb_target_branch',
-    'can_clean_target_worktree',
-    'oma_can_write_owner_receipt',
-    'can_invoke_target_owner_closeout_hook',
-    'can_write_target_owner_receipt_body',
-  ], 'execute-external-work-order.authority_boundary');
 
   assertFalseFlags(trajectoryAction.authority_boundary as JsonObject, [
     'can_run_trajectory_daemon',
@@ -93,7 +78,7 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   const feedbackReadback = actionCatalog.target_agent_feedback_self_evolution_readback as JsonObject;
   assertIncludesAll(asStrings(feedbackReadback.required_action_route), [
     'improve-from-external-agent-lab-suite',
-    'execute-external-work-order',
+    'opl work-order execute',
   ], 'feedback readback route');
   assertFalseFlags(feedbackReadback.authority_boundary as JsonObject, [
     'oma_can_own_runner_or_queue',

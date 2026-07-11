@@ -165,26 +165,6 @@
         "forbidden_roles": []
       },
       {
-        "script_ref": "scripts/execute-external-work-order.ts",
-        "classes": [
-          "smoke_helper",
-          "developer_work_order_materializer",
-          "fixture_or_proof_helper"
-        ],
-        "authority_function_refs": [],
-        "consumes_opl_surfaces": [
-          "opl_work_order_execute_primitive"
-        ],
-        "writes_only": [
-          "external_work_order_execution_delegation_ref",
-          "opl_work_order_execution_result_ref",
-          "no_oma_target_worktree_lifecycle_proof_ref",
-          "owner_closeout_hook_delegated_ref",
-          "no_oma_owner_receipt_write_proof_ref"
-        ],
-        "forbidden_roles": []
-      },
-      {
         "script_ref": "scripts/improve-from-agent-lab-suite.ts",
         "classes": [
           "smoke_helper",
@@ -866,37 +846,6 @@
         ]
       },
       {
-        "gate_id": "external_work_order_execution_delegation",
-        "tracked_script_refs": [
-          "scripts/execute-external-work-order.ts"
-        ],
-        "current_role": "thin_validation_and_opl_work_order_execute_delegation",
-        "retention_state": "retained_current_authority_function",
-        "retention_reason": "current OMA action implementation validates developer patch work-order shape and delegates execution to OPL work-order execute without owning target lifecycle or owner receipt bodies",
-        "retention_evidence_refs": [
-          "docs/decisions.md#execute-external-work-order",
-          "contracts/action_catalog.json#actions.execute-external-work-order",
-          "tests/execute-external-work-order.test.ts",
-          "tests/contracts-action-authority.test.ts"
-        ],
-        "allowed_until": "opl_generated_action_can_validate_and_delegate_same_work_order_shape",
-        "required_before_retire_or_absorb": [
-          "opl_work_order_execute_primitive_parity_ref",
-          "target_owner_closeout_hook_delegation_ref",
-          "no_oma_target_worktree_lifecycle_proof_ref",
-          "no_oma_owner_receipt_write_proof_ref",
-          "no_active_npm_or_test_caller_ref",
-          "tombstone_or_provenance_ref"
-        ],
-        "forbidden_long_term_claims": [
-          "generic_runner",
-          "queue_or_attempt_ledger",
-          "target_worktree_lifecycle_owner",
-          "absorb_or_cleanup_owner",
-          "target_owner_receipt_body_writer"
-        ]
-      },
-      {
         "gate_id": "source_structure_and_authority_manifest_maintenance_helpers",
         "tracked_script_refs": [
           "scripts/check-source-structure.ts",
@@ -1276,7 +1225,6 @@
     "scanned_script_refs": [
       "scripts/build-agent-baseline.ts",
       "scripts/check-source-structure.ts",
-      "scripts/execute-external-work-order.ts",
       "scripts/improve-from-agent-lab-suite.ts",
       "scripts/lib/agent-evidence-contracts.ts",
       "scripts/lib/agent-evidence-materializer.ts",
@@ -1342,13 +1290,6 @@
           ]
         },
         {
-          "script_ref": "scripts/execute-external-work-order.ts",
-          "active_caller_refs": [
-            "package.json#scripts.execute:external-work-order",
-            "tests/execute-external-work-order.test.ts#test_ref"
-          ]
-        },
-        {
           "script_ref": "scripts/improve-from-agent-lab-suite.ts",
           "active_caller_refs": [
             "package.json#scripts.improve:external-suite",
@@ -1383,7 +1324,6 @@
           "script_ref": "scripts/lib/domain-pack.ts",
           "active_caller_refs": [
             "scripts/build-agent-baseline.ts#import",
-            "scripts/execute-external-work-order.ts#import",
             "scripts/improve-from-agent-lab-suite.ts#import",
             "scripts/lib/agent-evidence-contracts.ts#import",
             "scripts/lib/agent-evidence-materializer.ts#import",
@@ -1450,7 +1390,6 @@
           "script_ref": "scripts/lib/meta-agent-loop-io.ts",
           "active_caller_refs": [
             "scripts/build-agent-baseline.ts#import",
-            "scripts/execute-external-work-order.ts#import",
             "scripts/improve-from-agent-lab-suite.ts#import",
             "scripts/lib/agent-evidence-contracts.ts#import",
             "scripts/lib/agent-evidence-materializer.ts#import",
@@ -1598,7 +1537,6 @@
         {
           "script_ref": "scripts/lib/work-order-validation.ts",
           "active_caller_refs": [
-            "scripts/execute-external-work-order.ts#import",
             "scripts/improve-from-agent-lab-suite.ts#import"
           ]
         },

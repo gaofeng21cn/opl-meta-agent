@@ -104,17 +104,18 @@
     },
     "required_action_route": [
       "improve-from-external-agent-lab-suite",
-      "execute-external-work-order",
+      "opl work-order execute",
       "target_owner_closeout_readback"
     ],
     "consumer_actions": {
       "materialized_suite_consumer": "improve-from-external-agent-lab-suite",
-      "work_order_execution_delegation": "execute-external-work-order",
+      "work_order_execution_owner": "one-person-lab/OPL work-order execute",
       "target_owner_closeout_owner": "target-domain via OPL"
     },
     "authority_boundary": {
       "oma_can_consume_materialized_agent_lab_suite": true,
-      "oma_can_materialize_developer_work_order": true,
+      "oma_can_author_developer_work_order_semantics": true,
+      "oma_can_materialize_developer_work_order_file": false,
       "oma_can_own_runner_or_queue": false,
       "oma_can_manage_target_worktree_lifecycle": false,
       "oma_can_write_target_owner_receipt_body": false,
@@ -286,11 +287,11 @@
     {
       "action_id": "improve-from-external-agent-lab-suite",
       "title": "Improve From External Agent Lab Suite",
-      "summary": "Consume an explicit OPL Foundry Lab suite result and structured AI reviewer evidence, then emit an OMA capability judgment and, when inputs are complete, a versioned developer patch work order for OPL execution.",
+      "summary": "Consume an explicit OPL Foundry Lab suite result and structured AI reviewer evidence, then emit an OMA capability judgment and a typed developer patch work-order request without writing request files or executing the work order.",
       "owner": "opl-meta-agent",
       "effect": "mutating",
       "source_command": {
-        "command": "npm run improve:external-suite -- --suite <suite_path> --suite-result <suite_result_path> --target-agent-dir <agent_dir> --output-dir <output_dir> --ai-reviewer-evaluation <ai_reviewer_evaluation>",
+        "command": "npm run improve:external-suite -- --suite <suite_path> --suite-result <suite_result_path> --target-agent-dir <agent_dir> --ai-reviewer-evaluation <ai_reviewer_evaluation>",
         "surface_kind": "domain_smoke_cli"
       },
       "input_schema_ref": "contracts/schemas/improve-from-external-agent-lab-suite.input.schema.json",
@@ -299,7 +300,6 @@
         "suite_path",
         "suite_result_path",
         "agent_dir",
-        "output_dir",
         "feedback_ref",
         "ai_reviewer_evaluation"
       ],
@@ -379,7 +379,7 @@
       },
       "supported_surfaces": {
         "cli": {
-          "command": "npm run improve:external-suite -- --suite <suite_path> --suite-result <suite_result_path> --target-agent-dir <agent_dir> --output-dir <output_dir> --ai-reviewer-evaluation <ai_reviewer_evaluation>",
+          "command": "npm run improve:external-suite -- --suite <suite_path> --suite-result <suite_result_path> --target-agent-dir <agent_dir> --ai-reviewer-evaluation <ai_reviewer_evaluation>",
           "surface_kind": "domain_smoke_cli"
         },
         "mcp": {
@@ -394,7 +394,7 @@
         },
         "product_entry": {
           "action_key": "improve-from-external-agent-lab-suite",
-          "command": "npm run improve:external-suite -- --suite <suite_path> --suite-result <suite_result_path> --target-agent-dir <agent_dir> --output-dir <output_dir> --ai-reviewer-evaluation <ai_reviewer_evaluation>",
+          "command": "npm run improve:external-suite -- --suite <suite_path> --suite-result <suite_result_path> --target-agent-dir <agent_dir> --ai-reviewer-evaluation <ai_reviewer_evaluation>",
           "surface_kind": "domain_product_entry_action"
         },
         "openai": {
@@ -407,89 +407,9 @@
       "authority_boundary": {
         "can_write_target_domain_truth": false,
         "can_write_target_domain_memory_body": false,
-        "can_modify_target_agent_source_repo": true,
-        "can_modify_target_agent_tests": true,
-        "can_modify_target_agent_docs": true,
-        "can_mutate_target_domain_artifact_body": false,
-        "can_authorize_target_domain_quality_or_export": false,
-        "can_promote_default_agent_without_gate": false,
-        "can_train_or_deploy_model_weights": false
-      }
-    },
-    {
-      "action_id": "execute-external-work-order",
-      "title": "Execute External Work Order",
-      "summary": "Validate an OMA developer patch work order and delegate execution to OPL Framework's work-order execute primitive, including any post-absorb target-domain owner closeout hook, without implementing an OMA runner, queue, target worktree lifecycle, absorb, cleanup, or owner-receipt loop.",
-      "owner": "opl-meta-agent",
-      "effect": "mutating",
-      "source_command": {
-        "command": "npm run execute:external-work-order -- --work-order <work_order_path> --opl-bin <opl_bin> [--output <output_path>] -- [opl_work_order_passthrough_args]",
-        "surface_kind": "domain_smoke_cli_thin_delegation"
-      },
-      "input_schema_ref": "contracts/schemas/execute-external-work-order.input.schema.json",
-      "output_schema_ref": "contracts/schemas/execute-external-work-order.output.schema.json",
-      "workspace_locator_fields": [
-        "work_order_path",
-        "opl_bin",
-        "output_path"
-      ],
-      "human_gate_ids": [
-        "target_agent_owner_patch_gate",
-        "opl_work_order_execute_gate",
-        "target_domain_owner_closeout_hook_gate"
-      ],
-      "stage_route": {
-        "entry_stage_ref": "optimizer-iteration",
-        "required_stage_refs": [
-          "optimizer-iteration"
-        ],
-        "optional_stage_refs": [],
-        "terminal_stage_refs": [
-          "optimizer-iteration"
-        ],
-        "route_policy": "ordered_stage_attempts_no_skip"
-      },
-      "supported_surfaces": {
-        "cli": {
-          "command": "npm run execute:external-work-order -- --work-order <work_order_path> --opl-bin <opl_bin> [--output <output_path>] -- [opl_work_order_passthrough_args]",
-          "surface_kind": "domain_smoke_cli_thin_delegation"
-        },
-        "mcp": {
-          "tool_name": "opl_meta_agent_execute_external_work_order",
-          "surface_kind": "opl_generated_mcp_descriptor",
-          "descriptor_only": true,
-          "public_runtime": false
-        },
-        "skill": {
-          "command_contract_id": "opl-meta-agent.execute-external-work-order",
-          "surface_kind": "opl_generated_skill_contract"
-        },
-        "product_entry": {
-          "action_key": "execute-external-work-order",
-          "command": "npm run execute:external-work-order -- --work-order <work_order_path> --opl-bin <opl_bin> [--output <output_path>] -- [opl_work_order_passthrough_args]",
-          "surface_kind": "domain_product_entry_action"
-        },
-        "openai": {
-          "tool_name": "opl_meta_agent_execute_external_work_order"
-        },
-        "ai_sdk": {
-          "tool_name": "opl_meta_agent_execute_external_work_order"
-        }
-      },
-      "authority_boundary": {
-        "delegates_to_opl_work_order_execute": true,
-        "can_own_generic_runner": false,
-        "can_own_generic_queue_or_attempt_ledger": false,
-        "can_manage_target_worktree_lifecycle": false,
-        "can_absorb_target_branch": false,
-        "can_clean_target_worktree": false,
-        "owner_closeout_hook_delegated": true,
-        "target_owner_closeout_owner": "target-domain via OPL",
-        "oma_can_write_owner_receipt": false,
-        "can_invoke_target_owner_closeout_hook": false,
-        "can_write_target_owner_receipt_body": false,
-        "can_write_target_domain_truth": false,
-        "can_write_target_domain_memory_body": false,
+        "can_modify_target_agent_source_repo": false,
+        "can_modify_target_agent_tests": false,
+        "can_modify_target_agent_docs": false,
         "can_mutate_target_domain_artifact_body": false,
         "can_authorize_target_domain_quality_or_export": false,
         "can_promote_default_agent_without_gate": false,

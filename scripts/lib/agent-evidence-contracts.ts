@@ -1,5 +1,4 @@
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { parseArgs as parseNodeArgs } from 'node:util';
 import type { JsonObject } from './domain-pack.ts';
@@ -58,7 +57,6 @@ export const TARGET_AGENT_FORBIDDEN_WRITE_SURFACES = [
 
 type MutableAgentEvidenceArgs = {
   agentRepo: string | null;
-  outputDir: string | null;
   productionAcceptancePath: string | null;
   aiReviewerEvaluationPath: string | null;
 };
@@ -154,7 +152,6 @@ export function productionEvidenceGate(contracts: AgentContracts, targetAgent: T
 export function parseAgentEvidenceArgs(argv: string[]) {
   const parsed: MutableAgentEvidenceArgs = {
     agentRepo: null,
-    outputDir: null,
     productionAcceptancePath: null,
     aiReviewerEvaluationPath: null,
   };
@@ -164,7 +161,6 @@ export function parseAgentEvidenceArgs(argv: string[]) {
     options: {
       'agent-repo': { type: 'string' },
       'production-acceptance': { type: 'string' },
-      'output-dir': { type: 'string' },
       'ai-reviewer-evaluation': { type: 'string' },
     },
     strict: true,
@@ -175,9 +171,6 @@ export function parseAgentEvidenceArgs(argv: string[]) {
   }
   if (typeof values['production-acceptance'] === 'string') {
     parsed.productionAcceptancePath = requiredValue('--production-acceptance', values['production-acceptance']);
-  }
-  if (typeof values['output-dir'] === 'string') {
-    parsed.outputDir = requiredPathValue('--output-dir', values['output-dir']);
   }
   if (typeof values['ai-reviewer-evaluation'] === 'string') {
     parsed.aiReviewerEvaluationPath = requiredPathValue('--ai-reviewer-evaluation', values['ai-reviewer-evaluation']);
@@ -190,10 +183,8 @@ export function parseAgentEvidenceArgs(argv: string[]) {
     throw new Error(`target agent repo path does not exist: ${parsed.agentRepo}`);
   }
 
-  parsed.outputDir ??= fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-agent-evidence-'));
   return {
     agentRepo: parsed.agentRepo,
-    outputDir: parsed.outputDir,
     productionAcceptancePath: parsed.productionAcceptancePath,
     aiReviewerEvaluationPath: parsed.aiReviewerEvaluationPath,
   };

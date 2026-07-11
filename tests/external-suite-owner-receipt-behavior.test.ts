@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import test from 'node:test';
-import { readJsonFile as readJson, writeJsonFile as writeJson } from './support/contracts.ts';
+import { writeJsonFile as writeJson } from './support/contracts.ts';
 import {
   buildExternalSuite,
   runImproveFromSuite,
@@ -38,9 +38,9 @@ for (const [name, domainId, taskFamily] of cases) {
       });
 
       const payload = runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
-      const candidate = readJson(payload.artifacts.target_capability_improvement_candidate_path);
+      const candidate = payload.agent_building_judgment.target_capability_improvement_candidate;
       assert.equal(payload.status, 'no_source_patch_required');
-      assert.equal(payload.artifacts.developer_patch_work_order_path, undefined);
+      assert.equal(payload.semantic_requests, undefined);
       assert.equal(candidate.status, 'evaluated_no_source_patch_required');
       if (domainId === 'target-agent') {
         assert.deepEqual(candidate.proposed_change_refs, []);

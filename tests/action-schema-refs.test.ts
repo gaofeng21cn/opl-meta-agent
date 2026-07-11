@@ -74,8 +74,8 @@ function improveOutput(status: string, delta: JsonObject = {}): JsonObject {
     source_agent_lab_result_ref: 'result:target-agent/external',
     candidate_refs: ['candidate:target-agent/capability-gap'],
     authority_boundary: authorityBoundary(),
-    artifacts: {
-      target_capability_improvement_candidate_path: '/tmp/candidate.json',
+    agent_building_judgment: {
+      target_capability_improvement_candidate: capabilityCandidate,
     },
     ...delta,
   };
@@ -260,13 +260,17 @@ test('external-suite action schema matches the three real OMA judgment branches'
     {
       foundry_lab_execution_receipt_ref: foundryReceipt,
       candidate_refs: [capabilityCandidate.candidate_id, developerWorkOrder.work_order_id],
-      artifacts: {
-        target_capability_improvement_candidate_path: '/tmp/candidate.json',
-        developer_patch_work_order_path: '/tmp/work-order.json',
-      },
       agent_building_judgment: {
         target_capability_improvement_candidate: capabilityCandidate,
         developer_patch_work_order: developerWorkOrder,
+      },
+      semantic_requests: {
+        developer_patch_work_order: developerWorkOrder,
+        physical_materialization_owner: 'one-person-lab/OPL Foundry Lab',
+        materialization_surface: 'opl work-order materialize-request --request <semantic-request.json> --target-dir <new-dir>',
+        oma_writes_request_files: false,
+        requested_file_name: 'developer-patch-work-order.json',
+        execution_surface: 'opl work-order execute --work-order <developer-patch-work-order.json>',
       },
     },
   )).ok, true);
@@ -275,9 +279,13 @@ test('external-suite action schema matches the three real OMA judgment branches'
     'candidate_blocked_missing_declarative_work_order_inputs',
     {
       missing_required_fields: ['foundry_lab_execution_receipt_ref'],
-      agent_building_judgment: {
-        target_capability_improvement_candidate: capabilityCandidate,
+      semantic_requests: {
         developer_patch_work_order: developerWorkOrder,
+        physical_materialization_owner: 'one-person-lab/OPL Foundry Lab',
+        materialization_surface: 'opl work-order materialize-request --request <semantic-request.json> --target-dir <new-dir>',
+        oma_writes_request_files: false,
+        requested_file_name: 'developer-patch-work-order.json',
+        execution_surface: 'opl work-order execute --work-order <developer-patch-work-order.json>',
       },
     },
   )).ok, false, 'missing-input branch must not contain an executable developer work order');

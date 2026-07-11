@@ -6,7 +6,6 @@ import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import {
   parseJsonText,
-  readJsonFile as readJson,
   repoRoot,
   writeJsonFile as writeJson,
 } from './support/contracts.ts';
@@ -85,20 +84,18 @@ test('agent:evidence emits a thin evaluation request, candidate, and Foundry Lab
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-agent-evidence-'));
   try {
     const agentRepo = path.join(outputRoot, 'med-autoscience');
-    const outputDir = path.join(outputRoot, 'out');
     const reviewerPath = path.join(outputRoot, 'reviewer.json');
     writeTargetAgentFixture(agentRepo);
     writeReviewerEvaluation(reviewerPath);
 
     const result = runMaterializer([
       '--agent-repo', agentRepo,
-      '--output-dir', outputDir,
       '--ai-reviewer-evaluation', reviewerPath,
     ]);
     assert.equal(result.status, 0, result.stderr);
     const payload = parseJsonText(result.stdout);
-    const workOrder = readJson(path.join(outputDir, 'foundry-lab-work-order.json'));
-    const evaluationRequest = readJson(path.join(outputDir, 'foundry-evaluation-request.json'));
+    const workOrder = payload.semantic_requests.foundry_lab_work_order;
+    const evaluationRequest = payload.semantic_requests.foundry_evaluation_request;
     assert.equal(payload.status, 'foundry_lab_evaluation_candidate_ready_for_opl_foundry_lab');
     assert.equal(workOrder.work_order_kind, 'target_agent_production_evidence_evaluation');
     assert.equal(workOrder.status, 'ready_for_opl_foundry_lab_evaluation');
@@ -124,10 +121,8 @@ test('agent:evidence emits a thin evaluation request, candidate, and Foundry Lab
       oma_can_claim_target_domain_ready: false,
       oma_can_claim_target_production_ready: false,
     });
-    assert.equal(fs.existsSync(path.join(outputDir, 'agent-lab-suite-seed.json')), false);
-    assert.equal(fs.existsSync(path.join(outputDir, 'agent-lab-run-result.json')), false);
-    assert.equal(fs.existsSync(path.join(outputDir, 'developer-patch-work-order.json')), false);
-    assert.equal(fs.existsSync(path.join(outputDir, 'typed-blocker.json')), false);
+    assert.equal(fs.readdirSync(outputRoot).includes('out'), false);
+    assert.equal(payload.semantic_requests.oma_writes_request_files, false);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }
@@ -137,9 +132,8 @@ test('agent:evidence projects an expected blocker ref instead of writing a block
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-agent-evidence-missing-reviewer-'));
   try {
     const agentRepo = path.join(outputRoot, 'med-autoscience');
-    const outputDir = path.join(outputRoot, 'out');
     writeTargetAgentFixture(agentRepo);
-    const result = runMaterializer(['--agent-repo', agentRepo, '--output-dir', outputDir]);
+    const result = runMaterializer(['--agent-repo', agentRepo]);
     assert.equal(result.status, 0, result.stderr);
     const payload = parseJsonText(result.stdout);
     assert.equal(
@@ -147,7 +141,7 @@ test('agent:evidence projects an expected blocker ref instead of writing a block
       'foundry_lab_evaluation_candidate_ready_reviewer_evidence_missing',
     );
     assert.match(payload.agent_building_judgment.expected_typed_blocker_ref, /^expected-typed-blocker-ref:/);
-    assert.equal(fs.existsSync(path.join(outputDir, 'typed-blocker.json')), false);
+    assert.equal(payload.semantic_requests.oma_writes_request_files, false);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }

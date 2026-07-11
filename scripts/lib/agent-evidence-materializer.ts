@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import fs from 'node:fs';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 import type { JsonObject } from './domain-pack.ts';
 import {
@@ -7,11 +7,7 @@ import {
   loadAiReviewerEvaluation,
   type AiReviewerEvaluation,
 } from './meta-agent-loop-ai-reviewer.ts';
-import {
-  sha256FileBytes,
-  stableId,
-  writeJson,
-} from './meta-agent-loop-io.ts';
+import { stableId } from './meta-agent-loop-io.ts';
 import {
   type AgentContracts,
   TARGET_AGENT_EDITABLE_SURFACES,
@@ -238,9 +234,12 @@ export function buildCapabilityCandidate({
   };
 }
 
-export function materializeAgentEvidenceFromCli(argv = process.argv.slice(2)): JsonObject {
+function semanticJsonSha256(value: JsonObject): string {
+  return createHash('sha256').update(`${JSON.stringify(value, null, 2)}\n`).digest('hex');
+}
+
+export function buildAgentEvidenceRequestFromCli(argv = process.argv.slice(2)): JsonObject {
   const args = parseAgentEvidenceArgs(argv);
-  fs.mkdirSync(args.outputDir, { recursive: true });
   const contracts = loadAgentContracts(args.agentRepo, args.productionAcceptancePath);
   const targetAgent = targetAgentIdentity(contracts, args.agentRepo);
   const aiReviewerEvaluation = args.aiReviewerEvaluationPath
@@ -253,12 +252,7 @@ export function materializeAgentEvidenceFromCli(argv = process.argv.slice(2)): J
     aiReviewerEvaluation,
     aiReviewerEvaluationPath: args.aiReviewerEvaluationPath,
   });
-  const evaluationRequestPath = path.join(args.outputDir, 'foundry-evaluation-request.json');
-  writeJson(evaluationRequestPath, evaluationRequest);
-
   const ownerReceiptRefs = buildOwnerReceiptRefs(contracts, targetAgent);
-  const ownerReceiptRefsPath = path.join(args.outputDir, 'owner-receipt-refs.json');
-  writeJson(ownerReceiptRefsPath, ownerReceiptRefs);
 
   const capabilityCandidate = buildCapabilityCandidate({
     contracts,
@@ -267,9 +261,6 @@ export function materializeAgentEvidenceFromCli(argv = process.argv.slice(2)): J
     aiReviewerEvaluationPath: args.aiReviewerEvaluationPath,
     targetAgent,
   });
-  const capabilityPath = path.join(args.outputDir, 'target-capability-improvement-candidate.json');
-  writeJson(capabilityPath, capabilityCandidate);
-
   const foundryLabWorkOrder = buildFoundryLabWorkOrder({
     workOrderKind: 'target_agent_production_evidence_evaluation',
     targetAgent: {
@@ -280,11 +271,11 @@ export function materializeAgentEvidenceFromCli(argv = process.argv.slice(2)): J
       descriptor_ref: path.join(args.agentRepo, 'contracts/domain_descriptor.json'),
     },
     evaluationRequest,
-    evaluationRequestRef: path.basename(evaluationRequestPath),
-    evaluationRequestSha256: sha256FileBytes(evaluationRequestPath),
+    evaluationRequestRef: 'foundry-evaluation-request.json',
+    evaluationRequestSha256: semanticJsonSha256(evaluationRequest),
     sourceRefs: [
       ...sourceContractRefs(contracts),
-      ownerReceiptRefsPath,
+      'owner-receipt-refs.json',
       ...productionAcceptanceEvidenceRefs(contracts.productionAcceptance),
     ],
     reviewerRefs: aiReviewerEvaluation && args.aiReviewerEvaluationPath
@@ -300,8 +291,6 @@ export function materializeAgentEvidenceFromCli(argv = process.argv.slice(2)): J
         .filter((ref): ref is string => typeof ref === 'string')),
     ],
   });
-  const foundryLabWorkOrderPath = path.join(args.outputDir, 'foundry-lab-work-order.json');
-  writeJson(foundryLabWorkOrderPath, foundryLabWorkOrder);
 
   return {
     surface_kind: 'opl_meta_agent_agent_evidence_handoff',
@@ -311,19 +300,23 @@ export function materializeAgentEvidenceFromCli(argv = process.argv.slice(2)): J
       : 'foundry_lab_evaluation_candidate_ready_reviewer_evidence_missing',
     product_id: 'opl-meta-agent',
     target_agent: capabilityCandidate.target_agent,
-    artifacts: {
-      foundry_evaluation_request_path: evaluationRequestPath,
-      owner_receipt_refs_path: ownerReceiptRefsPath,
-      target_capability_improvement_candidate_path: capabilityPath,
-      foundry_lab_work_order_path: foundryLabWorkOrderPath,
-    },
     agent_building_judgment: {
       target_capability_improvement_candidate: capabilityCandidate,
       expected_typed_blocker_ref: capabilityCandidate.expected_typed_blocker_ref,
     },
-    foundry_lab_handoff: {
-      evaluation_request: evaluationRequest,
-      work_order: foundryLabWorkOrder,
+    semantic_requests: {
+      foundry_evaluation_request: evaluationRequest,
+      owner_receipt_refs: ownerReceiptRefs,
+      foundry_lab_work_order: foundryLabWorkOrder,
+      physical_materialization_owner: 'one-person-lab/OPL Foundry Lab',
+      materialization_surface: 'opl work-order materialize-request --request <semantic-request.json> --target-dir <new-dir>',
+      oma_writes_request_files: false,
+      requested_file_names: {
+        foundry_evaluation_request: 'foundry-evaluation-request.json',
+        owner_receipt_refs: 'owner-receipt-refs.json',
+        target_capability_improvement_candidate: 'target-capability-improvement-candidate.json',
+        foundry_lab_work_order: 'foundry-lab-work-order.json',
+      },
     },
     authority_boundary: foundryLabWorkOrder.authority_boundary,
   };
@@ -331,7 +324,7 @@ export function materializeAgentEvidenceFromCli(argv = process.argv.slice(2)): J
 
 if (import.meta.main) {
   try {
-    process.stdout.write(`${JSON.stringify(materializeAgentEvidenceFromCli(), null, 2)}\n`);
+    process.stdout.write(`${JSON.stringify(buildAgentEvidenceRequestFromCli(), null, 2)}\n`);
   } catch (error) {
     process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
     process.exitCode = 1;

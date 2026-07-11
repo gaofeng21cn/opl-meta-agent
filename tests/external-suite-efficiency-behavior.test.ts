@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
-import { readJsonFile as readJson, writeJsonFile as writeJson } from './support/contracts.ts';
+import { writeJsonFile as writeJson } from './support/contracts.ts';
 import {
   buildExternalSuite,
   runImproveFromSuite,
@@ -44,7 +44,7 @@ test('external suite efficiency evidence is projected into developer work order 
     });
 
     const payload = runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
-    const workOrder = readJson(payload.artifacts.developer_patch_work_order_path);
+    const workOrder = payload.agent_building_judgment.developer_patch_work_order;
     assert.equal(payload.status, 'developer_patch_work_order_ready_for_opl_foundry_lab');
     assert.deepEqual(workOrder.efficiency_non_regression_refs, efficiencyRefs);
     assert.equal(workOrder.implementation_controls.quality_floor_non_regression_required, true);
@@ -77,7 +77,7 @@ test('external suite efficiency evidence without quality floor emits a blocker r
     assert.equal(payload.status, 'candidate_blocked_missing_declarative_work_order_inputs');
     assert.equal(fs.existsSync(path.join(outputRoot, 'mechanism-patch-proposal.json')), false);
     assert.equal(fs.existsSync(path.join(outputRoot, 'typed-blocker.json')), false);
-    const candidate = readJson(payload.artifacts.target_capability_improvement_candidate_path);
+    const candidate = payload.agent_building_judgment.target_capability_improvement_candidate;
     assert.deepEqual(candidate.missing_required_fields, [
       'efficiency_non_regression_refs.quality_floor_refs',
       'target_improvement_policy.proposed_change_refs',

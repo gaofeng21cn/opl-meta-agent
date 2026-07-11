@@ -245,8 +245,7 @@
         "agent/quality_gates/external-work-order-execution.md"
       ],
       "allowed_action_refs": [
-        "improve-from-external-agent-lab-suite",
-        "execute-external-work-order"
+        "improve-from-external-agent-lab-suite"
       ],
       "requires": [
         "target_bound_foundry_result_and_reviewer_evidence_ready"

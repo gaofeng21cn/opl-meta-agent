@@ -119,37 +119,6 @@
     ]
   },
   {
-    "gate_id": "external_work_order_execution_delegation",
-    "tracked_script_refs": [
-      "scripts/execute-external-work-order.ts"
-    ],
-    "current_role": "thin_validation_and_opl_work_order_execute_delegation",
-    "retention_state": "retained_current_authority_function",
-    "retention_reason": "current OMA action implementation validates developer patch work-order shape and delegates execution to OPL work-order execute without owning target lifecycle or owner receipt bodies",
-    "retention_evidence_refs": [
-      "docs/decisions.md#execute-external-work-order",
-      "contracts/action_catalog.json#actions.execute-external-work-order",
-      "tests/execute-external-work-order.test.ts",
-      "tests/contracts-action-authority.test.ts"
-    ],
-    "allowed_until": "opl_generated_action_can_validate_and_delegate_same_work_order_shape",
-    "required_before_retire_or_absorb": [
-      "opl_work_order_execute_primitive_parity_ref",
-      "target_owner_closeout_hook_delegation_ref",
-      "no_oma_target_worktree_lifecycle_proof_ref",
-      "no_oma_owner_receipt_write_proof_ref",
-      "no_active_npm_or_test_caller_ref",
-      "tombstone_or_provenance_ref"
-    ],
-    "forbidden_long_term_claims": [
-      "generic_runner",
-      "queue_or_attempt_ledger",
-      "target_worktree_lifecycle_owner",
-      "absorb_or_cleanup_owner",
-      "target_owner_receipt_body_writer"
-    ]
-  },
-  {
     "gate_id": "source_structure_and_authority_manifest_maintenance_helpers",
     "tracked_script_refs": [
       "scripts/check-source-structure.ts",

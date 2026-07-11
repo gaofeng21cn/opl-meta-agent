@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { parseArgs as parseNodeArgs } from 'node:util';
 import {
@@ -19,7 +18,6 @@ import {
   readJson,
   readTargetAgent,
   stableId,
-  writeJson,
 } from './lib/meta-agent-loop-io.ts';
 import type { SuiteResult } from './lib/external-suite-materializer.ts';
 import {
@@ -52,7 +50,6 @@ export type ImproveArgs = {
   suitePath: string;
   suiteResultPath: string;
   targetAgentDir: string;
-  outputDir: string;
   feedbackRef: string | null;
   aiReviewerEvaluationPath: string;
 };
@@ -62,14 +59,12 @@ export function parseImproveFromAgentLabSuiteArgs(argv: string[]): ImproveArgs {
     suitePath: string | null;
     suiteResultPath: string | null;
     targetAgentDir: string | null;
-    outputDir: string | null;
     feedbackRef: string | null;
     aiReviewerEvaluationPath: string | null;
   } = {
     suitePath: null,
     suiteResultPath: null,
     targetAgentDir: null,
-    outputDir: null,
     feedbackRef: null,
     aiReviewerEvaluationPath: null,
   };
@@ -81,7 +76,6 @@ export function parseImproveFromAgentLabSuiteArgs(argv: string[]): ImproveArgs {
       'suite-result': { type: 'string' },
       'target-agent-dir': { type: 'string' },
       'agent-dir': { type: 'string' },
-      'output-dir': { type: 'string' },
       'feedback-ref': { type: 'string' },
       'ai-reviewer-evaluation': { type: 'string' },
     },
@@ -103,9 +97,6 @@ export function parseImproveFromAgentLabSuiteArgs(argv: string[]): ImproveArgs {
     .at(-1);
   if (targetAgentDir?.kind === 'option' && typeof targetAgentDir.value === 'string') {
     parsed.targetAgentDir = path.resolve(targetAgentDir.value);
-  }
-  if (typeof values['output-dir'] === 'string') {
-    parsed.outputDir = path.resolve(values['output-dir']);
   }
   if (typeof values['feedback-ref'] === 'string') {
     parsed.feedbackRef = values['feedback-ref'];
@@ -138,12 +129,10 @@ export function parseImproveFromAgentLabSuiteArgs(argv: string[]): ImproveArgs {
     );
   }
 
-  parsed.outputDir ??= fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-external-suite-'));
   return {
     suitePath: parsed.suitePath,
     suiteResultPath: parsed.suiteResultPath,
     targetAgentDir: parsed.targetAgentDir,
-    outputDir: parsed.outputDir,
     feedbackRef: parsed.feedbackRef,
     aiReviewerEvaluationPath: parsed.aiReviewerEvaluationPath,
   };
@@ -705,11 +694,9 @@ export function runImproveFromAgentLabSuite({
   suitePath,
   suiteResultPath,
   targetAgentDir,
-  outputDir,
   feedbackRef,
   aiReviewerEvaluationPath,
 }: ImproveArgs): JsonObject {
-  fs.mkdirSync(outputDir, { recursive: true });
   const domainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
   const aiReviewerEvaluation = loadAiReviewerEvaluation(aiReviewerEvaluationPath);
   const suite = readJson(suitePath);
@@ -749,7 +736,6 @@ export function runImproveFromAgentLabSuite({
     aiReviewerEvaluationRef: aiReviewerEvaluationPath,
     policy,
   });
-  const capabilityPath = path.join(outputDir, 'target-capability-improvement-candidate.json');
   const missingFields = [
     ...missingEfficiencyNonRegressionFields(capabilityCandidate.efficiency_non_regression_refs),
     ...missingTargetImprovementPolicyFields({
@@ -772,7 +758,6 @@ export function runImproveFromAgentLabSuite({
     capabilityCandidate.status = 'candidate_blocked_missing_declarative_work_order_inputs';
     capabilityCandidate.missing_required_fields = uniqueStrings(missingFields);
     capabilityCandidate.expected_typed_blocker_ref = expectedTypedBlockerRef;
-    writeJson(capabilityPath, capabilityCandidate);
     return {
       surface_kind: 'opl_meta_agent_external_suite_judgment',
       version: 'opl-meta-agent.external-suite-judgment.v1',
@@ -784,8 +769,8 @@ export function runImproveFromAgentLabSuite({
       evaluation_provenance_refs: suiteResult.refs.evaluation_provenance_refs,
       candidate_refs: [capabilityCandidate.candidate_id, expectedTypedBlockerRef],
       missing_required_fields: uniqueStrings(missingFields),
-      artifacts: {
-        target_capability_improvement_candidate_path: capabilityPath,
+      agent_building_judgment: {
+        target_capability_improvement_candidate: capabilityCandidate,
       },
       authority_boundary: {
         ...capabilityCandidate.authority_boundary,
@@ -797,7 +782,6 @@ export function runImproveFromAgentLabSuite({
 
   if (suiteResult.status === 'passed') {
     capabilityCandidate.status = 'evaluated_no_source_patch_required';
-    writeJson(capabilityPath, capabilityCandidate);
     return {
       surface_kind: 'opl_meta_agent_external_suite_judgment',
       version: 'opl-meta-agent.external-suite-judgment.v1',
@@ -809,8 +793,8 @@ export function runImproveFromAgentLabSuite({
       evaluation_target_agent: suiteResult.evaluation_target_agent,
       evaluation_provenance_refs: suiteResult.refs.evaluation_provenance_refs,
       candidate_refs: [capabilityCandidate.candidate_id],
-      artifacts: {
-        target_capability_improvement_candidate_path: capabilityPath,
+      agent_building_judgment: {
+        target_capability_improvement_candidate: capabilityCandidate,
       },
       authority_boundary: capabilityCandidate.authority_boundary,
     };
@@ -838,10 +822,6 @@ export function runImproveFromAgentLabSuite({
     opl_work_order_delegation_aperture: developerPatchWorkOrder.opl_work_order_delegation_aperture,
   });
   validateDeveloperPatchWorkOrder(developerPatchWorkOrder);
-  const workOrderPath = path.join(outputDir, 'developer-patch-work-order.json');
-  writeJson(capabilityPath, capabilityCandidate);
-  writeJson(workOrderPath, developerPatchWorkOrder);
-
   return {
     surface_kind: 'opl_meta_agent_external_suite_judgment',
     version: 'opl-meta-agent.external-suite-judgment.v1',
@@ -858,13 +838,17 @@ export function runImproveFromAgentLabSuite({
     ],
     ...domainPackReceiptFields(domainPackSummary),
     source_domain_pack: domainPackSummary,
-    artifacts: {
-      target_capability_improvement_candidate_path: capabilityPath,
-      developer_patch_work_order_path: workOrderPath,
-    },
     agent_building_judgment: {
       target_capability_improvement_candidate: capabilityCandidate,
       developer_patch_work_order: developerPatchWorkOrder,
+    },
+    semantic_requests: {
+      developer_patch_work_order: developerPatchWorkOrder,
+      physical_materialization_owner: 'one-person-lab/OPL Foundry Lab',
+      materialization_surface: 'opl work-order materialize-request --request <semantic-request.json> --target-dir <new-dir>',
+      oma_writes_request_files: false,
+      requested_file_name: 'developer-patch-work-order.json',
+      execution_surface: 'opl work-order execute --work-order <developer-patch-work-order.json>',
     },
     authority_boundary: {
       ...capabilityCandidate.authority_boundary,

@@ -21,7 +21,6 @@
   "scanned_script_refs": [
     "scripts/build-agent-baseline.ts",
     "scripts/check-source-structure.ts",
-    "scripts/execute-external-work-order.ts",
     "scripts/improve-from-agent-lab-suite.ts",
     "scripts/lib/agent-evidence-contracts.ts",
     "scripts/lib/agent-evidence-materializer.ts",
@@ -87,13 +86,6 @@
         ]
       },
       {
-        "script_ref": "scripts/execute-external-work-order.ts",
-        "active_caller_refs": [
-          "package.json#scripts.execute:external-work-order",
-          "tests/execute-external-work-order.test.ts#test_ref"
-        ]
-      },
-      {
         "script_ref": "scripts/improve-from-agent-lab-suite.ts",
         "active_caller_refs": [
           "package.json#scripts.improve:external-suite",
@@ -128,7 +120,6 @@
         "script_ref": "scripts/lib/domain-pack.ts",
         "active_caller_refs": [
           "scripts/build-agent-baseline.ts#import",
-          "scripts/execute-external-work-order.ts#import",
           "scripts/improve-from-agent-lab-suite.ts#import",
           "scripts/lib/agent-evidence-contracts.ts#import",
           "scripts/lib/agent-evidence-materializer.ts#import",
@@ -195,7 +186,6 @@
         "script_ref": "scripts/lib/meta-agent-loop-io.ts",
         "active_caller_refs": [
           "scripts/build-agent-baseline.ts#import",
-          "scripts/execute-external-work-order.ts#import",
           "scripts/improve-from-agent-lab-suite.ts#import",
           "scripts/lib/agent-evidence-contracts.ts#import",
           "scripts/lib/agent-evidence-materializer.ts#import",
@@ -343,7 +333,6 @@
       {
         "script_ref": "scripts/lib/work-order-validation.ts",
         "active_caller_refs": [
-          "scripts/execute-external-work-order.ts#import",
           "scripts/improve-from-agent-lab-suite.ts#import"
         ]
       },

@@ -180,42 +180,6 @@
         "can_own_generic_runner": false,
         "can_own_generic_queue_or_attempt_ledger": false
       }
-    },
-    {
-      "action_id": "execute-external-work-order",
-      "generated_action_contract_ref": "contracts/action_catalog.json#/actions/execute-external-work-order",
-      "hosted_path_owner": "one-person-lab/OPL generated surface",
-      "progress_role": "opl_work_order_execute_receipt_or_typed_blocker_ref_shape",
-      "accepted_ref_shapes": [
-        "external_work_order_delegation_ref",
-        "work_order_execution_receipt_ref",
-        "target_owner_receipt_or_typed_blocker_ref",
-        "no_regression_ref"
-      ],
-      "accepted_progress_refs": [
-        "external-work-order-delegation-ref:target-agent/work-order",
-        "work-order-execution-receipt:target-agent/work-order",
-        "target-owner-receipt-or-typed-blocker:target-agent/work-order",
-        "agent-lab-no-regression-ref:target-agent/post-work-order"
-      ],
-      "uses_oma_runner_or_queue": false,
-      "canary_modifies_external_target_repo": false,
-      "canary_materializes_candidate_agent_body": false,
-      "authority_boundary": {
-        "refs_only": true,
-        "can_write_target_domain_truth": false,
-        "can_write_target_domain_memory_body": false,
-        "can_mutate_target_domain_artifact_body": false,
-        "can_authorize_target_domain_quality_or_export": false,
-        "can_claim_target_domain_ready": false,
-        "can_claim_production_ready": false,
-        "can_hold_target_artifact_authority": false,
-        "can_write_target_owner_receipt_body": false,
-        "can_promote_default_agent_without_gate": false,
-        "can_manage_target_worktree_lifecycle": false,
-        "can_own_generic_runner": false,
-        "can_own_generic_queue_or_attempt_ledger": false
-      }
     }
   ],
   "controlled_owner_chain_canary_readout": {
