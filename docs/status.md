@@ -201,7 +201,7 @@ g2 `work_order_execution.receipt` dry-run ready。验证证据：`npm run test:b
 
 ## Zoller PDF -> 肠癌手术风险 Agent E2E
 
-当前 ABI 复验已记录在 [Zoller reference-design E2E](./history/process/zoller-reference-design-e2e-20260711.md)。该轮由 OMA `7a8f096` 与 OPL checkout `610aef7` 执行，未新增私有 PDF parser runtime 或 `--reference-design-file` 旁路；原始 PDF 只以 SHA-256 保管，pattern packet 仍是设计来源，血液病知识、患者数据、阈值、性能结论、runtime 和临床 authority 均未迁入 target truth。
+当前 ABI 复验已记录在 [Zoller reference-design E2E](./history/process/zoller-reference-design-e2e-20260711.md)。该轮由 OMA `7a8f096` 与 OPL checkout `610aef7` 执行，未新增私有 PDF parser runtime 或 `--reference-design-file` 旁路；原始 PDF 只以 SHA-256 保管，pattern packet 仍是设计来源，血液病知识、患者数据、阈值、性能结论、runtime 和临床 authority 均未迁入 target truth。OMA shared-package compatibility pin 是 `f0a543e`；OPL `c71c935` 已在同一 target 上完成 post-E2E recheck，完整 artifact digest index 绑定在该历史记录中。
 
 修复后的 `build-agent-baseline` 只有在 OPL scaffold `validation.status=passed` 时才会写 Foundry handoff。六个 controlled `fixture-run` StageRun closeout 都以 `completed + accepted_typed_closeout` 结束并逐段消费前一 closeout；target `domain-agent:colorectal-surgery-risk` 走 `source_derived_design`，实现了 9 个 source-derived stages 加 1 个 target-only owner gate。当前 package readback 是 scaffold=`passed`、interfaces=`ready`、manifest=`valid`、profile conformance=`passed`，work order=`oma_foundry_lab_work_order_4c1ed2e086ea`。
 

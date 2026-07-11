@@ -17,9 +17,11 @@ Machine boundary: 本文记录一次可复核的 PDF-to-agent ABI evidence。机
 | OPL pattern packet | `cb26ce9fc3084615f8c8047b64f0e3c7ef50f1f16799569fdafc43ac259f9a42` |
 | Pattern notes | `27e2a9e893057f72b6e6e10e2e0db069b2fb52e5846cba5f6ba3e7cd243dbc1b` |
 | OMA producer source | `7a8f0968104d6a7dc2cfdaea35ff9903f9a7b532` |
-| OPL checkout used for readback | `610aef704ccf92c5f373256c9f494e949a402abe` |
+| OMA package compatibility pin | `f0a543e1728f8c1d35b2c5f2e035a6551a521507` |
+| OPL exact checkout used for E2E readback | `610aef704ccf92c5f373256c9f494e949a402abe` |
+| OPL canonical SHA after final recheck | `c71c9357d1b5d4a602cb8716d4554f2b4fa870ff` |
 
-OMA 的 package dependency/release compatibility pin 仍由 `package.json` / `package-lock.json` 持有；上表的 OPL SHA 仅说明本次 CLI ABI readback 所用 checkout，不能写成 release pin 或 public install authority。
+`f0a543e...` 是 OMA `package.json` 与 lockfile 所持有的 shared-package compatibility pin；`610aef...` 只标识本次 CLI ABI E2E 所用 source checkout；`c71c935...` 是其后完成同一 target scaffold/interfaces/no-observation readback 的 OPL canonical SHA。三者职责不同，后两者都不能写成 OMA dependency pin、public install authority 或 target owner acceptance。
 
 ## Current ABI Repair
 
@@ -96,6 +98,25 @@ Artifact hashes for exact evidence bytes:
 | Generated interfaces | `a06429b39a09608239e9ffa78afc4d5bf4cc8da2dd4e225aeac620b3cb0c1227` |
 | Stage manifest | `0ec0e1d654f4816c0f6f4c709f78b25e1f61416c9ca7d87ed5f117aa3379fa60` |
 | AgentBuildReceipt | `3810d5a3f21a317874f7f1cfa2a614d2343b4a4645f083dd511ee510cc3236c8` |
+
+## Final Readback Manifest
+
+最终 local evidence bundle 的 `final-readback-manifest.json` SHA-256 为
+`ec7339432f458608f4f7fea10324c3fb7d98f50ff6f3509197e16076bcf93272`。
+该 manifest 绑定 exact OMA canonical、package compatibility pin、OPL E2E source、OPL final recheck 和下列 artifact bytes；本表是 historical digest index，不替代 OPL runtime/readback、target owner receipt 或任何 clinical authority。
+
+| Artifact | SHA-256 |
+| --- | --- |
+| `stage-route-evidence.json` | `0850531b8e4ffa414f5e3a6d29c8d1da31caba62a1d4137df0577ac9fc08e1ca` |
+| `build-agent-baseline.json` | `6e9955007845582d7999ea29b33bdde4135339848433ad136aa9eca395144df4` |
+| `scaffold-validation.json` | `af144964f2e3c62f5a63ed36f33614e5632c5f22814b289c9686e6c4a83ac4bb` |
+| `generated-interfaces.json` | `a06429b39a09608239e9ffa78afc4d5bf4cc8da2dd4e225aeac620b3cb0c1227` |
+| `foundry-evaluation-no-observation.json` | `020e2c3d6f85e4c0df759d2a03f5047870264ddedad3cb9d20b70fda9e798e87` |
+| `synthetic-abi-observation-packet.json` | `663e11673a21244870fb229ecba71fa53f86bfc75da0149224231a0ccc128992` |
+| `foundry-evaluation-synthetic-abi.json` | `1a31d4c5c03b6c1f5a7a7d7a2d06b00dea18b5e0fef40a0e65429284723226a4` |
+| `current-opl-c71-scaffold-validation.json` | `af144964f2e3c62f5a63ed36f33614e5632c5f22814b289c9686e6c4a83ac4bb` |
+| `current-opl-c71-generated-interfaces.json` | `a06429b39a09608239e9ffa78afc4d5bf4cc8da2dd4e225aeac620b3cb0c1227` |
+| `current-opl-c71-foundry-no-observation.json` | `a4f2a42689a7778428af770a4d269b14c69585baf9196ec79a02e6358587aca9` |
 
 标准 materialization command shape：
 
