@@ -357,63 +357,6 @@ function addStageSubpacketRefs(stage: JsonObject, expectedRef: string, repairNot
   }
 }
 
-function installFoundryStageIdentityProjection(
-  draft: JsonObject,
-  targetAgent: TargetAgent,
-  repairNotes: string[],
-): void {
-  const foundrySeries = isRecord(draft.foundry_agent_series) ? draft.foundry_agent_series : null;
-  if (!foundrySeries) {
-    return;
-  }
-  if (!Array.isArray(foundrySeries.required_identity_fields)
-    || foundrySeries.required_identity_fields.some((field) =>
-      typeof field !== 'string' || field.trim().length === 0
-    )) {
-    return;
-  }
-  const requiredIdentityFields = foundrySeries.required_identity_fields.map((field) => field.trim());
-  const expectedLabel = targetAgent.domain_label ?? targetAgent.domain_id;
-  const expectedCoreIdentity: Record<string, string> = {
-    domain_id: targetAgent.domain_id,
-    foundry_agent_id: targetAgent.domain_id,
-    product_layer: 'foundry_agent',
-    domain_label: expectedLabel,
-    authority_owner: expectedLabel,
-    stage_control_plane_target_domain_id: targetAgent.domain_id,
-  };
-  const requiredLegacyIdentityFields = [
-    'domain_id',
-    'foundry_agent_id',
-    'product_layer',
-    'domain_label',
-    'authority_owner',
-    'stage_control_plane_ref',
-  ];
-  if (uniqueStrings(requiredIdentityFields).length !== requiredIdentityFields.length
-    || requiredLegacyIdentityFields.some((field) => !requiredIdentityFields.includes(field))
-    || Object.entries(expectedCoreIdentity).some(([field, expected]) => foundrySeries[field] !== expected)) {
-    return;
-  }
-  const expectedFields: Record<string, string> = {
-    stage_manifest_ref: 'agent/stages/manifest.json',
-    stage_control_plane_ref: 'opl-generated:family_stage_control_plane',
-  };
-  Object.entries(expectedFields).forEach(([field, expected]) => {
-    if (foundrySeries[field] !== expected) {
-      foundrySeries[field] = expected;
-      repairNotes.push(`foundry_agent_series.${field}`);
-    }
-  });
-  for (const field of ['stage_manifest_ref', 'stage_control_plane_ref']) {
-    if (!requiredIdentityFields.includes(field)) {
-      requiredIdentityFields.push(field);
-      repairNotes.push(`foundry_agent_series.required_identity_fields.${field}`);
-    }
-  }
-  foundrySeries.required_identity_fields = requiredIdentityFields;
-}
-
 export function repairStageDecompositionCloseoutPacket(
   packet: unknown,
   { targetAgent }: { targetAgent: TargetAgent },
@@ -433,7 +376,6 @@ export function repairStageDecompositionCloseoutPacket(
   const repairedPacket = cloneJson(packet) as StageDecompositionCloseoutPacket;
   const repairNotes: string[] = [];
   const draft = repairedPacket.stage_decomposition_pack_draft as unknown as JsonObject;
-  installFoundryStageIdentityProjection(draft, targetAgent, repairNotes);
 
   if (expectedSet) {
     const expectedRef = String(expectedSet.packet_set_ref);

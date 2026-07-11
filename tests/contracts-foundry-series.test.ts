@@ -5,7 +5,6 @@ import {
   readJson,
   readOwnerJson,
   oplSharedReleaseDependency,
-  oplSharedReleaseCommit,
 } from './support/contracts.ts';
 import type { JsonObject } from './support/contracts.ts';
 import { assertEveryFlagFalse } from './support/source-purity.ts';
@@ -51,9 +50,12 @@ test('foundry agent series pins the shared implementation and policy releases', 
   const ownerPolicyRelease = readOwnerJson(
     series.shared_policy_release.policy_release_contract_ref as string,
   );
+  const ownerSharedRelease = readOwnerJson('contracts/family-release/shared-owner-release.json');
+  const latestStable = ownerSharedRelease.latest_stable as JsonObject;
   assert.equal((packageJson.dependencies as JsonObject)['opl-framework-shared'], oplSharedReleaseDependency);
   assert.equal((rootPackageLock.dependencies as JsonObject)['opl-framework-shared'], oplSharedReleaseDependency);
-  assert.equal(String(sharedPackageLock.resolved).endsWith(`#${oplSharedReleaseCommit}`), true);
+  assert.match(String(latestStable.commit), /^[0-9a-f]{40}$/);
+  assert.equal(String(sharedPackageLock.resolved).endsWith(`#${latestStable.commit}`), true);
 
   assert.equal(
     series.shared_policy_release.policy_bundle_fingerprint,

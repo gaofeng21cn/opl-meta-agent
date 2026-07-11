@@ -1186,6 +1186,12 @@ export function validateStageDecompositionCloseoutPacket(
   );
   validateStageNativeArtifactContractBundle(stageNativeArtifactContract, stageControl, targetAgent);
   const foundrySeries = asRecord(draft.foundry_agent_series, 'foundry_agent_series');
+  if (foundrySeries.surface_kind !== 'opl_foundry_agent_series_consumer') {
+    throw new Error('stage-decomposition pack draft foundry_agent_series.surface_kind is invalid.');
+  }
+  if (foundrySeries.version !== 'foundry-agent-series-consumer.v1') {
+    throw new Error('stage-decomposition pack draft foundry_agent_series.version is invalid.');
+  }
   const expectedLabel = domainLabelFor(targetAgent);
   const expectedSeriesIdentity: Record<string, string> = {
     domain_id: targetAgent.domain_id,
@@ -1202,27 +1208,8 @@ export function validateStageDecompositionCloseoutPacket(
       );
     }
   }
-  const requiredIdentityFields = asStringArray(
-    foundrySeries.required_identity_fields,
-    'foundry_agent_series.required_identity_fields',
-  );
-  if (new Set(requiredIdentityFields).size !== requiredIdentityFields.length) {
-    throw new Error('stage-decomposition pack draft foundry_agent_series.required_identity_fields has duplicates.');
-  }
-  for (const field of [
-    'domain_id',
-    'foundry_agent_id',
-    'product_layer',
-    'domain_label',
-    'authority_owner',
-    'stage_manifest_ref',
-    'stage_control_plane_ref',
-  ]) {
-    if (!requiredIdentityFields.includes(field)) {
-      throw new Error(
-        `stage-decomposition pack draft foundry_agent_series.required_identity_fields missing ${field}.`,
-      );
-    }
+  if (Object.hasOwn(foundrySeries, 'required_identity_fields')) {
+    throw new Error('stage-decomposition pack draft foundry_agent_series.required_identity_fields is retired.');
   }
   if (foundrySeries.stage_manifest_ref !== 'agent/stages/manifest.json') {
     throw new Error('stage-decomposition pack draft foundry_agent_series.stage_manifest_ref is invalid.');

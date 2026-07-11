@@ -886,8 +886,8 @@ function buildStageControlPlane(args: StageControlPlaneArgs): JsonObject {
 function buildFoundryAgentSeriesContract(targetAgent: TargetAgent, stageControlPlane: JsonObject, owner: string): JsonObject {
   const domainId = targetAgent.domain_id;
   return {
-    surface_kind: 'opl_foundry_agent_series_contract',
-    version: 'foundry-agent-series.v1',
+    surface_kind: 'opl_foundry_agent_series_consumer',
+    version: 'foundry-agent-series-consumer.v1',
     owner: domainId,
     ...CANONICAL_FOUNDRY_POLICY_REFS,
     shared_policy_release: SHARED_POLICY_RELEASE,
@@ -901,15 +901,6 @@ function buildFoundryAgentSeriesContract(targetAgent: TargetAgent, stageControlP
     stage_control_plane_ref: 'opl-generated:family_stage_control_plane',
     stage_control_plane_target_domain_id: stageControlPlane.target_domain_id,
     app_projection_ref: 'contracts/generated_surface_handoff.json#/product_entry',
-    required_identity_fields: [
-      'domain_id',
-      'foundry_agent_id',
-      'product_layer',
-      'domain_label',
-      'authority_owner',
-      'stage_manifest_ref',
-      'stage_control_plane_ref',
-    ],
     domain_policy_delta: DOMAIN_FOUNDRY_POLICY_DELTA,
     domain_progress_aliases: {
       deliverable: ['target_agent_progress', 'foundry_agent_progress', 'agent_build_progress'],

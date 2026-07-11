@@ -121,7 +121,9 @@ test('stage-decomposition materializer writes refs-only stage pack surfaces', ()
     assert.ok(Object.hasOwn(manifestStageContract, 'artifact_morphology_contract'));
     assert.equal(foundrySeries.stage_manifest_ref, 'agent/stages/manifest.json');
     assert.equal(foundrySeries.stage_control_plane_ref, 'opl-generated:family_stage_control_plane');
-    assert.ok(foundrySeries.required_identity_fields.includes('stage_manifest_ref'));
+    assert.equal(foundrySeries.surface_kind, 'opl_foundry_agent_series_consumer');
+    assert.equal(foundrySeries.version, 'foundry-agent-series-consumer.v1');
+    assert.equal(Object.hasOwn(foundrySeries, 'required_identity_fields'), false);
     assert.equal(foundrySeries.canonical_policy_export, 'opl-framework-shared/foundry-agent-series-policy');
     assert.equal(Object.hasOwn(foundrySeries, 'series_design_profile'), false);
     assert.equal(Object.hasOwn(foundrySeries, 'workspace_topology_profile'), false);
@@ -201,56 +203,18 @@ test('stage-decomposition validator fails closed on untyped or unsafe closeout',
   );
 });
 
-test('stage-decomposition bounded repair upgrades stale Foundry stage identity refs', () => {
+test('stage-decomposition bounded repair does not preserve legacy Foundry identity fields', () => {
   const packet = buildFixtureStageDecompositionCloseout({ targetAgent });
   const draft = packet.stage_decomposition_pack_draft as JsonObject;
   const foundrySeries = draft.foundry_agent_series as JsonObject;
-  delete foundrySeries.stage_manifest_ref;
-  foundrySeries.stage_control_plane_ref = 'contracts/stage_control_plane.json';
-  foundrySeries.required_identity_fields = (foundrySeries.required_identity_fields as string[])
-    .filter((field) => field !== 'stage_manifest_ref');
+  foundrySeries.required_identity_fields = ['domain_id'];
 
   assert.throws(
     () => validateStageDecompositionCloseoutPacket(packet, { targetAgent }),
-    /foundry_agent_series\.(?:stage_manifest_ref|required_identity_fields)/i,
+    /foundry_agent_series\.required_identity_fields is retired/i,
   );
   const repair = repairStageDecompositionCloseoutPacket(packet, { targetAgent });
-  assert.equal(repair.repaired, true);
-  assert.match(repair.repair_notes.join('\n'), /foundry_agent_series\.stage_manifest_ref/);
-  const repairedDraft = validateStageDecompositionCloseoutPacket(repair.packet, { targetAgent });
-  assert.equal(repairedDraft.foundry_agent_series.stage_manifest_ref, 'agent/stages/manifest.json');
-  assert.equal(
-    repairedDraft.foundry_agent_series.stage_control_plane_ref,
-    'opl-generated:family_stage_control_plane',
-  );
-  assert.ok(repairedDraft.foundry_agent_series.required_identity_fields.includes('stage_manifest_ref'));
-});
-
-test('stage-decomposition bounded repair cannot reconstruct malformed Foundry core identity', () => {
-  const malformedFieldsPacket = buildFixtureStageDecompositionCloseout({ targetAgent });
-  const malformedFieldsSeries = (malformedFieldsPacket.stage_decomposition_pack_draft as JsonObject)
-    .foundry_agent_series as JsonObject;
-  malformedFieldsSeries.stage_control_plane_ref = 'contracts/stage_control_plane.json';
-  delete malformedFieldsSeries.stage_manifest_ref;
-  malformedFieldsSeries.required_identity_fields = 'invalid';
-  const malformedFieldsRepair = repairStageDecompositionCloseoutPacket(malformedFieldsPacket, { targetAgent });
-  assert.equal(malformedFieldsRepair.repaired, false);
-  assert.throws(
-    () => validateStageDecompositionCloseoutPacket(malformedFieldsRepair.packet, { targetAgent }),
-    /foundry_agent_series\.stage_manifest_ref|foundry_agent_series\.required_identity_fields/i,
-  );
-
-  const missingIdentityPacket = buildFixtureStageDecompositionCloseout({ targetAgent });
-  const missingIdentitySeries = (missingIdentityPacket.stage_decomposition_pack_draft as JsonObject)
-    .foundry_agent_series as JsonObject;
-  delete missingIdentitySeries.domain_id;
-  missingIdentitySeries.stage_control_plane_ref = 'contracts/stage_control_plane.json';
-  const missingIdentityRepair = repairStageDecompositionCloseoutPacket(missingIdentityPacket, { targetAgent });
-  assert.equal(missingIdentityRepair.repaired, false);
-  assert.throws(
-    () => validateStageDecompositionCloseoutPacket(missingIdentityRepair.packet, { targetAgent }),
-    /foundry_agent_series\.domain_id/i,
-  );
+  assert.equal(repair.repaired, false);
 });
 
 test('stage-decomposition validator fails closed on empty source-derived design objects', () => {
