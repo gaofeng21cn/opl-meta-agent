@@ -295,7 +295,10 @@ function writeNormalizedBuildStageRunReadbacks(
   outputRoot: string,
   domainId: string,
   stagePackets: Map<string, JsonObject>,
-  options: { omitPredecessorConsumptionFor?: string } = {},
+  options: {
+    omitOuterPredecessorConsumptionFor?: string;
+    includePayloadPredecessorConsumption?: boolean;
+  } = {},
 ): string[] {
   const payloadDir = path.join(outputRoot, 'stage-closeout-payloads');
   fs.mkdirSync(payloadDir, { recursive: true });
@@ -320,11 +323,17 @@ function writeNormalizedBuildStageRunReadbacks(
     const consumedRefs = Array.isArray(sourcePacket.consumed_refs)
       ? sourcePacket.consumed_refs.filter((ref): ref is string => typeof ref === 'string')
       : [];
+    const payloadConsumedRefs = previousCloseoutRef
+      && options.includePayloadPredecessorConsumption === true
+      ? [...new Set([...consumedRefs, previousCloseoutRef])]
+      : consumedRefs;
+    const outerConsumedRefs = previousCloseoutRef
+      && options.omitOuterPredecessorConsumptionFor !== stageId
+      ? [previousCloseoutRef]
+      : [];
     writeJson(payloadPath, {
       ...sourcePacket,
-      consumed_refs: previousCloseoutRef && options.omitPredecessorConsumptionFor !== stageId
-        ? [...new Set([...consumedRefs, previousCloseoutRef])]
-        : consumedRefs,
+      consumed_refs: payloadConsumedRefs,
     });
     const payloadRef = pathToFileURL(payloadPath).href;
     const payloadSha256 = createHash('sha256').update(fs.readFileSync(payloadPath)).digest('hex');
@@ -361,7 +370,7 @@ function writeNormalizedBuildStageRunReadbacks(
                 kind: 'oma_stage_closeout_payload',
                 sha256: payloadSha256,
               }],
-              consumed_refs: [],
+              consumed_refs: outerConsumedRefs,
               consumed_memory_refs: [],
               writeback_receipt_refs: [],
               rejected_writes: [],
@@ -563,7 +572,7 @@ test('build-agent-baseline rejects foreign, nonterminal, conflicted, or mismatch
   }
 });
 
-test('build-agent-baseline resolves SHA-bound domain payload refs from normalized OPL StageRun readbacks', () => {
+test('build-agent-baseline accepts outer canonical predecessor consumption when decoded payload omits it', () => {
   withTempDir('oma-bootstrap-normalized-opl-readbacks-', (outputRoot) => {
     const reviewerPath = path.join(outputRoot, 'reviewer.json');
     writeReviewerEvaluation(reviewerPath);
@@ -589,7 +598,7 @@ test('build-agent-baseline resolves SHA-bound domain payload refs from normalize
   });
 });
 
-test('build-agent-baseline rejects a later StageRun payload that omits its preceding accepted closeout ref', () => {
+test('build-agent-baseline rejects decoded payload predecessor consumption when outer canonical envelope omits it', () => {
   withTempDir('oma-bootstrap-stage-predecessor-consumption-', (outputRoot) => {
     const reviewerPath = path.join(outputRoot, 'reviewer.json');
     writeReviewerEvaluation(reviewerPath);
@@ -600,7 +609,10 @@ test('build-agent-baseline rejects a later StageRun payload that omits its prece
         ['stage-decomposition', buildFixtureStageDecompositionCloseout({ targetAgent })],
         ['agent-skeleton-build', buildFixtureAgentSkeletonBuildCloseout({ targetAgent })],
       ]),
-      { omitPredecessorConsumptionFor: 'stage-decomposition' },
+      {
+        omitOuterPredecessorConsumptionFor: 'stage-decomposition',
+        includePayloadPredecessorConsumption: true,
+      },
     );
 
     assert.throws(

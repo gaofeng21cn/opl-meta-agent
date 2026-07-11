@@ -17,6 +17,7 @@ export type StageRunCloseoutEvidence = {
   stage_attempt_ref: string;
   closeout_id: string;
   closeout_packet_ref: string;
+  canonical_closeout_packet: JsonObject;
   closeout_packet: JsonObject;
   readback_path: string;
 };
@@ -278,7 +279,7 @@ function stageRunCloseout(readbackPath: string, targetDomainId: string): StageRu
     throw new Error(`OPL StageRun ${stageId} closeout contains rejected writes.`);
   }
   stringArray(packet.closeout_refs, `${readbackPath}: closeout_packet.closeout_refs`);
-  const closeoutPacket = domainCloseoutPayload(
+  const domainCloseoutPayloadPacket = domainCloseoutPayload(
     packet,
     attempt,
     stageId,
@@ -291,7 +292,8 @@ function stageRunCloseout(readbackPath: string, targetDomainId: string): StageRu
     stage_attempt_ref: stageAttemptRef,
     closeout_id: closeoutId,
     closeout_packet_ref: `${stageAttemptRef}/closeouts/${encodeURIComponent(closeoutId)}`,
-    closeout_packet: closeoutPacket,
+    canonical_closeout_packet: packet,
+    closeout_packet: domainCloseoutPayloadPacket ?? packet,
     readback_path: readbackPath,
   };
 }
@@ -340,8 +342,8 @@ export function evaluateActionStageRoute(input: {
   for (let index = 1; index < stageCloseouts.length; index += 1) {
     const previous = stageCloseouts[index - 1]!;
     const current = stageCloseouts[index]!;
-    const consumedRefs = Array.isArray(current.closeout_packet.consumed_refs)
-      ? current.closeout_packet.consumed_refs.filter((ref): ref is string => typeof ref === 'string')
+    const consumedRefs = Array.isArray(current.canonical_closeout_packet.consumed_refs)
+      ? current.canonical_closeout_packet.consumed_refs.filter((ref): ref is string => typeof ref === 'string')
       : [];
     if (!consumedRefs.includes(previous.closeout_packet_ref)) {
       throw new Error(
