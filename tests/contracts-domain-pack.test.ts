@@ -9,6 +9,7 @@ import {
   assertUsablePackFile,
   assertNoForbiddenAuthority,
 } from './support/contracts.ts';
+import type { JsonObject } from './support/contracts.ts';
 import { assertIncludesAll } from './support/source-purity.ts';
 
 test('opl-meta-agent descriptor keeps OPL runtime authority outside the repo', () => {
@@ -216,6 +217,51 @@ test('domain skill declarations and professional skills stay separate', () => {
     assert.equal(capability.capability_kind, 'professional_skill');
     assert.deepEqual(asStrings(capability.canonical_paths), [capability.physical_source_ref.ref]);
     assert.equal(capability.codex_default_exposure, false);
+  });
+});
+
+test('capability policy profiles remove repeated no-authority blocks', () => {
+  const capabilityMap = readJson('contracts/capability_map.json');
+  const profiles = capabilityMap.capability_policy_profiles as JsonObject;
+  const capabilities = asObjects(capabilityMap.capabilities);
+  const profileCounts = new Map<string, number>();
+
+  assert.deepEqual(Object.keys(profiles).sort(), [
+    'domain_pack_guarded',
+    'professional_method_guarded',
+    'work_order_hygiene_guarded',
+  ]);
+  Object.entries(profiles).forEach(([profileId, profile]) => {
+    const policyProfile = profile as JsonObject;
+    const authority = policyProfile.authority_boundary as JsonObject;
+    Object.entries(authority).forEach(([field, value]) => {
+      assert.equal(value, false, `capability policy profile ${profileId}.${field}`);
+    });
+    assert.ok(asStrings(policyProfile.forbidden_surfaces).length > 0);
+    assert.ok(asStrings(policyProfile.verification_refs).length > 0);
+    const ownerBoundary = policyProfile.owner_closeout_boundary as JsonObject;
+    assert.equal(ownerBoundary.owner, 'opl-meta-agent');
+    assert.equal(ownerBoundary.can_write_owner_receipt_body, false);
+    assert.equal(ownerBoundary.can_create_typed_blocker, false);
+  });
+
+  capabilities.forEach((capability) => {
+    const profileRef = String(capability.capability_policy_profile_ref);
+    const profileId = profileRef.replace('#/capability_policy_profiles/', '');
+    assert.equal(profileRef, `#/capability_policy_profiles/${profileId}`);
+    assert.ok(profiles[profileId], `${capability.capability_id} references ${profileId}`);
+    profileCounts.set(profileId, (profileCounts.get(profileId) ?? 0) + 1);
+    [
+      'authority_boundary',
+      'forbidden_surfaces',
+      'verification_refs',
+      'owner_closeout_boundary',
+    ].forEach((field) => assert.equal(Object.hasOwn(capability, field), false, `${capability.capability_id}.${field}`));
+  });
+  assert.deepEqual(Object.fromEntries(profileCounts), {
+    domain_pack_guarded: 5,
+    professional_method_guarded: 3,
+    work_order_hygiene_guarded: 1,
   });
 });
 

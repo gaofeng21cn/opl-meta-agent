@@ -116,16 +116,6 @@
       ],
       "sync_policy": "domain_agent_builtin_refs_only",
       "externalization_reason": "repo-owned standard OPL agent capability locator; resolver metadata only, not domain truth or readiness evidence",
-      "authority_boundary": {
-        "can_write_domain_truth": false,
-        "can_write_memory_body": false,
-        "can_mutate_artifact_body": false,
-        "can_sign_owner_receipt": false,
-        "can_create_typed_blocker": false,
-        "can_authorize_quality_or_export": false,
-        "can_claim_domain_ready": false,
-        "can_claim_production_ready": false
-      },
       "improvement_tokens": [
         "opl",
         "meta",
@@ -138,35 +128,7 @@
       "canonical_target_paths": [
         "agent/prompts/intent-intake.md"
       ],
-      "verification_refs": [
-        "git diff --check",
-        "node --test tests/contracts-domain-pack.test.ts",
-        "scripts/verify.sh",
-        "opl:agents-scaffold-validate"
-      ],
-      "forbidden_surfaces": [
-        "target domain truth",
-        "target memory body",
-        "target artifact body",
-        "target owner receipt body",
-        "target typed blocker body",
-        "quality/export verdict",
-        "promotion gate state",
-        "runtime queue or provider attempt",
-        "domain ready claim",
-        "production ready claim"
-      ],
-      "owner_closeout_boundary": {
-        "owner": "opl-meta-agent",
-        "required_return_shapes": [
-          "owner_receipt_ref",
-          "typed_blocker_ref",
-          "human_gate_ref",
-          "route_back_ref"
-        ],
-        "can_write_owner_receipt_body": false,
-        "can_create_typed_blocker": false
-      }
+      "capability_policy_profile_ref": "#/capability_policy_profiles/domain_pack_guarded"
     },
     {
       "capability_id": "opl-meta-agent.agent-design-evolution.professional_skill",
@@ -189,20 +151,6 @@
         "mechanism learning"
       ],
       "failure_token_registry_ref": "contracts/opl-framework/agent-lab-failure-token-registry.json",
-      "verification_refs": [
-        "git diff --check",
-        "node --test tests/contracts-domain-pack.test.ts",
-        "scripts/verify.sh"
-      ],
-      "forbidden_surfaces": [
-        "target domain truth",
-        "target memory body",
-        "target artifact body",
-        "target owner receipt body",
-        "target typed blocker body",
-        "quality/export verdict",
-        "promotion gate state"
-      ],
       "runtime_projection_refs": [
         {
           "ref_kind": "contract_ref",
@@ -222,16 +170,6 @@
       ],
       "sync_policy": "domain_agent_builtin_refs_only",
       "externalization_reason": "workflow-level OMA agent design/evolution method; resolver metadata only, not target-domain truth, trajectory runtime, owner receipt, or readiness evidence",
-      "authority_boundary": {
-        "can_write_domain_truth": false,
-        "can_write_memory_body": false,
-        "can_mutate_artifact_body": false,
-        "can_sign_owner_receipt": false,
-        "can_create_typed_blocker": false,
-        "can_authorize_quality_or_export": false,
-        "can_claim_domain_ready": false,
-        "can_claim_production_ready": false
-      },
       "exposure_layer": "repo_internal_professional_skill",
       "codex_default_exposure": false,
       "allowed_exposure_scopes": [
@@ -243,17 +181,7 @@
         "agent/professional_skills/oma-agent-design-evolution/SKILL.md"
       ],
       "owner_closeout_boundary_ref": "contracts/capability_map.json#/authority_boundary",
-      "owner_closeout_boundary": {
-        "owner": "opl-meta-agent",
-        "required_return_shapes": [
-          "owner_receipt_ref",
-          "typed_blocker_ref",
-          "human_gate_ref",
-          "route_back_ref"
-        ],
-        "can_write_owner_receipt_body": false,
-        "can_create_typed_blocker": false
-      }
+      "capability_policy_profile_ref": "#/capability_policy_profiles/professional_method_guarded"
     },
     {
       "capability_id": "opl-meta-agent.stage-pack-intent-architecture.professional_skill",
@@ -276,20 +204,6 @@
         "acceptance criteria"
       ],
       "failure_token_registry_ref": "contracts/opl-framework/agent-lab-failure-token-registry.json",
-      "verification_refs": [
-        "git diff --check",
-        "node --test tests/contracts-domain-pack.test.ts",
-        "scripts/verify.sh"
-      ],
-      "forbidden_surfaces": [
-        "target domain truth",
-        "target memory body",
-        "target artifact body",
-        "target owner receipt body",
-        "target typed blocker body",
-        "quality/export verdict",
-        "promotion gate state"
-      ],
       "runtime_projection_refs": [
         {
           "ref_kind": "contract_ref",
@@ -299,16 +213,6 @@
       ],
       "sync_policy": "domain_agent_builtin_refs_only",
       "externalization_reason": "workflow-level OMA intent/research/stage-pack architecture method; resolver metadata only, not target-domain truth or generated runtime authority",
-      "authority_boundary": {
-        "can_write_domain_truth": false,
-        "can_write_memory_body": false,
-        "can_mutate_artifact_body": false,
-        "can_sign_owner_receipt": false,
-        "can_create_typed_blocker": false,
-        "can_authorize_quality_or_export": false,
-        "can_claim_domain_ready": false,
-        "can_claim_production_ready": false
-      },
       "exposure_layer": "repo_internal_professional_skill",
       "codex_default_exposure": false,
       "allowed_exposure_scopes": [
@@ -320,17 +224,7 @@
         "agent/professional_skills/oma-stage-pack-intent-architecture/SKILL.md"
       ],
       "owner_closeout_boundary_ref": "contracts/capability_map.json#/authority_boundary",
-      "owner_closeout_boundary": {
-        "owner": "opl-meta-agent",
-        "required_return_shapes": [
-          "owner_receipt_ref",
-          "typed_blocker_ref",
-          "human_gate_ref",
-          "route_back_ref"
-        ],
-        "can_write_owner_receipt_body": false,
-        "can_create_typed_blocker": false
-      }
+      "capability_policy_profile_ref": "#/capability_policy_profiles/professional_method_guarded"
     },
     {
       "capability_id": "opl-meta-agent.eval-takeover-review.professional_skill",
@@ -353,20 +247,6 @@
         "owner authority review"
       ],
       "failure_token_registry_ref": "contracts/opl-framework/agent-lab-failure-token-registry.json",
-      "verification_refs": [
-        "git diff --check",
-        "node --test tests/contracts-domain-pack.test.ts",
-        "scripts/verify.sh"
-      ],
-      "forbidden_surfaces": [
-        "target domain truth",
-        "target memory body",
-        "target artifact body",
-        "target owner receipt body",
-        "target typed blocker body",
-        "quality/export verdict",
-        "promotion gate state"
-      ],
       "runtime_projection_refs": [
         {
           "ref_kind": "contract_ref",
@@ -376,16 +256,6 @@
       ],
       "sync_policy": "domain_agent_builtin_refs_only",
       "externalization_reason": "workflow-level OMA eval/takeover review method; resolver metadata only, not target quality verdict, owner receipt, App-live readiness, or promotion authority",
-      "authority_boundary": {
-        "can_write_domain_truth": false,
-        "can_write_memory_body": false,
-        "can_mutate_artifact_body": false,
-        "can_sign_owner_receipt": false,
-        "can_create_typed_blocker": false,
-        "can_authorize_quality_or_export": false,
-        "can_claim_domain_ready": false,
-        "can_claim_production_ready": false
-      },
       "exposure_layer": "repo_internal_professional_skill",
       "codex_default_exposure": false,
       "allowed_exposure_scopes": [
@@ -397,17 +267,7 @@
         "agent/professional_skills/oma-eval-takeover-review/SKILL.md"
       ],
       "owner_closeout_boundary_ref": "contracts/capability_map.json#/authority_boundary",
-      "owner_closeout_boundary": {
-        "owner": "opl-meta-agent",
-        "required_return_shapes": [
-          "owner_receipt_ref",
-          "typed_blocker_ref",
-          "human_gate_ref",
-          "route_back_ref"
-        ],
-        "can_write_owner_receipt_body": false,
-        "can_create_typed_blocker": false
-      }
+      "capability_policy_profile_ref": "#/capability_policy_profiles/professional_method_guarded"
     },
     {
       "capability_id": "opl-meta-agent.work-order-hygiene.professional_skill",
@@ -430,26 +290,6 @@
         "developer patch work order"
       ],
       "failure_token_registry_ref": "contracts/opl-framework/agent-lab-failure-token-registry.json",
-      "verification_refs": [
-        "git diff --check",
-        "node --test tests/contracts-domain-pack.test.ts",
-        "scripts/verify.sh"
-      ],
-      "forbidden_surfaces": [
-        "physical delete authority",
-        "script retirement authority",
-        "target domain truth",
-        "target memory body",
-        "target artifact body",
-        "target owner receipt body",
-        "target typed blocker body",
-        "quality/export verdict",
-        "promotion gate state",
-        "OPL primitive parity claim",
-        "App/generated readiness",
-        "default promotion",
-        "target/domain/production readiness"
-      ],
       "runtime_projection_refs": [
         {
           "ref_kind": "contract_ref",
@@ -474,16 +314,6 @@
       ],
       "sync_policy": "domain_agent_builtin_refs_only",
       "externalization_reason": "workflow-level OMA work-order and script/source hygiene method; resolver metadata only, not physical delete, readiness, owner receipt, typed blocker, or parity authority",
-      "authority_boundary": {
-        "can_write_domain_truth": false,
-        "can_write_memory_body": false,
-        "can_mutate_artifact_body": false,
-        "can_sign_owner_receipt": false,
-        "can_create_typed_blocker": false,
-        "can_authorize_quality_or_export": false,
-        "can_claim_domain_ready": false,
-        "can_claim_production_ready": false
-      },
       "exposure_layer": "repo_internal_professional_skill",
       "codex_default_exposure": false,
       "allowed_exposure_scopes": [
@@ -495,17 +325,7 @@
         "agent/professional_skills/oma-work-order-hygiene/SKILL.md"
       ],
       "owner_closeout_boundary_ref": "contracts/capability_map.json#/authority_boundary",
-      "owner_closeout_boundary": {
-        "owner": "opl-meta-agent",
-        "required_return_shapes": [
-          "owner_receipt_ref",
-          "typed_blocker_ref",
-          "human_gate_ref",
-          "route_back_ref"
-        ],
-        "can_write_owner_receipt_body": false,
-        "can_create_typed_blocker": false
-      }
+      "capability_policy_profile_ref": "#/capability_policy_profiles/work_order_hygiene_guarded"
     },
     {
       "capability_id": "opl-meta-agent.domain-affordances.tool_connector",
@@ -526,16 +346,6 @@
       ],
       "sync_policy": "domain_agent_builtin_or_opl_connect_when_externalized",
       "externalization_reason": "repo-owned standard OPL agent capability locator; resolver metadata only, not domain truth or readiness evidence",
-      "authority_boundary": {
-        "can_write_domain_truth": false,
-        "can_write_memory_body": false,
-        "can_mutate_artifact_body": false,
-        "can_sign_owner_receipt": false,
-        "can_create_typed_blocker": false,
-        "can_authorize_quality_or_export": false,
-        "can_claim_domain_ready": false,
-        "can_claim_production_ready": false
-      },
       "improvement_tokens": [
         "opl",
         "meta",
@@ -548,35 +358,7 @@
       "canonical_target_paths": [
         "agent/tools/domain_affordances.md"
       ],
-      "verification_refs": [
-        "git diff --check",
-        "node --test tests/contracts-domain-pack.test.ts",
-        "scripts/verify.sh",
-        "opl:agents-scaffold-validate"
-      ],
-      "forbidden_surfaces": [
-        "target domain truth",
-        "target memory body",
-        "target artifact body",
-        "target owner receipt body",
-        "target typed blocker body",
-        "quality/export verdict",
-        "promotion gate state",
-        "runtime queue or provider attempt",
-        "domain ready claim",
-        "production ready claim"
-      ],
-      "owner_closeout_boundary": {
-        "owner": "opl-meta-agent",
-        "required_return_shapes": [
-          "owner_receipt_ref",
-          "typed_blocker_ref",
-          "human_gate_ref",
-          "route_back_ref"
-        ],
-        "can_write_owner_receipt_body": false,
-        "can_create_typed_blocker": false
-      }
+      "capability_policy_profile_ref": "#/capability_policy_profiles/domain_pack_guarded"
     },
     {
       "capability_id": "opl-meta-agent.boundary-policy.knowledge_pack",
@@ -597,16 +379,6 @@
       ],
       "sync_policy": "domain_agent_builtin_refs_only",
       "externalization_reason": "repo-owned standard OPL agent capability locator; resolver metadata only, not domain truth or readiness evidence",
-      "authority_boundary": {
-        "can_write_domain_truth": false,
-        "can_write_memory_body": false,
-        "can_mutate_artifact_body": false,
-        "can_sign_owner_receipt": false,
-        "can_create_typed_blocker": false,
-        "can_authorize_quality_or_export": false,
-        "can_claim_domain_ready": false,
-        "can_claim_production_ready": false
-      },
       "improvement_tokens": [
         "opl",
         "meta",
@@ -620,35 +392,7 @@
       "canonical_target_paths": [
         "agent/knowledge/opl-boundary-policy.md"
       ],
-      "verification_refs": [
-        "git diff --check",
-        "node --test tests/contracts-domain-pack.test.ts",
-        "scripts/verify.sh",
-        "opl:agents-scaffold-validate"
-      ],
-      "forbidden_surfaces": [
-        "target domain truth",
-        "target memory body",
-        "target artifact body",
-        "target owner receipt body",
-        "target typed blocker body",
-        "quality/export verdict",
-        "promotion gate state",
-        "runtime queue or provider attempt",
-        "domain ready claim",
-        "production ready claim"
-      ],
-      "owner_closeout_boundary": {
-        "owner": "opl-meta-agent",
-        "required_return_shapes": [
-          "owner_receipt_ref",
-          "typed_blocker_ref",
-          "human_gate_ref",
-          "route_back_ref"
-        ],
-        "can_write_owner_receipt_body": false,
-        "can_create_typed_blocker": false
-      }
+      "capability_policy_profile_ref": "#/capability_policy_profiles/domain_pack_guarded"
     },
     {
       "capability_id": "opl-meta-agent.takeover.quality_gate",
@@ -669,16 +413,6 @@
       ],
       "sync_policy": "domain_agent_builtin_refs_only",
       "externalization_reason": "repo-owned standard OPL agent capability locator; resolver metadata only, not domain truth or readiness evidence",
-      "authority_boundary": {
-        "can_write_domain_truth": false,
-        "can_write_memory_body": false,
-        "can_mutate_artifact_body": false,
-        "can_sign_owner_receipt": false,
-        "can_create_typed_blocker": false,
-        "can_authorize_quality_or_export": false,
-        "can_claim_domain_ready": false,
-        "can_claim_production_ready": false
-      },
       "improvement_tokens": [
         "opl",
         "meta",
@@ -692,35 +426,7 @@
       "canonical_target_paths": [
         "agent/quality_gates/takeover.md"
       ],
-      "verification_refs": [
-        "git diff --check",
-        "node --test tests/contracts-domain-pack.test.ts",
-        "scripts/verify.sh",
-        "opl:agents-scaffold-validate"
-      ],
-      "forbidden_surfaces": [
-        "target domain truth",
-        "target memory body",
-        "target artifact body",
-        "target owner receipt body",
-        "target typed blocker body",
-        "quality/export verdict",
-        "promotion gate state",
-        "runtime queue or provider attempt",
-        "domain ready claim",
-        "production ready claim"
-      ],
-      "owner_closeout_boundary": {
-        "owner": "opl-meta-agent",
-        "required_return_shapes": [
-          "owner_receipt_ref",
-          "typed_blocker_ref",
-          "human_gate_ref",
-          "route_back_ref"
-        ],
-        "can_write_owner_receipt_body": false,
-        "can_create_typed_blocker": false
-      }
+      "capability_policy_profile_ref": "#/capability_policy_profiles/domain_pack_guarded"
     },
     {
       "capability_id": "opl-meta-agent.live-evidence.eval_suite",
@@ -741,16 +447,6 @@
       ],
       "sync_policy": "domain_agent_builtin_refs_only",
       "externalization_reason": "repo-owned standard OPL agent capability locator; resolver metadata only, not domain truth or readiness evidence",
-      "authority_boundary": {
-        "can_write_domain_truth": false,
-        "can_write_memory_body": false,
-        "can_mutate_artifact_body": false,
-        "can_sign_owner_receipt": false,
-        "can_create_typed_blocker": false,
-        "can_authorize_quality_or_export": false,
-        "can_claim_domain_ready": false,
-        "can_claim_production_ready": false
-      },
       "improvement_tokens": [
         "opl",
         "meta",
@@ -764,35 +460,7 @@
       "canonical_target_paths": [
         "contracts/live_stage_run_progress_evidence.json"
       ],
-      "verification_refs": [
-        "git diff --check",
-        "node --test tests/contracts-domain-pack.test.ts",
-        "scripts/verify.sh",
-        "opl:agents-scaffold-validate"
-      ],
-      "forbidden_surfaces": [
-        "target domain truth",
-        "target memory body",
-        "target artifact body",
-        "target owner receipt body",
-        "target typed blocker body",
-        "quality/export verdict",
-        "promotion gate state",
-        "runtime queue or provider attempt",
-        "domain ready claim",
-        "production ready claim"
-      ],
-      "owner_closeout_boundary": {
-        "owner": "opl-meta-agent",
-        "required_return_shapes": [
-          "owner_receipt_ref",
-          "typed_blocker_ref",
-          "human_gate_ref",
-          "route_back_ref"
-        ],
-        "can_write_owner_receipt_body": false,
-        "can_create_typed_blocker": false
-      }
+      "capability_policy_profile_ref": "#/capability_policy_profiles/domain_pack_guarded"
     }
   ],
   "resolver_index": {
@@ -912,5 +580,128 @@
       "default_codex_exposure": false,
       "authority_boundary": "no_independent_authority"
     }
-  ]
+  ],
+  "capability_policy_profiles": {
+    "domain_pack_guarded": {
+      "authority_boundary": {
+        "can_write_domain_truth": false,
+        "can_write_memory_body": false,
+        "can_mutate_artifact_body": false,
+        "can_sign_owner_receipt": false,
+        "can_create_typed_blocker": false,
+        "can_authorize_quality_or_export": false,
+        "can_claim_domain_ready": false,
+        "can_claim_production_ready": false
+      },
+      "forbidden_surfaces": [
+        "target domain truth",
+        "target memory body",
+        "target artifact body",
+        "target owner receipt body",
+        "target typed blocker body",
+        "quality/export verdict",
+        "promotion gate state",
+        "runtime queue or provider attempt",
+        "domain ready claim",
+        "production ready claim"
+      ],
+      "verification_refs": [
+        "git diff --check",
+        "node --test tests/contracts-domain-pack.test.ts",
+        "scripts/verify.sh",
+        "opl:agents-scaffold-validate"
+      ],
+      "owner_closeout_boundary": {
+        "owner": "opl-meta-agent",
+        "required_return_shapes": [
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "route_back_ref"
+        ],
+        "can_write_owner_receipt_body": false,
+        "can_create_typed_blocker": false
+      }
+    },
+    "professional_method_guarded": {
+      "authority_boundary": {
+        "can_write_domain_truth": false,
+        "can_write_memory_body": false,
+        "can_mutate_artifact_body": false,
+        "can_sign_owner_receipt": false,
+        "can_create_typed_blocker": false,
+        "can_authorize_quality_or_export": false,
+        "can_claim_domain_ready": false,
+        "can_claim_production_ready": false
+      },
+      "forbidden_surfaces": [
+        "target domain truth",
+        "target memory body",
+        "target artifact body",
+        "target owner receipt body",
+        "target typed blocker body",
+        "quality/export verdict",
+        "promotion gate state"
+      ],
+      "verification_refs": [
+        "git diff --check",
+        "node --test tests/contracts-domain-pack.test.ts",
+        "scripts/verify.sh"
+      ],
+      "owner_closeout_boundary": {
+        "owner": "opl-meta-agent",
+        "required_return_shapes": [
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "route_back_ref"
+        ],
+        "can_write_owner_receipt_body": false,
+        "can_create_typed_blocker": false
+      }
+    },
+    "work_order_hygiene_guarded": {
+      "authority_boundary": {
+        "can_write_domain_truth": false,
+        "can_write_memory_body": false,
+        "can_mutate_artifact_body": false,
+        "can_sign_owner_receipt": false,
+        "can_create_typed_blocker": false,
+        "can_authorize_quality_or_export": false,
+        "can_claim_domain_ready": false,
+        "can_claim_production_ready": false
+      },
+      "forbidden_surfaces": [
+        "physical delete authority",
+        "script retirement authority",
+        "target domain truth",
+        "target memory body",
+        "target artifact body",
+        "target owner receipt body",
+        "target typed blocker body",
+        "quality/export verdict",
+        "promotion gate state",
+        "OPL primitive parity claim",
+        "App/generated readiness",
+        "default promotion",
+        "target/domain/production readiness"
+      ],
+      "verification_refs": [
+        "git diff --check",
+        "node --test tests/contracts-domain-pack.test.ts",
+        "scripts/verify.sh"
+      ],
+      "owner_closeout_boundary": {
+        "owner": "opl-meta-agent",
+        "required_return_shapes": [
+          "owner_receipt_ref",
+          "typed_blocker_ref",
+          "human_gate_ref",
+          "route_back_ref"
+        ],
+        "can_write_owner_receipt_body": false,
+        "can_create_typed_blocker": false
+      }
+    }
+  }
 }
