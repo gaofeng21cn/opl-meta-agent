@@ -96,7 +96,7 @@
       "properties": {
         "ai_reviewer_evaluation_ref": { "$ref": "#/$defs/nonEmptyString" },
         "verdict": { "$ref": "#/$defs/nonEmptyString" },
-        "suggestions": { "$ref": "#/$defs/stringArray" },
+        "suggestions": { "$ref": "#/$defs/nonEmptyStringArray" },
         "candidate_refs": { "$ref": "#/$defs/stringArray" }
       },
       "additionalProperties": false

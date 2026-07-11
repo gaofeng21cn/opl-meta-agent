@@ -66,7 +66,7 @@ test('takeover emits a thin evaluation request and Foundry Lab work order withou
       delivery_domain: 'takeover_fixture',
       target_brief: 'Verify declarative takeover handoff.',
     });
-    writeReviewerEvaluation(reviewerPath);
+    writeReviewerEvaluation(reviewerPath, { suggestions: ['Repeatable suggestion.', 'Repeatable suggestion.'] });
 
     const result = spawnSync(process.execPath, [
       path.join(repoRoot, 'scripts/takeover-agent.ts'),
@@ -82,6 +82,10 @@ test('takeover emits a thin evaluation request and Foundry Lab work order withou
     assert.equal(payload.status, 'takeover_candidate_materialized_ready_for_opl_foundry_lab_evaluation');
     assert.equal(payload.authority_boundary.oma_can_execute_agent_lab_suite, false);
     assert.equal(payload.takeover_policy.can_write_target_owner_receipt_body, false);
+    assert.deepEqual(payload.agent_building_judgment.suggestions, [
+      'Repeatable suggestion.',
+      'Repeatable suggestion.',
+    ]);
     assert.deepEqual(payload.agent_building_judgment.candidate_refs, [
       'improvement-candidate:opl-meta-agent/takeover-fixture-agent/gated-self-evolution',
       'mechanism-candidate:opl-meta-agent/takeover-fixture-agent/testing-takeover-loop',
