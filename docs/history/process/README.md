@@ -27,7 +27,7 @@ Machine boundary: 本目录只记录人读治理过程、覆盖 ledger、退役 
 
 | Provenance group | Current read |
 | --- | --- |
-| Docs lifecycle and coverage | Root `README*`, every tracked `docs/**/*.md`, and tracked `agent/*/README.md` were rechecked as the complete OMA human-doc portfolio. Each file keeps one role under `docs/docs_portfolio_consolidation.md`; future coverage records stay topic-level here, and machine truth remains in contracts/source/tests. |
+| Docs lifecycle and coverage | Root `README*`, every tracked `docs/**/*.md`, `agent/README.md`, and professional skill discovery were rechecked as the complete OMA human-doc portfolio. Each file keeps one role under `docs/docs_portfolio_consolidation.md`; future coverage records stay topic-level here, and machine truth remains in contracts/source/tests. |
 | Foundry Agent OS target-delta foldback | The active support doc `docs/active/foundry-agent-os-target-delta.md` is now part of the lifecycle map and inventory. Its machine SSOT is `contracts/foundry-agent-os-domain-kernel-manifest.json`; peer docs keep only pointers, boundary summaries, or forbidden-claim rules. |
 | Target-agent field / takeover retirement | Old `external_agent_allowed`, `external_opl_compatible_agents_allowed`, `external-agent-takeover`, `takeover:test --fixture`, implicit fixture graph and field-only closeout files are folded into `retired-surface-provenance.md` and machine no-resurrection tests. |
 | External-suite / external-work-order vocabulary | `external-suite` and external work-order remain active Agent Lab external-suite and OPL work-order delegation semantics. They are not stale takeover aliases and should not be retired without replacement machine truth. |
@@ -46,8 +46,8 @@ series goal.
 
 - Current portfolio scope: root `README*`, `docs/*.md`,
   `docs/active/*.md`, `docs/references/*.md`, `docs/history/*.md`,
-  `docs/history/process/*.md`, and tracked
-  `agent/{knowledge,prompts,quality_gates,skills,stages}/README.md`.
+  `docs/history/process/*.md`, `agent/README.md`, and
+  `agent/professional_skills/README.md`.
   This is the complete tracked OMA human-doc inventory for this tranche.
 - Current SSOT decision: `docs/active/opl-meta-agent-ideal-state-gap-plan.md`
   remains the single Active Truth owner; `docs/active/opl-private-implementation-migration-inventory.md`
@@ -66,9 +66,10 @@ series goal.
 - Current recheck scope: all OMA human docs were rechecked against the active
   plan, private inventory, docs lifecycle map, ideal-state reference, core docs,
   Foundry Agent OS domain-kernel manifest, package scripts, pack compiler input,
-  authority function policy, source-purity tests and tracked
-  `agent/*/README.md` support indexes. No source, contract, test, workflow,
-  package or CLI surface changed in this tranche.
+  authority function policy, source-purity tests, `agent/README.md`, and
+  professional skill discovery. The current consolidation changes the pack index,
+  its quality-gate source ref, and the focused contract test; no workflow,
+  package or CLI surface changes.
 - Current private-inventory compression: active inventory retired-tail detail was
   reduced to a pointer plus migration gate rule; the itemized no-resurrection
   list remains in `retired-surface-provenance.md` and machine guards.

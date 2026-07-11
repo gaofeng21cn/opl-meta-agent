@@ -266,7 +266,7 @@
   },
   "source_refs": {
     "stage_graph_source_ref": "agent/stages/manifest.json",
-    "quality_gate_source_ref": "agent/quality_gates/README.md",
+    "quality_gate_source_ref": "agent/stages/manifest.json#/stages/*/quality_gate_refs",
     "executor_policy_source_ref": "agent/stages/manifest.json#/stages/*/trust_lane",
     "owner_receipt_schema_source_ref": "contracts/owner_receipt_contract.json",
     "authority_functions_source_ref": "runtime/authority_functions/meta-agent-authority-functions.json",

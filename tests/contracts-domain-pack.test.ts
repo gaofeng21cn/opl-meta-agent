@@ -37,6 +37,10 @@ test('domain pack files and declarative stage refs resolve to usable repo files'
   assert.equal(packCompilerInput.domain_id, 'opl-meta-agent');
   assert.equal(packCompilerInput.canonical_agent_id, 'oma');
   assert.equal(packCompilerInput.canonical_semantic_pack_root, 'agent/');
+  assert.equal(
+    packCompilerInput.source_refs.quality_gate_source_ref,
+    'agent/stages/manifest.json#/stages/*/quality_gate_refs',
+  );
   assert.equal(generatedSurfaceHandoff.generated_interface_role, 'invoke_and_project_without_domain_authority_escalation');
   assertIncludesAll(asStrings(generatedSurfaceHandoff.required_domain_handoff), [
     'domain_pack_paths_exist_and_are_non_empty',
@@ -51,6 +55,10 @@ test('domain pack files and declarative stage refs resolve to usable repo files'
   ].sort();
   assert.deepEqual(packCompilerInput.required_domain_pack_paths, actualDomainPackPaths);
   actualDomainPackPaths.forEach(assertUsablePackFile);
+  assert.deepEqual(
+    listMarkdownFiles('agent').filter((relativePath) => relativePath.endsWith('/README.md')),
+    ['agent/README.md', 'agent/professional_skills/README.md'],
+  );
 
   refGroups.forEach(({ field, pathPattern }) => {
     asObjects(stageManifest.stages).forEach((stage) => {

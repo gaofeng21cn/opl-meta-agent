@@ -159,7 +159,7 @@ Non-goals:
 
 Verification commands:
 
-- Docs-only：`rtk git diff --check`、`rtk rg -n "<<<<<<<|>>>>>>>|=======" README* docs agent/*/README.md`、docs inventory sanity。
+- Docs-only：`rtk git diff --check`、`rtk rg -n "<<<<<<<|>>>>>>>|=======" README* docs agent/README.md agent/professional_skills/README.md`、docs inventory sanity。
 - 触及 contracts/source/tests：默认 `rtk npm test` / `rtk npm run test:smoke` 或 `rtk npm run verify`；触及 bootstrap、external-suite、work-order、owner-chain 或 live-progress behavior 时补 `rtk npm run test:behavior`。
 
 Completion gate:
