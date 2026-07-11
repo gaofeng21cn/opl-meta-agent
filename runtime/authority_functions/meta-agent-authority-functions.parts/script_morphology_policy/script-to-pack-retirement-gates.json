@@ -72,9 +72,9 @@
       "scripts/lib/action-stage-route.ts",
       "scripts/lib/stage-native-artifact-contract.ts"
     ],
-    "current_role": "typed_stage_closeout_validator_action_stage_route_readback_and_candidate_pack_materializer",
+    "current_role": "typed_stage_closeout_validator_action_stage_route_readback_and_opl_scaffold_request_adapter",
     "retention_state": "retained_current_authority_function",
-    "retention_reason": "current OMA thin authority surface for stage-decomposition closeout validation, candidate domain-pack materialization, thin evaluation-request emission, and declarative Foundry Lab work-order handoff without owning Agent Lab suite-plan compilation/execution/results/ledgers, pack compiler, generated interface, target truth, runtime state, promotion, target worktree lifecycle, owner receipt bodies, or typed blocker bodies",
+    "retention_reason": "current OMA thin authority surface for stage-decomposition closeout validation, domain-authored scaffold request emission, thin evaluation-request emission, and declarative Foundry Lab work-order handoff; OPL owns target file IO, path safety, scaffold merge, digests, final build receipt, Agent Lab suite-plan compilation/execution/results/ledgers, pack compiler, generated interface, runtime state, promotion, and target worktree lifecycle",
     "retention_evidence_refs": [
       "package.json#scripts.build-agent-baseline",
       "contracts/stage_native_artifact_vocabulary.json",

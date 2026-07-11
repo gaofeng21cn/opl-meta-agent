@@ -10,7 +10,7 @@
       "authority-function-ref:opl-meta-agent/candidate-agent-package-builder"
     ],
     "consumes_opl_surfaces": [
-      "standard_domain_agent_scaffold",
+      "opl_agent_scaffold_materialization",
       "generated_interface_bundle",
       "opl_foundry_lab_evaluation_work_order_consumer_dependency_open"
     ],
@@ -291,17 +291,12 @@
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
       "opl_family_runtime_stage_attempt",
-      "opl_standard_domain_agent_scaffold"
+      "opl_agent_scaffold_materialization"
     ],
     "writes_only": [
-      "domain_pack_file_ref",
-      "action_catalog_ref",
-      "stage_control_plane_ref",
-      "stage_native_artifact_contract_ref",
-      "stage_native_artifact_ref_template_ref",
-      "opl_physical_kernel_locator_ref",
-      "stage_artifact_conformance_ref",
-      "stage_artifact_workbench_consumption_ref"
+      "opl_agent_scaffold_materialization_request_ref",
+      "expected_opl_agent_scaffold_materialization_receipt_ref",
+      "expected_agent_build_receipt_ref"
     ],
     "forbidden_roles": []
   },

@@ -3,17 +3,24 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import type { JsonObject } from '../scripts/lib/domain-pack.ts';
+import { validateJsonSchemaPayload } from 'opl-framework/json-schema-registry';
+import {
+  buildTargetAgentCapabilityMapProjection,
+  buildTargetAgentPackageManifest,
+  buildTargetAgentPrimarySkillMarkdown,
+  type JsonObject,
+} from '../scripts/lib/domain-pack.ts';
 import {
   readJsonFile as readJson,
-  writeJsonFile as writeJson,
+  repoRoot,
 } from './support/contracts.ts';
 import {
   buildFixtureAgentSkeletonBuildCloseout,
   buildFixtureStageDecompositionCloseout,
 } from '../scripts/lib/stage-decomposition-pack-draft/builder.ts';
 import {
-  materializeStageDecompositionPackDraft,
+  buildScaffoldMaterializationRequest,
+  delegateScaffoldMaterialization,
   repairStageDecompositionCloseoutPacket,
 } from '../scripts/lib/stage-decomposition-pack-draft/materializer.ts';
 import {
@@ -44,15 +51,26 @@ const sourceDerivedTargetAgent = {
   ],
 };
 
-test('stage-decomposition materializer writes refs-only stage pack surfaces', () => {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-stage-materializer-pass4-'));
-  try {
-    const targetAgentDir = path.join(outputRoot, targetAgent.domain_id);
-    writeJson(path.join(targetAgentDir, 'contracts/pack_compiler_input.json'), {
-      surface_kind: 'opl_domain_pack_compiler_input',
-      required_domain_pack_paths: [],
-    });
-    const packet = buildFixtureStageDecompositionCloseout({
+function buildFixtureMaterializationRequest() {
+  const packet = buildFixtureStageDecompositionCloseout({ targetAgent });
+  const draft = validateStageDecompositionCloseoutPacket(packet, { targetAgent });
+  const files = validateAgentSkeletonBuildCloseoutPacket(
+    buildFixtureAgentSkeletonBuildCloseout({ targetAgent }),
+    { targetAgent, packDraft: draft },
+  );
+  return buildScaffoldMaterializationRequest({
+    targetAgent,
+    draft,
+    materializedFiles: files,
+    primarySkillBody: buildTargetAgentPrimarySkillMarkdown(targetAgent),
+    descriptorProjection: { target_brief: targetAgent.target_brief },
+    capabilityMapProjection: buildTargetAgentCapabilityMapProjection(targetAgent, null),
+    packageManifest: buildTargetAgentPackageManifest(targetAgent),
+  });
+}
+
+test('stage-decomposition emits an OPL-owned scaffold materialization request', () => {
+  const packet = buildFixtureStageDecompositionCloseout({
       targetAgent,
       stageId: 'evidence-synthesis-plan',
       actionId: 'plan-evidence-synthesis',
@@ -62,9 +80,9 @@ test('stage-decomposition materializer writes refs-only stage pack surfaces', ()
       skillPath: 'agent/skills/evidence-synthesis-domain-skill.md',
       knowledgePath: 'agent/knowledge/evidence-synthesis-boundary.md',
       qualityGatePath: 'agent/quality_gates/evidence-synthesis-plan-gate.md',
-    });
+  });
 
-    const skeletonCloseout = buildFixtureAgentSkeletonBuildCloseout({
+  const skeletonCloseout = buildFixtureAgentSkeletonBuildCloseout({
       targetAgent,
       stageId: 'evidence-synthesis-plan',
       actionId: 'plan-evidence-synthesis',
@@ -74,20 +92,55 @@ test('stage-decomposition materializer writes refs-only stage pack surfaces', ()
       skillPath: 'agent/skills/evidence-synthesis-domain-skill.md',
       knowledgePath: 'agent/knowledge/evidence-synthesis-boundary.md',
       qualityGatePath: 'agent/quality_gates/evidence-synthesis-plan-gate.md',
-    });
-    const draft = validateStageDecompositionCloseoutPacket(packet, { targetAgent });
-    const files = validateAgentSkeletonBuildCloseoutPacket(skeletonCloseout, {
-      targetAgent,
-      packDraft: draft,
-    });
-    materializeStageDecompositionPackDraft(targetAgentDir, draft, files);
+  });
+  const draft = validateStageDecompositionCloseoutPacket(packet, { targetAgent });
+  const files = validateAgentSkeletonBuildCloseoutPacket(skeletonCloseout, {
+    targetAgent,
+    packDraft: draft,
+  });
+  const request = buildScaffoldMaterializationRequest({
+    targetAgent,
+    draft,
+    materializedFiles: files,
+    primarySkillBody: buildTargetAgentPrimarySkillMarkdown(targetAgent),
+    descriptorProjection: { target_brief: targetAgent.target_brief },
+    capabilityMapProjection: buildTargetAgentCapabilityMapProjection(targetAgent, null),
+    packageManifest: buildTargetAgentPackageManifest(targetAgent),
+  });
 
-    const stageControl = readJson(path.join(targetAgentDir, 'contracts/stage_control_plane.json'));
-    const stageManifest = readJson(path.join(targetAgentDir, 'agent/stages/manifest.json'));
-    const foundrySeries = readJson(path.join(targetAgentDir, 'contracts/foundry_agent_series.json'));
-    const artifactMorphology = readJson(path.join(targetAgentDir, 'contracts/artifact_morphology_contract.json'));
-    const compilerInput = readJson(path.join(targetAgentDir, 'contracts/pack_compiler_input.json'));
-    const stage = (stageControl.stages as JsonObject[])[0];
+  const schemaRef = 'contracts/schemas/agent-scaffold-materialization-request.producer.schema.json';
+  const schema = readJson(path.join(repoRoot, schemaRef));
+  const validation = validateJsonSchemaPayload({
+    schemaId: String(schema.$id),
+    schema,
+    sourceRef: schemaRef,
+  }, request);
+  assert.equal(validation.ok, true, JSON.stringify(validation));
+  const escapingRequest = structuredClone(request);
+  (escapingRequest.files as JsonObject[])[0].path = '../outside-target.md';
+  const escapingValidation = validateJsonSchemaPayload({
+    schemaId: String(schema.$id),
+    schema,
+    sourceRef: schemaRef,
+  }, escapingRequest);
+  assert.equal(escapingValidation.ok, false);
+  assert.equal(request.execution_owner, 'one-person-lab/OPL Foundry Lab');
+  assert.equal((request.authority_boundary as JsonObject).oma_writes_target_agent_files, false);
+  assert.equal((request.authority_boundary as JsonObject).opl_owns_final_build_receipt, true);
+  assert.deepEqual((request.overwrite_policy as JsonObject).allowed_merge_object_paths, [
+    'contracts/domain_descriptor.json',
+    'contracts/capability_map.json',
+  ]);
+  const jsonProjections = request.json_projections as JsonObject[];
+  assert.ok(jsonProjections.every((projection) => projection.merge_policy === 'merge_object'));
+  assert.equal(new Set(jsonProjections.map((projection) => projection.path)).size, 2);
+  const stageControl = draft.stage_control_plane;
+  const stageManifest = (request.stage_manifest as JsonObject).value as JsonObject;
+  const contracts = request.contracts as JsonObject[];
+  const foundrySeries = contracts.find((entry) => entry.path === 'contracts/foundry_agent_series.json')?.value as JsonObject;
+  const artifactMorphology = contracts.find((entry) => entry.path === 'contracts/artifact_morphology_contract.json')?.value as JsonObject;
+  const compilerInput = request.pack_compiler_input as JsonObject;
+  const stage = (stageControl.stages as JsonObject[])[0];
     assert.equal(stage.stage_id, 'evidence-synthesis-plan');
     assert.equal(stage.selected_executor.executor_kind, 'codex_cli');
     assert.equal(stage.authority_boundary.can_write_target_domain_truth, false);
@@ -133,16 +186,71 @@ test('stage-decomposition materializer writes refs-only stage pack surfaces', ()
       true,
     );
     assert.equal(artifactMorphology.native_source_policy.creative_source_must_not_be_generator_code, true);
-    assert.ok(compilerInput.required_domain_pack_paths.includes(
+    assert.ok((compilerInput.required_domain_pack_path_additions as string[]).includes(
       'contracts/schemas/plan-evidence-synthesis.input.schema.json',
     ));
-    assert.ok(compilerInput.required_domain_pack_paths.includes(
+    assert.ok((compilerInput.required_domain_pack_path_additions as string[]).includes(
       'contracts/schemas/plan-evidence-synthesis.output.schema.json',
     ));
-    assert.equal(stageControl.stage_decomposition_subpacket_set, null);
-    assert.equal(
-      fs.existsSync(path.join(targetAgentDir, 'contracts/stage_native_artifacts/evidence-synthesis-plan/attempt.json')),
-      true,
+  assert.equal(stageControl.stage_decomposition_subpacket_set, null);
+  assert.ok((request.files as JsonObject[]).some((file) =>
+    file.path === 'contracts/stage_native_artifacts/evidence-synthesis-plan/attempt.json'
+  ));
+});
+
+test('materialization adapter delegates to OPL and never writes target files itself', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-scaffold-delegation-'));
+  try {
+    const request = buildFixtureMaterializationRequest();
+    const requestPath = path.join(outputRoot, 'request.json');
+    const targetDir = path.join(outputRoot, 'target-agent');
+    const fakeOpl = path.join(outputRoot, 'opl');
+    const expectedRef = (request.build_receipt_installation as JsonObject).expected_build_receipt_ref;
+    fs.writeFileSync(fakeOpl, `#!/usr/bin/env node
+const payload = {
+  standard_domain_agent_scaffold: {
+    materialization_receipt: {
+      surface_kind: 'opl_agent_scaffold_materialization_receipt',
+      status: 'materialized',
+      build_receipt_ref: ${JSON.stringify(expectedRef)},
+      build_receipt: { receipt_ref: ${JSON.stringify(expectedRef)} },
+      materialized_file_digests: [{ path: 'agent/stages/manifest.json', sha256: '${'a'.repeat(64)}' }],
+      validation_refs: ['validation-ref:scaffold/passed'],
+    },
+  },
+};
+process.stdout.write(JSON.stringify(payload));
+`);
+    fs.chmodSync(fakeOpl, 0o755);
+
+    const receipt = delegateScaffoldMaterialization({
+      oplBin: fakeOpl,
+      targetAgentDir: targetDir,
+      requestPath,
+      request,
+    });
+    assert.equal(receipt.build_receipt_ref, expectedRef);
+    assert.equal(fs.existsSync(requestPath), true);
+    assert.equal(fs.existsSync(targetDir), false);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
+test('materialization adapter fails closed on a missing OPL receipt', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-scaffold-delegation-blocked-'));
+  try {
+    const fakeOpl = path.join(outputRoot, 'opl');
+    fs.writeFileSync(fakeOpl, '#!/bin/sh\nprintf \'%s\\n\' \'{"standard_domain_agent_scaffold":{"state":"scaffold_generated"}}\'\n');
+    fs.chmodSync(fakeOpl, 0o755);
+    assert.throws(
+      () => delegateScaffoldMaterialization({
+        oplBin: fakeOpl,
+        targetAgentDir: path.join(outputRoot, 'target-agent'),
+        requestPath: path.join(outputRoot, 'request.json'),
+        request: buildFixtureMaterializationRequest(),
+      }),
+      /did not return opl_agent_scaffold_materialization_receipt/i,
     );
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });

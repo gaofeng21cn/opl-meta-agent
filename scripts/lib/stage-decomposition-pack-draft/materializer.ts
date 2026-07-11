@@ -1,9 +1,3 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import {
-  buildReferenceBuildDigestTargets,
-  materializeReferenceBuildFileDigest,
-} from 'opl-framework/reference-build-proof';
 import {
   buildAgentBuildReceipt,
   buildAgentBuildReceiptRef,
@@ -146,66 +140,6 @@ function buildDeclarativeStageManifest(draft: StageDecompositionPackDraft): Json
       };
     }),
   };
-}
-
-function installBuildReceipt(surface: JsonObject, receipt: JsonObject): void {
-  const receiptRef = asString(receipt.receipt_ref, 'build_receipt.receipt_ref');
-  surface.expected_build_receipt_ref = receiptRef;
-  surface.build_receipt = receipt;
-  surface.build_receipt_ref = receiptRef;
-  surface.build_receipt_refs = [receiptRef];
-}
-
-export function materializeAgentBuildReceipt(
-  targetAgentDir: string,
-  targetAgent: TargetAgent,
-): JsonObject | null {
-  const baseReceipt = buildAgentBuildReceipt(targetAgent);
-  if (!baseReceipt) {
-    return null;
-  }
-  const stageControlPath = path.join(targetAgentDir, 'contracts', 'stage_control_plane.json');
-  const stageControl = JSON.parse(fs.readFileSync(stageControlPath, 'utf8')) as JsonObject;
-  const agentPackPlan = isRecord(stageControl.agent_pack_plan) ? stageControl.agent_pack_plan : null;
-  if (!agentPackPlan) {
-    throw new Error('AgentBuildReceipt requires a materialized AgentPackPlan.');
-  }
-  const plannedStages = asRecordArray(agentPackPlan.planned_stage_refs, 'agent_pack_plan.planned_stage_refs');
-  const materializedStages = asRecordArray(stageControl.stages, 'stage_control_plane.stages');
-  const plannedStageIds = plannedStages.map((stage) =>
-    asString(stage.stage_id, 'agent_pack_plan.planned_stage_refs[].stage_id')
-  );
-  const materializedStageIds = materializedStages.map((stage) =>
-    asString(stage.stage_id, 'stage_control_plane.stages[].stage_id')
-  );
-  if (JSON.stringify(plannedStageIds) !== JSON.stringify(materializedStageIds)) {
-    throw new Error('AgentBuildReceipt cannot be issued before every AgentPackPlan stage is materialized exactly once.');
-  }
-  const digestTargets = buildReferenceBuildDigestTargets(targetAgentDir, agentPackPlan);
-  const receipt: JsonObject = {
-    ...baseReceipt,
-    receipt_timing: 'post_materialization',
-    materialization: {
-      status: 'passed',
-      planned_stage_ids: plannedStageIds,
-      materialized_stage_ids: materializedStageIds,
-      materialized_file_digests: digestTargets.map((target) =>
-        materializeReferenceBuildFileDigest(targetAgentDir, target)
-      ),
-      all_planned_stages_materialized_exactly_once: true,
-      all_planned_control_refs_resolved: true,
-      all_resolvable_planned_capability_refs_digested: true,
-      all_planned_stage_files_present: true,
-    },
-  };
-  if (receipt.receipt_ref !== buildAgentBuildReceiptRef(targetAgent)) {
-    throw new Error('AgentBuildReceipt ref drifted from the expected pre-materialization ref.');
-  }
-  installBuildReceipt(stageControl, receipt);
-  materializedStages.forEach((stage) => installBuildReceipt(stage, receipt));
-  writeJson(stageControlPath, stageControl);
-  writeJson(path.join(targetAgentDir, 'contracts', 'agent_build_receipt.json'), receipt);
-  return receipt;
 }
 
 function conformanceProfileId(targetAgent: TargetAgent): string | null {
@@ -431,12 +365,11 @@ function refTemplateRecord({
   };
 }
 
-function materializeStageNativeArtifactRefFiles(targetAgentDir: string, draft: StageDecompositionPackDraft): void {
+function buildStageNativeArtifactRefFiles(draft: StageDecompositionPackDraft) {
+  const files: Array<{ path: string; body: string; role: string }> = [];
   const contracts = asRecordArray(draft.stage_native_artifact_contract.contracts, 'stage_native_artifact_contract.contracts');
   for (const contract of contracts) {
     const stageId = asString(contract.stage_id, 'stage_native_artifact_contract.contracts[].stage_id');
-    const outputDir = path.join(targetAgentDir, 'contracts', 'stage_native_artifacts', stageId);
-    fs.mkdirSync(outputDir, { recursive: true });
     const fileRefs = [
       ['stage.json', 'stage_json_ref', String(contract.stage_json_ref)],
       ['attempt.json', 'stage_attempt_json_ref', String(contract.attempt_json_ref)],
@@ -452,55 +385,218 @@ function materializeStageNativeArtifactRefFiles(targetAgentDir: string, draft: S
       ['workbench_consumption.json', 'stage_artifact_workbench_consumption_ref', String(contract.workbench_consumption_ref)],
     ] as const;
     fileRefs.forEach(([fileName, refKind, refValue]) => {
-      writeJson(path.join(outputDir, fileName), refTemplateRecord({
-        contract,
-        fileName,
-        refKind,
-        refValue,
-      }));
+      files.push({
+        path: `contracts/stage_native_artifacts/${stageId}/${fileName}`,
+        body: `${JSON.stringify(refTemplateRecord({ contract, fileName, refKind, refValue }), null, 2)}\n`,
+        role: 'stage_native_ref_template',
+      });
     });
   }
+  return files;
 }
 
-function installActionSchemaRequiredPaths(
-  targetAgentDir: string,
-  draft: StageDecompositionPackDraft,
-): void {
-  const compilerInputPath = path.join(targetAgentDir, 'contracts', 'pack_compiler_input.json');
-  const compilerInput = JSON.parse(fs.readFileSync(compilerInputPath, 'utf8')) as JsonObject;
-  const requiredPaths = Array.isArray(compilerInput.required_domain_pack_paths)
-    ? compilerInput.required_domain_pack_paths.filter((entry): entry is string => typeof entry === 'string')
-    : [];
+function actionSchemaRefs(draft: StageDecompositionPackDraft): string[] {
   const actions = asRecordArray(draft.action_catalog.actions, 'action_catalog.actions');
-  const schemaRefs = actions.flatMap((action, index) => [
+  return actions.flatMap((action, index) => [
     asString(action.input_schema_ref, `action_catalog.actions[${index}].input_schema_ref`),
     asString(action.output_schema_ref, `action_catalog.actions[${index}].output_schema_ref`),
   ]);
-  compilerInput.required_domain_pack_paths = [...new Set([...requiredPaths, ...schemaRefs])];
-  writeJson(compilerInputPath, compilerInput);
 }
 
-export function materializeStageDecompositionPackDraft(
-  targetAgentDir: string,
-  draft: StageDecompositionPackDraft,
-  materializedFiles: AgentSkeletonBuildFile[],
-): void {
-  for (const file of materializedFiles) {
-    const relPath = validateMaterializationPath(file.path, 'materialized_files[].path');
-    const body = validateBody(file.body, relPath);
-    const filePath = path.join(targetAgentDir, relPath);
-    fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    fs.writeFileSync(filePath, body);
+export type ScaffoldMaterializationRequestInput = {
+  targetAgent: TargetAgent;
+  draft: StageDecompositionPackDraft;
+  materializedFiles: AgentSkeletonBuildFile[];
+  primarySkillBody: string;
+  descriptorProjection: JsonObject;
+  capabilityMapProjection: JsonObject;
+  packageManifest: JsonObject;
+};
+
+export function buildScaffoldMaterializationRequest({
+  targetAgent,
+  draft,
+  materializedFiles,
+  primarySkillBody,
+  descriptorProjection,
+  capabilityMapProjection,
+  packageManifest,
+}: ScaffoldMaterializationRequestInput): JsonObject {
+  const expectedBuildReceiptRef = buildAgentBuildReceiptRef(targetAgent);
+  const buildReceiptCandidate = buildAgentBuildReceipt(targetAgent) ?? {
+    surface_kind: 'opl_meta_agent_build_receipt_candidate',
+    version: 'opl-meta-agent.agent-build-receipt-candidate.v1',
+    receipt_ref: expectedBuildReceiptRef,
+    target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
+    build_source_kind: 'builtin_profile',
+    authority_boundary: {
+      candidate_only: true,
+      oma_can_finalize_materialized_file_digests: false,
+      oma_can_issue_final_build_receipt: false,
+    },
+  };
+  if (buildReceiptCandidate.receipt_ref !== expectedBuildReceiptRef) {
+    throw new Error('OPL scaffold materialization requires one valid OMA build receipt candidate.');
   }
-  writeJson(path.join(targetAgentDir, 'agent', 'stages', 'manifest.json'), buildDeclarativeStageManifest(draft));
-  writeJson(path.join(targetAgentDir, 'contracts', 'action_catalog.json'), draft.action_catalog);
-  writeJson(path.join(targetAgentDir, 'contracts', 'artifact_morphology_contract.json'), draft.artifact_morphology_contract);
-  writeJson(path.join(targetAgentDir, 'contracts', 'stage_control_plane.json'), draft.stage_control_plane);
-  writeJson(
-    path.join(targetAgentDir, 'contracts', 'stage_native_artifact_contract.json'),
-    draft.stage_native_artifact_contract,
-  );
-  installActionSchemaRequiredPaths(targetAgentDir, draft);
-  materializeStageNativeArtifactRefFiles(targetAgentDir, draft);
-  writeJson(path.join(targetAgentDir, 'contracts', 'foundry_agent_series.json'), draft.foundry_agent_series);
+  const files = materializedFiles.map((file, index) => {
+    const relPath = validateMaterializationPath(file.path, `materialized_files[${index}].path`);
+    return {
+      path: relPath,
+      body: validateBody(file.body, relPath),
+      role: 'oma_domain_pack_file',
+    };
+  });
+  files.push({
+    path: 'agent/primary_skill/SKILL.md',
+    body: validateBody(primarySkillBody, 'agent/primary_skill/SKILL.md'),
+    role: 'oma_primary_skill_candidate',
+  });
+  files.push({
+    path: 'contracts/opl_agent_package_manifest.json',
+    body: `${JSON.stringify(packageManifest, null, 2)}\n`,
+    role: 'oma_agent_package_manifest_candidate',
+  });
+  files.push(...buildStageNativeArtifactRefFiles(draft));
+
+  return {
+    surface_kind: 'opl_agent_scaffold_materialization_request',
+    version: 'opl-agent-scaffold-materialization-request.v1',
+    canonical_schema_ref: 'contracts/opl-framework/agent-scaffold-materialization-request.schema.json',
+    request_owner: 'opl-meta-agent',
+    execution_owner: 'one-person-lab/OPL Foundry Lab',
+    target_identity: {
+      domain_id: targetAgent.domain_id,
+      domain_label: targetAgent.domain_label ?? targetAgent.domain_id,
+      target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
+    },
+    overwrite_policy: {
+      mode: 'replace_declared_files_only',
+      allow_existing_target_dir: true,
+      reject_absolute_paths: true,
+      reject_parent_traversal: true,
+      reject_symlink_escape: true,
+      allowed_merge_object_paths: [
+        'contracts/domain_descriptor.json',
+        'contracts/capability_map.json',
+      ],
+    },
+    files,
+    json_projections: [
+      {
+        path: 'contracts/domain_descriptor.json',
+        value: descriptorProjection,
+        merge_policy: 'merge_object',
+      },
+      {
+        path: 'contracts/capability_map.json',
+        value: capabilityMapProjection,
+        merge_policy: 'merge_object',
+      },
+    ],
+    stage_manifest: {
+      path: 'agent/stages/manifest.json',
+      value: buildDeclarativeStageManifest(draft),
+      write_policy: 'replace_declared_files_only',
+    },
+    contracts: [
+      ['contracts/action_catalog.json', draft.action_catalog],
+      ['contracts/artifact_morphology_contract.json', draft.artifact_morphology_contract],
+      ['contracts/stage_control_plane.json', draft.stage_control_plane],
+      ['contracts/stage_native_artifact_contract.json', draft.stage_native_artifact_contract],
+      ['contracts/foundry_agent_series.json', draft.foundry_agent_series],
+    ].map(([contractPath, value]) => ({
+      path: contractPath,
+      value,
+      write_policy: 'replace_declared_files_only',
+    })),
+    pack_compiler_input: {
+      required_domain_pack_path_additions: [...new Set(actionSchemaRefs(draft))],
+    },
+    build_receipt_candidate: buildReceiptCandidate,
+    build_receipt_installation: {
+      expected_build_receipt_ref: expectedBuildReceiptRef,
+      receipt_path: 'contracts/agent_build_receipt.json',
+      projection_paths: [
+        'contracts/domain_descriptor.json',
+        'contracts/capability_map.json',
+        'contracts/stage_control_plane.json',
+      ],
+    },
+    validation_requests: [
+      'standard_domain_agent_scaffold',
+      'domain_pack_compiler',
+      'agent_profile_conformance',
+    ],
+    authority_boundary: {
+      oma_authors_agent_building_semantics: true,
+      oma_writes_target_agent_files: false,
+      opl_owns_physical_scaffold_materialization: true,
+      opl_owns_materialized_file_digests: true,
+      opl_owns_final_build_receipt: true,
+      build_receipt_candidate_is_final_receipt: false,
+      opl_can_write_target_domain_truth: false,
+      opl_can_authorize_quality_or_export: false,
+    },
+  };
+}
+
+function scaffoldMaterializationReceipt(result: JsonObject): JsonObject {
+  const scaffold = isRecord(result.standard_domain_agent_scaffold)
+    ? result.standard_domain_agent_scaffold
+    : null;
+  const receipt = scaffold && isRecord(scaffold.materialization_receipt)
+    ? scaffold.materialization_receipt
+    : null;
+  if (!receipt || receipt.surface_kind !== 'opl_agent_scaffold_materialization_receipt') {
+    throw new Error('OPL scaffold materialization did not return opl_agent_scaffold_materialization_receipt.');
+  }
+  if (receipt.status !== 'materialized') {
+    throw new Error(`OPL scaffold materialization receipt is not materialized: ${String(receipt.status)}`);
+  }
+  const buildReceipt = isRecord(receipt.build_receipt) ? receipt.build_receipt : null;
+  const buildReceiptRef = asString(receipt.build_receipt_ref, 'materialization_receipt.build_receipt_ref');
+  if (!buildReceipt || buildReceipt.receipt_ref !== buildReceiptRef) {
+    throw new Error('OPL scaffold materialization receipt build receipt/ref mismatch.');
+  }
+  if (asRecordArray(receipt.materialized_file_digests, 'materialization_receipt.materialized_file_digests').length === 0) {
+    throw new Error('OPL scaffold materialization receipt requires materialized file digests.');
+  }
+  if (asStringArray(receipt.validation_refs, 'materialization_receipt.validation_refs').length === 0) {
+    throw new Error('OPL scaffold materialization receipt requires validation refs.');
+  }
+  return receipt;
+}
+
+export function delegateScaffoldMaterialization({
+  oplBin,
+  targetAgentDir,
+  requestPath,
+  request,
+}: {
+  oplBin: string;
+  targetAgentDir: string;
+  requestPath: string;
+  request: JsonObject;
+}): JsonObject {
+  writeJson(requestPath, request);
+  const result = runOpl(oplBin, [
+    'agents',
+    'scaffold',
+    '--materialize-request',
+    requestPath,
+    '--target-dir',
+    targetAgentDir,
+    '--json',
+  ]);
+  const receipt = scaffoldMaterializationReceipt(result);
+  const expectedBuildReceiptRef = isRecord(request.build_receipt_installation)
+    ? asString(
+      request.build_receipt_installation.expected_build_receipt_ref,
+      'request.build_receipt_installation.expected_build_receipt_ref',
+    )
+    : '';
+  if (receipt.build_receipt_ref !== expectedBuildReceiptRef) {
+    throw new Error('OPL scaffold materialization returned an unexpected build receipt ref.');
+  }
+  return receipt;
 }

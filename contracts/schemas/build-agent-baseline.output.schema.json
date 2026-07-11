@@ -133,6 +133,7 @@
       "required": [
         "stage_decomposition_stage_run_readback_path",
         "agent_skeleton_build_stage_run_readback_path",
+        "scaffold_materialization_request_path",
         "foundry_evaluation_request_path",
         "foundry_lab_work_order_path",
         "opl_agent_package_manifest_path",
@@ -146,6 +147,9 @@
           "$ref": "#/$defs/nonEmptyString"
         },
         "agent_skeleton_build_stage_run_readback_path": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "scaffold_materialization_request_path": {
           "$ref": "#/$defs/nonEmptyString"
         },
         "foundry_evaluation_request_path": {

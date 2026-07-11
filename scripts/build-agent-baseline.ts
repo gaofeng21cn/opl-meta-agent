@@ -5,19 +5,18 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseArgs as parseNodeArgs } from 'node:util';
 import {
+  buildTargetAgentCapabilityMapProjection,
+  buildTargetAgentPackageManifest,
+  buildTargetAgentPrimarySkillMarkdown,
   buildProfileSelectionReceipt,
   type JsonObject,
   domainPackReceiptFields,
   readDomainPackSummary,
-  writeMinimalAgentDomainPack,
-  writeTargetAgentCapabilityMap,
-  writeTargetAgentPackageManifest,
-  writeTargetAgentPrimarySkill,
 } from './lib/domain-pack.ts';
 import {
   assertTargetProfileConformance,
-  materializeAgentBuildReceipt,
-  materializeStageDecompositionPackDraft,
+  buildScaffoldMaterializationRequest,
+  delegateScaffoldMaterialization,
   repairStageDecompositionCloseoutPacket,
 } from './lib/stage-decomposition-pack-draft/materializer.ts';
 import type {
@@ -563,99 +562,9 @@ function buildBaselineFoundryEvaluationRequest({
   });
 }
 
-export function runBuildAgentBaseline({
-    outputDir,
-    oplBin,
-    aiReviewerEvaluationPath,
-    targetAgent,
-    stageRunReadbackPaths,
-  }: BuildAgentBaselineArgs): JsonObject {
-  const routeProgress = evaluateActionStageRoute({
-    repoRoot,
-    actionId: 'build-agent-baseline',
-    stageRunReadbackPaths,
-  });
-  if (!routeProgress.complete) {
-    return buildActionStageContinuation(routeProgress);
-  }
-  const routeCloseoutGate = buildActionStageRouteCloseoutGate(routeProgress);
-  const stageDecompositionCloseout = closeoutForStage(routeProgress, 'stage-decomposition');
-  const agentSkeletonBuildCloseout = closeoutForStage(routeProgress, 'agent-skeleton-build');
-  fs.mkdirSync(outputDir, { recursive: true });
-  const domainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
-  const aiReviewerEvaluation = loadAiReviewerEvaluation(aiReviewerEvaluationPath);
-  assertAiReviewerArtifactMorphologyEvidence(aiReviewerEvaluation, 'Baseline delivery');
-  targetAgent = resolveTargetAgentProfileSelection(targetAgent, oplBin);
-
-  const targetAgentLabel = targetAgent.domain_label ?? targetAgent.domain_id;
-  const targetAgentDir = path.join(outputDir, targetAgent.domain_id);
-  const evaluationRequestPath = path.join(outputDir, 'foundry-evaluation-request.json');
-  const foundryLabWorkOrderPath = path.join(outputDir, 'foundry-lab-work-order.json');
-
-  try {
-    buildProfileSelectionReceipt(targetAgent);
-  } catch (error) {
-    const blocker = stageDecompositionBlockerFromError(error, targetAgent);
-    const blockerPath = writeStageDecompositionBlocker(outputDir, targetAgent, blocker);
-    throw new Error(
-      `Stage decomposition failed closed; typed blocker written to ${blockerPath}: ${blocker.blocker_message}`,
-    );
-  }
-
-  const scaffold = runOpl(oplBin, [
-    'agents',
-    'scaffold',
-    '--target-dir',
-    targetAgentDir,
-    '--domain-id',
-    targetAgent.domain_id,
-    '--domain-label',
-    targetAgentLabel,
-    '--force',
-    '--json',
-  ]);
-  writeMinimalAgentDomainPack(targetAgentDir, targetAgent);
-  const targetPrimarySkillPath = writeTargetAgentPrimarySkill(targetAgentDir, targetAgent);
-  let stageDecompositionPackDraft: StageDecompositionPackDraft;
-  try {
-    stageDecompositionPackDraft = validateOrRepairStageDecompositionCloseoutPacket(
-      stageDecompositionCloseout.closeout_packet,
-      { targetAgent },
-    );
-    const materializedFiles = validateAgentSkeletonBuildCloseoutPacket(
-      agentSkeletonBuildCloseout.closeout_packet,
-      {
-        targetAgent,
-        packDraft: stageDecompositionPackDraft,
-      },
-    );
-    materializeStageDecompositionPackDraft(
-      targetAgentDir,
-      stageDecompositionPackDraft,
-      materializedFiles,
-    );
-  } catch (error) {
-    const blocker = stageDecompositionBlockerFromError(error, targetAgent);
-    const blockerPath = writeStageDecompositionBlocker(outputDir, targetAgent, blocker);
-    throw new Error(
-      `Stage decomposition failed closed; typed blocker written to ${blockerPath}: ${blocker.blocker_message}`,
-    );
-  }
-  writeTargetAgentCapabilityMap(targetAgentDir, targetAgent, null);
-  const agentBuildReceipt = materializeAgentBuildReceipt(targetAgentDir, targetAgent);
-  const descriptorPath = path.join(targetAgentDir, 'contracts', 'domain_descriptor.json');
-  const descriptor = JSON.parse(fs.readFileSync(descriptorPath, 'utf8'));
+function buildTargetDescriptorProjection(targetAgent: TargetAgent): JsonObject {
   const profileSelectionReceipt = buildProfileSelectionReceipt(targetAgent);
-  const agentBuildReceiptPath = path.join(targetAgentDir, 'contracts', 'agent_build_receipt.json');
-  const agentBuildReceiptRef = agentBuildReceipt?.receipt_ref ?? null;
-  if (
-    profileSelectionReceipt.expected_build_receipt_ref
-    && agentBuildReceiptRef !== profileSelectionReceipt.expected_build_receipt_ref
-  ) {
-    throw new Error('Target descriptor requires the post-materialization AgentBuildReceipt.');
-  }
-  writeJson(descriptorPath, {
-    ...descriptor,
+  return {
     delivery_domain: targetAgent.delivery_domain,
     target_brief: targetAgent.target_brief,
     ...((targetAgent.intent_signals?.length ?? 0) > 0
@@ -704,10 +613,6 @@ export function runBuildAgentBaseline({
     design_admission_receipt: profileSelectionReceipt.design_admission_receipt,
     design_admission_receipt_ref: profileSelectionReceipt.design_admission_receipt_ref,
     expected_build_receipt_ref: profileSelectionReceipt.expected_build_receipt_ref,
-    ...(agentBuildReceipt ? {
-      build_receipt: agentBuildReceipt,
-      build_receipt_ref: agentBuildReceiptRef,
-    } : {}),
     stage_decomposition_subpacket_set: profileSelectionReceipt.stage_decomposition_subpacket_set,
     stage_decomposition_subpacket_set_ref: profileSelectionReceipt.stage_decomposition_subpacket_set_ref,
     stage_decomposition_subpacket_set_refs: profileSelectionReceipt.stage_decomposition_subpacket_set_ref
@@ -715,12 +620,105 @@ export function runBuildAgentBaseline({
       : [],
     transferable_pattern_requirements: profileSelectionReceipt.transferable_pattern_requirements,
     capability_plan_requirements: profileSelectionReceipt.capability_plan_requirements,
-  });
-  const targetAgentCapabilityMapPath = writeTargetAgentCapabilityMap(
-    targetAgentDir,
+  };
+}
+
+export function runBuildAgentBaseline({
+    outputDir,
+    oplBin,
+    aiReviewerEvaluationPath,
     targetAgent,
-    agentBuildReceipt,
+    stageRunReadbackPaths,
+  }: BuildAgentBaselineArgs): JsonObject {
+  const routeProgress = evaluateActionStageRoute({
+    repoRoot,
+    actionId: 'build-agent-baseline',
+    stageRunReadbackPaths,
+  });
+  if (!routeProgress.complete) {
+    return buildActionStageContinuation(routeProgress);
+  }
+  const routeCloseoutGate = buildActionStageRouteCloseoutGate(routeProgress);
+  const stageDecompositionCloseout = closeoutForStage(routeProgress, 'stage-decomposition');
+  const agentSkeletonBuildCloseout = closeoutForStage(routeProgress, 'agent-skeleton-build');
+  fs.mkdirSync(outputDir, { recursive: true });
+  const domainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
+  const aiReviewerEvaluation = loadAiReviewerEvaluation(aiReviewerEvaluationPath);
+  assertAiReviewerArtifactMorphologyEvidence(aiReviewerEvaluation, 'Baseline delivery');
+  targetAgent = resolveTargetAgentProfileSelection(targetAgent, oplBin);
+
+  const targetAgentDir = path.join(outputDir, targetAgent.domain_id);
+  const evaluationRequestPath = path.join(outputDir, 'foundry-evaluation-request.json');
+  const foundryLabWorkOrderPath = path.join(outputDir, 'foundry-lab-work-order.json');
+
+  try {
+    buildProfileSelectionReceipt(targetAgent);
+  } catch (error) {
+    const blocker = stageDecompositionBlockerFromError(error, targetAgent);
+    const blockerPath = writeStageDecompositionBlocker(outputDir, targetAgent, blocker);
+    throw new Error(
+      `Stage decomposition failed closed; typed blocker written to ${blockerPath}: ${blocker.blocker_message}`,
+    );
+  }
+
+  const targetPrimarySkillPath = path.join(targetAgentDir, 'agent', 'primary_skill', 'SKILL.md');
+  const targetAgentCapabilityMapPath = path.join(targetAgentDir, 'contracts', 'capability_map.json');
+  const targetAgentPackageManifestPath = path.join(
+    targetAgentDir,
+    'contracts',
+    'opl_agent_package_manifest.json',
   );
+  const scaffoldMaterializationRequestPath = path.join(
+    outputDir,
+    'scaffold-materialization-request.json',
+  );
+  let stageDecompositionPackDraft: StageDecompositionPackDraft;
+  let scaffoldMaterializationReceipt: JsonObject;
+  try {
+    stageDecompositionPackDraft = validateOrRepairStageDecompositionCloseoutPacket(
+      stageDecompositionCloseout.closeout_packet,
+      { targetAgent },
+    );
+    const materializedFiles = validateAgentSkeletonBuildCloseoutPacket(
+      agentSkeletonBuildCloseout.closeout_packet,
+      {
+        targetAgent,
+        packDraft: stageDecompositionPackDraft,
+      },
+    );
+    const scaffoldMaterializationRequest = buildScaffoldMaterializationRequest({
+      targetAgent,
+      draft: stageDecompositionPackDraft,
+      materializedFiles,
+      primarySkillBody: buildTargetAgentPrimarySkillMarkdown(targetAgent),
+      descriptorProjection: buildTargetDescriptorProjection(targetAgent),
+      capabilityMapProjection: buildTargetAgentCapabilityMapProjection(targetAgent, null),
+      packageManifest: buildTargetAgentPackageManifest(targetAgent),
+    });
+    scaffoldMaterializationReceipt = delegateScaffoldMaterialization({
+      oplBin,
+      targetAgentDir,
+      requestPath: scaffoldMaterializationRequestPath,
+      request: scaffoldMaterializationRequest,
+    });
+  } catch (error) {
+    const blocker = stageDecompositionBlockerFromError(error, targetAgent);
+    const blockerPath = writeStageDecompositionBlocker(outputDir, targetAgent, blocker);
+    throw new Error(
+      `Stage decomposition failed closed; typed blocker written to ${blockerPath}: ${blocker.blocker_message}`,
+    );
+  }
+  const agentBuildReceipt = scaffoldMaterializationReceipt.build_receipt as JsonObject;
+  const descriptorPath = path.join(targetAgentDir, 'contracts', 'domain_descriptor.json');
+  const profileSelectionReceipt = buildProfileSelectionReceipt(targetAgent);
+  const agentBuildReceiptPath = path.join(targetAgentDir, 'contracts', 'agent_build_receipt.json');
+  const agentBuildReceiptRef = agentBuildReceipt.receipt_ref ?? null;
+  if (
+    profileSelectionReceipt.expected_build_receipt_ref
+    && agentBuildReceiptRef !== profileSelectionReceipt.expected_build_receipt_ref
+  ) {
+    throw new Error('Target descriptor requires the post-materialization AgentBuildReceipt.');
+  }
   const targetDomainPackSummary = readDomainPackSummary(targetAgentDir, {
     domainId: targetAgent.domain_id,
   });
@@ -739,7 +737,6 @@ export function runBuildAgentBaseline({
     targetAgentDir,
     '--json',
   ]);
-  const targetAgentPackageManifestPath = writeTargetAgentPackageManifest(targetAgentDir, targetAgent);
   const targetAgentPackageManifestValidation = runOpl(oplBin, [
     'connect',
     'agent-packages',
@@ -800,7 +797,7 @@ export function runBuildAgentBaseline({
     target_agent: {
       ...targetAgent,
       repo_dir: targetAgentDir,
-      scaffold_status: scaffold.standard_domain_agent_scaffold.state,
+      scaffold_status: String(scaffoldMaterializationReceipt.status),
       scaffold_validation_status: scaffoldValidation.standard_domain_agent_scaffold.validation.status,
       generated_interface_status: generatedInterfaces.generated_agent_interfaces.status,
       domain_pack_status: targetDomainPackSummary.status,
@@ -812,6 +809,7 @@ export function runBuildAgentBaseline({
     artifacts: {
       stage_decomposition_stage_run_readback_path: stageDecompositionCloseout.readback_path,
       agent_skeleton_build_stage_run_readback_path: agentSkeletonBuildCloseout.readback_path,
+      scaffold_materialization_request_path: scaffoldMaterializationRequestPath,
       foundry_evaluation_request_path: evaluationRequestPath,
       foundry_lab_work_order_path: foundryLabWorkOrderPath,
       opl_agent_package_manifest_path: targetAgentPackageManifestPath,

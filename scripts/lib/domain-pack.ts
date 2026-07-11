@@ -1192,11 +1192,6 @@ function profileSelectionMarkdown(targetAgent: MinimalTargetAgent): string[] {
 
 const targetPrimarySkillRef = 'agent/primary_skill/SKILL.md';
 
-function writeJson(filePath: string, payload: unknown): void {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`);
-}
-
 function policyRef({
   domainId,
   refKind,
@@ -1285,97 +1280,7 @@ export function domainPackReceiptFields(summary: DomainPackSummary): DomainPackR
   };
 }
 
-export function writeMinimalAgentDomainPack(targetAgentDir: string, targetAgent: MinimalTargetAgent): void {
-  const domainId = targetAgent.domain_id;
-  const domainLabel = targetAgent.domain_label ?? domainId;
-  const files = {
-    'agent/prompts/README.md': [
-      `# ${domainLabel} Prompts`,
-      '',
-      'Prompt policies stay domain-owned. OPL may project prompt refs but does not copy domain truth or memory bodies.',
-      '',
-    ].join('\n'),
-    'agent/stages/README.md': [
-      `# ${domainLabel} Stages`,
-      '',
-      'Stage policy refs describe the minimal agent flow. OPL owns generated runtime projection and hosted interfaces.',
-      '',
-    ].join('\n'),
-    'agent/skills/README.md': [
-      `# ${domainLabel} Skills`,
-      '',
-      'Skill policy refs declare direct domain entry points and keep parity with OPL-hosted invocation receipts.',
-      '',
-    ].join('\n'),
-    'agent/quality_gates/README.md': [
-      `# ${domainLabel} Quality Gates`,
-      '',
-      'Quality and readiness verdicts stay domain-owned. OPL projects refs and receipts only.',
-      '',
-    ].join('\n'),
-    'agent/knowledge/README.md': [
-      `# ${domainLabel} Knowledge`,
-      '',
-      'Knowledge policy refs locate source and memory policies. Runtime memory bodies stay outside OPL state.',
-      '',
-    ].join('\n'),
-  };
-
-  for (const [relPath, body] of Object.entries(files)) {
-    const filePath = path.join(targetAgentDir, relPath);
-    fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    fs.writeFileSync(filePath, body);
-  }
-
-  const fixturePath = path.join(
-    targetAgentDir,
-    'contracts',
-    'production_acceptance',
-    'morphology_conformance_fixture.json',
-  );
-  fs.mkdirSync(path.dirname(fixturePath), { recursive: true });
-  fs.writeFileSync(
-    fixturePath,
-    `${JSON.stringify({
-      surface_kind: 'generated_agent_morphology_conformance_fixture',
-      schema_version: 1,
-      domain_id: domainId,
-      owner: domainId,
-      fixture_status: 'required_by_default_generated_agent',
-      canonical_semantic_pack_root: 'agent/',
-      required_check_refs: [
-        'check-ref:generated-agent/domain-pack-files-present',
-        'check-ref:generated-agent/stage-action-contracts-present',
-        'check-ref:generated-agent/OPL-generated-interface-owner',
-        'check-ref:generated-agent/no-target-domain-truth-write',
-        'check-ref:generated-agent/no-default-promotion-without-gate',
-      ],
-      conformance_refs: [
-        'contracts/domain_descriptor.json',
-        'contracts/foundry_agent_series.json',
-        'contracts/action_catalog.json',
-        'contracts/stage_control_plane.json',
-        'agent/prompts/README.md',
-        'agent/stages/README.md',
-        'agent/skills/README.md',
-        'agent/quality_gates/README.md',
-        'agent/knowledge/README.md',
-      ],
-      authority_boundary: {
-        refs_only: true,
-        generated_interface_owner: 'one-person-lab',
-        domain_repo_can_own_generated_surface: false,
-        can_write_target_domain_truth: false,
-        can_write_target_domain_memory_body: false,
-        can_mutate_target_domain_artifact_body: false,
-        can_authorize_target_domain_quality_or_export: false,
-        can_promote_default_agent_without_gate: false,
-      },
-    }, null, 2)}\n`,
-  );
-}
-
-function buildTargetAgentPrimarySkillMarkdown(targetAgent: MinimalTargetAgent): string {
+export function buildTargetAgentPrimarySkillMarkdown(targetAgent: MinimalTargetAgent): string {
   const domainId = targetAgent.domain_id;
   const domainLabel = targetAgent.domain_label ?? domainId;
   const targetBrief = targetAgent.target_brief
@@ -1423,13 +1328,6 @@ function buildTargetAgentPrimarySkillMarkdown(targetAgent: MinimalTargetAgent): 
     '- The target domain owner owns domain truth, memory body, artifact body, quality/export verdict, owner receipt, human gate, and default promotion authority.',
     '',
   ].join('\n');
-}
-
-export function writeTargetAgentPrimarySkill(targetAgentDir: string, targetAgent: MinimalTargetAgent): string {
-  const primarySkillPath = path.join(targetAgentDir, targetPrimarySkillRef);
-  fs.mkdirSync(path.dirname(primarySkillPath), { recursive: true });
-  fs.writeFileSync(primarySkillPath, buildTargetAgentPrimarySkillMarkdown(targetAgent), 'utf8');
-  return primarySkillPath;
 }
 
 function buildTargetAgentPrimarySkillCapability(targetAgent: MinimalTargetAgent): JsonObject {
@@ -1503,13 +1401,10 @@ function buildTargetAgentPrimarySkillCapability(targetAgent: MinimalTargetAgent)
   };
 }
 
-export function writeTargetAgentCapabilityMap(
-  targetAgentDir: string,
+export function buildTargetAgentCapabilityMapProjection(
   targetAgent: MinimalTargetAgent,
   buildReceipt: JsonObject | null,
-): string {
-  const capabilityMapPath = path.join(targetAgentDir, 'contracts', 'capability_map.json');
-  const capabilityMap = JSON.parse(fs.readFileSync(capabilityMapPath, 'utf8')) as JsonObject;
+): JsonObject {
   const profileSelectionReceipt = buildProfileSelectionReceipt(targetAgent);
   const buildReceiptRef = buildReceipt?.receipt_ref ?? null;
   if (
@@ -1521,13 +1416,7 @@ export function writeTargetAgentCapabilityMap(
     throw new Error('Target capability map requires the post-materialization AgentBuildReceipt.');
   }
   const selectedProfileRefs = profileSelectionReceipt.selected_profile_refs as string[];
-  const resolverIndex = typeof capabilityMap.resolver_index === 'object'
-    && capabilityMap.resolver_index !== null
-    && !Array.isArray(capabilityMap.resolver_index)
-    ? capabilityMap.resolver_index as JsonObject
-    : {};
-  writeJson(capabilityMapPath, {
-    ...capabilityMap,
+  return {
     profile_selection_mode: profileSelectionReceipt.profile_selection_mode,
     selected_profile_refs: selectedProfileRefs,
     profile_requirements: profileSelectionReceipt.profile_requirements,
@@ -1575,7 +1464,6 @@ export function writeTargetAgentCapabilityMap(
     capability_plan_requirements: profileSelectionReceipt.capability_plan_requirements,
     primary_skill_capability: buildTargetAgentPrimarySkillCapability(targetAgent),
     resolver_index: {
-      ...resolverIndex,
       profile_selection_mode: profileSelectionReceipt.profile_selection_mode,
       profile_refs: selectedProfileRefs,
       profile_requirement_refs: profileSelectionReceipt.profile_requirement_refs,
@@ -1606,11 +1494,10 @@ export function writeTargetAgentCapabilityMap(
       research_synthesis_refs: profileSelectionReceipt.research_synthesis_refs,
       primary_skill_refs: ['contracts/capability_map.json#/primary_skill_capability'],
     },
-  });
-  return capabilityMapPath;
+  };
 }
 
-function buildTargetAgentPackageManifest(targetAgent: MinimalTargetAgent): JsonObject {
+export function buildTargetAgentPackageManifest(targetAgent: MinimalTargetAgent): JsonObject {
   const domainId = targetAgent.domain_id;
   const domainLabel = targetAgent.domain_label ?? domainId;
   return {
@@ -1663,10 +1550,4 @@ function buildTargetAgentPackageManifest(targetAgent: MinimalTargetAgent): JsonO
     },
     capability_dependencies: [],
   };
-}
-
-export function writeTargetAgentPackageManifest(targetAgentDir: string, targetAgent: MinimalTargetAgent): string {
-  const packageManifestPath = path.join(targetAgentDir, 'contracts', 'opl_agent_package_manifest.json');
-  writeJson(packageManifestPath, buildTargetAgentPackageManifest(targetAgent));
-  return packageManifestPath;
 }
