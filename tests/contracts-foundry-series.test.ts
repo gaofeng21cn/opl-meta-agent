@@ -4,7 +4,6 @@ import {
   asStrings,
   readJson,
   readOwnerJson,
-  oplSharedReleaseDependency,
 } from './support/contracts.ts';
 import type { JsonObject } from './support/contracts.ts';
 import { assertEveryFlagFalse } from './support/source-purity.ts';
@@ -16,7 +15,7 @@ test('foundry agent series keeps only OMA identity and domain deltas beside cano
   const seriesAuthority = series.authority_boundary as JsonObject;
 
   assert.equal(series.owner, 'opl-meta-agent');
-  assert.equal(series.canonical_policy_export, 'opl-framework-shared/foundry-agent-series-policy');
+  assert.equal(series.canonical_policy_export, 'opl-framework/foundry-agent-series-policy');
   assert.equal(series.canonical_series_contract_ref, 'contracts/opl-framework/foundry-agent-series-contract.json');
   assert.equal(series.canonical_skeleton_contract_ref, 'contracts/opl-framework/standard-domain-agent-skeleton-contract.json');
   assert.equal(series.domain_id, 'opl-meta-agent');
@@ -49,21 +48,20 @@ test('foundry agent series keeps only OMA identity and domain deltas beside cano
   assertEveryFlagFalse(seriesAuthority as Record<string, boolean>, 'series authority');
 });
 
-test('foundry agent series pins the shared implementation and policy releases', () => {
+test('foundry agent series consumes the OPL-managed framework and pins only the policy release', () => {
   const series = readJson('contracts/foundry_agent_series.json');
   const packageJson = readJson('package.json');
   const packageLock = readJson('package-lock.json');
   const rootPackageLock = (packageLock.packages as JsonObject)[''] as JsonObject;
-  const sharedPackageLock = (packageLock.packages as JsonObject)['node_modules/opl-framework-shared'] as JsonObject;
   const ownerPolicyRelease = readOwnerJson(
     series.shared_policy_release.policy_release_contract_ref as string,
   );
-  const ownerSharedRelease = readOwnerJson('contracts/family-release/shared-owner-release.json');
-  const latestStable = ownerSharedRelease.latest_stable as JsonObject;
-  assert.equal((packageJson.dependencies as JsonObject)['opl-framework-shared'], oplSharedReleaseDependency);
-  assert.equal((rootPackageLock.dependencies as JsonObject)['opl-framework-shared'], oplSharedReleaseDependency);
-  assert.match(String(latestStable.commit), /^[0-9a-f]{40}$/);
-  assert.equal(String(sharedPackageLock.resolved).endsWith(`#${latestStable.commit}`), true);
+  const packageEntries = Object.keys(packageLock.packages as JsonObject);
+
+  assert.equal((packageJson.dependencies as JsonObject | undefined)?.['opl-framework'], undefined);
+  assert.equal((rootPackageLock.dependencies as JsonObject | undefined)?.['opl-framework'], undefined);
+  assert.equal(packageEntries.includes('node_modules/opl-framework'), false);
+  assert.equal(packageEntries.some((entry) => entry.startsWith('node_modules/@temporalio/')), false);
 
   assert.equal(
     series.shared_policy_release.policy_bundle_fingerprint,

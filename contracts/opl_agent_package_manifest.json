@@ -8,7 +8,8 @@
   "source": "first_party_repo_local",
   "carrier_source_role": "codex_plugin_default_carrier_not_package_truth",
   "schema_ref": "one-person-lab/contracts/opl-framework/agent-package-manifest.schema.json",
-  "machine_boundary": "This repo-local sidecar declares OPL Agent Package management semantics. OMA does not maintain a repo-owned generic plugin wrapper; OPL projects the Codex carrier from contracts.",
+  "opl_managed_surface_ref": "one-person-lab/contracts/opl-framework/agent-packages/oma.json#/opl_managed_surface",
+  "machine_boundary": "This repo-local sidecar declares OPL Agent Package management semantics. The node_modules Framework link is an OPL install artifact, not OMA dependency or package truth. OMA does not maintain a repo-owned generic plugin wrapper; OPL projects the Codex carrier from contracts.",
   "codex_surface": {
     "plugin_id": "opl-meta-agent",
     "standalone_distribution": "generated_carrier_surface",

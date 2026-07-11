@@ -15,7 +15,13 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 
 - 决策：`standard_foundry_policies.json` 与 `foundry_agent_series.json` 只保存 release pin、OPL canonical consumer/contract refs、OMA identity 和 agent-building delta；stage-decomposition helper 从 OPL public consumer 读取 canonical body，并只合并 artifact morphology、OMA progress semantics 和 typed-blocker authority delta。
 - 决策：generated target `foundry_agent_series.json` 同样只物化 canonical refs、release pin、target identity、OMA domain delta 与 false-authority boundary，不再复制 series design、workspace topology、membership 或 public projection body。
-- 影响：OPL canonical contract 是唯一 shared policy truth；OMA 的 docs、tests、generated contracts 和本仓 JSON 均不得恢复同一 policy body。远端依赖 release 必须实际导出 `foundry-agent-series-policy` 后才能完成安装 cutover，local source/link 验证不等于 release currentness。
+- 影响：OPL canonical contract 是唯一 shared policy truth；OMA 的 docs、tests、generated contracts 和本仓 JSON 均不得恢复同一 policy body。OPL owner policy release 必须实际导出 `foundry-agent-series-policy`；local source/link 验证不等于 release currentness。
+
+### Framework import 由 OPL managed link 托管
+
+- 决策：OMA 保留 `opl-framework/*` bare imports，但 `package.json` / lockfile 不声明或安装 `opl-framework`。OPL install/update/sync/reinstall 负责把当前 Framework root 物化为 agent root 下的 managed link；developer checkout 通过同一 OPL Connect 命令显式 repair。
+- 决策：repo verification wrapper 只调用 OPL `link-framework --check --json` 并传播 typed failure / repair command；检查路径不得写 link，不得在 OMA 新增 resolver、Framework copy、tarball、`file:` dependency 或 package wrapper。
+- 影响：npm lock 只持有 OMA 自身开发工具；Framework currentness、link target 和 repair authority 归 OPL owner readback。bare import 可解析只证明当前 link 可消费，不声明 Framework release currentness、runtime ready 或 OMA domain ready。
 
 ### External learning / suite signals 是 advisory inputs，不是 target owner verdict
 

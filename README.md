@@ -141,7 +141,7 @@ The loop turns each run into reviewable improvement material:
 <details>
   <summary><strong>Start here if you are handing this repo to Codex or another agent</strong></summary>
 
-- Cloning this repo does not install the OPL Framework or runtime substrate. If you need live runs, prepare the current `one-person-lab` checkout or release bundle first.
+- Cloning this repo does not install the OPL Framework or runtime substrate. OPL install/update/sync/reinstall owns the Framework link; for a developer checkout, run `npm install` and then `opl connect agent-packages link-framework --agent-root "$PWD" --json`.
 - Read this README, then [Project](./docs/project.md), [Status](./docs/status.md), [Architecture](./docs/architecture.md), [Invariants](./docs/invariants.md), [Decisions](./docs/decisions.md), and the contracts under [`contracts/`](./contracts/).
 - Use package scripts and `contracts/action_catalog.json` for current command surfaces; update focused tests when changing contracts, README, docs, smoke scripts, or action boundaries.
 - This repo owns agent-building semantics and testing/self-evolution orchestration. OPL Agent Lab owns real runs, longline suites, mechanism read models, work-order execution, and promotion gates.
@@ -159,6 +159,8 @@ npm run test:full
 ```
 
 `typecheck` runs TypeScript's compiler gate over `scripts/**/*.ts` and `tests/**/*.ts`. `npm test` aliases `npm run test:smoke`, the default lightweight contract/source-purity lane. `npm run test:behavior` covers bootstrap, external-suite, work-order, owner-chain, and live-progress fixture-oracle behavior tests. `npm run test:full` runs the full Node test suite. Baseline, takeover, evidence, and interface commands are maintained in `package.json`, `contracts/action_catalog.json`, source, and focused tests.
+
+`npm install` installs only OMA's development toolchain. OMA keeps no npm dependency on `opl-framework`; `scripts/run-with-repo-temp-env.sh` performs the read-only OPL `link-framework --check` prerequisite before verification and prints the OPL-owned repair command when the link is absent or stale.
 
 ## Further Reading
 

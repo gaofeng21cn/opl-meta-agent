@@ -124,7 +124,7 @@ test('stage-decomposition materializer writes refs-only stage pack surfaces', ()
     assert.equal(foundrySeries.surface_kind, 'opl_foundry_agent_series_consumer');
     assert.equal(foundrySeries.version, 'foundry-agent-series-consumer.v1');
     assert.equal(Object.hasOwn(foundrySeries, 'required_identity_fields'), false);
-    assert.equal(foundrySeries.canonical_policy_export, 'opl-framework-shared/foundry-agent-series-policy');
+    assert.equal(foundrySeries.canonical_policy_export, 'opl-framework/foundry-agent-series-policy');
     assert.equal(Object.hasOwn(foundrySeries, 'series_design_profile'), false);
     assert.equal(Object.hasOwn(foundrySeries, 'workspace_topology_profile'), false);
     assert.equal(

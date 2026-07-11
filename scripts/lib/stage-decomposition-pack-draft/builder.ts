@@ -1,4 +1,4 @@
-import { STANDARD_AGENT_PACK_ABI } from 'opl-framework-shared/standard-agent-pack-abi';
+import { STANDARD_AGENT_PACK_ABI } from 'opl-framework/standard-agent-pack-abi';
 import {
   buildAgentPackPlan,
   buildAgentBuildReceiptRef,

@@ -3,7 +3,7 @@ import path from 'node:path';
 import {
   buildReferenceBuildDigestTargets,
   materializeReferenceBuildFileDigest,
-} from 'opl-framework-shared/reference-build-proof';
+} from 'opl-framework/reference-build-proof';
 import {
   buildAgentBuildReceipt,
   buildAgentBuildReceiptRef,

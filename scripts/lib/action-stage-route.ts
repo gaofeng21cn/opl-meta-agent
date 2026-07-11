@@ -2,7 +2,7 @@ import {
   evaluateStandardAgentActionStageRun,
   type StandardAgentActionStageRunCloseout,
   type StandardAgentActionStageRunProgress,
-} from 'opl-framework-shared/standard-agent-action-stage-run';
+} from 'opl-framework/standard-agent-action-stage-run';
 import type { JsonObject } from './domain-pack.ts';
 
 export type StageRunCloseoutEvidence = StandardAgentActionStageRunCloseout & {

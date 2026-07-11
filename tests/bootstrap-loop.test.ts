@@ -5,7 +5,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { pathToFileURL } from 'node:url';
-import { validateJsonSchemaPayload } from 'opl-framework-shared/json-schema-registry';
+import { validateJsonSchemaPayload } from 'opl-framework/json-schema-registry';
 import {
   buildAiReviewerEvaluation,
   oplOwnerRepoRoot,

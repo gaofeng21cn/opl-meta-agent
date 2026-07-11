@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
-import { validateJsonSchemaPayload } from 'opl-framework-shared/json-schema-registry';
+import { validateJsonSchemaPayload } from 'opl-framework/json-schema-registry';
 import { readJson, repoRoot } from './support/contracts.ts';
 
 type JsonObject = Record<string, any>;

@@ -5,7 +5,7 @@ import {
   FOUNDRY_AGENT_SERIES_CONTRACT_REF,
   STANDARD_DOMAIN_AGENT_SKELETON_CONTRACT_REF,
   canonicalFoundryAgentSeriesPolicy,
-} from 'opl-framework-shared/foundry-agent-series-policy';
+} from 'opl-framework/foundry-agent-series-policy';
 import type { JsonObject } from '../domain-pack.ts';
 import type { TargetAgent } from '../meta-agent-loop-io.ts';
 
@@ -42,7 +42,7 @@ function readStandardFoundryPolicyConsumer(): JsonObject {
   if (policy.surface_kind !== 'standard_foundry_policy_consumer') {
     throw new Error('Standard Foundry policy consumer has an unexpected surface_kind.');
   }
-  if (policy.canonical_policy_export !== 'opl-framework-shared/foundry-agent-series-policy') {
+  if (policy.canonical_policy_export !== 'opl-framework/foundry-agent-series-policy') {
     throw new Error('Standard Foundry policy consumer must use the canonical OPL public export.');
   }
   if (policy.canonical_series_contract_ref !== FOUNDRY_AGENT_SERIES_CONTRACT_REF) {

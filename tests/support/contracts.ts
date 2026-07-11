@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { assertJsonSchemaPayload } from 'opl-framework-shared/json-schema-registry';
+import { assertJsonSchemaPayload } from 'opl-framework/json-schema-registry';
 import type { JsonObject } from '../../scripts/lib/domain-pack.ts';
 
 export type { JsonObject };
@@ -13,9 +13,6 @@ export const oplBin = process.env.OPL_BIN
 export const oplOwnerRepoRoot = process.env.OPL_OWNER_REPO_ROOT
   ?? '/Users/gaofeng/workspace/one-person-lab';
 export const placeholderPattern = new RegExp(`\\b(?:TO${'DO'}|T${'BD'})\\b`, 'i');
-export const oplSharedReleaseDependency =
-  'git+https://github.com/gaofeng21cn/one-person-lab.git#latest-stable';
-
 export function asObjects(value: unknown): JsonObject[] {
   return value as JsonObject[];
 }

@@ -2,7 +2,7 @@
   "surface_kind": "opl_foundry_agent_series_consumer",
   "version": "foundry-agent-series-consumer.v1",
   "owner": "opl-meta-agent",
-  "canonical_policy_export": "opl-framework-shared/foundry-agent-series-policy",
+  "canonical_policy_export": "opl-framework/foundry-agent-series-policy",
   "canonical_series_contract_ref": "contracts/opl-framework/foundry-agent-series-contract.json",
   "canonical_skeleton_contract_ref": "contracts/opl-framework/standard-domain-agent-skeleton-contract.json",
   "shared_policy_release": {

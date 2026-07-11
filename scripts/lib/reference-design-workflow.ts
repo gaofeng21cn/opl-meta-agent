@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { validateReferenceDesignPatternPacket } from 'opl-framework-shared/reference-design-pattern-packet';
+import { validateReferenceDesignPatternPacket } from 'opl-framework/reference-design-pattern-packet';
 
 type JsonObject = Record<string, any>;
 

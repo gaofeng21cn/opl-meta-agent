@@ -5,7 +5,7 @@
   "purpose": "Bind OMA Foundry authoring deltas to the canonical OPL Foundry policy consumer.",
   "state": "active_contract",
   "machine_boundary": "OPL canonical contracts own shared Foundry policy bodies. OMA stores only the release pin, canonical refs, and agent-building deltas consumed by stage decomposition.",
-  "canonical_policy_export": "opl-framework-shared/foundry-agent-series-policy",
+  "canonical_policy_export": "opl-framework/foundry-agent-series-policy",
   "canonical_series_contract_ref": "contracts/opl-framework/foundry-agent-series-contract.json",
   "canonical_skeleton_contract_ref": "contracts/opl-framework/standard-domain-agent-skeleton-contract.json",
   "active_policy_consumer_refs": [

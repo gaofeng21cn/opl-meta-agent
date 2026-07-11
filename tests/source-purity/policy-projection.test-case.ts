@@ -79,7 +79,7 @@ test('retired policy helpers cannot resurrect beside their contract owners', () 
       verify(contract: JsonObject, activeConsumer: JsonObject): void {
         assert.equal(contract.surface_kind, 'standard_foundry_policy_consumer');
         assert.ok(asStrings(activeConsumer.writes_only).includes('standard_foundry_policy_ref'));
-        assert.equal(contract.canonical_policy_export, 'opl-framework-shared/foundry-agent-series-policy');
+        assert.equal(contract.canonical_policy_export, 'opl-framework/foundry-agent-series-policy');
         const policyDelta = assertPolicyObject(contract, 'domain_policy_delta');
         const seriesProfile = assertPolicyObject(policyDelta, 'series_design_profile');
         const morphologyPolicy = assertPolicyObject(seriesProfile, 'artifact_morphology_policy');
