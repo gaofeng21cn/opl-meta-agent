@@ -121,7 +121,7 @@ Artifact hashes for exact evidence bytes:
 标准 materialization command shape：
 
 ```bash
-node --experimental-strip-types scripts/build-agent-baseline.ts \
+node scripts/build-agent-baseline.ts \
   --output-dir <target-output> \
   --opl-bin <opl-bin> \
   --ai-reviewer-evaluation <reviewer-evidence.json> \
