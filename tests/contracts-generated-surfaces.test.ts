@@ -125,20 +125,22 @@ test('Pack canonical generated interfaces consume OMA identity and stage manifes
   assert.equal(asObjects(bundle.product_entry.family_stage_control_plane.stages).length, 11);
 });
 
-test('default-caller readback cannot authorize physical deletion', () => {
-  const evidence = readJson('contracts/default_caller_deletion_evidence.json');
+test('functional audit records physically absent default surfaces without a second evidence contract', () => {
+  const evidence = readJson('contracts/functional_privatization_audit.json');
   const handoff = readJson('contracts/generated_surface_handoff.json');
 
   assert.equal(evidence.source_shape, 'landed');
   assert.equal(evidence.functional_structure_gap_count, 0);
-  assert.equal(evidence.physical_delete_authorized, false);
-  assert.equal(evidence.authority_boundary.refs_only, true);
-  assert.equal(evidence.authority_boundary.can_authorize_domain_repo_physical_delete, false);
-  assert.equal(handoff.default_caller_deletion_evidence_ref, 'contracts/default_caller_deletion_evidence.json');
+  assert.equal(evidence.default_surface_boundary.state, 'physically_absent');
+  assert.equal(evidence.default_surface_boundary.domain_repo_can_own_default_surface, false);
+  assert.equal(
+    handoff.functional_privatization_audit_ref,
+    'contracts/functional_privatization_audit.json',
+  );
   asObjects(handoff.handoff_surfaces).forEach((surface) => {
     assert.equal(surface.owner, 'one-person-lab');
-    assert.equal(surface.physical_delete_authorized, false);
-    assert.ok(evidence.surface_evidence[surface.surface_id] as JsonObject);
+    assert.equal(surface.retired_default_surface_id, surface.surface_id);
+    assert.ok((evidence.retired_default_surface_ids as string[]).includes(surface.surface_id as string));
   });
 
   const result = spawnSync(oplBin, [

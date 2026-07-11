@@ -25,7 +25,6 @@ import {
 const CORE_FALSE_READY_KEYS = [
   'generated_hosted_surface_live_ready',
   'default_promotion_complete',
-  'cleanup_readback_physical_delete_authorized',
   'target_agent_ready',
   'domain_ready',
   'production_ready',

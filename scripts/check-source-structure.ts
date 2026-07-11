@@ -157,190 +157,29 @@ function repoNativeRetentionOverrides(policy: JsonObject): Map<string, JsonObjec
   return overrides;
 }
 
-function cleanupReadbackForScripts(
+function scriptRetentionSummary(
   policy: JsonObject,
-  receipt: JsonObject,
   sourceReceipt: JsonObject,
   scriptMorphology: JsonObject,
-  commandRef = 'npm run script-to-pack:readback:full',
 ): JsonObject {
-  const cleanupGuard = scriptMorphology.retirement_readback_cleanup_guard as JsonObject;
-  const classificationsByScript = byScriptRef(scriptMorphology.script_classifications);
-  const activeCallersByScript = byScriptRef((sourceReceipt.active_script_caller_scan as JsonObject).caller_refs_by_script);
   const gatesByScript = gateByScriptRef(scriptMorphology.script_to_pack_retirement_gates);
   const retentionOverridesByGate = repoNativeRetentionOverrides(policy);
   const scannedScriptRefs = asStrings(sourceReceipt.scanned_script_refs, 'source_purity_scan_receipt.scanned_script_refs');
-  const requiredByReceipt = asStringArray(receipt.future_retirement_or_absorb_still_requires);
-  const requiredByGuard = asStringArray(cleanupGuard.required_before_cleanup_apply);
-  const requiredBeforeCleanup = requiredByGuard.length > 0 ? requiredByGuard : requiredByReceipt;
-  const defaultMissingEvidence = requiredByReceipt.length > 0
-    ? requiredByReceipt
-    : requiredBeforeCleanup.filter((entry) => !entry.startsWith('owner_receipt://'));
-
-  const rows = scannedScriptRefs.map((scriptRef) => {
+  const retentionStates = scannedScriptRefs.map((scriptRef) => {
     const gate = gatesByScript.get(scriptRef) ?? {};
-    const classification = classificationsByScript.get(scriptRef) ?? {};
-    const activeCaller = activeCallersByScript.get(scriptRef) ?? {};
-    const missingEvidence = asStringArray(gate.required_before_retire_or_absorb);
     const gateId = firstString(gate.gate_id);
     const retentionOverride = gateId ? retentionOverridesByGate.get(gateId) : undefined;
-    const retentionState = retentionOverride
+    return retentionOverride
       ? firstString(retentionOverride.retention_state)
       : retainedCurrentKind(gate);
-
-    return {
-      script_ref: scriptRef,
-      gate_id: gateId ?? 'missing_script_to_pack_gate',
-      current_role: firstString(gate.current_role) ?? 'unknown_retained_script_role',
-      classes: asStringArray(classification.classes),
-      authority_function_refs: asStringArray(classification.authority_function_refs),
-      consumes_opl_surfaces: asStringArray(classification.consumes_opl_surfaces),
-      active_caller_refs: asStringArray(activeCaller.active_caller_refs),
-      missing_evidence: missingEvidence.length > 0 ? missingEvidence : defaultMissingEvidence,
-      closed_retention_refs: asStringArray(gate.closed_retention_refs),
-      owner_delta_route: gateId
-        ? `route-to-owner:opl-framework-or-target-owner/script-to-pack/${gateId}`
-        : 'route-to-owner:opl-meta-agent/script-to-pack/missing-script-gate',
-      typed_blocker_ref_shape: gateId
-        ? `oma-typed-blocker:script-to-pack/${gateId}/${scriptRef}`
-        : `oma-typed-blocker:script-to-pack/missing-script-gate/${scriptRef}`,
-      can_apply_cleanup: false,
-      retention_state: retentionState,
-      retention_reason: retentionOverride
-        ? firstString(retentionOverride.retention_reason)
-        : firstString(gate.retention_reason),
-      retention_evidence_refs: retentionOverride
-        ? asStringArray(retentionOverride.retention_evidence_refs)
-        : asStringArray(gate.retention_evidence_refs),
-      no_resurrection_policy: retentionOverride?.no_resurrection_policy,
-      future_retirement_requires: asStringArray(gate.required_before_retire_or_absorb),
-    };
   });
-  const retainedCurrentRows = rows
-    .filter((row) => row.retention_state)
-    .map((row) => ({
-      script_ref: row.script_ref,
-      gate_id: row.gate_id,
-      current_role: row.current_role,
-      retention_state: row.retention_state,
-      retention_reason: row.retention_reason,
-      retention_evidence_refs: row.retention_evidence_refs,
-      no_resurrection_policy: row.no_resurrection_policy,
-      classes: row.classes,
-      authority_function_refs: row.authority_function_refs,
-      consumes_opl_surfaces: row.consumes_opl_surfaces,
-      active_caller_refs: row.active_caller_refs,
-      future_retirement_requires: row.future_retirement_requires,
-      owner_delta_route: row.owner_delta_route,
-      typed_blocker_ref_shape: row.typed_blocker_ref_shape,
-      can_apply_cleanup: false,
-    }));
-  const cleanupCandidates = rows
-    .filter((row) => !row.retention_state)
-    .map((row) => {
-      const {
-        retention_state: _retentionState,
-        retention_reason: _retentionReason,
-        retention_evidence_refs: _retentionEvidenceRefs,
-        no_resurrection_policy: _noResurrectionPolicy,
-        future_retirement_requires: _futureRetirementRequires,
-        ...candidate
-      } = row;
-      return candidate;
-    });
-
+  const count = (state: string) => retentionStates.filter((entry) => entry === state).length;
   return {
-    surface_kind: 'oma_script_to_pack_retirement_cleanup_readback',
-    version: 'script-to-pack-retirement-cleanup-readback.v1',
-    owner: 'opl-meta-agent',
-    target_domain_id: 'opl-meta-agent',
-    state: 'readback_available_cleanup_not_authorized',
-    ok: true,
-    source_refs: {
-      receipt_ref: 'contracts/script_to_pack_gate_receipt.json',
-      authority_functions_ref: 'runtime/authority_functions/meta-agent-authority-functions.json',
-      script_morphology_policy_ref:
-        'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy',
-      active_caller_scan_ref:
-        'runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt.active_script_caller_scan',
-    },
-    readback_guard_ref:
-      'runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy.retirement_readback_cleanup_guard',
-    command_ref: commandRef,
-    readback_is_authority: false,
-    cleanup_candidate_count: cleanupCandidates.length,
-    retained_current_count: retainedCurrentRows.length,
-    retained_current_authority_function_count: retainedCurrentRows
-      .filter((row) => row.retention_state === 'retained_current_authority_function')
-      .length,
-    retained_current_repo_native_surface_count: retainedCurrentRows
-      .filter((row) => row.retention_state === 'retained_current_repo_native_surface')
-      .length,
-    fixture_or_proof_only_retained_count: retainedCurrentRows
-      .filter((row) => row.retention_state === 'fixture_or_proof_only_retained')
-      .length,
-    cleanup_apply_candidate_count: 0,
-    missing_evidence_item_count: cleanupCandidates.reduce(
-      (count, candidate) => count + asStringArray(candidate.missing_evidence).length,
-      0,
-    ),
-    required_before_cleanup_apply: requiredBeforeCleanup,
-    cleanup_candidates: cleanupCandidates,
-    retained_current_rows: retainedCurrentRows,
-    retained_current_authority_functions: retainedCurrentRows,
-    false_ready_claims: {
-      claims_cleanup_readback_authorizes_delete: false,
-      claims_retirement_cleanup_applied: false,
-      claims_retirement_cleanup_complete: false,
-      claims_opl_primitive_parity: false,
-      claims_no_active_caller: false,
-      claims_app_or_registry_readiness: false,
-      claims_generated_hosted_readiness: false,
-      claims_target_agent_ready: false,
-      claims_domain_ready: false,
-      claims_production_ready: false,
-    },
-    authority_boundary: {
-      can_identify_cleanup_candidates: true,
-      can_route_owner_delta: true,
-      can_authorize_physical_delete: false,
-      can_sign_owner_receipt: false,
-      can_create_typed_blocker_instance: false,
-      can_claim_opl_primitive_parity: false,
-      can_claim_no_active_caller: false,
-      can_claim_app_or_registry_readiness: false,
-      can_claim_generated_hosted_readiness: false,
-      can_claim_target_agent_ready: false,
-      can_claim_domain_ready: false,
-      can_claim_production_ready: false,
-    },
-  };
-}
-
-function compactCleanupReadback(readback: JsonObject): JsonObject {
-  const candidates = Array.isArray(readback.cleanup_candidates)
-    ? readback.cleanup_candidates as JsonObject[]
-    : [];
-  const sampleCleanupCandidates = candidates.slice(0, 3);
-  return {
-    summary_id: 'oma.script_to_pack_retirement_cleanup.compact_summary.v1',
-    surface_kind: readback.surface_kind,
-    version: readback.version,
-    summary_role: 'compact_cleanup_summary_not_second_script_inventory',
-    state: readback.state,
-    command_ref: readback.command_ref,
-    readback_is_authority: readback.readback_is_authority,
-    cleanup_candidate_count: readback.cleanup_candidate_count,
-    retained_current_count: readback.retained_current_count,
-    retained_current_authority_function_count: readback.retained_current_authority_function_count,
-    retained_current_repo_native_surface_count: readback.retained_current_repo_native_surface_count,
-    fixture_or_proof_only_retained_count: readback.fixture_or_proof_only_retained_count,
-    cleanup_apply_candidate_count: readback.cleanup_apply_candidate_count,
-    missing_evidence_item_count: readback.missing_evidence_item_count,
-    sample_cleanup_candidate_count: sampleCleanupCandidates.length,
-    sample_cleanup_candidates: sampleCleanupCandidates,
-    false_ready_claims: readback.false_ready_claims,
-    authority_boundary: readback.authority_boundary,
+    retained_current_count: retentionStates.filter(Boolean).length,
+    retained_current_authority_function_count: count('retained_current_authority_function'),
+    retained_current_repo_native_surface_count: count('retained_current_repo_native_surface'),
+    fixture_or_proof_only_retained_count: count('fixture_or_proof_only_retained'),
+    unclassified_script_count: retentionStates.filter((entry) => !entry).length,
   };
 }
 
@@ -362,7 +201,7 @@ function sourceStructureGateReadback(
     state: exitCode === 0 ? 'passed' : 'failed',
     ok: exitCode === 0,
     mode: strict ? 'strict' : 'advisory',
-    command_ref: strict ? 'npm run source-structure:strict:json' : 'npm run source-structure:json',
+    command_ref: strict ? 'npm run source-structure:strict -- --json' : 'npm run source-structure:json',
     fail_reasons: failReasons,
     line_budget: {
       budget_lines: budget,
@@ -377,62 +216,6 @@ function sourceStructureGateReadback(
       violation_count: guardViolations.length,
       violations: guardViolations,
     },
-  };
-}
-
-function cleanupReadbackState(exitCode: number, cleanupState: unknown): string {
-  return exitCode === 0 ? String(cleanupState) : 'failed_source_structure_gate';
-}
-
-function combinedViolations(sourceStructureGate: JsonObject): string[] {
-  return [
-    ...asStringArray(sourceStructureGate.script_to_pack_receipt_guard?.violations),
-    ...asStringArray(sourceStructureGate.line_budget?.violations)
-      .map((entry) => `line_budget: ${entry}`),
-  ];
-}
-
-function directCompactCleanupReadback(
-  readback: JsonObject,
-  exitCode: number,
-  sourceStructureGate: JsonObject,
-): JsonObject {
-  const compact = compactCleanupReadback({
-    ...readback,
-    command_ref: 'npm run script-to-pack:readback',
-  });
-  const violations = combinedViolations(sourceStructureGate);
-  return {
-    surface_kind: 'oma_script_to_pack_retirement_cleanup_compact_readback',
-    version: 'script-to-pack-retirement-cleanup-compact-readback.v1',
-    owner: readback.owner ?? 'opl-meta-agent',
-    target_domain_id: readback.target_domain_id ?? 'opl-meta-agent',
-    state: cleanupReadbackState(exitCode, compact.state),
-    ok: exitCode === 0 && readback.ok !== false,
-    policy_ref: policyPath,
-    command_ref: 'npm run script-to-pack:readback',
-    full_detail_command_ref: 'npm run script-to-pack:readback:full',
-    readback_role: 'default_operator_compact_readback_not_second_script_inventory',
-    readback_is_authority: compact.readback_is_authority,
-    cleanup_candidate_count: compact.cleanup_candidate_count,
-    retained_current_count: compact.retained_current_count,
-    retained_current_authority_function_count: compact.retained_current_authority_function_count,
-    retained_current_repo_native_surface_count: compact.retained_current_repo_native_surface_count,
-    fixture_or_proof_only_retained_count: compact.fixture_or_proof_only_retained_count,
-    cleanup_apply_candidate_count: compact.cleanup_apply_candidate_count,
-    missing_evidence_item_count: compact.missing_evidence_item_count,
-    sample_cleanup_candidate_count: compact.sample_cleanup_candidate_count,
-    sample_cleanup_candidates: compact.sample_cleanup_candidates,
-    full_candidate_rows_omitted_from_default: true,
-    full_candidate_rows_available_via: 'npm run script-to-pack:readback:full',
-    false_ready_claims: compact.false_ready_claims,
-    authority_boundary: compact.authority_boundary,
-    compact_cleanup_summary: compact,
-    source_structure_gate: sourceStructureGate,
-    cleanup_violation_count: sourceStructureGate.script_to_pack_receipt_guard?.violation_count ?? 0,
-    cleanup_violations: sourceStructureGate.script_to_pack_receipt_guard?.violations ?? [],
-    violation_count: violations.length,
-    violations,
   };
 }
 
@@ -451,8 +234,7 @@ function validateScriptToPackReceiptGuard(
   const activeCallerScan = sourceReceipt.active_script_caller_scan as JsonObject;
   const sourceRefIntegrityGuard = scriptMorphology.source_ref_integrity_guard as JsonObject;
   const currentSummary = receipt.current_scan_summary as JsonObject;
-  const cleanupReadback = cleanupReadbackForScripts(policy, receipt, sourceReceipt, scriptMorphology);
-  const compactCleanupSummary = compactCleanupReadback(cleanupReadback);
+  const retentionSummary = scriptRetentionSummary(policy, sourceReceipt, scriptMorphology);
   const trackedScriptRefs = scriptRefsFromTrackedFiles(tracked);
   const scannedScriptRefs = asStrings(sourceReceipt.scanned_script_refs, 'source_purity_scan_receipt.scanned_script_refs');
   const summaryScannedScriptRefs = asStrings(currentSummary.scanned_script_refs, 'current_scan_summary.scanned_script_refs');
@@ -500,56 +282,15 @@ function validateScriptToPackReceiptGuard(
   if (Number(currentSummary.script_gate_count) !== (scriptMorphology.script_to_pack_retirement_gates as unknown[]).length) {
     guardViolations.push('script-to-pack current_scan_summary.script_gate_count drift');
   }
-  if (cleanupReadback.cleanup_candidate_count + cleanupReadback.retained_current_count !== scannedScriptRefs.length) {
-    guardViolations.push('script-to-pack cleanup readback classified script count drift');
+  if (retentionSummary.retained_current_count + retentionSummary.unclassified_script_count !== scannedScriptRefs.length) {
+    guardViolations.push('script-to-pack retention summary classified script count drift');
   }
-  if (cleanupReadback.cleanup_apply_candidate_count !== 0) {
-    guardViolations.push('script-to-pack cleanup readback must not authorize cleanup apply');
+  if (retentionSummary.unclassified_script_count !== 0) {
+    guardViolations.push('script-to-pack retention summary reports unclassified scripts');
   }
-  if (currentSummary.compact_cleanup_summary_id !== compactCleanupSummary.summary_id) {
-    guardViolations.push('script-to-pack compact cleanup summary id drift');
-  }
-  if (currentSummary.compact_cleanup_summary_output_ref !== 'script-to-pack-readback.compact_cleanup_summary') {
-    guardViolations.push('script-to-pack compact cleanup summary output ref drift');
-  }
-  if (Number(currentSummary.compact_cleanup_candidate_count) !== cleanupReadback.cleanup_candidate_count) {
-    guardViolations.push('script-to-pack compact cleanup candidate count drift');
-  }
-  if (Number(currentSummary.compact_retained_current_count) !== cleanupReadback.retained_current_count) {
-    guardViolations.push('script-to-pack compact retained current count drift');
-  }
-  if (Number(currentSummary.retained_current_count) !== cleanupReadback.retained_current_count) {
+  if (Number(currentSummary.retained_current_count) !== retentionSummary.retained_current_count) {
     guardViolations.push('script-to-pack retained current count drift');
   }
-  if (Number(currentSummary.compact_cleanup_apply_candidate_count) !== cleanupReadback.cleanup_apply_candidate_count) {
-    guardViolations.push('script-to-pack compact cleanup apply candidate count drift');
-  }
-  if (Number(currentSummary.compact_cleanup_missing_evidence_item_count) !== cleanupReadback.missing_evidence_item_count) {
-    guardViolations.push('script-to-pack compact cleanup missing evidence item count drift');
-  }
-  if (Number(currentSummary.compact_cleanup_sample_candidate_count) !== Number(compactCleanupSummary.sample_cleanup_candidate_count)) {
-    guardViolations.push('script-to-pack compact cleanup sample candidate count drift');
-  }
-  if (currentSummary.compact_cleanup_readback_can_authorize_delete !== false) {
-    guardViolations.push('script-to-pack compact cleanup summary must not authorize physical delete');
-  }
-  if (currentSummary.compact_cleanup_readback_can_claim_retirement_complete !== false) {
-    guardViolations.push('script-to-pack compact cleanup summary must not claim retirement complete');
-  }
-  (cleanupReadback.cleanup_candidates as JsonObject[]).forEach((candidate) => {
-    if (candidate.can_apply_cleanup !== false) {
-      guardViolations.push(`script-to-pack cleanup readback ${candidate.script_ref} can_apply_cleanup must be false`);
-    }
-    if (!Array.isArray(candidate.missing_evidence) || candidate.missing_evidence.length === 0) {
-      guardViolations.push(`script-to-pack cleanup readback ${candidate.script_ref} missing_evidence must be non-empty`);
-    }
-    if (!String(candidate.owner_delta_route ?? '').startsWith('route-to-owner:')) {
-      guardViolations.push(`script-to-pack cleanup readback ${candidate.script_ref} owner_delta_route missing`);
-    }
-    if (!String(candidate.typed_blocker_ref_shape ?? '').startsWith('oma-typed-blocker:')) {
-      guardViolations.push(`script-to-pack cleanup readback ${candidate.script_ref} typed_blocker_ref_shape missing`);
-    }
-  });
   assertSameStringSet(scannedScriptRefs, trackedScriptRefs, 'script-to-pack scanned_script_refs vs tracked scripts', guardViolations);
   assertSameStringSet(summaryScannedScriptRefs, scannedScriptRefs, 'script-to-pack summary scanned_script_refs', guardViolations);
   assertSameStringSet(summaryGatedScriptRefs, gatedScriptRefs, 'script-to-pack summary gated_script_refs', guardViolations);
@@ -574,8 +315,6 @@ function validateScriptToPackReceiptGuard(
     state: guard.state,
     command_ref: guard.command_ref,
     json_readback_command_ref: guard.json_readback_command_ref ?? null,
-    cleanup_readback_command_ref: guard.cleanup_readback_command_ref ?? null,
-    cleanup_readback_output_ref: guard.cleanup_readback_output_ref ?? null,
     receipt_ref: guard.receipt_ref,
     authority_functions_ref: guard.authority_functions_ref,
     scanned_script_count: scannedScriptRefs.length,
@@ -589,27 +328,10 @@ function validateScriptToPackReceiptGuard(
     receipt_status: receipt.receipt_status,
     closure_status: receipt.closure_status,
     hard_fail: guardViolations.length > 0,
-    cleanup_readback: compactCleanupSummary,
-    cleanup_readback_full: cleanupReadback,
-    claims: {
-      claims_script_retirement_authorized: false,
-      claims_opl_primitive_parity: false,
-      claims_no_active_caller: false,
-      claims_app_or_registry_readiness: false,
-      claims_generated_hosted_readiness: false,
-      claims_target_agent_ready: false,
-      claims_domain_ready: false,
-      claims_production_ready: false,
-    },
+    retention_summary: retentionSummary,
     authority_boundary: {
       guard_can_authorize_script_retirement: false,
-      guard_can_claim_opl_primitive_parity: false,
-      guard_can_claim_no_active_caller: false,
-      guard_can_claim_app_or_registry_readiness: false,
-      guard_can_claim_generated_hosted_readiness: false,
-      guard_can_claim_target_agent_ready: false,
-      guard_can_claim_domain_ready: false,
-      guard_can_claim_production_ready: false,
+      guard_can_write_target_domain_truth: false,
     },
   };
 }
@@ -679,15 +401,11 @@ const args = parseArgs({
   options: {
     advisory: { type: 'boolean' },
     json: { type: 'boolean' },
-    'script-to-pack-readback': { type: 'boolean' },
-    'script-to-pack-readback-full': { type: 'boolean' },
     strict: { type: 'boolean' },
   },
   allowPositionals: true,
 });
 const jsonOutput = args.values.json === true;
-const scriptToPackReadbackOutput = args.values['script-to-pack-readback'] === true;
-const scriptToPackFullReadbackOutput = args.values['script-to-pack-readback-full'] === true;
 const strict = args.values.strict === true || args.positionals.includes('strict');
 const policy = readJson(policyPath);
 const lane = (policy.lanes as JsonObject)[strict ? 'strict' : 'advisory'] as JsonObject;
@@ -730,52 +448,7 @@ const sourceStructureGate = sourceStructureGateReadback(
   guardViolations,
 );
 
-if (scriptToPackReadbackOutput || scriptToPackFullReadbackOutput) {
-  const cleanupReadback = scriptToPackReceiptGuardSummary?.cleanup_readback_full ?? {
-    surface_kind: 'oma_script_to_pack_retirement_cleanup_readback',
-    version: 'script-to-pack-retirement-cleanup-readback.v1',
-    owner: 'opl-meta-agent',
-    target_domain_id: 'opl-meta-agent',
-    state: 'failed',
-    ok: false,
-    cleanup_candidate_count: 0,
-    cleanup_apply_candidate_count: 0,
-    cleanup_candidates: [],
-    violations: guardViolations,
-  };
-  if (scriptToPackReadbackOutput) {
-    console.log(JSON.stringify(
-      directCompactCleanupReadback(cleanupReadback, exitCode, sourceStructureGate),
-      null,
-      2,
-    ));
-    process.exit(exitCode);
-  }
-  const combined = combinedViolations(sourceStructureGate);
-  console.log(JSON.stringify({
-    ...cleanupReadback,
-    command_ref: 'npm run script-to-pack:readback:full',
-    ok: exitCode === 0 && cleanupReadback.ok !== false,
-    state: cleanupReadbackState(exitCode, cleanupReadback.state),
-    policy_ref: policyPath,
-    compact_cleanup_summary_ref: 'npm run script-to-pack:readback',
-    compact_cleanup_summary_omitted_from_full: true,
-    source_structure_gate: sourceStructureGate,
-    cleanup_violation_count: sourceStructureGate.script_to_pack_receipt_guard?.violation_count ?? 0,
-    cleanup_violations: sourceStructureGate.script_to_pack_receipt_guard?.violations ?? [],
-    violation_count: combined.length,
-    violations: combined,
-  }, null, 2));
-  process.exit(exitCode);
-}
-
 if (jsonOutput) {
-  const scriptToPackReceiptGuardJson = scriptToPackReceiptGuardSummary
-    ? Object.fromEntries(
-      Object.entries(scriptToPackReceiptGuardSummary)
-        .filter(([key]) => key !== 'cleanup_readback_full'),
-    )
-    : {};
   console.log(JSON.stringify({
     surface_kind: 'oma_source_structure_readback',
     version: 'source-structure-readback.v1',
@@ -798,7 +471,7 @@ if (jsonOutput) {
     },
     compatibility_aliases: policy.compatibility_aliases ?? [],
     script_to_pack_receipt_guard: {
-      ...scriptToPackReceiptGuardJson,
+      ...scriptToPackReceiptGuardSummary,
       violation_count: guardViolations.length,
       violations: guardViolations,
     },

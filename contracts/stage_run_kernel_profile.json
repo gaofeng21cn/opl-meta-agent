@@ -144,7 +144,6 @@
     "retirement_gate_refs": [
       "runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy",
       "runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt",
-      "contracts/default_caller_deletion_evidence.json",
       "contracts/functional_privatization_audit.json",
       "docs/active/opl-private-implementation-migration-inventory.md"
     ],
@@ -270,7 +269,6 @@
       ],
       "required_guard_refs": [
         "contracts/functional_privatization_audit.json",
-        "contracts/default_caller_deletion_evidence.json",
         "runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt",
         "tests/source-purity.test.ts"
       ],

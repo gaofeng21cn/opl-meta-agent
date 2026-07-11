@@ -79,12 +79,9 @@
       {
         "script_ref": "scripts/check-source-structure.ts",
         "active_caller_refs": [
-          "package.json#scripts.script-to-pack:readback",
-          "package.json#scripts.script-to-pack:readback:full",
           "package.json#scripts.source-structure",
           "package.json#scripts.source-structure:json",
           "package.json#scripts.source-structure:strict",
-          "package.json#scripts.source-structure:strict:json",
           "scripts/verify.sh#shell",
           "tests/source-structure-lane.test.ts#test_ref"
         ]
@@ -354,7 +351,6 @@
         "script_ref": "scripts/repo-hygiene.sh",
         "active_caller_refs": [
           "package.json#scripts.repo:hygiene",
-          "package.json#scripts.repo:hygiene:fix",
           "scripts/verify.sh#shell",
           "tests/contracts-repo-hygiene.test.ts#test_ref"
         ]
@@ -365,12 +361,9 @@
           "package.json#scripts.authority-functions:check",
           "package.json#scripts.authority-functions:split",
           "package.json#scripts.authority-functions:write",
-          "package.json#scripts.script-to-pack:readback",
-          "package.json#scripts.script-to-pack:readback:full",
           "package.json#scripts.source-structure",
           "package.json#scripts.source-structure:json",
           "package.json#scripts.source-structure:strict",
-          "package.json#scripts.source-structure:strict:json",
           "package.json#scripts.test:behavior",
           "package.json#scripts.test:full",
           "package.json#scripts.test:smoke",

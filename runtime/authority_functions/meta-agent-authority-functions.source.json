@@ -28,7 +28,6 @@
     "script_scan_scope",
     "active_caller_scan_policy",
     "false_ready_claim_guard",
-    "retirement_readback_cleanup_guard",
     "allowed_classes",
     "forbidden_roles",
     "allowed_opl_surface_consumption_policy_ref",

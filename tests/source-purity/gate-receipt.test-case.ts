@@ -9,26 +9,12 @@ import {
   type JsonObject,
 } from '../support/contracts.ts';
 import {
-  assertExactFalseFlags,
   assertEveryFlagFalse,
   assertIncludesAll,
   assertPolicyObject,
   asBooleanRecord,
   valuesAtDottedPath,
 } from '../support/source-purity.ts';
-
-const CLEANUP_READBACK_FALSE_AUTHORITY_KEYS = [
-  'guard_can_authorize_physical_delete',
-  'guard_can_sign_owner_receipt',
-  'guard_can_create_typed_blocker',
-  'guard_can_claim_opl_primitive_parity',
-  'guard_can_claim_target_agent_ready',
-  'guard_can_claim_domain_ready',
-  'guard_can_claim_production_ready',
-  'guard_can_claim_app_or_registry_readiness',
-  'guard_can_claim_generated_hosted_readiness',
-  'guard_can_claim_default_promotion_or_cutover',
-];
 
 test('script-to-pack receipt projects the canonical morphology gate without owning it', () => {
   const gateReceipt = readJson('contracts/script_to_pack_gate_receipt.json');
@@ -38,7 +24,6 @@ test('script-to-pack receipt projects the canonical morphology gate without owni
   const activeCallerScan = sourceReceipt.active_script_caller_scan as JsonObject;
   const materializerScan = sourceReceipt.generic_script_materializer_scan as JsonObject;
   const gateSummary = gateReceipt.current_scan_summary as JsonObject;
-  const readbackGuard = assertPolicyObject(morphologyPolicy, 'retirement_readback_cleanup_guard');
   const reciprocalPolicy = gateReceipt.reciprocal_consumption_policy as JsonObject;
   const testStructure = gateReceipt.machine_gate_inputs.source_purity_test_structure as JsonObject;
 
@@ -52,7 +37,6 @@ test('script-to-pack receipt projects the canonical morphology gate without owni
     ['active_caller_scan_policy', morphologyPolicy.active_caller_scan_policy],
     ['source_ref_integrity_guard', morphologyPolicy.source_ref_integrity_guard],
     ['false_ready_claim_guard', morphologyPolicy.false_ready_claim_guard],
-    ['retirement_readback_cleanup_guard', readbackGuard],
     ['generic_materializer_no_resurrection_guard', morphologyPolicy.generic_materializer_no_resurrection_guard],
   ].forEach(([field, expected]) => {
     assert.deepEqual(gateReceipt.machine_gate_inputs[field], expected, `machine_gate_inputs.${field}`);
@@ -73,26 +57,7 @@ test('script-to-pack receipt projects the canonical morphology gate without owni
     ['generic_materializer_scan_status', materializerScan.status],
   ].forEach(([field, expected]) => assert.equal(gateSummary[field], expected, field as string));
   assert.equal(gateSummary.orphan_script_count, 0);
-  assert.equal(gateSummary.cleanup_candidate_count, 0);
-  assert.equal(gateSummary.cleanup_readback_is_authority, false);
-  assert.equal(gateSummary.cleanup_readback_can_authorize_delete, false);
-  assert.equal(gateSummary.cleanup_readback_can_claim_retirement_complete, false);
-
-  assert.equal(readbackGuard.executable_readback_command_ref, 'npm run script-to-pack:readback');
-  assert.equal(readbackGuard.full_readback_command_ref, 'npm run script-to-pack:readback:full');
-  assertEveryFlagFalse(asBooleanRecord(readbackGuard.claims), 'cleanup readback claims');
-  const {
-    guard_can_identify_cleanup_candidates: canIdentifyCleanupCandidates,
-    guard_can_route_owner_delta: canRouteOwnerDelta,
-    ...cleanupReadbackDeniedAuthority
-  } = asBooleanRecord(readbackGuard.authority_boundary);
-  assert.equal(canIdentifyCleanupCandidates, true);
-  assert.equal(canRouteOwnerDelta, true);
-  assertExactFalseFlags(
-    cleanupReadbackDeniedAuthority,
-    CLEANUP_READBACK_FALSE_AUTHORITY_KEYS,
-    'cleanup readback authority boundary',
-  );
+  assert.equal(gateSummary.retained_current_count, gateSummary.scanned_script_count);
 
   assertIncludesAll(asStrings(gateReceipt.not_claimed_by_this_receipt), [
     'physical script retirement',

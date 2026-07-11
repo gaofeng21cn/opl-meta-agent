@@ -53,19 +53,10 @@
     "state": "active_executable_guard",
     "command_ref": "npm run source-structure",
     "json_readback_command_ref": "npm run source-structure:json",
-    "cleanup_readback_command_ref": "npm run script-to-pack:readback",
-    "full_cleanup_readback_command_ref": "npm run script-to-pack:readback:full",
     "receipt_ref": "contracts/script_to_pack_gate_receipt.json",
     "authority_functions_ref": "runtime/authority_functions/meta-agent-authority-functions.json",
     "source_receipt_path": "source_purity_scan_receipt",
     "script_morphology_path": "script_morphology_policy",
-    "cleanup_readback_output_ref": "source-structure-readback.script_to_pack_receipt_guard.cleanup_readback",
-    "direct_readback_compact_summary_output_ref": "script-to-pack-readback.compact_cleanup_summary",
-    "direct_readback_full_detail_output_ref": "script-to-pack-readback-full.cleanup_candidates",
-    "compact_cleanup_summary_id": "oma.script_to_pack_retirement_cleanup.compact_summary.v1",
-    "cleanup_readback_surface_kind": "oma_script_to_pack_retirement_cleanup_compact_readback",
-    "full_cleanup_readback_surface_kind": "oma_script_to_pack_retirement_cleanup_readback",
-    "cleanup_readback_compact_summary_role": "direct_readback_short_form_not_second_script_inventory",
     "repo_native_retention_overrides": [
       {
         "gate_id": "source_structure_and_authority_manifest_maintenance_helpers",
@@ -74,7 +65,6 @@
         "retention_evidence_refs": [
           "contracts/source_structure_policy.json",
           "package.json#scripts.source-structure",
-          "package.json#scripts.script-to-pack:readback",
           "package.json#scripts.authority-functions:check",
           "scripts/verify.sh#structure",
           "tests/source-structure-lane.test.ts#source-structure-and-authority-manifest-retention",
@@ -121,20 +111,6 @@
         }
       }
     ],
-    "cleanup_readback_required_fields": [
-      "script_ref",
-      "gate_id",
-      "current_role",
-      "classes",
-      "active_caller_refs",
-      "missing_evidence",
-      "retained_current_rows",
-      "retained_current_authority_functions",
-      "retained_current_repo_native_surface_count",
-      "owner_delta_route",
-      "typed_blocker_ref_shape",
-      "can_apply_cleanup"
-    ],
     "validated_summary_fields": [
       "source_purity_scan_status",
       "active_script_caller_scan_status",
@@ -158,12 +134,7 @@
       "receipt_scanned_script_not_tracked",
       "gated_script_refs_drift",
       "orphan_script_count_nonzero",
-      "receipt_claims_retirement_or_readiness",
-      "cleanup_readback_missing_candidate",
-      "cleanup_readback_retained_current_drift",
-      "cleanup_readback_claims_cleanup_apply",
-      "compact_cleanup_summary_drift",
-      "compact_cleanup_summary_claims_cleanup_or_readiness"
+      "receipt_claims_retirement_or_readiness"
     ],
     "false_authority_boundary": {
       "guard_can_authorize_script_retirement": false,
@@ -176,7 +147,14 @@
       "guard_can_claim_target_agent_ready": false,
       "guard_can_claim_domain_ready": false,
       "guard_can_claim_production_ready": false
-    }
+    },
+    "retention_summary_fields": [
+      "retained_current_count",
+      "retained_current_authority_function_count",
+      "retained_current_repo_native_surface_count",
+      "fixture_or_proof_only_retained_count",
+      "unclassified_script_count"
+    ]
   },
   "authority_boundary": {
     "domain_truth_owner": "opl-meta-agent",
