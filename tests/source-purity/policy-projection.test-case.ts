@@ -20,7 +20,7 @@ import {
 
 function assertContractOwnedProjection(args: {
   contractRef: string;
-  retiredScriptRef: string;
+  retiredScriptRef?: string;
   activeConsumerRef: string;
   gateId: string;
 }): { contract: JsonObject; activeConsumer: JsonObject } {
@@ -34,19 +34,21 @@ function assertContractOwnedProjection(args: {
     .find((entry) => entry.script_ref === args.activeConsumerRef);
 
   assert.equal(contract.state, 'active_contract');
-  assert.equal(contract.retired_script_projection_tombstone_ref, args.retiredScriptRef);
-  assert.equal(contract.retired_script_projection_no_resurrection, true);
   assert.equal(Object.hasOwn(contract, 'retired_script_projection_ref'), false);
   assert.deepEqual(asStrings(contract.active_policy_consumer_refs), [args.activeConsumerRef]);
   assertEveryFlagFalse(asBooleanRecord(contract.authority_boundary), `${args.contractRef} boundary`);
 
-  assert.equal(fs.existsSync(path.join(repoRoot, args.retiredScriptRef)), false);
-  assert.equal(
-    asObjects(morphologyPolicy.script_classifications)
-      .some((entry) => entry.script_ref === args.retiredScriptRef),
-    false,
-  );
-  assert.equal(asStrings(receipt.scanned_script_refs).includes(args.retiredScriptRef), false);
+  if (args.retiredScriptRef) {
+    assert.equal(contract.retired_script_projection_tombstone_ref, args.retiredScriptRef);
+    assert.equal(contract.retired_script_projection_no_resurrection, true);
+    assert.equal(fs.existsSync(path.join(repoRoot, args.retiredScriptRef)), false);
+    assert.equal(
+      asObjects(morphologyPolicy.script_classifications)
+        .some((entry) => entry.script_ref === args.retiredScriptRef),
+      false,
+    );
+    assert.equal(asStrings(receipt.scanned_script_refs).includes(args.retiredScriptRef), false);
+  }
   assert.ok(activeConsumer);
   assert.deepEqual(asStrings(activeConsumer.contract_refs), [args.contractRef]);
   assert.ok(retirementGate);
@@ -72,16 +74,14 @@ test('retired policy helpers cannot resurrect beside their contract owners', () 
     },
     {
       contractRef: STANDARD_FOUNDRY_POLICIES_CONTRACT_REF,
-      retiredScriptRef: 'scripts/lib/standard-foundry-policies.ts',
       activeConsumerRef: 'scripts/lib/stage-decomposition-pack-draft/shared.ts',
       gateId: 'build_agent_baseline_and_stage_decomposition_materializers',
       verify(contract: JsonObject, activeConsumer: JsonObject): void {
-        assert.equal(contract.surface_kind, 'standard_foundry_policies');
+        assert.equal(contract.surface_kind, 'standard_foundry_policy_consumer');
         assert.ok(asStrings(activeConsumer.writes_only).includes('standard_foundry_policy_ref'));
-        const completionPolicy = assertPolicyObject(contract, 'stage_completion_policy');
-        assert.equal(completionPolicy.completion_judgment_owner, 'domain_stage');
-        assert.equal(completionPolicy.provider_completion_is_domain_completion, false);
-        const seriesProfile = assertPolicyObject(contract, 'series_design_profile');
+        assert.equal(contract.canonical_policy_export, 'opl-framework-shared/foundry-agent-series-policy');
+        const policyDelta = assertPolicyObject(contract, 'domain_policy_delta');
+        const seriesProfile = assertPolicyObject(policyDelta, 'series_design_profile');
         const morphologyPolicy = assertPolicyObject(seriesProfile, 'artifact_morphology_policy');
         assert.equal(morphologyPolicy.required_for_new_target_agent_baseline, true);
         assert.equal(morphologyPolicy.required_contract_ref, 'contracts/artifact_morphology_contract.json');

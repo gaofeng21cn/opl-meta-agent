@@ -11,6 +11,12 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 
 ## 当前有效决策
 
+### Foundry canonical policy body 只归 OPL Framework
+
+- 决策：`standard_foundry_policies.json` 与 `foundry_agent_series.json` 只保存 release pin、OPL canonical consumer/contract refs、OMA identity 和 agent-building delta；stage-decomposition helper 从 OPL public consumer 读取 canonical body，并只合并 artifact morphology、OMA progress semantics 和 typed-blocker authority delta。
+- 决策：generated target `foundry_agent_series.json` 同样只物化 canonical refs、release pin、target identity、OMA domain delta 与 false-authority boundary，不再复制 series design、workspace topology、membership 或 public projection body。
+- 影响：OPL canonical contract 是唯一 shared policy truth；OMA 的 docs、tests、generated contracts 和本仓 JSON 均不得恢复同一 policy body。远端依赖 release 必须实际导出 `foundry-agent-series-policy` 后才能完成安装 cutover，local source/link 验证不等于 release currentness。
+
 ### External learning / suite signals 是 advisory inputs，不是 target owner verdict
 
 - 决策：external learning notes、suite findings、scorecards、optimizer candidates、promotion signals 和 regression pass/fail 只能作为 Codex / independent reviewer 的证据输入、developer work order trace、mechanism proposal、route-back 或 reviewer attention。

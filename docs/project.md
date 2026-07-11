@@ -5,7 +5,7 @@ Purpose: `opl_based_agent_builder_foundry_agent`
 State: `real_target_delivery_minimum_and_codex_first_pack_ready`
 Machine boundary: 本文是人读项目概览。机器真相归 `contracts/`、运行 receipts、OPL Agent Lab result refs 和未来 delivery receipts。
 
-`opl-meta-agent` 是基于 OPL Framework 的独立 Foundry Agent，也是 OPL Foundry Agent 系列成员。`contracts/foundry_agent_series.json#/series_design_profile` 使用与 MAS、MAG、RCA 同形的 canonical `opl_foundry_agent_series_design_profile.v1`，声明同一 lifecycle、generic input/output slots、stage pack sections、closeout shape 和 authority invariants；OMA 的 agent-building / improvement 差异写在 `domain_specific_profile`、stage/action contracts 和 authority refs 中，输入是 target agent specs 与 evidence refs，输出是 candidate package、developer work order、target capability candidate、mechanism patch proposal 或 typed blocker。
+`opl-meta-agent` 是基于 OPL Framework 的独立 Foundry Agent，也是 OPL Foundry Agent 系列成员。OPL 的 `foundry-agent-series-policy` public consumer 提供 canonical lifecycle、stage pack、closeout、projection 和 authority policy；`contracts/foundry_agent_series.json` 只保存 release pin、canonical refs、OMA identity 与 `domain_specific_profile`，不复制 Framework policy body。OMA 的 agent-building / improvement 差异写在 domain delta、stage/action contracts 和 authority refs 中，输入是 target agent specs 与 evidence refs，输出是 candidate package、developer work order、target capability candidate、mechanism patch proposal 或 typed blocker。
 
 OPL family `Foundry Agent OS` target delta 维护在 [OMA Foundry Agent OS 目标差异页](./active/foundry-agent-os-target-delta.md)。OMA 在该目标下不是第二 Agent Lab，也不是 OPL Framework 内置模块；它保留 agent-building authority kernel，OPL 持有 generic execution、generated interface、work-order primitive、promotion/canary/rollback shell、App/workbench 和 capability registry ABI。
 

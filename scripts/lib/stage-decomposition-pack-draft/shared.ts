@@ -1,13 +1,17 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { isDeepStrictEqual } from 'node:util';
+import {
+  FOUNDRY_AGENT_SERIES_CONTRACT_REF,
+  STANDARD_DOMAIN_AGENT_SKELETON_CONTRACT_REF,
+  canonicalFoundryAgentSeriesPolicy,
+} from 'opl-framework-shared/foundry-agent-series-policy';
 import type { JsonObject } from '../domain-pack.ts';
 import type { TargetAgent } from '../meta-agent-loop-io.ts';
 
-type StandardFoundryPolicies = JsonObject;
-
 const placeholderPattern = new RegExp(`\\b(?:TO${'DO'}|T${'BD'})\\b`, 'i');
 
-function stringList(policy: StandardFoundryPolicies, field: string): string[] {
+function stringList(policy: JsonObject, field: string): string[] {
   const value = policy[field];
   if (!Array.isArray(value) || value.some((entry) => typeof entry !== 'string' || !entry.trim())) {
     throw new Error(`Standard Foundry policy ${field} must be a non-empty string array.`);
@@ -15,7 +19,7 @@ function stringList(policy: StandardFoundryPolicies, field: string): string[] {
   return value.map((entry) => entry.trim());
 }
 
-function objectField(policy: StandardFoundryPolicies, field: string): JsonObject {
+function objectField(policy: JsonObject, field: string): JsonObject {
   const value = policy[field];
   if (!isRecord(value)) {
     throw new Error(`Standard Foundry policy ${field} must be a JSON object.`);
@@ -31,64 +35,44 @@ function objectStringField(policy: JsonObject, field: string): string {
   return value.trim();
 }
 
-function assertBoolean(policy: JsonObject, field: string): void {
-  if (typeof policy[field] !== 'boolean') {
-    throw new Error(`Standard Foundry policy ${field} must be a boolean.`);
-  }
-}
-
-function arraysMatch(left: unknown, right: string[]): boolean {
-  return Array.isArray(left)
-    && left.length === right.length
-    && left.every((entry, index) => entry === right[index]);
-}
-
-function readStandardFoundryPolicies(): StandardFoundryPolicies {
+function readStandardFoundryPolicyConsumer(): JsonObject {
   const policy = JSON.parse(
     fs.readFileSync(new URL('../../../contracts/standard_foundry_policies.json', import.meta.url), 'utf8'),
-  ) as StandardFoundryPolicies;
-  if (policy.surface_kind !== 'standard_foundry_policies') {
-    throw new Error('Standard Foundry policies contract has an unexpected surface_kind.');
+  ) as JsonObject;
+  if (policy.surface_kind !== 'standard_foundry_policy_consumer') {
+    throw new Error('Standard Foundry policy consumer has an unexpected surface_kind.');
   }
-  const consumers = Array.isArray(policy.active_policy_consumer_refs)
-    ? policy.active_policy_consumer_refs
-    : [];
-  if (!consumers.includes('scripts/lib/stage-decomposition-pack-draft/shared.ts')) {
-    throw new Error('Standard Foundry policies contract must name stage-decomposition shared as an active consumer.');
+  if (policy.canonical_policy_export !== 'opl-framework-shared/foundry-agent-series-policy') {
+    throw new Error('Standard Foundry policy consumer must use the canonical OPL public export.');
   }
-  const requiredFields = stringList(policy, 'user_stage_log_required_fields');
-  const userStageLogContract = objectField(policy, 'user_stage_log_contract');
-  if (!arraysMatch(userStageLogContract.required_domain_semantic_fields, requiredFields)) {
-    throw new Error('Standard Foundry policies contract stage-log fields drifted from required fields.');
+  if (policy.canonical_series_contract_ref !== FOUNDRY_AGENT_SERIES_CONTRACT_REF) {
+    throw new Error('Standard Foundry policy consumer series contract ref drifted from OPL.');
   }
-  const stagePackDefaults = objectField(policy, 'stage_pack_defaults');
-  objectStringField(stagePackDefaults, 'stage_pack_conformance_version');
-  objectStringField(stagePackDefaults, 'default_stage_executor_binding_ref');
-  const sharedPolicyRelease = objectField(policy, 'shared_policy_release');
-  [
-    'policy_release_contract_ref',
-    'policy_bundle_fingerprint',
-    'fingerprint_algorithm',
-    'consumer_alignment_check',
-  ].forEach((field) => objectStringField(sharedPolicyRelease, field));
-  [
-    'domain_contract_policy_release_pin_required',
-    'domain_adapter_must_not_copy_policy_body_as_authority',
-  ].forEach((field) => assertBoolean(sharedPolicyRelease, field));
+  if (policy.canonical_skeleton_contract_ref !== STANDARD_DOMAIN_AGENT_SKELETON_CONTRACT_REF) {
+    throw new Error('Standard Foundry policy consumer skeleton contract ref drifted from OPL.');
+  }
   return policy;
 }
 
-const STANDARD_FOUNDRY_POLICIES = readStandardFoundryPolicies();
+const POLICY_CONSUMER = readStandardFoundryPolicyConsumer();
+const CANONICAL_POLICY = canonicalFoundryAgentSeriesPolicy() as JsonObject;
+const DOMAIN_POLICY_DELTA = objectField(POLICY_CONSUMER, 'domain_policy_delta');
 
-export const FORBIDDEN_GENERIC_OWNER_ROLES = stringList(
-  STANDARD_FOUNDRY_POLICIES,
-  'forbidden_generic_owner_roles',
-);
+function withAuthorityDelta(policyField: string): JsonObject {
+  const canonical = objectField(CANONICAL_POLICY, policyField);
+  const delta = objectField(DOMAIN_POLICY_DELTA, policyField);
+  return {
+    ...canonical,
+    authority_boundary: {
+      ...objectField(canonical, 'authority_boundary'),
+      ...objectField(delta, 'authority_boundary'),
+    },
+  };
+}
 
-const STAGE_PACK_DEFAULTS = objectField(
-  STANDARD_FOUNDRY_POLICIES,
-  'stage_pack_defaults',
-);
+export const FORBIDDEN_GENERIC_OWNER_ROLES = stringList(CANONICAL_POLICY, 'forbidden_generic_owner_roles');
+
+const STAGE_PACK_DEFAULTS = objectField(CANONICAL_POLICY, 'stage_pack_defaults');
 
 export const STANDARD_STAGE_PACK_CONFORMANCE_VERSION = objectStringField(
   STAGE_PACK_DEFAULTS,
@@ -100,55 +84,45 @@ export const DEFAULT_STAGE_EXECUTOR_BINDING_REF = objectStringField(
   'default_stage_executor_binding_ref',
 );
 
-export const SHARED_POLICY_RELEASE = objectField(
-  STANDARD_FOUNDRY_POLICIES,
-  'shared_policy_release',
-);
+export const SHARED_POLICY_RELEASE = objectField(POLICY_CONSUMER, 'shared_policy_release');
+if (!isDeepStrictEqual(SHARED_POLICY_RELEASE, objectField(CANONICAL_POLICY, 'shared_policy_release'))) {
+  throw new Error('Standard Foundry policy consumer release pin drifted from OPL.');
+}
 
-export const USER_STAGE_LOG_REQUIRED_FIELDS = stringList(
-  STANDARD_FOUNDRY_POLICIES,
-  'user_stage_log_required_fields',
-);
+export const USER_STAGE_LOG_REQUIRED_FIELDS = stringList(CANONICAL_POLICY, 'user_stage_log_required_fields');
 
-export const USER_STAGE_LOG_CONTRACT = objectField(
-  STANDARD_FOUNDRY_POLICIES,
-  'user_stage_log_contract',
-);
+export const USER_STAGE_LOG_CONTRACT = objectField(CANONICAL_POLICY, 'user_stage_log_contract');
 
-export const STAGE_PROGRESS_DELTA_POLICY = objectField(
-  STANDARD_FOUNDRY_POLICIES,
-  'stage_progress_delta_policy',
-);
+export const STAGE_PROGRESS_DELTA_POLICY = withAuthorityDelta('stage_progress_delta_policy');
 
-export const TYPED_BLOCKER_LINEAGE_POLICY = objectField(
-  STANDARD_FOUNDRY_POLICIES,
-  'typed_blocker_lineage_policy',
-);
+export const TYPED_BLOCKER_LINEAGE_POLICY = withAuthorityDelta('typed_blocker_lineage_policy');
 
-export const STAGE_COMPLETION_POLICY = objectField(
-  STANDARD_FOUNDRY_POLICIES,
-  'stage_completion_policy',
-);
+export const STAGE_COMPLETION_POLICY = objectField(CANONICAL_POLICY, 'stage_completion_policy');
 
-export const SERIES_DESIGN_PROFILE = objectField(
-  STANDARD_FOUNDRY_POLICIES,
-  'series_design_profile',
-);
+const CANONICAL_SERIES_DESIGN_PROFILE = objectField(CANONICAL_POLICY, 'series_design_profile');
+const SERIES_DESIGN_DELTA = objectField(DOMAIN_POLICY_DELTA, 'series_design_profile');
+export const SERIES_DESIGN_PROFILE = {
+  ...CANONICAL_SERIES_DESIGN_PROFILE,
+  stage_pack_sections: [...new Set([
+    ...stringList(CANONICAL_SERIES_DESIGN_PROFILE, 'stage_pack_sections'),
+    ...stringList(SERIES_DESIGN_DELTA, 'stage_pack_section_additions'),
+  ])],
+  artifact_morphology_policy: objectField(SERIES_DESIGN_DELTA, 'artifact_morphology_policy'),
+};
 
-export const AGENT_MEMBERSHIP_PROJECTION_POLICY = objectField(
-  STANDARD_FOUNDRY_POLICIES,
-  'agent_membership_projection_policy',
-);
+export const AGENT_MEMBERSHIP_PROJECTION_POLICY = objectField(CANONICAL_POLICY, 'agent_membership_projection_policy');
 
-export const STANDARD_PUBLIC_PROJECTION_POLICY = objectField(
-  STANDARD_FOUNDRY_POLICIES,
-  'standard_public_projection_policy',
-);
+export const STANDARD_PUBLIC_PROJECTION_POLICY = objectField(CANONICAL_POLICY, 'standard_public_projection_policy');
 
-export const WORKSPACE_TOPOLOGY_PROFILE = objectField(
-  STANDARD_FOUNDRY_POLICIES,
-  'workspace_topology_profile',
-);
+export const WORKSPACE_TOPOLOGY_PROFILE = objectField(CANONICAL_POLICY, 'workspace_topology_profile');
+
+export const CANONICAL_FOUNDRY_POLICY_REFS = {
+  canonical_policy_export: POLICY_CONSUMER.canonical_policy_export,
+  canonical_series_contract_ref: FOUNDRY_AGENT_SERIES_CONTRACT_REF,
+  canonical_skeleton_contract_ref: STANDARD_DOMAIN_AGENT_SKELETON_CONTRACT_REF,
+};
+
+export const DOMAIN_FOUNDRY_POLICY_DELTA = DOMAIN_POLICY_DELTA;
 
 export type StageDecompositionFilePlan = {
   path: string;

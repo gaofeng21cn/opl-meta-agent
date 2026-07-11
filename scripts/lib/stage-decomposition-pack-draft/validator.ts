@@ -28,8 +28,10 @@ import {
   validateTransferMapObject,
 } from './reference-design-validator.ts';
 import {
+  CANONICAL_FOUNDRY_POLICY_REFS,
   DEFAULT_STAGE_EXECUTOR_BINDING_REF,
-  SERIES_DESIGN_PROFILE,
+  DOMAIN_FOUNDRY_POLICY_DELTA,
+  SHARED_POLICY_RELEASE,
   STANDARD_STAGE_PACK_CONFORMANCE_VERSION,
   STAGE_COMPLETION_POLICY,
   STAGE_PROGRESS_DELTA_POLICY,
@@ -1228,34 +1230,25 @@ export function validateStageDecompositionCloseoutPacket(
   if (foundrySeries.stage_control_plane_ref !== 'opl-generated:family_stage_control_plane') {
     throw new Error('stage-decomposition pack draft foundry_agent_series.stage_control_plane_ref is invalid.');
   }
-  const seriesDesignProfile = asRecord(foundrySeries.series_design_profile, 'foundry_agent_series.series_design_profile');
-  if (seriesDesignProfile.surface_kind !== SERIES_DESIGN_PROFILE.surface_kind) {
-    throw new Error('stage-decomposition pack draft foundry_agent_series.series_design_profile.surface_kind is invalid.');
-  }
-  if (seriesDesignProfile.profile_id !== SERIES_DESIGN_PROFILE.profile_id) {
-    throw new Error('stage-decomposition pack draft foundry_agent_series.series_design_profile.profile_id is invalid.');
-  }
-  const stagePackSections = asStringArray(
-    seriesDesignProfile.stage_pack_sections,
-    'foundry_agent_series.series_design_profile.stage_pack_sections',
-  );
-  asStringArray(
-    SERIES_DESIGN_PROFILE.stage_pack_sections,
-    'standard_foundry_policy.series_design_profile.stage_pack_sections',
-  ).forEach((section) => {
-    if (!stagePackSections.includes(section)) {
-      throw new Error(`stage-decomposition pack draft foundry_agent_series.series_design_profile missing ${section} section.`);
+  for (const [field, expected] of Object.entries(CANONICAL_FOUNDRY_POLICY_REFS)) {
+    if (foundrySeries[field] !== expected) {
+      throw new Error(`stage-decomposition pack draft foundry_agent_series.${field} is invalid.`);
     }
-  });
-  const sharedCloseout = asRecord(
-    seriesDesignProfile.shared_closeout_contract,
-    'foundry_agent_series.series_design_profile.shared_closeout_contract',
-  );
-  assertBooleanFalse(
-    sharedCloseout,
-    'provider_completion_is_closeout',
-    'foundry_agent_series.series_design_profile.shared_closeout_contract.provider_completion_is_closeout',
-  );
+  }
+  if (JSON.stringify(foundrySeries.shared_policy_release) !== JSON.stringify(SHARED_POLICY_RELEASE)) {
+    throw new Error('stage-decomposition pack draft foundry_agent_series.shared_policy_release is invalid.');
+  }
+  if (JSON.stringify(foundrySeries.domain_policy_delta) !== JSON.stringify(DOMAIN_FOUNDRY_POLICY_DELTA)) {
+    throw new Error('stage-decomposition pack draft foundry_agent_series.domain_policy_delta is invalid.');
+  }
+  const foundryAuthority = asRecord(foundrySeries.authority_boundary, 'foundry_agent_series.authority_boundary');
+  [
+    'oma_can_write_target_domain_truth',
+    'oma_can_write_target_domain_memory_body',
+    'oma_can_mutate_target_domain_artifact_body',
+    'oma_can_authorize_target_domain_quality_or_export',
+    'generated_surface_can_claim_domain_ready',
+  ].forEach((field) => assertBooleanFalse(foundryAuthority, field, `foundry_agent_series.authority_boundary.${field}`));
   return {
     ...draft,
     artifact_morphology_contract: artifactMorphologyContract,
