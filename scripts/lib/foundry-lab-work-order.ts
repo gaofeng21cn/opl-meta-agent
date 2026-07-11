@@ -23,6 +23,7 @@ type FoundryLabWorkOrderInput = {
   targetAgent: FoundryLabTargetAgent;
   evaluationRequest: JsonObject;
   evaluationRequestRef: string;
+  evaluationRequestSha256: string;
   sourceRefs?: string[];
   reviewerRefs?: string[];
   candidateRefs?: string[];
@@ -44,6 +45,7 @@ export function buildFoundryLabWorkOrder({
   targetAgent,
   evaluationRequest,
   evaluationRequestRef,
+  evaluationRequestSha256,
   sourceRefs = [],
   reviewerRefs = [],
   candidateRefs = [],
@@ -68,6 +70,13 @@ export function buildFoundryLabWorkOrder({
     throw new Error('Foundry Lab work order requires unique evaluation_request.task_intents[].task_id values.');
   }
   const canonicalEvaluationRequestRef = requiredString(evaluationRequestRef, 'evaluation_request.ref');
+  const canonicalEvaluationRequestSha256 = requiredString(
+    evaluationRequestSha256,
+    'evaluation_request.sha256',
+  );
+  if (!/^[a-f0-9]{64}$/.test(canonicalEvaluationRequestSha256)) {
+    throw new Error('Foundry Lab work order requires evaluation_request.sha256 as 64 lowercase hex characters.');
+  }
   const canonicalSourceRefs = canonicalRefs(sourceRefs);
   const canonicalReviewerRefs = canonicalRefs(reviewerRefs);
   const canonicalCandidateRefs = canonicalRefs(candidateRefs);
@@ -83,6 +92,7 @@ export function buildFoundryLabWorkOrder({
       suite_id: suiteId,
       suite_kind: suiteKind,
       ref: canonicalEvaluationRequestRef,
+      sha256: canonicalEvaluationRequestSha256,
       task_ids: [...taskIds].sort(),
     },
     source_refs: canonicalSourceRefs,
@@ -101,6 +111,7 @@ export function buildFoundryLabWorkOrder({
     target_agent: canonicalTarget,
     evaluation_request: {
       ref: canonicalEvaluationRequestRef,
+      sha256: canonicalEvaluationRequestSha256,
       request_id: requestId,
       suite_id: suiteId,
       suite_kind: suiteKind,

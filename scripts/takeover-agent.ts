@@ -19,6 +19,7 @@ import {
 import {
   type TargetAgent,
   readTargetAgent,
+  sha256FileBytes,
   writeJson,
 } from './lib/meta-agent-loop-io.ts';
 import {
@@ -175,6 +176,7 @@ export function runTakeoverAgent({
     },
     evaluationRequest,
     evaluationRequestRef: path.basename(evaluationRequestPath),
+    evaluationRequestSha256: sha256FileBytes(evaluationRequestPath),
     sourceRefs: [
       targetAgent.descriptor_ref,
       ...aiReviewerEvaluation.source_refs,

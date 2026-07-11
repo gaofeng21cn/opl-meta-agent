@@ -29,6 +29,12 @@
     "product_id": {
       "const": "opl-meta-agent"
     },
+    "domain_pack_status": { "type": "string" },
+    "prompt_policy_refs": { "$ref": "#/$defs/stringArray" },
+    "skill_policy_refs": { "$ref": "#/$defs/stringArray" },
+    "quality_gate_refs": { "$ref": "#/$defs/stringArray" },
+    "knowledge_policy_refs": { "$ref": "#/$defs/stringArray" },
+    "source_domain_pack": { "type": "object" },
     "takeover_policy": {
       "type": "object",
       "required": [
@@ -51,11 +57,14 @@
         "can_write_target_domain_truth": {
           "const": false
         },
+        "can_write_target_quality_verdict": { "const": false },
+        "can_write_target_artifact_body": { "const": false },
+        "can_write_target_memory_body": { "const": false },
         "can_promote_default_agent_without_gate": {
           "const": false
         }
       },
-      "additionalProperties": true
+      "additionalProperties": false
     },
     "target_agent": {
       "$ref": "#/$defs/targetIdentity"
@@ -84,7 +93,13 @@
         "suggestions",
         "candidate_refs"
       ],
-      "additionalProperties": true
+      "properties": {
+        "ai_reviewer_evaluation_ref": { "$ref": "#/$defs/nonEmptyString" },
+        "verdict": { "$ref": "#/$defs/nonEmptyString" },
+        "suggestions": { "$ref": "#/$defs/stringArray" },
+        "candidate_refs": { "$ref": "#/$defs/stringArray" }
+      },
+      "additionalProperties": false
     },
     "foundry_lab_handoff": {
       "$ref": "#/$defs/foundryHandoff"
@@ -118,9 +133,11 @@
         },
         "descriptor_ref": {
           "$ref": "#/$defs/nonEmptyString"
-        }
+        },
+        "domain_label": { "type": ["string", "null"] },
+        "delivery_domain": { "type": ["string", "null"] }
       },
-      "additionalProperties": true
+      "additionalProperties": false
     },
     "foundryHandoff": {
       "type": "object",
@@ -155,13 +172,61 @@
               "minItems": 1,
               "items": {
                 "type": "object",
-                "required": ["task_id", "domain_id", "task_family"],
+                "required": [
+                  "task_id",
+                  "domain_id",
+                  "task_family",
+                  "instructions_ref",
+                  "agent_entry_ref",
+                  "stage_refs",
+                  "oracle_refs",
+                  "scorer_refs",
+                  "metric_refs",
+                  "evidence_refs",
+                  "review_refs",
+                  "quality_gate_refs",
+                  "trajectory_ref",
+                  "requested_run_ref",
+                  "artifact_refs",
+                  "receipt_refs",
+                  "scorecard_ref",
+                  "improvement_candidate",
+                  "promotion_gate_ref"
+                ],
                 "properties": {
                   "task_id": { "$ref": "#/$defs/nonEmptyString" },
                   "domain_id": { "const": "opl-meta-agent" },
-                  "task_family": { "$ref": "#/$defs/nonEmptyString" }
+                  "task_family": { "$ref": "#/$defs/nonEmptyString" },
+                  "instructions_ref": { "$ref": "#/$defs/nonEmptyString" },
+                  "agent_entry_ref": { "$ref": "#/$defs/nonEmptyString" },
+                  "stage_refs": { "$ref": "#/$defs/nonEmptyStringArray" },
+                  "oracle_refs": { "$ref": "#/$defs/nonEmptyStringArray" },
+                  "scorer_refs": { "$ref": "#/$defs/nonEmptyStringArray" },
+                  "metric_refs": { "$ref": "#/$defs/nonEmptyStringArray" },
+                  "evidence_refs": { "$ref": "#/$defs/nonEmptyStringArray" },
+                  "review_refs": { "$ref": "#/$defs/stringArray" },
+                  "quality_gate_refs": { "$ref": "#/$defs/nonEmptyStringArray" },
+                  "trajectory_ref": { "$ref": "#/$defs/nonEmptyString" },
+                  "requested_run_ref": { "$ref": "#/$defs/nonEmptyString" },
+                  "artifact_refs": { "$ref": "#/$defs/nonEmptyStringArray" },
+                  "receipt_refs": { "$ref": "#/$defs/nonEmptyStringArray" },
+                  "scorecard_ref": { "$ref": "#/$defs/nonEmptyString" },
+                  "improvement_candidate": {
+                    "type": "object",
+                    "required": ["candidate_ref", "candidate_kind", "target_ref", "allowed_change_scope"],
+                    "properties": {
+                      "candidate_ref": { "$ref": "#/$defs/nonEmptyString" },
+                      "candidate_kind": { "$ref": "#/$defs/nonEmptyString" },
+                      "target_ref": { "$ref": "#/$defs/nonEmptyString" },
+                      "allowed_change_scope": { "const": "branch_only" }
+                    },
+                    "additionalProperties": false
+                  },
+                  "promotion_gate_ref": { "$ref": "#/$defs/nonEmptyString" },
+                  "promotion_gate_required_refs": { "$ref": "#/$defs/stringArray" },
+                  "regression_suite_refs": { "$ref": "#/$defs/stringArray" }
                 },
-                "additionalProperties": true
+                "additionalProperties": false
               }
             },
             "authority_boundary": {
@@ -193,32 +258,58 @@
           "type": "object",
           "required": [
             "surface_kind",
+            "version",
+            "work_order_id",
+            "work_order_kind",
             "status",
+            "product_id",
+            "execution_owner",
             "target_agent",
             "evaluation_request",
+            "source_refs",
+            "reviewer_refs",
+            "candidate_refs",
+            "requested_operations",
+            "expected_return_shapes",
             "consumer_dependency",
-            "execution_aperture"
+            "execution_aperture",
+            "authority_boundary"
           ],
           "properties": {
             "surface_kind": {
               "const": "opl_meta_agent_foundry_lab_work_order_candidate"
             },
+            "version": { "const": "opl-meta-agent.foundry-lab-work-order-candidate.v1" },
+            "work_order_id": { "$ref": "#/$defs/nonEmptyString" },
+            "work_order_kind": { "const": "target_agent_takeover_evaluation" },
             "status": {
               "const": "ready_for_opl_foundry_lab_evaluation"
             },
+            "product_id": { "const": "opl-meta-agent" },
+            "execution_owner": { "const": "one-person-lab/OPL Foundry Lab" },
+            "target_agent": { "$ref": "#/$defs/targetIdentity" },
             "evaluation_request": {
               "type": "object",
-              "required": ["ref", "request_id", "suite_id", "suite_kind"],
+              "required": ["ref", "sha256", "request_id", "suite_id", "suite_kind"],
               "properties": {
                 "ref": { "$ref": "#/$defs/nonEmptyString" },
+                "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
                 "request_id": { "$ref": "#/$defs/nonEmptyString" },
                 "suite_id": { "$ref": "#/$defs/nonEmptyString" },
                 "suite_kind": { "const": "agent_lab_external_suite" }
               },
               "additionalProperties": false
-            }
+            },
+            "source_refs": { "$ref": "#/$defs/stringArray" },
+            "reviewer_refs": { "$ref": "#/$defs/stringArray" },
+            "candidate_refs": { "$ref": "#/$defs/stringArray" },
+            "requested_operations": { "$ref": "#/$defs/stringArray" },
+            "expected_return_shapes": { "$ref": "#/$defs/stringArray" },
+            "consumer_dependency": { "$ref": "#/$defs/consumerDependency" },
+            "execution_aperture": { "$ref": "#/$defs/executionAperture" },
+            "authority_boundary": { "$ref": "#/$defs/authorityBoundary" }
           },
-          "additionalProperties": true
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -229,7 +320,16 @@
         "oma_can_execute_agent_lab_suite",
         "oma_can_write_agent_lab_result",
         "oma_can_write_owner_receipt_body",
+        "oma_can_write_learning_candidate_ledger",
+        "oma_can_write_promotion_gate",
+        "oma_can_write_mechanism_or_scaleout_ledger",
+        "oma_can_manage_work_order_lifecycle",
         "oma_can_write_target_domain_truth",
+        "oma_can_write_target_domain_memory_body",
+        "oma_can_mutate_target_domain_artifact_body",
+        "oma_can_authorize_target_domain_quality_or_export",
+        "oma_can_claim_target_domain_ready",
+        "oma_can_claim_target_production_ready",
         "oma_can_promote_default_agent_without_gate"
       ],
       "properties": {
@@ -242,15 +342,55 @@
         "oma_can_write_owner_receipt_body": {
           "const": false
         },
+        "oma_can_write_learning_candidate_ledger": { "const": false },
+        "oma_can_write_promotion_gate": { "const": false },
+        "oma_can_write_mechanism_or_scaleout_ledger": { "const": false },
+        "oma_can_manage_work_order_lifecycle": { "const": false },
         "oma_can_write_target_domain_truth": {
           "const": false
         },
+        "oma_can_write_target_domain_memory_body": { "const": false },
+        "oma_can_mutate_target_domain_artifact_body": { "const": false },
+        "oma_can_authorize_target_domain_quality_or_export": { "const": false },
+        "oma_can_claim_target_domain_ready": { "const": false },
+        "oma_can_claim_target_production_ready": { "const": false },
         "oma_can_promote_default_agent_without_gate": {
           "const": false
         }
       },
-      "additionalProperties": true
+      "additionalProperties": false
+    },
+    "stringArray": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/nonEmptyString" },
+      "uniqueItems": true
+    },
+    "nonEmptyStringArray": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/nonEmptyString" }
+    },
+    "consumerDependency": {
+      "type": "object",
+      "required": ["status", "owner", "required_consumer_role"],
+      "properties": {
+        "status": { "const": "available" },
+        "owner": { "const": "one-person-lab/OPL Foundry Lab" },
+        "required_consumer_role": { "const": "compile_evaluation_work_order_to_agent_lab_suite_and_execute" }
+      },
+      "additionalProperties": false
+    },
+    "executionAperture": {
+      "type": "object",
+      "required": ["action_ref", "work_order_lifecycle_owner", "result_ledger_owner", "target_owner_closeout_owner"],
+      "properties": {
+        "action_ref": { "const": "opl agent-lab evaluation-work-order execute --work-order <work-order.json> --output <dir>" },
+        "work_order_lifecycle_owner": { "const": "one-person-lab/OPL Foundry Lab" },
+        "result_ledger_owner": { "const": "one-person-lab/OPL Foundry Lab" },
+        "target_owner_closeout_owner": { "const": "target-domain" }
+      },
+      "additionalProperties": false
     }
   },
-  "additionalProperties": true
+  "additionalProperties": false
 }

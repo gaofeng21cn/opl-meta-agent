@@ -42,6 +42,7 @@ import {
   type TargetAgent,
   resolveOplBin,
   runOpl,
+  sha256FileBytes,
   writeJson,
 } from './lib/meta-agent-loop-io.ts';
 import {
@@ -767,6 +768,7 @@ export function runBuildAgentBaseline({
     },
     evaluationRequest,
     evaluationRequestRef: path.basename(evaluationRequestPath),
+    evaluationRequestSha256: sha256FileBytes(evaluationRequestPath),
     sourceRefs: [
       descriptorPath,
       targetAgentPackageManifestPath,

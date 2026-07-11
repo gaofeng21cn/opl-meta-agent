@@ -8,6 +8,7 @@ import {
   type AiReviewerEvaluation,
 } from './meta-agent-loop-ai-reviewer.ts';
 import {
+  sha256FileBytes,
   stableId,
   writeJson,
 } from './meta-agent-loop-io.ts';
@@ -280,6 +281,7 @@ export function materializeAgentEvidenceFromCli(argv = process.argv.slice(2)): J
     },
     evaluationRequest,
     evaluationRequestRef: path.basename(evaluationRequestPath),
+    evaluationRequestSha256: sha256FileBytes(evaluationRequestPath),
     sourceRefs: [
       ...sourceContractRefs(contracts),
       ownerReceiptRefsPath,

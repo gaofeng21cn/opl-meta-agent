@@ -59,6 +59,10 @@ export function stableId(prefix: string, payload: unknown): string {
   return `${prefix}_${hash}`;
 }
 
+export function sha256FileBytes(filePath: string): string {
+  return createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+}
+
 export function writeJson(filePath: string, payload: unknown): void {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`);

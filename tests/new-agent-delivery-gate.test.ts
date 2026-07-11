@@ -36,6 +36,7 @@ test('OMA emits a canonical Foundry Lab work-order candidate without execution o
       task_intents: [{ task_id: 'agent-lab-task:target-agent/takeover' }],
     },
     evaluationRequestRef: '/tmp/oma/foundry-evaluation-request.json',
+    evaluationRequestSha256: 'a'.repeat(64),
     sourceRefs: ['contracts/agent_lab_handoff.json'],
     reviewerRefs: ['review:target-agent/takeover'],
     candidateRefs: ['improvement-candidate:target-agent/takeover'],

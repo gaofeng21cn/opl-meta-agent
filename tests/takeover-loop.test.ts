@@ -1,14 +1,17 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { validateJsonSchemaPayload } from 'opl-framework/json-schema-registry';
 import {
   parseTakeoverAgentArgs,
 } from '../scripts/takeover-agent.ts';
 import {
   assertMatchesJsonSchema,
+  oplBin,
   parseJsonText,
   readJsonFile as readJson,
   repoRoot,
@@ -39,6 +42,16 @@ function writeReviewerEvaluation(filePath: string, overrides: Record<string, unk
     provenance: { artifact_ref: 'artifact-ref:ai-reviewer/takeover-fixture', created_by: 'test-fixture' },
     ...overrides,
   });
+}
+
+function validateTakeoverOutput(payload: unknown) {
+  const schemaRef = 'contracts/schemas/takeover-target-agent-test.output.schema.json';
+  const schema = readJson(path.join(repoRoot, schemaRef));
+  return validateJsonSchemaPayload({
+    schemaId: String(schema.$id),
+    schema,
+    sourceRef: schemaRef,
+  }, payload);
 }
 
 test('takeover emits a thin evaluation request and Foundry Lab work order without local execution receipts', () => {
@@ -89,11 +102,28 @@ test('takeover emits a thin evaluation request and Foundry Lab work order withou
     assert.equal(workOrder.target_agent.target_agent_ref, 'domain-agent:takeover-fixture-agent');
     assert.equal(workOrder.target_agent.descriptor_ref, path.join(targetDir, 'contracts/domain_descriptor.json'));
     assert.equal(workOrder.evaluation_request.ref, 'foundry-evaluation-request.json');
+    assert.equal(
+      workOrder.evaluation_request.sha256,
+      createHash('sha256')
+        .update(fs.readFileSync(path.join(takeoverRoot, 'foundry-evaluation-request.json')))
+        .digest('hex'),
+    );
     assert.equal(workOrder.execution_owner, 'one-person-lab/OPL Foundry Lab');
     assert.equal(workOrder.authority_boundary.oma_can_write_owner_receipt_body, false);
     assert.equal(fs.existsSync(path.join(takeoverRoot, 'agent-lab-takeover-suite-seed.json')), false);
     assert.equal(fs.existsSync(path.join(takeoverRoot, 'takeover-receipt.json')), false);
     assert.equal(fs.existsSync(path.join(takeoverRoot, 'new-agent-delivery-gate.json')), false);
+
+    for (const mutate of [
+      (candidate: Record<string, any>) => { candidate.suite_seed = {}; },
+      (candidate: Record<string, any>) => { candidate.foundry_lab_handoff.work_order.suite_plan = {}; },
+      (candidate: Record<string, any>) => { candidate.target_agent.unknown_target_identity = 'forbidden'; },
+      (candidate: Record<string, any>) => { candidate.authority_boundary.unknown_authority = false; },
+    ]) {
+      const forged = structuredClone(payload);
+      mutate(forged);
+      assert.equal(validateTakeoverOutput(forged).ok, false);
+    }
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }
@@ -106,7 +136,6 @@ test('takeover hands the same thin request to the linked OPL Foundry Lab compile
     const takeoverRoot = path.join(outputRoot, 'takeover');
     const foundryOutputDir = path.join(outputRoot, 'foundry-output');
     const reviewerPath = path.join(outputRoot, 'reviewer.json');
-    const oplBin = path.join(repoRoot, 'node_modules', 'opl-framework', 'bin', 'opl');
     writeJson(path.join(targetDir, 'contracts/domain_descriptor.json'), {
       domain_id: 'takeover-fixture-agent',
       domain_label: 'Takeover Fixture Agent',

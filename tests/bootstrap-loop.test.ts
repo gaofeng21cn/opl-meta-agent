@@ -446,6 +446,22 @@ function assertBuildAgentBaselineOutputSchema(payload: unknown): void {
   assert.equal(result.ok, true, JSON.stringify(result));
 }
 
+function assertBuildAgentBaselineOutputSchemaRejectsLegacyAndUnknownFields(payload: JsonObject): void {
+  for (const mutate of [
+    (candidate: JsonObject) => { candidate.suite_seed = {}; },
+    (candidate: JsonObject) => { (candidate.foundry_lab_handoff as JsonObject).work_order = {
+      ...((candidate.foundry_lab_handoff as JsonObject).work_order as JsonObject),
+      suite_plan: {},
+    }; },
+    (candidate: JsonObject) => { (candidate.target_agent as JsonObject).unknown_target_identity = 'forbidden'; },
+    (candidate: JsonObject) => { (candidate.authority_boundary as JsonObject).unknown_authority = false; },
+  ]) {
+    const forged = structuredClone(payload);
+    mutate(forged);
+    assert.equal(validateBuildAgentBaselineOutput(forged).ok, false);
+  }
+}
+
 function assertRefFields(surface: JsonObject, expected: Record<string, string>): void {
   Object.entries(expected).forEach(([field, value]) => assert.equal(surface[field], value, field));
 }
@@ -731,6 +747,7 @@ test('build-agent-baseline writes a conformant hybrid package and canonical Foun
     assert.equal(payload.target_agent.scaffold_validation_status, 'passed');
     assert.equal(payload.opl_profile_conformance.status, 'passed');
     assertBuildAgentBaselineOutputSchema(payload);
+    assertBuildAgentBaselineOutputSchemaRejectsLegacyAndUnknownFields(payload);
     assert.equal(payload.artifacts.agent_build_receipt_path, path.join(targetDir, 'contracts/agent_build_receipt.json'));
     assert.equal(payload.artifacts.agent_build_receipt_ref, `build-receipt-ref:opl-meta-agent/${targetAgent.domain_id}`);
     const missingBuildReceiptRef = structuredClone(payload);

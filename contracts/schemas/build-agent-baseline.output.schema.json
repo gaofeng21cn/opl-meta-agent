@@ -78,6 +78,13 @@
     "meta_agent_kind": {
       "const": "opl_compatible_meta_agent"
     },
+    "domain_pack_status": { "type": "string" },
+    "prompt_policy_refs": { "$ref": "#/$defs/stringArray" },
+    "skill_policy_refs": { "$ref": "#/$defs/stringArray" },
+    "quality_gate_refs": { "$ref": "#/$defs/stringArray" },
+    "knowledge_policy_refs": { "$ref": "#/$defs/stringArray" },
+    "source_domain_pack": { "type": "object" },
+    "target_agent_domain_pack": { "type": "object" },
     "target_agent": {
       "type": "object",
       "required": [
@@ -95,9 +102,31 @@
         },
         "repo_dir": {
           "$ref": "#/$defs/nonEmptyString"
-        }
+        },
+        "domain_label": { "type": ["string", "null"] },
+        "delivery_domain": { "type": ["string", "null"] },
+        "target_kind": { "type": ["string", "null"] },
+        "target_brief": { "type": ["string", "null"] },
+        "intent_signals": { "type": ["array", "null"], "items": { "type": "string" } },
+        "selected_opl_profile_refs": { "type": ["array", "null"], "items": { "type": "string" } },
+        "profile_selection_rationale": { "type": ["string", "null"] },
+        "profile_requirement_refs": { "type": ["array", "null"], "items": { "type": "string" } },
+        "reference_design_source_refs": { "type": ["array", "null"], "items": { "type": "string" } },
+        "reference_design_pattern_notes": { "type": ["array", "null"], "items": { "type": "string" } },
+        "reference_design_pattern_packet_refs": { "type": ["array", "null"], "items": { "type": "string" } },
+        "research_source_refs": { "type": ["array", "null"], "items": { "type": "string" } },
+        "expert_practice_notes": { "type": ["array", "null"], "items": { "type": "string" } },
+        "research_synthesis_refs": { "type": ["array", "null"], "items": { "type": "string" } },
+        "target_agent_ref": { "type": "string" },
+        "descriptor_ref": { "type": "string" },
+        "descriptor": { "type": ["object", "null"] },
+        "scaffold_status": { "type": "string" },
+        "scaffold_validation_status": { "type": "string" },
+        "generated_interface_status": { "type": "string" },
+        "domain_pack_status": { "type": "string" },
+        "stage_decomposition_status": { "const": "typed_closeout_received" }
       },
-      "additionalProperties": true
+      "additionalProperties": false
     },
     "artifacts": {
       "type": "object",
@@ -243,9 +272,24 @@
         },
         "descriptor_ref": {
           "$ref": "#/$defs/nonEmptyString"
-        }
+        },
+        "domain_label": { "type": ["string", "null"] },
+        "repo_dir": { "type": ["string", "null"] },
+        "delivery_domain": { "type": ["string", "null"] },
+        "target_kind": { "type": ["string", "null"] },
+        "target_brief": { "type": ["string", "null"] },
+        "intent_signals": { "type": ["array", "null"], "items": { "type": "string" } },
+        "selected_opl_profile_refs": { "type": ["array", "null"], "items": { "type": "string" } },
+        "profile_selection_rationale": { "type": ["string", "null"] },
+        "profile_requirement_refs": { "type": ["array", "null"], "items": { "type": "string" } },
+        "reference_design_source_refs": { "type": ["array", "null"], "items": { "type": "string" } },
+        "reference_design_pattern_notes": { "type": ["array", "null"], "items": { "type": "string" } },
+        "reference_design_pattern_packet_refs": { "type": ["array", "null"], "items": { "type": "string" } },
+        "research_source_refs": { "type": ["array", "null"], "items": { "type": "string" } },
+        "expert_practice_notes": { "type": ["array", "null"], "items": { "type": "string" } },
+        "research_synthesis_refs": { "type": ["array", "null"], "items": { "type": "string" } }
       },
-      "additionalProperties": true
+      "additionalProperties": false
     },
     "evaluationRequest": {
       "type": "object",
@@ -427,9 +471,15 @@
         "work_order_id",
         "work_order_kind",
         "status",
+        "product_id",
         "execution_owner",
         "target_agent",
         "evaluation_request",
+        "source_refs",
+        "reviewer_refs",
+        "candidate_refs",
+        "requested_operations",
+        "expected_return_shapes",
         "consumer_dependency",
         "execution_aperture",
         "authority_boundary"
@@ -452,9 +502,10 @@
         },
         "evaluation_request": {
           "type": "object",
-          "required": ["ref", "request_id", "suite_id", "suite_kind"],
+          "required": ["ref", "sha256", "request_id", "suite_id", "suite_kind"],
           "properties": {
             "ref": { "$ref": "#/$defs/nonEmptyString" },
+            "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
             "request_id": { "$ref": "#/$defs/nonEmptyString" },
             "suite_id": { "$ref": "#/$defs/nonEmptyString" },
             "suite_kind": {
@@ -509,9 +560,23 @@
         },
         "authority_boundary": {
           "$ref": "#/$defs/authorityBoundary"
-        }
+        },
+        "work_order_id": { "$ref": "#/$defs/nonEmptyString" },
+        "work_order_kind": {
+          "enum": [
+            "agent_baseline_evaluation",
+            "target_agent_takeover_evaluation",
+            "target_agent_production_evidence_evaluation"
+          ]
+        },
+        "product_id": { "const": "opl-meta-agent" },
+        "source_refs": { "$ref": "#/$defs/stringArray" },
+        "reviewer_refs": { "$ref": "#/$defs/stringArray" },
+        "candidate_refs": { "$ref": "#/$defs/stringArray" },
+        "requested_operations": { "$ref": "#/$defs/stringArray" },
+        "expected_return_shapes": { "$ref": "#/$defs/stringArray" }
       },
-      "additionalProperties": true
+      "additionalProperties": false
     },
     "buildBaselineContinuationState": {
       "type": "object",
@@ -549,11 +614,14 @@
         "oma_can_write_owner_receipt_body",
         "oma_can_write_learning_candidate_ledger",
         "oma_can_write_promotion_gate",
+        "oma_can_write_mechanism_or_scaleout_ledger",
         "oma_can_manage_work_order_lifecycle",
         "oma_can_write_target_domain_truth",
         "oma_can_write_target_domain_memory_body",
         "oma_can_mutate_target_domain_artifact_body",
         "oma_can_authorize_target_domain_quality_or_export",
+        "oma_can_claim_target_domain_ready",
+        "oma_can_claim_target_production_ready",
         "oma_can_promote_default_agent_without_gate"
       ],
       "properties": {
@@ -572,6 +640,9 @@
         "oma_can_write_promotion_gate": {
           "const": false
         },
+        "oma_can_write_mechanism_or_scaleout_ledger": {
+          "const": false
+        },
         "oma_can_manage_work_order_lifecycle": {
           "const": false
         },
@@ -587,12 +658,23 @@
         "oma_can_authorize_target_domain_quality_or_export": {
           "const": false
         },
+        "oma_can_claim_target_domain_ready": {
+          "const": false
+        },
+        "oma_can_claim_target_production_ready": {
+          "const": false
+        },
         "oma_can_promote_default_agent_without_gate": {
           "const": false
         }
       },
-      "additionalProperties": true
+      "additionalProperties": false
+    },
+    "stringArray": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/nonEmptyString" },
+      "uniqueItems": true
     }
   },
-  "additionalProperties": true
+  "additionalProperties": false
 }
