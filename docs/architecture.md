@@ -15,6 +15,8 @@ OMA 的新建 agent intake 路线分四类：`builtin_profile`、`hybrid`、`sou
 
 标准 Agent Pack ABI 只从 `opl-framework-shared/standard-agent-pack-abi` 消费；OMA 不在 `standard_foundry_policies` 复制 ABI body。source-derived / research-driven 的正式 `AgentBuildReceipt` 只在 target files 全部物化后写盘，`build-agent-baseline` 的 action output 同时暴露 receipt path/ref；预物化 surface 只保留 `expected_build_receipt_ref`。
 
+Repo-tracked `contracts/opl_agent_package_manifest.json` 和 OMA 生成的 target manifest 都是 source-only sidecars。未发生真实发布时不写 `distribution_payload`、OCI ref、rolling tag 或 digest；真实 published registry 路径继续由 OPL Connect 要求 immutable payload 与有效 SHA-256。
+
 Reference-driven route 还执行三条硬门：每个 `reference_design_source_ref` 必须由 typed packet 的 `source_material_ref` 覆盖；有用户 packet 时 seed 只保留 context/disposition，不进入 active TransferMap 或 stage graph；`AgentPackPlan` 的每个 source workflow step 必须在 `stage_control_plane.stages` 一一物化，并带匹配的 provenance、internal synthesis rationale、prompt、skill、knowledge、tool affordance 与 quality gate refs。非英文或混合语言 intake 通过 typed `intent_signals` 调用 OPL selector；selector 只补 lower-bound profile，不改变 reference design 的设计来源地位。
 
 Stage 大小属于 OMA 的 AI 设计判断，不属于 schema-driven generation。`agent/prompts/stage-decomposition.md` 持有 top-level decomposition 与 closeout shape；`agent/professional_skills/oma-stage-pack-intent-architecture/SKILL.md` 持有 stage 内 intent / pattern / stage-pack 方法判断。一个 top-level stage 只承载一个主要开放语义判断；确定性生成、校验、文件物化、helper receipt 和 readback 留在 stage 内。需要不同 owner、知识源、quality gate、handoff recipient 或失败路由的开放判断才拆 stage；同一判断的机械步骤应合并或删除。`StageDecompositionSubpacketSet` 是保留大 stage 时暴露内部认知链的 typed proof，不是私有 runtime 子流程，也不是把 stage-size 判断外包给 validator。

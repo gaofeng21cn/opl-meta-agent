@@ -719,6 +719,7 @@ test('build-agent-baseline writes a conformant hybrid package and canonical Foun
     const suite = readJson(path.join(outputRoot, 'agent-lab-suite-seed.json'));
     const descriptor = readJson(path.join(targetDir, 'contracts/domain_descriptor.json'));
     const capabilityMap = readJson(path.join(targetDir, 'contracts/capability_map.json'));
+    const packageManifest = readJson(path.join(targetDir, 'contracts/opl_agent_package_manifest.json'));
     const stageControl = readJson(path.join(targetDir, 'contracts/stage_control_plane.json'));
     const firstStage = stageControl.stages[0] as JsonObject;
     const primarySkill = fs.readFileSync(path.join(targetDir, 'agent/primary_skill/SKILL.md'), 'utf8');
@@ -744,6 +745,7 @@ test('build-agent-baseline writes a conformant hybrid package and canonical Foun
     assert.equal(fs.existsSync(path.join(outputRoot, 'online-learning-candidate.json')), false);
     assert.equal(fs.existsSync(path.join(outputRoot, 'mechanism-patch-proposal.json')), false);
     assert.equal(descriptor.domain_id, targetAgent.domain_id);
+    assert.equal(packageManifest.distribution_payload, undefined);
     assert.deepEqual(descriptor.selected_opl_profile_refs, targetAgent.selected_opl_profile_refs);
     assert.equal(descriptor.profile_selection_rationale, targetAgent.profile_selection_rationale);
     assert.deepEqual(descriptor.reference_design_source_refs, targetAgent.reference_design_source_refs);
