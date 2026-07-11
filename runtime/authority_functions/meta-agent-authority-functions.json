@@ -670,7 +670,6 @@
           "sync_json_bundle_cli_mode_ref"
         ],
         "contract_refs": [
-          "contracts/stage_control_plane.source.json",
           "runtime/authority_functions/meta-agent-authority-functions.source.json"
         ],
         "forbidden_roles": []
@@ -807,26 +806,6 @@
           "runtime/authority_functions/meta-agent-authority-functions.json",
           "runtime/authority_functions/meta-agent-authority-functions.source.json",
           "runtime/authority_functions/meta-agent-authority-functions.leaf-index.json"
-        ],
-        "forbidden_roles": []
-      },
-      {
-        "script_ref": "scripts/sync-stage-control-plane.ts",
-        "classes": [
-          "fixture_or_proof_helper"
-        ],
-        "authority_function_refs": [],
-        "consumes_opl_surfaces": [],
-        "writes_only": [
-          "stage_control_plane_source_contract_ref",
-          "stage_control_plane_leaf_index_ref",
-          "stage_control_plane_aggregate_ref",
-          "stage_control_plane_drift_check_ref"
-        ],
-        "contract_refs": [
-          "contracts/stage_control_plane.json",
-          "contracts/stage_control_plane.source.json",
-          "contracts/stage_control_plane.leaf-index.json"
         ],
         "forbidden_roles": []
       },
@@ -1015,26 +994,22 @@
         ]
       },
       {
-        "gate_id": "source_structure_and_stage_control_maintenance_helpers",
+        "gate_id": "source_structure_and_authority_manifest_maintenance_helpers",
         "tracked_script_refs": [
           "scripts/check-source-structure.ts",
-          "scripts/sync-authority-functions.ts",
-          "scripts/sync-stage-control-plane.ts"
+          "scripts/sync-authority-functions.ts"
         ],
-        "current_role": "source_structure_line_budget_checker_authority_manifest_split_helper_and_stage_control_plane_split_aggregate_helper",
-        "allowed_until": "authority_functions_and_stage_control_aggregate_consumer_paths_require_repo_local_split_checkers",
+        "current_role": "source_structure_line_budget_checker_and_authority_manifest_split_helper",
+        "allowed_until": "authority_functions_aggregate_consumer_path_requires_repo_local_split_checker",
         "required_before_retire_or_absorb": [
           "opl_framework_source_structure_lane_parity_ref",
           "authority_functions_source_aggregate_sync_parity_ref",
-          "stage_control_plane_source_aggregate_sync_parity_ref",
           "no_generated_aggregate_drift_ref",
           "no_active_npm_or_test_caller_ref",
           "tombstone_or_provenance_ref"
         ],
         "closed_retention_refs": [
           "contracts/source_structure_policy.json",
-          "contracts/stage_control_plane.source.json",
-          "contracts/stage_control_plane.leaf-index.json",
           "runtime/authority_functions/meta-agent-authority-functions.source.json",
           "runtime/authority_functions/meta-agent-authority-functions.leaf-index.json"
         ],
@@ -1051,34 +1026,29 @@
         "tracked_script_refs": [
           "scripts/lib/sync-json-bundle.ts"
         ],
-        "current_role": "shared_json_bundle_file_io_digest_and_cli_dispatch_helper_for_authority_and_stage_aggregate_sync",
+        "current_role": "json_bundle_file_io_digest_and_cli_dispatch_helper_for_authority_aggregate_sync",
         "retention_state": "retained_current_repo_native_surface",
-        "retention_reason": "current thin repo-local helper imported by both generated aggregate sync entrypoints to share mechanical JSON IO, stable JSON text, source digest, and CLI mode dispatch without owning refs, leaf semantics, runtime, generated interface, or domain truth",
+        "retention_reason": "current thin repo-local helper imported by the authority aggregate sync entrypoint for mechanical JSON IO, stable JSON text, source digest, and CLI mode dispatch without owning refs, leaf semantics, runtime, generated interface, or domain truth",
         "retention_evidence_refs": [
           "scripts/sync-authority-functions.ts#import",
-          "scripts/sync-stage-control-plane.ts#import",
           "npm run authority-functions:check",
-          "npm run stage-control:check",
           "npm run source-structure:json"
         ],
-        "allowed_until": "authority_functions_and_stage_control_aggregate_consumer_paths_share_mechanical_json_bundle_sync_logic",
+        "allowed_until": "authority_functions_aggregate_consumer_path_requires_mechanical_json_bundle_sync_logic",
         "required_before_retire_or_absorb": [
           "authority_functions_source_aggregate_sync_parity_ref",
-          "stage_control_plane_source_aggregate_sync_parity_ref",
           "no_generated_aggregate_drift_ref",
           "no_active_npm_or_test_caller_ref",
           "tombstone_or_provenance_ref"
         ],
         "closed_retention_refs": [
           "runtime/authority_functions/meta-agent-authority-functions.source.json",
-          "contracts/stage_control_plane.source.json",
-          "scripts/sync-authority-functions.ts",
-          "scripts/sync-stage-control-plane.ts"
+          "scripts/sync-authority-functions.ts"
         ],
         "no_resurrection_policy": {
           "policy_id": "oma.sync_json_bundle_helper.no_resurrection.v1",
           "state": "active_machine_policy",
-          "retained_only_while_both_aggregate_sync_entrypoints_import_it": true,
+          "retained_only_while_authority_aggregate_sync_entrypoint_imports_it": true,
           "must_not_become_generic_framework_helper": true,
           "must_not_become_runtime_owner": true,
           "must_not_become_generated_interface_owner": true,
@@ -1431,7 +1401,6 @@
       "scripts/repo-hygiene.sh",
       "scripts/run-with-repo-temp-env.sh",
       "scripts/sync-authority-functions.ts",
-      "scripts/sync-stage-control-plane.ts",
       "scripts/takeover-agent.ts",
       "scripts/verify.sh"
     ],
@@ -1684,8 +1653,7 @@
         {
           "script_ref": "scripts/lib/sync-json-bundle.ts",
           "active_caller_refs": [
-            "scripts/sync-authority-functions.ts#import",
-            "scripts/sync-stage-control-plane.ts#import"
+            "scripts/sync-authority-functions.ts#import"
           ]
         },
         {
@@ -1753,9 +1721,6 @@
             "package.json#scripts.source-structure:json",
             "package.json#scripts.source-structure:strict",
             "package.json#scripts.source-structure:strict:json",
-            "package.json#scripts.stage-control:check",
-            "package.json#scripts.stage-control:split",
-            "package.json#scripts.stage-control:write",
             "package.json#scripts.test:behavior",
             "package.json#scripts.test:full",
             "package.json#scripts.test:smoke",
@@ -1771,16 +1736,6 @@
             "package.json#scripts.authority-functions:split",
             "package.json#scripts.authority-functions:write",
             "scripts/verify.sh#shell"
-          ]
-        },
-        {
-          "script_ref": "scripts/sync-stage-control-plane.ts",
-          "active_caller_refs": [
-            "package.json#scripts.stage-control:check",
-            "package.json#scripts.stage-control:split",
-            "package.json#scripts.stage-control:write",
-            "scripts/verify.sh#shell",
-            "tests/source-structure-lane.test.ts#test_ref"
           ]
         },
         {

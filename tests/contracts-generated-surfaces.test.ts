@@ -56,7 +56,9 @@ test('generated-surface contracts remain OPL-owned refs-only projections', () =>
 
   Object.entries(registration.domain_manifest)
     .filter(([key]) => key.endsWith('_ref'))
+    .filter(([, value]) => !String(value).startsWith('opl-generated:'))
     .forEach(([, value]) => assertRepoRefExists(value as string));
+  assert.equal(registration.domain_manifest.stage_control_plane_ref, 'opl-generated:family_stage_control_plane');
   asStrings(registration.discovery_receipt.consumed_contract_refs).forEach(assertRepoRefExists);
   asStrings(appProjection.drilldown_readiness_receipt.verified_by_refs).forEach(assertRepoRefExists);
 

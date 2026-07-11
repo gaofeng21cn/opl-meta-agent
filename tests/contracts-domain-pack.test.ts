@@ -23,15 +23,14 @@ test('opl-meta-agent descriptor keeps OPL runtime authority outside the repo', (
   assert.ok(asStrings(descriptor.outputs).includes('mechanism_patch_proposal_ref'));
 });
 
-test('domain pack files and stage prompt refs resolve to usable repo files', () => {
-  const stageControl = readJson('contracts/stage_control_plane.json');
+test('domain pack files and declarative stage refs resolve to usable repo files', () => {
+  const stageManifest = readJson('agent/stages/manifest.json');
   const packCompilerInput = readJson('contracts/pack_compiler_input.json');
   const generatedSurfaceHandoff = readJson('contracts/generated_surface_handoff.json');
   const refGroups = [
-    { field: 'prompt_refs', refKind: 'domain_prompt_ref', pathPattern: /^agent\/prompts\/.+\.md$/ },
-    { field: 'skills', refKind: 'domain_skill_ref', pathPattern: /^agent\/skills\/.+\.md$/ },
-    { field: 'knowledge_refs', refKind: 'domain_knowledge_ref', pathPattern: /^agent\/knowledge\/.+\.md$/ },
-    { field: 'evaluation', refKind: 'domain_quality_gate_ref', pathPattern: /^agent\/quality_gates\/.+\.md$/ },
+    { field: 'prompt_ref', pathPattern: /^agent\/prompts\/.+\.md$/ },
+    { field: 'knowledge_refs', pathPattern: /^agent\/knowledge\/.+\.md$/ },
+    { field: 'quality_gate_refs', pathPattern: /^agent\/quality_gates\/.+\.md$/ },
   ];
 
   assert.equal(packCompilerInput.domain_pack_owner, 'opl-meta-agent');
@@ -53,14 +52,13 @@ test('domain pack files and stage prompt refs resolve to usable repo files', () 
   assert.deepEqual(packCompilerInput.required_domain_pack_paths, actualDomainPackPaths);
   actualDomainPackPaths.forEach(assertUsablePackFile);
 
-  refGroups.forEach(({ field, refKind, pathPattern }) => {
-    asObjects(stageControl.stages).forEach((stage) => {
-      const refs = asObjects(stage[field]);
+  refGroups.forEach(({ field, pathPattern }) => {
+    asObjects(stageManifest.stages).forEach((stage) => {
+      const refs = typeof stage[field] === 'string' ? [stage[field]] : asStrings(stage[field]);
       assert.ok(refs.length > 0, `${stage.stage_id}.${field} should not be empty`);
       refs.forEach((stageRef) => {
-        assert.equal(stageRef.ref_kind, refKind);
-        assert.match(String(stageRef.ref), pathPattern);
-        assertUsablePackFile(String(stageRef.ref));
+        assert.match(String(stageRef), pathPattern);
+        assertUsablePackFile(String(stageRef));
       });
     });
   });

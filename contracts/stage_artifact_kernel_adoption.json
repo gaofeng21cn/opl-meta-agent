@@ -88,7 +88,7 @@
   },
   "domain_pack_binding": {
     "accepted_source_refs": [
-      "contracts/stage_control_plane.json",
+      "agent/stages/manifest.json",
       "contracts/foundry_agent_series.json",
       "scripts/lib/stage-native-artifact-contract.ts",
       "scripts/lib/stage-decomposition-pack-draft/builder.ts",

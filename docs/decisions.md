@@ -35,8 +35,8 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 
 - 决策：`agent/` 下的 principles、prompts、stages、skills、quality gates 和 knowledge files 是机器可验证 pack source；README 与文档章节只做人读索引。
 - 理由：标准 OPL Agent 需要 contracts/tests 能解析真实 pack path，避免把 prose heading、目录存在性或 README 当成 semantic pack truth。
-- 决策：`agent/stages/manifest.json` 是 OPL Pack 唯一 domain-owned declarative stage source；OPL 从它编译 hosted `family_stage_control_plane`，不得从 `contracts/stage_control_plane.json` 反推或 fallback。tracked stage plane 只保留为旧 consumer compatibility aggregate。
-- 影响：`contracts/pack_compiler_input.json`、`agent/stages/manifest.json` 和 pack tests 必须指向非 README 的真实文件；新增 stage/action/quality gate 先进入 manifest/pack/contracts，再同步兼容 aggregate 和人读说明。
+- 决策：`agent/stages/manifest.json` 是 OPL Pack 唯一 repo-tracked domain-owned declarative stage source；OPL 从它编译并持有 hosted `family_stage_control_plane`。本仓不保留 stage-control aggregate、source parts、leaf index、bundle manifest、同步命令或兼容入口。
+- 影响：`contracts/pack_compiler_input.json`、`agent/stages/manifest.json` 和 pack tests 必须指向非 README 的真实文件；新增 stage/action/quality gate 先进入 manifest/pack/contracts，再同步人读说明。
 
 ### Stage 大小由 stage prompt 和 professional skill 的 AI 判断决定
 
@@ -56,7 +56,7 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 - 决策：专家工作流 catalog 是 content-rich seed library，不是模板库。用户 paper/packet 是 primary design origin；seed 只能 fallback/secondary，并显式记录 adopt/adapt/reject。`TransferMap` 使用 canonical pattern/step mapping fields；`AgentPackPlan` 每个 workflow step 一个独立稳定 target stage。`DesignAdmissionReceipt` 在物化前，`AgentBuildReceipt` 在物化后。
 - 决策：seed source provenance 的机器 owner 是 `contracts/expert_workflow_pattern_library.json#/anchor_catalog`。Step 继续使用字符串 `source_anchor_refs` ABI，但值只能是可解析的 opaque catalog key；官方 URL、章节/selector、support role、verification status 和 source version/fingerprint 留在 catalog entry，不把内部语义标签伪造成 URL fragment。只有官方来源明确给出工作顺序时才标 `source_derived`，并要求至少一条 `verified direct_workflow + workflow_source` 主锚；额外 synthesis/quality/evaluation anchor 只能作为支撑，不获得 direct authority。其余评价框架、报告准则、质量门和 OMA 自己增加的 framing/blocker/review/closure 一律标 `internal_synthesis`，写明 rationale，且不得声称 direct workflow 或 owner authority。Seed 进入 `ReferenceDesignPacket` 后必须保留 `authority_tier` 和 resolved anchor 子集。更新来源或 seed step 时必须同时更新 catalog、resolver negative tests 和本组 canonical docs。
 - 理由：标准目录属于 OPL family 统一 scaffold / conformance；OMA 的核心价值是 agent-building reasoning、stage decomposition、artifact morphology、candidate package、developer work order 和 mechanism proposal，而不是复制 OPL Pack / Stagecraft / Connect / generated surface。
-- 影响：README、目录存在、suite pass、generated interface readiness 或 scaffold validation 都不能单独声明新 target agent 完成；profile/catalog/template 只提供 OPL conformance 下限和 route/readback refs，scaffold 只提供物理骨架，不能替代参考设计提炼或 target agent 语义设计。可消费语义必须来自非 README pack files、domain-owned declarative stage manifest、typed closeout refs、owner route refs 和 delivery gate refs；tracked compatibility aggregate 不能替代 manifest。
+- 影响：README、目录存在、suite pass、generated interface readiness 或 scaffold validation 都不能单独声明新 target agent 完成；profile/catalog/template 只提供 OPL conformance 下限和 route/readback refs，scaffold 只提供物理骨架，不能替代参考设计提炼或 target agent 语义设计。可消费语义必须来自非 README pack files、domain-owned declarative stage manifest、typed closeout refs、owner route refs 和 delivery gate refs。
 
 ### OPL 持有 generated surfaces，OMA 只提供 refs-only inputs
 

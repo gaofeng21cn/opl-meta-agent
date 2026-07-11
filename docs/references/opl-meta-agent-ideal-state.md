@@ -95,7 +95,7 @@ CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framewo
 
 ## 理想完成门槛
 
-- `agent/` pack、`contracts/pack_compiler_input.json`、`contracts/generated_surface_handoff.json` 和 `contracts/stage_control_plane.json` 全部采用 OPL standard pack shape，并由 OPL scaffold validation 通过。
+- `agent/` pack、`agent/stages/manifest.json`、`contracts/pack_compiler_input.json` 和 `contracts/generated_surface_handoff.json` 全部采用 OPL standard pack shape，并由 OPL scaffold validation 通过。
 - 所有 generated interface surface 均由 OPL Framework 生成或托管；本仓不实现 repo-owned generic wrapper。
 - 所有 retained scripts 都能归类为 domain smoke、minimal authority function implementation ref、fixture/proof helper 或历史 provenance；不能归类的脚本必须上收 OPL、收薄成 refs-only adapter 或退役。
 - Agent Lab suite、baseline delivery、testing takeover、external suite self-evolution、target-agent evidence takeover 和 mechanism patch proposal 都返回 owner receipt / typed blocker / candidate refs，不写目标 domain truth。

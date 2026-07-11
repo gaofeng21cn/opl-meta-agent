@@ -112,7 +112,7 @@
       "agent/prompts/intent-intake.md",
       "agent/stages/intent-intake.md",
       "contracts/domain_descriptor.json",
-      "contracts/stage_control_plane.json"
+      "agent/stages/manifest.json"
     ],
     "test_handoff_refs": [
       "agent/prompts/eval-suite-build.md",

@@ -13,7 +13,7 @@
     "canonical_semantic_pack_root": "agent/",
     "canonical_semantic_pack_role": "repo_source_declarative_meta_agent_pack",
     "domain_descriptor_ref": "contracts/domain_descriptor.json",
-    "stage_control_plane_ref": "contracts/stage_control_plane.json",
+    "stage_control_plane_ref": "opl-generated:family_stage_control_plane",
     "action_catalog_ref": "contracts/action_catalog.json",
     "pack_compiler_input_ref": "contracts/pack_compiler_input.json",
     "generated_surface_handoff_ref": "contracts/generated_surface_handoff.json",
@@ -55,7 +55,7 @@
     "source_manifest_ref": "contracts/opl_domain_manifest_registration.json",
     "consumed_contract_refs": [
       "contracts/domain_descriptor.json",
-      "contracts/stage_control_plane.json",
+      "agent/stages/manifest.json",
       "contracts/action_catalog.json",
       "contracts/pack_compiler_input.json",
       "contracts/generated_surface_handoff.json",

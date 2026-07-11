@@ -14,7 +14,7 @@ Machine boundary: 本文只压缩记录已退役 surface 的 no-resurrection 规
 | active completion / gap / next prompt | `docs/active/opl-meta-agent-ideal-state-gap-plan.md` |
 | target improvement policy | target-owned `default_change_refs` / `change_ref_mappings`, `scripts/lib/target-improvement-policy.ts`, external-suite tests |
 | developer work-order and standard Foundry policy bodies | `contracts/developer_work_order_policy.json`, `contracts/standard_foundry_policies.json`, concrete source helpers |
-| domain pack required paths | `contracts/pack_compiler_input.json`, `contracts/stage_control_plane.json`, non-README `agent/` pack files, pack tests |
+| domain pack required paths | `contracts/pack_compiler_input.json`, `agent/stages/manifest.json`, non-README `agent/` pack files, pack tests |
 | public narrative and technical boundary | root `README*`, `docs/status.md`, `docs/architecture.md`, `docs/invariants.md`, `docs/decisions.md` |
 
 ## Retired Surfaces

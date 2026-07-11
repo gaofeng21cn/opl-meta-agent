@@ -51,7 +51,6 @@
     "scripts/repo-hygiene.sh",
     "scripts/run-with-repo-temp-env.sh",
     "scripts/sync-authority-functions.ts",
-    "scripts/sync-stage-control-plane.ts",
     "scripts/takeover-agent.ts",
     "scripts/verify.sh"
   ],
@@ -304,8 +303,7 @@
       {
         "script_ref": "scripts/lib/sync-json-bundle.ts",
         "active_caller_refs": [
-          "scripts/sync-authority-functions.ts#import",
-          "scripts/sync-stage-control-plane.ts#import"
+          "scripts/sync-authority-functions.ts#import"
         ]
       },
       {
@@ -373,9 +371,6 @@
           "package.json#scripts.source-structure:json",
           "package.json#scripts.source-structure:strict",
           "package.json#scripts.source-structure:strict:json",
-          "package.json#scripts.stage-control:check",
-          "package.json#scripts.stage-control:split",
-          "package.json#scripts.stage-control:write",
           "package.json#scripts.test:behavior",
           "package.json#scripts.test:full",
           "package.json#scripts.test:smoke",
@@ -391,16 +386,6 @@
           "package.json#scripts.authority-functions:split",
           "package.json#scripts.authority-functions:write",
           "scripts/verify.sh#shell"
-        ]
-      },
-      {
-        "script_ref": "scripts/sync-stage-control-plane.ts",
-        "active_caller_refs": [
-          "package.json#scripts.stage-control:check",
-          "package.json#scripts.stage-control:split",
-          "package.json#scripts.stage-control:write",
-          "scripts/verify.sh#shell",
-          "tests/source-structure-lane.test.ts#test_ref"
         ]
       },
       {

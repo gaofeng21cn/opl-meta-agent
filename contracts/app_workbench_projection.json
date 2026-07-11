@@ -9,7 +9,7 @@
   "source_refs": {
     "domain_manifest_registration_ref": "contracts/opl_domain_manifest_registration.json",
     "domain_descriptor_ref": "contracts/domain_descriptor.json",
-    "stage_control_plane_ref": "contracts/stage_control_plane.json",
+    "stage_control_plane_ref": "opl-generated:family_stage_control_plane",
     "action_catalog_ref": "contracts/action_catalog.json",
     "owner_receipt_contract_ref": "contracts/owner_receipt_contract.json",
     "scaleout_evidence_contract_ref": "contracts/real_target_agent_scaleout_evidence.json",

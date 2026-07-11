@@ -110,8 +110,8 @@
       "runtime_projection_refs": [
         {
           "ref_kind": "contract_ref",
-          "ref": "contracts/stage_control_plane.json#/stages",
-          "role": "stage_control_plane_prompt_refs"
+          "ref": "agent/stages/manifest.json#/stages",
+          "role": "stage_manifest_prompt_refs"
         }
       ],
       "sync_policy": "domain_agent_builtin_refs_only",
@@ -293,8 +293,8 @@
       "runtime_projection_refs": [
         {
           "ref_kind": "contract_ref",
-          "ref": "contracts/stage_control_plane.json#/stages",
-          "role": "stage_control_plane_skill_refs"
+          "ref": "agent/stages/manifest.json#/stages",
+          "role": "stage_manifest_skill_refs"
         }
       ],
       "sync_policy": "domain_agent_builtin_refs_only",
@@ -370,8 +370,8 @@
       "runtime_projection_refs": [
         {
           "ref_kind": "contract_ref",
-          "ref": "contracts/stage_control_plane.json#/stages",
-          "role": "stage_control_plane_skill_refs"
+          "ref": "agent/stages/manifest.json#/stages",
+          "role": "stage_manifest_skill_refs"
         }
       ],
       "sync_policy": "domain_agent_builtin_refs_only",
@@ -453,8 +453,8 @@
       "runtime_projection_refs": [
         {
           "ref_kind": "contract_ref",
-          "ref": "contracts/stage_control_plane.json#/stages",
-          "role": "stage_control_plane_skill_refs"
+          "ref": "agent/stages/manifest.json#/stages",
+          "role": "stage_manifest_skill_refs"
         },
         {
           "ref_kind": "contract_ref",
@@ -591,8 +591,8 @@
       "runtime_projection_refs": [
         {
           "ref_kind": "contract_ref",
-          "ref": "contracts/stage_control_plane.json#/stages",
-          "role": "stage_control_plane_knowledge_refs"
+          "ref": "agent/stages/manifest.json#/stages",
+          "role": "stage_manifest_knowledge_refs"
         }
       ],
       "sync_policy": "domain_agent_builtin_refs_only",

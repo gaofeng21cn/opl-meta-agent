@@ -453,7 +453,6 @@
       "sync_json_bundle_cli_mode_ref"
     ],
     "contract_refs": [
-      "contracts/stage_control_plane.source.json",
       "runtime/authority_functions/meta-agent-authority-functions.source.json"
     ],
     "forbidden_roles": []
@@ -590,26 +589,6 @@
       "runtime/authority_functions/meta-agent-authority-functions.json",
       "runtime/authority_functions/meta-agent-authority-functions.source.json",
       "runtime/authority_functions/meta-agent-authority-functions.leaf-index.json"
-    ],
-    "forbidden_roles": []
-  },
-  {
-    "script_ref": "scripts/sync-stage-control-plane.ts",
-    "classes": [
-      "fixture_or_proof_helper"
-    ],
-    "authority_function_refs": [],
-    "consumes_opl_surfaces": [],
-    "writes_only": [
-      "stage_control_plane_source_contract_ref",
-      "stage_control_plane_leaf_index_ref",
-      "stage_control_plane_aggregate_ref",
-      "stage_control_plane_drift_check_ref"
-    ],
-    "contract_refs": [
-      "contracts/stage_control_plane.json",
-      "contracts/stage_control_plane.source.json",
-      "contracts/stage_control_plane.leaf-index.json"
     ],
     "forbidden_roles": []
   },

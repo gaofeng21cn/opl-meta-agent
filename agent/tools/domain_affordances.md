@@ -7,7 +7,7 @@ Machine boundary: This file declares available domain tool affordances for OPL M
 
 ## Boundary
 
-OMA stage attempts may use tools to read target-agent context, research external experience, materialize agent pack refs, run baseline or external-suite checks, and collect refs-only takeover evidence. Tool use stays inside the permission, credential, write-scope, side-effect, and forbidden-authority boundaries declared by `contracts/pack_compiler_input.json`, `contracts/stage_control_plane.json`, and `contracts/cognitive_kernel_adoption.json`.
+OMA stage attempts may use tools to read target-agent context, research external experience, materialize agent pack refs, run baseline or external-suite checks, and collect refs-only takeover evidence. Tool use stays inside the permission, credential, write-scope, side-effect, and forbidden-authority boundaries declared by `contracts/pack_compiler_input.json`, `agent/stages/manifest.json`, and `contracts/cognitive_kernel_adoption.json`.
 
 ## Affordances
 
