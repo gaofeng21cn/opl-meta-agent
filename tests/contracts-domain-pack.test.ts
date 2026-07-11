@@ -122,6 +122,21 @@ test('declarative stage manifest is the OPL Pack compiler source', () => {
   );
 });
 
+test('standard-agent principles bind the declarative manifest and explicit proof lane', () => {
+  const principles = readJson('contracts/standard-agent-principles-adoption.json');
+  const manifest = readJson('agent/stages/manifest.json');
+  const skeletonBuild = asObjects(manifest.stages)
+    .find((stage) => stage.stage_id === 'agent-skeleton-build');
+
+  assert.equal(principles.source_refs.stage_manifest_ref, 'agent/stages/manifest.json');
+  assert.equal(principles.source_refs.stage_control_plane_ref, 'opl-generated:family_stage_control_plane');
+  assert.equal(
+    principles.domain_mapping.domain_intake.domain_stage_ref,
+    'agent/stages/manifest.json#/stages/0',
+  );
+  assert.equal(skeletonBuild?.lane_kind, 'proof');
+});
+
 test('declared action routes publish every required predecessor condition', () => {
   const manifest = readJson('agent/stages/manifest.json');
   const actionCatalog = readJson('contracts/action_catalog.json');

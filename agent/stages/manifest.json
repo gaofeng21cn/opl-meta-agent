@@ -105,6 +105,7 @@
     {
       "stage_id": "agent-skeleton-build",
       "stage_kind": "creation",
+      "lane_kind": "proof",
       "title": "Agent Pack materialization",
       "summary": "Materialize the admitted target Agent Pack and its build proof in the designated output root.",
       "goal": "Create an OPL-compatible candidate package without writing target domain truth or framework runtime state.",
