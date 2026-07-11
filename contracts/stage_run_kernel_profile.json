@@ -183,7 +183,7 @@
       ],
       "mechanism-and-test-review": [
         "mechanism_candidate_ref",
-        "agent_lab_suite_seed_ref",
+        "foundry_evaluation_request_ref",
         "test_review_ref",
         "quality_gate_ref"
       ],

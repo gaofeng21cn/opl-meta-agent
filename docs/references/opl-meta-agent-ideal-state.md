@@ -10,12 +10,12 @@ Machine boundary: 本文是人读目标态参考。机器真相继续归 `contra
 - 本文只写 `opl-meta-agent` 的 north-star 目标态和长期 owner boundary；当前差距、完善顺序和证据缺口回到 [opl-meta-agent 理想目标态差距与完善计划](../active/opl-meta-agent-ideal-state-gap-plan.md)。
 - 本文不冻结 run date、branch、worktree、commit SHA、receipt id、动态 counts、read-model 输出或 closeout 流程；dated refs 只作为 provenance，当前 completion/gap/prompt 回到 active plan 和 live machine truth。
 - `opl-meta-agent` 是 OPL-compatible Foundry Agent，不是 OPL Framework 内置模块。OPL Framework 持有 runtime、Agent Lab、standard scaffold、generated interface bundle、queue、attempt ledger、provider receipt、observability、optimizer / RL transition refs 和 promotion gate。
-- Agent Lab 与 `opl-meta-agent` 都是标准消费者，不是为 MAS、MAG、RCA 或任一单仓定制的兼容层。标准 OPL Agent 必须提供可被 Agent Lab / OMA 消费的 handoff、suite seed、owner route、receipt、no-forbidden-write 和 patch-work-order 输入；不能把叙事写成 Agent Lab 或 OMA 为每个 agent 单独实现一套能力。
+- Agent Lab 与 `opl-meta-agent` 都是标准消费者，不是为 MAS、MAG、RCA 或任一单仓定制的兼容层。标准 OPL Agent 必须提供可被 Agent Lab / OMA 消费的 handoff、evaluation request、owner route、receipt、no-forbidden-write 和 patch-work-order 输入；OPL Foundry Lab 是唯一 suite-plan compiler，不能把叙事写成 Agent Lab 或 OMA 为每个 agent 单独实现一套能力。
 - 目标态优先于当前脚本形态。仓内脚本可以作为 domain smoke 或 minimal authority function implementation refs 存在，但不能变成 repo-owned generic runtime、generic CLI/MCP/Skill/product-entry wrapper、generic scheduler、queue、attempt ledger、operator workbench 或默认 promotion engine。
 
 ## 目标结论
 
-理想状态下，`opl-meta-agent` 是“构建、接管、修复和持续改进 OPL-compatible 高价值知识交付智能体”的 Foundry Agent。它读取用户意图、目标领域材料和目标 agent 的标准 handoff surface，形成可审计的 agent brief、stage plan、domain pack、quality gates、Agent Lab suite seed、baseline receipt、developer patch work order、online-learning candidate 和 mechanism patch proposal。
+理想状态下，`opl-meta-agent` 是“构建、接管、修复和持续改进 OPL-compatible 高价值知识交付智能体”的 Foundry Agent。它读取用户意图、目标领域材料和目标 agent 的标准 handoff surface，形成可审计的 agent brief、stage plan、domain pack、quality gates、thin Foundry evaluation request、baseline receipt、developer patch work order、online-learning candidate 和 mechanism patch proposal。
 
 `opl-meta-agent` 的理想形态是：
 
@@ -57,7 +57,7 @@ generated surface proof、registration readiness、App projection readiness、su
 - Agent-building intent brief、目标 agent 任务边界、适用/不适用场景和 baseline acceptance policy。
 - Declarative agent-building pack：`agent/prompts/`、`agent/stages/`、`agent/skills/`、`agent/quality_gates/`、`agent/knowledge/` 下的真实语义文件。
 - Agent skeleton / contract / prompt / skill / quality gate 生成策略。
-- Agent Lab suite spec、scorecard refs、recovery probes、blocked suite intake 和 developer patch work order policy。
+- Thin Foundry evaluation request、blocked external-suite intake 和 developer patch work order policy；OPL Foundry Lab owns suite spec、scorecard refs、recovery probes 与 compiled suite plan。
 - Baseline delivery receipt、testing takeover receipt、online-learning candidate refs 和 mechanism patch proposal refs。
 - Minimal authority functions：candidate agent package builder 和 mechanism patch proposal authorizer。
 
@@ -70,7 +70,7 @@ OPL Framework 持有：
 目标 domain agent 持有：
 
 - 目标领域 truth、memory body、artifact body、quality/export verdict、artifact authority、owner receipt 和默认 agent promotion authority。
-- 目标 agent 对 Agent Lab / OMA 的标准 handoff surface：suite seed、owner route refs、receipt refs、required return shapes、no-forbidden-write proof refs、editable surface policy 和 closeout gate。
+- 目标 agent 对 Agent Lab / OMA 的标准 handoff surface：evaluation request / external-suite intake、owner route refs、receipt refs、required return shapes、no-forbidden-write proof refs、editable surface policy 和 closeout gate。
 
 ## Pack 与 Generated Surface 形状
 

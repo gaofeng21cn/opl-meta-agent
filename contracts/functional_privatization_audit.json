@@ -148,7 +148,7 @@
       ],
       "active_caller_status": "refs_only_adapter_active",
       "consumes_opl_surface": "opl_foundry_lab_suite_result_refs_with_evaluation_work_order_consumer_dependency_open",
-      "retention_reason": "OMA emits declarative suite seeds, candidate refs, blocked Foundry Lab evaluation work-order candidates, and executable developer patch work orders, or consumes an explicit Foundry Lab suite-result ref for agent-building judgment. OPL Foundry Lab owns suite materialization/execution, execution receipts, learning/promotion/mechanism/scaleout ledgers, work-order lifecycle, and delivery-gate assembly; its canonical evaluation-work-order consumer is still required before these candidates become executable. Target owners own owner receipt and typed blocker bodies."
+      "retention_reason": "OMA emits thin declarative evaluation requests, candidate refs, blocked Foundry Lab evaluation work-order candidates, and executable developer patch work orders, or consumes an explicit Foundry Lab suite-result ref for agent-building judgment. OPL Foundry Lab owns suite-plan materialization/execution, execution receipts, learning/promotion/mechanism/scaleout ledgers, work-order lifecycle, and delivery-gate assembly; its canonical evaluation-work-order consumer is still required before these candidates become executable. Target owners own owner receipt and typed blocker bodies."
     },
     {
       "module_id": "mechanism_patch_proposal_authorizer",

@@ -21,8 +21,8 @@ export const FOUNDRY_LAB_EVALUATION_ACTION_REF =
 type FoundryLabWorkOrderInput = {
   workOrderKind: FoundryLabWorkOrderKind;
   targetAgent: FoundryLabTargetAgent;
-  suiteSeed: JsonObject;
-  suiteSeedRef: string;
+  evaluationRequest: JsonObject;
+  evaluationRequestRef: string;
   sourceRefs?: string[];
   reviewerRefs?: string[];
   candidateRefs?: string[];
@@ -42,8 +42,8 @@ function canonicalRefs(values: string[]): string[] {
 export function buildFoundryLabWorkOrder({
   workOrderKind,
   targetAgent,
-  suiteSeed,
-  suiteSeedRef,
+  evaluationRequest,
+  evaluationRequestRef,
   sourceRefs = [],
   reviewerRefs = [],
   candidateRefs = [],
@@ -54,19 +54,20 @@ export function buildFoundryLabWorkOrder({
     target_agent_ref: requiredString(targetAgent.target_agent_ref, 'target_agent.target_agent_ref'),
     descriptor_ref: requiredString(targetAgent.descriptor_ref, 'target_agent.descriptor_ref'),
   };
-  const suiteId = requiredString(suiteSeed.suite_id, 'suite_seed.suite_id');
-  const suiteKind = requiredString(suiteSeed.suite_kind, 'suite_seed.suite_kind');
-  const suiteTasks = Array.isArray(suiteSeed.tasks) ? suiteSeed.tasks : [];
-  const suiteTaskIds = suiteTasks.map((task, index) => {
+  const requestId = requiredString(evaluationRequest.request_id, 'evaluation_request.request_id');
+  const suiteId = requiredString(evaluationRequest.suite_id, 'evaluation_request.suite_id');
+  const suiteKind = requiredString(evaluationRequest.suite_kind, 'evaluation_request.suite_kind');
+  const taskIntents = Array.isArray(evaluationRequest.task_intents) ? evaluationRequest.task_intents : [];
+  const taskIds = taskIntents.map((task, index) => {
     if (typeof task !== 'object' || task === null || Array.isArray(task)) {
-      throw new Error(`Foundry Lab work order requires suite_seed.tasks[${index}].task_id.`);
+      throw new Error(`Foundry Lab work order requires evaluation_request.task_intents[${index}].task_id.`);
     }
-    return requiredString((task as JsonObject).task_id, `suite_seed.tasks[${index}].task_id`);
+    return requiredString((task as JsonObject).task_id, `evaluation_request.task_intents[${index}].task_id`);
   });
-  if (suiteTaskIds.length === 0 || new Set(suiteTaskIds).size !== suiteTaskIds.length) {
-    throw new Error('Foundry Lab work order requires unique suite_seed.tasks[].task_id values.');
+  if (taskIds.length === 0 || new Set(taskIds).size !== taskIds.length) {
+    throw new Error('Foundry Lab work order requires unique evaluation_request.task_intents[].task_id values.');
   }
-  const canonicalSuiteSeedRef = requiredString(suiteSeedRef, 'suite_seed.ref');
+  const canonicalEvaluationRequestRef = requiredString(evaluationRequestRef, 'evaluation_request.ref');
   const canonicalSourceRefs = canonicalRefs(sourceRefs);
   const canonicalReviewerRefs = canonicalRefs(reviewerRefs);
   const canonicalCandidateRefs = canonicalRefs(candidateRefs);
@@ -77,11 +78,12 @@ export function buildFoundryLabWorkOrder({
       target_agent_ref: canonicalTarget.target_agent_ref,
       descriptor_ref: canonicalTarget.descriptor_ref,
     },
-    suite_seed: {
+    evaluation_request: {
+      request_id: requestId,
       suite_id: suiteId,
       suite_kind: suiteKind,
-      ref: canonicalSuiteSeedRef,
-      task_ids: [...suiteTaskIds].sort(),
+      ref: canonicalEvaluationRequestRef,
+      task_ids: [...taskIds].sort(),
     },
     source_refs: canonicalSourceRefs,
     reviewer_refs: canonicalReviewerRefs,
@@ -97,8 +99,9 @@ export function buildFoundryLabWorkOrder({
     product_id: 'opl-meta-agent',
     execution_owner: FOUNDRY_LAB_EVALUATION_OWNER,
     target_agent: canonicalTarget,
-    suite_seed: {
-      ref: canonicalSuiteSeedRef,
+    evaluation_request: {
+      ref: canonicalEvaluationRequestRef,
+      request_id: requestId,
       suite_id: suiteId,
       suite_kind: suiteKind,
     },

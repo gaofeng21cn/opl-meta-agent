@@ -126,7 +126,7 @@
     {
       "action_id": "build-agent-baseline",
       "title": "Build Agent Baseline",
-      "summary": "Generate and validate an OPL-compatible candidate Agent Pack, consume structured AI reviewer evidence, and emit a declarative suite seed plus canonical OPL Foundry Lab evaluation work order without creating a suite result or owner receipt.",
+      "summary": "Generate and validate an OPL-compatible candidate Agent Pack, consume structured AI reviewer evidence, and emit a thin Foundry evaluation request plus canonical OPL Foundry Lab work order without creating a suite result or owner receipt.",
       "owner": "opl-meta-agent",
       "effect": "mutating",
       "source_command": {
@@ -216,7 +216,7 @@
     {
       "action_id": "takeover-target-agent-test",
       "title": "Take Over Target Agent Test",
-      "summary": "Read an existing OPL-compatible agent repo, consume structured AI reviewer evidence, and emit a declarative takeover suite seed plus canonical OPL Foundry Lab evaluation work order without local suite execution or owner receipt creation.",
+      "summary": "Read an existing OPL-compatible agent repo, consume structured AI reviewer evidence, and emit a thin takeover evaluation request plus canonical OPL Foundry Lab evaluation work order without local suite execution or owner receipt creation.",
       "owner": "opl-meta-agent",
       "effect": "mutating",
       "source_command": {

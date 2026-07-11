@@ -783,7 +783,7 @@ function buildReferenceDesignBoundary(targetAgent: MinimalTargetAgent): JsonObje
     role: 'external_architecture_or_research_inspiration_not_target_domain_truth',
     may_inform_stage_graph: true,
     may_inform_quality_gate_design: true,
-    may_inform_agent_lab_suite_seed: true,
+    may_inform_foundry_evaluation_request: true,
     can_copy_external_runtime: false,
     can_write_target_domain_truth: false,
     can_replace_target_owner_judgment: false,
@@ -830,7 +830,7 @@ export function buildTransferablePatternRequirements(targetAgent: MinimalTargetA
 export function buildCapabilityPlanRequirements(targetAgent: MinimalTargetAgent): string[] {
   if (hasSourceDerivedDesign(targetAgent)) {
     return [
-      'map_transferable_patterns_into_stage_control_plane_prompt_knowledge_quality_gate_and_agent_lab_suite_seed',
+      'map_transferable_patterns_into_stage_control_plane_prompt_knowledge_quality_gate_and_foundry_evaluation_request',
       'mark_each_planned_stage_as_source_pattern_ref_or_target_only_requirement',
       'preserve_owner_boundary_and_refs_only_source_design_receipt',
       'route_back_when_reference_design_packet_is_insufficient_for_target_agent_design',
@@ -838,7 +838,7 @@ export function buildCapabilityPlanRequirements(targetAgent: MinimalTargetAgent)
   }
   return hasResearchDrivenDesignInput(targetAgent)
     ? [
-        'map_researched_expert_practice_into_stage_control_plane_prompt_knowledge_quality_gate_and_agent_lab_suite_seed',
+        'map_researched_expert_practice_into_stage_control_plane_prompt_knowledge_quality_gate_and_foundry_evaluation_request',
         'mark_each_planned_stage_as_research_pattern_ref_or_target_only_requirement',
         'preserve_owner_boundary_and_refs_only_research_design_receipt',
         'route_back_when_research_synthesis_is_insufficient_for_target_agent_design',

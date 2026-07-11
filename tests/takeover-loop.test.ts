@@ -25,7 +25,7 @@ function writeReviewerEvaluation(filePath: string, overrides: Record<string, unk
     no_shared_context: true,
     independent_attempt: true,
     critique: 'Takeover needs Foundry Lab execution and target-owner closeout.',
-    suggestions: ['Submit the suite seed through a declarative Foundry Lab work order.'],
+    suggestions: ['Submit a thin evaluation request through a declarative Foundry Lab work order.'],
     source_refs: [
       'review-ref:opl-meta-agent/takeover-fixture/ai-reviewer',
       'artifact-morphology-ref:takeover-fixture-agent/target-delivery',
@@ -41,7 +41,7 @@ function writeReviewerEvaluation(filePath: string, overrides: Record<string, unk
   });
 }
 
-test('takeover emits suite seed and Foundry Lab work order without local execution receipts', () => {
+test('takeover emits a thin evaluation request and Foundry Lab work order without local execution receipts', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-takeover-'));
   try {
     const targetDir = path.join(outputRoot, 'target-agent');
@@ -74,22 +74,13 @@ test('takeover emits suite seed and Foundry Lab work order without local executi
       'mechanism-candidate:opl-meta-agent/takeover-fixture-agent/testing-takeover-loop',
     ]);
 
-    const suiteSeed = readJson(path.join(takeoverRoot, 'agent-lab-takeover-suite-seed.json'));
-    assert.equal(suiteSeed.surface_kind, 'opl_meta_agent_agent_lab_suite_seed');
-    assert.equal(suiteSeed.seed_status, 'declarative_seed_candidate_waiting_for_foundry_lab_consumer');
-    assert.equal(suiteSeed.target_agent_ref, 'domain-agent:takeover-fixture-agent');
-    assert.equal(
-      suiteSeed.target_agent_descriptor_ref,
-      path.join(targetDir, 'contracts/domain_descriptor.json'),
-    );
-    assert.deepEqual(suiteSeed.evaluation_target_agent, {
-      domain_id: 'takeover-fixture-agent',
-      target_agent_ref: 'domain-agent:takeover-fixture-agent',
-      descriptor_ref: path.join(targetDir, 'contracts/domain_descriptor.json'),
-    });
-    assert.equal(suiteSeed.tasks[0].scorecard_spec.passed, undefined);
-    assert.equal(suiteSeed.tasks[0].promotion_gate_request.gate_status, undefined);
-    assert.equal(suiteSeed.tasks[0].recovery_probe_specs[0].observed_status, undefined);
+    const evaluationRequest = readJson(path.join(takeoverRoot, 'foundry-evaluation-request.json'));
+    assert.equal(evaluationRequest.surface_kind, 'opl_meta_agent_foundry_evaluation_request');
+    assert.equal(evaluationRequest.suite_kind, 'agent_lab_external_suite');
+    assert.equal(evaluationRequest.task_intents[0].domain_id, 'opl-meta-agent');
+    assert.equal(Object.hasOwn(evaluationRequest, 'target_agent_ref'), false);
+    assert.equal(Object.hasOwn(evaluationRequest.task_intents[0], 'environment'), false);
+    assert.equal(Object.hasOwn(evaluationRequest.task_intents[0], 'recovery_probe_specs'), false);
 
     const workOrder = readJson(path.join(takeoverRoot, 'foundry-lab-work-order.json'));
     assert.equal(workOrder.work_order_kind, 'target_agent_takeover_evaluation');
@@ -97,10 +88,75 @@ test('takeover emits suite seed and Foundry Lab work order without local executi
     assert.equal(workOrder.consumer_dependency.status, 'available');
     assert.equal(workOrder.target_agent.target_agent_ref, 'domain-agent:takeover-fixture-agent');
     assert.equal(workOrder.target_agent.descriptor_ref, path.join(targetDir, 'contracts/domain_descriptor.json'));
+    assert.equal(workOrder.evaluation_request.ref, 'foundry-evaluation-request.json');
     assert.equal(workOrder.execution_owner, 'one-person-lab/OPL Foundry Lab');
     assert.equal(workOrder.authority_boundary.oma_can_write_owner_receipt_body, false);
+    assert.equal(fs.existsSync(path.join(takeoverRoot, 'agent-lab-takeover-suite-seed.json')), false);
     assert.equal(fs.existsSync(path.join(takeoverRoot, 'takeover-receipt.json')), false);
     assert.equal(fs.existsSync(path.join(takeoverRoot, 'new-agent-delivery-gate.json')), false);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
+test('takeover hands the same thin request to the linked OPL Foundry Lab compiler', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-takeover-opl-e2e-'));
+  try {
+    const targetDir = path.join(outputRoot, 'target-agent');
+    const takeoverRoot = path.join(outputRoot, 'takeover');
+    const foundryOutputDir = path.join(outputRoot, 'foundry-output');
+    const reviewerPath = path.join(outputRoot, 'reviewer.json');
+    const oplBin = path.join(repoRoot, 'node_modules', 'opl-framework', 'bin', 'opl');
+    writeJson(path.join(targetDir, 'contracts/domain_descriptor.json'), {
+      domain_id: 'takeover-fixture-agent',
+      domain_label: 'Takeover Fixture Agent',
+      delivery_domain: 'takeover_fixture',
+      target_brief: 'Verify Foundry Lab consumes the OMA request without a suite seed.',
+    });
+    writeReviewerEvaluation(reviewerPath);
+
+    const producer = spawnSync(process.execPath, [
+      path.join(repoRoot, 'scripts/takeover-agent.ts'),
+      '--agent-dir', targetDir,
+      '--output-dir', takeoverRoot,
+      '--ai-reviewer-evaluation', reviewerPath,
+    ], { cwd: repoRoot, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
+    assert.equal(producer.status, 0, producer.stderr || producer.stdout);
+
+    const requestPath = path.join(takeoverRoot, 'foundry-evaluation-request.json');
+    const workOrderPath = path.join(takeoverRoot, 'foundry-lab-work-order.json');
+    const request = readJson(requestPath);
+    const workOrder = readJson(workOrderPath);
+    assert.equal(fs.existsSync(path.join(takeoverRoot, 'agent-lab-takeover-suite-seed.json')), false);
+    assert.equal(Object.hasOwn(request, 'tasks'), false);
+    assert.equal(Object.hasOwn(workOrder, 'suite_seed'), false);
+
+    const consumer = spawnSync(oplBin, [
+      'agent-lab',
+      'evaluation-work-order',
+      'execute',
+      '--work-order', workOrderPath,
+      '--output', foundryOutputDir,
+      '--json',
+    ], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      maxBuffer: 16 * 1024 * 1024,
+      env: {
+        ...process.env,
+        OPL_STATE_DIR: path.join(outputRoot, 'opl-state'),
+      },
+    });
+    assert.equal(consumer.status, 0, consumer.stderr || consumer.stdout);
+
+    const execution = parseJsonText(consumer.stdout).agent_lab_evaluation_work_order_execution;
+    const suitePlan = readJson(execution.artifacts.evaluation_suite_plan_path);
+    assert.equal(execution.status, 'blocked_missing_evaluation_observations');
+    assert.equal(execution.suite_result, null);
+    assert.equal(Object.hasOwn(execution, 'suite_seed_path'), false);
+    assert.equal(suitePlan.surface_kind, 'opl_foundry_lab_evaluation_suite_plan');
+    assert.equal(suitePlan.producer, 'one-person-lab/OPL Foundry Lab');
+    assert.equal(suitePlan.tasks[0].task_id, request.task_intents[0].task_id);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }

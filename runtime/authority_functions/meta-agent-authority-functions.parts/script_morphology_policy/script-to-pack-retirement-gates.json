@@ -16,7 +16,7 @@
     ],
     "current_role": "target_agent_suite_result_judgment_candidate_and_declarative_work_order_materializer",
     "retention_state": "retained_current_authority_function",
-    "retention_reason": "current OMA refs-only group emits suite seeds, Foundry Lab work orders, target capability candidates, developer work orders, and expected blocker refs, or consumes an explicit Foundry Lab suite-result ref for agent-building judgment. It does not execute Agent Lab, write suite results, owner receipt or typed blocker bodies, learning/promotion/mechanism/scaleout ledgers, delivery gates, target worktree lifecycle, target truth, or quality verdicts",
+    "retention_reason": "current OMA refs-only group emits thin Foundry evaluation requests, Foundry Lab work orders, target capability candidates, developer work orders, and expected blocker refs, or consumes an explicit target-owned Foundry Lab suite-result ref for agent-building judgment. It does not compile or execute Agent Lab suites, write suite results, owner receipt or typed blocker bodies, learning/promotion/mechanism/scaleout ledgers, delivery gates, target worktree lifecycle, target truth, or quality verdicts",
     "retention_evidence_refs": [
       "contracts/developer_work_order_policy.json",
       "contracts/developer_work_order_policy.json#/target_improvement_default_change_ref_policy",
@@ -74,7 +74,7 @@
     ],
     "current_role": "typed_stage_closeout_validator_action_stage_route_readback_and_candidate_pack_materializer",
     "retention_state": "retained_current_authority_function",
-    "retention_reason": "current OMA thin authority surface for stage-decomposition closeout validation, candidate domain-pack materialization, suite-seed emission, and declarative Foundry Lab work-order handoff without owning Agent Lab execution/results/ledgers, pack compiler, generated interface, target truth, runtime state, promotion, target worktree lifecycle, owner receipt bodies, or typed blocker bodies",
+    "retention_reason": "current OMA thin authority surface for stage-decomposition closeout validation, candidate domain-pack materialization, thin evaluation-request emission, and declarative Foundry Lab work-order handoff without owning Agent Lab suite-plan compilation/execution/results/ledgers, pack compiler, generated interface, target truth, runtime state, promotion, target worktree lifecycle, owner receipt bodies, or typed blocker bodies",
     "retention_evidence_refs": [
       "package.json#scripts.build-agent-baseline",
       "contracts/stage_native_artifact_vocabulary.json",

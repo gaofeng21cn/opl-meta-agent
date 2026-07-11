@@ -7,7 +7,7 @@ description: Use when Codex should operate OPL Meta Agent to design, baseline, t
 
 ## 用途
 
-使用 OPL Meta Agent 创建、接管测试、修复或持续改进 OPL-compatible Foundry Agent。OMA 读取用户自然语言、目标领域材料、用户提供的论文/资料/外部参考设计、已有 agent repo、Agent Lab evidence 和 reviewer evidence，产出 target-agent brief、stage pack、quality gates、AgentBuildReceipt、declarative Agent Lab suite seed、OPL Foundry Lab evaluation work order、developer patch work order、mechanism proposal、target capability candidate 或 typed blocker ref/shape。
+使用 OPL Meta Agent 创建、接管测试、修复或持续改进 OPL-compatible Foundry Agent。OMA 读取用户自然语言、目标领域材料、用户提供的论文/资料/外部参考设计、已有 agent repo、Agent Lab evidence 和 reviewer evidence，产出 target-agent brief、stage pack、quality gates、AgentBuildReceipt、thin Foundry evaluation request、OPL Foundry Lab evaluation work order、developer patch work order、mechanism proposal、target capability candidate 或 typed blocker ref/shape。
 
 OMA 是 agent-building domain owner，不是 OPL Framework、Agent Lab、App registry、workbench、queue、attempt ledger、generic runtime 或 target domain owner。
 
@@ -29,13 +29,13 @@ OMA 是 agent-building domain owner，不是 OPL Framework、Agent Lab、App reg
 
 OMA 输出 target-agent semantics、profile selection mode、selected OPL profile receipt、source-derived design receipt 或 research-driven design receipt、ReferenceDesignPacket 或 ResearchSynthesisPacket、TransferMap、AgentPackPlan、DesignAdmissionReceipt、StageDecompositionSubpacketSet、AgentBuildReceipt / build_receipt，以及 refs-only handoff；OPL Framework / Agent Lab 执行 scaffold、generated interface、profile conformance、suite run、promotion gate、work-order execute / absorb / cleanup 和 App / registry projection。
 
-`build-agent-baseline`、`takeover:test` 和 `agent:evidence` 的 producer 终点是 target-bound declarative suite seed 与 canonical Foundry Lab evaluation work order；它们不本地执行 suite，不写 Agent Lab result、Foundry execution receipt、target owner receipt、learning ledger 或 promotion result。work order 必须使用完整 `domain_id + target_agent_ref + descriptor_ref`，绑定 suite/task 与 canonical provenance refs，并通过 `opl agent-lab evaluation-work-order execute --work-order <work-order.json> --output <dir>` 交给 OPL。只有 OPL 返回的 target-bound result / execution receipt 才能作为 `improve:external-suite --suite-result` 的输入；缺失时保持 work-order pending 或 external typed blocker，不得由 OMA 自填结果或 receipt。
+`build-agent-baseline`、`takeover:test` 和 `agent:evidence` 的 producer 终点是 thin Foundry evaluation request 与 canonical Foundry Lab evaluation work order；request 只声明 domain-owned task intent 与 refs，work order 才绑定完整 `domain_id + target_agent_ref + descriptor_ref`、suite/task identity 与 canonical provenance。它们不本地编译或执行 suite，不写 Agent Lab result、Foundry execution receipt、target owner receipt、learning ledger 或 promotion result。OPL 通过 `opl agent-lab evaluation-work-order execute --work-order <work-order.json> --output <dir>` 编译唯一 suite plan 并执行；只有 OPL 返回的 target-bound result / execution receipt 才能作为 `improve:external-suite --suite-result` 的输入；缺失时保持 work-order pending 或 external typed blocker，不得由 OMA 自填结果或 receipt。
 
 Target agent handoff 必须保留：
 
 - target agent descriptor、profile selection mode、selected OPL profile refs、source-derived design receipt 或 research-driven design receipt、ReferenceDesignPacket 或 ResearchSynthesisPacket、TransferMap、AgentPackPlan、DesignAdmissionReceipt、StageDecompositionSubpacketSet、AgentBuildReceipt / build_receipt、profile requirements、stage control plane、action catalog、quality gates 和 capability map refs；
 - reference design source refs、pattern notes、pattern packet refs 和 external-learning provenance；
-- declarative suite seed / Foundry evaluation work-order refs，以及由 OPL 外部返回的 baseline / takeover / external-suite result 与 execution-receipt refs；
+- thin evaluation request / Foundry evaluation work-order refs，以及由 OPL 外部返回的 suite plan、baseline / takeover / external-suite result 与 execution-receipt refs；
 - independent AI reviewer critique、suggestions、direct evidence refs 和 provenance；
 - no-forbidden-write proof、owner route、source morphology refs 和 generated surface consumption refs；
 - target owner receipt、typed blocker、human gate、route-back 或 owner-gated continuation shape。
@@ -56,7 +56,7 @@ Producer action 自身的 `candidate_package_materialized_ready_for_opl_foundry_
 
 ## Authority Boundary
 
-- OMA 可以写 agent-building semantics、declarative pack、suite seed、Foundry evaluation work-order candidate、developer work-order policy、target capability candidate、mechanism proposal 和 OMA-owned blocker shape/ref；不得代写 target-domain 或 OPL runtime blocker body。
+- OMA 可以写 agent-building semantics、declarative pack、thin evaluation request、Foundry evaluation work-order candidate、developer work-order policy、target capability candidate、mechanism proposal 和 OMA-owned blocker shape/ref；不得代写 target-domain 或 OPL runtime blocker body。
 - OMA 不写 target domain truth、memory body、artifact body、quality/export verdict、owner receipt body、runtime queue、provider attempt、App state 或 default promotion state。
 - OPL owns standard runtime, generated / hosted surfaces, Agent Lab execution, package validation, registry / App projection and work-order lifecycle.
 - Target domain owner owns final truth, artifact body, memory body, quality/export verdict, owner receipt, human gate and default promotion authority.

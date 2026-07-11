@@ -50,6 +50,6 @@
 - 禁止在 AI reviewer evaluation 缺失、critique/suggestions 为空或 source refs 只有 suite/scaffold refs 时签发 delivery receipt。
 - 禁止在 artifact morphology evidence 缺失、目标体量被降级、正文入源码字符串、缺分片或外部资产无项目内 custody 时签发 delivery receipt。
 - 禁止把 baseline-ready 写成 production default。
-- 禁止把 AgentBuildReceipt、suite seed 或 Foundry work-order ready 当成 OPL evaluation result 或 delivery evidence。
+- 禁止把 AgentBuildReceipt、evaluation request、OPL-generated suite plan 或 Foundry work-order ready 当成 OPL evaluation result 或 delivery evidence。
 - 禁止把本仓的交付 receipt 写成 target domain quality verdict。
 - 禁止把 runtime artifact 或本机路径固化进长期 contracts。

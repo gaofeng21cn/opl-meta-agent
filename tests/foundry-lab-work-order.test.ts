@@ -14,20 +14,21 @@ const targetAgent = {
   descriptor_ref: '/tmp/colorectal-surgery-risk-agent/contracts/domain_descriptor.json',
 };
 
-const suiteSeed = {
-  surface_kind: 'opl_meta_agent_agent_lab_suite_seed',
-  version: 'opl-meta-agent.agent-lab-suite-seed.v1',
+const evaluationRequest = {
+  surface_kind: 'opl_meta_agent_foundry_evaluation_request',
+  version: 'opl-meta-agent.foundry-evaluation-request.v1',
+  request_id: 'oma-evaluation-request:colorectal-surgery-risk-agent/baseline',
   suite_id: 'opl-meta-agent-baseline-suite:colorectal-surgery-risk-agent',
   suite_kind: 'agent_lab_external_suite',
-  tasks: [{ task_id: 'agent-lab-task:colorectal-surgery-risk-agent/baseline' }],
+  task_intents: [{ task_id: 'agent-lab-task:colorectal-surgery-risk-agent/baseline' }],
 };
 
 function build(overrides: Record<string, unknown> = {}) {
   return buildFoundryLabWorkOrder({
     workOrderKind: 'agent_baseline_evaluation',
     targetAgent,
-    suiteSeed,
-    suiteSeedRef: 'agent-lab-suite-seed.json',
+    evaluationRequest,
+    evaluationRequestRef: 'oma-evaluation-request.json',
     sourceRefs: ['source:b', 'source:a', 'source:a'],
     reviewerRefs: ['review:b', 'review:a'],
     candidateRefs: ['candidate:b', 'candidate:a'],
@@ -52,6 +53,13 @@ test('Foundry evaluation work order matches the canonical OPL consumer ABI', () 
     result_ledger_owner: FOUNDRY_LAB_EVALUATION_OWNER,
     target_owner_closeout_owner: 'target-domain',
   });
+  assert.deepEqual(workOrder.evaluation_request, {
+    ref: 'oma-evaluation-request.json',
+    request_id: evaluationRequest.request_id,
+    suite_id: evaluationRequest.suite_id,
+    suite_kind: evaluationRequest.suite_kind,
+  });
+  assert.equal(Object.hasOwn(workOrder, 'suite_seed'), false);
   assert.equal(Object.hasOwn(workOrder, 'suite_result'), false);
   assert.equal(Object.hasOwn(workOrder, 'foundry_lab_execution_receipt'), false);
 });
@@ -76,9 +84,9 @@ test('Foundry work-order identity binds target identity and canonical provenance
   });
   const changedProvenance = build({ candidateRefs: ['candidate:a', 'candidate:c'] });
   const changedTask = build({
-    suiteSeed: {
-      ...suiteSeed,
-      tasks: [{ task_id: 'agent-lab-task:colorectal-surgery-risk-agent/transportability' }],
+    evaluationRequest: {
+      ...evaluationRequest,
+      task_intents: [{ task_id: 'agent-lab-task:colorectal-surgery-risk-agent/transportability' }],
     },
   });
   assert.notEqual(changedTargetRef.work_order_id, canonical.work_order_id);

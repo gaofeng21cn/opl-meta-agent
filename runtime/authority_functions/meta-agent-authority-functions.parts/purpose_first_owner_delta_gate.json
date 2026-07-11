@@ -1,10 +1,10 @@
 {
   "gate_id": "purpose-first-owner-delta-gate",
   "status": "active",
-  "default_output_shape": "target_agent_semantics_or_suite_seed_or_declarative_work_order_or_candidate_ref",
+  "default_output_shape": "target_agent_semantics_or_evaluation_request_or_declarative_work_order_or_candidate_ref",
   "allowed_output_refs": [
     "target_agent_semantic_delta_ref",
-    "agent_lab_suite_seed_ref",
+    "foundry_evaluation_request_ref",
     "foundry_lab_work_order_candidate_ref",
     "developer_patch_work_order_ref",
     "target_capability_improvement_candidate_ref",
@@ -46,7 +46,7 @@
     "oma_is_agent_lab_or_opl_framework_replacement": false,
     "allowed_oma_products": [
       "candidate_agent_package_ref",
-      "agent_lab_suite_seed_ref",
+      "foundry_evaluation_request_ref",
       "foundry_lab_work_order_candidate_ref",
       "developer_patch_work_order_ref",
       "target_capability_improvement_candidate_ref",

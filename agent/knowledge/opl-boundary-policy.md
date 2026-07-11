@@ -15,8 +15,8 @@ External learning notes, suite findings, scorecards, optimizer candidates, and p
 ## 本仓可以做
 
 - 生成目标 agent 的 domain pack。
-- 组织 declarative Agent Lab suite seed、scorecard spec、recovery probe spec 和 promotion-gate request。
-- 生成 target-bound Foundry evaluation work order、developer patch work order 和 mechanism candidate。
+- 组织 thin Foundry evaluation request：仅 domain-owned task intent、quality/improvement/promotion refs 与 exact false-authority boundary。
+- 生成 target-bound Foundry evaluation work order、developer patch work order 和 mechanism candidate；OPL Foundry Lab 负责从 request 编译 suite plan、环境、probe、scorecard 与 completion policy。
 - 消费 OPL / target owner 返回的 suite result、execution receipt、verification 与 closeout refs。
 
 ## 本仓不能做

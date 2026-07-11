@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://one-person-lab.local/contracts/opl-meta-agent/actions/takeover-target-agent-test.output.schema.json",
   "title": "Take Over Target Agent Test Output",
-  "description": "A declarative takeover suite seed and canonical OPL Foundry Lab evaluation work order. No suite result or owner receipt is created by OMA.",
+  "description": "A thin declarative takeover evaluation request and canonical OPL Foundry Lab work order. OPL compiles the suite plan; OMA creates no suite result or owner receipt.",
   "type": "object",
   "required": [
     "surface_kind",
@@ -63,11 +63,11 @@
     "artifacts": {
       "type": "object",
       "required": [
-        "agent_lab_suite_seed_path",
+        "foundry_evaluation_request_path",
         "foundry_lab_work_order_path"
       ],
       "properties": {
-        "agent_lab_suite_seed_path": {
+        "foundry_evaluation_request_path": {
           "$ref": "#/$defs/nonEmptyString"
         },
         "foundry_lab_work_order_path": {
@@ -125,24 +125,69 @@
     "foundryHandoff": {
       "type": "object",
       "required": [
-        "suite_seed",
+        "evaluation_request",
         "work_order"
       ],
       "properties": {
-        "suite_seed": {
+        "evaluation_request": {
           "type": "object",
           "required": [
             "surface_kind",
-            "target_agent_ref",
-            "target_agent_descriptor_ref",
-            "tasks"
+            "version",
+            "request_id",
+            "suite_id",
+            "suite_kind",
+            "task_intents",
+            "authority_boundary"
           ],
           "properties": {
             "surface_kind": {
-              "const": "opl_meta_agent_agent_lab_suite_seed"
+              "const": "opl_meta_agent_foundry_evaluation_request"
+            },
+            "version": {
+              "const": "opl-meta-agent.foundry-evaluation-request.v1"
+            },
+            "request_id": { "$ref": "#/$defs/nonEmptyString" },
+            "suite_id": { "$ref": "#/$defs/nonEmptyString" },
+            "suite_kind": { "const": "agent_lab_external_suite" },
+            "task_intents": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["task_id", "domain_id", "task_family"],
+                "properties": {
+                  "task_id": { "$ref": "#/$defs/nonEmptyString" },
+                  "domain_id": { "const": "opl-meta-agent" },
+                  "task_family": { "$ref": "#/$defs/nonEmptyString" }
+                },
+                "additionalProperties": true
+              }
+            },
+            "authority_boundary": {
+              "type": "object",
+              "required": [
+                "refs_only",
+                "oma_can_execute_agent_lab_suite",
+                "oma_can_write_agent_lab_result",
+                "oma_can_write_owner_receipt_body",
+                "oma_can_write_promotion_gate",
+                "oma_can_claim_target_domain_ready",
+                "oma_can_claim_target_production_ready"
+              ],
+              "properties": {
+                "refs_only": { "const": true },
+                "oma_can_execute_agent_lab_suite": { "const": false },
+                "oma_can_write_agent_lab_result": { "const": false },
+                "oma_can_write_owner_receipt_body": { "const": false },
+                "oma_can_write_promotion_gate": { "const": false },
+                "oma_can_claim_target_domain_ready": { "const": false },
+                "oma_can_claim_target_production_ready": { "const": false }
+              },
+              "additionalProperties": false
             }
           },
-          "additionalProperties": true
+          "additionalProperties": false
         },
         "work_order": {
           "type": "object",
@@ -150,6 +195,7 @@
             "surface_kind",
             "status",
             "target_agent",
+            "evaluation_request",
             "consumer_dependency",
             "execution_aperture"
           ],
@@ -159,6 +205,17 @@
             },
             "status": {
               "const": "ready_for_opl_foundry_lab_evaluation"
+            },
+            "evaluation_request": {
+              "type": "object",
+              "required": ["ref", "request_id", "suite_id", "suite_kind"],
+              "properties": {
+                "ref": { "$ref": "#/$defs/nonEmptyString" },
+                "request_id": { "$ref": "#/$defs/nonEmptyString" },
+                "suite_id": { "$ref": "#/$defs/nonEmptyString" },
+                "suite_kind": { "const": "agent_lab_external_suite" }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": true

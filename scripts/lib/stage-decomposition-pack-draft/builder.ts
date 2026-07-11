@@ -96,7 +96,7 @@ function buildReferenceDesignBoundary(targetAgent: TargetAgent): JsonObject {
     may_inform_stage_graph: true,
     may_inform_artifact_morphology: true,
     may_inform_quality_gate_design: true,
-    may_inform_agent_lab_suite_seed: true,
+    may_inform_foundry_evaluation_request: true,
     can_copy_external_runtime: false,
     can_copy_external_domain_truth: false,
     can_replace_target_owner_judgment: false,

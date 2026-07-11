@@ -27,12 +27,15 @@ test('OMA emits a canonical Foundry Lab work-order candidate without execution o
       target_agent_ref: 'domain-agent:target-agent',
       descriptor_ref: '/tmp/target-agent/contracts/domain_descriptor.json',
     },
-    suiteSeed: {
-      suite_id: 'agent-lab-suite-seed:target-agent/takeover',
+    evaluationRequest: {
+      surface_kind: 'opl_meta_agent_foundry_evaluation_request',
+      version: 'opl-meta-agent.foundry-evaluation-request.v1',
+      request_id: 'oma-evaluation-request:target-agent/takeover',
+      suite_id: 'opl-meta-agent-takeover-suite:target-agent',
       suite_kind: 'agent_lab_external_suite',
-      tasks: [{ task_id: 'agent-lab-task:target-agent/takeover' }],
+      task_intents: [{ task_id: 'agent-lab-task:target-agent/takeover' }],
     },
-    suiteSeedRef: '/tmp/oma/agent-lab-suite-seed.json',
+    evaluationRequestRef: '/tmp/oma/foundry-evaluation-request.json',
     sourceRefs: ['contracts/agent_lab_handoff.json'],
     reviewerRefs: ['review:target-agent/takeover'],
     candidateRefs: ['improvement-candidate:target-agent/takeover'],
@@ -47,7 +50,9 @@ test('OMA emits a canonical Foundry Lab work-order candidate without execution o
     'opl agent-lab evaluation-work-order execute --work-order <work-order.json> --output <dir>',
   );
   assert.equal(workOrder.execution_owner, 'one-person-lab/OPL Foundry Lab');
-  assert.equal(workOrder.suite_seed.ref, '/tmp/oma/agent-lab-suite-seed.json');
+  assert.equal(workOrder.evaluation_request.ref, '/tmp/oma/foundry-evaluation-request.json');
+  assert.equal(workOrder.evaluation_request.request_id, 'oma-evaluation-request:target-agent/takeover');
+  assert.equal(Object.hasOwn(workOrder, 'suite_seed'), false);
   assert.deepEqual(workOrder.candidate_refs, ['improvement-candidate:target-agent/takeover']);
   assert.deepEqual(workOrder.expected_return_shapes, [
     'agent_lab_suite_result_ref',

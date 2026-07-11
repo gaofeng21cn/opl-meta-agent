@@ -45,7 +45,7 @@ import {
   writeJson,
 } from './lib/meta-agent-loop-io.ts';
 import {
-  buildAgentLabSuiteSeed as buildExternalSuiteSeed,
+  buildFoundryEvaluationRequest,
 } from './lib/meta-agent-loop-receipts.ts';
 import {
   buildFoundryLabWorkOrder,
@@ -515,33 +515,29 @@ export function resolveTargetAgentProfileSelection(
   };
 }
 
-function buildBaselineAgentLabSuiteSeed({
+function buildBaselineFoundryEvaluationRequest({
   targetAgent,
-  targetAgentDir,
   aiReviewerEvaluation,
   aiReviewerEvaluationRef,
 }: {
   targetAgent: TargetAgent;
-  targetAgentDir: string;
   aiReviewerEvaluation: AiReviewerEvaluation;
   aiReviewerEvaluationRef: string;
 }): JsonObject {
-  return buildExternalSuiteSeed({
+  return buildFoundryEvaluationRequest({
+    requestId: `oma-foundry-evaluation-request:${targetAgent.domain_id}/baseline`,
     suiteId: `opl-meta-agent-baseline-suite:${targetAgent.domain_id}`,
+    suiteKind: 'agent_lab_external_suite',
     taskId: `agent-lab-task:opl-meta-agent/${targetAgent.domain_id}-baseline`,
+    domainId: 'opl-meta-agent',
     taskFamily: 'agent_building_baseline',
-    targetAgent: {
-      ...targetAgent,
-      descriptor_ref: path.join(targetAgentDir, 'contracts', 'domain_descriptor.json'),
-    },
-    targetAgentDir,
     instructionsRef: `instructions:opl-meta-agent/${targetAgent.domain_id}/baseline`,
     agentEntryRef: `domain-agent-entry:${targetAgent.domain_id}`,
     stageRefs: [`stage:${targetAgent.domain_id}/intake`, `stage:${targetAgent.domain_id}/draft`],
     oracleRefs: ['oracle:opl-meta-agent/baseline-contract-valid'],
     scorerRefs: ['scorer:opl-meta-agent/baseline-acceptance'],
     trajectoryRef: `trajectory:opl-meta-agent/${targetAgent.domain_id}-baseline`,
-    runRef: `run:opl-meta-agent/${targetAgent.domain_id}-baseline`,
+    requestedRunRef: `run:opl-meta-agent/${targetAgent.domain_id}-baseline`,
     artifactRefs: [`artifact-ref:${targetAgent.domain_id}/package`],
     receiptRefs: [`owner-receipt:opl-meta-agent/${targetAgent.domain_id}/baseline-delivery`],
     scorecardRef: 'quality-scorecard:opl-meta-agent/baseline-acceptance',
@@ -549,16 +545,20 @@ function buildBaselineAgentLabSuiteSeed({
     evidenceRefs: [
       `evidence-ref:${targetAgent.domain_id}/scaffold-validation`,
       ...referenceDesignEvidenceRefs(targetAgent),
+      aiReviewerEvaluationRef,
+      ...aiReviewerEvaluation.source_refs,
+      ...aiReviewerEvaluation.direct_evidence_refs,
     ],
-    reviewRefs: ['review-ref:opl-meta-agent/baseline-review'],
+    reviewRefs: [
+      'review-ref:opl-meta-agent/baseline-review',
+      aiReviewerEvaluationRef,
+    ],
     qualityGateRefs: ['quality-gate:opl-meta-agent/baseline-owner'],
     improvementCandidateRef: `improvement-candidate:opl-meta-agent/${targetAgent.domain_id}/rubric-gap-tightening`,
     improvementCandidateKind: 'rubric_gap',
     improvementTargetRef: 'quality-gate:opl-meta-agent/baseline-owner',
     promotionGateRef: `promotion-gate:opl-meta-agent/${targetAgent.domain_id}`,
     regressionSuiteRefs: ['regression-suite:opl-meta-agent/self-bootstrap'],
-    aiReviewerEvaluation,
-    aiReviewerEvaluationRef,
   });
 }
 
@@ -588,7 +588,7 @@ export function runBuildAgentBaseline({
 
   const targetAgentLabel = targetAgent.domain_label ?? targetAgent.domain_id;
   const targetAgentDir = path.join(outputDir, targetAgent.domain_id);
-  const suiteSeedPath = path.join(outputDir, 'agent-lab-suite-seed.json');
+  const evaluationRequestPath = path.join(outputDir, 'foundry-evaluation-request.json');
   const foundryLabWorkOrderPath = path.join(outputDir, 'foundry-lab-work-order.json');
 
   try {
@@ -750,13 +750,12 @@ export function runBuildAgentBaseline({
   ]);
   const targetProfileConformance = assertTargetProfileConformance(oplBin, targetAgentDir, targetAgent);
 
-  const suiteSeed = buildBaselineAgentLabSuiteSeed({
+  const evaluationRequest = buildBaselineFoundryEvaluationRequest({
     targetAgent,
-    targetAgentDir,
     aiReviewerEvaluation,
     aiReviewerEvaluationRef: aiReviewerEvaluationPath,
   });
-  writeJson(suiteSeedPath, suiteSeed);
+  writeJson(evaluationRequestPath, evaluationRequest);
 
   const foundryLabWorkOrder = buildFoundryLabWorkOrder({
     workOrderKind: 'agent_baseline_evaluation',
@@ -766,8 +765,8 @@ export function runBuildAgentBaseline({
       target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
       descriptor_ref: path.join(targetAgentDir, 'contracts', 'domain_descriptor.json'),
     },
-    suiteSeed,
-    suiteSeedRef: path.basename(suiteSeedPath),
+    evaluationRequest,
+    evaluationRequestRef: path.basename(evaluationRequestPath),
     sourceRefs: [
       descriptorPath,
       targetAgentPackageManifestPath,
@@ -811,7 +810,7 @@ export function runBuildAgentBaseline({
     artifacts: {
       stage_decomposition_stage_run_readback_path: stageDecompositionCloseout.readback_path,
       agent_skeleton_build_stage_run_readback_path: agentSkeletonBuildCloseout.readback_path,
-      agent_lab_suite_seed_path: suiteSeedPath,
+      foundry_evaluation_request_path: evaluationRequestPath,
       foundry_lab_work_order_path: foundryLabWorkOrderPath,
       opl_agent_package_manifest_path: targetAgentPackageManifestPath,
       target_agent_capability_map_path: targetAgentCapabilityMapPath,
@@ -845,7 +844,7 @@ export function runBuildAgentBaseline({
       direct_evidence_refs: aiReviewerEvaluation.direct_evidence_refs,
     },
     foundry_lab_handoff: {
-      suite_seed: suiteSeed,
+      evaluation_request: evaluationRequest,
       work_order: foundryLabWorkOrder,
     },
     authority_boundary: foundryLabWorkOrder.authority_boundary,

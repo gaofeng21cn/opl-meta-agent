@@ -26,7 +26,7 @@ OMA 不是 OPL Framework 内置模块，也不是第二 Agent Lab。它是一个
 
 | 上收域 | OPL owner | OMA 侧保留 |
 | --- | --- | --- |
-| Agent Lab runtime / suite execution / promotion gate | Foundry Lab / Runway | suite seed refs、review policy refs、candidate / mechanism proposal refs |
+| Agent Lab runtime / suite-plan compile / execution / promotion gate | Foundry Lab / Runway | thin evaluation request refs、review policy refs、candidate / mechanism proposal refs |
 | scaffold generator / generated interfaces / registry | Pack / Connect / Atlas | Declarative Agent-Building Pack、target-agent descriptor refs、registration input refs |
 | work-order execute / absorb / cleanup | Runway / Vault / Console | developer work-order materialization、allowed editable surfaces、no-forbidden-write proof requirements |
 | target owner closeout hook invocation | Runway / target owner | owner route refs、expected target owner receipt / typed blocker return shape |
@@ -41,7 +41,7 @@ OPL 只能持有 refs、execution primitive、generated interface、promotion sh
 OMA 必须保留：
 
 - 用户意图理解、target brief、agent-building semantics 和 stage decomposition；
-- candidate agent package materialization policy、Agent Lab suite seed policy、baseline delivery receipt policy；
+- candidate agent package materialization policy、thin Foundry evaluation request policy、baseline delivery receipt policy；
 - developer patch work order materialization，包括 AHE failure/root-cause/fix/impact refs、allowed editable surfaces、required verification refs、rollback/canary/version refs、owner route refs 和 no-forbidden-write proof；
 - target capability improvement candidate、mechanism patch proposal 和 online-learning candidate；
 - independent reviewer evidence requirements、direct-evidence verdict schema 和 provenance requirements；
@@ -67,7 +67,7 @@ OMA 后续落地按下面的 gate 收口：
 | Gate | 关闭条件 |
 | --- | --- |
 | Pack compile parity | OPL generated surfaces 能从 `agent/`、stage control、action catalog、work-order policy 和 OMA contracts 生成同一 descriptor / command / status shape。 |
-| Agent Lab delegation parity | OMA 只生成 suite seed、candidate、work-order 或 blocker；suite execution、promotion gate、worktree lifecycle、absorb/cleanup 和 closeout hook 由 OPL / target owner 执行并返回 refs。 |
+| Agent Lab delegation parity | OMA 只生成 thin evaluation request、candidate、work-order 或 blocker；suite-plan compilation、suite execution、promotion gate、worktree lifecycle、absorb/cleanup 和 closeout hook 由 OPL / target owner 执行并返回 refs。 |
 | No forbidden authority | OMA / OPL generated surface / Agent Lab / Vault / Console / Runway 不能写 target truth、artifact body、memory body、quality/export verdict、owner receipt body 或 default promotion authority。 |
 | Script-to-pack thinning | 保留脚本必须被 machine gate 分类为 authority implementation、smoke/proof helper、thin delegation 或 developer work-order materializer；稳定 policy 迁入 `agent/`、contracts 或 OPL primitive。 |
 | Production evidence | registry discovery receipt、App render / runtime drilldown receipt、repeat target cohorts、real source patch / rerun / owner receipt samples、independent reviewer direct evidence 和 no-active-legacy-caller scan 形成真实证据。 |

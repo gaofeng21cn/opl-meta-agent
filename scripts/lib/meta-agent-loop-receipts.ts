@@ -1,22 +1,19 @@
 import type { JsonObject } from './domain-pack.ts';
-import type { AiReviewerEvaluation } from './meta-agent-loop-ai-reviewer.ts';
-import type { TargetAgent } from './meta-agent-loop-io.ts';
-import { FOUNDRY_LAB_EVALUATION_OWNER } from './foundry-lab-work-order.ts';
-import { STAGE_COMPLETION_POLICY } from './stage-decomposition-pack-draft/shared.ts';
 
-type AgentLabSuiteSeedOptions = {
+type FoundryEvaluationRequestOptions = {
+  requestId: string;
   suiteId: string;
+  suiteKind: 'agent_lab_external_suite' | 'agent_production_evidence_suite';
   taskId: string;
+  domainId: string;
   taskFamily: string;
-  targetAgent: TargetAgent;
-  targetAgentDir: string;
   instructionsRef: string;
   agentEntryRef: string;
   stageRefs: string[];
   oracleRefs: string[];
   scorerRefs: string[];
   trajectoryRef: string;
-  runRef: string;
+  requestedRunRef: string;
   artifactRefs: string[];
   receiptRefs: string[];
   scorecardRef: string;
@@ -28,33 +25,35 @@ type AgentLabSuiteSeedOptions = {
   improvementCandidateKind: string;
   improvementTargetRef: string;
   promotionGateRef: string;
-  regressionSuiteRefs: string[];
-  aiReviewerEvaluation?: AiReviewerEvaluation;
-  aiReviewerEvaluationRef?: string;
+  promotionGateRequiredRefs?: string[];
+  regressionSuiteRefs?: string[];
+  productionEvidenceGateIds?: string[];
 };
 
-function buildAgentLabStageCompletionPolicy(targetAgent: TargetAgent, taskFamily: string): JsonObject {
-  return {
-    ...STAGE_COMPLETION_POLICY,
-    policy_ref: `stage-completion-policy:opl-meta-agent/${targetAgent.domain_id}/${taskFamily}`,
-    stage_id: taskFamily,
-    target_domain_id: targetAgent.domain_id,
-  };
-}
+const OMA_EVALUATION_REQUEST_AUTHORITY_BOUNDARY = {
+  refs_only: true,
+  oma_can_execute_agent_lab_suite: false,
+  oma_can_write_agent_lab_result: false,
+  oma_can_write_owner_receipt_body: false,
+  oma_can_write_promotion_gate: false,
+  oma_can_claim_target_domain_ready: false,
+  oma_can_claim_target_production_ready: false,
+} as const;
 
-export function buildAgentLabSuiteSeed({
+export function buildFoundryEvaluationRequest({
+  requestId,
   suiteId,
+  suiteKind,
   taskId,
+  domainId,
   taskFamily,
-  targetAgent,
-  targetAgentDir,
   instructionsRef,
   agentEntryRef,
   stageRefs,
   oracleRefs,
   scorerRefs,
   trajectoryRef,
-  runRef,
+  requestedRunRef,
   artifactRefs,
   receiptRefs,
   scorecardRef,
@@ -66,113 +65,55 @@ export function buildAgentLabSuiteSeed({
   improvementCandidateKind,
   improvementTargetRef,
   promotionGateRef,
-  regressionSuiteRefs,
-  aiReviewerEvaluation,
-  aiReviewerEvaluationRef,
-}: AgentLabSuiteSeedOptions): JsonObject {
-  const targetAgentRef = targetAgent.target_agent_ref?.trim()
-    || `domain-agent:${targetAgent.domain_id}`;
-  const targetAgentDescriptorRef = targetAgent.descriptor_ref?.trim();
-  if (!targetAgentDescriptorRef) {
-    throw new Error('Agent Lab suite seed requires target_agent_descriptor_ref.');
+  promotionGateRequiredRefs = [],
+  regressionSuiteRefs = [],
+  productionEvidenceGateIds = [],
+}: FoundryEvaluationRequestOptions): JsonObject {
+  if (suiteKind === 'agent_production_evidence_suite' && productionEvidenceGateIds.length === 0) {
+    throw new Error('Foundry evaluation requests for production evidence require production evidence gate ids.');
   }
-  const reviewerEvidenceRefs = aiReviewerEvaluation && aiReviewerEvaluationRef
-    ? [aiReviewerEvaluationRef, ...aiReviewerEvaluation.source_refs, ...aiReviewerEvaluation.direct_evidence_refs]
-    : [];
 
   return {
-    surface_kind: 'opl_meta_agent_agent_lab_suite_seed',
-    version: 'opl-meta-agent.agent-lab-suite-seed.v1',
+    surface_kind: 'opl_meta_agent_foundry_evaluation_request',
+    version: 'opl-meta-agent.foundry-evaluation-request.v1',
+    request_id: requestId,
     suite_id: suiteId,
-    suite_kind: 'agent_lab_external_suite',
-    seed_status: 'declarative_seed_candidate_waiting_for_foundry_lab_consumer',
-    execution_owner: FOUNDRY_LAB_EVALUATION_OWNER,
-    target_agent_ref: targetAgentRef,
-    target_agent_descriptor_ref: targetAgentDescriptorRef,
-    evaluation_target_agent: {
-      domain_id: targetAgent.domain_id,
-      target_agent_ref: targetAgentRef,
-      descriptor_ref: targetAgentDescriptorRef,
-    },
-    authority_boundary: {
-      refs_only: true,
-      oma_can_execute_suite: false,
-      oma_can_write_suite_result: false,
-      oma_can_write_owner_receipt_body: false,
-      oma_can_write_promotion_gate: false,
-      can_write_domain_truth: false,
-      can_write_memory_body: false,
-      can_authorize_quality_verdict: false,
-      can_promote_default_agent_without_gate: false,
-    },
-    tasks: [
-      {
-        task_id: taskId,
-        domain_id: 'opl-meta-agent',
-        task_family: taskFamily,
-        target_agent_ref: targetAgentRef,
-        target_agent_descriptor_ref: targetAgentDescriptorRef,
-        environment: {
-          environment_kind: 'fixture',
-          workspace_locator_ref: `workspace-locator:${targetAgentDir}`,
-          sandbox_policy: 'fixture_only_no_artifact_mutation',
-          network_policy: 'offline',
-        },
-        instructions_ref: instructionsRef,
-        agent_entry_ref: agentEntryRef,
-        stage_refs: stageRefs,
-        stage_completion_policy: buildAgentLabStageCompletionPolicy(targetAgent, taskFamily),
-        oracle_refs: oracleRefs,
-        scorer_refs: scorerRefs,
-        recovery_probe_specs: [
-          {
-            probe_ref: `recovery-probe:opl-meta-agent/${targetAgent.domain_id}/resume-after-interruption`,
-            probe_kind: 'resume_after_interruption',
-            expected_status: 'passed',
-            source_refs: [`receipt-ref:opl-meta-agent/${targetAgent.domain_id}/resume-fixture`],
-          },
-          {
-            probe_ref: `recovery-probe:opl-meta-agent/${targetAgent.domain_id}/retry-after-tool-failure`,
-            probe_kind: 'retry_after_tool_failure',
-            expected_status: 'passed',
-            source_refs: [`receipt-ref:opl-meta-agent/${targetAgent.domain_id}/retry-fixture`],
-          },
-        ],
-        trajectory_plan: {
-          trajectory_ref: trajectoryRef,
-          requested_run_ref: runRef,
-          agent_executor: 'codex_cli',
-          expected_stage_attempt_refs: [`stage-attempt:opl-meta-agent/${targetAgent.domain_id}/${taskFamily}`],
-          tool_affordance_refs: ['opl-action:agent-lab/evaluation-work-order'],
-          expected_artifact_refs: artifactRefs,
-          expected_receipt_refs: receiptRefs,
-          trace_refs: [`trace-ref:opl-meta-agent/${targetAgent.domain_id}/${taskFamily}`],
-        },
-        scorecard_spec: {
-          scorecard_ref: scorecardRef,
-          domain_owned: true,
-          opl_scorecard_role: 'scorecard_ref_projection_only',
-          metric_refs: metricRefs,
-          evidence_refs: [...evidenceRefs, ...reviewerEvidenceRefs],
-          review_refs: [...reviewRefs, ...(aiReviewerEvaluationRef ? [aiReviewerEvaluationRef] : [])],
-          quality_gate_refs: qualityGateRefs,
-        },
-        improvement_candidate_seed: {
-          candidate_ref: improvementCandidateRef,
-          candidate_kind: improvementCandidateKind,
-          target_ref: improvementTargetRef,
-          evidence_refs: [`failure-taxonomy:opl-meta-agent/${targetAgent.domain_id}/evaluation-pending`],
-          allowed_change_scope: 'branch_only',
-        },
-        promotion_gate_request: {
-          gate_ref: promotionGateRef,
-          evaluation_owner: FOUNDRY_LAB_EVALUATION_OWNER,
-          required_refs: [scorecardRef],
-          regression_suite_refs: regressionSuiteRefs,
-          no_forbidden_write_proof_refs: [`no-forbidden-write:opl-meta-agent/${targetAgent.domain_id}/${taskFamily}`],
-        },
+    suite_kind: suiteKind,
+    task_intents: [{
+      task_id: taskId,
+      domain_id: domainId,
+      task_family: taskFamily,
+      instructions_ref: instructionsRef,
+      agent_entry_ref: agentEntryRef,
+      stage_refs: stageRefs,
+      oracle_refs: oracleRefs,
+      scorer_refs: scorerRefs,
+      metric_refs: metricRefs,
+      evidence_refs: evidenceRefs,
+      review_refs: reviewRefs,
+      quality_gate_refs: qualityGateRefs,
+      trajectory_ref: trajectoryRef,
+      requested_run_ref: requestedRunRef,
+      artifact_refs: artifactRefs,
+      receipt_refs: receiptRefs,
+      scorecard_ref: scorecardRef,
+      improvement_candidate: {
+        candidate_ref: improvementCandidateRef,
+        candidate_kind: improvementCandidateKind,
+        target_ref: improvementTargetRef,
+        allowed_change_scope: 'branch_only',
       },
-    ],
-    ...(aiReviewerEvaluationRef ? { ai_reviewer_evaluation_ref: aiReviewerEvaluationRef } : {}),
+      promotion_gate_ref: promotionGateRef,
+      ...(promotionGateRequiredRefs.length > 0
+        ? { promotion_gate_required_refs: promotionGateRequiredRefs }
+        : {}),
+      ...(regressionSuiteRefs.length > 0
+        ? { regression_suite_refs: regressionSuiteRefs }
+        : {}),
+    }],
+    ...(suiteKind === 'agent_production_evidence_suite'
+      ? { production_evidence_gate_ids: productionEvidenceGateIds }
+      : {}),
+    authority_boundary: OMA_EVALUATION_REQUEST_AUTHORITY_BOUNDARY,
   };
 }

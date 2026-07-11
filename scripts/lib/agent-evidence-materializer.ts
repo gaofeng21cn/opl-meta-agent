@@ -26,9 +26,11 @@ import {
   buildExpectedTypedBlockerRef,
 } from './agent-evidence-typed-blocker.ts';
 import {
-  FOUNDRY_LAB_EVALUATION_OWNER,
   buildFoundryLabWorkOrder,
 } from './foundry-lab-work-order.ts';
+import {
+  buildFoundryEvaluationRequest,
+} from './meta-agent-loop-receipts.ts';
 import {
   buildStageNativeArtifactAttemptRefs,
 } from './stage-native-artifact-contract.ts';
@@ -47,9 +49,10 @@ import {
 
 export type { AgentContracts, TargetAgentIdentity } from './agent-evidence-contracts.ts';
 
-export function buildAgentLabSuiteSeed({
+export function buildAgentEvidenceEvaluationRequest({
   agentRepo,
   contracts,
+  aiReviewerEvaluation,
   aiReviewerEvaluationPath,
 }: {
   agentRepo: string;
@@ -66,124 +69,76 @@ export function buildAgentLabSuiteSeed({
     domainTruthOwner: 'opl-meta-agent',
     attemptId: 'production-evidence-tail',
   });
-  const suiteId = stableId('agent_lab_suite_seed', [
+  const suiteId = stableId('oma_foundry_evaluation_request', [
     agentRepo,
     contracts.productionAcceptanceRef,
     contracts.productionAcceptance.updated_at,
     aiReviewerEvaluationPath,
   ]);
 
-  return {
-    surface_kind: 'opl_meta_agent_agent_lab_suite_seed',
-    version: 'opl-meta-agent.agent-lab-suite-seed.v1',
-    suite_id: suiteId,
-    suite_kind: 'agent_production_evidence_suite',
-    suite_role: 'target_agent_production_evidence_tail_testing_takeover',
-    seed_status: 'declarative_seed_candidate_waiting_for_foundry_lab_consumer',
-    execution_owner: FOUNDRY_LAB_EVALUATION_OWNER,
-    target_agent_ref: targetAgent.targetAgentRef,
-    target_agent_descriptor_ref: path.join(agentRepo, 'contracts/domain_descriptor.json'),
-    evaluation_target_agent: {
-      domain_id: targetAgent.domainId,
-      target_agent_ref: targetAgent.targetAgentRef,
-      descriptor_ref: path.join(agentRepo, 'contracts/domain_descriptor.json'),
-    },
-    source_contract_refs: sourceContractRefs(contracts),
-    stage_native_artifact_refs: stageNativeArtifactRefs,
-    production_evidence_gate: productionEvidenceGate(contracts, targetAgent),
-    authority_boundary: {
-      refs_only: true,
-      oma_can_execute_suite: false,
-      oma_can_write_suite_result: false,
-      oma_can_write_owner_receipt_body: false,
-      oma_can_write_promotion_gate: false,
-      can_generate_target_domain_owner_receipt: false,
-      can_write_target_domain_truth: false,
-      can_write_target_memory_body: false,
-      can_mutate_target_artifact_body: false,
-      can_authorize_target_quality_or_export: false,
-      can_promote_default_agent_without_gate: false,
-      forbidden_write_surfaces: forbiddenWriteSurfaces(contracts, TARGET_AGENT_FORBIDDEN_WRITE_SURFACES),
-    },
-    tasks: [
-      {
-        task_id: `agent-lab-task:${targetAgent.domainId}/production-evidence-tail/testing-takeover`,
-        domain_id: 'opl-meta-agent',
-        task_family: 'target_agent_production_evidence_tail_testing_takeover',
-        target_agent_ref: targetAgent.targetAgentRef,
-        target_agent_descriptor_ref: path.join(agentRepo, 'contracts/domain_descriptor.json'),
-        environment: {
-          environment_kind: 'external_repo_contract_intake',
-          workspace_locator_ref: agentRepo,
-          sandbox_policy: 'refs_only_no_target_domain_mutation',
-          network_policy: 'target_owner_policy',
-        },
-        instructions_ref: `instructions:opl-meta-agent/${targetAgent.domainId}/production-evidence-tail-testing-takeover`,
-        agent_entry_ref: `target-agent-entry:${targetAgent.domainId}`,
-        stage_refs: [
-          `stage:${targetAgent.domainId}/production-acceptance-contract-read`,
-          `stage:${targetAgent.domainId}/agent-lab-handoff-suite-seed`,
-          `stage:${targetAgent.domainId}/no-forbidden-write-verification`,
-        ],
-        oracle_refs: [
-          `oracle:${targetAgent.domainId}/production-acceptance`,
-          `oracle:${targetAgent.domainId}/owner-receipt-or-typed-blocker-route`,
-        ],
-        scorer_refs: [
-          `scorer:${targetAgent.domainId}/no-forbidden-write-proof`,
-          `scorer:${targetAgent.domainId}/refs-only-evidence-tail-handoff`,
-        ],
-        recovery_probe_specs: [
-          {
-            probe_ref: `recovery-probe:${targetAgent.domainId}/production-evidence-tail/no-forbidden-write`,
-            probe_kind: 'no_forbidden_authority_write',
-            expected_status: 'passed',
-            source_refs: [
-              `${contracts.productionAcceptanceRef}#/authority_boundary`,
-              'contracts/generated_surface_handoff.json#/generated_surface_policy/must_not_write',
-            ],
-          },
-        ],
-        trajectory_plan: {
-          trajectory_ref: `trajectory:${targetAgent.domainId}/production-evidence-tail/testing-takeover`,
-          requested_run_ref: `run:opl-foundry-lab/${targetAgent.domainId}/production-evidence-tail`,
-          agent_executor: 'codex_cli',
-          tool_affordance_refs: ['opl-action:agent-lab/evaluation-work-order'],
-          expected_receipt_refs: receiptRefs,
-        },
-        scorecard_spec: {
-          scorecard_ref: `scorecard:${targetAgent.domainId}/production-evidence-tail/testing-takeover`,
-          target_agent_owned: true,
-          opl_scorecard_role: 'scorecard_ref_projection_only',
-          metric_refs: [
-            `metric-ref:${targetAgent.domainId}/no-forbidden-write-proof`,
-            `metric-ref:${targetAgent.domainId}/target-owner-route-present`,
-            `metric-ref:${targetAgent.domainId}/ai-reviewer-evaluation-present`,
-          ],
-          evidence_refs: uniqueRefs([
-            contracts.productionAcceptanceRef,
-            ...receiptRefs,
-            ...(aiReviewerEvaluationPath ? [aiReviewerEvaluationPath] : []),
-          ]),
-        },
-        improvement_candidate_seed: {
-          candidate_ref: `improvement-candidate:${targetAgent.domainId}/production-evidence-tail/foundry-testing-takeover`,
-          candidate_kind: 'production_evidence_tail_capability_gap',
-          target_ref: `${targetAgent.targetAgentRef}/production-evidence-tail`,
-          allowed_change_scope: 'branch_only',
-        },
-        promotion_gate_request: {
-          gate_ref: `promotion-gate:${targetAgent.domainId}/production-evidence-tail/owner-gated`,
-          evaluation_owner: FOUNDRY_LAB_EVALUATION_OWNER,
-          required_refs: [
-            `scorecard:${targetAgent.domainId}/production-evidence-tail/testing-takeover`,
-            ...noForbiddenRefs,
-          ],
-        },
-      },
+  const productionGate = productionEvidenceGate(contracts, targetAgent);
+  const productionEvidenceGateIds = Array.isArray(productionGate.gate_ids)
+    ? productionGate.gate_ids.filter((value): value is string => typeof value === 'string' && value.length > 0)
+    : [];
+  const reviewerRefs = aiReviewerEvaluation && aiReviewerEvaluationPath
+    ? [
+        aiReviewerEvaluationPath,
+        ...aiReviewerEvaluation.source_refs,
+        ...aiReviewerEvaluation.direct_evidence_refs,
+      ]
+    : [];
+  const scorecardRef = `scorecard:${targetAgent.domainId}/production-evidence-tail/testing-takeover`;
+
+  return buildFoundryEvaluationRequest({
+    requestId: `oma-foundry-evaluation-request:${suiteId}`,
+    suiteId,
+    suiteKind: 'agent_production_evidence_suite',
+    taskId: `agent-lab-task:${targetAgent.domainId}/production-evidence-tail/testing-takeover`,
+    domainId: 'opl-meta-agent',
+    taskFamily: 'target_agent_production_evidence_tail_testing_takeover',
+    instructionsRef: `instructions:opl-meta-agent/${targetAgent.domainId}/production-evidence-tail-testing-takeover`,
+    agentEntryRef: `target-agent-entry:${targetAgent.domainId}`,
+    stageRefs: [
+      `stage:${targetAgent.domainId}/production-acceptance-contract-read`,
+      `stage:${targetAgent.domainId}/foundry-evaluation-request`,
+      `stage:${targetAgent.domainId}/no-forbidden-write-verification`,
     ],
-    ...(aiReviewerEvaluationPath ? { ai_reviewer_evaluation_ref: aiReviewerEvaluationPath } : {}),
-  };
+    oracleRefs: [
+      `oracle:${targetAgent.domainId}/production-acceptance`,
+      `oracle:${targetAgent.domainId}/owner-receipt-or-typed-blocker-route`,
+    ],
+    scorerRefs: [
+      `scorer:${targetAgent.domainId}/no-forbidden-write-proof`,
+      `scorer:${targetAgent.domainId}/refs-only-evidence-tail-handoff`,
+    ],
+    trajectoryRef: `trajectory:${targetAgent.domainId}/production-evidence-tail/testing-takeover`,
+    requestedRunRef: `run:opl-foundry-lab/${targetAgent.domainId}/production-evidence-tail`,
+    artifactRefs: [
+      String(stageNativeArtifactRefs.canonical_artifact_ref),
+      String(stageNativeArtifactRefs.manifest_ref),
+    ],
+    receiptRefs,
+    scorecardRef,
+    metricRefs: [
+      `metric-ref:${targetAgent.domainId}/no-forbidden-write-proof`,
+      `metric-ref:${targetAgent.domainId}/target-owner-route-present`,
+      `metric-ref:${targetAgent.domainId}/ai-reviewer-evaluation-present`,
+    ],
+    evidenceRefs: uniqueRefs([
+      ...sourceContractRefs(contracts),
+      contracts.productionAcceptanceRef,
+      ...receiptRefs,
+      ...reviewerRefs,
+    ]),
+    reviewRefs: reviewerRefs,
+    qualityGateRefs: [`quality-gate:${targetAgent.domainId}/production-evidence-tail/owner-gated`],
+    improvementCandidateRef: `improvement-candidate:${targetAgent.domainId}/production-evidence-tail/foundry-testing-takeover`,
+    improvementCandidateKind: 'production_evidence_tail_capability_gap',
+    improvementTargetRef: `${targetAgent.targetAgentRef}/production-evidence-tail`,
+    promotionGateRef: `promotion-gate:${targetAgent.domainId}/production-evidence-tail/owner-gated`,
+    promotionGateRequiredRefs: noForbiddenRefs,
+    productionEvidenceGateIds,
+  });
 }
 
 export function buildOwnerReceiptRefs(contracts: AgentContracts, targetAgent: TargetAgentIdentity): JsonObject {
@@ -201,13 +156,13 @@ export function buildOwnerReceiptRefs(contracts: AgentContracts, targetAgent: Ta
 
 export function buildCapabilityCandidate({
   contracts,
-  suiteSeed,
+  evaluationRequest,
   aiReviewerEvaluation,
   aiReviewerEvaluationPath,
   targetAgent,
 }: {
   contracts: AgentContracts;
-  suiteSeed: JsonObject;
+  evaluationRequest: JsonObject;
   aiReviewerEvaluation: AiReviewerEvaluation | null;
   aiReviewerEvaluationPath: string | null;
   targetAgent: TargetAgentIdentity;
@@ -220,7 +175,7 @@ export function buildCapabilityCandidate({
     `agent:evidence-tail/${targetAgent.domainId}/no-forbidden-write-proof`,
   ];
   const candidateId = stableId('oma_agent_capability_candidate', [
-    suiteSeed.suite_id,
+    evaluationRequest.suite_id,
     proposedChangeRefs,
     aiReviewerEvaluationPath,
   ]);
@@ -242,12 +197,13 @@ export function buildCapabilityCandidate({
       generated_surface_owner: targetAgent.generatedSurfaceOwner,
       target_agent_ref: targetAgent.targetAgentRef,
     },
-    source_agent_lab_suite_seed: {
-      suite_id: suiteSeed.suite_id,
-      suite_kind: suiteSeed.suite_kind,
+    source_foundry_evaluation_request: {
+      request_id: evaluationRequest.request_id,
+      suite_id: evaluationRequest.suite_id,
+      suite_kind: evaluationRequest.suite_kind,
       evaluation_status: 'pending_opl_foundry_lab_execution',
     },
-    source_contract_refs: suiteSeed.source_contract_refs,
+    source_contract_refs: sourceContractRefs(contracts),
     target_owner_route: targetOwnerRoute(contracts),
     proposed_change_refs: proposedChangeRefs,
     editable_surface_limits: {
@@ -268,7 +224,7 @@ export function buildCapabilityCandidate({
     efficiency_non_regression_refs: collectEfficiencyNonRegressionRefs(
       contracts.productionAcceptance,
       contracts.agentLabHandoff,
-      suiteSeed,
+      evaluationRequest,
       aiReviewerEvaluation,
     ),
     verification_command_refs: verificationRefs(contracts.productionAcceptance),
@@ -290,14 +246,14 @@ export function materializeAgentEvidenceFromCli(argv = process.argv.slice(2)): J
     ? loadAiReviewerEvaluation(args.aiReviewerEvaluationPath)
     : null;
 
-  const suiteSeed = buildAgentLabSuiteSeed({
+  const evaluationRequest = buildAgentEvidenceEvaluationRequest({
     agentRepo: args.agentRepo,
     contracts,
     aiReviewerEvaluation,
     aiReviewerEvaluationPath: args.aiReviewerEvaluationPath,
   });
-  const suiteSeedPath = path.join(args.outputDir, 'agent-lab-suite-seed.json');
-  writeJson(suiteSeedPath, suiteSeed);
+  const evaluationRequestPath = path.join(args.outputDir, 'foundry-evaluation-request.json');
+  writeJson(evaluationRequestPath, evaluationRequest);
 
   const ownerReceiptRefs = buildOwnerReceiptRefs(contracts, targetAgent);
   const ownerReceiptRefsPath = path.join(args.outputDir, 'owner-receipt-refs.json');
@@ -305,7 +261,7 @@ export function materializeAgentEvidenceFromCli(argv = process.argv.slice(2)): J
 
   const capabilityCandidate = buildCapabilityCandidate({
     contracts,
-    suiteSeed,
+    evaluationRequest,
     aiReviewerEvaluation,
     aiReviewerEvaluationPath: args.aiReviewerEvaluationPath,
     targetAgent,
@@ -322,8 +278,8 @@ export function materializeAgentEvidenceFromCli(argv = process.argv.slice(2)): J
       target_agent_ref: targetAgent.targetAgentRef,
       descriptor_ref: path.join(args.agentRepo, 'contracts/domain_descriptor.json'),
     },
-    suiteSeed,
-    suiteSeedRef: path.basename(suiteSeedPath),
+    evaluationRequest,
+    evaluationRequestRef: path.basename(evaluationRequestPath),
     sourceRefs: [
       ...sourceContractRefs(contracts),
       ownerReceiptRefsPath,
@@ -354,7 +310,7 @@ export function materializeAgentEvidenceFromCli(argv = process.argv.slice(2)): J
     product_id: 'opl-meta-agent',
     target_agent: capabilityCandidate.target_agent,
     artifacts: {
-      agent_lab_suite_seed_path: suiteSeedPath,
+      foundry_evaluation_request_path: evaluationRequestPath,
       owner_receipt_refs_path: ownerReceiptRefsPath,
       target_capability_improvement_candidate_path: capabilityPath,
       foundry_lab_work_order_path: foundryLabWorkOrderPath,
@@ -364,7 +320,7 @@ export function materializeAgentEvidenceFromCli(argv = process.argv.slice(2)): J
       expected_typed_blocker_ref: capabilityCandidate.expected_typed_blocker_ref,
     },
     foundry_lab_handoff: {
-      suite_seed: suiteSeed,
+      evaluation_request: evaluationRequest,
       work_order: foundryLabWorkOrder,
     },
     authority_boundary: foundryLabWorkOrder.authority_boundary,

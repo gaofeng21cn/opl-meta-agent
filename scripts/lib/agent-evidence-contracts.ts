@@ -68,7 +68,8 @@ type ContractRef = {
   ref: string;
 };
 
-function handoffTasks(agentLabHandoff: JsonObject): JsonObject[] {
+// `external_suite_seed` is target-owned intake from its handoff contract, never OMA output.
+function targetOwnedExternalSuiteSeedTasks(agentLabHandoff: JsonObject): JsonObject[] {
   return records(agentLabHandoff.external_suite_seed?.tasks);
 }
 
@@ -112,7 +113,7 @@ export function sourceContractRefs(contracts: AgentContracts): string[] {
 }
 
 export function productionEvidenceGate(contracts: AgentContracts, targetAgent: TargetAgentIdentity): JsonObject {
-  const tasks = handoffTasks(contracts.agentLabHandoff);
+  const tasks = targetOwnedExternalSuiteSeedTasks(contracts.agentLabHandoff);
   const handoffGateIds = tasks
     .map((task) => stringValue(task.gate_id))
     .filter((gateId): gateId is string => Boolean(gateId));

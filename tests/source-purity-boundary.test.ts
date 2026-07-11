@@ -141,7 +141,7 @@ test('purpose-first gate prevents OMA scripts from becoming a second framework',
   assert.equal(secondFrameworkGuard.oma_is_agent_lab_or_opl_framework_replacement, false);
   assertIncludesAll(asStrings(secondFrameworkGuard.allowed_oma_products), [
     'candidate_agent_package_ref',
-    'agent_lab_suite_seed_ref',
+    'foundry_evaluation_request_ref',
     'foundry_lab_work_order_candidate_ref',
     'developer_patch_work_order_ref',
     'target_capability_improvement_candidate_ref',

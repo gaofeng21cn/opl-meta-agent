@@ -137,7 +137,7 @@
       "stage_id": "eval-suite-build",
       "stage_kind": "creation",
       "title": "Evaluation suite design",
-      "summary": "Compile acceptance criteria into a target-bound declarative Agent Lab suite seed.",
+      "summary": "Compile acceptance criteria into a thin target-domain evaluation request for OPL Foundry Lab.",
       "goal": "Define evaluation tasks and gates without executing Agent Lab or writing a suite result.",
       "policy_ref": "agent/stages/eval-suite-build.md",
       "prompt_ref": "agent/prompts/eval-suite-build.md",
@@ -157,7 +157,7 @@
         "candidate_pack_or_takeover_assessment_ready"
       ],
       "ensures": [
-        "target_bound_suite_seed_ready"
+        "target_bound_foundry_evaluation_request_ready"
       ],
       "next_stage_refs": [
         "baseline-run"
@@ -168,7 +168,7 @@
       "stage_id": "baseline-run",
       "stage_kind": "review",
       "title": "Foundry evaluation handoff",
-      "summary": "Bind the suite seed and target identity into an OPL Foundry Lab evaluation work order.",
+      "summary": "Bind the thin evaluation request and target identity into an OPL Foundry Lab evaluation work order.",
       "goal": "Hand evaluation to OPL Foundry Lab without fabricating a result, receipt, or owner verdict.",
       "policy_ref": "agent/stages/baseline-run.md",
       "prompt_ref": "agent/prompts/baseline-run.md",
@@ -184,7 +184,7 @@
         "takeover-target-agent-test"
       ],
       "requires": [
-        "target_bound_suite_seed_ready"
+        "target_bound_foundry_evaluation_request_ready"
       ],
       "ensures": [
         "foundry_evaluation_work_order_ready",

@@ -81,7 +81,7 @@ function runMaterializer(args: string[]) {
   );
 }
 
-test('agent:evidence emits suite seed, candidate, and Foundry Lab work order only', () => {
+test('agent:evidence emits a thin evaluation request, candidate, and Foundry Lab work order only', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-agent-evidence-'));
   try {
     const agentRepo = path.join(outputRoot, 'med-autoscience');
@@ -98,7 +98,7 @@ test('agent:evidence emits suite seed, candidate, and Foundry Lab work order onl
     assert.equal(result.status, 0, result.stderr);
     const payload = parseJsonText(result.stdout);
     const workOrder = readJson(path.join(outputDir, 'foundry-lab-work-order.json'));
-    const suiteSeed = readJson(path.join(outputDir, 'agent-lab-suite-seed.json'));
+    const evaluationRequest = readJson(path.join(outputDir, 'foundry-evaluation-request.json'));
     assert.equal(payload.status, 'foundry_lab_evaluation_candidate_ready_for_opl_foundry_lab');
     assert.equal(workOrder.work_order_kind, 'target_agent_production_evidence_evaluation');
     assert.equal(workOrder.status, 'ready_for_opl_foundry_lab_evaluation');
@@ -108,16 +108,23 @@ test('agent:evidence emits suite seed, candidate, and Foundry Lab work order onl
       workOrder.target_agent.descriptor_ref,
       path.join(agentRepo, 'contracts/domain_descriptor.json'),
     );
-    assert.equal(suiteSeed.target_agent_ref, 'target-agent:med-autoscience');
-    assert.equal(suiteSeed.target_agent_descriptor_ref, path.join(agentRepo, 'contracts/domain_descriptor.json'));
-    assert.deepEqual(suiteSeed.evaluation_target_agent, {
-      domain_id: 'med-autoscience',
-      target_agent_ref: 'target-agent:med-autoscience',
-      descriptor_ref: path.join(agentRepo, 'contracts/domain_descriptor.json'),
-    });
-    assert.equal(suiteSeed.tasks[0].domain_id, 'opl-meta-agent');
+    assert.equal(workOrder.evaluation_request.ref, 'foundry-evaluation-request.json');
+    assert.equal(evaluationRequest.surface_kind, 'opl_meta_agent_foundry_evaluation_request');
+    assert.equal(evaluationRequest.suite_kind, 'agent_production_evidence_suite');
+    assert.equal(evaluationRequest.task_intents[0].domain_id, 'opl-meta-agent');
+    assert.equal(Object.hasOwn(evaluationRequest, 'target_agent_ref'), false);
+    assert.equal(Object.hasOwn(evaluationRequest.task_intents[0], 'environment'), false);
     assert.equal(workOrder.authority_boundary.oma_can_execute_agent_lab_suite, false);
-    assert.equal(suiteSeed.seed_status, 'declarative_seed_candidate_waiting_for_foundry_lab_consumer');
+    assert.deepEqual(evaluationRequest.authority_boundary, {
+      refs_only: true,
+      oma_can_execute_agent_lab_suite: false,
+      oma_can_write_agent_lab_result: false,
+      oma_can_write_owner_receipt_body: false,
+      oma_can_write_promotion_gate: false,
+      oma_can_claim_target_domain_ready: false,
+      oma_can_claim_target_production_ready: false,
+    });
+    assert.equal(fs.existsSync(path.join(outputDir, 'agent-lab-suite-seed.json')), false);
     assert.equal(fs.existsSync(path.join(outputDir, 'agent-lab-run-result.json')), false);
     assert.equal(fs.existsSync(path.join(outputDir, 'developer-patch-work-order.json')), false);
     assert.equal(fs.existsSync(path.join(outputDir, 'typed-blocker.json')), false);

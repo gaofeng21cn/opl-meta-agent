@@ -2,13 +2,13 @@
 
 ## 操作策略
 
-把 candidate Agent Pack、AgentBuildReceipt 和 reviewer evidence 编译成 declarative suite seed 与 target-bound Foundry evaluation work order。该 stage 不实现 Agent Lab runner，也不物化 hosted result/receipt ledger。
+把 candidate Agent Pack、AgentBuildReceipt 和 reviewer evidence 编译成 thin evaluation request 与 target-bound Foundry evaluation work order。该 stage 不实现 Agent Lab runner、suite-plan compiler，也不物化 hosted result/receipt ledger。
 
 ## Handoff
 
 向 OPL Foundry Lab 或后续 `improve:external-suite` 交付：
 
-- `agent_lab_suite_seed_ref`
+- `foundry_evaluation_request_ref`
 - `foundry_lab_evaluation_work_order_ref`
 - `expected_evaluation_result_ref`
 - target-owner route and external-evaluation refs required by `baseline-delivery`; these are work-order / route refs, not a fabricated evaluation result or owner verdict.

@@ -11,14 +11,14 @@
 - independent AI reviewer source/direct evidence refs。
 - artifact morphology brief 或明确 gap ref。
 - realistic target task review ref。
-- declarative Agent Lab suite seed ref。
+- thin Foundry evaluation request ref。
 - canonical Foundry evaluation work-order ref。
 
 ## 通过标准
 
 - target、suite/task 与 provenance refs 进入 stable work-order identity。
 - `consumer_dependency.status=available`，execution owner/action 指向 canonical OPL Foundry Lab。
-- suite seed 只含 declarative specs，不含 observations、pass/fail、gate status 或 receipt body。
+- evaluation request 只含 domain task intent 与 refs，不含 target identity、suite plan、observations、pass/fail、gate status 或 receipt body。
 - authority boundary 明确 OMA 不能执行 suite、写 Agent Lab result、owner receipt 或 promotion gate。
 - morphology gaps 与 reviewer findings 可交给 OPL evaluation 和 target owner review。
 
