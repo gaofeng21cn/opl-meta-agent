@@ -7,6 +7,8 @@ Machine boundary: 本文是人读状态摘要。机器真相继续归 `contracts
 
 Plugin native profile pointer: `contracts/opl-native-profile.json` 只声明插件同步/发现所需的 repo-native profile；它不是 domain truth、active gap、read model、runtime authority 或 owner receipt。
 
+`contracts/standard_agent_conformance_profile.json` 由 OMA 自己声明 agent-building golden path 与物理 surface 分类；OPL conformance engine 只执行该 profile，不再内置 OMA stage、ledger、action 或 residue 常量。
+
 Docs lifecycle boundary: 本文件只保留当前能力状态、边界、剩余尾项和不能声明的结论。Coverage tranche、doctor transcript、branch/worktree closeout、dated proof packet 和 repeated no-drift 记录只进入 `docs/history/process/` 索引；durable 结论折回 active gap plan、private inventory、contracts、source 或 tests。
 
 ## 当前状态
