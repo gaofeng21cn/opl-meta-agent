@@ -879,6 +879,7 @@ test('build-agent-baseline materializes source-derived proof with canonical OPL 
     const stageControl = readJson(path.join(targetDir, 'contracts/stage_control_plane.json'));
     const buildReceipt = readJson(path.join(targetDir, 'contracts/agent_build_receipt.json'));
     const compilerInput = readJson(path.join(targetDir, 'contracts/pack_compiler_input.json'));
+    const generatedSeries = readJson(path.join(targetDir, 'contracts/foundry_agent_series.json'));
     const sourceDesignReceipt = capabilityMap.profile_selection_receipt.source_derived_design_receipt as JsonObject;
     const primarySkill = fs.readFileSync(path.join(targetDir, 'agent/primary_skill/SKILL.md'), 'utf8');
     const generatedPrompt = fs.readFileSync(path.join(targetDir, stageControl.stages[0].prompt_refs[0].ref), 'utf8');
@@ -917,6 +918,14 @@ test('build-agent-baseline materializes source-derived proof with canonical OPL 
       'target-only-requirement:surgery-risk-from-paper-agent/owner-gated-closeout',
     );
     assert.equal(stageControl.build_receipt.receipt_timing, 'post_materialization');
+    for (const field of [
+      'domain_can_write_other_domain_truth',
+      'domain_can_write_other_domain_memory_body',
+      'domain_can_mutate_other_domain_artifact_body',
+      'domain_can_authorize_other_domain_quality_or_export',
+    ]) {
+      assert.equal(generatedSeries.authority_boundary[field], false, field);
+    }
     for (const schemaRef of [
       'contracts/schemas/draft-agent-output.input.schema.json',
       'contracts/schemas/draft-agent-output.output.schema.json',

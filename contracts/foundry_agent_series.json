@@ -120,6 +120,10 @@
     "oma_can_write_target_domain_memory_body": false,
     "oma_can_mutate_target_domain_artifact_body": false,
     "oma_can_authorize_target_domain_quality_or_export": false,
+    "domain_can_write_other_domain_truth": false,
+    "domain_can_write_other_domain_memory_body": false,
+    "domain_can_mutate_other_domain_artifact_body": false,
+    "domain_can_authorize_other_domain_quality_or_export": false,
     "generated_surface_can_claim_domain_ready": false
   }
 }

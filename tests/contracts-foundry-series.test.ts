@@ -22,6 +22,14 @@ test('foundry agent series keeps only OMA identity and domain deltas beside cano
   assert.equal(series.domain_id, 'opl-meta-agent');
   assert.equal(series.stage_manifest_ref, 'agent/stages/manifest.json');
   assert.equal(series.stage_control_plane_ref, 'opl-generated:family_stage_control_plane');
+  for (const field of [
+    'domain_can_write_other_domain_truth',
+    'domain_can_write_other_domain_memory_body',
+    'domain_can_mutate_other_domain_artifact_body',
+    'domain_can_authorize_other_domain_quality_or_export',
+  ]) {
+    assert.equal(seriesAuthority[field], false, `series authority ${field}`);
+  }
 
   for (const copiedCanonicalBody of [
     'series_design_profile',
