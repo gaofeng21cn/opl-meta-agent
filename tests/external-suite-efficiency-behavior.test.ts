@@ -113,6 +113,6 @@ test('external suite efficiency evidence without quality floor fails closed with
       'latency-baseline:target-agent/p50-p95-before',
     ]);
     assert.equal(typedBlocker.authority_boundary.no_executable_work_order_issued, true);
-    assert.equal(typedBlocker.authority_boundary.can_authorize_target_quality_or_export, false);
+    assert.equal(typedBlocker.authority_boundary.can_authorize_target_domain_quality_or_export, false);
   });
 });

@@ -26,7 +26,7 @@
     "verify": "scripts/verify.sh",
     "typecheck": "scripts/run-with-repo-temp-env.sh tsc --noEmit",
     "test": "npm run test:smoke",
-    "test:smoke": "scripts/run-with-repo-temp-env.sh node --test tests/contracts-repo-hygiene.test.ts tests/contracts-action-authority.test.ts tests/contracts-domain-pack.test.ts tests/contracts-generated-surfaces.test.ts tests/contracts-foundry-series.test.ts tests/source-purity.test.ts tests/source-purity-boundary.test.ts tests/new-agent-delivery-gate.test.ts",
+    "test:smoke": "scripts/run-with-repo-temp-env.sh node --test tests/contracts-repo-hygiene.test.ts tests/contracts-action-authority.test.ts tests/action-schema-refs.test.ts tests/contracts-domain-pack.test.ts tests/contracts-generated-surfaces.test.ts tests/contracts-foundry-series.test.ts tests/source-purity.test.ts tests/source-purity-boundary.test.ts tests/new-agent-delivery-gate.test.ts",
     "test:behavior": "scripts/run-with-repo-temp-env.sh node --test tests/bootstrap-loop.test.ts tests/stage-decomposition-materializer.test.ts tests/takeover-loop.test.ts tests/agent-evidence-materializer.test.ts tests/execute-external-work-order.test.ts tests/external-suite-*.test.ts tests/target-*.test.ts tests/live-stage-run-progress-evidence.test.ts tests/new-agent-consumption-evidence.test.ts",
     "test:full": "scripts/run-with-repo-temp-env.sh node --test tests/*.test.ts"
   },
@@ -36,6 +36,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.9.0",
+    "ajv": "^8.20.0",
     "typescript": "^6.0.3"
   }
 }

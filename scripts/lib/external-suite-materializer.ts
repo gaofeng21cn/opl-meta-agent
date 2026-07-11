@@ -606,7 +606,7 @@ export function buildEfficiencyTypedBlocker({
       can_write_target_domain_truth: false,
       can_write_target_domain_memory_body: false,
       can_mutate_target_domain_artifact_body: false,
-      can_authorize_target_quality_or_export: false,
+      can_authorize_target_domain_quality_or_export: false,
       can_promote_default_agent_without_gate: false,
     },
   };
