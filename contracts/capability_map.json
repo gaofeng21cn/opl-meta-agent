@@ -140,7 +140,7 @@
       ],
       "verification_refs": [
         "git diff --check",
-        "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
+        "node --test tests/contracts-domain-pack.test.ts",
         "scripts/verify.sh",
         "opl:agents-scaffold-validate"
       ],
@@ -191,7 +191,7 @@
       "failure_token_registry_ref": "contracts/opl-framework/agent-lab-failure-token-registry.json",
       "verification_refs": [
         "git diff --check",
-        "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
+        "node --test tests/contracts-domain-pack.test.ts",
         "scripts/verify.sh"
       ],
       "forbidden_surfaces": [
@@ -278,7 +278,7 @@
       "failure_token_registry_ref": "contracts/opl-framework/agent-lab-failure-token-registry.json",
       "verification_refs": [
         "git diff --check",
-        "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
+        "node --test tests/contracts-domain-pack.test.ts",
         "scripts/verify.sh"
       ],
       "forbidden_surfaces": [
@@ -355,7 +355,7 @@
       "failure_token_registry_ref": "contracts/opl-framework/agent-lab-failure-token-registry.json",
       "verification_refs": [
         "git diff --check",
-        "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
+        "node --test tests/contracts-domain-pack.test.ts",
         "scripts/verify.sh"
       ],
       "forbidden_surfaces": [
@@ -432,7 +432,7 @@
       "failure_token_registry_ref": "contracts/opl-framework/agent-lab-failure-token-registry.json",
       "verification_refs": [
         "git diff --check",
-        "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
+        "node --test tests/contracts-domain-pack.test.ts",
         "scripts/verify.sh"
       ],
       "forbidden_surfaces": [
@@ -550,7 +550,7 @@
       ],
       "verification_refs": [
         "git diff --check",
-        "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
+        "node --test tests/contracts-domain-pack.test.ts",
         "scripts/verify.sh",
         "opl:agents-scaffold-validate"
       ],
@@ -622,7 +622,7 @@
       ],
       "verification_refs": [
         "git diff --check",
-        "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
+        "node --test tests/contracts-domain-pack.test.ts",
         "scripts/verify.sh",
         "opl:agents-scaffold-validate"
       ],
@@ -694,7 +694,7 @@
       ],
       "verification_refs": [
         "git diff --check",
-        "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
+        "node --test tests/contracts-domain-pack.test.ts",
         "scripts/verify.sh",
         "opl:agents-scaffold-validate"
       ],
@@ -766,7 +766,7 @@
       ],
       "verification_refs": [
         "git diff --check",
-        "node --experimental-strip-types --test tests/contracts-domain-pack.test.ts",
+        "node --test tests/contracts-domain-pack.test.ts",
         "scripts/verify.sh",
         "opl:agents-scaffold-validate"
       ],

@@ -2,13 +2,12 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { assertJsonSchemaPayload } from 'opl-framework-shared/json-schema-registry';
 import type { JsonObject } from '../../scripts/lib/domain-pack.ts';
 
 export type { JsonObject };
 
-export const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+export const repoRoot = path.resolve(import.meta.dirname, '../..');
 export const oplBin = process.env.OPL_BIN
   ?? 'opl';
 export const oplOwnerRepoRoot = process.env.OPL_OWNER_REPO_ROOT

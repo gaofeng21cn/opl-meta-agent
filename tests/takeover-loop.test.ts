@@ -56,7 +56,6 @@ test('takeover emits suite seed and Foundry Lab work order without local executi
     writeReviewerEvaluation(reviewerPath);
 
     const result = spawnSync(process.execPath, [
-      '--experimental-strip-types',
       path.join(repoRoot, 'scripts/takeover-agent.ts'),
       '--agent-dir', targetDir,
       '--output-dir', takeoverRoot,
@@ -136,7 +135,6 @@ test('takeover fails closed without source and direct artifact morphology eviden
     });
 
     const result = spawnSync(process.execPath, [
-      '--experimental-strip-types',
       path.join(repoRoot, 'scripts/takeover-agent.ts'),
       '--agent-dir', targetDir,
       '--output-dir', path.join(outputRoot, 'takeover'),

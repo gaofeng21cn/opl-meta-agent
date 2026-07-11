@@ -33,10 +33,6 @@ export OPL_REPO_TEMP_ROOT="${repo_temp_root}"
 export NPM_CONFIG_CACHE="${repo_temp_root}/npm/cache"
 export npm_config_cache="${NPM_CONFIG_CACHE}"
 export NODE_COMPILE_CACHE="${repo_temp_root}/node/compile-cache"
-case " ${NODE_OPTIONS:-} " in
-  *" --experimental-strip-types "*) ;;
-  *) export NODE_OPTIONS="${NODE_OPTIONS:-} --experimental-strip-types" ;;
-esac
 export XDG_CACHE_HOME="${repo_temp_root}/xdg-cache"
 
 "$@"

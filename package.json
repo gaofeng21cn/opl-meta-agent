@@ -4,11 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build-agent-baseline": "node --experimental-strip-types scripts/build-agent-baseline.ts",
-    "improve:external-suite": "node --experimental-strip-types scripts/improve-from-agent-lab-suite.ts",
-    "execute:external-work-order": "node --experimental-strip-types scripts/execute-external-work-order.ts",
-    "agent:evidence": "node --experimental-strip-types scripts/lib/agent-evidence-materializer.ts",
-    "takeover:test": "node --experimental-strip-types scripts/takeover-agent.ts",
+    "build-agent-baseline": "node scripts/build-agent-baseline.ts",
+    "improve:external-suite": "node scripts/improve-from-agent-lab-suite.ts",
+    "execute:external-work-order": "node scripts/execute-external-work-order.ts",
+    "agent:evidence": "node scripts/lib/agent-evidence-materializer.ts",
+    "takeover:test": "node scripts/takeover-agent.ts",
     "repo:hygiene": "scripts/repo-hygiene.sh",
     "repo:hygiene:fix": "scripts/repo-hygiene.sh --fix",
     "authority-functions:check": "scripts/run-with-repo-temp-env.sh node scripts/sync-authority-functions.ts --check",
@@ -28,6 +28,9 @@
     "test:full": "scripts/run-with-repo-temp-env.sh node --test tests/*.test.ts"
   },
   "license": "Apache-2.0",
+  "engines": {
+    "node": ">=24.2.0"
+  },
   "dependencies": {
     "opl-framework-shared": "git+https://github.com/gaofeng21cn/one-person-lab.git#latest-stable"
   },

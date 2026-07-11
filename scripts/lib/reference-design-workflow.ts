@@ -12,7 +12,7 @@ export type ReferenceDesignWorkflowTarget = {
   reference_design_pattern_packet_refs?: string[] | null;
 };
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const repoRoot = path.resolve(import.meta.dirname, '../..');
 const expertWorkflowPatternLibraryPath = path.join(
   repoRoot,
   'contracts',

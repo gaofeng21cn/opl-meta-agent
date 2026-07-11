@@ -50,7 +50,6 @@ function runImproveCliProcess(args: {
   reviewerEvaluationPath: string;
 }) {
   return spawnSync(process.execPath, [
-    '--experimental-strip-types',
     path.join(repoRoot, 'scripts/improve-from-agent-lab-suite.ts'),
     '--suite', args.suitePath,
     '--suite-result', args.suiteResultPath,

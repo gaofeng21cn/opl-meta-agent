@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import type { JsonObject } from './domain-pack.ts';
 import {
   aiReviewerReceiptFields,
@@ -372,12 +371,7 @@ export function materializeAgentEvidenceFromCli(argv = process.argv.slice(2)): J
   };
 }
 
-function isDirectCliEntry(): boolean {
-  const entry = process.argv[1];
-  return Boolean(entry) && path.resolve(entry) === fileURLToPath(import.meta.url);
-}
-
-if (isDirectCliEntry()) {
+if (import.meta.main) {
   try {
     process.stdout.write(`${JSON.stringify(materializeAgentEvidenceFromCli(), null, 2)}\n`);
   } catch (error) {

@@ -2,7 +2,6 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs as parseNodeArgs } from 'node:util';
 import {
   type DomainPackSummary,
@@ -47,7 +46,7 @@ import {
   buildExpectedTypedBlockerRef,
 } from './lib/agent-evidence-typed-blocker.ts';
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const repoRoot = path.resolve(import.meta.dirname, '..');
 
 export type ImproveArgs = {
   suitePath: string;
@@ -884,7 +883,7 @@ function main() {
   process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (import.meta.main) {
   try {
     main();
   } catch (error) {

@@ -3,7 +3,6 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
 
 import {
   buildAgentBuildReceipt,
@@ -13,7 +12,7 @@ import {
   buildTransferMap,
 } from '../scripts/lib/domain-pack.ts';
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const repoRoot = path.resolve(import.meta.dirname, '..');
 
 test('OMA ReferenceDesignPacket materialization matches its owned handoff contract', () => {
   const contract = JSON.parse(fs.readFileSync(

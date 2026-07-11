@@ -2,12 +2,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import crypto from 'node:crypto';
-import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 type JsonObject = Record<string, any>;
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const repoRoot = path.resolve(import.meta.dirname, '..');
 const policyPath = 'contracts/source_structure_policy.json';
 
 function readJson(relativePath: string): JsonObject {

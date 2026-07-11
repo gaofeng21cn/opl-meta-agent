@@ -50,7 +50,6 @@ process.stdout.write(JSON.stringify({ status: 'delegated', closeout_refs: workOr
 
 function runExecute(workOrderPath: string, outputPath: string, oplPath: string) {
   return spawnSync(process.execPath, [
-    '--experimental-strip-types',
     path.join(repoRoot, 'scripts/execute-external-work-order.ts'),
     '--work-order', workOrderPath,
     '--output', outputPath,

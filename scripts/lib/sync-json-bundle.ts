@@ -1,11 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { fileURLToPath } from 'node:url';
 
 export type JsonObject = Record<string, any>;
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const repoRoot = path.resolve(import.meta.dirname, '../..');
 
 export function absolute(relativePath: string): string {
   return path.join(repoRoot, relativePath);
