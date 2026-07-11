@@ -56,11 +56,11 @@ string、receipt count 或 blocker ref；这些机器字段归
 human approval、replay success、target-agent ready、domain ready、production ready
 或 default promotion。
 
-StageRun overclaim boundary 已进入机器合同：`contracts/stage_run_kernel_profile.json#agent_building_stage_run_canary.overclaim_boundary` 只允许声明 repo-local canary shape 可消费、controlled fixture strategy refs 存在、owner receipt 或 typed blocker ref 存在、legacy residue guard 已声明；禁止升级为 live domain progress、target-agent readiness、quality/export verdict、Agent Lab promotion readiness、production readiness、App live rendering、human approval、default promotion 或 OPL 物化 owner receipt body。`legacy_runtime_residue_guard` 把旧 runtime/status/workbench residue 守卫绑定到 functional privatization audit、default-caller deletion evidence、source-purity scan receipt 和 source-purity tests；它只能证明 guard 存在，不能授权物理删除或恢复 repo-owned runtime wrapper。
+StageRun overclaim boundary 已进入机器合同：`contracts/stage_run_kernel_profile.json#agent_building_stage_run_canary.overclaim_boundary` 只允许声明 repo-local canary shape 可消费、controlled fixture strategy refs 存在、owner receipt 或 typed blocker ref 存在、legacy residue guard 已声明；禁止升级为 live domain progress、target-agent readiness、quality/export verdict、Agent Lab promotion readiness、production readiness、App live rendering、human approval、default promotion 或 OPL 物化 owner receipt body。`legacy_runtime_residue_guard` 绑定 canonical functional audit、source-purity receipt 和 tests；它只能证明 guard 存在，不能授权物理删除或恢复 repo-owned runtime wrapper。
 
-`functional_structure_gap_count=0` 只说明 repo-owned generic runtime / generated shell / workbench / sidecar / compatibility surface 当前 absent；它不能把 `scripts/` materializer、Agent Lab invocation helper、bootstrap pack writer 或 default-caller evidence contract 写成 strict purity 完成态。Script-to-pack / source-purity 的字段级 truth 不在 status 展开，SSOT 是 [私有实现与 OPL 迁移台账](./active/opl-private-implementation-migration-inventory.md)、`contracts/script_to_pack_gate_receipt.json`、`runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt`、`runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy`、`npm run script-to-pack:readback`、`npm run script-to-pack:readback:full` 和 source-purity tests。
+`functional_structure_gap_count=0` 只说明 repo-owned generic runtime / generated shell / workbench / sidecar / compatibility surface 当前 absent。Default surfaces 的物理缺席状态直接记录在 canonical functional audit，不再复制第二 evidence contract。Script-to-pack / source-purity 的字段级 truth 归 [私有实现与 OPL 迁移台账](./active/opl-private-implementation-migration-inventory.md)、machine contracts、`npm run source-structure:json` 和 source-purity tests。
 
-当前 status 只保留读法：保留脚本只能是 authority implementation、smoke/proof helper、thin delegation、developer work-order materializer 或 repo-native verification wrapper，并且必须有真实 package script、import、shell invocation 或非 self-guard test ref 形成的 active caller。source-ref integrity、false-ready scan、cleanup readback、generic materializer no-resurrection、reciprocal consumption policy 和 compact readback 都是 machine gate / owner-route guard；它们不授权 OPL primitive parity、脚本物理退役、no-active-caller、tombstone/provenance、App live rendering、registry discovery、generated-hosted readiness、default promotion、target/domain ready 或 production readiness。字段级 receipt ids、per-script rows、caller graph、source-ref lists 和 accepted shapes 回到 machine contracts、private inventory、source-purity tests 和 readback 命令。
+当前 status 只保留读法：保留脚本只能是 authority implementation、smoke/proof helper、thin delegation、developer work-order materializer 或 repo-native verification wrapper，并且必须有真实 package script、import、shell invocation 或非 self-guard test ref。source-structure retention summary 是唯一动态入口；它不授权 OPL primitive parity、脚本物理退役、readiness 或 promotion。
 
 OMA 的默认输出只允许是 target-agent semantics、AgentBuildReceipt、declarative suite seed、Foundry evaluation/developer work order、target capability candidate、mechanism candidate、OMA-owned blocker shape 或 external expected blocker ref。下一跳必须指向 OPL Foundry Lab、target owner、OPL Framework / App 或 human gate 需要产出的 result、receipt、gate、owner delta 或 blocker；OMA 不自填这些外部 authority bodies。
 
@@ -93,7 +93,7 @@ MAS `reviewer_revision` feedback self-evolution trigger 的当前可读状态是
 | Live StageRun progress evidence | OPL 标准消费 `contracts/live_stage_run_progress_evidence.json`；字段级 refs、tail closure、accepted shape 与 verification command 回到 machine contracts 和 focused tests | `contracts/live_stage_run_progress_evidence.json`、`contracts/target_agent_owner_chain_evidence.json`、`contracts/production_acceptance/meta-agent-production-acceptance.json`、`tests/live-stage-run-progress-evidence.test.ts`、`tests/target-agent-owner-chain-evidence.test.ts` | 当前读法是 refs-only not-ready lane；不真实修改 target repo，不生成 actual candidate body，不持有 target domain ready、domain ready、production ready、target artifact authority、quality/export verdict、human approval、App live rendering 或 target owner receipt body。 |
 | Target-agent owner-chain evidence | OMA 声明 OPL-hosted generated action path 的 live-progress ref shape readout；target-agent owner-chain tail 的具体 closure 由合同持有 | `contracts/target_agent_owner_chain_evidence.json`、`contracts/stage_run_kernel_profile.json`、`contracts/action_catalog.json`、`contracts/live_stage_run_progress_evidence.json`、`tests/target-agent-owner-chain-evidence.test.ts` | 只接受 owner receipt / typed blocker / work-order receipt / no-regression refs；OPL 必须消费为 not-ready，不能据此声明 target domain ready、production ready、target artifact authority、quality/export verdict、human approval 或 target owner receipt body。 |
 | External work-order execution | OMA 只做 shape validation 和 OPL primitive delegation | `npm run execute:external-work-order`、`tests/execute-external-work-order.test.ts` | target worktree lifecycle、runner、queue、attempt ledger、absorb、cleanup 和 owner closeout hook invocation 归 OPL / target owner。 |
-| Source-purity guard | repo-owned wrapper/runtime surface 仍保持缺席；retained scripts have machine-checked active callers, source-ref integrity / false-ready / cleanup-readback guards, reciprocal consumer-chain guard, source-structure drift guard, compact cleanup readback, and full cleanup candidate readback | `contracts/functional_privatization_audit.json`、`contracts/script_to_pack_gate_receipt.json`、`contracts/source_structure_policy.json#script_to_pack_receipt_guard`、`runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt`、`runtime/authority_functions/meta-agent-authority-functions.json#script_morphology_policy`、`npm run script-to-pack:readback`、`npm run script-to-pack:readback:full`、source-purity tests | `scripts/` 只能是 authority implementation、smoke/proof helper、fixture helper、thin delegation 或 developer work-order materializer。逐脚本分类和 gate 语义归 private inventory；status 只保留 cleanup/readback 可以列候选和 blocker shape、但不能授权 retirement、primitive parity、physical delete、App/registry live evidence、generated-hosted readiness、default promotion、target/domain readiness、production readiness 或 owner receipt body write 的边界。 |
+| Source-purity guard | repo-owned wrapper/runtime surface 保持缺席；retained scripts 有 machine-checked caller、source-ref integrity 和 retention summary | `contracts/functional_privatization_audit.json`、`contracts/script_to_pack_gate_receipt.json`、`contracts/source_structure_policy.json#script_to_pack_receipt_guard`、authority source-purity / morphology surfaces、`npm run source-structure:json`、source-purity tests | `scripts/` 只能是 authority implementation、proof helper、thin delegation、developer work-order materializer 或 repo-native verification wrapper；readback 不授权 retirement、primitive parity、physical delete、readiness、promotion 或 owner receipt body write。 |
 
 Source-structure 检查属于 daily / strict maintenance 的
 source-size 治理信号，不进入普通开发的 hard gate。`scripts/verify.sh
@@ -108,7 +108,7 @@ lane；`scripts/verify.sh structure:strict`、`npm run source-structure:strict`
 `npm run authority-functions:check` 防止 drift；其 bundle manifest 记录 source digest、
 generator commands、do-not-edit consumer surface 和 false-authority flags。OPL Pack 的 stage compiler source 是
 `agent/stages/manifest.json`，hosted `family_stage_control_plane` 不回写本仓。
-同一 source-structure 命令现在也执行 `script_to_pack_receipt_guard`，所以 receipt / active caller / tracked script / morphology summary 漂移在 advisory 与 strict 模式下都会 hard fail。`npm run source-structure:json`、`npm run script-to-pack:readback` 和 `npm run script-to-pack:readback:full` 只提供 drift / cleanup-candidate readback；完整 per-script detail 不进入 status，也不能替代 private inventory 或 machine contracts。
+同一 source-structure 命令也执行 `script_to_pack_receipt_guard`，所以 receipt / active caller / tracked script / morphology summary 漂移在 advisory 与 strict 模式下都会 hard fail。`npm run source-structure:json` 是唯一 JSON readback；完整 per-script detail 不进入 status，也不能替代 private inventory 或 machine contracts。
 `scripts/verify.sh smoke`、`npm test` / `npm run test:smoke`、`npm run
 typecheck` 和 repo hygiene 继续验证当前核心合同、源码、测试与生成物边界，
 不把普通开发默认升级为行数硬门。bootstrap、external-suite、work-order、
@@ -120,32 +120,7 @@ full`。默认验证只检查 repo hygiene；需要删除 ignored cache/build by
 `line-budget` / `line-budget:strict` npm 与 shell aliases 已退役。Canonical
 maintenance lane 是 `source-structure` / `source-structure:strict`；
 `contracts/source_structure_policy.json#compatibility_aliases` 和
-`source-structure:json` readback 均保持空 alias list。2026-07-07 cleanup landing
-同时移除了测试 support 对 Node 标准库的 re-export facade，并把 legacy professional
-skill 物理 tombstone 文件合并为 `capability_map` / README redirect ledger。
-`script-to-pack:readback` / `script-to-pack:readback:full` 仍运行在 strict
-source-structure gate 下；若 source-structure gate 失败，会以
-`failed_source_structure_gate` 暴露原因。这不改变 cleanup candidate 数量，也不授权
-item `6/7` 物理删除；它们已完成 parity re-audit，当前结论是 retained。
-
-2026-07-09 retained helper deletion gate readback：本轮只确认删除门，不做源码删除。
-`npm run source-structure:json` 显示 source-purity/script-to-pack receipt guard
-`violation_count=0`、`orphan_script_count=0`、`cleanup_candidate_count=0`、
-`retained_current_count=32`；`npm run script-to-pack:readback -- --json` 仍因 strict
-source-structure `line_budget` 返回 `failed_source_structure_gate`，但 cleanup 维度同样是
-`cleanup_candidate_count=0`、`cleanup_apply_candidate_count=0`、
-`missing_evidence_item_count=0`。OPL generated/default caller readback
-`opl agents interfaces --repo-dir . --json` 显示 generated interface `status=ready`、
-default-entry no-resurrection gate `pass`、8 个默认入口由 OPL 持有且
-`execute-external-work-order` answer-shape roundtrip `accepted_answer_shape_aligned`；这只证明
-OPL default-caller surface 对齐，不证明 OMA retained validator/materializer 已满足
-no-active-caller、OPL validator/materializer parity、tombstone/provenance 或 owner receipt /
-typed blocker roundtrip 删除门。因此本轮结论继续是 `no_safe_delete_retained_current`：
-`scripts/execute-external-work-order.ts` 保留为 OMA work-order validation aperture；
-`scripts/lib/stage-decomposition-pack-draft/**`、`scripts/lib/work-order-*` 和相邻
-agent-evidence/external-suite materializers 保留为 refs-only helper/materializer；下一次物理删除
-必须先拿到对应 OPL primitive parity、no-active-caller refresh、no-forbidden-write proof where
-applicable、tombstone/provenance ref 和 owner/typed-blocker accepted shape evidence。
+`source-structure:json` readback 均保持空 alias list。测试 support 不再 re-export Node 标准库；Node 运行入口直接使用稳定 type-stripping、`import.meta.dirname` 和 `import.meta.main`。retained helper 的后续删除仍需 OPL primitive parity、no-active-caller 和 owner evidence，但 status 不保存 dated count snapshot。
 
 同一轮 re-audit 确认 OPL Framework `/Users/gaofeng/workspace/one-person-lab`
 提供 `opl work-order execute` public command、Codex worktree execution、dry-run、absorb、

@@ -139,6 +139,13 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 - 理由：OMA 可以学习 agent-building organization，但不能引入 alternate runtime、installer、server 或 execution plane。
 - 影响：不得导入 xskill daemon/runtime、generic scheduler、skill installer、team server、storage authority 或 generated interface owner；xskill-derived 内容只能进入 refs-only proposal、developer work order、typed blocker、reviewer evidence 或 declarative policy。
 
+### Source-shape 只保留 canonical audit 和单一 structure readback
+
+- 决策：default surfaces 的物理缺席只记录在 `contracts/functional_privatization_audit.json`；OPL default-caller consumer 直接读取 `default_surface_boundary` 与 `retired_default_surface_ids`。OMA 不再持有逐 surface deletion-evidence 合同。
+- 决策：script retention 只通过 `source-structure` / `source-structure:json` 暴露摘要；删除 compact/full cleanup readback aliases、重复 authority guard 和 dated count snapshot。
+- 理由：第二 evidence contract 与多套只读 aliases 没有增加 authority，却会在 surface 已物理缺席后持续生成伪 worklist和旧入口传播。
+- 影响：source-structure 继续 fail closed 校验 caller、source refs、retention classification 与 aggregate drift，但不能授权 physical delete、readiness、promotion、typed blocker body 或 owner receipt body。
+
 ## Superseded 决策入口
 
 以下旧口径只作为 history/provenance 读，不再承担 current owner：

@@ -107,19 +107,6 @@ function firstString(value: unknown): string | null {
   return typeof value === 'string' && value.trim() !== '' ? value : null;
 }
 
-function byScriptRef(entries: unknown): Map<string, JsonObject> {
-  const map = new Map<string, JsonObject>();
-  if (!Array.isArray(entries)) return map;
-  entries.forEach((entry) => {
-    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return;
-    const scriptRef = firstString((entry as JsonObject).script_ref);
-    if (scriptRef) {
-      map.set(scriptRef, entry as JsonObject);
-    }
-  });
-  return map;
-}
-
 function gateByScriptRef(gates: unknown): Map<string, JsonObject> {
   const map = new Map<string, JsonObject>();
   if (!Array.isArray(gates)) return map;
@@ -180,42 +167,6 @@ function scriptRetentionSummary(
     retained_current_repo_native_surface_count: count('retained_current_repo_native_surface'),
     fixture_or_proof_only_retained_count: count('fixture_or_proof_only_retained'),
     unclassified_script_count: retentionStates.filter((entry) => !entry).length,
-  };
-}
-
-function sourceStructureGateReadback(
-  exitCode: number,
-  strict: boolean,
-  budget: number,
-  failOnOverBudget: boolean,
-  scannedFileCount: number,
-  acceptedAggregates: string[],
-  lineBudgetViolations: string[],
-  guardViolations: string[],
-): JsonObject {
-  const failReasons = [
-    ...(guardViolations.length > 0 ? ['script_to_pack_receipt_guard'] : []),
-    ...(lineBudgetViolations.length > 0 && failOnOverBudget ? ['line_budget'] : []),
-  ];
-  return {
-    state: exitCode === 0 ? 'passed' : 'failed',
-    ok: exitCode === 0,
-    mode: strict ? 'strict' : 'advisory',
-    command_ref: strict ? 'npm run source-structure:strict -- --json' : 'npm run source-structure:json',
-    fail_reasons: failReasons,
-    line_budget: {
-      budget_lines: budget,
-      fail_on_over_budget: failOnOverBudget,
-      scanned_file_count: scannedFileCount,
-      accepted_generated_aggregate_count: acceptedAggregates.length,
-      accepted_generated_aggregates: acceptedAggregates,
-      violation_count: lineBudgetViolations.length,
-      violations: lineBudgetViolations,
-    },
-    script_to_pack_receipt_guard: {
-      violation_count: guardViolations.length,
-      violations: guardViolations,
-    },
   };
 }
 
@@ -437,16 +388,6 @@ scanned.forEach((relativePath) => {
 });
 
 const exitCode = guardViolations.length > 0 || (violations.length > 0 && failOnOverBudget) ? 1 : 0;
-const sourceStructureGate = sourceStructureGateReadback(
-  exitCode,
-  strict,
-  budget,
-  failOnOverBudget,
-  scanned.length,
-  acceptedAggregates,
-  violations,
-  guardViolations,
-);
 
 if (jsonOutput) {
   console.log(JSON.stringify({
