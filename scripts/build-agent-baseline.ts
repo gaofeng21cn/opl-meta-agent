@@ -415,6 +415,23 @@ function jsonObject(value: unknown, field: string): JsonObject {
   return value as JsonObject;
 }
 
+function assertScaffoldValidationPassed(scaffoldValidation: JsonObject): void {
+  const scaffold = jsonObject(
+    scaffoldValidation.standard_domain_agent_scaffold,
+    'OPL scaffold validation standard_domain_agent_scaffold',
+  );
+  const validation = jsonObject(
+    scaffold.validation,
+    'OPL scaffold validation standard_domain_agent_scaffold.validation',
+  );
+  if (validation.status !== 'passed') {
+    const blockers = stringArray(validation.blockers);
+    throw new Error(
+      `OPL scaffold validation did not pass: ${blockers.length > 0 ? blockers.join(', ') : 'unknown_scaffold_validation_failure'}.`,
+    );
+  }
+}
+
 function canonicalBuiltinProfileRef(value: string): string {
   if (value.startsWith('opl-profile-route:')) {
     throw new Error(`Selected OPL profile must be a builtin profile, not a route ref: ${value}`);
@@ -716,6 +733,7 @@ export function runBuildAgentBaseline({
     targetAgentDir,
     '--json',
   ]);
+  assertScaffoldValidationPassed(scaffoldValidation);
   const generatedInterfaces = runOpl(oplBin, [
     'agents',
     'interfaces',

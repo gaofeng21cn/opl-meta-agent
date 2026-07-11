@@ -410,6 +410,28 @@ function runBaselineFixture(
   ]));
 }
 
+function writeBlockedScaffoldValidationOplShim(dir: string): string {
+  const shimPath = path.join(dir, 'opl-blocked-scaffold-validation.sh');
+  const blockedValidation = JSON.stringify({
+    standard_domain_agent_scaffold: {
+      state: 'validation_blocked',
+      validation: {
+        status: 'blocked',
+        blockers: ['fixture_scaffold_validation_blocker'],
+      },
+    },
+  });
+  fs.writeFileSync(shimPath, `#!/bin/sh
+if [ "$1" = "agents" ] && [ "$2" = "scaffold" ] && [ "$3" = "--validate" ]; then
+  printf '%s\\n' '${blockedValidation}'
+  exit 0
+fi
+exec ${JSON.stringify(oplBin)} "$@"
+`);
+  fs.chmodSync(shimPath, 0o755);
+  return shimPath;
+}
+
 function validateBuildAgentBaselineOutput(payload: unknown) {
   const schemaRef = 'contracts/schemas/build-agent-baseline.output.schema.json';
   const schema = readJson(path.join(repoRoot, schemaRef));
@@ -641,6 +663,34 @@ test('build-agent-baseline rejects drifted or escaping StageRun domain payload r
   }
 });
 
+test('build-agent-baseline fails closed when OPL scaffold validation is blocked', () => {
+  withTempDir('oma-bootstrap-scaffold-blocked-', (outputRoot) => {
+    const reviewerPath = path.join(outputRoot, 'reviewer.json');
+    writeReviewerEvaluation(reviewerPath);
+    const stageRunReadbackPaths = writeBuildStageRunReadbacks(
+      outputRoot,
+      targetAgent.domain_id,
+      new Map<string, JsonObject>([
+        ['stage-decomposition', buildFixtureStageDecompositionCloseout({ targetAgent })],
+        ['agent-skeleton-build', buildFixtureAgentSkeletonBuildCloseout({ targetAgent })],
+      ]),
+    );
+
+    assert.throws(
+      () => runBuildAgentBaseline({
+        outputDir: outputRoot,
+        oplBin: writeBlockedScaffoldValidationOplShim(outputRoot),
+        aiReviewerEvaluationPath: reviewerPath,
+        targetAgent,
+        stageRunReadbackPaths,
+      }),
+      /OPL scaffold validation did not pass.*fixture_scaffold_validation_blocker/i,
+    );
+    assert.equal(fs.existsSync(path.join(outputRoot, 'agent-lab-suite-seed.json')), false);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'foundry-lab-work-order.json')), false);
+  });
+});
+
 test('build-agent-baseline writes a conformant hybrid package and canonical Foundry handoff', () => {
   withTempDir('oma-bootstrap-pass4-', (outputRoot) => {
     const reviewerPath = path.join(outputRoot, 'reviewer.json');
@@ -680,6 +730,7 @@ test('build-agent-baseline writes a conformant hybrid package and canonical Foun
       descriptor_ref: path.join(targetDir, 'contracts/domain_descriptor.json'),
     });
     assert.equal(payload.status, 'candidate_package_materialized_ready_for_opl_foundry_lab_evaluation');
+    assert.equal(payload.target_agent.scaffold_validation_status, 'passed');
     assert.equal(payload.opl_profile_conformance.status, 'passed');
     assertBuildAgentBaselineOutputSchema(payload);
     assert.equal(payload.artifacts.agent_build_receipt_path, path.join(targetDir, 'contracts/agent_build_receipt.json'));

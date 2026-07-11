@@ -71,8 +71,9 @@ test('foundry agent series pins the shared implementation and policy releases', 
   const feedbackPolicy = series.standard_feedback_self_evolution_trigger_policy as JsonObject;
   const feedbackBoundary = feedbackPolicy.authority_boundary as JsonObject;
 
-  assert.equal(series.shared_release_pin_strategy.owner_commit_pin_required, true);
-  assert.equal(series.shared_release_pin_strategy.domain_dependency_pin_required, true);
+  assert.equal(series.shared_release_pin_strategy.owner_managed_latest_stable_channel_required, true);
+  assert.equal(series.shared_release_pin_strategy.lockfile_resolved_commit_receipt_required, true);
+  assert.equal(series.shared_release_pin_strategy.consumer_exact_commit_equality_gate, false);
   assert.equal((packageJson.dependencies as JsonObject)['opl-framework-shared'], oplSharedReleaseDependency);
   assert.equal((rootPackageLock.dependencies as JsonObject)['opl-framework-shared'], oplSharedReleaseDependency);
   assert.equal(String(sharedPackageLock.resolved).endsWith(`#${oplSharedReleaseCommit}`), true);

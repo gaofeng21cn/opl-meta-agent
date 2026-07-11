@@ -122,6 +122,9 @@ test('stage-decomposition materializer writes refs-only stage pack surfaces', ()
     assert.equal(foundrySeries.stage_manifest_ref, 'agent/stages/manifest.json');
     assert.equal(foundrySeries.stage_control_plane_ref, 'opl-generated:family_stage_control_plane');
     assert.ok(foundrySeries.required_identity_fields.includes('stage_manifest_ref'));
+    assert.equal(foundrySeries.shared_release_pin_strategy.owner_managed_latest_stable_channel_required, true);
+    assert.equal(foundrySeries.shared_release_pin_strategy.lockfile_resolved_commit_receipt_required, true);
+    assert.equal(foundrySeries.shared_release_pin_strategy.consumer_exact_commit_equality_gate, false);
     assert.equal(artifactMorphology.native_source_policy.creative_source_must_not_be_generator_code, true);
     assert.ok(compilerInput.required_domain_pack_paths.includes(
       'contracts/schemas/plan-evidence-synthesis.input.schema.json',
