@@ -10,29 +10,9 @@ import {
   asRecord,
   asRecordArray,
   asStringArray,
+  assertMatchingStringArray,
   assertBooleanFalse,
 } from './shared.ts';
-
-function normalizedStringArray(value: unknown, field: string): string[] {
-  if (value === undefined || value === null) {
-    return [];
-  }
-  return asStringArray(value, field);
-}
-function assertMatchingStringArray(actual: unknown, expected: unknown, field: string): void {
-  const actualList = normalizedStringArray(actual, `stage_decomposition_pack_draft.${field}`);
-  const expectedList = normalizedStringArray(expected, `requested_target_agent.${field}`);
-  if (JSON.stringify(actualList) !== JSON.stringify(expectedList)) {
-    throw new Error(`stage-decomposition pack draft ${field} does not match requested target.`);
-  }
-}
-
-function optionalStringArray(value: unknown, field: string): string[] {
-  if (value === undefined || value === null) {
-    return [];
-  }
-  return asStringArray(value, field);
-}
 
 function expectedReferencePatternRefs(targetAgent: TargetAgent): string[] {
   return buildReferenceDesignPacket(targetAgent)?.transferable_design_patterns

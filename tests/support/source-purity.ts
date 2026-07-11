@@ -58,8 +58,10 @@ function listFalseReadyScanSourceRefs(relativeRef: string): string[] {
       ? [relativeRef]
       : [];
   }
-  return fs.readdirSync(absoluteRef, { withFileTypes: true })
-    .flatMap((entry) => listFalseReadyScanSourceRefs(path.join(relativeRef, entry.name)))
+  return ['.json', '.ts', '.sh', '.yml', '.yaml']
+    .flatMap((extension) => fs.globSync(`**/*${extension}`, { cwd: absoluteRef }))
+    .map((entry) => path.join(relativeRef, entry))
+    .filter((entry) => entry !== 'tests/source-purity.test.ts' && !entry.startsWith('tests/source-purity/'))
     .sort();
 }
 
@@ -187,14 +189,8 @@ export function assertIncludesAll(actual: string[], expected: string[], label: s
 
 function listFilesByExtension(relativeDir: string, extension: string): string[] {
   const absoluteDir = path.join(repoRoot, relativeDir);
-  return fs.readdirSync(absoluteDir, { withFileTypes: true })
-    .flatMap((entry) => {
-      const entryRelativePath = path.join(relativeDir, entry.name);
-      if (entry.isDirectory()) {
-        return listFilesByExtension(entryRelativePath, extension);
-      }
-      return entry.name.endsWith(extension) ? [entryRelativePath] : [];
-    })
+  return fs.globSync(`**/*${extension}`, { cwd: absoluteDir })
+    .map((entry) => path.join(relativeDir, entry))
     .sort();
 }
 

@@ -304,12 +304,8 @@ function researchSourcePatternRef(targetAgent: MinimalTargetAgent, index: number
   return `research-source-ref:${targetAgent.domain_id}/${index + 1}`;
 }
 
-export function resolveReferenceDesignPatterns(targetAgent: MinimalTargetAgent): JsonObject[] {
-  return resolveReferenceDesignWorkflowPatterns(targetAgent);
-}
-
 function referenceDesignPatternInputs(targetAgent: MinimalTargetAgent): JsonObject[] {
-  const patterns = resolveReferenceDesignPatterns(targetAgent);
+  const patterns = resolveReferenceDesignWorkflowPatterns(targetAgent);
   const userPatterns = patterns.filter((pattern) => pattern.pattern_origin === 'user_typed_pattern_packet');
   return userPatterns.length > 0 ? userPatterns : patterns;
 }
@@ -672,13 +668,6 @@ export function buildAgentBuildReceipt(
 
 export function buildAgentBuildReceiptRef(targetAgent: MinimalTargetAgent): string {
   return `build-receipt-ref:opl-meta-agent/${targetAgent.domain_id}`;
-}
-
-export function buildSourceDerivedBuildReceipt(
-  targetAgent: MinimalTargetAgent,
-  options: AgentPackPlanOptions = {},
-): JsonObject | null {
-  return buildAgentBuildReceipt(targetAgent, options);
 }
 
 export function buildStageDecompositionSubpacketSet(

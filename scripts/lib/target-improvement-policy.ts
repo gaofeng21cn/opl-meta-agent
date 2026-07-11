@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { AiReviewerEvaluation } from './meta-agent-loop-ai-reviewer.ts';
-import { readJson, type TargetAgent } from './meta-agent-loop-io.ts';
+import { readJson } from './meta-agent-loop-io.ts';
 import type { JsonObject } from './domain-pack.ts';
 import {
   DEFAULT_FORBIDDEN_TARGET_PATHS_OR_SURFACES,
@@ -521,10 +521,4 @@ function fileHintsForPatchRefs({ patchRefs, policy }: { patchRefs: string[]; pol
 
 export function targetEditableSurfaceRefs(proposedChangeRefs: string[]): string[] {
   return surfaceRefsForPatchRefs(proposedChangeRefs);
-}
-
-export function mechanismEditableSurfaces(proposedChangeRefs: string[]): string[] {
-  return surfaceRefsForPatchRefs(proposedChangeRefs).map((surfaceRef) =>
-    surfaceRef.startsWith('target_agent_') ? surfaceRef : `target_agent_${surfaceRef}`
-  );
 }

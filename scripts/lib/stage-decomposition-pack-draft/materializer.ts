@@ -22,9 +22,9 @@ import {
   asString,
   asStringArray,
   isRecord,
+  optionalString,
   validateBody,
   validateMaterializationPath,
-  validateRelativeMarkdownPath,
 } from './shared.ts';
 
 export type StageDecompositionCloseoutRepairResult = {
@@ -34,7 +34,7 @@ export type StageDecompositionCloseoutRepairResult = {
 };
 
 function cloneJson<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
+  return structuredClone(value);
 }
 
 function uniqueStrings(values: unknown[]): string[] {
@@ -47,10 +47,6 @@ function refValues(value: unknown, field: string): string[] {
   return asRecordArray(value, field).map((entry, index) =>
     asString(entry.ref, `${field}[${index}].ref`)
   );
-}
-
-function optionalString(value: unknown): string | null {
-  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
 }
 
 const frameworkOwnedStageContractFields = new Set([

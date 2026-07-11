@@ -17,7 +17,6 @@ import {
 import {
   buildAgentPackPlan,
   buildDesignAdmissionReceipt,
-  buildProfileSelectionReceipt,
   buildReferenceDesignPacket,
   buildResearchSynthesisPacket,
   buildTransferMap,
@@ -150,15 +149,6 @@ const researchDrivenObjectRefs = {
 
 const sourceDerivedRequiredDesignObjects = ['ReferenceDesignPacket', 'TransferMap', 'AgentPackPlan'];
 const researchDrivenRequiredDesignObjects = ['ResearchSynthesisPacket', 'TransferMap', 'AgentPackPlan'];
-
-const sourceDerivedCoreRefs = {
-  reference_design_packet_ref: sourceDerivedObjectRefs.referenceDesignPacketRef,
-  transfer_map_ref: sourceDerivedObjectRefs.transferMapRef,
-  agent_pack_plan_ref: sourceDerivedObjectRefs.agentPackPlanRef,
-  design_admission_receipt_ref: sourceDerivedObjectRefs.designAdmissionReceiptRef,
-  build_receipt_ref: sourceDerivedObjectRefs.buildReceiptRef,
-  stage_decomposition_subpacket_set_ref: sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef,
-};
 
 const researchDrivenCoreRefs = {
   research_synthesis_packet_ref: researchDrivenObjectRefs.researchSynthesisPacketRef,

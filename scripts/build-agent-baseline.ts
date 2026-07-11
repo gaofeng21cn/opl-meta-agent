@@ -6,7 +6,6 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs as parseNodeArgs } from 'node:util';
 import {
   buildProfileSelectionReceipt,
-  type DomainPackSummary,
   type JsonObject,
   domainPackReceiptFields,
   readDomainPackSummary,
@@ -36,8 +35,6 @@ import {
 } from './lib/action-stage-route.ts';
 import {
   type AiReviewerEvaluation,
-  aiReviewerAcceptanceGates,
-  aiReviewerReceiptFields,
   assertAiReviewerArtifactMorphologyEvidence,
   loadAiReviewerEvaluation,
 } from './lib/meta-agent-loop-ai-reviewer.ts';

@@ -202,18 +202,3 @@ export function aiReviewerReceiptFields(
     },
   };
 }
-
-export function aiReviewerAcceptanceGates(): JsonObject {
-  return {
-    ai_reviewer_evaluation_present: true,
-    ai_reviewer_critique_present: true,
-    ai_reviewer_suggestions_present: true,
-    ai_reviewer_source_refs_valid: true,
-    ai_reviewer_direct_evidence_refs_present: true,
-    ai_reviewer_direct_evidence_refs_valid: true,
-    ai_reviewer_provenance_present: true,
-    ai_reviewer_no_shared_context: true,
-    ai_reviewer_independent_attempt_present: true,
-    ai_reviewer_attempt_refs_distinct: true,
-  };
-}

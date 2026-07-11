@@ -42,6 +42,7 @@ import {
   WORKSPACE_TOPOLOGY_PROFILE,
   commandPrefix,
   domainLabelFor,
+  optionalString,
   ref,
   snakeId,
   stageNativeRefsFor,
@@ -388,10 +389,6 @@ function buildAgentPackPlanOptions({
     toolPath: DEFAULT_TOOL_AFFORDANCE_REF,
     qualityGatePath,
   };
-}
-
-function optionalString(value: unknown): string | null {
-  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
 }
 
 function requiredMachineString(value: unknown, field: string): string {

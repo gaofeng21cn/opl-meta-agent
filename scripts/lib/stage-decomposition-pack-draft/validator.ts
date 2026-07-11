@@ -20,7 +20,6 @@ import type {
 } from './shared.ts';
 import { validateArtifactMorphologyContract } from './artifact-morphology-validator.ts';
 import {
-  expectedSourcePatternRefs,
   validateAgentPackPlanObject,
   validateDesignAdmissionReceiptObject,
   validateReferenceDesignPacketObject,
@@ -40,11 +39,14 @@ import {
   asRecordArray,
   asString,
   asStringArray,
+  assertMatchingStringArray,
   assertBooleanFalse,
   domainLabelFor,
   filePlansByPath,
   filesByPath,
   isRecord,
+  normalizedStringArray,
+  optionalString,
   stageNativeRefsFor,
   validateRelativeMarkdownPath,
 } from './shared.ts';
@@ -85,37 +87,11 @@ function assertMatchingOptionalStringArray(
   }
 }
 
-function normalizedStringArray(value: unknown, field: string): string[] {
-  if (value === undefined || value === null) {
-    return [];
-  }
-  return asStringArray(value, field);
-}
-
-function assertMatchingStringArray(actual: unknown, expected: unknown, field: string): void {
-  const actualList = normalizedStringArray(actual, `stage_decomposition_pack_draft.${field}`);
-  const expectedList = normalizedStringArray(expected, `requested_target_agent.${field}`);
-  if (JSON.stringify(actualList) !== JSON.stringify(expectedList)) {
-    throw new Error(`stage-decomposition pack draft ${field} does not match requested target.`);
-  }
-}
-
 function assertMatchingObject(actual: unknown, expected: unknown, field: string): void {
   const actualObject = asRecord(actual, `stage_decomposition_pack_draft.${field}`);
   if (JSON.stringify(actualObject) !== JSON.stringify(expected)) {
     throw new Error(`stage-decomposition pack draft ${field} does not match requested profile requirements.`);
   }
-}
-
-function optionalString(value: unknown): string | null {
-  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
-}
-
-function optionalStringArray(value: unknown, field: string): string[] {
-  if (value === undefined || value === null) {
-    return [];
-  }
-  return asStringArray(value, field);
 }
 
 function assertOptionalRefField(
@@ -142,7 +118,7 @@ function assertOptionalRefArrayIncludes(
   if (!expected) {
     return;
   }
-  if (!optionalStringArray(actual, field).includes(expected)) {
+  if (!normalizedStringArray(actual, field).includes(expected)) {
     throw new Error(`stage-decomposition pack draft ${field} missing ${expected}.`);
   }
 }
@@ -663,7 +639,7 @@ function validateStageControlPlane(
       if (stage.stage_origin !== expectedPlannedStage.origin) {
         throw new Error(`stage-decomposition pack draft stage ${stageId} origin does not match AgentPackPlan.`);
       }
-      const stagePatternSourceRefs = optionalStringArray(
+      const stagePatternSourceRefs = normalizedStringArray(
         stage.stage_pattern_source_refs,
         `stage ${stageId}.stage_pattern_source_refs`,
       );
@@ -681,8 +657,8 @@ function validateStageControlPlane(
           stage.pattern_id !== expectedPlannedStage.pattern_id
           || stage.step_id !== expectedPlannedStage.step_id
           || stage.provenance_kind !== expectedPlannedStage.provenance_kind
-          || JSON.stringify(optionalStringArray(stage.source_anchor_refs, `stage ${stageId}.source_anchor_refs`))
-            !== JSON.stringify(optionalStringArray(
+          || JSON.stringify(normalizedStringArray(stage.source_anchor_refs, `stage ${stageId}.source_anchor_refs`))
+            !== JSON.stringify(normalizedStringArray(
               expectedPlannedStage.source_anchor_refs,
               `expected_agent_pack_plan.${stageId}.source_anchor_refs`,
             ))

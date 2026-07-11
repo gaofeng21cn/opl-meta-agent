@@ -150,8 +150,6 @@ export const WORKSPACE_TOPOLOGY_PROFILE = objectField(
   'workspace_topology_profile',
 );
 
-export type StageRunnerKind = 'fixture' | 'live';
-
 export type StageDecompositionFilePlan = {
   path: string;
   materialization_stage_ref: 'agent-skeleton-build';
@@ -242,6 +240,25 @@ export function asStringArray(value: unknown, field: string): string[] {
     throw new Error(`stage-decomposition pack draft ${field} must be a string array.`);
   }
   return value.map((entry) => entry.trim());
+}
+
+export function normalizedStringArray(value: unknown, field: string): string[] {
+  if (value === undefined || value === null) {
+    return [];
+  }
+  return asStringArray(value, field);
+}
+
+export function assertMatchingStringArray(actual: unknown, expected: unknown, field: string): void {
+  const actualList = normalizedStringArray(actual, `stage_decomposition_pack_draft.${field}`);
+  const expectedList = normalizedStringArray(expected, `requested_target_agent.${field}`);
+  if (JSON.stringify(actualList) !== JSON.stringify(expectedList)) {
+    throw new Error(`stage-decomposition pack draft ${field} does not match requested target.`);
+  }
+}
+
+export function optionalString(value: unknown): string | null {
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
 }
 
 export function domainLabelFor(targetAgent: TargetAgent): string {

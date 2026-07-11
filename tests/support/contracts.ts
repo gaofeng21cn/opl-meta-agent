@@ -91,14 +91,8 @@ export function readOwnerJson(relativePath: string): JsonObject {
 
 export function listMarkdownFiles(relativeDir: string): string[] {
   const absoluteDir = path.join(repoRoot, relativeDir);
-  return fs.readdirSync(absoluteDir, { withFileTypes: true })
-    .flatMap((entry) => {
-      const entryRelativePath = path.join(relativeDir, entry.name);
-      if (entry.isDirectory()) {
-        return listMarkdownFiles(entryRelativePath);
-      }
-      return entry.name.endsWith('.md') ? [entryRelativePath] : [];
-    })
+  return fs.globSync('**/*.md', { cwd: absoluteDir })
+    .map((entry) => path.join(relativeDir, entry))
     .sort();
 }
 
@@ -252,23 +246,6 @@ export function assertNoActiveMorphologyForbiddenOwnerTokens(surface: JsonObject
       `${label} should not carry active forbidden morphology token ${token}`,
     );
   }
-}
-
-export function assertNoForbiddenDesignCenterVocabulary(relativePath: string): void {
-  const content = readText(relativePath).toLowerCase();
-  [
-    /\bmed-autoscience\b/,
-    /\bmed-autogrant\b/,
-    /(?:^|[:/_.-])mas(?:$|[:/_.-])/,
-    /(?:^|[:/_.-])mag(?:$|[:/_.-])/,
-    /\bmedical\b/,
-    /\bgrant\b/,
-    /\bmanuscript\b/,
-    /\bpublication\b/,
-    /\bfundability\b/,
-  ].forEach((pattern) => {
-    assert.equal(pattern.test(content), false, `${relativePath} should not match ${pattern}`);
-  });
 }
 
 export const opl10PrincipleRefs = [

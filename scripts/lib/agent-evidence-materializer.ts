@@ -51,7 +51,6 @@ export type { AgentContracts, TargetAgentIdentity } from './agent-evidence-contr
 export function buildAgentLabSuiteSeed({
   agentRepo,
   contracts,
-  aiReviewerEvaluation,
   aiReviewerEvaluationPath,
 }: {
   agentRepo: string;
