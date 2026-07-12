@@ -20,10 +20,12 @@ Live Evidence 后置 / 功能结构优先是 OMA 日常开发读法。script-to-
 当前目标物理形态是：
 
 ```text
-Declarative Agent-Building Pack
+Declarative Standard Agent-Building Pack (Markdown/JSON)
   + OPL generated/hosted surfaces
-  + minimal agent-building authority functions
+  + TypeScript agent-design/materialization helpers
 ```
+
+这里的 TypeScript 是 OMA helper implementation，不是 Agent 类型。OMA 生成的目标 Agent 同样必须先是语言中立 Standard Agent Pack，再按实际领域需要选择 Python/TypeScript helper；pack-only 也是合法结果。helper language 不得改变 membership、stage/golden path、generated surfaces 或 authority owner。
 
 OPL family `Foundry Agent OS` 目标下，OMA 的 target delta 读 [OMA Foundry Agent OS 目标差异页](./active/foundry-agent-os-target-delta.md)：Agent Lab runtime/result/receipt ledger、suite-plan compiler、evaluation/developer work-order execution、absorb/cleanup、scaffold generator、generated interface bundle、conformance/read-model projection、promotion/canary/rollback shell 和 capability registry ABI 上收到 OPL；agent-building semantics、candidate Agent Pack/AgentBuildReceipt、thin evaluation request、Foundry evaluation/developer work-order typed semantic request、mechanism candidate、no-forbidden-write proof和 expected blocker / route-back refs 保留为 OMA authority kernel。该 target delta 只冻结架构方向，不声明 target-agent ready、App live rendering、human approval、default promotion 或 family production ready。
 

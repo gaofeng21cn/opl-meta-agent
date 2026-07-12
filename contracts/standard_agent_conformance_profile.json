@@ -38,6 +38,7 @@
     "allowed_residue_prefixes": ["contracts/", "docs/history/", "tests/"],
     "required_surface_ids": [
       "declarative_agent_building_pack",
+      "standard_agent_implementation_profile",
       "agent_building_authority_functions",
       "opl_scaffold_materialization_request_producer",
       "generated_surface_refs"
@@ -47,6 +48,11 @@
         "surface_id": "declarative_agent_building_pack",
         "classification": "declarative_domain_pack",
         "source_refs": ["agent/"]
+      },
+      {
+        "surface_id": "standard_agent_implementation_profile",
+        "classification": "standard_agent_implementation_profile",
+        "source_refs": ["contracts/pack_compiler_input.json"]
       },
       {
         "surface_id": "agent_building_authority_functions",

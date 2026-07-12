@@ -895,6 +895,18 @@ test('build-agent-baseline materializes source-derived proof with canonical OPL 
     const generatedPrompt = fs.readFileSync(path.join(targetDir, stageControl.stages[0].prompt_refs[0].ref), 'utf8');
 
     assert.equal(payload.status, 'candidate_package_materialized_ready_for_opl_foundry_lab_evaluation');
+    assert.deepEqual(compilerInput.implementation_profile, {
+      profile_id: 'opl.standard_domain_agent.v1',
+      agent_identity: 'declarative_standard_agent_pack',
+      pack_formats: ['markdown', 'json'],
+      helpers: {
+        optional: true,
+        entries: [],
+        language_is_identity: false,
+        rust_policy: 'framework_hot_path_only',
+      },
+      generated_surfaces_owner: 'one-person-lab',
+    });
     assert.equal(payload.opl_profile_conformance.status, 'passed');
     assertBuildAgentBaselineOutputSchema(payload);
     assert.equal(fs.existsSync(path.join(outputRoot, 'baseline-delivery-receipt.json')), false);
@@ -1230,6 +1242,10 @@ test('canonical OPL refs-only pattern packet produces its own stable workflow st
 
   assert.ok(packet);
   assert.ok(plan);
+  assert.equal(packet.surface_kind, 'opl_foundry_reference_design_packet');
+  assert.equal(packet.version, 'opl.foundry.reference-design-packet.v1');
+  assert.equal(plan.surface_kind, 'opl_foundry_agent_pack_plan');
+  assert.equal(plan.version, 'opl.foundry.agent-pack-plan.v1');
   assert.deepEqual(
     packet.transferable_design_patterns[0].transferable_workflow_steps.map((step: JsonObject) => step.step_id),
     ['risk-case-intake', 'model-evidence-review', 'risk-interpretation', 'owner-handoff-gate'],
@@ -1417,6 +1433,10 @@ test('primary reference design remains the only required design basis when resea
   assert.ok(transferMap);
   assert.ok(plan);
   assert.ok(admission);
+  assert.equal(transferMap.surface_kind, 'opl_foundry_transfer_map');
+  assert.equal(transferMap.version, 'opl.foundry.transfer-map.v1');
+  assert.equal(admission.surface_kind, 'opl_foundry_design_admission_receipt');
+  assert.equal(admission.version, 'opl.foundry.design-admission-receipt.v1');
   assert.equal(transferMap.design_basis_kind, 'source_derived_design');
   assert.equal(plan.design_basis_kind, 'source_derived_design');
   assert.deepEqual(admission.required_design_objects, sourceDerivedRequiredDesignObjects);

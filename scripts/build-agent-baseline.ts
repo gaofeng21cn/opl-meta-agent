@@ -738,7 +738,8 @@ export function runBuildAgentBaseline({
     '--json',
   ]);
   const targetAgentPackageManifestValidation = runOpl(oplBin, [
-    'packages',
+    'connect',
+    'agent-packages',
     'validate-manifest',
     '--manifest-url', pathToFileURL(targetAgentPackageManifestPath).href,
     '--trust-tier', 'first_party',

@@ -9,8 +9,9 @@
   "input_handoff_schema_id": "opl.reference_design_pattern_packet.v1",
   "input_handoff_schema_ref": "https://one-person-lab.local/contracts/opl-framework/reference-design-pattern-packet.schema.json",
   "input_handoff_policy": "Validate the OPL-owned refs-only envelope, resolve only its local JSON-pointer semantic refs, then materialize the OMA-owned content-rich ReferenceDesignPacket.",
-  "object_surface_kind": "opl_meta_agent_reference_design_packet",
-  "object_version": "opl-meta-agent.reference-design-packet.v1",
+  "canonical_identity_ref": "opl-framework/source-derived-agent-design-abi#reference_design_packet",
+  "object_surface_kind": "opl_foundry_reference_design_packet",
+  "object_version": "opl.foundry.reference-design-packet.v1",
   "required_fields": [
     "surface_kind",
     "version",

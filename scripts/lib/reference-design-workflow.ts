@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validateReferenceDesignPatternPacket } from 'opl-framework/reference-design-pattern-packet';
+import { SOURCE_DERIVED_AGENT_DESIGN_TYPED_OBJECTS } from 'opl-framework/source-derived-agent-design-abi';
 
 type JsonObject = Record<string, any>;
 
@@ -631,8 +632,8 @@ export function buildReferenceDesignPacketContent(
   const hasUserOrigin = userPatterns.length > 0;
   const activePatterns = hasUserOrigin ? userPatterns : seedPatterns;
   return {
-    surface_kind: 'opl_meta_agent_reference_design_packet',
-    version: 'opl-meta-agent.reference-design-packet.v1',
+    surface_kind: SOURCE_DERIVED_AGENT_DESIGN_TYPED_OBJECTS.reference_design_packet.surface_kind,
+    version: SOURCE_DERIVED_AGENT_DESIGN_TYPED_OBJECTS.reference_design_packet.version,
     packet_ref: refs.reference_design_packet_ref,
     target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
     reference_source_refs: stringList(targetAgent.reference_design_source_refs),

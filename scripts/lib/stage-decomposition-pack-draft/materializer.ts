@@ -1,3 +1,5 @@
+import { STANDARD_AGENT_IMPLEMENTATION_PROFILE } from 'opl-framework/standard-agent-implementation-profile';
+
 import {
   buildAgentBuildReceipt,
   buildAgentBuildReceiptRef,
@@ -511,6 +513,7 @@ export function buildScaffoldMaterializationRequest({
     })),
     pack_compiler_input: {
       required_domain_pack_path_additions: [...new Set(actionSchemaRefs(draft))],
+      implementation_profile: cloneJson(STANDARD_AGENT_IMPLEMENTATION_PROFILE),
     },
     build_receipt_candidate: buildReceiptCandidate,
     build_receipt_installation: {

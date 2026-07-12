@@ -140,6 +140,18 @@ test('stage-decomposition emits an OPL-owned scaffold materialization request', 
   const foundrySeries = contracts.find((entry) => entry.path === 'contracts/foundry_agent_series.json')?.value as JsonObject;
   const artifactMorphology = contracts.find((entry) => entry.path === 'contracts/artifact_morphology_contract.json')?.value as JsonObject;
   const compilerInput = request.pack_compiler_input as JsonObject;
+  assert.deepEqual(compilerInput.implementation_profile, {
+    profile_id: 'opl.standard_domain_agent.v1',
+    agent_identity: 'declarative_standard_agent_pack',
+    pack_formats: ['markdown', 'json'],
+    helpers: {
+      optional: true,
+      entries: [],
+      language_is_identity: false,
+      rust_policy: 'framework_hot_path_only',
+    },
+    generated_surfaces_owner: 'one-person-lab',
+  });
   const stage = (stageControl.stages as JsonObject[])[0];
     assert.equal(stage.stage_id, 'evidence-synthesis-plan');
     assert.equal(stage.selected_executor.executor_kind, 'codex_cli');
@@ -332,19 +344,23 @@ test('stage-decomposition validator fails closed on empty source-derived design 
   const stage = (stageControl.stages as JsonObject[])[0];
 
   const emptyPacket = {
-    surface_kind: 'opl_meta_agent_reference_design_packet',
+    surface_kind: 'opl_foundry_reference_design_packet',
+    version: 'opl.foundry.reference-design-packet.v1',
     packet_ref: stageControl.reference_design_packet_ref,
   };
   const emptyTransferMap = {
-    surface_kind: 'opl_meta_agent_transfer_map',
+    surface_kind: 'opl_foundry_transfer_map',
+    version: 'opl.foundry.transfer-map.v1',
     transfer_map_ref: stageControl.transfer_map_ref,
   };
   const emptyAgentPackPlan = {
-    surface_kind: 'opl_meta_agent_agent_pack_plan',
+    surface_kind: 'opl_foundry_agent_pack_plan',
+    version: 'opl.foundry.agent-pack-plan.v1',
     plan_ref: stageControl.agent_pack_plan_ref,
   };
   const emptyDesignAdmissionReceipt = {
-    surface_kind: 'opl_meta_agent_design_admission_receipt',
+    surface_kind: 'opl_foundry_design_admission_receipt',
+    version: 'opl.foundry.design-admission-receipt.v1',
     receipt_ref: stageControl.design_admission_receipt_ref,
   };
   const emptyBuildReceipt = {
@@ -440,7 +456,8 @@ test('stage-decomposition materialization repair does not hide empty design obje
   const stageControl = draft.stage_control_plane as JsonObject;
   const stage = (stageControl.stages as JsonObject[])[0];
   const emptyPacket = {
-    surface_kind: 'opl_meta_agent_reference_design_packet',
+    surface_kind: 'opl_foundry_reference_design_packet',
+    version: 'opl.foundry.reference-design-packet.v1',
     packet_ref: stageControl.reference_design_packet_ref,
   };
 

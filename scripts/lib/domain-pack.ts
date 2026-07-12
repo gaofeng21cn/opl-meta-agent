@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { SOURCE_DERIVED_AGENT_DESIGN_TYPED_OBJECTS } from 'opl-framework/source-derived-agent-design-abi';
 import {
   buildReferenceDesignAspects,
   buildReferenceDesignPacketContent,
@@ -418,8 +419,8 @@ export function buildTransferMap(
   const fallbackStageId = options.stageId ?? 'agent-output-draft';
   const actionId = options.actionId ?? 'draft-agent-output';
   return {
-    surface_kind: 'opl_meta_agent_transfer_map',
-    version: 'opl-meta-agent.transfer-map.v1',
+    surface_kind: SOURCE_DERIVED_AGENT_DESIGN_TYPED_OBJECTS.transfer_map.surface_kind,
+    version: SOURCE_DERIVED_AGENT_DESIGN_TYPED_OBJECTS.transfer_map.version,
     transfer_map_ref: refs.transfer_map_ref,
     reference_design_packet_ref: refs.reference_design_packet_ref ?? null,
     research_synthesis_packet_ref: refs.research_synthesis_packet_ref ?? null,
@@ -469,8 +470,8 @@ export function buildAgentPackPlan(
   });
   const plannedStages = [...sourcePatternStageRefs, ownerGateStage];
   return {
-    surface_kind: 'opl_meta_agent_agent_pack_plan',
-    version: 'opl-meta-agent.agent-pack-plan.v1',
+    surface_kind: SOURCE_DERIVED_AGENT_DESIGN_TYPED_OBJECTS.agent_pack_plan.surface_kind,
+    version: SOURCE_DERIVED_AGENT_DESIGN_TYPED_OBJECTS.agent_pack_plan.version,
     plan_ref: refs.agent_pack_plan_ref,
     reference_design_packet_ref: refs.reference_design_packet_ref ?? null,
     research_synthesis_packet_ref: refs.research_synthesis_packet_ref ?? null,
@@ -543,8 +544,8 @@ export function buildDesignAdmissionReceipt(
     }));
   const selectedProfileRefs = stringList(targetAgent.selected_opl_profile_refs);
   return {
-    surface_kind: 'opl_meta_agent_design_admission_receipt',
-    version: 'opl-meta-agent.design-admission-receipt.v1',
+    surface_kind: SOURCE_DERIVED_AGENT_DESIGN_TYPED_OBJECTS.design_admission_receipt.surface_kind,
+    version: SOURCE_DERIVED_AGENT_DESIGN_TYPED_OBJECTS.design_admission_receipt.version,
     receipt_id: `design-admission-receipt:opl-meta-agent/${targetAgent.domain_id}`,
     receipt_ref: `design-admission-receipt-ref:opl-meta-agent/${targetAgent.domain_id}`,
     target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
@@ -1364,7 +1365,7 @@ function buildTargetAgentPrimarySkillCapability(targetAgent: MinimalTargetAgent)
     verification_refs: [
       'git diff --check',
       'opl agents scaffold --validate <target-agent-dir> --json',
-      'opl packages validate-manifest --manifest-url <sidecar> --json',
+      'opl connect agent-packages validate-manifest --manifest-url <sidecar> --json',
     ],
     forbidden_surfaces: [
       'target domain truth',

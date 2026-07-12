@@ -1,3 +1,5 @@
+import { SOURCE_DERIVED_AGENT_DESIGN_TYPED_OBJECTS } from 'opl-framework/source-derived-agent-design-abi';
+
 import {
   buildAgentPackPlan,
   buildReferenceDesignPacket,
@@ -42,7 +44,11 @@ export function validateReferenceDesignPacketObject(
   transferMapRef: string,
   field: string,
 ): void {
-  if (actualPacket.surface_kind !== 'opl_meta_agent_reference_design_packet' || actualPacket.packet_ref !== packetRef) {
+  if (
+    actualPacket.surface_kind !== SOURCE_DERIVED_AGENT_DESIGN_TYPED_OBJECTS.reference_design_packet.surface_kind
+    || actualPacket.version !== SOURCE_DERIVED_AGENT_DESIGN_TYPED_OBJECTS.reference_design_packet.version
+    || actualPacket.packet_ref !== packetRef
+  ) {
     throw new Error(`stage-decomposition pack draft ${field}.reference_design_packet identity is invalid.`);
   }
   assertMatchingStringArray(
@@ -183,7 +189,11 @@ export function validateTransferMapObject(
   transferMapRef: string,
   field: string,
 ): void {
-  if (actualTransferMap.surface_kind !== 'opl_meta_agent_transfer_map' || actualTransferMap.transfer_map_ref !== transferMapRef) {
+  if (
+    actualTransferMap.surface_kind !== SOURCE_DERIVED_AGENT_DESIGN_TYPED_OBJECTS.transfer_map.surface_kind
+    || actualTransferMap.version !== SOURCE_DERIVED_AGENT_DESIGN_TYPED_OBJECTS.transfer_map.version
+    || actualTransferMap.transfer_map_ref !== transferMapRef
+  ) {
     throw new Error(`stage-decomposition pack draft ${field}.transfer_map identity is invalid.`);
   }
   if (
@@ -254,7 +264,11 @@ export function validateAgentPackPlanObject(
   agentPackPlanRef: string,
   field: string,
 ): void {
-  if (actualAgentPackPlan.surface_kind !== 'opl_meta_agent_agent_pack_plan' || actualAgentPackPlan.plan_ref !== agentPackPlanRef) {
+  if (
+    actualAgentPackPlan.surface_kind !== SOURCE_DERIVED_AGENT_DESIGN_TYPED_OBJECTS.agent_pack_plan.surface_kind
+    || actualAgentPackPlan.version !== SOURCE_DERIVED_AGENT_DESIGN_TYPED_OBJECTS.agent_pack_plan.version
+    || actualAgentPackPlan.plan_ref !== agentPackPlanRef
+  ) {
     throw new Error(`stage-decomposition pack draft ${field}.agent_pack_plan identity is invalid.`);
   }
   if (
@@ -360,7 +374,8 @@ export function validateDesignAdmissionReceiptObject(
   field: string,
 ): void {
   if (
-    actualReceipt.surface_kind !== 'opl_meta_agent_design_admission_receipt'
+    actualReceipt.surface_kind !== SOURCE_DERIVED_AGENT_DESIGN_TYPED_OBJECTS.design_admission_receipt.surface_kind
+    || actualReceipt.version !== SOURCE_DERIVED_AGENT_DESIGN_TYPED_OBJECTS.design_admission_receipt.version
     || actualReceipt.receipt_ref !== receiptRef
   ) {
     throw new Error(`stage-decomposition pack draft ${field}.design_admission_receipt identity is invalid.`);

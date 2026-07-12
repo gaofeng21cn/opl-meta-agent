@@ -29,8 +29,9 @@ or target owner authority.
 7. 为每个 stage 明确 goal、inputs、prompt refs、tools/action refs、knowledge refs、outputs、handoff 和 quality gate。
 8. 对每个 stage 写清 AI executor autonomy：Codex 可在哪些范围内自主规划、调用工具、要求补充 source、route-back、重写策略。
 9. 设计 action catalog，只保留 domain authority function 或 smoke CLI；generic CLI/MCP/Skill/product-entry 交给 OPL generated interface。
-10. 设计 memory descriptor：只定义 locator、schema、owner 和访问规则，不写 memory body。
-11. 设计 artifact morphology brief，先用 realistic target task 反推目标交付物形态，再固定：
+10. 形成语言中立的 implementation plan：Agent identity 固定为 Markdown/JSON Standard Agent Pack；先判断是否真的需要程序 helper。新建 baseline 默认物化 pack-only implementation profile。只有 target repo 已经存在且通过审计的 helper root 才能进入 profile；尚未实现的 helper need 必须作为 AgentPackPlan / capability requirement / developer work order ref，记录建议 role、language 与验证边界，不能伪造成已落地 implementation。Python/TypeScript 只能是 helper implementation，不得改变 stage graph、golden path、generated surfaces 或 authority owner，也不得用整个 `src/` / `packages/` 根目录掩盖 generic runtime。
+11. 设计 memory descriptor：只定义 locator、schema、owner 和访问规则，不写 memory body。
+12. 设计 artifact morphology brief，先用 realistic target task 反推目标交付物形态，再固定：
    - native source format，例如 Markdown chapter tree、DOCX/PPTX editable source、notebook、dataset manifest、asset folder 或 domain-native schema。
    - artifact body owner，以及 `opl-meta-agent` / OPL 只能持有 refs、locator、manifest、receipt 或 assembler policy 的边界。
    - creative source refs 与 assembled/export refs 的区别；创作源必须是可审阅、可分片、可复制的 domain-native source，导出物只作为 build/export result。
@@ -39,9 +40,9 @@ or target owner authority.
    - asset custody/file-path policy；imagegen、外部图片、音视频、数据、模板和第三方素材必须有项目内可复制路径、manifest/provenance/license refs 和缺失时的 blocker，不得只保留聊天附件、临时 URL 或本机绝对路径。
    - thin assembler/helper boundary；Python/TS helper 只能读取 native source、manifest 和 asset paths 做装配、校验或导出，不能把书稿、长文、长 deck 正文或开放式创作内容塞进源码字符串。
    - realistic target task review；不得只看 scaffold/interface/Agent Lab shape，必须用至少一个真实领域任务样例检查产物结构能否承载目标交付。
-12. 设计 artifact locator：只定义交付物 refs、package roots、receipts、provenance 和 morphology refs，不写 artifact body。
-13. 对每个 stage 标注 owner split：target domain agent、`opl-meta-agent`、OPL Framework。
-14. 检查所有 outputs 是否能被后续 stage 或 gate 消费，删掉不可消费的输出。
+13. 设计 artifact locator：只定义交付物 refs、package roots、receipts、provenance 和 morphology refs，不写 artifact body。
+14. 对每个 stage 标注 owner split：target domain agent、`opl-meta-agent`、OPL Framework。
+15. 检查所有 outputs 是否能被后续 stage 或 gate 消费，删掉不可消费的输出。
 
 ## 输出
 
@@ -53,6 +54,7 @@ or target owner authority.
 - `stage_control_plane` 和每个 stage 必须保留 `profile_selection_mode`、`selected_profile_refs`、`profile_selection_receipt_ref`、`profile_requirements`；source-derived 路线还必须保留 `source_derived_design_receipt`、`reference_design_pattern_packet_refs`、非空 `ReferenceDesignPacket`、非空 `TransferMap`、非空 `AgentPackPlan`、非空 `DesignAdmissionReceipt`、`StageDecompositionSubpacketSet` 和物化后的 `AgentBuildReceipt` / `build_receipt`；research-driven 路线还必须保留 `research_driven_design_receipt`、`research_source_refs`、`expert_practice_notes`、`research_synthesis_refs`、非空 `ResearchSynthesisPacket`、非空 `TransferMap`、非空 `AgentPackPlan`、非空 `DesignAdmissionReceipt`、`StageDecompositionSubpacketSet` 和物化后的 `AgentBuildReceipt` / `build_receipt`；两条设计依据路线都必须保留 `transferable_pattern_requirements` 和 `capability_plan_requirements`。stage inputs/requires 必须引用 profile selection receipt、三类设计对象、DesignAdmissionReceipt 和 StageDecompositionSubpacketSet；AgentBuildReceipt 进入 expected receipt / readback，不作为物化前 input；每个 design-derived stage 必须一一对应 AgentPackPlan workflow step，并声明匹配的 `pattern_id`、`step_id`、`source_anchor_refs` 和 `stage_pattern_source_refs`。
 - 若请求包含参考设计，`target_agent` 必须保留 `reference_design_source_refs`、`reference_design_pattern_notes` 和 `reference_design_pattern_packet_refs`；stage pack 必须把它们声明为 architecture inspiration，不作为 target truth、runtime dependency 或 owner verdict。
 - `artifact_morphology_brief`：native source format、artifact body owner、creative source refs、assembled/export refs、sharding strategy、extent/scale contract、asset custody/file-path policy、thin assembler/helper boundary 和 realistic target task review refs。
+- `implementation_profile`：`agent_identity=declarative_standard_agent_pack`、`pack_formats=[markdown,json]`、OPL generated-surface owner，以及零个或多个已经物理存在并通过审计的 helper implementation；新建 baseline 默认 entries 为空，未实现 helper need 进入 AgentPackPlan / work order。该 profile 不授权 generic runtime、CLI、workbench 或第二 Pack source。
 - `action_catalog`：domain-owned action metadata、supported surfaces 和 no-forbidden-write authority boundary。
 - `stage_control_plane`：完整 stage list，每个 stage 都带 `selected_executor=codex_cli`、prompt/skill/knowledge/quality gate refs、requires/ensures、expected receipt refs、independent gate policy 和 owner boundary。
 - `files`：目标 repo 下真实 `agent/prompts`、`agent/stages`、`agent/skills`、`agent/knowledge`、`agent/quality_gates` Markdown 文件路径与正文。
@@ -65,6 +67,7 @@ or target owner authority.
 - independent gate policy 必须禁止 execution attempt self-review、shared-context review、mechanical completion claim 和 provider-completion-as-domain-ready claim。
 - action/stage metadata 可作为 CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK surface 的唯一派生源。
 - 没有 repo-owned generic scheduler、daemon、queue、attempt ledger、workbench 或 private wrapper。
+- helper language 不参与 Agent membership；删除或换写 helper implementation 后，Agent identity、stage/prompt/skill/knowledge/quality-gate Pack、golden path 和 generated interface 保持不变。
 - domain truth、memory body、artifact body、quality/export verdict 的 owner 没有漂移。
 - artifact morphology brief 必须覆盖目标领域交付物的真实创作源、分片、体量、资产保管和装配边界；缺失 native source format、sharding strategy、extent/scale contract、asset custody/file-path policy 或 realistic target task review 时 fail closed。
 - source-derived / research-driven 路线必须保留 `StageDecompositionSubpacketSet`，且 cognitive packet 顺序、materialization boundary 和 fail-closed checks 不得缺失或重排。

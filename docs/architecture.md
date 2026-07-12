@@ -15,6 +15,8 @@ OMA 的新建 agent intake 路线分四类：`builtin_profile`、`hybrid`、`sou
 
 标准 Agent Pack ABI 只从 `opl-framework/standard-agent-pack-abi` 消费；该 bare import 由 OPL Connect 管理的 Framework link 解析，OMA 的 `package.json` / lockfile 不安装或固定 Framework 实现。OMA 不在 `standard_foundry_policies` 复制 ABI body。source-derived / research-driven 的正式 `AgentBuildReceipt` 只由 OPL 在 target files 全部物化并计算 digest 后写盘，`build-agent-baseline` 的 action output 同时暴露 receipt path/ref；预物化 OMA surface 只保留 candidate 与 `expected_build_receipt_ref`。
 
+标准 Agent 的外部接口按语言中立模型读取：`agent/` Markdown 与 `contracts/` JSON 共同定义 Agent identity 和 Pack ABI；`runtime/authority_functions/`、`runtime/native_helpers/` 或等价已声明 source refs 只承载可选 helper implementation。OMA 自身因此是 `Standard Agent Pack + TypeScript agent-design/materialization helpers`，不是 TypeScript Agent。OMA 新建目标仓时默认交给 OPL scaffold 一个 pack-only implementation profile；只有已经物理存在并通过 target-repo 审计的 helper root 才可登记。尚未实现的 helper need、建议 language 和验证边界进入 AgentPackPlan / capability requirement / developer work order，不能按 delivery-domain 文本启发式猜语言或伪造成已落地 helper。
+
 Repo-tracked `contracts/opl_agent_package_manifest.json` 和 OMA 生成的 target manifest 都是 source-only sidecars。未发生真实发布时不写 `distribution_payload`、OCI ref、rolling tag 或 digest；真实 published registry 路径继续由 OPL Connect 要求 immutable payload 与有效 SHA-256。Framework link 的 policy、物化、校验和 repair receipt 归 OPL package owner surface；OMA verification wrapper 只调用只读 `--check`，不实现 resolver、复制 Framework 或在检查路径写 link。
 
 Reference-driven route 还执行三条硬门：每个 `reference_design_source_ref` 必须由 typed packet 的 `source_material_ref` 覆盖；有用户 packet 时 seed 只保留 context/disposition，不进入 active TransferMap 或 stage graph；`AgentPackPlan` 的每个 source workflow step 必须在 `stage_control_plane.stages` 一一物化，并带匹配的 provenance、internal synthesis rationale、prompt、skill、knowledge、tool affordance 与 quality gate refs。非英文或混合语言 intake 通过 typed `intent_signals` 调用 OPL selector；selector 只补 lower-bound profile，不改变 reference design 的设计来源地位。
@@ -71,6 +73,8 @@ OMA 生成 target agent 时只提供 agent-building 语义，不维护私有 rep
 4. Agent Lab suite、independent reviewer、new-agent delivery gate、target owner receipt / typed blocker / human gate 共同决定收口形态。
 
 这条链路的边界是：OPL scaffold 负责目录标准、物理 materialization、digest 和最终 build receipt；OMA 只负责目标智能体的语义设计、domain-authored request、候选包和受限改进建议；target domain owner 持有 domain truth、artifact body、quality/export verdict、owner receipt 和 typed blocker。OPL scaffold 自带的 README 只做人读索引，不能作为 semantic pack source；可被合同消费的 source 必须是非 README pack files、stage control plane refs 和 closeout packet refs。
+
+目标仓的语言替换测试是强制架构检查：将一个 Python helper 改写为 TypeScript（或反向）时，若必须修改 Agent identity、stage/prompt/skill/knowledge/quality-gate pack、golden path、generated interface 或 Framework runtime，说明实现语言已经泄漏进 Agent 架构，目标仓不能按标准形态收口。
 
 ## Self-Evolution Responsibility Split
 

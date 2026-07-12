@@ -15,6 +15,7 @@
 - 结构化 AI reviewer evaluation ref/path，包含非空 critique、非空 suggestions、非 suite/scaffold-only source refs 和 review provenance。
 - artifact morphology brief ref，覆盖 native source format、artifact body owner、creative source/export refs、sharding strategy、extent/scale contract、asset custody/file-path policy、thin assembler/helper boundary 和 realistic target task review refs。
 - artifact morphology reviewer evidence ref/path；source refs 必须指向真实 target task、artifact locator、native source/shard/asset refs、diff/receipt 或 owner feedback，不能只有 scaffold/interface/suite refs。
+- standard implementation profile ref，必须证明 Agent identity 来自 Markdown/JSON Pack，helper language 只存在于受限 helper declarations，generated surfaces 继续归 OPL。
 - stage/action/memory/artifact/gate refs 完整。
 - owner boundary receipt。
 - operator runbook ref。
@@ -27,6 +28,8 @@
 - baseline receipt acceptance gates 明确 AI reviewer critique、suggestions、source refs 和 provenance 已通过校验。
 - takeover / external suite evidence 由 OPL 返回，且 external-suite judgment 显式记录 `no_source_patch_required`、可执行 developer work order 或 expected blocker ref。
 - baseline、takeover 或 external suite 至少一个 evidence path 覆盖 artifact morphology 风险，并能发现目标体量降级、开放式正文入源码字符串、缺分片、外部资产无 custody、assembler/helper 越界或缺 realistic target task review。
+- helper replacement test 成立：替换 Python/TypeScript helper implementation 不需要修改 Agent identity、stage/golden path、generated interface 或 owner boundary；没有 helper need 时 target 保持 pack-only。
+- implementation profile 中的每个 helper root 已物理存在并通过 target-repo 审计；尚未实现的 helper need 只出现在 AgentPackPlan / developer work order，不得伪装成已落地 helper。
 - 若 reviewer 或 Agent Lab 发现缺口，缺口必须映射到 target capability candidate 和 developer patch work order，并在 owner gate 或 typed blocker 中收口。
 - delivery receipt 声明版本、rollback path、open risks 和 owner review gate。
 
@@ -40,5 +43,7 @@
 - 缺少 OPL-returned takeover result/execution receipt、external-suite judgment、target capability candidate 或 work order / expected blocker ref。
 - Agent Lab 或 reviewer evidence 指出可修复缺口，但没有进入 improvement loop、developer work order 或 typed blocker。
 - 需要 repo-private generic wrapper 才能运行。
+- helper language、repo main language 或 implementation root 被写成 Agent membership/type，或 helper profile 把整个 `src/`/`packages/` 私有平台合法化。
+- implementation profile 声明了不存在的 helper root，或把 helper requirement/candidate 当成已落地 implementation。
 - Agent Lab result blocked/failed 且未进入 optimizer work order。
 - package 写入 target truth、memory body、artifact body 或 quality verdict。

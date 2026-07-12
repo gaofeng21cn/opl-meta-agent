@@ -39,7 +39,9 @@ Shape a target-agent request into an auditable intent packet, research dispositi
 6. Build the smallest stage sequence that preserves distinct owners and handoffs; every stage output should map to one next owner action, not to a private OMA runtime obligation.
 7. Name where future Agent Lab / FeedbackOps evidence should route: stage-route, specialist-skill, tool-connector, quality-gate, read-model/currentness, authority-boundary, or target-owner route-back. Do this as handoff vocabulary, not as new runtime machinery.
 8. Define artifact morphology from realistic target tasks: native source format, sharding, extent/scale contract, asset custody, assembler boundary, and export refs.
-9. Delete orphan outputs and compatibility aliases unless a contract explicitly needs a migration bridge.
+9. Define the language-neutral implementation plan after the stage and affordance design is stable. Keep the Agent identity in the Markdown/JSON Pack. A new baseline is pack-only until a helper root physically exists and passes target-repo review. Record an unimplemented helper need, proposed language, and verification boundary in AgentPackPlan/capability requirements or a developer work order; do not claim it in the implementation profile prematurely.
+10. Apply the helper replacement test: changing a helper from Python to TypeScript, or the reverse, must not require a change to Agent identity, stage topology, golden path, generated surfaces, or owner authority.
+11. Delete orphan outputs and compatibility aliases unless a contract explicitly needs a migration bridge.
 
 ## Reference Design Intake Protocol
 
@@ -60,6 +62,7 @@ Fail closed before target pack materialization when source bytes are unavailable
 - Do not create generic scheduler, daemon, queue, workbench, private runtime, compatibility facade, target owner authority, or generated-surface ownership.
 - Do not write target truth, memory body, artifact body, quality/export verdict, owner receipt body, typed blocker body or promotion state.
 - Do not copy long external text or target memory body into OMA pack files.
+- Do not classify target agents as Python Agents or TypeScript Agents. Language is an implementation detail of declared helpers only.
 
 ## Legacy Redirects
 

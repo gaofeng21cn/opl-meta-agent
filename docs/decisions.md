@@ -11,6 +11,13 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 
 ## 当前有效决策
 
+### 标准 Agent 身份与 helper 实现语言分离
+
+- 决策：OMA 自身和 OMA 生成/接管的目标智能体统一采用 `Declarative Standard Agent Pack + optional domain helpers`。`agent/` Markdown 与 `contracts/` JSON 是 Agent identity、stage、golden path、authority 和 generated-surface input 的唯一声明源；Python/TypeScript 只作为已声明 helper/authority function 的实现语言。
+- 决策：OMA 当前实现口径固定为 `Standard Agent Pack + TypeScript agent-design/materialization helpers`。该描述不建立 TypeScript Agent 分支；更换 helper 实现语言不能要求修改 Pack ABI、stage graph、generated interface 或 Framework runtime。
+- 决策：OMA 的 stage-decomposition 必须显式形成语言中立 implementation plan，并由 OPL scaffold/materializer 写入 target `pack_compiler_input`。新建 baseline 默认生成 pack-only profile；只有物理存在且已通过 target-repo 审计的 helper root 才能登记。未实现 helper need 进入 AgentPackPlan / capability requirement / developer work order。禁止通过 delivery-domain 关键词启发式选语言，也禁止预先伪造 helper 或用整个 `src/`/`packages/` 根目录掩盖 generic runtime。
+- 影响：baseline delivery gate 必须拒绝 helper language 成为 Agent membership、私有 CLI/runtime/workbench owner 或第二 Pack source；OPL Framework 继续持有 scaffold、pack compiler、generated CLI/App/runtime 和 conformance。
+
 ### Foundry canonical policy body 只归 OPL Framework
 
 - 决策：`standard_foundry_policies.json` 与 `foundry_agent_series.json` 只保存 release pin、OPL canonical consumer/contract refs、OMA identity 和 agent-building delta；stage-decomposition helper 从 OPL public consumer 读取 canonical body，并只合并 artifact morphology、OMA progress semantics 和 typed-blocker authority delta。
@@ -159,6 +166,12 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 - 决策：script retention 只通过 `source-structure` / `source-structure:json` 暴露摘要；删除 compact/full cleanup readback aliases、重复 authority guard 和 dated count snapshot。
 - 理由：第二 evidence contract 与多套只读 aliases 没有增加 authority，却会在 surface 已物理缺席后持续生成伪 worklist和旧入口传播。
 - 影响：source-structure 继续 fail closed 校验 caller、source refs、retention classification 与 aggregate drift，但不能授权 physical delete、readiness、promotion、typed blocker body 或 owner receipt body。
+
+### Source-derived design objects 使用 OPL Foundry ABI
+
+- 决策：OMA 生成的 `ReferenceDesignPacket`、`TransferMap`、`AgentPackPlan` 与 `DesignAdmissionReceipt` 使用 `opl-framework/source-derived-agent-design-abi` 的 `opl_foundry_*` identity；OMA 不再为这些跨 producer 对象维护 `opl_meta_agent_*` identity alias。
+- 理由：对象语义和设计判断仍由 OMA 持有，但 OPL Profile Spine、scaffold materializer 和未来其他 producer 需要一个与 producer 名称无关的稳定 machine interface。
+- 影响：OMA 只提交 candidate semantics；物理 scaffold、文件 digest、post-materialization `opl_foundry_agent_build_receipt` 和 conformance 继续由 OPL Foundry Lab 持有。ResearchSynthesisPacket 等 OMA-only 设计输入仍保留 OMA identity。
 
 ## Superseded 决策入口
 

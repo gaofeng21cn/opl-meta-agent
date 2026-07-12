@@ -279,6 +279,29 @@
     "required": true,
     "enforcement_ref": "agent/stages/manifest.json"
   },
+  "implementation_profile": {
+    "profile_id": "opl.standard_domain_agent.v1",
+    "agent_identity": "declarative_standard_agent_pack",
+    "pack_formats": [
+      "markdown",
+      "json"
+    ],
+    "helpers": {
+      "optional": true,
+      "entries": [
+        {
+          "language": "typescript",
+          "role": "domain_helper",
+          "source_roots": [
+            "scripts/"
+          ]
+        }
+      ],
+      "language_is_identity": false,
+      "rust_policy": "framework_hot_path_only"
+    },
+    "generated_surfaces_owner": "one-person-lab"
+  },
   "standard_agent_pack_abi": {
     "surface_kind": "opl_standard_agent_pack_abi",
     "version": "standard-agent-pack-abi.v1",

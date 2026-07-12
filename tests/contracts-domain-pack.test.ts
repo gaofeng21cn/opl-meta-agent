@@ -38,6 +38,22 @@ test('domain pack files and declarative stage refs resolve to usable repo files'
   assert.equal(packCompilerInput.domain_id, 'opl-meta-agent');
   assert.equal(packCompilerInput.canonical_agent_id, 'oma');
   assert.equal(packCompilerInput.canonical_semantic_pack_root, 'agent/');
+  assert.deepEqual(packCompilerInput.implementation_profile, {
+    profile_id: 'opl.standard_domain_agent.v1',
+    agent_identity: 'declarative_standard_agent_pack',
+    pack_formats: ['markdown', 'json'],
+    helpers: {
+      optional: true,
+      entries: [{
+        language: 'typescript',
+        role: 'domain_helper',
+        source_roots: ['scripts/'],
+      }],
+      language_is_identity: false,
+      rust_policy: 'framework_hot_path_only',
+    },
+    generated_surfaces_owner: 'one-person-lab',
+  });
   assert.equal(
     packCompilerInput.source_refs.quality_gate_source_ref,
     'agent/stages/manifest.json#/stages/*/quality_gate_refs',

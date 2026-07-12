@@ -98,13 +98,14 @@
     },
     "pack_compiler_input": {
       "type": "object",
-      "required": ["required_domain_pack_path_additions"],
+      "required": ["required_domain_pack_path_additions", "implementation_profile"],
       "properties": {
         "required_domain_pack_path_additions": {
           "type": "array",
           "items": { "$ref": "#/$defs/safeRelativePath" },
           "uniqueItems": true
-        }
+        },
+        "implementation_profile": { "type": "object" }
       },
       "additionalProperties": false
     },

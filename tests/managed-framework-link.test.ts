@@ -36,7 +36,7 @@ test('repo command wrapper runs only after the OPL-managed framework link check 
     fs.writeFileSync(fakeOplPath, [
       '#!/usr/bin/env bash',
       'printf "%s\\n" "$@" > "$OPL_TEST_ARGS_PATH"',
-      'printf \'{"error":"framework_link_missing","details":{"repair_command":"opl packages link-framework --agent-root <repo> --json"}}\\n\'',
+      'printf \'{"error":"framework_link_missing","details":{"repair_command":"opl connect agent-packages link-framework --agent-root <repo> --json"}}\\n\'',
       'exit 42',
       '',
     ].join('\n'));
@@ -63,7 +63,8 @@ test('repo command wrapper runs only after the OPL-managed framework link check 
     assert.equal(fs.existsSync(commandMarkerPath), false);
     assert.deepEqual(snapshotTree(agentRoot), before);
     assert.deepEqual(fs.readFileSync(argsPath, 'utf8').trim().split('\n'), [
-      'packages',
+      'connect',
+      'agent-packages',
       'link-framework',
       '--agent-root',
       fs.realpathSync(agentRoot),
@@ -101,4 +102,10 @@ test('OPL-managed framework link resolves canonical imports without a local Temp
   const { STANDARD_AGENT_PACK_ABI } = await import('opl-framework/standard-agent-pack-abi');
   assert.equal(STANDARD_AGENT_PACK_ABI.owner, 'one-person-lab');
   assert.equal(STANDARD_AGENT_PACK_ABI.version, 'standard-agent-pack-abi.v1');
+  const { STANDARD_AGENT_IMPLEMENTATION_PROFILE } = await import(
+    'opl-framework/standard-agent-implementation-profile'
+  );
+  assert.equal(STANDARD_AGENT_IMPLEMENTATION_PROFILE.agent_identity, 'declarative_standard_agent_pack');
+  assert.deepEqual(STANDARD_AGENT_IMPLEMENTATION_PROFILE.pack_formats, ['markdown', 'json']);
+  assert.deepEqual(STANDARD_AGENT_IMPLEMENTATION_PROFILE.helpers.entries, []);
 });
