@@ -22,6 +22,17 @@ test('opl-meta-agent descriptor keeps OPL runtime authority outside the repo', (
   assert.equal(descriptor.authority_boundary.opl_meta_agent_can_train_or_deploy_model_weights, false);
   assert.equal(descriptor.authority_boundary.opl_meta_agent_can_promote_default_agent_without_gate, false);
   assert.ok(asStrings(descriptor.outputs).includes('mechanism_patch_proposal_ref'));
+  assert.deepEqual(descriptor.standard_agent_interface.workspace_binding, {
+    locator_surface_kind: 'opl_meta_agent_workspace',
+    required_locator_fields: ['workspace_root'],
+    optional_locator_fields: [],
+    entry_command_template: null,
+    manifest_command_template: null,
+  });
+  assert.equal(descriptor.standard_agent_interface.runtime.dispatch_command, null);
+  assert.deepEqual(descriptor.standard_agent_interface.progress.deliverable_delta_aliases, [
+    'target_agent_substantive_delta',
+  ]);
 });
 
 test('domain pack files and declarative stage refs resolve to usable repo files', () => {
