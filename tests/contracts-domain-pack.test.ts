@@ -24,6 +24,12 @@ test('opl-meta-agent descriptor keeps OPL runtime authority outside the repo', (
   assert.ok(asStrings(descriptor.outputs).includes('mechanism_patch_proposal_ref'));
   assert.deepEqual(descriptor.standard_agent_interface.workspace_binding, {
     locator_surface_kind: 'opl_meta_agent_workspace',
+    default_profile_id: 'one_off',
+    workspace_kind: 'agent_foundry_workspace',
+    project_kind: 'agent_capability',
+    project_collection_label: 'deliverables',
+    default_workspace_id: 'agent-foundry-workspace',
+    default_project_id: 'agent-001',
     required_locator_fields: ['workspace_root'],
     optional_locator_fields: [],
     entry_command_template: null,
