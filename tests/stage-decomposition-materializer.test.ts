@@ -384,7 +384,7 @@ test('stage-decomposition validator fails closed on empty source-derived design 
   );
 });
 
-test('stage-decomposition validator fails closed when subpacket chain is missing or reordered', () => {
+test('stage-decomposition design-object packet set allows reordering and preserves dependency edges', () => {
   const packet = buildFixtureStageDecompositionCloseout({ targetAgent: sourceDerivedTargetAgent });
   const draft = packet.stage_decomposition_pack_draft as JsonObject;
   const stageControl = draft.stage_control_plane as JsonObject;
@@ -398,12 +398,53 @@ test('stage-decomposition validator fails closed when subpacket chain is missing
   );
 
   stageControl.stage_decomposition_subpacket_set = stage.stage_decomposition_subpacket_set;
-  const steps = stageControl.stage_decomposition_subpacket_set.cognitive_step_packets as JsonObject[];
-  [steps[0], steps[1]] = [steps[1], steps[0]];
+  const designObjects = stageControl.stage_decomposition_subpacket_set.design_object_packets as JsonObject[];
+  designObjects.reverse();
+  const dependencyEdges = stageControl.stage_decomposition_subpacket_set.dependency_edges as JsonObject[];
+  dependencyEdges.reverse();
+
+  assert.doesNotThrow(
+    () => validateStageDecompositionCloseoutPacket(packet, { targetAgent: sourceDerivedTargetAgent }),
+  );
+
+  designObjects.pop();
 
   assert.throws(
     () => validateStageDecompositionCloseoutPacket(packet, { targetAgent: sourceDerivedTargetAgent }),
-    /stage_decomposition_subpacket_set step 0/i,
+    /design object count|object .* missing/i,
+  );
+
+  const dependencyPacket = buildFixtureStageDecompositionCloseout({ targetAgent: sourceDerivedTargetAgent });
+  const dependencyDraft = dependencyPacket.stage_decomposition_pack_draft as JsonObject;
+  const dependencyControl = dependencyDraft.stage_control_plane as JsonObject;
+  const edges = dependencyControl.stage_decomposition_subpacket_set.dependency_edges as JsonObject[];
+  edges[0].dependent_ref = 'supported-design-claims:wrong-target';
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(dependencyPacket, { targetAgent: sourceDerivedTargetAgent }),
+    /dependency edge source-evidence-before-supported-claim dependent_ref is invalid/i,
+  );
+
+  const morphologyPacket = buildFixtureStageDecompositionCloseout({ targetAgent: sourceDerivedTargetAgent });
+  const morphologyDraft = morphologyPacket.stage_decomposition_pack_draft as JsonObject;
+  const morphologyControl = morphologyDraft.stage_control_plane as JsonObject;
+  morphologyControl.stage_decomposition_subpacket_set.artifact_morphology_ref =
+    'artifact-morphology-ref:wrong-target';
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(morphologyPacket, { targetAgent: sourceDerivedTargetAgent }),
+    /stage_decomposition_subpacket_set refs are invalid/i,
+  );
+
+  const objectMorphologyPacket = buildFixtureStageDecompositionCloseout({ targetAgent: sourceDerivedTargetAgent });
+  const objectMorphologyDraft = objectMorphologyPacket.stage_decomposition_pack_draft as JsonObject;
+  const objectMorphologyControl = objectMorphologyDraft.stage_control_plane as JsonObject;
+  const morphologyObject = (
+    objectMorphologyControl.stage_decomposition_subpacket_set.design_object_packets as JsonObject[]
+  ).find((entry) => entry.object_id === 'artifact-morphology');
+  assert.ok(morphologyObject);
+  morphologyObject.packet_ref = 'artifact-morphology-ref:wrong-target';
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(objectMorphologyPacket, { targetAgent: sourceDerivedTargetAgent }),
+    /object artifact-morphology packet_ref is invalid/i,
   );
 });
 

@@ -693,9 +693,10 @@ export function buildStageDecompositionSubpacketSet(
   const agentPackPlanRef = String(agentPackPlan.plan_ref);
   const designAdmissionReceiptRef = String(designAdmissionReceipt.receipt_ref);
   const buildReceiptRef = buildAgentBuildReceiptRef(targetAgent);
+  const artifactMorphologyRef = `artifact-morphology-ref:${targetAgent.domain_id}`;
   return {
     surface_kind: 'opl_meta_agent_stage_decomposition_subpacket_set',
-    version: 'opl-meta-agent.stage-decomposition-subpacket-set.v1',
+    version: 'opl-meta-agent.stage-decomposition-subpacket-set.v2',
     packet_set_ref: `stage-decomposition-subpacket-set:opl-meta-agent/${targetAgent.domain_id}`,
     stage_id: 'stage-decomposition',
     target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
@@ -708,42 +709,67 @@ export function buildStageDecompositionSubpacketSet(
     transfer_map_ref: transferMapRef,
     agent_pack_plan_ref: agentPackPlanRef,
     design_admission_receipt_ref: designAdmissionReceiptRef,
+    artifact_morphology_ref: artifactMorphologyRef,
     build_receipt_ref: buildReceiptRef,
-    cognitive_step_packets: [
+    design_object_packets: [
       {
-        step_id: 'design-basis',
+        object_id: 'design-basis',
         packet_kind: designBasisObject,
         packet_ref: designBasisPacketRef,
         open_judgment_owned_by: 'codex_cli',
         machine_validation: 'non_empty_transferable_patterns_and_extractable_design_aspects',
       },
       {
-        step_id: 'transfer-planning',
+        object_id: 'transfer-map',
         packet_kind: 'TransferMap',
         packet_ref: transferMapRef,
         open_judgment_owned_by: 'codex_cli',
         machine_validation: 'non_empty_adopt_adapt_reject_mappings',
       },
       {
-        step_id: 'agent-pack-planning',
+        object_id: 'agent-pack-plan',
         packet_kind: 'AgentPackPlan',
         packet_ref: agentPackPlanRef,
         open_judgment_owned_by: 'codex_cli',
         machine_validation: 'planned_stage_refs_and_capability_refs_present',
       },
       {
-        step_id: 'design-admission',
+        object_id: 'artifact-morphology',
+        packet_kind: 'ArtifactMorphologyBrief',
+        packet_ref: artifactMorphologyRef,
+        open_judgment_owned_by: 'codex_cli',
+        machine_validation: 'native_source_scale_sharding_asset_custody_and_realistic_task_refs_present',
+      },
+      {
+        object_id: 'design-admission',
         packet_kind: 'DesignAdmissionReceipt',
         packet_ref: designAdmissionReceiptRef,
         open_judgment_owned_by: 'validator',
         machine_validation: 'design_refs_stage_refs_rejected_patterns_forbidden_claims_boundary',
       },
       {
-        step_id: 'build-verification',
+        object_id: 'build-verification',
         packet_kind: 'AgentBuildReceipt',
         packet_ref: buildReceiptRef,
         open_judgment_owned_by: 'validator',
         machine_validation: 'post_materialization_trace_to_design_admission',
+      },
+    ],
+    dependency_edges: [
+      {
+        edge_id: 'source-evidence-before-supported-claim',
+        prerequisite_ref: designBasisPacketRef,
+        dependent_ref: `supported-design-claims:${targetAgent.domain_id}`,
+      },
+      {
+        edge_id: 'design-admission-before-materialization',
+        prerequisite_ref: designAdmissionReceiptRef,
+        dependent_ref: `target-pack-materialization:${targetAgent.domain_id}`,
+      },
+      {
+        edge_id: 'materialized-bytes-before-build-receipt',
+        prerequisite_ref: `materialized-target-pack-bytes:${targetAgent.domain_id}`,
+        dependent_ref: buildReceiptRef,
       },
     ],
     materialization_boundary: {

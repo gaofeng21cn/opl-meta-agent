@@ -37,7 +37,7 @@
 ## 质量门槛
 
 - 用户自然语言能追溯到 `target_brief`；字段缺失时只回问会改变交付物或 owner boundary 的问题。
-- 用户提供论文、PDF、repo 或案例系统作为参考时，必须保留 reference design refs / pattern packet refs，并先形成 `ReferenceDesignPacket -> TransferMap -> AgentPackPlan -> DesignAdmissionReceipt`；用户只有模糊想法时必须先形成 `ResearchSynthesisPacket -> TransferMap -> AgentPackPlan -> DesignAdmissionReceipt`；两条路线都必须保留 `StageDecompositionSubpacketSet`，证明没有跳过设计依据提炼、迁移和准入。上述 refs 只作为架构/评估/工作流模式来源，不写成 target truth、runtime dependency、owner receipt 或 quality verdict。物化后再保留 `AgentBuildReceipt` / `build_receipt`。
+- reference/research route 必须保留安全 design-basis packet、TransferMap、AgentPackPlan、morphology 与 DesignAdmissionReceipt refs。`StageDecompositionSubpacketSet` v2 将其作为无序对象集合；dependency edges 只守 source/safe packet、admission/materialization、bytes/build-receipt 的真实因果关系。上述 refs 不成为 target truth、runtime dependency、owner receipt 或 quality verdict。
 - 所有 stage 都有 prompt、tools/action、knowledge、handoff、quality gate declaration 和 independent gate policy。
 - free text closeout、partial refs、缺 independent gate policy、缺 quality gate declaration 或 self-review 在已有可消费 agent-pack artifact 时记录 `completed_with_quality_debt` 和 route-back；它们阻止交付完成、promotion 与 ready 声明，不阻止 stage transition。
 - generated interfaces 从 contracts 派生，不新增私有 wrapper。

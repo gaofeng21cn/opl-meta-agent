@@ -9,6 +9,7 @@ import {
   buildAgentPackPlan,
   buildDesignAdmissionReceipt,
   buildReferenceDesignPacket,
+  buildStageDecompositionSubpacketSet,
   buildTransferMap,
 } from '../scripts/lib/domain-pack.ts';
 
@@ -31,6 +32,7 @@ test('OMA ReferenceDesignPacket materialization matches its owned handoff contra
   const agentPackPlan = buildAgentPackPlan(targetAgent);
   const designAdmissionReceipt = buildDesignAdmissionReceipt(targetAgent);
   const agentBuildReceipt = buildAgentBuildReceipt(targetAgent);
+  const designObjectSet = buildStageDecompositionSubpacketSet(targetAgent);
 
   assert.ok(packet);
   assert.equal(packet.surface_kind, contract.object_surface_kind);
@@ -87,6 +89,19 @@ test('OMA ReferenceDesignPacket materialization matches its owned handoff contra
   ));
   assert.ok(designAdmissionReceipt);
   assert.ok(agentBuildReceipt);
+  assert.ok(designObjectSet);
+  const setPolicy = contract.stage_decomposition_design_object_set_policy;
+  assert.equal(designObjectSet.version, setPolicy.version);
+  assert.deepEqual(
+    new Set(designObjectSet.design_object_packets.map((packet: Record<string, unknown>) => packet.object_id)),
+    new Set(setPolicy.required_object_ids),
+  );
+  assert.deepEqual(
+    new Set(designObjectSet.dependency_edges.map((edge: Record<string, unknown>) => edge.edge_id)),
+    new Set(setPolicy.required_dependency_edge_ids),
+  );
+  assert.equal(setPolicy.collection_is_unordered, true);
+  assert.equal(setPolicy.transfer_pack_and_morphology_have_no_fixed_cognitive_order, true);
   [designAdmissionReceipt.design_derived_stage_refs, agentBuildReceipt.design_derived_stage_refs]
     .forEach((stageRefs: Array<Record<string, unknown>>) => {
       assert.ok(stageRefs.every((stage) =>
