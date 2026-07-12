@@ -25,7 +25,7 @@
     "status": {
       "enum": [
         "no_source_patch_required",
-        "candidate_blocked_missing_declarative_work_order_inputs",
+        "completed_with_quality_debt",
         "developer_patch_work_order_ready_for_opl_foundry_lab"
       ]
     },
@@ -116,17 +116,21 @@
     {
       "properties": {
         "status": {
-          "const": "candidate_blocked_missing_declarative_work_order_inputs"
+          "const": "completed_with_quality_debt"
         },
         "authority_boundary": {
           "type": "object",
           "required": [
-            "typed_blocker_body_materialized_by_oma",
+            "quality_debt_blocks_stage_transition",
+            "quality_debt_blocks_delivery_patch_or_promotion_claims",
             "executable_work_order_materialized"
           ],
           "properties": {
-            "typed_blocker_body_materialized_by_oma": {
+            "quality_debt_blocks_stage_transition": {
               "const": false
+            },
+            "quality_debt_blocks_delivery_patch_or_promotion_claims": {
+              "const": true
             },
             "executable_work_order_materialized": {
               "const": false

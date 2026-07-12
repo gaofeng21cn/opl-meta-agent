@@ -305,8 +305,9 @@ test('passed Foundry result without an execution receipt cannot claim no source 
       outputRoot,
       reviewerEvaluationPath,
     });
-    assert.equal(payload.status, 'candidate_blocked_missing_declarative_work_order_inputs');
+    assert.equal(payload.status, 'completed_with_quality_debt');
     assert.deepEqual(payload.missing_required_fields, ['foundry_lab_execution_receipt_ref']);
+    assert.equal(payload.next_stage_may_start, true);
     assert.equal(payload.foundry_lab_execution_receipt_ref, undefined);
     assert.equal(payload.semantic_requests, undefined);
   });

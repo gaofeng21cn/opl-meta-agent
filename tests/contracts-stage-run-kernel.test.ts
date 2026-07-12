@@ -12,7 +12,7 @@ import {
   assertIncludesAll,
 } from './support/source-purity.ts';
 
-const stageRunStateKeys = 'provider_completion_counts_as_domain_accepted file_presence_counts_as_stage_complete latest_json_counts_as_domain_accepted read_model_counts_as_transition_authority'.split(' ');
+const stageRunStateKeys = 'provider_completion_counts_as_domain_accepted file_presence_counts_as_stage_complete latest_json_counts_as_domain_accepted read_model_can_select_semantic_route quality_debt_counts_as_quality_acceptance'.split(' ');
 const retirementAuthorityKeys = 'legacy_surfaces_can_be_active_workflow legacy_surfaces_can_be_default_caller legacy_surfaces_can_write_runtime_state legacy_surfaces_can_write_read_model legacy_surfaces_can_authorize_owner_receipt legacy_surfaces_can_restore_repo_owned_wrapper legacy_surfaces_can_create_fallback_or_compatibility_route'.split(' ');
 const toolAuthorityKeys = 'tool_refs_can_define_fixed_workflow_order tool_refs_can_replace_stage_reasoning tool_refs_can_authorize_domain_verdict tool_refs_can_bypass_owner_approval_or_typed_blocker'.split(' ');
 const overclaimAuthorityKeys = 'allowed_claims_can_authorize_closeout controlled_canary_can_claim_live_domain_progress operator_summary_can_upgrade_readiness contract_completeness_can_claim_quality_or_export'.split(' ');
@@ -33,7 +33,19 @@ test('StageRun Kernel profile delegates schemas and rejects wrapper authority', 
   assert.equal(profile.surface_kind, 'opl_stage_run_kernel_profile');
   assert.equal(profile.owner, 'opl-meta-agent');
   assert.equal(profile.kernel_role, 'minimal_state_shell_not_domain_controller_system');
-  assertExactFalseFlags(profile.stage_run_state_machine, stageRunStateKeys, 'stage-run state machine');
+  const {
+    readable_artifact_counts_as_progress_input: readableArtifactCountsAsProgress,
+    codex_can_route_to_any_declared_stage: codexCanRouteToAnyDeclaredStage,
+    ...nonAuthorityStateMachineFlags
+  } = profile.stage_run_state_machine as Record<string, boolean>;
+  assertExactFalseFlags(nonAuthorityStateMachineFlags, stageRunStateKeys, 'stage-run state machine');
+  assert.equal(readableArtifactCountsAsProgress, true);
+  assert.equal(codexCanRouteToAnyDeclaredStage, true);
+  assert.equal((profile.codex_semantic_route_policy as JsonObject).semantic_owner, 'codex_cli');
+  assert.equal(
+    (profile.codex_semantic_route_policy as JsonObject).framework_can_accept_reject_rank_or_override_route,
+    false,
+  );
 
   assert.equal(oplRefs.owner, 'one-person-lab');
   assert.equal(oplRefs.domain_repo_role, 'consumer_profile_ref_only');

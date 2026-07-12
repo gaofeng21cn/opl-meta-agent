@@ -27,9 +27,7 @@ import {
   validateStageDecompositionCloseoutPacket,
 } from './lib/stage-decomposition-pack-draft/validator.ts';
 import {
-  buildActionStageContinuation,
-  buildActionStageRouteCloseoutGate,
-  closeoutForStage,
+  buildActionStageRouteContext,
   evaluateActionStageRoute,
 } from './lib/action-stage-route.ts';
 import {
@@ -86,30 +84,6 @@ function referenceDesignEvidenceRefs(targetAgent: TargetAgent): string[] {
     ...(targetAgent.expert_practice_notes ?? []).map((note) => `expert-practice:${note}`),
     ...(targetAgent.research_synthesis_refs ?? []),
   ];
-}
-
-function hasSourceDerivedDesignInput(parsed: {
-  referenceDesignSourceRefs: string[];
-  referenceDesignPatternNotes?: string[];
-  referenceDesignPatternPacketRefs: string[];
-}): boolean {
-  return parsed.referenceDesignSourceRefs.length > 0
-    || (parsed.referenceDesignPatternNotes?.length ?? 0) > 0
-    || parsed.referenceDesignPatternPacketRefs.length > 0;
-}
-
-function hasDesignBasisInput(parsed: {
-  referenceDesignSourceRefs: string[];
-  referenceDesignPatternNotes: string[];
-  referenceDesignPatternPacketRefs: string[];
-  researchSourceRefs: string[];
-  expertPracticeNotes: string[];
-  researchSynthesisRefs: string[];
-}): boolean {
-  return hasSourceDerivedDesignInput(parsed)
-    || parsed.researchSourceRefs.length > 0
-    || parsed.expertPracticeNotes.length > 0
-    || parsed.researchSynthesisRefs.length > 0;
 }
 
 export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineArgs {
@@ -246,24 +220,9 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
     values['stage-run-readback'],
   ).map((readbackPath) => path.resolve(readbackPath));
 
-  if (!parsed.aiReviewerEvaluationPath) {
-    throw new Error(
-      'Missing required --ai-reviewer-evaluation <path>; baseline delivery fails closed without structured AI reviewer evaluation.',
-    );
-  }
   if (!parsed.domainId) {
     throw new Error(
       'Missing required --domain-id <domain_id>; build-agent-baseline requires an explicit target agent.',
-    );
-  }
-  if (parsed.selectedOplProfileRefs.length === 0 && !hasDesignBasisInput(parsed)) {
-    throw new Error(
-      'Missing required profile input; target agent generation requires --selected-opl-profile <profile_ref>, source-derived design refs via --reference-design-source / --reference-design-pattern / --reference-design-pattern-packet, or research-driven design refs via --research-source / --expert-practice / --research-synthesis.',
-    );
-  }
-  if (parsed.selectedOplProfileRefs.length > 0 && !parsed.profileSelectionRationale) {
-    throw new Error(
-      'Missing required --profile-selection-rationale <rationale>; target agent generation requires profile selection rationale.',
     );
   }
   parsed.outputDir ??= fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-bootstrap-'));
@@ -308,7 +267,7 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
   return {
     outputDir: parsed.outputDir,
     oplBin: parsed.oplBin,
-    aiReviewerEvaluationPath: parsed.aiReviewerEvaluationPath,
+    aiReviewerEvaluationPath: parsed.aiReviewerEvaluationPath ?? '',
     targetAgent,
     stageRunReadbackPaths: parsed.stageRunReadbackPaths,
   };
@@ -344,58 +303,43 @@ function validateOrRepairStageDecompositionCloseoutPacket(
   }
 }
 
-function stageDecompositionBlockerFromError(error: unknown, targetAgent: TargetAgent): JsonObject {
+function stageDecompositionDebtFromError(error: unknown, targetAgent: TargetAgent): JsonObject {
   const message = errorMessage(error);
-  const referenceDesignResolutionFailed = message.startsWith('reference_design_resolution_failed:');
-  try {
-    const parsed = JSON.parse(message);
-    if (
-      typeof parsed === 'object'
-      && parsed !== null
-      && !Array.isArray(parsed)
-      && parsed.surface_kind === 'stage_attempt_closeout_packet'
-      && parsed.stage_id === 'stage-decomposition'
-    ) {
-      return parsed as JsonObject;
-    }
-  } catch {
-    // Fall through to a normalized typed blocker.
-  }
   return {
     surface_kind: 'stage_attempt_closeout_packet',
     stage_id: 'stage-decomposition',
     closeout_refs: [
-      `typed-blocker:opl-meta-agent/${targetAgent.domain_id}/stage-decomposition/${referenceDesignResolutionFailed
-        ? 'reference_design_resolution_failed'
-        : 'materialization_failed'}`,
+      `quality-debt:opl-meta-agent/${targetAgent.domain_id}/stage-decomposition/partial-design-artifact`,
     ],
-    blocked_reason: referenceDesignResolutionFailed
-      ? 'reference_design_resolution_failed'
-      : 'stage_decomposition_materialization_failed',
-    blocker_message: message,
-    domain_ready_verdict: 'blocked',
+    status: 'completed_with_quality_debt',
+    quality_debt_reasons: [message],
+    domain_ready_verdict: 'not_ready_quality_debt',
     next_owner: 'opl-meta-agent',
     route_impact: {
       target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
       materialization_allowed: false,
       baseline_receipt_signed: false,
+      next_stage_may_start: true,
+      route_back_selection_owner: 'codex_cli',
+      route_back_may_target_any_declared_stage: true,
+      validation_findings_are_non_blocking: true,
     },
     authority_boundary: {
       opl: 'stage_attempt_runtime_and_closeout_transport',
-      oma: 'cannot_materialize_without_valid_stage_decomposition_pack_draft',
+      oma: 'partial_design_artifact_owner_and_ai_route_back',
       target_domain: 'truth_quality_artifact_gate_owner',
     },
   };
 }
 
-function writeStageDecompositionBlocker(
+function writeStageDecompositionDebt(
   outputDir: string,
   targetAgent: TargetAgent,
-  blocker: JsonObject,
+  debt: JsonObject,
 ): string {
-  const blockerPath = path.join(outputDir, `${targetAgent.domain_id}-stage-decomposition-blocker.json`);
-  writeJson(blockerPath, blocker);
-  return blockerPath;
+  const debtPath = path.join(outputDir, `${targetAgent.domain_id}-stage-decomposition-quality-debt.json`);
+  writeJson(debtPath, debt);
+  return debtPath;
 }
 
 function stringArray(value: unknown): string[] {
@@ -635,30 +579,81 @@ export function runBuildAgentBaseline({
     actionId: 'build-agent-baseline',
     stageRunReadbackPaths,
   });
-  if (!routeProgress.complete) {
-    return buildActionStageContinuation(routeProgress);
-  }
-  const routeCloseoutGate = buildActionStageRouteCloseoutGate(routeProgress);
-  const stageDecompositionCloseout = closeoutForStage(routeProgress, 'stage-decomposition');
-  const agentSkeletonBuildCloseout = closeoutForStage(routeProgress, 'agent-skeleton-build');
+  const routeContext = buildActionStageRouteContext(routeProgress);
   fs.mkdirSync(outputDir, { recursive: true });
+  const stageDecompositionCloseout = routeProgress.stage_closeouts.find(
+    (entry) => entry.stage_id === 'stage-decomposition',
+  );
+  const agentSkeletonBuildCloseout = routeProgress.stage_closeouts.find(
+    (entry) => entry.stage_id === 'agent-skeleton-build',
+  );
+  if (!stageDecompositionCloseout || !agentSkeletonBuildCloseout) {
+    const missingStages = [
+      ...(!stageDecompositionCloseout ? ['stage-decomposition'] : []),
+      ...(!agentSkeletonBuildCloseout ? ['agent-skeleton-build'] : []),
+    ];
+    const debt = stageDecompositionDebtFromError(
+      new Error(`AI-selected route omitted specialized build inputs: ${missingStages.join(', ')}`),
+      targetAgent,
+    );
+    const debtPath = writeStageDecompositionDebt(outputDir, targetAgent, debt);
+    return {
+      surface_kind: 'opl_meta_agent_baseline_progress',
+      version: 'opl-meta-agent.baseline-progress.v1',
+      status: 'completed_with_quality_debt',
+      target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
+      quality_debt_ref: debtPath,
+      missing_specialized_input_stages: missingStages,
+      stage_closeout: debt,
+      next_stage_may_start: true,
+      route_back_selection_owner: 'codex_cli',
+    };
+  }
   const domainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
-  const aiReviewerEvaluation = loadAiReviewerEvaluation(aiReviewerEvaluationPath);
-  assertAiReviewerArtifactMorphologyEvidence(aiReviewerEvaluation, 'Baseline delivery');
-  targetAgent = resolveTargetAgentProfileSelection(targetAgent, oplBin);
+  let aiReviewerQualityDebt: string | null = null;
+  let aiReviewerEvaluation: AiReviewerEvaluation;
+  try {
+    aiReviewerEvaluation = loadAiReviewerEvaluation(aiReviewerEvaluationPath);
+    assertAiReviewerArtifactMorphologyEvidence(aiReviewerEvaluation, 'Baseline delivery');
+  } catch (error) {
+    aiReviewerQualityDebt = errorMessage(error);
+    aiReviewerEvaluation = {
+      reviewer_kind: 'missing_quality_debt',
+      model_or_provider: 'unavailable',
+      run_ref: 'quality-debt:opl-meta-agent/ai-reviewer/missing',
+      execution_attempt_ref: 'quality-debt:opl-meta-agent/execution/missing',
+      review_attempt_ref: 'quality-debt:opl-meta-agent/review/missing',
+      no_shared_context: true,
+      independent_attempt: false,
+      critique: aiReviewerQualityDebt,
+      suggestions: ['Run an independent AI review before delivery or promotion claims.'],
+      source_refs: [],
+      direct_evidence_refs: [],
+      verdict: 'not_reviewed_quality_debt',
+      predicted_impact: 'blocks_delivery_and_promotion_claims_not_stage_progress',
+      provenance: { status: 'missing_quality_debt' },
+    };
+  }
 
   const targetAgentDir = path.join(outputDir, targetAgent.domain_id);
   const evaluationRequestPath = path.join(outputDir, 'foundry-evaluation-request.json');
   const foundryLabWorkOrderPath = path.join(outputDir, 'foundry-lab-work-order.json');
 
   try {
+    targetAgent = resolveTargetAgentProfileSelection(targetAgent, oplBin);
     buildProfileSelectionReceipt(targetAgent);
   } catch (error) {
-    const blocker = stageDecompositionBlockerFromError(error, targetAgent);
-    const blockerPath = writeStageDecompositionBlocker(outputDir, targetAgent, blocker);
-    throw new Error(
-      `Stage decomposition failed closed; typed blocker written to ${blockerPath}: ${blocker.blocker_message}`,
-    );
+    const debt = stageDecompositionDebtFromError(error, targetAgent);
+    const debtPath = writeStageDecompositionDebt(outputDir, targetAgent, debt);
+    return {
+      surface_kind: 'opl_meta_agent_baseline_progress',
+      version: 'opl-meta-agent.baseline-progress.v1',
+      status: 'completed_with_quality_debt',
+      target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
+      quality_debt_ref: debtPath,
+      stage_closeout: debt,
+      next_stage_may_start: true,
+    };
   }
 
   const targetPrimarySkillPath = path.join(targetAgentDir, 'agent', 'primary_skill', 'SKILL.md');
@@ -702,51 +697,75 @@ export function runBuildAgentBaseline({
       request: scaffoldMaterializationRequest,
     });
   } catch (error) {
-    const blocker = stageDecompositionBlockerFromError(error, targetAgent);
-    const blockerPath = writeStageDecompositionBlocker(outputDir, targetAgent, blocker);
-    throw new Error(
-      `Stage decomposition failed closed; typed blocker written to ${blockerPath}: ${blocker.blocker_message}`,
-    );
+    const debt = stageDecompositionDebtFromError(error, targetAgent);
+    const debtPath = writeStageDecompositionDebt(outputDir, targetAgent, debt);
+    return {
+      surface_kind: 'opl_meta_agent_baseline_progress',
+      version: 'opl-meta-agent.baseline-progress.v1',
+      status: 'completed_with_quality_debt',
+      target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
+      quality_debt_ref: debtPath,
+      stage_decomposition_closeout_ref: stageDecompositionCloseout.closeout_packet_ref,
+      agent_skeleton_build_closeout_ref: agentSkeletonBuildCloseout.closeout_packet_ref,
+      stage_closeout: debt,
+      next_stage_may_start: true,
+      route_back_selection_owner: 'codex_cli',
+    };
   }
   const agentBuildReceipt = scaffoldMaterializationReceipt.build_receipt as JsonObject;
   const descriptorPath = path.join(targetAgentDir, 'contracts', 'domain_descriptor.json');
   const profileSelectionReceipt = buildProfileSelectionReceipt(targetAgent);
   const agentBuildReceiptPath = path.join(targetAgentDir, 'contracts', 'agent_build_receipt.json');
   const agentBuildReceiptRef = agentBuildReceipt.receipt_ref ?? null;
-  if (
-    profileSelectionReceipt.expected_build_receipt_ref
-    && agentBuildReceiptRef !== profileSelectionReceipt.expected_build_receipt_ref
-  ) {
-    throw new Error('Target descriptor requires the post-materialization AgentBuildReceipt.');
+  let targetDomainPackSummary: JsonObject;
+  let scaffoldValidation: JsonObject;
+  let generatedInterfaces: JsonObject;
+  let targetAgentPackageManifestValidation: JsonObject;
+  let targetProfileConformance: JsonObject;
+  try {
+    if (
+      profileSelectionReceipt.expected_build_receipt_ref
+      && agentBuildReceiptRef !== profileSelectionReceipt.expected_build_receipt_ref
+    ) {
+      throw new Error('Target descriptor requires the post-materialization AgentBuildReceipt.');
+    }
+    targetDomainPackSummary = readDomainPackSummary(targetAgentDir, {
+      domainId: targetAgent.domain_id,
+    });
+    scaffoldValidation = runOpl(oplBin, [
+      'agents', 'scaffold', '--validate', targetAgentDir, '--json',
+    ]);
+    assertScaffoldValidationPassed(scaffoldValidation);
+    generatedInterfaces = runOpl(oplBin, [
+      'agents', 'interfaces', '--repo-dir', targetAgentDir, '--json',
+    ]);
+    targetAgentPackageManifestValidation = runOpl(oplBin, [
+      'connect', 'agent-packages', 'validate-manifest',
+      '--manifest-url', pathToFileURL(targetAgentPackageManifestPath).href,
+      '--trust-tier', 'first_party', '--source-kind', 'local_file', '--json',
+    ]);
+    targetProfileConformance = assertTargetProfileConformance(oplBin, targetAgentDir, targetAgent);
+  } catch (error) {
+    const debt = stageDecompositionDebtFromError(error, targetAgent);
+    const debtPath = writeStageDecompositionDebt(outputDir, targetAgent, debt);
+    return {
+      surface_kind: 'opl_meta_agent_baseline_progress',
+      version: 'opl-meta-agent.baseline-progress.v1',
+      status: 'completed_with_quality_debt',
+      target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
+      target_agent_dir: targetAgentDir,
+      quality_debt_ref: debtPath,
+      materialized_artifact_refs: [
+        targetPrimarySkillPath,
+        targetAgentCapabilityMapPath,
+        targetAgentPackageManifestPath,
+        agentBuildReceiptPath,
+      ].filter((ref) => fs.existsSync(ref)),
+      stage_closeout: debt,
+      next_stage_may_start: true,
+      route_back_selection_owner: 'codex_cli',
+    };
   }
-  const targetDomainPackSummary = readDomainPackSummary(targetAgentDir, {
-    domainId: targetAgent.domain_id,
-  });
-  const scaffoldValidation = runOpl(oplBin, [
-    'agents',
-    'scaffold',
-    '--validate',
-    targetAgentDir,
-    '--json',
-  ]);
-  assertScaffoldValidationPassed(scaffoldValidation);
-  const generatedInterfaces = runOpl(oplBin, [
-    'agents',
-    'interfaces',
-    '--repo-dir',
-    targetAgentDir,
-    '--json',
-  ]);
-  const targetAgentPackageManifestValidation = runOpl(oplBin, [
-    'connect',
-    'agent-packages',
-    'validate-manifest',
-    '--manifest-url', pathToFileURL(targetAgentPackageManifestPath).href,
-    '--trust-tier', 'first_party',
-    '--source-kind', 'local_file',
-    '--json',
-  ]);
-  const targetProfileConformance = assertTargetProfileConformance(oplBin, targetAgentDir, targetAgent);
 
   const evaluationRequest = buildBaselineFoundryEvaluationRequest({
     targetAgent,
@@ -791,7 +810,9 @@ export function runBuildAgentBaseline({
   return {
     surface_kind: 'opl_meta_agent_candidate_package_handoff',
     version: 'opl-meta-agent.candidate-package-handoff.v1',
-    status: 'candidate_package_materialized_ready_for_opl_foundry_lab_evaluation',
+    status: aiReviewerQualityDebt
+      ? 'completed_with_quality_debt'
+      : 'candidate_package_materialized_ready_for_opl_foundry_lab_evaluation',
     product_id: 'opl-meta-agent',
     meta_agent_kind: 'opl_compatible_meta_agent',
     target_agent: {
@@ -836,13 +857,24 @@ export function runBuildAgentBaseline({
       closeout_packet_ref: agentSkeletonBuildCloseout.closeout_packet_ref,
       closeout_refs: agentSkeletonBuildCloseout.closeout_packet.closeout_refs,
     },
-    action_stage_route_closeout: routeCloseoutGate,
+    action_stage_route_context: routeContext,
     agent_building_judgment: {
       ai_reviewer_evaluation_ref: aiReviewerEvaluationPath,
       verdict: aiReviewerEvaluation.verdict,
       source_refs: aiReviewerEvaluation.source_refs,
       direct_evidence_refs: aiReviewerEvaluation.direct_evidence_refs,
     },
+    ...(aiReviewerQualityDebt
+      ? {
+          quality_debt: {
+            reasons: [aiReviewerQualityDebt],
+            blocks_stage_transition: false,
+            blocks_delivery_or_promotion_claims: true,
+          },
+          next_stage_may_start: true,
+          route_back_selection_owner: 'codex_cli',
+        }
+      : {}),
     foundry_lab_handoff: {
       evaluation_request: evaluationRequest,
       work_order: foundryLabWorkOrder,

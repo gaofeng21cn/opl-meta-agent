@@ -241,16 +241,17 @@ test('external-suite action schema matches the three real OMA judgment branches'
     { foundry_lab_execution_receipt_ref: foundryReceipt },
   )).ok, true);
   assert.equal(validate(outputRef, improveOutput(
-    'candidate_blocked_missing_declarative_work_order_inputs',
+    'completed_with_quality_debt',
     {
       candidate_refs: [
         'candidate:target-agent/capability-gap',
-        'expected-typed-blocker-ref:target-agent/missing-inputs',
+        'quality-debt:target-agent/missing-inputs',
       ],
       missing_required_fields: ['foundry_lab_execution_receipt_ref'],
       authority_boundary: {
         ...authorityBoundary(),
-        typed_blocker_body_materialized_by_oma: false,
+        quality_debt_blocks_stage_transition: false,
+        quality_debt_blocks_delivery_patch_or_promotion_claims: true,
         executable_work_order_materialized: false,
       },
     },
@@ -276,7 +277,7 @@ test('external-suite action schema matches the three real OMA judgment branches'
   )).ok, true);
 
   assert.equal(validate(outputRef, improveOutput(
-    'candidate_blocked_missing_declarative_work_order_inputs',
+    'completed_with_quality_debt',
     {
       missing_required_fields: ['foundry_lab_execution_receipt_ref'],
       semantic_requests: {

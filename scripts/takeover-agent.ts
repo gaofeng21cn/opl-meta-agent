@@ -10,6 +10,7 @@ import {
   readDomainPackSummary,
 } from './lib/domain-pack.ts';
 import {
+  type AiReviewerEvaluation,
   assertAiReviewerArtifactMorphologyEvidence,
   loadAiReviewerEvaluation,
 } from './lib/meta-agent-loop-ai-reviewer.ts';
@@ -74,15 +75,11 @@ export function parseTakeoverAgentArgs(argv: string[]): TakeoverArgs {
   if (!fs.existsSync(parsed.targetAgentDir)) {
     throw new Error(`Target agent path does not exist: ${parsed.targetAgentDir}`);
   }
-  if (!parsed.aiReviewerEvaluationPath) {
-    throw new Error('Missing required --ai-reviewer-evaluation <path>.');
-  }
-
   parsed.outputDir ??= fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-takeover-'));
   return {
     targetAgentDir: parsed.targetAgentDir,
     outputDir: parsed.outputDir,
-    aiReviewerEvaluationPath: parsed.aiReviewerEvaluationPath,
+    aiReviewerEvaluationPath: parsed.aiReviewerEvaluationPath ?? '',
   };
 }
 
@@ -153,8 +150,30 @@ export function runTakeoverAgent({
   fs.mkdirSync(outputDir, { recursive: true });
   const domainPackSummary: DomainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
   const targetAgent = readTargetAgent(targetAgentDir);
-  const aiReviewerEvaluation = loadAiReviewerEvaluation(aiReviewerEvaluationPath);
-  assertAiReviewerArtifactMorphologyEvidence(aiReviewerEvaluation, 'Takeover');
+  let reviewerQualityDebt: string | null = null;
+  let aiReviewerEvaluation: AiReviewerEvaluation;
+  try {
+    aiReviewerEvaluation = loadAiReviewerEvaluation(aiReviewerEvaluationPath);
+    assertAiReviewerArtifactMorphologyEvidence(aiReviewerEvaluation, 'Takeover');
+  } catch (error) {
+    reviewerQualityDebt = error instanceof Error ? error.message : String(error);
+    aiReviewerEvaluation = {
+      reviewer_kind: 'missing_quality_debt',
+      model_or_provider: 'unavailable',
+      run_ref: 'quality-debt:opl-meta-agent/takeover/reviewer-missing',
+      execution_attempt_ref: 'quality-debt:opl-meta-agent/takeover/execution-missing',
+      review_attempt_ref: 'quality-debt:opl-meta-agent/takeover/review-missing',
+      no_shared_context: true,
+      independent_attempt: false,
+      critique: reviewerQualityDebt,
+      suggestions: ['Run an independent review before delivery or promotion claims.'],
+      source_refs: [],
+      direct_evidence_refs: [],
+      verdict: 'not_reviewed_quality_debt',
+      predicted_impact: 'blocks_delivery_and_promotion_claims_not_stage_progress',
+      provenance: { status: 'missing_quality_debt' },
+    };
+  }
 
   const evaluationRequestPath = path.join(outputDir, 'foundry-evaluation-request.json');
   const foundryLabWorkOrderPath = path.join(outputDir, 'foundry-lab-work-order.json');
@@ -193,7 +212,9 @@ export function runTakeoverAgent({
   return {
     surface_kind: 'opl_meta_agent_takeover_handoff',
     version: 'opl-meta-agent.takeover-handoff.v1',
-    status: 'takeover_candidate_materialized_ready_for_opl_foundry_lab_evaluation',
+    status: reviewerQualityDebt
+      ? 'completed_with_quality_debt'
+      : 'takeover_candidate_materialized_ready_for_opl_foundry_lab_evaluation',
     product_id: 'opl-meta-agent',
     takeover_policy: {
       target_opl_compatible_agents_allowed: true,
@@ -229,6 +250,17 @@ export function runTakeoverAgent({
       evaluation_request: evaluationRequest,
       work_order: foundryLabWorkOrder,
     },
+    ...(reviewerQualityDebt
+      ? {
+          quality_debt: {
+            reasons: [reviewerQualityDebt],
+            blocks_stage_transition: false,
+            blocks_delivery_or_promotion_claims: true,
+          },
+          next_stage_may_start: true,
+          route_back_selection_owner: 'codex_cli',
+        }
+      : {}),
     authority_boundary: foundryLabWorkOrder.authority_boundary,
   };
 }

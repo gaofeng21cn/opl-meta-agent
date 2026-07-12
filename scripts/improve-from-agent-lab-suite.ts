@@ -40,10 +40,6 @@ import {
   type CapabilityCandidate,
   buildDeveloperPatchWorkOrder,
 } from './lib/external-suite-materializer.ts';
-import {
-  buildExpectedTypedBlockerRef,
-} from './lib/agent-evidence-typed-blocker.ts';
-
 const repoRoot = path.resolve(import.meta.dirname, '..');
 
 export type ImproveArgs = {
@@ -123,18 +119,12 @@ export function parseImproveFromAgentLabSuiteArgs(argv: string[]): ImproveArgs {
   if (!fs.existsSync(parsed.targetAgentDir)) {
     throw new Error(`Target agent path does not exist: ${parsed.targetAgentDir}`);
   }
-  if (!parsed.aiReviewerEvaluationPath) {
-    throw new Error(
-      'Missing required --ai-reviewer-evaluation <path>; external-suite improvement fails closed without structured AI reviewer evaluation.',
-    );
-  }
-
   return {
     suitePath: parsed.suitePath,
     suiteResultPath: parsed.suiteResultPath,
     targetAgentDir: parsed.targetAgentDir,
     feedbackRef: parsed.feedbackRef,
-    aiReviewerEvaluationPath: parsed.aiReviewerEvaluationPath,
+    aiReviewerEvaluationPath: parsed.aiReviewerEvaluationPath ?? '',
   };
 }
 
@@ -698,7 +688,29 @@ export function runImproveFromAgentLabSuite({
   aiReviewerEvaluationPath,
 }: ImproveArgs): JsonObject {
   const domainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
-  const aiReviewerEvaluation = loadAiReviewerEvaluation(aiReviewerEvaluationPath);
+  let reviewerQualityDebt: string | null = null;
+  let aiReviewerEvaluation: AiReviewerEvaluation;
+  try {
+    aiReviewerEvaluation = loadAiReviewerEvaluation(aiReviewerEvaluationPath);
+  } catch (error) {
+    reviewerQualityDebt = error instanceof Error ? error.message : String(error);
+    aiReviewerEvaluation = {
+      reviewer_kind: 'missing_quality_debt',
+      model_or_provider: 'unavailable',
+      run_ref: 'quality-debt:opl-meta-agent/external-suite/reviewer-missing',
+      execution_attempt_ref: 'quality-debt:opl-meta-agent/external-suite/execution-missing',
+      review_attempt_ref: 'quality-debt:opl-meta-agent/external-suite/review-missing',
+      no_shared_context: true,
+      independent_attempt: false,
+      critique: reviewerQualityDebt,
+      suggestions: ['Run an independent review before delivery, patch authorization, or promotion claims.'],
+      source_refs: [],
+      direct_evidence_refs: [],
+      verdict: 'not_reviewed_quality_debt',
+      predicted_impact: 'blocks_delivery_patch_authorization_and_promotion_claims_not_stage_progress',
+      provenance: { status: 'missing_quality_debt' },
+    };
+  }
   const suite = readJson(suitePath);
   const targetAgent = readTargetAgent(targetAgentDir);
   const suiteResult = readFoundryLabSuiteResult(suiteResultPath, suite, targetAgent);
@@ -750,33 +762,58 @@ export function runImproveFromAgentLabSuite({
   ];
 
   if (missingFields.length > 0) {
-    const expectedTypedBlockerRef = buildExpectedTypedBlockerRef(
-      targetAgent.domain_id,
-      capabilityCandidate.candidate_id,
-      'developer_work_order_inputs_missing',
-    );
-    capabilityCandidate.status = 'candidate_blocked_missing_declarative_work_order_inputs';
+    const qualityDebtRef = `quality-debt:opl-meta-agent/${targetAgent.domain_id}/${capabilityCandidate.candidate_id}/developer-work-order-inputs`;
+    capabilityCandidate.status = 'completed_with_quality_debt';
     capabilityCandidate.missing_required_fields = uniqueStrings(missingFields);
-    capabilityCandidate.expected_typed_blocker_ref = expectedTypedBlockerRef;
+    capabilityCandidate.quality_debt_ref = qualityDebtRef;
     return {
       surface_kind: 'opl_meta_agent_external_suite_judgment',
       version: 'opl-meta-agent.external-suite-judgment.v1',
-      status: 'candidate_blocked_missing_declarative_work_order_inputs',
+      status: 'completed_with_quality_debt',
       product_id: 'opl-meta-agent',
       target_agent: capabilityCandidate.target_agent,
       source_agent_lab_result_ref: suiteResult.result_id,
       evaluation_target_agent: suiteResult.evaluation_target_agent,
       evaluation_provenance_refs: suiteResult.refs.evaluation_provenance_refs,
-      candidate_refs: [capabilityCandidate.candidate_id, expectedTypedBlockerRef],
+      candidate_refs: [capabilityCandidate.candidate_id, qualityDebtRef],
       missing_required_fields: uniqueStrings(missingFields),
+      next_stage_may_start: true,
+      route_back_selection_owner: 'codex_cli',
       agent_building_judgment: {
         target_capability_improvement_candidate: capabilityCandidate,
       },
       authority_boundary: {
         ...capabilityCandidate.authority_boundary,
-        typed_blocker_body_materialized_by_oma: false,
+        quality_debt_blocks_stage_transition: false,
+        quality_debt_blocks_delivery_patch_or_promotion_claims: true,
         executable_work_order_materialized: false,
       },
+    };
+  }
+
+  if (reviewerQualityDebt) {
+    capabilityCandidate.status = 'completed_with_quality_debt';
+    return {
+      surface_kind: 'opl_meta_agent_external_suite_judgment',
+      version: 'opl-meta-agent.external-suite-judgment.v1',
+      status: 'completed_with_quality_debt',
+      product_id: 'opl-meta-agent',
+      target_agent: capabilityCandidate.target_agent,
+      source_agent_lab_result_ref: suiteResult.result_id,
+      evaluation_target_agent: suiteResult.evaluation_target_agent,
+      evaluation_provenance_refs: suiteResult.refs.evaluation_provenance_refs,
+      candidate_refs: [capabilityCandidate.candidate_id],
+      quality_debt: {
+        reasons: [reviewerQualityDebt],
+        blocks_stage_transition: false,
+        blocks_delivery_patch_or_promotion_claims: true,
+      },
+      next_stage_may_start: true,
+      route_back_selection_owner: 'codex_cli',
+      agent_building_judgment: {
+        target_capability_improvement_candidate: capabilityCandidate,
+      },
+      authority_boundary: capabilityCandidate.authority_boundary,
     };
   }
 

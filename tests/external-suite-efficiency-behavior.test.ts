@@ -74,7 +74,7 @@ test('external suite efficiency evidence without quality floor emits a blocker r
     });
 
     const payload = runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
-    assert.equal(payload.status, 'candidate_blocked_missing_declarative_work_order_inputs');
+    assert.equal(payload.status, 'completed_with_quality_debt');
     assert.equal(fs.existsSync(path.join(outputRoot, 'mechanism-patch-proposal.json')), false);
     assert.equal(fs.existsSync(path.join(outputRoot, 'typed-blocker.json')), false);
     const candidate = payload.agent_building_judgment.target_capability_improvement_candidate;
@@ -83,8 +83,8 @@ test('external suite efficiency evidence without quality floor emits a blocker r
       'target_improvement_policy.proposed_change_refs',
       'target_improvement_policy.patch_traceability_matrix',
     ]);
-    assert.match(candidate.expected_typed_blocker_ref, /^expected-typed-blocker-ref:/);
-    assert.equal(payload.authority_boundary.typed_blocker_body_materialized_by_oma, false);
+    assert.match(candidate.quality_debt_ref, /^quality-debt:/);
+    assert.equal(payload.authority_boundary.quality_debt_blocks_stage_transition, false);
     assert.equal(payload.authority_boundary.executable_work_order_materialized, false);
   });
 });

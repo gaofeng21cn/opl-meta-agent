@@ -210,7 +210,7 @@ test('takeover parser retires local Agent Lab execution flags and fixture aliase
   );
 });
 
-test('takeover fails closed without source and direct artifact morphology evidence', () => {
+test('takeover preserves its handoff with quality debt when morphology review evidence is missing', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-takeover-morphology-'));
   try {
     const targetDir = path.join(outputRoot, 'target-agent');
@@ -229,8 +229,11 @@ test('takeover fails closed without source and direct artifact morphology eviden
       '--output-dir', path.join(outputRoot, 'takeover'),
       '--ai-reviewer-evaluation', reviewerPath,
     ], { cwd: repoRoot, encoding: 'utf8' });
-    assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /artifact morphology evidence in source_refs and direct_evidence_refs/);
+    assert.equal(result.status, 0, result.stderr);
+    const payload = parseJsonText(result.stdout);
+    assert.equal(payload.status, 'completed_with_quality_debt');
+    assert.equal(payload.next_stage_may_start, true);
+    assert.equal(payload.quality_debt.blocks_delivery_or_promotion_claims, true);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }

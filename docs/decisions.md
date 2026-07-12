@@ -61,7 +61,7 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 
 - 决策：OMA stage 设计遵循 AI-first / contract-light。stage 主提示词负责 top-level stage graph、stage 大小和 closeout shape；repo-local professional skill 只在 stage 内需要专家方法判断时介入。一个 top-level stage 应只承载一个主要开放语义判断；确定性生成、校验、文件物化、helper receipt 和 readback 留在该 stage 内。多个独立开放判断需要不同 owner、知识源、quality gate、handoff recipient 或失败路由时才拆成不同 top-level stage。
 - 决策：刻意保留的大 stage 必须暴露 typed subpacket 或 gate boundary，例如 `StageDecompositionSubpacketSet`。这些 subpacket 只证明 stage 内部认知步骤、refs、顺序、物化边界和 fail-closed checks，不升级成 OPL runtime stage，也不替代目标 stage graph 的语义拆分判断。
-- 决策：OMA stage admission 采用 Progress-First 修正口径。validator、schema 或 materializer 发现的 format、projection、ref、stage input、`requires` 或 expected receipt 缺口，如果可由有效设计对象、stage graph 和 authority refs 机械推导，应在同一 stage materialization/admission 内有界修正并继续推进；不能直接变成 terminal blocker，也不能拆成新的 runtime stage 或私有控制面。核心语义对象缺失、source/evidence 缺失、owner 决策缺失、authority 越权、forbidden claim、target truth 写入或无法推导的设计缺口仍必须 fail closed 到 route-back、typed blocker 或 human gate。
+- 决策：OMA stage admission 采用 Progress-First。format、projection、ref、语义对象、source/evidence 或 reviewer 缺口在已有可读设计 artifact 时统一记录质量债并继续，由 Codex 决定后续前进或 route-back。只有零可读 artifact、损坏、path escape、identity/currentness、安全/权限/authority、forbidden write 或明确 human decision 才硬停。
 - 理由：OMA 的核心价值是 agent-building reasoning。若把 stage 大小交给 schema、validator 或脚本默认图，系统会把开放判断退化成固定流程；若把多个开放判断塞进一个大 stage，又会让某一步指令遵循失败污染整段产出。
 - 影响：contracts、schema、validator 和 tests 只记录已选 stage graph、refs、subpacket chain、authority boundary、admission repair boundary 和 fail-closed 条件；它们不能作为 stage-size selector。OMA 不新增 generic runtime、scheduler、queue 或 generated surface 来解决 stage 大小或可修格式缺口问题。
 
@@ -110,13 +110,13 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 
 ### `build-agent-baseline` 的默认输入 authority 是 OPL StageRun query readback
 
-- 决策：baseline materialization 必须通过 OPL public `standard-agent-action-stage-run` consumer 消费 StageRun query readbacks，并按 action catalog ordered `stage_route` 校验 target domain、exact attempt ref、accepted typed closeout、canonical completed outcome、ledger/packet identity 和无 conflict。OMA adapter 只保留 `oma_stage_closeout_payload` metadata 与 domain payload identity 校验，不复制通用 route/readback 解析。每个非首 stage 的 closeout `consumed_refs` 必须包含前一 accepted closeout ref，不能只按 stage id 排序跳过输入链。route 未闭合时返回 typed continuation且不生成 receipt；旧 direct script-authored graph、OMA-owned fixture/live runner 和 typed closeout CLI 旁路均无 compatibility path。
+- 决策：baseline materialization 通过 OPL public `standard-agent-action-stage-run` 消费 StageRun context，但不要求 ordered/no-skip、accepted typed closeout 或 conflict-free quality packet。任意可读 raw/partial artifact 可作为 `completed_with_quality_debt` 输入；Codex 可跳过、重复、逆向或 route-back。Framework 只校验 declared stage 与 identity/currentness/path safety。
 - 决策：OPL StageRun ledger 只持有 normalized closeout metadata 与 refs，不复制 OMA domain payload。需要完整设计/文件 payload 的 stage 必须使用 canonical `domain_owned_stage_output_ref` v1 envelope，`domain_id` 必须匹配 attempt，`output_ref` 必须同时出现在 closeout refs；OMA 当前只接受 attempt `workspace_root` 内的 `file://` output ref，并要求同 ref 的 `closeout_ref_metadata` 使用 OPL 白名单字段 `kind=oma_stage_closeout_payload` 和 SHA-256，拒绝 bytes drift、路径穿越、symlink escape、stage mismatch 和 closeout mismatch。
 - 决策：`stage-decomposition` closeout 只拥有 file materialization plan，禁止夹带 file body；`agent-skeleton-build` closeout 独立拥有与计划一一对应的 materialized file bodies。目标 action schema pair 必须真实写入 target repo，并进入 `pack_compiler_input.required_domain_pack_paths` 与 build digest。
 - 决策：source-derived / research-driven typed closeout 必须包含 `StageDecompositionSubpacketSet`；该对象只证明 `stage-decomposition` 内部认知步骤、refs、物化边界和 fail-closed checks，没有把这些 subpackets 升级成独立 OPL runtime stage。
-- 决策：`build-agent-baseline` 对 closeout 先做严格 validator；若只缺少可从已声明设计对象确定生成的 `StageDecompositionSubpacketSet` 投影、ref、stage input / requires / expected receipt ref，则在同一个 `stage-decomposition` materialization 内做一次有界 deterministic repair，再重新严格验证。核心设计对象为空、pattern refs 缺失、authority boundary 破坏、forbidden claim 或无法从 target/design refs 推导的语义问题仍 fail closed。
+- 决策：`build-agent-baseline` 对 closeout 先做严格 validator；若只缺少可从已声明设计对象确定生成的 `StageDecompositionSubpacketSet` 投影、ref、stage input / requires / expected receipt ref，则在同一个 `stage-decomposition` materialization 内做一次有界 deterministic repair，再重新严格验证。任何仍可读的核心设计、partial refs 或语义 findings 都转为 `completed_with_quality_debt` 并允许 Codex 继续或 route-back；authority boundary、forbidden write、path escape、bytes drift、identity/currentness、安全/权限才 fail closed。
 - 理由：OMA 的核心价值在 AI-first stage decomposition 和 owner-gated pack generation，固定脚本图会把 domain reasoning 退化为 fallback materializer。
-- 影响：foreign/nonterminal/conflicted/mismatched StageRun readback、free-text closeout、partial design refs、缺 independent gate policy、缺 quality gate declaration、缺 no-forbidden-write policy、file plan 夹带 body 或 self-review 都 fail closed；纯机械 subpacket 投影缺失不再直接 terminal blocker；不得恢复 no-`--domain-id` implicit fixture smoke、direct graph compatibility、默认 stage graph、private runner 或 fallback materialization route。
+- 影响：foreign/mismatched StageRun identity、path/symlink escape、bytes drift、权限/authority/forbidden write 继续硬停；free-text closeout、partial design refs、缺 independent gate policy、缺 quality gate declaration、缺 no-forbidden-write evidence、file plan/body 或 self-review findings 在有可读 artifact 时统一成为质量债，只阻止 materialized/baseline-delivered/promotion/ready 声明，不阻止 Codex 启动下一 stage。不得恢复 no-`--domain-id` implicit fixture smoke、direct graph compatibility、默认 stage graph、private runner 或 fallback materialization route。
 
 ### 新建 target agent 分为 Foundry evaluation handoff 与 downstream delivery
 
@@ -144,9 +144,9 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 
 ### Stage completion judgment 属于 domain stage，OPL 只负责 runtime 接力
 
-- 决策：OMA 生成的 target stage 默认必须包含 `stage_completion_policy`，并固定 `completion_judgment_owner=domain_stage`、`closeout_packet_required=true`、`provider_completion_is_domain_completion=false`、`opl_content_judgment_allowed=false`、`next_stage_transition_owner=opl_runtime`。
-- 理由：stage loop 要保持 RCA/OBF 式的低摩擦推进体验，但不能把 runtime completion、provider receipt、文件存在或测试通过误当成 domain completion。正确闭环是 stage 内完成内容判断并输出标准 closeout packet，OPL 只验证 packet shape、记录 attempt、执行 next-stage transition。
-- 影响：每个 stage contract / generated pack 必须携带 `stage_completion_policy_ref`，并要求 `stage_closeout_packet_ref`。Agent Lab / OMA 应检测缺失 policy、错误 owner、OPL 内容判断、provider completion 即 domain completion、缺 closeout packet、缺 accepted outcome refs 或缺 owner receipt / typed blocker / human gate / route-back refs 的 stage，并把它们标为 conformance blocker。
+- 决策：OMA 生成的 target stage 默认必须包含 progress-first `stage_completion_policy`，固定 `closeout_packet_required=false`、`raw_artifact_sufficient_for_progress=true`、`provider_completion_is_domain_completion=false`、`opl_content_judgment_allowed=false`、`next_stage_transition_owner=codex_cli`。
+- 理由：stage loop 要保持 RCA/OBF 式的低摩擦推进体验，但不能把 runtime completion、provider receipt、文件存在或测试通过误当成 quality/domain-ready 声明。正确闭环是 stage 内尽量完成内容判断并输出可读 artifact；OPL 只记录 attempt 与 refs，Codex CLI 独占下一 stage 的语义选择。
+- 影响：缺 policy 或错误 route owner 是 generated-pack conformance quality debt；owner receipt / typed blocker / human gate / route-back refs 只约束相应 quality/delivery/promotion/ready claim，不得成为 stage transition blocker。
 
 ### Progress-First accounting 使用 OPL family canonical fields
 

@@ -472,7 +472,7 @@ function assertStageInput(stage: JsonObject, refKind: string, ref?: string): voi
   ), `${refKind} input`);
 }
 
-test('build-agent-baseline returns a typed continuation before StageRun closeout evidence exists', () => {
+test('build-agent-baseline advances with quality debt before StageRun closeout evidence exists', () => {
   withTempDir('oma-bootstrap-continuation-', (outputRoot) => {
     const payload = runBuildAgentBaseline({
       outputDir: outputRoot,
@@ -481,27 +481,19 @@ test('build-agent-baseline returns a typed continuation before StageRun closeout
       targetAgent,
       stageRunReadbackPaths: [],
     });
-    assert.equal(payload.status, 'continuation_required');
-    assert.equal(payload.next_stage_ref, 'intent-intake');
-    assert.equal(payload.receipt_emitted, false);
-    assert.deepEqual(payload.completed_stage_refs, []);
+    assert.equal(payload.status, 'completed_with_quality_debt');
+    assert.equal(payload.next_stage_may_start, true);
+    assert.equal(payload.route_back_selection_owner, 'codex_cli');
+    assert.deepEqual(payload.missing_specialized_input_stages, [
+      'stage-decomposition',
+      'agent-skeleton-build',
+    ]);
     assertBuildAgentBaselineOutputSchema(payload);
-    const forgedAuthority = structuredClone(payload);
-    forgedAuthority.authority_boundary = {
-      oma_can_create_stage_run_receipt: true,
-      oma_can_skip_required_stage: true,
-      optional_stage_can_replace_required_stage: true,
-      continuation_is_action_completion: true,
-    };
-    assert.equal(validateBuildAgentBaselineOutput(forgedAuthority).ok, false);
-    const duplicateProgress = structuredClone(payload);
-    duplicateProgress.completed_stage_refs = ['intent-intake', 'intent-intake'];
-    assert.equal(validateBuildAgentBaselineOutput(duplicateProgress).ok, false);
     assert.equal(fs.existsSync(path.join(outputRoot, targetAgent.domain_id)), false);
   });
 });
 
-test('build-agent-baseline rejects StageRun evidence that skips the route entry stage', () => {
+test('build-agent-baseline accepts an AI-selected StageRun that skips the route entry stage', () => {
   withTempDir('oma-bootstrap-route-skip-', (outputRoot) => {
     const stageRunReadbackPaths = writeBuildStageRunReadbacks(
       outputRoot,
@@ -509,16 +501,16 @@ test('build-agent-baseline rejects StageRun evidence that skips the route entry 
       new Map(),
       ['stage-decomposition'],
     );
-    assert.throws(
-      () => runBuildAgentBaseline({
-        outputDir: outputRoot,
-        oplBin,
-        aiReviewerEvaluationPath: path.join(outputRoot, 'not-consumed-before-route-validation.json'),
-        targetAgent,
-        stageRunReadbackPaths,
-      }),
-      /route skip rejected; first closeout must be intent-intake/,
-    );
+    const payload = runBuildAgentBaseline({
+      outputDir: outputRoot,
+      oplBin,
+      aiReviewerEvaluationPath: path.join(outputRoot, 'not-consumed-before-route-validation.json'),
+      targetAgent,
+      stageRunReadbackPaths,
+    });
+    assert.equal(payload.status, 'completed_with_quality_debt');
+    assert.equal(payload.next_stage_may_start, true);
+    assert.deepEqual(payload.missing_specialized_input_stages, ['agent-skeleton-build']);
   });
 });
 
@@ -599,11 +591,12 @@ test('build-agent-baseline accepts outer canonical predecessor consumption when 
     });
 
     assert.equal(payload.status, 'candidate_package_materialized_ready_for_opl_foundry_lab_evaluation');
-    assert.equal(payload.action_stage_route_closeout.per_stage_typed_closeout_verified, true);
+    assert.equal(payload.action_stage_route_context.next_stage_may_start, true);
+    assert.equal(payload.action_stage_route_context.route_selection_owner, 'codex_cli');
   });
 });
 
-test('build-agent-baseline rejects decoded payload predecessor consumption when outer canonical envelope omits it', () => {
+test('build-agent-baseline does not let predecessor envelope bookkeeping block progress', () => {
   withTempDir('oma-bootstrap-stage-predecessor-consumption-', (outputRoot) => {
     const reviewerPath = path.join(outputRoot, 'reviewer.json');
     writeReviewerEvaluation(reviewerPath);
@@ -620,16 +613,15 @@ test('build-agent-baseline rejects decoded payload predecessor consumption when 
       },
     );
 
-    assert.throws(
-      () => runBuildAgentBaseline({
-        outputDir: outputRoot,
-        oplBin,
-        aiReviewerEvaluationPath: reviewerPath,
-        targetAgent,
-        stageRunReadbackPaths,
-      }),
-      /must consume preceding accepted closeout ref/i,
-    );
+    const payload = runBuildAgentBaseline({
+      outputDir: outputRoot,
+      oplBin,
+      aiReviewerEvaluationPath: reviewerPath,
+      targetAgent,
+      stageRunReadbackPaths,
+    });
+    assert.equal(payload.status, 'candidate_package_materialized_ready_for_opl_foundry_lab_evaluation');
+    assert.equal(payload.action_stage_route_context.next_stage_may_start, true);
   });
 });
 
@@ -680,7 +672,7 @@ test('build-agent-baseline rejects drifted or escaping StageRun domain payload r
   }
 });
 
-test('build-agent-baseline fails closed when OPL scaffold validation is blocked', () => {
+test('build-agent-baseline preserves materialized artifacts when OPL scaffold validation reports debt', () => {
   withTempDir('oma-bootstrap-scaffold-blocked-', (outputRoot) => {
     const reviewerPath = path.join(outputRoot, 'reviewer.json');
     writeReviewerEvaluation(reviewerPath);
@@ -693,16 +685,18 @@ test('build-agent-baseline fails closed when OPL scaffold validation is blocked'
       ]),
     );
 
-    assert.throws(
-      () => runBuildAgentBaseline({
-        outputDir: outputRoot,
-        oplBin: writeBlockedScaffoldValidationOplShim(outputRoot),
-        aiReviewerEvaluationPath: reviewerPath,
-        targetAgent,
-        stageRunReadbackPaths,
-      }),
-      /OPL scaffold validation did not pass.*fixture_scaffold_validation_blocker/i,
-    );
+    const payload = runBuildAgentBaseline({
+      outputDir: outputRoot,
+      oplBin: writeBlockedScaffoldValidationOplShim(outputRoot),
+      aiReviewerEvaluationPath: reviewerPath,
+      targetAgent,
+      stageRunReadbackPaths,
+    });
+    assert.equal(payload.status, 'completed_with_quality_debt');
+    assert.equal(payload.next_stage_may_start, true);
+    assert.ok((payload.materialized_artifact_refs as string[]).length > 0);
+    const debt = readJson(payload.quality_debt_ref as string);
+    assert.match((debt.quality_debt_reasons as string[]).join(' '), /fixture_scaffold_validation_blocker/i);
     assert.equal(fs.existsSync(path.join(outputRoot, 'agent-lab-suite-seed.json')), false);
     assert.equal(fs.existsSync(path.join(outputRoot, 'foundry-lab-work-order.json')), false);
   });
@@ -1497,7 +1491,7 @@ test('pre-materialization packets carry only the expected AgentBuildReceipt ref'
   });
 });
 
-test('raw reference source and opaque packet fail closed with a typed blocker', () => {
+test('raw reference source and opaque packet become routeable quality debt', () => {
   withTempDir('oma-bootstrap-raw-reference-design-', (outputRoot) => {
     const rawTargetAgent: BaselineFixtureTargetAgent = {
       domain_id: 'raw-reference-design-agent',
@@ -1511,60 +1505,58 @@ test('raw reference source and opaque packet fail closed with a typed blocker', 
     const reviewerPath = path.join(outputRoot, 'reviewer.json');
     writeReviewerEvaluation(reviewerPath, {}, rawTargetAgent.domain_id);
 
-    assert.throws(
-      () => runBuildAgentBaseline({
-        outputDir: outputRoot,
-        oplBin,
-        aiReviewerEvaluationPath: reviewerPath,
-        targetAgent: rawTargetAgent,
-        stageRunReadbackPaths: writeBuildStageRunReadbacks(outputRoot, rawTargetAgent.domain_id),
-      }),
-      /typed blocker written/i,
-    );
-    const blocker = readJson(path.join(
+    const payload = runBuildAgentBaseline({
+      outputDir: outputRoot,
+      oplBin,
+      aiReviewerEvaluationPath: reviewerPath,
+      targetAgent: rawTargetAgent,
+      stageRunReadbackPaths: writeBuildStageRunReadbacks(outputRoot, rawTargetAgent.domain_id),
+    });
+    assert.equal(payload.status, 'completed_with_quality_debt');
+    assert.equal(payload.next_stage_may_start, true);
+    const debt = readJson(path.join(
       outputRoot,
-      `${rawTargetAgent.domain_id}-stage-decomposition-blocker.json`,
+      `${rawTargetAgent.domain_id}-stage-decomposition-quality-debt.json`,
     ));
-    assert.equal(blocker.blocked_reason, 'reference_design_resolution_failed');
-    assert.match(blocker.blocker_message, /opaque_pattern_packet_unresolved/);
-    assert.equal(blocker.route_impact.materialization_allowed, false);
+    assert.match((debt.quality_debt_reasons as string[]).join(' '), /opaque_pattern_packet_unresolved/);
+    assert.equal(debt.route_impact.materialization_allowed, false);
+    assert.equal(debt.route_impact.route_back_selection_owner, 'codex_cli');
     assert.equal(fs.existsSync(path.join(outputRoot, 'profile-selection.json')), false);
   });
 });
 
-test('build-agent-baseline fails closed without independent reviewer evidence', () => {
+test('build-agent-baseline records missing independent reviewer evidence as quality debt', () => {
   withTempDir('oma-bootstrap-missing-reviewer-pass4-', (outputRoot) => {
-    const result = spawnSync(
-      process.execPath,
-      [
-        path.join(repoRoot, 'scripts/build-agent-baseline.ts'),
-        '--output-dir',
+    const payload = runBuildAgentBaseline({
+      outputDir: outputRoot,
+      oplBin,
+      aiReviewerEvaluationPath: '',
+      targetAgent,
+      stageRunReadbackPaths: writeBuildStageRunReadbacks(
         outputRoot,
-        '--opl-bin',
-        oplBin,
-        '--domain-id',
-        'missing-reviewer-agent',
-        '--target-brief',
-        'Create an OPL-compatible fixture agent.',
-      ],
-      { cwd: repoRoot, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 },
-    );
-    assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /ai reviewer evaluation/i);
-    assert.equal(fs.existsSync(path.join(outputRoot, 'foundry-lab-work-order.json')), false);
+        targetAgent.domain_id,
+        new Map<string, JsonObject>([
+          ['stage-decomposition', buildFixtureStageDecompositionCloseout({ targetAgent })],
+          ['agent-skeleton-build', buildFixtureAgentSkeletonBuildCloseout({ targetAgent })],
+        ]),
+      ),
+    });
+    assert.equal(payload.status, 'completed_with_quality_debt');
+    assert.equal(payload.next_stage_may_start, true);
+    assert.equal(payload.quality_debt.blocks_delivery_or_promotion_claims, true);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'foundry-lab-work-order.json')), true);
   });
 });
 
-test('build-agent-baseline fails closed when no builtin profile or design-basis refs exist', () => {
-  assert.throws(
-    () => parseBuildAgentBaselineArgs([
-      '--ai-reviewer-evaluation',
-      '/tmp/reviewer.json',
-      '--domain-id',
-      'unrouted-agent',
-      '--target-brief',
-      'Create an OPL-compatible fixture agent.',
-    ]),
-    /selected-opl-profile.*source-derived design refs.*research-driven design refs/i,
-  );
+test('build-agent-baseline accepts missing profile or design-basis refs as a later quality decision', () => {
+  const parsed = parseBuildAgentBaselineArgs([
+    '--domain-id',
+    'unrouted-agent',
+    '--target-brief',
+    'Create an OPL-compatible fixture agent.',
+  ]);
+  assert.deepEqual(parsed.targetAgent.selected_opl_profile_refs ?? [], []);
+  assert.deepEqual(parsed.targetAgent.reference_design_source_refs ?? [], []);
+  assert.deepEqual(parsed.targetAgent.research_source_refs ?? [], []);
+  assert.equal(parsed.aiReviewerEvaluationPath, '');
 });

@@ -73,7 +73,7 @@
     },
     "stage_run_readback_refs": {
       "$ref": "#/$defs/nonEmptyStringArray",
-      "description": "Ordered OPL family-runtime attempt query readbacks for completed Action StageRuns. Missing refs produce a typed continuation instead of a receipt."
+      "description": "OPL family-runtime StageRun readbacks used as Codex context. Raw, partial, skipped, repeated, reversed, or route-back stage outputs are allowed; quality gaps do not block later stages."
     }
   },
   "anyOf": [
