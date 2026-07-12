@@ -212,25 +212,31 @@ export function validateTransferMapObject(
   );
   const expectedStages = allExpectedStages.filter((stage) => stage.origin === 'source_pattern_ref');
   expectedStages.forEach((stage) => {
-    const anchors = asStringArray(
-      stage.source_anchor_refs,
-      `${field}.transfer_map.expected_stage.${stage.stage_id}.source_anchor_refs`,
+    const stepMappings = asRecordArray(
+      stage.source_step_mappings,
+      `${field}.transfer_map.expected_stage.${stage.stage_id}.source_step_mappings`,
     );
-    if (!mappings.some((mapping) =>
-      mapping.pattern_id === stage.pattern_id
-      && mapping.step_id === stage.step_id
-      && anchors.includes(String(mapping.source_anchor_ref))
-      && mapping.target_stage_or_capability_slot === stage.stage_ref
-      && ['adapt', 'adopt'].includes(String(mapping.disposition))
-      && typeof mapping.transfer_rationale === 'string'
-      && mapping.transfer_rationale.trim().length > 0
-      && Array.isArray(mapping.known_limits)
-      && mapping.known_limits.length > 0
-    )) {
-      throw new Error(
-        `stage-decomposition pack draft ${field}.transfer_map missing canonical mapping ${stage.pattern_id}/${stage.step_id}.`,
+    stepMappings.forEach((step) => {
+      const anchors = asStringArray(
+        step.source_anchor_refs,
+        `${field}.transfer_map.expected_stage.${stage.stage_id}.${step.step_id}.source_anchor_refs`,
       );
-    }
+      if (!mappings.some((mapping) =>
+        mapping.pattern_id === stage.pattern_id
+        && mapping.step_id === step.step_id
+        && anchors.includes(String(mapping.source_anchor_ref))
+        && mapping.target_stage_or_capability_slot === stage.stage_ref
+        && ['adapt', 'adopt', 'merged', 'stage_internal'].includes(String(mapping.disposition))
+        && typeof mapping.transfer_rationale === 'string'
+        && mapping.transfer_rationale.trim().length > 0
+        && Array.isArray(mapping.known_limits)
+        && mapping.known_limits.length > 0
+      )) {
+        throw new Error(
+          `stage-decomposition pack draft ${field}.transfer_map missing canonical mapping ${stage.pattern_id}/${step.step_id}.`,
+        );
+      }
+    });
   });
   expectedPatternRefs.forEach((expectedRef) => {
     if (!expectedStages.some((stage) => stage.source_pattern_ref === expectedRef)) {
@@ -248,11 +254,10 @@ export function validateTransferMapObject(
     .map((mapping) => String(mapping.target_stage_or_capability_slot));
   const expectedTargets = allExpectedStages.map((stage) => String(stage.stage_ref));
   if (
-    nonRejectTargets.length !== expectedTargets.length
-    || expectedTargets.some((target) => nonRejectTargets.filter((entry) => entry === target).length !== 1)
+    expectedTargets.some((target) => !nonRejectTargets.includes(target))
     || nonRejectTargets.some((target) => !expectedTargets.includes(target))
   ) {
-    throw new Error(`stage-decomposition pack draft ${field}.transfer_map targets must map one-to-one to AgentPackPlan stages.`);
+    throw new Error(`stage-decomposition pack draft ${field}.transfer_map targets must resolve to AgentPackPlan stages.`);
   }
 }
 
@@ -304,6 +309,14 @@ export function validateAgentPackPlanObject(
     if (
       typeof stageRef.pattern_id !== 'string'
       || typeof stageRef.step_id !== 'string'
+      || asStringArray(
+        stageRef.source_step_ids,
+        `${field}.agent_pack_plan.${stageRef.stage_id}.source_step_ids`,
+      ).length === 0
+      || asRecordArray(
+        stageRef.source_step_mappings,
+        `${field}.agent_pack_plan.${stageRef.stage_id}.source_step_mappings`,
+      ).length === 0
       || !['source_derived', 'internal_synthesis'].includes(String(stageRef.provenance_kind))
       || asStringArray(
         stageRef.source_anchor_refs,

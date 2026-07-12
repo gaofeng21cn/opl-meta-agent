@@ -532,6 +532,8 @@ export function buildDesignAdmissionReceipt(
       stage_ref: stage.stage_ref,
       pattern_id: stage.pattern_id,
       step_id: stage.step_id,
+      source_step_ids: stage.source_step_ids,
+      source_step_mappings: stage.source_step_mappings,
       provenance_kind: stage.provenance_kind,
       ...(typeof stage.source_authority_tier === 'string' && stage.source_authority_tier.trim()
         ? { source_authority_tier: stage.source_authority_tier.trim() }
@@ -1116,7 +1118,7 @@ function referenceDesignMarkdown(targetAgent: MinimalTargetAgent): string[] {
     ...sourceRefs.map((ref) => `- Source ref: ${ref}`),
     ...patternNotes.map((note) => `- Transfer pattern: ${note}`),
     ...patternPacketRefs.map((ref) => `- Pattern packet ref: ${ref}`),
-    'Extract transferable architecture, workflow, rubric, handoff, evaluation, and failure-taxonomy patterns into ReferenceDesignPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before materialization, preserve StageDecompositionSubpacketSet, then preserve AgentBuildReceipt after materialization.',
+    'Use ReferenceDesignPacket, TransferMap, AgentPackPlan, morphology, and DesignAdmissionReceipt as mutually informing design objects. Map source steps to adopted, adapted, merged, stage-internal, or rejected dispositions. Source evidence and safe packet precede claims, admission precedes materialization, and AgentBuildReceipt follows materialized bytes.',
     'Do not copy external runtime ownership, private data, domain verdicts, owner receipts, or promotion authority.',
     '',
   ];
@@ -1144,7 +1146,7 @@ function researchSynthesisMarkdown(targetAgent: MinimalTargetAgent): string[] {
     ...sourceRefs.map((ref) => `- Research source ref: ${ref}`),
     ...expertPracticeNotes.map((note) => `- Expert practice note: ${note}`),
     ...synthesisRefs.map((ref) => `- Research synthesis ref: ${ref}`),
-    'Synthesize expert practice into ResearchSynthesisPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before materialization, preserve StageDecompositionSubpacketSet, then preserve AgentBuildReceipt after materialization.',
+    'Use ResearchSynthesisPacket, TransferMap, AgentPackPlan, morphology, and DesignAdmissionReceipt as mutually informing design objects. Do not create one Stage per research step by default. Research evidence precedes claims, admission precedes materialization, and AgentBuildReceipt follows materialized bytes.',
     'Do not treat public research, examples, external runtime ownership, domain verdicts, owner receipts, or promotion authority as target truth.',
     '',
   ];

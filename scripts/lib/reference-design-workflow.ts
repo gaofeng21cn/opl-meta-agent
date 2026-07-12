@@ -183,6 +183,9 @@ function canonicalSeedReferenceDesignPattern({
       step_id: stepId,
       expert_question: requiredString(step.expert_question, `${patternId}.${stepId}.expert_question`),
       stage_archetype: requiredString(step.stage_archetype, `${patternId}.${stepId}.stage_archetype`),
+      ...(typeof step.target_stage_group === 'string' && step.target_stage_group.trim()
+        ? { target_stage_group: step.target_stage_group.trim() }
+        : {}),
       provenance_kind: provenanceKind,
       ...(synthesisRationale ? { synthesis_rationale: synthesisRationale } : {}),
       source_anchor_refs: sourceAnchorRefs,
@@ -478,14 +481,16 @@ function resolvedOplTransferablePattern(packetPath: string, ref: string, index: 
   }
   const pattern = value as JsonObject;
   const patternId = requiredString(pattern.pattern_id, `transferable_pattern_refs[${index}].pattern_id`);
+  const targetSlot = requiredString(
+    pattern.target_stage_or_capability_slot,
+    `${patternId}.target_stage_or_capability_slot`,
+  );
   return {
     step_id: patternId,
     transferable_pattern: requiredString(pattern.transferable_pattern, `${patternId}.transferable_pattern`),
     target_adaptation: requiredString(pattern.target_adaptation, `${patternId}.target_adaptation`),
-    stage_archetype: requiredString(
-      pattern.target_stage_or_capability_slot,
-      `${patternId}.target_stage_or_capability_slot`,
-    ),
+    stage_archetype: targetSlot,
+    target_stage_group: targetSlot,
     provenance_kind: 'source_derived',
     source_anchor_refs: requiredStringArray(pattern.source_anchor_refs, `${patternId}.source_anchor_refs`),
     known_limits: [requiredString(pattern.known_limits, `${patternId}.known_limits`)],
@@ -719,25 +724,49 @@ export function buildWorkflowStagePlans(
   targetAgent: { domain_id: string },
   patterns: JsonObject[],
 ): JsonObject[] {
-  return patterns.flatMap((pattern) => workflowStepsForPattern(pattern).map((step) => {
-    const stageId = `${stageSlug(String(pattern.pattern_id))}-${stageSlug(String(step.step_id))}`;
-    const stepAnchorRefs = stringList(step.source_anchor_refs);
+  return patterns.flatMap((pattern) => {
+    const groupedSteps = new Map<string, JsonObject[]>();
+    workflowStepsForPattern(pattern).forEach((step) => {
+      // A shared target slot is an explicit design decision that several source
+      // steps belong to one target-stage judgment, not a reason to clone stages.
+      const group = String(step.target_stage_group ?? step.step_id);
+      groupedSteps.set(group, [...(groupedSteps.get(group) ?? []), step]);
+    });
+    return [...groupedSteps.entries()].map(([group, steps]) => {
+    const primaryStep = steps[0];
+    const stageId = `${stageSlug(String(pattern.pattern_id))}-${stageSlug(group)}`;
+    const stepAnchorRefs = uniqueStrings(steps.flatMap((step) => stringList(step.source_anchor_refs)));
     const resolvedSourceAnchors = Array.isArray(pattern.resolved_source_anchors)
       ? (pattern.resolved_source_anchors as JsonObject[]).filter((anchor) =>
           stepAnchorRefs.includes(String(anchor.anchor_ref))
         )
       : [];
+    const sourceStepMappings = steps.map((step) => ({
+      step_id: step.step_id,
+      source_anchor_refs: stringList(step.source_anchor_refs),
+      disposition: steps.length > 1 ? 'merged' : 'adapt',
+      transfer_rationale: step.target_adaptation ?? step.expert_question ?? step.transferable_pattern,
+      known_limits: stringList(step.known_limits),
+    }));
     return {
       stage_id: stageId,
       stage_ref: `stage:${targetAgent.domain_id}/${stageId}`,
-      stage_archetype: step.stage_archetype,
-      stage_goal: step.target_adaptation ?? step.expert_question ?? step.transferable_pattern,
+      stage_archetype: group,
+      stage_goal: steps.length === 1
+        ? (primaryStep.target_adaptation ?? primaryStep.expert_question ?? primaryStep.transferable_pattern)
+        : steps.map((step) =>
+            step.target_adaptation ?? step.expert_question ?? step.transferable_pattern
+          ).join(' '),
       origin: 'source_pattern_ref',
       pattern_id: pattern.pattern_id,
-      step_id: step.step_id,
-      provenance_kind: step.provenance_kind,
-      ...(typeof step.synthesis_rationale === 'string' && step.synthesis_rationale.trim()
-        ? { synthesis_rationale: step.synthesis_rationale.trim() }
+      step_id: primaryStep.step_id,
+      source_step_ids: steps.map((step) => step.step_id),
+      source_step_mappings: sourceStepMappings,
+      provenance_kind: steps.every((step) => step.provenance_kind === 'source_derived')
+        ? 'source_derived'
+        : 'internal_synthesis',
+      ...(steps.some((step) => typeof step.synthesis_rationale === 'string' && step.synthesis_rationale.trim())
+        ? { synthesis_rationale: steps.map((step) => step.synthesis_rationale).filter(Boolean).join(' ') }
         : {}),
       ...(typeof pattern.authority_tier === 'string' && pattern.authority_tier.trim()
         ? { source_authority_tier: pattern.authority_tier.trim() }
@@ -747,11 +776,12 @@ export function buildWorkflowStagePlans(
       ...(resolvedSourceAnchors.length > 0
         ? { resolved_source_anchors: resolvedSourceAnchors }
         : {}),
-      transferable_pattern: step.transferable_pattern ?? null,
-      target_adaptation: step.target_adaptation ?? null,
-      known_limits: stringList(step.known_limits),
+      transferable_pattern: steps.map((step) => step.transferable_pattern).filter(Boolean).join(' | ') || null,
+      target_adaptation: steps.map((step) => step.target_adaptation).filter(Boolean).join(' | ') || null,
+      known_limits: uniqueStrings(steps.flatMap((step) => stringList(step.known_limits))),
     };
-  }));
+  });
+  });
 }
 
 export function buildWorkflowTransferMappings({
@@ -766,20 +796,22 @@ export function buildWorkflowTransferMappings({
   actionId: string;
 }): JsonObject[] {
   return [
-    ...buildWorkflowStagePlans(targetAgent, patterns).map((stage) => ({
-      mapping_id: `${stage.pattern_id}:${stage.step_id}`,
-      pattern_id: stage.pattern_id,
-      step_id: stage.step_id,
-      source_anchor_ref: stage.source_anchor_refs[0],
-      target_stage_or_capability_slot: stage.stage_ref,
-      transfer_rationale: stage.stage_goal,
-      known_limits: uniqueStrings([
-        ...stringList(stage.known_limits),
-        'source runtime topology and stage names are not copied verbatim',
-        'target domain truth and quality verdict remain target-owner owned',
-      ]),
-      disposition: 'adapt',
-    })),
+    ...buildWorkflowStagePlans(targetAgent, patterns).flatMap((stage) =>
+      (stage.source_step_mappings as JsonObject[]).map((step) => ({
+        mapping_id: `${stage.pattern_id}:${step.step_id}`,
+        pattern_id: stage.pattern_id,
+        step_id: step.step_id,
+        source_anchor_ref: stringList(step.source_anchor_refs)[0],
+        target_stage_or_capability_slot: stage.stage_ref,
+        transfer_rationale: step.transfer_rationale,
+        known_limits: uniqueStrings([
+          ...stringList(step.known_limits),
+          'source runtime topology and stage names are not copied verbatim',
+          'target domain truth and quality verdict remain target-owner owned',
+        ]),
+        disposition: step.disposition,
+      }))
+    ),
     ...patterns.flatMap((pattern) => stringList(pattern.non_transferable_constraints).map((constraint) => ({
       mapping_id: `${pattern.pattern_id}:reject:${stageSlug(constraint)}`,
       pattern_id: pattern.pattern_id,

@@ -12,7 +12,7 @@ Convert evidence into bounded refs-only developer patch work orders, typed block
 ## AI-First / Contract-Light Boundary
 
 - Use AI judgment here for bounded work-order scope, evidence-to-patch traceability, script retention vs deletion readiness, OPL absorption fit, and when hygiene evidence is still too weak to act.
-- Use AI judgment here for work-order closeout shape: choose developer patch work order, no-patch coordination, typed blocker, route-back, or owner wait based on evidence quality, owner route, verification path, and whether the change is actually actionable.
+- Use AI judgment here for work-order closeout shape: choose developer patch work order, no-patch coordination, typed blocker, route-back, or pending owner handoff based on evidence quality, owner route, verification path, and whether the change is actually actionable. OMA returns the handoff; it does not wait inside the Stage.
 - Use AI judgment here for private residue decisions: classify private scripts/helpers as retained authority implementation, refs-only materializer, thin delegation aperture, fixture/proof helper, tombstone candidate, or OPL absorption candidate before any contract or receipt records the decision ref.
 - Use AI judgment here to keep target-agent handoff clean: the work order should name the target owner, allowed write set, forbidden authority, expected verification, rollback/version ref, and post-absorb owner route without becoming the executor, lifecycle runner, or owner receipt.
 - Use AI judgment here to convert Agent Lab / FeedbackOps / trajectory evidence into the correct work-order lane: stage-route, specialist-skill, tool-connector, quality-gate, read-model/currentness, authority-boundary, owner route-back, or typed blocker.

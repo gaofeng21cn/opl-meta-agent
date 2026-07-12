@@ -24,6 +24,10 @@ import {
 } from '../scripts/lib/domain-pack.ts';
 import type { TargetAgent } from '../scripts/lib/meta-agent-loop-io.ts';
 import {
+  buildWorkflowStagePlans,
+  buildWorkflowTransferMappings,
+} from '../scripts/lib/reference-design-workflow.ts';
+import {
   parseBuildAgentBaselineArgs,
   resolveTargetAgentProfileSelection,
   runBuildAgentBaseline,
@@ -1026,7 +1030,8 @@ test('build-agent-baseline materializes source-derived proof with canonical OPL 
       sourceDerivedObjectRefs.agentPackPlanRef,
       sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef,
     ].forEach((text) => assert.ok(primarySkill.includes(text), text));
-    assert.ok(generatedPrompt.includes('ReferenceDesignPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt'));
+    assert.ok(generatedPrompt.includes('Map source steps to adopted, adapted, merged, stage-internal, or rejected dispositions'));
+    assert.ok(generatedPrompt.includes('## A Good Result'));
     assert.ok(generatedPrompt.includes(sourceDerivedTargetAgent.reference_design_pattern_packet_refs[0]));
   });
 });
@@ -1101,7 +1106,8 @@ test('build-agent-baseline materializes a research-driven target package from va
     assert.ok(primarySkill.includes('Selected profile ref: none; research-driven design refs are the active design input.'));
     assert.ok(primarySkill.includes(researchDrivenObjectRefs.researchSynthesisPacketRef));
     assert.ok(primarySkill.includes(researchDrivenObjectRefs.stageDecompositionSubpacketSetRef));
-    assert.ok(generatedPrompt.includes('ResearchSynthesisPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt'));
+    assert.ok(generatedPrompt.includes('Do not turn each research workflow step into an independent Stage by default'));
+    assert.ok(generatedPrompt.includes('## Professional Dependencies And Authority Boundary'));
     assert.ok(generatedPrompt.includes(researchDrivenTargetAgent.research_synthesis_refs[0]));
     assert.equal(payload.target_agent.selected_opl_profile_refs, undefined);
   });
@@ -1133,6 +1139,67 @@ test('expert workflow seeds produce different workflow-step stage graphs for the
   assert.notDeepEqual(stageIds(casePlan), stageIds(rcaPlan));
   assert.ok(stageIds(casePlan).some((stageId) => String(stageId).includes('case-material-intake')));
   assert.ok(stageIds(rcaPlan).some((stageId) => String(stageId).includes('timeline-and-impact-reconstruction')));
+});
+
+test('source workflow steps merge only when the design packet explicitly shares a target group', () => {
+  const pattern: JsonObject = {
+    pattern_id: 'grouped-workflow.v1',
+    source_pattern_ref: 'pattern:grouped-workflow.v1',
+    transferable_workflow_steps: [
+      {
+        step_id: 'inspect-a',
+        stage_archetype: 'evidence-appraisal',
+        provenance_kind: 'source_derived',
+        source_anchor_refs: ['anchor:a'],
+        target_adaptation: 'Appraise evidence A.',
+        known_limits: ['A is scoped.'],
+      },
+      {
+        step_id: 'inspect-b',
+        stage_archetype: 'evidence-appraisal',
+        provenance_kind: 'source_derived',
+        source_anchor_refs: ['anchor:b'],
+        target_adaptation: 'Appraise evidence B.',
+        known_limits: ['B is scoped.'],
+      },
+      {
+        step_id: 'owner-closeout',
+        stage_archetype: 'owner-closeout',
+        provenance_kind: 'source_derived',
+        source_anchor_refs: ['anchor:c'],
+        target_adaptation: 'Prepare the owner closeout.',
+        known_limits: ['Owner authority remains external.'],
+      },
+    ],
+    non_transferable_constraints: [],
+  };
+  const target = { domain_id: 'grouped-agent' };
+  const ungroupedStages = buildWorkflowStagePlans(target, [pattern]);
+  assert.equal(ungroupedStages.length, 3);
+  assert.deepEqual(ungroupedStages.map((stage) => stage.source_step_ids), [
+    ['inspect-a'],
+    ['inspect-b'],
+    ['owner-closeout'],
+  ]);
+
+  const groupedPattern = structuredClone(pattern);
+  groupedPattern.transferable_workflow_steps[0].target_stage_group = 'evidence-appraisal';
+  groupedPattern.transferable_workflow_steps[1].target_stage_group = 'evidence-appraisal';
+  const stages = buildWorkflowStagePlans(target, [groupedPattern]);
+  assert.equal(stages.length, 2);
+  assert.deepEqual(stages[0].source_step_ids, ['inspect-a', 'inspect-b']);
+
+  const mappings = buildWorkflowTransferMappings({
+    targetAgent: target,
+    patterns: [groupedPattern],
+    fallbackStageId: 'agent-output-draft',
+    actionId: 'draft-agent-output',
+  });
+  const appraisalMappings = mappings.filter((mapping) =>
+    mapping.target_stage_or_capability_slot === stages[0].stage_ref
+  );
+  assert.deepEqual(appraisalMappings.map((mapping) => mapping.step_id), ['inspect-a', 'inspect-b']);
+  assert.ok(appraisalMappings.every((mapping) => mapping.disposition === 'merged'));
 });
 
 test('build-agent-baseline consumes raw OPL receipts for a Chinese hybrid intent', () => {

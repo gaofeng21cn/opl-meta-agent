@@ -28,9 +28,19 @@
   "speed_policy": {
     "executor_autonomy_inside_stage": true,
     "executor_can_choose_order_and_parallelism": true,
+    "professional_dependency_order_is_preserved": true,
+    "professional_dependency_examples": [
+      "source_evidence_before_supported_claim",
+      "safe_packet_before_source_derived_design_claim",
+      "design_admission_before_materialization",
+      "materialized_bytes_before_build_receipt",
+      "developer_work_order_before_external_execution_result",
+      "external_result_before_delivery_or_optimizer_closeout"
+    ],
     "strategy_refs_are_advisory_or_route_back": true,
     "strategy_refs_block_launch_by_default": false,
     "tool_catalog_can_prescribe_workflow_sequence": false,
+    "professional_skill_can_prescribe_domain_dependency_sequence": true,
     "preflight_or_quality_review_can_loop_without_deliverable_delta": false,
     "quality_gaps_block_ordinary_progress_by_default": false,
     "safe_action_before_diagnostic_reconcile": true,

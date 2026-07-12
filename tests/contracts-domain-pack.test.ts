@@ -301,3 +301,46 @@ test('trajectory learning stays an OMA-native refs-only proposal flow', () => {
   assertNoForbiddenAuthority(trajectoryLearning, 'trajectoryLearning');
   asStrings(trajectoryLearning.semantic_pack_refs).forEach(assertUsablePackFile);
 });
+
+test('active Stage prompts keep goals and professional dependencies without fixed process scripts', () => {
+  const stageManifest = readJson('agent/stages/manifest.json');
+  const promptSemantics: Record<string, string[]> = {
+    'intent-intake': ['target-agent brief', 'owner split', 'route'],
+    'web-experience-research': ['research synthesis', 'source refs', 'adopted/adapted/rejected'],
+    'stage-decomposition': ['artifact morphology', 'owner split', 'adopt/adapt/merge/reject'],
+    'agent-skeleton-build': ['candidate package', 'AgentBuildReceipt', '六段式'],
+    'eval-suite-build': ['foundry_evaluation_request', 'OPL Foundry Lab', 'suite plan'],
+    'baseline-run': ['evaluation work order', '不等待', 'expected-result'],
+    'target-agent-takeover': ['takeover assessment', 'current bytes', 'owner receipt'],
+    'optimizer-iteration': ['developer patch work-order', '不在 Stage 内等待', 'next owner'],
+    'baseline-delivery': ['versioned owner-review handoff', 'current bound refs', 'owner review route'],
+    'trajectory-learning-intake': ['redaction proof', 'learning candidates', 'runtime queue'],
+    'online-learning': ['proposal-only', 'owner-gated', 'adoption'],
+  };
+  const stages = asObjects(stageManifest.stages);
+  assert.equal(stages.length, 11);
+  stages.forEach((stage) => {
+    const stageId = String(stage.stage_id);
+    const promptRef = String(stage.prompt_ref);
+    const prompt = readText(promptRef);
+    promptSemantics[stageId].forEach((semantic) => {
+      assert.ok(prompt.toLowerCase().includes(semantic.toLowerCase()), `${promptRef} ${semantic}`);
+    });
+    assert.equal(prompt.includes('## 步骤'), false, `${promptRef} fixed steps`);
+  });
+
+  const decomposition = readText('agent/prompts/stage-decomposition.md');
+  assert.ok(decomposition.includes('不要求每个 source workflow step 独立成 Stage'));
+  assert.ok(decomposition.includes('在设计 graph 前'));
+  assert.ok(decomposition.includes('owner split 贯穿'));
+
+  const optimizer = readText('agent/prompts/optimizer-iteration.md');
+  assert.ok(optimizer.includes('不在 Stage 内等待外部执行'));
+  const skeleton = readText('agent/prompts/agent-skeleton-build.md');
+  assert.ok(skeleton.includes('不生成六段式固定 prompt 剧本'));
+
+  assert.equal(
+    readText('agent/primary_skill/SKILL.md'),
+    readText('plugins/opl-meta-agent/skills/opl-meta-agent/SKILL.md'),
+  );
+});

@@ -1,13 +1,13 @@
 ---
 name: oma-eval-takeover-review
-description: Use when OMA must design Agent Lab suites or review existing target-agent takeover evidence without turning evaluation evidence into target quality authority.
+description: Use when OMA must design Foundry evaluation intent or review existing target-agent takeover evidence without turning evaluation evidence into target quality authority.
 ---
 
 # OMA Eval Takeover Review
 
 ## Purpose
 
-Design Agent Lab baseline, takeover, and external suite specs; review existing OPL-compatible target agents; and convert findings into suite specs, work-order candidates, mechanism proposals, route-back, or typed blocker shape. Suite pass/fail remains evidence input, not target quality verdict.
+Design thin Foundry evaluation requests for baseline, takeover, and external evaluation; review existing OPL-compatible target agents; and convert findings into task intents, work-order candidates, mechanism proposals, route-back, or typed blocker shape. OPL Foundry Lab alone compiles and executes suite plans. Suite pass/fail remains evidence input, not target quality verdict.
 
 ## AI-First / Contract-Light Boundary
 
@@ -27,14 +27,14 @@ Design Agent Lab baseline, takeover, and external suite specs; review existing O
 
 ## Workflow
 
-1. Verify OPL-compatible contracts before writing suite or improvement candidates.
+1. Verify OPL-compatible contracts before writing evaluation intent or improvement candidates.
 2. Map each task to acceptance criteria, stage contract, artifact morphology risk, recovery risk, or authority boundary.
 3. Include probes for silent scope downgrade, missing native source, missing shards, code-string artifact bodies, missing asset custody, and thin assembler violations.
 4. Classify takeover gaps as contract, capability, evidence, environment, morphology, owner-route, or gate gaps.
 5. Fold delivery-gate semantics back into reviewer judgment: distinguish deterministic missing refs from weak evidence, false owner-route claims, generated-surface-only proof, provider-completion-as-domain-completion, and suite-pass-overclaim.
 6. Route evidence to the smallest work-order family: stage-route when the wrong stage or owner handled the work; specialist-skill when open-ended judgment is missing; tool-connector when an external/helper capability is absent or miswired; quality-gate when evidence is present but interpreted falsely; read-model/currentness when projections are stale; authority-boundary when a forbidden owner claim appears.
-7. Return blocked suites with repair targets and the smallest next owner action; do not mask missing evidence with happy-path tests.
-8. Convert repairable findings into suite specs, work-order candidates, mechanism proposals, route-back, or typed blocker shape. Trajectory or FeedbackOps learning stays proposal-only until an owner-gated work order adopts it. `build-agent-baseline` remains the deterministic materializer/gate, not the place for these open-ended judgments.
+7. Return blocked evaluation designs with repair targets and the smallest next owner action; do not mask missing evidence with happy-path tasks.
+8. Convert repairable findings into evaluation task intents, work-order candidates, mechanism proposals, route-back, or typed blocker shape. Do not author OPL-owned probes, scorecard observations, suite results, or receipts. Trajectory or FeedbackOps learning stays proposal-only until an owner-gated work order adopts it.
 
 ## Forbidden Authority
 

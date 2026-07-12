@@ -20,7 +20,7 @@
 - 可选 `reference_design_source_refs`：用户提供的论文/PDF/repo/产品文档/案例系统等设计参考。
 - 可选 `reference_design_pattern_notes`：从参考设计抽取的短模式说明，例如 grounding、mode routing、rubric、validation 或 failure taxonomy。
 - 可选 `reference_design_pattern_packet_refs`：由 OPL source ingest / Codex extraction 从 PDF/论文/外部案例提炼出的 refs-only 模式包。
-- source-derived design machine objects：`ReferenceDesignPacket`、`TransferMap`、`AgentPackPlan`，当用户提供论文/PDF/repo/案例系统作为参考设计时必须生成并保留。外部 handoff 只接受 OPL `opl.reference_design_pattern_packet.v1` refs-only envelope，并只在 packet 本地目录安全解引用其 semantic JSON-pointer refs；三类设计对象必须来自已解析的真实 transferable patterns/anchors，或来自 seed library 的真实 workflow steps，pattern note 只能补充说明。raw source、opaque packet、identity shell、越界 pointer 或缺 steps/anchors 必须 fail closed。`DesignAdmissionReceipt` 必须在物化前证明 design-derived stage refs、target-only requirements、rejected source patterns、forbidden claims 和 refs-only authority boundary；`StageDecompositionSubpacketSet` 必须把 design-basis、transfer-planning、agent-pack-planning、design-admission 和 build-verification 串成可校验内部链条；`AgentBuildReceipt` / `build_receipt` 是物化后的构建溯源证明，不是第四个设计对象。
+- source-derived design machine objects：`ReferenceDesignPacket`、`TransferMap`、`AgentPackPlan`、morphology 与 `DesignAdmissionReceipt` 必须来自已解析的真实 patterns/anchors。它们可相互校正，但 safe packet/source evidence 先于 claim，admission 先于物化，`AgentBuildReceipt` 绑定物化后 bytes。`StageDecompositionSubpacketSet` 记录这些 refs 与 boundary provenance，不规定固定认知顺序。
 - 可选 `research_source_refs` / `expert_practice_notes` / `research_synthesis_refs`：用户只有模糊想法时，由 OMA/Codex 调研专家实践后形成。
 - research-driven design machine objects：`ResearchSynthesisPacket`、`TransferMap`、`AgentPackPlan`，当没有参考设计但需要从外部成熟经验提炼 agent 设计时必须生成并保留；三类设计对象必须来自 research synthesis ref、expert practice note 或 research source ref，不能只是目标需求复述；物化前必须有 `DesignAdmissionReceipt` 和 `StageDecompositionSubpacketSet`，物化后保留 `AgentBuildReceipt` / `build_receipt`。
 - stage-decomposition runner settings or explicit `stage_decomposition_closeout`
@@ -34,7 +34,7 @@
 
 1. 准备 output workspace，确认不会写入 source checkout 的 runtime artifact。
 2. 从自然语言目标生成稳定的 target-agent descriptor 字段和 candidate agent package 路径。
-3. 调用 OPL profile selector / readback：builtin / hybrid 路线把 selected profile、rationale、canonical `intent_signals` 和 requirements 写入 target descriptor、capability map 和 stage control plane；source-derived 路线按 `source extraction -> OPL refs-only packet -> local JSON-pointer resolution -> ReferenceDesignPacket -> TransferMap -> per-step AgentPackPlan -> DesignAdmissionReceipt` 执行后物化。每个声明 source 都必须有 typed packet 覆盖；用户 packet 存在时 seed 只作 context；每个 admitted workflow step 必须成为真实 stage 并带 prompt/skill/knowledge/quality-gate refs。research-driven 路线先把外部调研和专家实践提炼成非空 `ResearchSynthesisPacket`，再映射成非空 `TransferMap`、`AgentPackPlan` 和 `DesignAdmissionReceipt` 后物化。两条设计依据路线都必须把 receipt、pattern refs、transferable pattern requirements、capability plan requirements、design admission refs、`StageDecompositionSubpacketSet` refs 和 build receipt refs 写入同一组 surface。
+3. 消费 OPL profile/source/research route refs，并让真实 artifact morphology、owner split、design objects 与 source-step dispositions 共同决定 target graph。每个 workflow step 必须可追溯，但可按开放判断、owner、knowledge、gate、handoff 或 failure route 合并为 Stage-internal method；不得强制一 step 一 Stage。
 4. 启动或读取 `stage-decomposition` typed closeout，从其中的 stage graph、action refs、artifact morphology brief、pack file bodies、profile selection mode、selected profile refs / source-derived design refs / research-driven design refs、三类设计对象、`DesignAdmissionReceipt`、`StageDecompositionSubpacketSet`、`AgentBuildReceipt` / `build_receipt`、profile requirements、independent gate policy、reference design refs / pattern packet refs / research synthesis refs 和 quality gate declaration 生成 candidate agent package 的标准目录和 contracts。
 5. 写入 prompts、skills、stages、quality gates、knowledge policy，并保留 generated-from-closeout proof。
 6. 确认 target artifact locator 引用 morphology refs，且长书、长 deck、长文、素材型交付或数据型交付的 creative source 是可分片 native source，不是脚本字符串或单一导出物。
@@ -53,7 +53,7 @@
 - scaffold validation ref
 - generated interface bundle ref
 - profile selection mode / selected OPL profile refs / source-derived design receipt / research-driven design receipt / profile selection receipt ref / profile requirements
-- `ReferenceDesignPacket` 或 `ResearchSynthesisPacket` / `TransferMap` / `AgentPackPlan` refs 与非空对象；`DesignAdmissionReceipt` refs 与非空对象；`StageDecompositionSubpacketSet` refs 与有序 cognitive packet 链；物化后的 `AgentBuildReceipt` / `build_receipt` refs；每个 design-derived stage 的 `stage_pattern_source_refs`
+- `ReferenceDesignPacket` 或 `ResearchSynthesisPacket` / `TransferMap` / `AgentPackPlan` refs 与非空对象；`DesignAdmissionReceipt` refs；`StageDecompositionSubpacketSet` provenance/boundary refs；物化后的 `AgentBuildReceipt` / `build_receipt` refs；每个 design-derived Stage 的 source/disposition refs
 - reference design source refs / pattern notes / pattern packet refs
 - research source refs / expert practice notes / research synthesis refs
 - artifact morphology brief ref
@@ -73,7 +73,7 @@
 - package 必须包含 OPL Agent Package manifest sidecar；Codex plugin 是默认 carrier/projection，不是 package truth。
 - contract metadata 足以生成 CLI/MCP/Skill/product-entry/OpenAI/AI SDK surface。
 - stage graph 和 action catalog 来自 typed closeout，而不是脚本内固定 graph。
-- source-derived / research-driven closeout 必须保留 `StageDecompositionSubpacketSet`，证明 stage-decomposition 没有跳过设计依据、迁移计划、pack 计划、设计准入和物化后 build proof 的顺序。
+- source-derived / research-driven closeout 必须保留 `StageDecompositionSubpacketSet`，证明设计依据、迁移、pack、morphology、准入和 post-materialization build proof 的 refs 与边界完整；不用于冻结模型的认知顺序。
 - artifact morphology brief 来自 typed closeout，并被 artifact locator、suite task manifest、takeover/external-suite evidence 和 delivery receipt 引用。
 - free text closeout、partial refs、缺 independent gate policy、缺 quality gate declaration 或 self-review 在已有可消费 pack artifact 时记录 `completed_with_quality_debt` 并 route-back；它们阻止 baseline delivery、promotion 和 ready 声明，不阻止 stage transition。只有零可消费 artifact、artifact 损坏、权限/安全/authority/currentness 或显式人工决策才硬停止。
 - baseline delivery gate 通过前不签发交付。

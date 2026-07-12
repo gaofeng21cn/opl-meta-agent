@@ -658,6 +658,13 @@ function validateStageControlPlane(
         if (
           stage.pattern_id !== expectedPlannedStage.pattern_id
           || stage.step_id !== expectedPlannedStage.step_id
+          || JSON.stringify(normalizedStringArray(stage.source_step_ids, `stage ${stageId}.source_step_ids`))
+            !== JSON.stringify(normalizedStringArray(
+              expectedPlannedStage.source_step_ids,
+              `expected_agent_pack_plan.${stageId}.source_step_ids`,
+            ))
+          || JSON.stringify(stage.source_step_mappings)
+            !== JSON.stringify(expectedPlannedStage.source_step_mappings)
           || stage.provenance_kind !== expectedPlannedStage.provenance_kind
           || JSON.stringify(normalizedStringArray(stage.source_anchor_refs, `stage ${stageId}.source_anchor_refs`))
             !== JSON.stringify(normalizedStringArray(
