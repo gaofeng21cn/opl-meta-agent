@@ -141,7 +141,7 @@ The loop turns each run into reviewable improvement material:
 <details>
   <summary><strong>Start here if you are handing this repo to Codex or another agent</strong></summary>
 
-- Cloning this repo does not install the OPL Framework or runtime substrate. OPL install/update/sync/reinstall owns the Framework link; for a developer checkout, run `npm install` and then `opl connect agent-packages link-framework --agent-root "$PWD" --json`.
+- Cloning this repo does not install OPL Base. OPL install/update/package lifecycle owns the Framework link; for a developer checkout, run `npm install` and then `opl packages link-framework --agent-root "$PWD" --json`.
 - Read this README, then [Project](./docs/project.md), [Status](./docs/status.md), [Architecture](./docs/architecture.md), [Invariants](./docs/invariants.md), [Decisions](./docs/decisions.md), and the contracts under [`contracts/`](./contracts/).
 - Use package scripts and `contracts/action_catalog.json` for current command surfaces; update focused tests when changing contracts, README, docs, smoke scripts, or action boundaries.
 - This repo owns agent-building semantics and testing/self-evolution orchestration. OPL Agent Lab owns real runs, longline suites, mechanism read models, work-order execution, and promotion gates.
