@@ -139,7 +139,7 @@ Patch-loop closeout 的 machine refs 仍固定为 blocked suite result、develop
 
 CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framework 通过 `opl agents interfaces --repo-dir <repo>` 从 `contracts/action_catalog.json` 与 domain-owned `agent/stages/manifest.json` 编译生成；hosted `family_stage_control_plane` 是 OPL Pack 生成物。本仓不实现私有 MCP server、通用 CLI wrapper、product-entry shell 或 Skill 包装层；OMA 自身的 Codex plugin 只作为 `agent/primary_skill/SKILL.md` 的 repo-local materialized carrier，generated interface bundle 仍由 OPL Framework 统一生成。仓内脚本只作为领域 smoke / minimal authority action 的可调用目标。生成接口的权限上限写入 `contracts/pack_compiler_input.json`、`contracts/generated_surface_handoff.json`、OPL canonical Foundry policy 与 `contracts/foundry_agent_series.json` 的 OMA-owned `domain_specific_profile`：它可以 invoke/project 已声明 action、registration refs、App projection refs、scaleout evidence refs 与 minimal authority function，不能写 domain truth、memory body、artifact body、quality/export verdict，也不能成为 generated surface owner。
 
-Generated interface identity 只读取 `contracts/pack_compiler_input.json.canonical_agent_id="oma"`；`domain_id="opl-meta-agent"` 继续表示 domain locator，package/plugin slug 继续是 carrier locator。OPL 不得从 domain id 推断 `agent_id`；`contracts/opl_agent_package_manifest.json.agent_id` 必须与 canonical id 一致，而 `package_id` 保持 `opl-meta-agent`。
+Generated interface identity 只读取 `contracts/pack_compiler_input.json.canonical_agent_id="oma"`；`contracts/opl_agent_package_manifest.json` 的 `agent_id` 与 `package_id` 都必须等于 `oma`。`domain_id="opl-meta-agent"`、repo slug、npm package name 与 Codex plugin slug 继续表示 carrier locator；OPL 不得从 locator 推断 canonical identity，也不得通过 alias 维持第二个 package identity。
 
 ## Domain Pack Structure
 

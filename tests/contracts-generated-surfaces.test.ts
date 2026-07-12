@@ -41,10 +41,11 @@ test('generated-surface contracts remain OPL-owned refs-only projections', () =>
   assert.equal(packCompilerInput.domain_id, 'opl-meta-agent');
   assert.equal(packCompilerInput.canonical_agent_id, 'oma');
   assert.equal(packageManifest.agent_id, packCompilerInput.canonical_agent_id);
-  assert.equal(packageManifest.package_id, 'opl-meta-agent');
+  assert.equal(packageManifest.package_id, packCompilerInput.canonical_agent_id);
+  assert.equal(packageManifest.codex_surface.plugin_id, 'opl-meta-agent');
   assert.equal(
     packageManifest.opl_managed_surface_ref,
-    'one-person-lab/contracts/opl-framework/agent-packages/oma.json#/opl_managed_surface',
+    'one-person-lab/contracts/opl-framework/packages/oma.json#/opl_managed_surface',
   );
   assert.equal(packageManifest.distribution_payload, undefined);
   assert.equal(handoff.generated_surface_owner, 'one-person-lab');
