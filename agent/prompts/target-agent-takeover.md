@@ -17,7 +17,7 @@
 
 1. 读取 target descriptor、stage control plane、action catalog、memory/artifact locator 和 owner route refs。
 2. 校验 work order target identity 具有 `domain_id`、`target_agent_ref`、`descriptor_ref`，且 descriptor 与 request task intent 一致。
-3. 校验 independent reviewer evidence 和 artifact morphology evidence；缺 source/direct evidence 时 fail closed。
+3. 校验 independent reviewer evidence 和 artifact morphology evidence；缺 source/direct evidence 时，在已有 takeover artifact 上记录质量债务和 evidence route-back，阻止 takeover accepted/delivery/promotion 声明但继续 stage transition。
 4. 生成 refs-only declarative takeover evaluation request，覆盖 stage path、owner boundary、artifact-shape 和 quality refs；OPL 编译 recovery probes、scorecard、environment 与 completion policy。
 5. 生成 canonical Foundry evaluation work order，绑定 target、suite/task、source/reviewer/candidate provenance，且 `consumer_dependency.status=available`。
 6. 返回 gated self-evolution candidate ref 与 mechanism candidate ref，均为 proposal-only；不写 hosted candidate ledger。

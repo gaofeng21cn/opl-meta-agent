@@ -47,7 +47,7 @@
         "authority_boundary",
         "progress_projection",
         "currentness",
-        "owner_receipt_or_typed_blocker_closeout",
+        "progress_receipt_or_owner_answer_or_hard_stop_closeout",
         "app_projection"
       ],
       "stage_manifest_ref": "agent/stages/manifest.json",

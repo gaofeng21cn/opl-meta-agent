@@ -17,5 +17,5 @@
 
 - receipt 必须记录用户确认或可追溯输入来源。
 - receipt 必须声明 target domain owner、quality verdict owner、artifact authority 和 memory body owner。
-- route-specific 输入不足时必须返回 typed blocker；不得为未选 route 声明输入已满足。
+- route-specific 输入不足但仍能形成可消费 target brief 时，输出 `completed_with_quality_debt` 和 missing-input route-back；只有无法形成任何可消费 brief，或涉及显式 owner/human、权限、安全、authority/currentness 边界时返回 typed blocker/human gate。不得为未选 route 声明输入已满足。
 - 如果 authority boundary 不清，receipt 标记 blocked，不进入 skeleton build。

@@ -67,8 +67,11 @@ export function validateArtifactMorphologyContract(contract: JsonObject, targetA
   if (extentPolicy.silent_extent_downgrade_forbidden !== true) {
     throw new Error('stage-decomposition pack draft artifact morphology must forbid silent extent downgrade.');
   }
-  if (extentPolicy.shortfall_requires_typed_blocker !== true) {
-    throw new Error('stage-decomposition pack draft artifact morphology must require typed blocker for extent shortfall.');
+  if (extentPolicy.shortfall_with_consumable_artifact !== 'completed_with_quality_debt'
+    || extentPolicy.shortfall_without_consumable_artifact !== 'typed_blocker'
+    || extentPolicy.shortfall_blocks_stage_transition !== false
+    || extentPolicy.shortfall_blocks_quality_or_ready_claims !== true) {
+    throw new Error('stage-decomposition pack draft artifact morphology must route extent shortfall through progress-first quality debt.');
   }
 
   const assetCustodyPolicy = asRecord(contract.asset_custody_policy, 'artifact_morphology_contract.asset_custody_policy');
@@ -83,8 +86,10 @@ export function validateArtifactMorphologyContract(contract: JsonObject, targetA
   }
 
   const reviewPolicy = asRecord(contract.realistic_task_review_policy, 'artifact_morphology_contract.realistic_task_review_policy');
-  if (reviewPolicy.required_before_baseline_delivery !== true) {
-    throw new Error('stage-decomposition pack draft artifact morphology must require realistic task review before baseline delivery.');
+  if (reviewPolicy.required_before_baseline_quality_acceptance !== true
+    || reviewPolicy.missing_review_with_consumable_artifact !== 'completed_with_quality_debt'
+    || reviewPolicy.missing_review_blocks_stage_transition !== false) {
+    throw new Error('stage-decomposition pack draft artifact morphology must keep realistic review as a quality-acceptance gate, not a stage-transition blocker.');
   }
   if (reviewPolicy.reviewer_must_check_artifact_morphology !== true) {
     throw new Error('stage-decomposition pack draft artifact morphology must require reviewer artifact-shape checks.');
@@ -110,5 +115,9 @@ export function validateArtifactMorphologyContract(contract: JsonObject, targetA
   ].forEach((field) => assertBooleanFalse(boundary, field, `artifact_morphology_contract.authority_boundary.${field}`));
   if (boundary.target_domain_owner_must_accept_morphology !== true) {
     throw new Error('stage-decomposition pack draft artifact morphology must require target-domain owner acceptance.');
+  }
+  if (boundary.target_domain_owner_acceptance_blocks_stage_transition !== false
+    || boundary.target_domain_owner_acceptance_blocks_quality_or_ready_claims !== true) {
+    throw new Error('target-domain morphology acceptance must gate quality/readiness claims without blocking artifact progress.');
   }
 }

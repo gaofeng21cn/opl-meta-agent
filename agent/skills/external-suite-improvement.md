@@ -16,9 +16,9 @@
 ## 流程
 
 1. 读取 suite result、rubric gaps、trajectory refs、receipts 和结构化 AI reviewer evaluation。
-2. 校验 AI reviewer critique、suggestions、source refs、direct evidence refs、verdict、provenance、no shared context 和独立 attempt refs；缺失、为空或只有 suite/scaffold refs 时 fail closed。
+2. 校验 AI reviewer critique、suggestions、source refs、direct evidence refs、verdict、provenance、no shared context 和独立 attempt refs；缺失、为空或只有 suite/scaffold refs 时，在已有 suite/work-order artifact 上记录质量债务与 reviewer route-back，不阻止后续 stage。
 3. 分类 failure，并把 AI reviewer suggestions 映射进 patch traceability matrix。
-4. 若 suite 或 production evidence 出现效率证据，提取通用 target-agent efficiency non-regression refs：`quality_floor_refs`、`latency_baseline_refs`、`usage_cost_refs`、`cache_reuse_refs` 和 `target_verification_refs`；缺 `quality_floor_refs` 时 fail closed 到 typed blocker。
+4. 若 suite 或 production evidence 出现效率证据，提取通用 target-agent efficiency non-regression refs：`quality_floor_refs`、`latency_baseline_refs`、`usage_cost_refs`、`cache_reuse_refs` 和 `target_verification_refs`；缺 `quality_floor_refs` 时记录质量债务并禁止 efficiency non-regression / promotion 声明，已有 work-order artifact 继续推进。
 5. 判断可编辑面：source、tests、docs、prompt policy、skill policy、stage policy、suite policy 或 quality gate policy。
 6. 生成 developer work order completeness：reviewer refs、Codex/executor-first aperture、patch traceability、target verification、owner route、no-forbidden-write proof、canary、rollback、version refs 和 efficiency non-regression refs。
 6. 当 declarative inputs 完整时生成 target capability candidate 与 developer patch work order；缺字段时只返回 expected typed-blocker ref，不物化 target-domain blocker body。

@@ -69,12 +69,12 @@ or target owner authority.
 - 没有 repo-owned generic scheduler、daemon、queue、attempt ledger、workbench 或 private wrapper。
 - helper language 不参与 Agent membership；删除或换写 helper implementation 后，Agent identity、stage/prompt/skill/knowledge/quality-gate Pack、golden path 和 generated interface 保持不变。
 - domain truth、memory body、artifact body、quality/export verdict 的 owner 没有漂移。
-- artifact morphology brief 必须覆盖目标领域交付物的真实创作源、分片、体量、资产保管和装配边界；缺失 native source format、sharding strategy、extent/scale contract、asset custody/file-path policy 或 realistic target task review 时 fail closed。
-- source-derived / research-driven 路线必须保留 `StageDecompositionSubpacketSet`，且 cognitive packet 顺序、materialization boundary 和 fail-closed checks 不得缺失或重排。
+- artifact morphology brief 必须覆盖目标领域交付物的真实创作源、分片、体量、资产保管和装配边界；缺失 native source format、sharding strategy、extent/scale contract、asset custody/file-path policy 或 realistic target task review 时，在已有可消费 pack artifact 上记录质量债务与补齐 route-back，阻止 morphology accepted / baseline delivery / promotion 声明但继续 stage transition。
+- source-derived / research-driven 路线必须保留 `StageDecompositionSubpacketSet`，且 cognitive packet 顺序、materialization boundary 和 quality-claim checks 不得缺失或重排。
 - stage 大小必须由 stage main prompt 和必要 professional skill 的 AI 判断决定；schema、validator 和 tests 只能守住 refs、顺序、权限和 fail-closed 边界。一个 top-level stage 不得混入多个独立开放判断；也不得把同一判断拆成只为满足流程存在的机械 stage。
 - admission 必须 progress-first：可由有效设计对象确定推导的 format、projection、ref、requires、expected receipt 缺口应在 stage 内有界修正并继续物化；只有语义对象缺失、证据/来源缺失、owner 决策缺失、authority 越权、forbidden claim 或无法推导的缺口才成为 route-back / typed blocker / human gate。
 - stage graph 不把推理路线、写作策略、评审标准或修订策略写死；这些开放式判断由 Codex executor 和独立 reviewer 承担。
-- 每个 stage 都能声明 knowledge/tool/rubric gap blocker，避免为了通过 scaffold validation 生成空语义包。
+- 每个 stage 都能声明 knowledge/tool/rubric gap quality debt；只有零可消费 artifact、artifact 损坏、安全/权限/authority/currentness 或显式人工决策才生成 blocker/human gate。
 
 ## 禁止事项
 

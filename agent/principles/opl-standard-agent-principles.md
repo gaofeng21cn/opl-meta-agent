@@ -16,6 +16,7 @@ This projection does not create a second truth source. OPL owns the shared princ
 | `domain_intake_mapping` | Domain intake mapping | `domain_intake` is an owner-handoff pattern mapped to OMA `intent-intake`, not an independent Skill. |
 | `workspace_source_intake_shell` | Workspace/source shell | OPL owns generic locator and refs-only source intake transport; OMA owns agent-building source semantics and owner route decisions. |
 | `owner_delta_progress` | Owner-delta progress | Progress is measured by deliverable deltas, owner receipts, route-back refs, typed blockers, human gates, or handoff packets. |
+| `quality_budget_progress_first` | Quality-budget progress first | A consumable Agent pack or work-order artifact advances with `completed_with_quality_debt`; pending review or owner acceptance blocks promotion/readiness claims, not OMA stage transition. |
 | `parallel_executor_autonomy` | Bounded executor autonomy | Executors may choose order, tools, substitutions, and safe parallelism inside declared authority and permission boundaries. |
 | `module_organization` | Module organization | OPL brand modules hold framework primitives; OMA is a declarative domain pack plus minimal authority functions. |
 

@@ -16,7 +16,7 @@
 
 1. 分类失败：contract gap、prompt gap、skill gap、stage-policy gap、tool-policy gap、quality gate gap、workspace environment gap。
 2. 让 Codex 做 root-cause reasoning：判断失败来自 agent 设计、prompt/skill/knowledge 缺口、tool policy、stage graph、质量门，还是 evidence 采集不足；禁止直接用后处理修补输出。
-3. 校验 AI reviewer evaluation；缺少 critique/suggestions/source refs/provenance 时 fail closed。
+3. 校验 AI reviewer evaluation；缺少 critique/suggestions/source refs/provenance 时，在已有 optimizer candidate/work-order artifact 上记录质量债务和 reviewer route-back，阻止 promotion/ready 声明但继续 stage transition。
 4. 要求独立 reviewer 的 direct-evidence critique 进入改动依据；执行 Codex 不得在同一上下文里自审并批准自己的 patch。
 5. 为每个 gap 建立 traceability matrix：source failure ref、AI reviewer suggestion/source refs、required patch ref、editable surface、test proof、receipt proof。
 6. 把 target owner 允许的 source/tests/docs 写集编码进 developer work order；OMA 不直接执行 patch。

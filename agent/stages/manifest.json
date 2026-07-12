@@ -3,6 +3,21 @@
   "version": "opl-standard-agent-declarative-stage-manifest.v1",
   "target_domain_id": "opl-meta-agent",
   "owner": "opl-meta-agent",
+  "progress_first_policy": {
+    "consumable_artifact_advances_stage": true,
+    "retry_review_and_repair_limits_are_quality_budgets": true,
+    "quality_budget_exhaustion_status": "completed_with_quality_debt",
+    "quality_debt_blocks_stage_transition": false,
+    "quality_debt_blocks_quality_export_or_ready_claims": true,
+    "hard_stop_classes": [
+      "zero_consumable_artifact",
+      "artifact_corrupt_or_unreadable",
+      "permission_or_credential_boundary",
+      "explicit_human_decision",
+      "authority_boundary_violation",
+      "identity_or_currentness_mismatch"
+    ]
+  },
   "stages": [
     {
       "stage_id": "intent-intake",
