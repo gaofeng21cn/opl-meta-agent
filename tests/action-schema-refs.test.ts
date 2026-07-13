@@ -183,6 +183,15 @@ test('stage manifest gives Codex unrestricted declared-stage routing', () => {
   assert.equal(policy.no_output_or_failure_diagnostic_advances_stage, true);
 });
 
+test('stage operating principles expose the same progress-first route ABI', () => {
+  const policy = readJson('contracts/stage_operating_principles.json').speed_policy;
+  assert.equal(policy.route_selection_owner, 'codex_cli');
+  assert.equal(policy.codex_may_advance_skip_repeat_reverse_or_route_back, true);
+  assert.equal(policy.any_declared_stage_may_start_from_any_prior_stage_result, true);
+  assert.equal(policy.declared_requires_are_quality_context_not_launch_gates, true);
+  assert.equal(policy.next_stage_refs_are_recommendations_not_constraints, true);
+});
+
 test('representative action inputs and outputs accept valid instances and reject invalid ones', () => {
   const buildInputRef = 'contracts/schemas/build-agent-baseline.input.schema.json';
   assert.equal(validate(buildInputRef, {
