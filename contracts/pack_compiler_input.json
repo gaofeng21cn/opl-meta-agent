@@ -25,6 +25,7 @@
     "agent/prompts/online-learning.md",
     "agent/prompts/optimizer-iteration.md",
     "agent/prompts/stage-decomposition.md",
+    "agent/prompts/stage-quality-cycle-roles.md",
     "agent/prompts/target-agent-takeover.md",
     "agent/prompts/trajectory-learning-intake.md",
     "agent/prompts/web-experience-research.md",
@@ -51,7 +52,8 @@
     "agent/stages/target-agent-takeover.md",
     "agent/stages/trajectory-learning-intake.md",
     "agent/stages/web-experience-research.md",
-    "agent/tools/domain_affordances.md"
+    "agent/tools/domain_affordances.md",
+    "contracts/stage_quality_cycle_policy.json"
   ],
   "declarative_domain_pack": [
     "domain_truth_schema",

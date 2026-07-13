@@ -175,6 +175,12 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 - 理由：对象语义和设计判断仍由 OMA 持有，但 OPL Profile Spine、scaffold materializer 和未来其他 producer 需要一个与 producer 名称无关的稳定 machine interface。
 - 影响：OMA 只提交 candidate semantics；物理 scaffold、文件 digest、post-materialization `opl_foundry_agent_build_receipt` 和 conformance 继续由 OPL Foundry Lab 持有。ResearchSynthesisPacket 等 OMA-only 设计输入仍保留 OMA identity。
 
+### Stage Review 隔离与 optimizer Meta Review
+
+- 决策：所有 OMA AI producer Stage 显式绑定独立上下文质量循环；同 thread 只允许 `in_thread_refinement`，正式 review/repair/re-review 各自使用新的 StageAttempt 与 Codex thread。
+- 决策：`optimizer-iteration` 保留 ID 并承担 Agent Design Meta Review，正式 baseline 必须在外部 result/reviewer evidence 返回后经过该 Stage 才能 delivery。
+- 影响：Meta Review 输出最早 defect owner、失效下游 refs、route-back/no-patch/work-order/quality-debt shape；默认三轮 route-back 预算耗尽且有可消费 candidate 时带债推进，但不得升级 delivery/promotion/ready claim。
+
 ## Superseded 决策入口
 
 以下旧口径只作为 history/provenance 读，不再承担 current owner：

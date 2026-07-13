@@ -19,6 +19,10 @@
 
 不写 target truth，不把 smoke/suite/profile 命中声明成交付，不替 OPL 发明 runtime 能力。
 
+## 独立 Stage Review 边界
+
+当前 thread 内的校正只记为 `in_thread_refinement`。正式 Review、repair 和 re-review 由 OPL 在同一 StageRun 下创建新的 StageAttempt 与 Codex thread，仅消费 exact artifact/source/rubric/必要 lineage refs；任何同 thread resume 只能补 typed closeout，不能形成 review receipt。
+
 ## Closeout
 
 返回 `intent_brief_ref`、`acceptance_criteria_ref`、`authority_boundary_ref`、选定 route 及该 route 的 source/profile/research/existing-agent refs。零、损坏或不可读 brief 物化 no-output/failure diagnostic 并继续；只有 executor unavailable、权限/安全/authority、wrong-target identity/currentness、不可逆动作或显式 owner/human 决策才返回 typed blocker/human gate。

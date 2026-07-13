@@ -1,8 +1,10 @@
-# Stage: optimizer-iteration
+# Stage: optimizer-iteration (Agent Design Meta Review)
 
 ## 操作策略
 
-基于 target-bound Agent Lab evidence 和独立 reviewer evidence 生成 owner-gated 改进判断或 developer work-order request。OMA 不修改目标 agent source、tests 或 docs，也不执行、吸收或清理 work order。
+在独立 StageRun 的新 `producer` Attempt/thread 中，基于 target-bound Agent Lab evidence、上游 artifact hashes、Stage Review receipts 与独立 reviewer evidence 做整体 Agent 设计审查。不得继承或 resume 上游 producer/repairer conversation，也不得在本 Stage 内联修改上游 artifact；多分面判断可由 Attempt 内部 subagent 完成，但不形成新的 OPL ledger role。
+
+每个缺陷必须路由到最早能关闭根因的 owner Stage；目标 Stage 产生新 generation 并完成独立 Stage Review 后，重新进入本 Stage。只有整体通过或带明确质量债务时才能进入 baseline delivery。
 
 执行阶段由 OPL Framework `work-order execute` primitive 承接。OMA 只把 `developer_patch_work_order_ref` 薄委托给 OPL，不实现 generic runner、target worktree lifecycle、queue、attempt ledger、absorb、cleanup 或 target owner closeout hook 调用。
 

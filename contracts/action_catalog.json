@@ -166,6 +166,7 @@
           "agent-skeleton-build",
           "eval-suite-build",
           "baseline-run",
+          "optimizer-iteration",
           "baseline-delivery"
         ],
         "optional_stage_refs": [

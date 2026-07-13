@@ -105,10 +105,10 @@
         "evolution-candidate-ref:opl-meta-agent/stage-run-canary/revise-mechanism-and-tests"
       ]
     },
-    "meta_review_learning": {
+    "strategy_retrospective": {
       "refs": [
-        "meta-review-ref:opl-meta-agent/stage-run-canary/meta-learning",
-        "mechanism-patch-proposal-ref:opl-meta-agent/stage-run-canary/controlled-meta-review"
+        "strategy-retrospective-ref:opl-meta-agent/stage-run-canary/strategy-learning",
+        "mechanism-patch-proposal-ref:opl-meta-agent/stage-run-canary/controlled-strategy-retrospective"
       ]
     },
     "independent_quality_gate": {
@@ -124,7 +124,7 @@
     "reflection_review_ref": "reflection-review-ref:opl-meta-agent/stage-run-canary/source-grounding",
     "ranking_selection_ref": "ranking-selection-ref:opl-meta-agent/stage-run-canary/candidate-ranking",
     "revision_lineage_ref": "revision-lineage-ref:opl-meta-agent/stage-run-canary/revision-v1",
-    "meta_review_ref": "meta-review-ref:opl-meta-agent/stage-run-canary/meta-learning",
+    "strategy_retrospective_ref": "strategy-retrospective-ref:opl-meta-agent/stage-run-canary/strategy-learning",
     "independent_gate_ref": "independent-agent-test-review-gate-ref:opl-meta-agent/stage-run-canary/no-shared-context"
   },
   "tool_affordance_policy": {

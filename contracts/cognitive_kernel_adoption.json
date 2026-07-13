@@ -170,14 +170,14 @@
     "route_is_not_stage_strategy": true,
     "stage_attempt_is_required_for_execution": true,
     "candidate_pool_is_stage_internal_artifact": true,
-    "meta_review_updates_are_proposals_until_owner_acceptance": true
+    "strategy_retrospective_updates_are_proposals_until_owner_acceptance": true
   },
   "stage_strategy_refs": [
     "target_agent_candidate_generation",
     "mechanism_proposal_grounded_reflection",
     "agent_pack_comparative_selection",
     "eval_suite_independent_gate",
-    "trajectory_learning_meta_review"
+    "trajectory_learning_strategy_retrospective"
   ],
   "stage_artifact_refs": [
     "target_agent_intent_ref",

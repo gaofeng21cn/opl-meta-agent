@@ -17,6 +17,10 @@
 
 evaluation request 先于 work-order binding。只有 OPL Foundry Lab 外部返回的 result/execution receipt 才能进入 optimizer 或 delivery evidence。OMA 不等待它们完成；本 Stage 交付 pending work order 和 expected-result locator 后即 closeout。
 
+## 独立 Stage Review 边界
+
+当前 thread 内的校正只记为 `in_thread_refinement`。正式 Review、repair 和 re-review 由 OPL 在同一 StageRun 下创建新的 StageAttempt 与 Codex thread，仅消费 exact artifact/source/rubric/必要 lineage refs；任何同 thread resume 只能补 typed closeout，不能形成 review receipt。正式 baseline 在外部 result 与 reviewer evidence 返回后必须进入 `optimizer-iteration` Meta Review，不能直接进入 delivery。
+
 ## Closeout
 
 返回 request、Foundry evaluation work order、expected-result ref 和 owner/external-evaluation route。若外部 result 尚无，明确 pending consumer/next owner；不得生成 suite plan、result、execution receipt、target blocker body 或 owner receipt。
