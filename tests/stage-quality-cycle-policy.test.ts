@@ -20,9 +20,26 @@ test('OMA declares isolated Stage Review for every AI producer', () => {
   assert.equal(attemptContract.same_thread_resume_consumes_quality_budget, false);
   assert.deepEqual(Object.keys(attemptContract.role_prompt_refs).sort(), ['producer', 're_reviewer', 'repairer', 'reviewer']);
   assert.deepEqual(attemptContract.required_role_output_ref_fields.reviewer, [
-    'finding_refs', 'repair_map_refs', 'reviewed_artifact_hashes',
+    'finding_refs', 'reviewed_artifact_hashes',
+  ]);
+  assert.deepEqual(attemptContract.required_role_output_ref_fields.repairer, [
+    'repair_map_refs', 'changed_artifact_refs', 'changed_artifact_hashes', 'lineage_refs',
   ]);
   assert.ok(attemptContract.required_role_output_ref_fields.re_reviewer.includes('re_review_closure_refs'));
+
+  const rolePrompt = readFileSync('agent/prompts/stage-quality-cycle-roles.md', 'utf8');
+  ['finding_id', 'severity', 'required', 'evidence_refs', 'repair_expectation'].forEach((field) => {
+    assert.equal(rolePrompt.includes(`\`${field}\``), true);
+  });
+  assert.match(rolePrompt, /Reviewer 不产 repair map/);
+  assert.match(rolePrompt, /逐 `finding_id` 返回/);
+  assert.match(rolePrompt, /Repairer 不关闭 findings、不做终局 Stage 判断/);
+  assert.match(rolePrompt, /route_impact\.stage_route_decision/);
+  assert.match(rolePrompt, /route_impact\.stage_route_recommendation/);
+  assert.match(rolePrompt, /正式 Review receipt 由 StageRunController 物化/);
+  ['route_back_stage_ref', 'selected_next_stage_ref', 'next_stage_ref', 'workflow_complete'].forEach((field) => {
+    assert.equal(rolePrompt.includes(`\`${field}\``), true);
+  });
 
   const stages = new Map<string, Record<string, any>>(
     manifest.stages.map((stage: Record<string, any>) => [String(stage.stage_id), stage]),
@@ -86,6 +103,61 @@ test('optimizer-iteration is the isolated Agent Design Meta Review on the baseli
   assert.equal(meta.max_route_back_rounds, 3);
   assert.ok(meta.defect_owner_route_back.stage_refs.includes('stage-decomposition'));
   assert.ok(meta.defect_owner_route_back.stage_refs.includes('agent-skeleton-build'));
+});
+
+test('baseline-delivery remains a primary-only immutable refs handoff to the owner gate', () => {
+  const manifest = readJson('agent/stages/manifest.json');
+  const profile = readJson('contracts/stage_quality_cycle_policy.json');
+  const stages = new Map<string, Record<string, any>>(
+    manifest.stages.map((stage: Record<string, any>) => [String(stage.stage_id), stage]),
+  );
+  const delivery = stages.get('baseline-delivery');
+  assert.ok(delivery);
+
+  assert.deepEqual(delivery.handoff_review_boundary, {
+    artifact_effect: 'reviewed_immutable_refs_only',
+    freezes_canonical_artifact_bytes: false,
+    issues_quality_export_publication_or_ready_claim: false,
+    downstream_owner_retains_acceptance: true,
+  });
+  assert.equal(delivery.trust_lane, 'human_gate');
+  assert.deepEqual(delivery.ensures, ['versioned_agent_handoff_ready_for_owner_review']);
+  assert.deepEqual(profile.stages['baseline-delivery'].formal_review, {
+    required: false,
+    risk_tier: 'high',
+    review_depth: 'full',
+    context_isolation_required: true,
+    max_repair_rounds: 0,
+  });
+
+  const prompt = readFileSync(String(delivery.prompt_ref), 'utf8');
+  assert.match(prompt, /immutable refs-only/);
+  assert.match(prompt, /baseline_handoff_candidate_ref/);
+  assert.match(prompt, /不签发 `baseline_delivery_receipt`/);
+  assert.match(prompt, /不表示 owner acceptance/);
+  assert.match(prompt, /route_impact\.stage_route_decision/);
+  assert.match(prompt, /decision_kind=complete/);
+
+  const descriptor = readJson('contracts/domain_descriptor.json');
+  assert.ok(descriptor.outputs.includes('baseline_handoff_candidate_ref'));
+  assert.equal(descriptor.outputs.includes('baseline_delivery_receipt_ref'), false);
+  const receiptContract = readJson('contracts/owner_receipt_contract.json');
+  assert.equal(receiptContract.allowed_receipt_classes.includes('baseline_delivery_receipt'), false);
+  assert.deepEqual(receiptContract.retired_receipt_classes, [{
+    receipt_class: 'baseline_delivery_receipt',
+    replacement_output_ref: 'baseline_handoff_candidate_ref',
+    historical_refs_are_provenance_only: true,
+    acceptance_owner: 'target_domain_owner',
+  }]);
+  const appProjection = readJson('contracts/app_workbench_projection.json');
+  assert.ok(appProjection.drilldown_readiness_receipt.candidate_ref_fields.includes('baseline_handoff_candidate_ref'));
+  assert.equal(
+    appProjection.drilldown_readiness_receipt.receipt_ref_fields.includes('baseline_delivery_receipt_ref'),
+    false,
+  );
+  const adoption = readJson('contracts/standard-agent-principles-adoption.json');
+  assert.ok(adoption.domain_authority_owner.owns.includes('baseline_handoff_candidate_refs'));
+  assert.equal(adoption.domain_authority_owner.owns.includes('baseline_delivery_receipts'), false);
 });
 
 test('quality policy does not define nested Stage, route, or owner graphs', () => {

@@ -483,7 +483,7 @@ function buildBaselineFoundryEvaluationRequest({
     trajectoryRef: `trajectory:opl-meta-agent/${targetAgent.domain_id}-baseline`,
     requestedRunRef: `run:opl-meta-agent/${targetAgent.domain_id}-baseline`,
     artifactRefs: [`artifact-ref:${targetAgent.domain_id}/package`],
-    receiptRefs: [`owner-receipt:opl-meta-agent/${targetAgent.domain_id}/baseline-delivery`],
+    receiptRefs: [`expected-owner-receipt:target-domain/${targetAgent.domain_id}/baseline-delivery`],
     scorecardRef: 'quality-scorecard:opl-meta-agent/baseline-acceptance',
     metricRefs: ['metric-ref:descriptor-valid', 'metric-ref:agent-lab-suite-valid'],
     evidenceRefs: [

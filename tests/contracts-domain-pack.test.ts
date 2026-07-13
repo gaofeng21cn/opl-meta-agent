@@ -320,7 +320,7 @@ test('active Stage prompts keep goals and professional dependencies without fixe
     'baseline-run': ['evaluation work order', '不等待', 'expected-result'],
     'target-agent-takeover': ['takeover assessment', 'current bytes', 'owner receipt'],
     'optimizer-iteration': ['developer patch work-order', '不在 Stage 内等待', 'next owner'],
-    'baseline-delivery': ['versioned owner-review handoff', 'current bound refs', 'owner review route'],
+    'baseline-delivery': ['immutable refs-only', 'baseline_handoff_candidate_ref', 'owner review route'],
     'trajectory-learning-intake': ['redaction proof', 'learning candidates', 'runtime queue'],
     'online-learning': ['proposal-only', 'owner-gated', 'adoption'],
   };

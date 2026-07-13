@@ -815,6 +815,15 @@ test('build-agent-baseline writes a conformant hybrid package and canonical Foun
     assert.equal(evaluationRequest.task_intents[0].domain_id, 'opl-meta-agent');
     assert.equal(Object.hasOwn(evaluationRequest.task_intents[0], 'target_agent_ref'), false);
     assert.equal(Object.hasOwn(evaluationRequest.task_intents[0], 'scorecard_spec'), false);
+    assert.deepEqual(evaluationRequest.task_intents[0].receipt_refs, [
+      `expected-owner-receipt:target-domain/${targetAgent.domain_id}/baseline-delivery`,
+    ]);
+    assert.equal(
+      (evaluationRequest.task_intents[0].receipt_refs as string[]).some((ref) =>
+        ref.startsWith('owner-receipt:opl-meta-agent/')
+      ),
+      false,
+    );
     assert.equal(workOrder.authority_boundary.oma_can_execute_agent_lab_suite, false);
     assert.equal(workOrder.authority_boundary.oma_can_write_owner_receipt_body, false);
     assert.ok(primarySkill.includes(targetAgent.reference_design_pattern_packet_refs[0]));

@@ -21,8 +21,8 @@
     },
     "required_role_output_ref_fields": {
       "producer": ["artifact_refs", "artifact_hashes", "source_refs", "lineage_refs"],
-      "reviewer": ["finding_refs", "repair_map_refs", "reviewed_artifact_hashes"],
-      "repairer": ["repaired_artifact_refs", "repaired_artifact_hashes", "repair_delta_refs", "lineage_refs"],
+      "reviewer": ["finding_refs", "reviewed_artifact_hashes"],
+      "repairer": ["repair_map_refs", "changed_artifact_refs", "changed_artifact_hashes", "lineage_refs"],
       "re_reviewer": ["re_review_closure_refs", "remaining_quality_debt_refs", "reviewed_artifact_hashes"]
     }
   },

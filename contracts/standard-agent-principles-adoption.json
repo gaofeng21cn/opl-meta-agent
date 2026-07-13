@@ -121,7 +121,7 @@
       "stage_decomposition_refs",
       "candidate_agent_package_refs",
       "eval_suite_refs",
-      "baseline_delivery_receipts",
+      "baseline_handoff_candidate_refs",
       "mechanism_patch_proposals",
       "oma_owner_receipts",
       "oma_typed_blockers"

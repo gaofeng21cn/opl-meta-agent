@@ -39,7 +39,7 @@
         "candidate_agent_package_ref",
         "pack_validation_ref",
         "generated_interface_bundle_ref",
-        "baseline_delivery_receipt_ref"
+        "baseline_handoff_candidate_ref"
       ],
       "write_boundary": "display_refs_only"
     },
@@ -157,8 +157,10 @@
       "owner_review_receipt_or_typed_blocker_ref",
       "target_agent_live_stage_progress_typed_blocker_refs"
     ],
+    "candidate_ref_fields": [
+      "baseline_handoff_candidate_ref"
+    ],
     "receipt_ref_fields": [
-      "baseline_delivery_receipt_ref",
       "agent_lab_result_ref",
       "developer_patch_work_order_ref",
       "mechanism_patch_proposal_ref",

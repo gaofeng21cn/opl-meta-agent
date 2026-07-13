@@ -320,6 +320,12 @@
         "versioned_agent_handoff_ready_for_owner_review"
       ],
       "next_stage_refs": [],
+      "handoff_review_boundary": {
+        "artifact_effect": "reviewed_immutable_refs_only",
+        "freezes_canonical_artifact_bytes": false,
+        "issues_quality_export_publication_or_ready_claim": false,
+        "downstream_owner_retains_acceptance": true
+      },
       "trust_lane": "human_gate"
     },
     {

@@ -126,6 +126,12 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 - 理由：AgentBuildReceipt 只证明 pack 构建，evaluation request 只证明 domain task intent，OPL-generated suite plan 才是唯一 framework-owned evaluation plan，work-order ready 只证明合法 consumer aperture。把任何一项包装成 suite result 或 delivery receipt，会同时制造第二 Agent Lab truth、第二 owner receipt authority 和不稳定的跨仓身份。
 - 影响：旧 action-level `new_agent_delivery_gate` readback 删除。Producer 状态只允许是 ready for OPL Foundry Lab evaluation；完整 delivery 仍必须消费 OPL 返回的 target-bound suite result / execution receipt、independent reviewer evidence、`improve:external-suite` judgment，以及 target-owner receipt / blocker / human-gate closeout。缺 observations 时 OPL 返回平台 blocker；缺 OMA declarative work-order inputs 时 OMA 只返回 expected blocker ref，不伪造 result、receipt 或 blocker body。
 
+### `baseline-delivery` 是 immutable refs-only owner-review handoff
+
+- 决策：`baseline-delivery` 不产生、转换或冻结 target package bytes，只把已由 `AgentBuildReceipt`、Stage Review、Agent Design Meta Review 与外部 evidence 绑定的 immutable refs/hash 组织成 `baseline_handoff_candidate_ref`。
+- 理由：再套一层正式 Stage Review 会重复前置 Meta Review 与 downstream target-owner review；该 Stage 没有新的 artifact-body judgment 或 acceptance authority。
+- 影响：本 Stage 保持 primary-only，`formal_review.required=false`、`max_repair_rounds=0`，producer 是唯一 decisive Attempt。合法 handoff 返回 `route_impact.stage_route_decision.decision_kind=complete`；refs/version 漂移才 route-back 到 declared owning Stage。它不得签发 `baseline_delivery_receipt`，不得声明 owner acceptance、baseline accepted、quality/ready、promotion 或 delivery complete；active descriptor/workbench 只投影 `baseline_handoff_candidate_ref`，历史同名 receipt 只保留 provenance，最终 acceptance 继续由 target owner 持有。
+
 ### Target-domain artifact morphology 是 Foundry 流程必需设计面
 
 - 决策：`stage-decomposition` typed closeout 必须产出 target-domain artifact morphology brief；baseline、takeover、external-suite 和 reviewer evidence 必须引用该 brief，并用 realistic target task 反推产物结构。

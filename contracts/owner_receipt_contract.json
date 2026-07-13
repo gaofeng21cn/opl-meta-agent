@@ -10,9 +10,16 @@
     "testing_takeover_self_evolution_receipt",
     "optimizer_candidate_receipt",
     "mechanism_patch_proposal_receipt",
-    "baseline_delivery_receipt",
     "online_learning_review_receipt",
     "typed_blocker"
+  ],
+  "retired_receipt_classes": [
+    {
+      "receipt_class": "baseline_delivery_receipt",
+      "replacement_output_ref": "baseline_handoff_candidate_ref",
+      "historical_refs_are_provenance_only": true,
+      "acceptance_owner": "target_domain_owner"
+    }
   ],
   "forbidden_claims": [
     "opl_authorized_domain_ready",

@@ -24,7 +24,7 @@
     "candidate_agent_package_ref",
     "agent_lab_task_manifest_refs",
     "improvement_candidate_refs",
-    "baseline_delivery_receipt_ref",
+    "baseline_handoff_candidate_ref",
     "online_learning_dataset_refs",
     "mechanism_patch_proposal_ref"
   ],
