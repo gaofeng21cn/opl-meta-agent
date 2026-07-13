@@ -740,7 +740,7 @@ export function runBuildAgentBaseline({
       'agents', 'interfaces', '--repo-dir', targetAgentDir, '--json',
     ]);
     targetAgentPackageManifestValidation = runOpl(oplBin, [
-      'connect', 'agent-packages', 'validate-manifest',
+      'packages', 'validate-manifest',
       '--manifest-url', pathToFileURL(targetAgentPackageManifestPath).href,
       '--trust-tier', 'first_party', '--source-kind', 'local_file', '--json',
     ]);

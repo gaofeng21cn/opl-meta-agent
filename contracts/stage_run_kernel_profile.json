@@ -50,7 +50,7 @@
     "codex_can_route_to_any_declared_stage": true,
     "quality_debt_counts_as_quality_acceptance": false
   },
-  "launch_admission_policy": {
+  "stage_context_policy": {
     "hard_blockers": [
       "identity",
       "owner",
@@ -82,6 +82,7 @@
   "codex_semantic_route_policy": {
     "semantic_owner": "codex_cli",
     "readable_artifact_allows_any_declared_stage": true,
+    "no_output_diagnostic_allows_any_declared_stage": true,
     "provider_completion_is_route_decision": false,
     "file_presence_without_readability_is_progress": false,
     "quality_budget_exhaustion_blocks_route": false,

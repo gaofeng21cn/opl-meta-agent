@@ -10,11 +10,11 @@
     "quality_debt_blocks_stage_transition": false,
     "quality_debt_blocks_quality_export_or_ready_claims": true,
     "hard_stop_classes": [
-      "zero_consumable_artifact",
-      "artifact_corrupt_or_unreadable",
+      "executor_unavailable",
       "permission_or_credential_boundary",
       "explicit_human_decision",
       "authority_boundary_violation",
+      "irreversible_action_requires_authorization",
       "identity_or_currentness_mismatch"
     ]
   },

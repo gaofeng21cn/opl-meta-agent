@@ -22,6 +22,23 @@ test('opl-meta-agent descriptor keeps OPL runtime authority outside the repo', (
   assert.equal(descriptor.authority_boundary.opl_meta_agent_can_train_or_deploy_model_weights, false);
   assert.equal(descriptor.authority_boundary.opl_meta_agent_can_promote_default_agent_without_gate, false);
   assert.ok(asStrings(descriptor.outputs).includes('mechanism_patch_proposal_ref'));
+  assert.deepEqual(descriptor.standard_agent_interface.workspace_binding, {
+    locator_surface_kind: 'opl_meta_agent_workspace',
+    default_profile_id: 'one_off',
+    workspace_kind: 'agent_foundry_workspace',
+    project_kind: 'agent_capability',
+    project_collection_label: 'deliverables',
+    default_workspace_id: 'agent-foundry-workspace',
+    default_project_id: 'agent-001',
+    required_locator_fields: ['workspace_root'],
+    optional_locator_fields: [],
+    entry_command_template: null,
+    manifest_command_template: null,
+  });
+  assert.equal(descriptor.standard_agent_interface.runtime.dispatch_command, null);
+  assert.deepEqual(descriptor.standard_agent_interface.progress.deliverable_delta_aliases, [
+    'target_agent_substantive_delta',
+  ]);
 });
 
 test('domain pack files and declarative stage refs resolve to usable repo files', () => {
@@ -289,4 +306,47 @@ test('trajectory learning stays an OMA-native refs-only proposal flow', () => {
   assert.equal(trajectoryLearning.contract_status, 'ready_for_agent_lab_consumption_refs_only');
   assertNoForbiddenAuthority(trajectoryLearning, 'trajectoryLearning');
   asStrings(trajectoryLearning.semantic_pack_refs).forEach(assertUsablePackFile);
+});
+
+test('active Stage prompts keep goals and professional dependencies without fixed process scripts', () => {
+  const stageManifest = readJson('agent/stages/manifest.json');
+  const promptSemantics: Record<string, string[]> = {
+    'intent-intake': ['target-agent brief', 'owner split', 'route'],
+    'web-experience-research': ['research synthesis', 'source refs', 'adopted/adapted/rejected'],
+    'stage-decomposition': ['artifact morphology', 'owner split', 'adopt/adapt/merge/reject'],
+    'agent-skeleton-build': ['candidate package', 'AgentBuildReceipt', '六段式'],
+    'eval-suite-build': ['foundry_evaluation_request', 'OPL Foundry Lab', 'suite plan'],
+    'baseline-run': ['evaluation work order', '不等待', 'expected-result'],
+    'target-agent-takeover': ['takeover assessment', 'current bytes', 'owner receipt'],
+    'optimizer-iteration': ['developer patch work-order', '不在 Stage 内等待', 'next owner'],
+    'baseline-delivery': ['versioned owner-review handoff', 'current bound refs', 'owner review route'],
+    'trajectory-learning-intake': ['redaction proof', 'learning candidates', 'runtime queue'],
+    'online-learning': ['proposal-only', 'owner-gated', 'adoption'],
+  };
+  const stages = asObjects(stageManifest.stages);
+  assert.equal(stages.length, 11);
+  stages.forEach((stage) => {
+    const stageId = String(stage.stage_id);
+    const promptRef = String(stage.prompt_ref);
+    const prompt = readText(promptRef);
+    promptSemantics[stageId].forEach((semantic) => {
+      assert.ok(prompt.toLowerCase().includes(semantic.toLowerCase()), `${promptRef} ${semantic}`);
+    });
+    assert.equal(prompt.includes('## 步骤'), false, `${promptRef} fixed steps`);
+  });
+
+  const decomposition = readText('agent/prompts/stage-decomposition.md');
+  assert.ok(decomposition.includes('不要求每个 source workflow step 独立成 Stage'));
+  assert.ok(decomposition.includes('在设计 graph 前'));
+  assert.ok(decomposition.includes('owner split 贯穿'));
+
+  const optimizer = readText('agent/prompts/optimizer-iteration.md');
+  assert.ok(optimizer.includes('不在 Stage 内等待外部执行'));
+  const skeleton = readText('agent/prompts/agent-skeleton-build.md');
+  assert.ok(skeleton.includes('不生成六段式固定 prompt 剧本'));
+
+  assert.equal(
+    readText('agent/primary_skill/SKILL.md'),
+    readText('plugins/opl-meta-agent/skills/opl-meta-agent/SKILL.md'),
+  );
 });

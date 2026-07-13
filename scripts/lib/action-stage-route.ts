@@ -24,7 +24,9 @@ export function evaluateActionStageRoute(input: {
     actionId: input.actionId,
     stageRunReadbackPaths: input.stageRunReadbackPaths,
   });
-  const qualityDebt: string[] = [];
+  const qualityDebt: string[] = [...(
+    progress as StandardAgentActionStageRunProgress & { quality_debt_refs?: string[] }
+  ).quality_debt_refs ?? []];
   return {
     ...progress,
     stage_closeouts: progress.stage_closeouts.map((closeout) => {

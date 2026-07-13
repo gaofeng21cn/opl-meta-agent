@@ -532,6 +532,8 @@ export function buildDesignAdmissionReceipt(
       stage_ref: stage.stage_ref,
       pattern_id: stage.pattern_id,
       step_id: stage.step_id,
+      source_step_ids: stage.source_step_ids,
+      source_step_mappings: stage.source_step_mappings,
       provenance_kind: stage.provenance_kind,
       ...(typeof stage.source_authority_tier === 'string' && stage.source_authority_tier.trim()
         ? { source_authority_tier: stage.source_authority_tier.trim() }
@@ -691,9 +693,10 @@ export function buildStageDecompositionSubpacketSet(
   const agentPackPlanRef = String(agentPackPlan.plan_ref);
   const designAdmissionReceiptRef = String(designAdmissionReceipt.receipt_ref);
   const buildReceiptRef = buildAgentBuildReceiptRef(targetAgent);
+  const artifactMorphologyRef = `artifact-morphology-ref:${targetAgent.domain_id}`;
   return {
     surface_kind: 'opl_meta_agent_stage_decomposition_subpacket_set',
-    version: 'opl-meta-agent.stage-decomposition-subpacket-set.v1',
+    version: 'opl-meta-agent.stage-decomposition-subpacket-set.v2',
     packet_set_ref: `stage-decomposition-subpacket-set:opl-meta-agent/${targetAgent.domain_id}`,
     stage_id: 'stage-decomposition',
     target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
@@ -706,42 +709,67 @@ export function buildStageDecompositionSubpacketSet(
     transfer_map_ref: transferMapRef,
     agent_pack_plan_ref: agentPackPlanRef,
     design_admission_receipt_ref: designAdmissionReceiptRef,
+    artifact_morphology_ref: artifactMorphologyRef,
     build_receipt_ref: buildReceiptRef,
-    cognitive_step_packets: [
+    design_object_packets: [
       {
-        step_id: 'design-basis',
+        object_id: 'design-basis',
         packet_kind: designBasisObject,
         packet_ref: designBasisPacketRef,
         open_judgment_owned_by: 'codex_cli',
         machine_validation: 'non_empty_transferable_patterns_and_extractable_design_aspects',
       },
       {
-        step_id: 'transfer-planning',
+        object_id: 'transfer-map',
         packet_kind: 'TransferMap',
         packet_ref: transferMapRef,
         open_judgment_owned_by: 'codex_cli',
         machine_validation: 'non_empty_adopt_adapt_reject_mappings',
       },
       {
-        step_id: 'agent-pack-planning',
+        object_id: 'agent-pack-plan',
         packet_kind: 'AgentPackPlan',
         packet_ref: agentPackPlanRef,
         open_judgment_owned_by: 'codex_cli',
         machine_validation: 'planned_stage_refs_and_capability_refs_present',
       },
       {
-        step_id: 'design-admission',
+        object_id: 'artifact-morphology',
+        packet_kind: 'ArtifactMorphologyBrief',
+        packet_ref: artifactMorphologyRef,
+        open_judgment_owned_by: 'codex_cli',
+        machine_validation: 'native_source_scale_sharding_asset_custody_and_realistic_task_refs_present',
+      },
+      {
+        object_id: 'design-admission',
         packet_kind: 'DesignAdmissionReceipt',
         packet_ref: designAdmissionReceiptRef,
         open_judgment_owned_by: 'validator',
         machine_validation: 'design_refs_stage_refs_rejected_patterns_forbidden_claims_boundary',
       },
       {
-        step_id: 'build-verification',
+        object_id: 'build-verification',
         packet_kind: 'AgentBuildReceipt',
         packet_ref: buildReceiptRef,
         open_judgment_owned_by: 'validator',
         machine_validation: 'post_materialization_trace_to_design_admission',
+      },
+    ],
+    dependency_edges: [
+      {
+        edge_id: 'source-evidence-before-supported-claim',
+        prerequisite_ref: designBasisPacketRef,
+        dependent_ref: `supported-design-claims:${targetAgent.domain_id}`,
+      },
+      {
+        edge_id: 'design-admission-before-materialization',
+        prerequisite_ref: designAdmissionReceiptRef,
+        dependent_ref: `target-pack-materialization:${targetAgent.domain_id}`,
+      },
+      {
+        edge_id: 'materialized-bytes-before-build-receipt',
+        prerequisite_ref: `materialized-target-pack-bytes:${targetAgent.domain_id}`,
+        dependent_ref: buildReceiptRef,
       },
     ],
     materialization_boundary: {
@@ -1116,7 +1144,7 @@ function referenceDesignMarkdown(targetAgent: MinimalTargetAgent): string[] {
     ...sourceRefs.map((ref) => `- Source ref: ${ref}`),
     ...patternNotes.map((note) => `- Transfer pattern: ${note}`),
     ...patternPacketRefs.map((ref) => `- Pattern packet ref: ${ref}`),
-    'Extract transferable architecture, workflow, rubric, handoff, evaluation, and failure-taxonomy patterns into ReferenceDesignPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before materialization, preserve StageDecompositionSubpacketSet, then preserve AgentBuildReceipt after materialization.',
+    'Use ReferenceDesignPacket, TransferMap, AgentPackPlan, morphology, and DesignAdmissionReceipt as mutually informing design objects. Map source steps to adopted, adapted, merged, stage-internal, or rejected dispositions. Source evidence and safe packet precede claims, admission precedes materialization, and AgentBuildReceipt follows materialized bytes.',
     'Do not copy external runtime ownership, private data, domain verdicts, owner receipts, or promotion authority.',
     '',
   ];
@@ -1144,7 +1172,7 @@ function researchSynthesisMarkdown(targetAgent: MinimalTargetAgent): string[] {
     ...sourceRefs.map((ref) => `- Research source ref: ${ref}`),
     ...expertPracticeNotes.map((note) => `- Expert practice note: ${note}`),
     ...synthesisRefs.map((ref) => `- Research synthesis ref: ${ref}`),
-    'Synthesize expert practice into ResearchSynthesisPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before materialization, preserve StageDecompositionSubpacketSet, then preserve AgentBuildReceipt after materialization.',
+    'Use ResearchSynthesisPacket, TransferMap, AgentPackPlan, morphology, and DesignAdmissionReceipt as mutually informing design objects. Do not create one Stage per research step by default. Research evidence precedes claims, admission precedes materialization, and AgentBuildReceipt follows materialized bytes.',
     'Do not treat public research, examples, external runtime ownership, domain verdicts, owner receipts, or promotion authority as target truth.',
     '',
   ];
@@ -1365,7 +1393,7 @@ function buildTargetAgentPrimarySkillCapability(targetAgent: MinimalTargetAgent)
     verification_refs: [
       'git diff --check',
       'opl agents scaffold --validate <target-agent-dir> --json',
-      'opl connect agent-packages validate-manifest --manifest-url <sidecar> --json',
+      'opl packages validate-manifest --manifest-url <sidecar> --json',
     ],
     forbidden_surfaces: [
       'target domain truth',

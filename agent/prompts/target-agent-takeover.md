@@ -1,47 +1,22 @@
-# Target Agent Takeover Prompt
+# Target Agent Takeover Review Prompt
 
 ## 目标
 
-读取既有 OPL-compatible agent 的 descriptor/contracts 和 independent reviewer evidence，生成 thin takeover evaluation request 与 canonical OPL Foundry Lab evaluation work order，同时保留 target owner authority。OMA 不运行 gated takeover，不签 takeover receipt。
+审阅既有 target Agent 的真实 pack、authority、artifact morphology 与独立 reviewer evidence，形成可供 evaluation request 设计消费的 takeover assessment。
 
-## 输入
+## 好结果
 
-- `target_agent_descriptor_ref`
-- `target_agent_contract_refs`
-- `ai_reviewer_evaluation_ref`
-- `agent_dir`、`output_dir`
-- artifact morphology brief / locator refs；缺失时记录 route-back 或 candidate gap ref。
-- 可选 feedback、既有 OPL suite-result 和 target owner constraint refs。
+- 区分已存在能力、结构/语义缺口、历史 residue、owner boundary 和实际交付风险；
+- 使用真实 source/contract/reviewer refs，不把 docs 或 scaffold pass 当成行为证明；
+- 给出 representative evaluation priorities、route-back 和 proposal-only improvement candidates；
+- 保持 target owner 和 OPL Foundry Lab authority 不变。
 
-## 步骤
+使用 `oma-eval-takeover-review` 的 takeover 方法。
 
-1. 读取 target descriptor、stage control plane、action catalog、memory/artifact locator 和 owner route refs。
-2. 校验 work order target identity 具有 `domain_id`、`target_agent_ref`、`descriptor_ref`，且 descriptor 与 request task intent 一致。
-3. 校验 independent reviewer evidence 和 artifact morphology evidence；缺 source/direct evidence 时，在已有 takeover artifact 上记录质量债务和 evidence route-back，阻止 takeover accepted/delivery/promotion 声明但继续 stage transition。
-4. 生成 refs-only declarative takeover evaluation request，覆盖 stage path、owner boundary、artifact-shape 和 quality refs；OPL 编译 recovery probes、scorecard、environment 与 completion policy。
-5. 生成 canonical Foundry evaluation work order，绑定 target、suite/task、source/reviewer/candidate provenance，且 `consumer_dependency.status=available`。
-6. 返回 gated self-evolution candidate ref 与 mechanism candidate ref，均为 proposal-only；不写 hosted candidate ledger。
-7. 将 work order 交给 OPL Foundry Lab 执行；只有外部返回的 suite result / execution receipt 才能进入后续 `improve:external-suite` 与 target-owner closeout。
+## 专业依赖与边界
 
-## 输出
+可并行检查 pack、contracts、callers 和 evidence；takeover 判断必须绑定同一 target identity/current bytes。此 Stage 不设计最终 suite plan、不执行 suite、不修改 target repo、不签 owner receipt。
 
-- `foundry_evaluation_request_ref`
-- `foundry_lab_evaluation_work_order_ref`
-- `artifact_morphology_gap_refs`
-- `gated_self_evolution_candidate_ref`
-- `mechanism_candidate_ref`
+## Closeout
 
-## 质量门槛
-
-- request 不含 target identity、environment、probe、scorecard spec、completion policy、observed status、passed、gate status、suite plan 或 result/receipt body。
-- work order 使用 canonical OPL owner/action，且 stable identity 绑定完整 target 与 provenance。
-- target truth、quality verdict、artifact authority、memory body 和 owner closeout owner 保持不变。
-- producer 只声明 ready for OPL Foundry Lab evaluation，不声明 takeover passed、delivered 或 domain ready。
-
-## 禁止事项
-
-- 禁止本地执行 Agent Lab 或生成 takeover receipt。
-- 禁止直接改 target truth、memory body、artifact body 或 quality verdict。
-- 禁止无 owner gate 合并 target source patch。
-- 禁止把 work-order ready 或 declarative evaluation request 当成测试通过。
-- 禁止伪造 suite result、execution receipt、target owner receipt、typed-blocker body、learning ledger 或 promotion result。
+返回 `target_takeover_assessment_ref`、evaluation priorities、candidate/route-back refs 和 `candidate_pack_or_takeover_assessment_ready`。缺少可审阅 target bytes 或 identity/authority 不清时 typed blocker/human gate。

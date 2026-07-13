@@ -12,7 +12,7 @@ Convert evidence into bounded refs-only developer patch work orders, typed block
 ## AI-First / Contract-Light Boundary
 
 - Use AI judgment here for bounded work-order scope, evidence-to-patch traceability, script retention vs deletion readiness, OPL absorption fit, and when hygiene evidence is still too weak to act.
-- Use AI judgment here for work-order closeout shape: choose developer patch work order, no-patch coordination, typed blocker, route-back, or owner wait based on evidence quality, owner route, verification path, and whether the change is actually actionable.
+- Use AI judgment here for work-order closeout shape: choose developer patch work order, no-patch coordination, typed blocker, route-back, or pending owner handoff based on evidence quality, owner route, verification path, and whether the change is actually actionable. OMA returns the handoff; it does not wait inside the Stage.
 - Use AI judgment here for private residue decisions: classify private scripts/helpers as retained authority implementation, refs-only materializer, thin delegation aperture, fixture/proof helper, tombstone candidate, or OPL absorption candidate before any contract or receipt records the decision ref.
 - Use AI judgment here to keep target-agent handoff clean: the work order should name the target owner, allowed write set, forbidden authority, expected verification, rollback/version ref, and post-absorb owner route without becoming the executor, lifecycle runner, or owner receipt.
 - Use AI judgment here to convert Agent Lab / FeedbackOps / trajectory evidence into the correct work-order lane: stage-route, specialist-skill, tool-connector, quality-gate, read-model/currentness, authority-boundary, owner route-back, or typed blocker.
@@ -34,7 +34,7 @@ Convert evidence into bounded refs-only developer patch work orders, typed block
 6. Classify scripts or helpers as `retain`, `absorb`, `delete`, `tombstone`, `route-back`, or `work-order`.
 7. Require real non-self active callers, repo-local source refs, no-forbidden-write evidence, OPL primitive parity or explicit fixture/proof refs, no-active-caller evidence, and tombstone/provenance refs before recommending deletion readiness. Missing proof is a hygiene finding, not deletion authority.
 8. Check owner-answer shape before closeout: accepted shapes are owner receipt, typed blocker, human gate, route-back, rejected, completed-and-continue, or completed-and-wait-owner. Anything else routes back instead of being patched into a broader contract.
-9. Prefer keep, route, or bounded work order before adding wrappers. `build-agent-baseline` may fail closed on missing refs, but this skill owns the contract-light choice of what those refs mean and which work-order path is justified.
+9. Prefer keep, route, or bounded work order before adding wrappers. `build-agent-baseline` validators may close a delivery/promotion claim on missing refs, but the caller must preserve any artifact or materialize a progress diagnostic as quality debt and allow the next stage to start. This skill owns the contract-light choice of what those refs mean and which work-order path is justified.
 
 ## Forbidden Authority
 

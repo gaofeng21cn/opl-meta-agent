@@ -158,9 +158,9 @@ function profileRequirementLines(targetAgent: TargetAgent): string[] {
     ),
     ...transferablePatternRequirements.map((requirement) => `Transferable pattern requirement: ${requirement}`),
     ...capabilityPlanRequirements.map((requirement) => `Capability plan requirement: ${requirement}`),
-    'Preserve StageDecompositionSubpacketSet as the ordered internal cognitive packet chain and treat generated files as materializer projections, not as the design source of truth.',
-    'For source-derived design, materialize ReferenceDesignPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before target pack materialization, preserve StageDecompositionSubpacketSet, then preserve AgentBuildReceipt as build proof.',
-    'For research-driven design, materialize ResearchSynthesisPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before target pack materialization, preserve StageDecompositionSubpacketSet, then preserve AgentBuildReceipt as build proof.',
+    'Preserve StageDecompositionSubpacketSet as provenance for design-basis, transfer, pack, admission, morphology, and build-boundary refs; it does not prescribe a cognitive execution order.',
+    'For source-derived design, let ReferenceDesignPacket, TransferMap, AgentPackPlan, morphology, and DesignAdmissionReceipt iteratively inform the design; source evidence and safe packet precede their claims, admission precedes materialization, and AgentBuildReceipt follows materialized bytes.',
+    'For research-driven design, let ResearchSynthesisPacket, TransferMap, AgentPackPlan, morphology, and DesignAdmissionReceipt iteratively inform the design; research evidence precedes its claims, admission precedes materialization, and AgentBuildReceipt follows materialized bytes.',
     'Map builtin profile, source-derived design, and research-driven design requirements into knowledge/tool/evaluation refs before owner handoff.',
   ];
 }
@@ -877,6 +877,8 @@ function buildStageControlPlane(args: StageControlPlaneArgs): JsonObject {
     if (plannedStage.origin === 'source_pattern_ref') {
       stage.pattern_id = plannedStage.pattern_id;
       stage.step_id = plannedStage.step_id;
+      stage.source_step_ids = plannedStage.source_step_ids;
+      stage.source_step_mappings = plannedStage.source_step_mappings;
       stage.provenance_kind = plannedStage.provenance_kind;
       stage.stage_pattern_source_refs = [plannedStage.source_pattern_ref];
       stage.source_anchor_refs = plannedStage.source_anchor_refs;
@@ -964,7 +966,7 @@ function buildFiles({
         ...referenceDesignSourceRefs.map((sourceRef) => `Reference design source: ${sourceRef}`),
         ...referenceDesignPatternNotes.map((note) => `Transfer pattern: ${note}`),
         ...referenceDesignPatternPacketRefs.map((packetRef) => `Pattern packet ref: ${packetRef}`),
-        'Extract transferable workflow, grounding, evaluation, handoff, and failure-taxonomy patterns into ReferenceDesignPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before materialization, preserve StageDecompositionSubpacketSet, then preserve AgentBuildReceipt; do not copy external runtime ownership or domain verdicts.',
+        'Use ReferenceDesignPacket, TransferMap, AgentPackPlan, morphology, and DesignAdmissionReceipt as mutually informing design objects. Map source steps to adopted, adapted, merged, stage-internal, or rejected dispositions; do not copy external runtime ownership or domain verdicts. Admission precedes materialization and AgentBuildReceipt follows materialized bytes.',
       ]
     : [];
   const researchDesignLines = researchSourceRefs.length > 0
@@ -979,7 +981,7 @@ function buildFiles({
         ...researchSourceRefs.map((sourceRef) => `Research source: ${sourceRef}`),
         ...expertPracticeNotes.map((note) => `Expert practice: ${note}`),
         ...researchSynthesisRefs.map((synthesisRef) => `Research synthesis ref: ${synthesisRef}`),
-        'Synthesize expert practice into ResearchSynthesisPacket -> TransferMap -> AgentPackPlan, pass DesignAdmissionReceipt before materialization, preserve StageDecompositionSubpacketSet, then preserve AgentBuildReceipt; do not treat public research as target truth or owner verdicts.',
+        'Use ResearchSynthesisPacket, TransferMap, AgentPackPlan, morphology, and DesignAdmissionReceipt as mutually informing design objects. Do not turn each research workflow step into an independent Stage by default or treat public research as target truth. Admission precedes materialization and AgentBuildReceipt follows materialized bytes.',
       ]
     : [];
   return [
@@ -988,14 +990,25 @@ function buildFiles({
       body: [
         `# ${title} Prompt`,
         '',
-        `Goal: ${brief}`,
+        '## Goal',
         '',
-        'Use declared workspace, source, artifact, and owner refs only.',
+        brief,
+        '',
+        '## A Good Result',
+        '',
+        `Deliver the ${title} judgment for the declared target while preserving source, artifact, owner, and acceptance refs.`,
+        '',
+        '## Professional Dependencies And Authority Boundary',
+        '',
+        'Use declared workspace, source, artifact, and owner refs. Apply domain methods through the referenced professional skill; contracts and validators guard identity, authority, evidence, and closeout rather than prescribing the reasoning path.',
         ...profileLines,
         ...referenceDesignLines,
         ...researchDesignLines,
         'Keep the work Codex-first: the executor may plan, inspect evidence, request source refs, route back when inputs are incomplete, and choose the reasoning path.',
         'Do not write target domain truth, memory bodies, artifact bodies, quality verdicts, export verdicts, or promotion state.',
+        '',
+        '## Closeout',
+        '',
         'Close the execution attempt with explicit artifact refs, owner handoff refs, typed blockers, or route-back refs.',
         '',
       ].join('\n'),

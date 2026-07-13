@@ -212,25 +212,31 @@ export function validateTransferMapObject(
   );
   const expectedStages = allExpectedStages.filter((stage) => stage.origin === 'source_pattern_ref');
   expectedStages.forEach((stage) => {
-    const anchors = asStringArray(
-      stage.source_anchor_refs,
-      `${field}.transfer_map.expected_stage.${stage.stage_id}.source_anchor_refs`,
+    const stepMappings = asRecordArray(
+      stage.source_step_mappings,
+      `${field}.transfer_map.expected_stage.${stage.stage_id}.source_step_mappings`,
     );
-    if (!mappings.some((mapping) =>
-      mapping.pattern_id === stage.pattern_id
-      && mapping.step_id === stage.step_id
-      && anchors.includes(String(mapping.source_anchor_ref))
-      && mapping.target_stage_or_capability_slot === stage.stage_ref
-      && ['adapt', 'adopt'].includes(String(mapping.disposition))
-      && typeof mapping.transfer_rationale === 'string'
-      && mapping.transfer_rationale.trim().length > 0
-      && Array.isArray(mapping.known_limits)
-      && mapping.known_limits.length > 0
-    )) {
-      throw new Error(
-        `stage-decomposition pack draft ${field}.transfer_map missing canonical mapping ${stage.pattern_id}/${stage.step_id}.`,
+    stepMappings.forEach((step) => {
+      const anchors = asStringArray(
+        step.source_anchor_refs,
+        `${field}.transfer_map.expected_stage.${stage.stage_id}.${step.step_id}.source_anchor_refs`,
       );
-    }
+      if (!mappings.some((mapping) =>
+        mapping.pattern_id === stage.pattern_id
+        && mapping.step_id === step.step_id
+        && anchors.includes(String(mapping.source_anchor_ref))
+        && mapping.target_stage_or_capability_slot === stage.stage_ref
+        && ['adapt', 'adopt', 'merged', 'stage_internal'].includes(String(mapping.disposition))
+        && typeof mapping.transfer_rationale === 'string'
+        && mapping.transfer_rationale.trim().length > 0
+        && Array.isArray(mapping.known_limits)
+        && mapping.known_limits.length > 0
+      )) {
+        throw new Error(
+          `stage-decomposition pack draft ${field}.transfer_map missing canonical mapping ${stage.pattern_id}/${step.step_id}.`,
+        );
+      }
+    });
   });
   expectedPatternRefs.forEach((expectedRef) => {
     if (!expectedStages.some((stage) => stage.source_pattern_ref === expectedRef)) {
@@ -248,11 +254,10 @@ export function validateTransferMapObject(
     .map((mapping) => String(mapping.target_stage_or_capability_slot));
   const expectedTargets = allExpectedStages.map((stage) => String(stage.stage_ref));
   if (
-    nonRejectTargets.length !== expectedTargets.length
-    || expectedTargets.some((target) => nonRejectTargets.filter((entry) => entry === target).length !== 1)
+    expectedTargets.some((target) => !nonRejectTargets.includes(target))
     || nonRejectTargets.some((target) => !expectedTargets.includes(target))
   ) {
-    throw new Error(`stage-decomposition pack draft ${field}.transfer_map targets must map one-to-one to AgentPackPlan stages.`);
+    throw new Error(`stage-decomposition pack draft ${field}.transfer_map targets must resolve to AgentPackPlan stages.`);
   }
 }
 
@@ -304,6 +309,14 @@ export function validateAgentPackPlanObject(
     if (
       typeof stageRef.pattern_id !== 'string'
       || typeof stageRef.step_id !== 'string'
+      || asStringArray(
+        stageRef.source_step_ids,
+        `${field}.agent_pack_plan.${stageRef.stage_id}.source_step_ids`,
+      ).length === 0
+      || asRecordArray(
+        stageRef.source_step_mappings,
+        `${field}.agent_pack_plan.${stageRef.stage_id}.source_step_mappings`,
+      ).length === 0
       || !['source_derived', 'internal_synthesis'].includes(String(stageRef.provenance_kind))
       || asStringArray(
         stageRef.source_anchor_refs,
@@ -469,6 +482,7 @@ export function validateStageDecompositionSubpacketSetObject(
   }
   if (
     actualSubpacketSet.surface_kind !== 'opl_meta_agent_stage_decomposition_subpacket_set'
+    || actualSubpacketSet.version !== 'opl-meta-agent.stage-decomposition-subpacket-set.v2'
     || actualSubpacketSet.packet_set_ref !== subpacketSetRef
     || actualSubpacketSet.stage_id !== 'stage-decomposition'
   ) {
@@ -479,27 +493,65 @@ export function validateStageDecompositionSubpacketSetObject(
     || actualSubpacketSet.transfer_map_ref !== transferMapRef
     || actualSubpacketSet.agent_pack_plan_ref !== agentPackPlanRef
     || actualSubpacketSet.design_admission_receipt_ref !== designAdmissionReceiptRef
+    || actualSubpacketSet.artifact_morphology_ref !== expectedSet.artifact_morphology_ref
     || actualSubpacketSet.build_receipt_ref !== buildReceiptRef
   ) {
     throw new Error(`stage-decomposition pack draft ${field}.stage_decomposition_subpacket_set refs are invalid.`);
   }
-  const actualSteps = asRecordArray(
-    actualSubpacketSet.cognitive_step_packets,
-    `${field}.stage_decomposition_subpacket_set.cognitive_step_packets`,
+  const actualPackets = asRecordArray(
+    actualSubpacketSet.design_object_packets,
+    `${field}.stage_decomposition_subpacket_set.design_object_packets`,
   );
-  const expectedSteps = asRecordArray(
-    expectedSet.cognitive_step_packets,
-    `${field}.expected_stage_decomposition_subpacket_set.cognitive_step_packets`,
+  const expectedPackets = asRecordArray(
+    expectedSet.design_object_packets,
+    `${field}.expected_stage_decomposition_subpacket_set.design_object_packets`,
   );
-  if (actualSteps.length !== expectedSteps.length) {
-    throw new Error(`stage-decomposition pack draft ${field}.stage_decomposition_subpacket_set cognitive step count is invalid.`);
+  if (actualPackets.length !== expectedPackets.length) {
+    throw new Error(`stage-decomposition pack draft ${field}.stage_decomposition_subpacket_set design object count is invalid.`);
   }
-  expectedSteps.forEach((expectedStep, index) => {
-    const actualStep = actualSteps[index];
-    ['step_id', 'packet_kind', 'packet_ref'].forEach((stepField) => {
-      if (actualStep[stepField] !== expectedStep[stepField]) {
+  const actualPacketsById = new Map(actualPackets.map((packet) => [String(packet.object_id), packet]));
+  if (actualPacketsById.size !== actualPackets.length) {
+    throw new Error(`stage-decomposition pack draft ${field}.stage_decomposition_subpacket_set design object ids must be unique.`);
+  }
+  expectedPackets.forEach((expectedPacket) => {
+    const objectId = String(expectedPacket.object_id);
+    const actualPacket = actualPacketsById.get(objectId);
+    if (!actualPacket) {
+      throw new Error(`stage-decomposition pack draft ${field}.stage_decomposition_subpacket_set object ${objectId} is missing.`);
+    }
+    ['object_id', 'packet_kind', 'packet_ref'].forEach((packetField) => {
+      if (actualPacket[packetField] !== expectedPacket[packetField]) {
         throw new Error(
-          `stage-decomposition pack draft ${field}.stage_decomposition_subpacket_set step ${index} ${stepField} is invalid.`,
+          `stage-decomposition pack draft ${field}.stage_decomposition_subpacket_set object ${objectId} ${packetField} is invalid.`,
+        );
+      }
+    });
+  });
+  const actualEdges = asRecordArray(
+    actualSubpacketSet.dependency_edges,
+    `${field}.stage_decomposition_subpacket_set.dependency_edges`,
+  );
+  const expectedEdges = asRecordArray(
+    expectedSet.dependency_edges,
+    `${field}.expected_stage_decomposition_subpacket_set.dependency_edges`,
+  );
+  if (actualEdges.length !== expectedEdges.length) {
+    throw new Error(`stage-decomposition pack draft ${field}.stage_decomposition_subpacket_set dependency edge count is invalid.`);
+  }
+  const actualEdgesById = new Map(actualEdges.map((edge) => [String(edge.edge_id), edge]));
+  if (actualEdgesById.size !== actualEdges.length) {
+    throw new Error(`stage-decomposition pack draft ${field}.stage_decomposition_subpacket_set dependency edge ids must be unique.`);
+  }
+  expectedEdges.forEach((expectedEdge) => {
+    const edgeId = String(expectedEdge.edge_id);
+    const actualEdge = actualEdgesById.get(edgeId);
+    if (!actualEdge) {
+      throw new Error(`stage-decomposition pack draft ${field}.stage_decomposition_subpacket_set dependency edge ${edgeId} is missing.`);
+    }
+    ['prerequisite_ref', 'dependent_ref'].forEach((edgeField) => {
+      if (actualEdge[edgeField] !== expectedEdge[edgeField]) {
+        throw new Error(
+          `stage-decomposition pack draft ${field}.stage_decomposition_subpacket_set dependency edge ${edgeId} ${edgeField} is invalid.`,
         );
       }
     });

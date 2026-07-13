@@ -28,6 +28,37 @@
     "online_learning_dataset_refs",
     "mechanism_patch_proposal_ref"
   ],
+  "standard_agent_interface": {
+    "version": "opl_standard_agent_interface.v1",
+    "workspace_binding": {
+      "locator_surface_kind": "opl_meta_agent_workspace",
+      "default_profile_id": "one_off",
+      "workspace_kind": "agent_foundry_workspace",
+      "project_kind": "agent_capability",
+      "project_collection_label": "deliverables",
+      "default_workspace_id": "agent-foundry-workspace",
+      "default_project_id": "agent-001",
+      "required_locator_fields": ["workspace_root"],
+      "optional_locator_fields": [],
+      "entry_command_template": null,
+      "manifest_command_template": null
+    },
+    "runtime": {
+      "runtime_domain_id": "opl-meta-agent",
+      "dispatch_command": null,
+      "registration_ref": "contracts/opl_domain_manifest_registration.json"
+    },
+    "progress": {
+      "deliverable_delta_aliases": ["target_agent_substantive_delta"],
+      "platform_delta_aliases": ["platform_interface_repair_delta"]
+    },
+    "routing": {
+      "explicit_aliases": ["oma", "opl-meta-agent", "agent-building"],
+      "workstream_ids": [],
+      "intent_signals": ["agent_building", "agent_takeover", "agent_improvement"],
+      "ambiguity_policy": "require_explicit_agent_building_intent"
+    }
+  },
   "marker": "generated_by_opl_standard_domain_agent_scaffold_v1",
   "authority_boundary": {
     "opl_can_write_domain_truth": false,

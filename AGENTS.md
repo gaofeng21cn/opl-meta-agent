@@ -18,7 +18,7 @@ OMA 生成或接管的任何目标 Agent 都必须采用同一语言中立形态
 
 `agent/primary_skill/SKILL.md` 是标准 OPL Agent 的 canonical rich primary skill；`plugins/<agent>/skills/<agent>/SKILL.md` 是 Codex plugin 安装要求的 materialized full-skill carrier mirror。该关系以 `contracts/capability_map.json` 中的 `carrier_projection_contract` 为机器权威；两者字节相同表示同步健康，不表示应删除重复，mirror 漂移才是问题。
 
-OPL canonical id 固定为 `oma`；`opl-meta-agent`、包名和 plugin slug 只作为 repo/package/carrier locator，不改变 domain canonical id。
+OPL canonical agent/package id 固定为 `oma`；`opl-meta-agent` 只作为 repo slug、`domain_id`、npm package name 和 Codex plugin/carrier locator，不得通过 alias 维持第二个 package identity。
 
 ## Skill 目录语义
 
