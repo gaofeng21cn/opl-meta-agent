@@ -258,7 +258,8 @@ export function runTakeoverAgent({
             blocks_delivery_or_promotion_claims: true,
           },
           next_stage_may_start: true,
-          route_back_selection_owner: 'codex_cli',
+          semantic_route_decision_owner: 'decisive_codex_attempt',
+          stage_transition_materialization_owner: 'opl_stage_run_controller',
         }
       : {}),
     authority_boundary: foundryLabWorkOrder.authority_boundary,

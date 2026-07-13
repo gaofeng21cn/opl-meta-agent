@@ -532,8 +532,20 @@ function validateStageCompletionPolicy(
     'provider_completion_is_domain_completion',
     'opl_content_judgment_allowed',
   ].forEach((field) => assertBooleanFalse(policy, field, `stage ${stageId}.stage_completion_policy.${field}`));
-  if (policy.next_stage_transition_owner !== 'codex_cli') {
-    throw new Error(`stage-decomposition pack draft stage ${stageId} next_stage_transition_owner must be codex_cli.`);
+  if (policy.semantic_route_decision_owner !== 'decisive_codex_attempt') {
+    throw new Error(
+      `stage-decomposition pack draft stage ${stageId} semantic_route_decision_owner must be decisive_codex_attempt.`,
+    );
+  }
+  if (policy.stage_transition_materialization_owner !== 'opl_stage_run_controller') {
+    throw new Error(
+      `stage-decomposition pack draft stage ${stageId} stage_transition_materialization_owner must be opl_stage_run_controller.`,
+    );
+  }
+  if (Object.hasOwn(policy, 'next_stage_transition_owner')) {
+    throw new Error(
+      `stage-decomposition pack draft stage ${stageId} must not declare retired next_stage_transition_owner.`,
+    );
   }
   const outcomes = asStringArray(
     policy.required_closeout_outcomes,

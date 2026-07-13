@@ -35,7 +35,7 @@ test('family action catalog v2 uses only OPL-hosted stages or exact domain handl
   }, catalog);
 
   assert.equal(catalog.version, 'family-action-catalog.v2');
-  assert.equal(validation.ok, true, JSON.stringify(validation.errors));
+  assert.equal(validation.ok, true, JSON.stringify(validation));
   assert.doesNotMatch(JSON.stringify(catalog), /source_command|handler_id|entry_command_template/);
 
   const actions = asObjects(catalog.actions);

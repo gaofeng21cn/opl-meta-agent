@@ -179,6 +179,18 @@ test('stage-decomposition emits an OPL-owned scaffold materialization request', 
     assert.equal(stage.selected_executor.executor_kind, 'codex_cli');
     assert.equal(stage.authority_boundary.can_write_target_domain_truth, false);
     assert.equal(stage.stage_contract.stage_completion_policy.provider_completion_is_domain_completion, false);
+    assert.equal(
+      stage.stage_contract.stage_completion_policy.semantic_route_decision_owner,
+      'decisive_codex_attempt',
+    );
+    assert.equal(
+      stage.stage_contract.stage_completion_policy.stage_transition_materialization_owner,
+      'opl_stage_run_controller',
+    );
+    assert.equal(
+      Object.hasOwn(stage.stage_contract.stage_completion_policy, 'next_stage_transition_owner'),
+      false,
+    );
     assert.equal(stageManifest.target_domain_id, targetAgent.domain_id);
     assert.equal(stageManifest.owner, targetAgent.domain_id);
     assert.deepEqual(stageManifest.stages.map((entry: JsonObject) => entry.stage_id), [
@@ -342,6 +354,36 @@ test('stage-decomposition validator fails closed on untyped or unsafe closeout',
   assert.throws(
     () => validateStageDecompositionCloseoutPacket(packet, { targetAgent }),
     /independent_gate_policy/i,
+  );
+});
+
+test('stage-decomposition rejects retired mixed route owner ABI', () => {
+  const missingSemanticOwner = buildFixtureStageDecompositionCloseout({ targetAgent });
+  const missingSemanticDraft = missingSemanticOwner.stage_decomposition_pack_draft as JsonObject;
+  const missingSemanticStage = (
+    (missingSemanticDraft.stage_control_plane as JsonObject).stages as JsonObject[]
+  )[0];
+  const missingSemanticPolicy = (
+    missingSemanticStage.stage_contract as JsonObject
+  ).stage_completion_policy as JsonObject;
+  delete missingSemanticPolicy.semantic_route_decision_owner;
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(missingSemanticOwner, { targetAgent }),
+    /semantic_route_decision_owner must be decisive_codex_attempt/i,
+  );
+
+  const retiredOwner = buildFixtureStageDecompositionCloseout({ targetAgent });
+  const retiredOwnerDraft = retiredOwner.stage_decomposition_pack_draft as JsonObject;
+  const retiredOwnerStage = (
+    (retiredOwnerDraft.stage_control_plane as JsonObject).stages as JsonObject[]
+  )[0];
+  const retiredOwnerPolicy = (
+    retiredOwnerStage.stage_contract as JsonObject
+  ).stage_completion_policy as JsonObject;
+  retiredOwnerPolicy.next_stage_transition_owner = 'codex_cli';
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(retiredOwner, { targetAgent }),
+    /must not declare retired next_stage_transition_owner/i,
   );
 });
 

@@ -71,7 +71,8 @@ export function buildActionStageRouteContext(progress: ActionStageRouteProgress)
     missing_stage_refs: missingStageRefs,
     quality_debt: [...progress.quality_debt, ...missingStageRefs.map((ref) => `missing_stage_context:${ref}`)],
     next_stage_may_start: true,
-    route_selection_owner: 'codex_cli',
+    semantic_route_decision_owner: 'decisive_codex_attempt',
+    stage_transition_materialization_owner: 'opl_stage_run_controller',
     route_may_skip_repeat_or_reverse_to_any_declared_stage: true,
     authority_boundary: {
       reuses_opl_stage_run: true,

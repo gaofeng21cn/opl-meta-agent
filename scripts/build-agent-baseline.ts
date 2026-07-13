@@ -320,7 +320,8 @@ function stageDecompositionDebtFromError(error: unknown, targetAgent: TargetAgen
       materialization_allowed: false,
       baseline_receipt_signed: false,
       next_stage_may_start: true,
-      route_back_selection_owner: 'codex_cli',
+      semantic_route_decision_owner: 'decisive_codex_attempt',
+      stage_transition_materialization_owner: 'opl_stage_run_controller',
       route_back_may_target_any_declared_stage: true,
       validation_findings_are_non_blocking: true,
     },
@@ -606,7 +607,8 @@ export function runBuildAgentBaseline({
       missing_specialized_input_stages: missingStages,
       stage_closeout: debt,
       next_stage_may_start: true,
-      route_back_selection_owner: 'codex_cli',
+      semantic_route_decision_owner: 'decisive_codex_attempt',
+      stage_transition_materialization_owner: 'opl_stage_run_controller',
     };
   }
   const domainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
@@ -709,7 +711,8 @@ export function runBuildAgentBaseline({
       agent_skeleton_build_closeout_ref: agentSkeletonBuildCloseout.closeout_packet_ref,
       stage_closeout: debt,
       next_stage_may_start: true,
-      route_back_selection_owner: 'codex_cli',
+      semantic_route_decision_owner: 'decisive_codex_attempt',
+      stage_transition_materialization_owner: 'opl_stage_run_controller',
     };
   }
   const agentBuildReceipt = scaffoldMaterializationReceipt.build_receipt as JsonObject;
@@ -763,7 +766,8 @@ export function runBuildAgentBaseline({
       ].filter((ref) => fs.existsSync(ref)),
       stage_closeout: debt,
       next_stage_may_start: true,
-      route_back_selection_owner: 'codex_cli',
+      semantic_route_decision_owner: 'decisive_codex_attempt',
+      stage_transition_materialization_owner: 'opl_stage_run_controller',
     };
   }
   const evaluationRequest = buildBaselineFoundryEvaluationRequest({
@@ -871,7 +875,8 @@ export function runBuildAgentBaseline({
             blocks_delivery_or_promotion_claims: true,
           },
           next_stage_may_start: true,
-          route_back_selection_owner: 'codex_cli',
+          semantic_route_decision_owner: 'decisive_codex_attempt',
+          stage_transition_materialization_owner: 'opl_stage_run_controller',
         }
       : {}),
     foundry_lab_handoff: {

@@ -14,6 +14,17 @@
     "same_thread_resume_role": "protocol_closeout_resume",
     "same_thread_resume_counts_as_review": false,
     "same_thread_resume_consumes_quality_budget": false,
+    "route_authority_contract": {
+      "semantic_route_decision_owner": "decisive_codex_attempt",
+      "stage_transition_materialization_owner": "opl_stage_run_controller",
+      "primary_only_decisive_attempt_role": "producer",
+      "formal_review_decisive_attempt_roles": ["reviewer", "re_reviewer"],
+      "repairer_can_be_decisive_attempt": false,
+      "repair_required_with_budget_remaining_route_output": "route_impact.stage_route_recommendation",
+      "repair_required_without_budget_and_consumable_artifact_route_output": "route_impact.stage_route_decision",
+      "repair_budget_exhaustion_terminal_status": "completed_with_quality_debt",
+      "hard_stop_or_zero_consumable_artifact_route_output": "none"
+    },
     "attempt_output_contract": {
       "envelope_path": "route_impact.stage_quality_cycle",
       "outcome_field": "outcome",
@@ -45,6 +56,10 @@
       "closure_statuses": ["closed", "partially_closed", "still_open"],
       "next_repair_round_triggers": ["required_finding_not_closed", "repair_regression", "critical_new_finding"],
       "ordinary_new_suggestion_disposition": "optional_observation_or_quality_debt_without_reopening_loop",
+      "optional_observations_do_not_trigger_repair": true,
+      "optional_observations_imply_quality_debt": false,
+      "repair_regression_or_critical_new_finding_must_be_required": true,
+      "finding_id_uniqueness_scope": "prior_open_and_new",
       "reviewer_creates_repair_map": false,
       "repairer_closes_findings": false,
       "review_receipt_materializer": "opl_stage_run_controller"

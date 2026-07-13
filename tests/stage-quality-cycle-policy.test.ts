@@ -22,6 +22,17 @@ test('OMA declares isolated Stage Review for every AI producer', () => {
   assert.equal(attemptContract.same_thread_resume_role, 'protocol_closeout_resume');
   assert.equal(attemptContract.same_thread_resume_counts_as_review, false);
   assert.equal(attemptContract.same_thread_resume_consumes_quality_budget, false);
+  assert.deepEqual(attemptContract.route_authority_contract, {
+    semantic_route_decision_owner: 'decisive_codex_attempt',
+    stage_transition_materialization_owner: 'opl_stage_run_controller',
+    primary_only_decisive_attempt_role: 'producer',
+    formal_review_decisive_attempt_roles: ['reviewer', 're_reviewer'],
+    repairer_can_be_decisive_attempt: false,
+    repair_required_with_budget_remaining_route_output: 'route_impact.stage_route_recommendation',
+    repair_required_without_budget_and_consumable_artifact_route_output: 'route_impact.stage_route_decision',
+    repair_budget_exhaustion_terminal_status: 'completed_with_quality_debt',
+    hard_stop_or_zero_consumable_artifact_route_output: 'none',
+  });
   assert.deepEqual(attemptContract.attempt_output_contract, {
     envelope_path: 'route_impact.stage_quality_cycle',
     outcome_field: 'outcome',
@@ -57,6 +68,10 @@ test('OMA declares isolated Stage Review for every AI producer', () => {
       'required_finding_not_closed', 'repair_regression', 'critical_new_finding',
     ],
     ordinary_new_suggestion_disposition: 'optional_observation_or_quality_debt_without_reopening_loop',
+    optional_observations_do_not_trigger_repair: true,
+    optional_observations_imply_quality_debt: false,
+    repair_regression_or_critical_new_finding_must_be_required: true,
+    finding_id_uniqueness_scope: 'prior_open_and_new',
     reviewer_creates_repair_map: false,
     repairer_closes_findings: false,
     review_receipt_materializer: 'opl_stage_run_controller',
@@ -72,6 +87,13 @@ test('OMA declares isolated Stage Review for every AI producer', () => {
   assert.match(rolePrompt, /route_impact\.stage_route_decision/);
   assert.match(rolePrompt, /route_impact\.stage_route_recommendation/);
   assert.match(rolePrompt, /正式 Review receipt 由 StageRunController 物化/);
+  assert.match(rolePrompt, /semantic_route_decision_owner=decisive_codex_attempt/);
+  assert.match(rolePrompt, /stage_transition_materialization_owner=opl_stage_run_controller/);
+  assert.match(rolePrompt, /repair budget 仍可用/);
+  assert.match(rolePrompt, /repair budget 已耗尽且 artifact 可消费/);
+  assert.match(rolePrompt, /Controller 以 `completed_with_quality_debt` 终局/);
+  assert.match(rolePrompt, /`pass \+ optional_observation` 合法/);
+  assert.match(rolePrompt, /零可消费 artifact 不返回 route decision\/recommendation/);
   assert.match(rolePrompt, /`route_impact\.stage_quality_cycle\.outcome`/);
   ['pass', 'repair_required', 'quality_debt', 'blocked', 'human_gate'].forEach((outcome) => {
     assert.equal(rolePrompt.includes(`\`${outcome}\``), true);
@@ -83,7 +105,6 @@ test('OMA declares isolated Stage Review for every AI producer', () => {
   ['required_finding_not_closed', 'repair_regression', 'critical_new_finding'].forEach((trigger) => {
     assert.equal(rolePrompt.includes(`\`${trigger}\``), true);
   });
-  assert.match(rolePrompt, /`optional_observation` 或 quality debt，不得重开循环/);
   ['route_back_stage_ref', 'selected_next_stage_ref', 'next_stage_ref', 'workflow_complete'].forEach((field) => {
     assert.equal(rolePrompt.includes(`\`${field}\``), true);
   });

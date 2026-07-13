@@ -778,7 +778,8 @@ export function runImproveFromAgentLabSuite({
       candidate_refs: [capabilityCandidate.candidate_id, qualityDebtRef],
       missing_required_fields: uniqueStrings(missingFields),
       next_stage_may_start: true,
-      route_back_selection_owner: 'codex_cli',
+      semantic_route_decision_owner: 'decisive_codex_attempt',
+      stage_transition_materialization_owner: 'opl_stage_run_controller',
       agent_building_judgment: {
         target_capability_improvement_candidate: capabilityCandidate,
       },
@@ -809,7 +810,8 @@ export function runImproveFromAgentLabSuite({
         blocks_delivery_patch_or_promotion_claims: true,
       },
       next_stage_may_start: true,
-      route_back_selection_owner: 'codex_cli',
+      semantic_route_decision_owner: 'decisive_codex_attempt',
+      stage_transition_materialization_owner: 'opl_stage_run_controller',
       agent_building_judgment: {
         target_capability_improvement_candidate: capabilityCandidate,
       },

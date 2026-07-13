@@ -156,7 +156,12 @@ test('build-agent-baseline action metadata exposes canonical intent signals and 
 
 test('stage manifest gives Codex unrestricted declared-stage routing', () => {
   const policy = readJson('agent/stages/manifest.json').progress_first_policy;
-  assert.equal(policy.route_selection_owner, 'codex_cli');
+  assert.equal(policy.semantic_route_decision_owner, 'decisive_codex_attempt');
+  assert.equal(policy.stage_transition_materialization_owner, 'opl_stage_run_controller');
+  assert.equal(policy.primary_only_decisive_attempt_role, 'producer');
+  assert.deepEqual(policy.formal_review_decisive_attempt_roles, ['reviewer', 're_reviewer']);
+  assert.equal(policy.repairer_can_be_decisive_attempt, false);
+  assert.equal(Object.hasOwn(policy, 'route_selection_owner'), false);
   assert.equal(policy.codex_may_advance_skip_repeat_reverse_or_route_back, true);
   assert.equal(policy.any_declared_stage_may_start_from_any_prior_stage_result, true);
   assert.equal(policy.declared_requires_are_quality_context_not_launch_gates, true);
@@ -166,7 +171,12 @@ test('stage manifest gives Codex unrestricted declared-stage routing', () => {
 
 test('stage operating principles expose the same progress-first route ABI', () => {
   const policy = readJson('contracts/stage_operating_principles.json').speed_policy;
-  assert.equal(policy.route_selection_owner, 'codex_cli');
+  assert.equal(policy.semantic_route_decision_owner, 'decisive_codex_attempt');
+  assert.equal(policy.stage_transition_materialization_owner, 'opl_stage_run_controller');
+  assert.equal(policy.primary_only_decisive_attempt_role, 'producer');
+  assert.deepEqual(policy.formal_review_decisive_attempt_roles, ['reviewer', 're_reviewer']);
+  assert.equal(policy.repairer_can_be_decisive_attempt, false);
+  assert.equal(Object.hasOwn(policy, 'route_selection_owner'), false);
   assert.equal(policy.codex_may_advance_skip_repeat_reverse_or_route_back, true);
   assert.equal(policy.any_declared_stage_may_start_from_any_prior_stage_result, true);
   assert.equal(policy.declared_requires_are_quality_context_not_launch_gates, true);

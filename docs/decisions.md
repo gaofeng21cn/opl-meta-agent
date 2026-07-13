@@ -153,9 +153,9 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 
 ### Stage completion judgment 属于 domain stage，OPL 只负责 runtime 接力
 
-- 决策：OMA 生成的 target stage 默认必须包含 progress-first `stage_completion_policy`，固定 `closeout_packet_required=false`、`raw_artifact_sufficient_for_progress=true`、`provider_completion_is_domain_completion=false`、`opl_content_judgment_allowed=false`、`next_stage_transition_owner=codex_cli`。
-- 理由：stage loop 要保持 RCA/OBF 式的低摩擦推进体验，但不能把 runtime completion、provider receipt、文件存在或测试通过误当成 quality/domain-ready 声明。正确闭环是 stage 内尽量完成内容判断并输出可读 artifact；OPL 只记录 attempt 与 refs，Codex CLI 独占下一 stage 的语义选择。
-- 影响：缺 policy 或错误 route owner 是 generated-pack conformance quality debt；owner receipt / typed blocker / human gate / route-back refs 只约束相应 quality/delivery/promotion/ready claim，不得成为 stage transition blocker。
+- 决策：OMA 生成的 target stage 默认必须包含 progress-first `stage_completion_policy`，固定 `closeout_packet_required=false`、`raw_artifact_sufficient_for_progress=true`、`provider_completion_is_domain_completion=false`、`opl_content_judgment_allowed=false`、`semantic_route_decision_owner=decisive_codex_attempt`、`stage_transition_materialization_owner=opl_stage_run_controller`，并删除 active `next_stage_transition_owner`。
+- 理由：stage loop 要保持低摩擦推进体验，但不能把 runtime completion、provider receipt、文件存在或测试通过误当成 quality/domain-ready 声明。Primary-only producer 或 Formal Review 的 terminal reviewer/re_reviewer 负责领域语义路由；repairer 永不终局；StageRunController 只校验并物化 decisive Attempt 的 route decision，不获得内容批准权。
+- 影响：缺 policy、保留旧 owner 字段或混淆 semantic decision 与 transition materialization 都是 generated-pack conformance quality debt；owner receipt / typed blocker / human gate / route-back refs 只约束相应 quality/delivery/promotion/ready claim，不得成为普通 stage transition blocker。repair budget 尚存时 `outcome=repair_required` 只给 recommendation；预算耗尽但 artifact 可消费时由 terminal reviewer/re_reviewer 给 decision，Controller 以 `completed_with_quality_debt` 终局；hard gate 或零可消费 artifact 不给 route。
 
 ### Progress-First accounting 使用 OPL family canonical fields
 

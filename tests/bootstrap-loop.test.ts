@@ -478,12 +478,6 @@ function assertRefFields(surface: JsonObject, expected: Record<string, string>):
   Object.entries(expected).forEach(([field, value]) => assert.equal(surface[field], value, field));
 }
 
-function assertStageInput(stage: JsonObject, refKind: string, ref?: string): void {
-  assert.ok((stage.inputs as JsonObject[]).some((entry) =>
-    entry.ref_kind === refKind && (ref === undefined || entry.ref === ref)
-  ), `${refKind} input`);
-}
-
 test('build-agent-baseline advances with quality debt before StageRun closeout evidence exists', () => {
   withTempDir('oma-bootstrap-continuation-', (outputRoot) => {
     const payload = runBuildAgentBaseline({
@@ -495,7 +489,9 @@ test('build-agent-baseline advances with quality debt before StageRun closeout e
     });
     assert.equal(payload.status, 'completed_with_quality_debt');
     assert.equal(payload.next_stage_may_start, true);
-    assert.equal(payload.route_back_selection_owner, 'codex_cli');
+    assert.equal(payload.semantic_route_decision_owner, 'decisive_codex_attempt');
+    assert.equal(payload.stage_transition_materialization_owner, 'opl_stage_run_controller');
+    assert.equal(Object.hasOwn(payload, 'route_back_selection_owner'), false);
     assert.deepEqual(payload.missing_specialized_input_stages, [
       'stage-decomposition',
       'agent-skeleton-build',
@@ -607,7 +603,15 @@ test('build-agent-baseline accepts outer canonical predecessor consumption when 
 
     assert.equal(payload.status, 'candidate_package_materialized_ready_for_opl_foundry_lab_evaluation');
     assert.equal(payload.action_stage_route_context.next_stage_may_start, true);
-    assert.equal(payload.action_stage_route_context.route_selection_owner, 'codex_cli');
+    assert.equal(
+      payload.action_stage_route_context.semantic_route_decision_owner,
+      'decisive_codex_attempt',
+    );
+    assert.equal(
+      payload.action_stage_route_context.stage_transition_materialization_owner,
+      'opl_stage_run_controller',
+    );
+    assert.equal(Object.hasOwn(payload.action_stage_route_context, 'route_selection_owner'), false);
   });
 });
 
@@ -1588,7 +1592,12 @@ test('raw reference source and opaque packet become routeable quality debt', () 
     ));
     assert.match((debt.quality_debt_reasons as string[]).join(' '), /opaque_pattern_packet_unresolved/);
     assert.equal(debt.route_impact.materialization_allowed, false);
-    assert.equal(debt.route_impact.route_back_selection_owner, 'codex_cli');
+    assert.equal(debt.route_impact.semantic_route_decision_owner, 'decisive_codex_attempt');
+    assert.equal(
+      debt.route_impact.stage_transition_materialization_owner,
+      'opl_stage_run_controller',
+    );
+    assert.equal(Object.hasOwn(debt.route_impact, 'route_back_selection_owner'), false);
     assert.equal(fs.existsSync(path.join(outputRoot, 'profile-selection.json')), false);
   });
 });

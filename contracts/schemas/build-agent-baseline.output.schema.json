@@ -39,13 +39,16 @@
         "version": { "const": "opl-meta-agent.baseline-progress.v1" },
         "status": { "const": "completed_with_quality_debt" },
         "next_stage_may_start": { "const": true },
-        "route_back_selection_owner": { "const": "codex_cli" }
+        "semantic_route_decision_owner": { "const": "decisive_codex_attempt" },
+        "stage_transition_materialization_owner": { "const": "opl_stage_run_controller" }
       },
       "required": [
         "target_agent_ref",
         "quality_debt_ref",
         "stage_closeout",
-        "next_stage_may_start"
+        "next_stage_may_start",
+        "semantic_route_decision_owner",
+        "stage_transition_materialization_owner"
       ]
     }
   ],
@@ -213,7 +216,8 @@
     "materialized_artifact_refs": { "$ref": "#/$defs/stringArray" },
     "stage_closeout": { "type": "object" },
     "next_stage_may_start": { "type": "boolean" },
-    "route_back_selection_owner": { "const": "codex_cli" },
+    "semantic_route_decision_owner": { "const": "decisive_codex_attempt" },
+    "stage_transition_materialization_owner": { "const": "opl_stage_run_controller" },
     "action_id": {
       "const": "build-agent-baseline"
     },
@@ -606,13 +610,15 @@
       "type": "object",
       "required": [
         "oma_can_create_stage_run_receipt",
-        "codex_cli_selects_semantic_route",
+        "semantic_route_decision_owner",
+        "stage_transition_materialization_owner",
         "route_may_skip_repeat_or_reverse_to_any_declared_stage",
         "continuation_is_action_completion"
       ],
       "properties": {
         "oma_can_create_stage_run_receipt": { "const": false },
-        "codex_cli_selects_semantic_route": { "const": true },
+        "semantic_route_decision_owner": { "const": "decisive_codex_attempt" },
+        "stage_transition_materialization_owner": { "const": "opl_stage_run_controller" },
         "route_may_skip_repeat_or_reverse_to_any_declared_stage": { "const": true },
         "continuation_is_action_completion": { "const": false }
       },
