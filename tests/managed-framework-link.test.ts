@@ -18,6 +18,34 @@ function snapshotTree(root: string): string[] {
     .sort();
 }
 
+test('nested repo commands reuse the active temp environment without another framework-link check', () => {
+  const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-framework-link-nested-'));
+  const wrapperPath = path.join(repoRoot, 'scripts', 'run-with-repo-temp-env.sh');
+  const markerPath = path.join(fixtureRoot, 'command-ran.txt');
+  const fakeOplPath = path.join(fixtureRoot, 'opl-must-not-run');
+  try {
+    fs.writeFileSync(fakeOplPath, '#!/usr/bin/env bash\nexit 91\n');
+    fs.chmodSync(fakeOplPath, 0o755);
+    const result = spawnSync(wrapperPath, [
+      process.execPath,
+      '-e',
+      `require('node:fs').writeFileSync(${JSON.stringify(markerPath)}, 'ran')`,
+    ], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        OPL_BIN: fakeOplPath,
+        OPL_REPO_TEMP_ENV_ACTIVE: '1',
+      },
+    });
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    assert.equal(fs.readFileSync(markerPath, 'utf8'), 'ran');
+  } finally {
+    fs.rmSync(fixtureRoot, { recursive: true, force: true });
+  }
+});
+
 test('repo command wrapper runs only after the OPL-managed framework link check passes', () => {
   const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-framework-link-'));
   const agentRoot = path.join(fixtureRoot, 'agent');
@@ -55,6 +83,7 @@ test('repo command wrapper runs only after the OPL-managed framework link check 
         OPL_BIN: fakeOplPath,
         OPL_TEST_ARGS_PATH: argsPath,
         OPL_REPO_TEMP_ROOT: path.join(fixtureRoot, 'repo-temp'),
+        OPL_REPO_TEMP_ENV_ACTIVE: '0',
       },
     });
 

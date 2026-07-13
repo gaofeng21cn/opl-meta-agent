@@ -766,7 +766,6 @@ export function runBuildAgentBaseline({
       route_back_selection_owner: 'codex_cli',
     };
   }
-
   const evaluationRequest = buildBaselineFoundryEvaluationRequest({
     targetAgent,
     aiReviewerEvaluation,

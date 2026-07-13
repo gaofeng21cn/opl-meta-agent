@@ -55,6 +55,8 @@ scripts/verify.sh
 
 `npm test` / `npm run test:smoke` 是默认轻量合同与 source-purity 入口；`npm run test:behavior` 覆盖 bootstrap、external-suite、work-order、owner-chain 等 fixture-oracle/behavior tests；`npm run test:full` 是完整 Node test suite。`scripts/verify.sh cleanup` 才执行 repo hygiene fix，默认验证只检查不删除本地 ignored 产物。
 
+Canonical wrapper 只在最外层执行一次 OPL Packages framework-link currentness check并建立外部 temp/cache 环境；嵌套 npm script 复用 `OPL_REPO_TEMP_ENV_ACTIVE=1`，不得重复检查 link 或重建 temp root。完整 suite 已覆盖 source-structure JSON readback，`scripts/verify.sh full` 不在 suite 后重复执行同一 advisory readback。
+
 <!-- OPL_FLOW_MANAGED_START -->
 OPL Flow managed surface: repo_agent_instructions
 Plugin: opl-flow

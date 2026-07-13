@@ -26,8 +26,8 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 
 ### Framework import 由 OPL managed link 托管
 
-- 决策：OMA 保留 `opl-framework/*` bare imports，但 `package.json` / lockfile 不声明或安装 `opl-framework`。OPL install/update/sync/reinstall 负责把当前 Framework root 物化为 agent root 下的 managed link；developer checkout 通过同一 OPL Connect 命令显式 repair。
-- 决策：repo verification wrapper 只调用 OPL `link-framework --check --json` 并传播 typed failure / repair command；检查路径不得写 link，不得在 OMA 新增 resolver、Framework copy、tarball、`file:` dependency 或 package wrapper。
+- 决策：OMA 保留 `opl-framework/*` bare imports，但 `package.json` / lockfile 不声明或安装 `opl-framework`。OPL install/update/sync/reinstall 负责把当前 Framework root 物化为 agent root 下的 managed link；developer checkout 通过 canonical OPL Packages `opl packages link-framework` 命令显式 repair。
+- 决策：repo verification wrapper 的最外层只调用一次 OPL Packages `opl packages link-framework --check --json` 并传播 typed failure / repair command；嵌套 npm script 复用已经建立的 repo temp/cache 环境，不重复检查 link。检查路径不得写 link，不得在 OMA 新增 resolver、Framework copy、tarball、`file:` dependency 或 package wrapper。
 - 影响：npm lock 只持有 OMA 自身开发工具；Framework currentness、link target 和 repair authority 归 OPL owner readback。bare import 可解析只证明当前 link 可消费，不声明 Framework release currentness、runtime ready 或 OMA domain ready。
 
 ### External learning / suite signals 是 advisory inputs，不是 target owner verdict

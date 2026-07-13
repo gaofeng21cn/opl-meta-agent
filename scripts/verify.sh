@@ -38,7 +38,6 @@ case "$lane" in
     npm run typecheck
     npm run test:full
     node scripts/sync-authority-functions.ts --check
-    node scripts/check-source-structure.ts --advisory
     ;;
   *)
     echo "Unknown lane: $lane" >&2

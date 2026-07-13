@@ -218,7 +218,7 @@ const taskScopedProvenanceRoles = new Set([
   'trajectory_observation',
 ]);
 
-function readFoundryLabSuiteResult(
+export function validateFoundryLabSuiteResult(
   suiteResultPath: string,
   suite: JsonObject,
   targetAgent: TargetAgent,
@@ -713,7 +713,7 @@ export function runImproveFromAgentLabSuite({
   }
   const suite = readJson(suitePath);
   const targetAgent = readTargetAgent(targetAgentDir);
-  const suiteResult = readFoundryLabSuiteResult(suiteResultPath, suite, targetAgent);
+  const suiteResult = validateFoundryLabSuiteResult(suiteResultPath, suite, targetAgent);
   const policy = targetImprovementPolicy(targetAgentDir);
 
   const suiteRefs = collectSuiteRefs(suite);

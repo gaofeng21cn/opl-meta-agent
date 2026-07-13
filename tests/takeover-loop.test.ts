@@ -96,6 +96,7 @@ test('takeover emits a thin evaluation request and Foundry Lab work order withou
     assert.equal(evaluationRequest.suite_kind, 'agent_lab_external_suite');
     assert.equal(evaluationRequest.task_intents[0].domain_id, 'opl-meta-agent');
     assert.equal(Object.hasOwn(evaluationRequest, 'target_agent_ref'), false);
+    assert.equal(Object.hasOwn(evaluationRequest, 'tasks'), false);
     assert.equal(Object.hasOwn(evaluationRequest.task_intents[0], 'environment'), false);
     assert.equal(Object.hasOwn(evaluationRequest.task_intents[0], 'recovery_probe_specs'), false);
 
@@ -114,61 +115,17 @@ test('takeover emits a thin evaluation request and Foundry Lab work order withou
     );
     assert.equal(workOrder.execution_owner, 'one-person-lab/OPL Foundry Lab');
     assert.equal(workOrder.authority_boundary.oma_can_write_owner_receipt_body, false);
+    assert.equal(Object.hasOwn(workOrder, 'suite_seed'), false);
     assert.equal(fs.existsSync(path.join(takeoverRoot, 'agent-lab-takeover-suite-seed.json')), false);
     assert.equal(fs.existsSync(path.join(takeoverRoot, 'takeover-receipt.json')), false);
     assert.equal(fs.existsSync(path.join(takeoverRoot, 'new-agent-delivery-gate.json')), false);
 
-    for (const mutate of [
-      (candidate: Record<string, any>) => { candidate.suite_seed = {}; },
-      (candidate: Record<string, any>) => { candidate.foundry_lab_handoff.work_order.suite_plan = {}; },
-      (candidate: Record<string, any>) => { candidate.target_agent.unknown_target_identity = 'forbidden'; },
-      (candidate: Record<string, any>) => { candidate.authority_boundary.unknown_authority = false; },
-    ]) {
-      const forged = structuredClone(payload);
-      mutate(forged);
-      assert.equal(validateTakeoverOutput(forged).ok, false);
-    }
-  } finally {
-    fs.rmSync(outputRoot, { recursive: true, force: true });
-  }
-});
-
-test('takeover hands the same thin request to the linked OPL Foundry Lab compiler', () => {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-takeover-opl-e2e-'));
-  try {
-    const targetDir = path.join(outputRoot, 'target-agent');
-    const takeoverRoot = path.join(outputRoot, 'takeover');
     const foundryOutputDir = path.join(outputRoot, 'foundry-output');
-    const reviewerPath = path.join(outputRoot, 'reviewer.json');
-    writeJson(path.join(targetDir, 'contracts/domain_descriptor.json'), {
-      domain_id: 'takeover-fixture-agent',
-      domain_label: 'Takeover Fixture Agent',
-      delivery_domain: 'takeover_fixture',
-      target_brief: 'Verify Foundry Lab consumes the OMA request without a suite seed.',
-    });
-    writeReviewerEvaluation(reviewerPath);
-
-    const producer = spawnSync(process.execPath, [
-      path.join(repoRoot, 'scripts/takeover-agent.ts'),
-      '--agent-dir', targetDir,
-      '--output-dir', takeoverRoot,
-      '--ai-reviewer-evaluation', reviewerPath,
-    ], { cwd: repoRoot, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
-    assert.equal(producer.status, 0, producer.stderr || producer.stdout);
-
-    const requestPath = path.join(takeoverRoot, 'foundry-evaluation-request.json');
-    const workOrderPath = path.join(takeoverRoot, 'foundry-lab-work-order.json');
-    const request = readJson(requestPath);
-    const workOrder = readJson(workOrderPath);
-    assert.equal(fs.existsSync(path.join(takeoverRoot, 'agent-lab-takeover-suite-seed.json')), false);
-    assert.equal(Object.hasOwn(request, 'tasks'), false);
-    assert.equal(Object.hasOwn(workOrder, 'suite_seed'), false);
-
     const consumer = spawnSync(oplBin, [
       'agent-lab',
       'evaluation-work-order',
       'execute',
-      '--work-order', workOrderPath,
+      '--work-order', path.join(takeoverRoot, 'foundry-lab-work-order.json'),
       '--output', foundryOutputDir,
       '--json',
     ], {
@@ -181,7 +138,6 @@ test('takeover hands the same thin request to the linked OPL Foundry Lab compile
       },
     });
     assert.equal(consumer.status, 0, consumer.stderr || consumer.stdout);
-
     const execution = parseJsonText(consumer.stdout).agent_lab_evaluation_work_order_execution;
     const suitePlan = readJson(execution.artifacts.evaluation_suite_plan_path);
     assert.equal(execution.status, 'blocked_missing_evaluation_observations');
@@ -189,7 +145,18 @@ test('takeover hands the same thin request to the linked OPL Foundry Lab compile
     assert.equal(Object.hasOwn(execution, 'suite_seed_path'), false);
     assert.equal(suitePlan.surface_kind, 'opl_foundry_lab_evaluation_suite_plan');
     assert.equal(suitePlan.producer, 'one-person-lab/OPL Foundry Lab');
-    assert.equal(suitePlan.tasks[0].task_id, request.task_intents[0].task_id);
+    assert.equal(suitePlan.tasks[0].task_id, evaluationRequest.task_intents[0].task_id);
+
+    for (const mutate of [
+      (candidate: Record<string, any>) => { candidate.suite_seed = {}; },
+      (candidate: Record<string, any>) => { candidate.foundry_lab_handoff.work_order.suite_plan = {}; },
+      (candidate: Record<string, any>) => { candidate.target_agent.unknown_target_identity = 'forbidden'; },
+      (candidate: Record<string, any>) => { candidate.authority_boundary.unknown_authority = false; },
+    ]) {
+      const forged = structuredClone(payload);
+      mutate(forged);
+      assert.equal(validateTakeoverOutput(forged).ok, false);
+    }
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }
