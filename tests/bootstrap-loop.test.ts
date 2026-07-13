@@ -279,7 +279,7 @@ function materializeDeveloperProofReceipt(
   profileInput.reference_design_pattern_packet_refs.forEach((ref) =>
     selectorArgs.push('--pattern-packet', ref)
   );
-  profileInput.research_source_refs.forEach((ref) => selectorArgs.push('--research-source', ref));
+  profileInput.research_source_refs.forEach((ref) => selectorArgs.push('--reference-source', ref));
   const profileSelectionReadback = runOplJson(selectorArgs);
   const profileSelectionReceipt = profileSelectionReadback.profile_selection_receipt as JsonObject;
   profileSelectionReceipt.selected_profile_refs = [...new Set([

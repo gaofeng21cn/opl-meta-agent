@@ -962,7 +962,7 @@ export function buildResearchDrivenDesignReceipt(targetAgent: MinimalTargetAgent
     capability_plan_requirements: buildCapabilityPlanRequirements(targetAgent),
     source_readback_refs: [
       'web research / source ingest for expert practice refs',
-      'opl profiles select --intent <target-agent-intent> --research-source <source-ref> --json',
+      'opl profiles select --intent <target-agent-intent> --reference-source <source-ref> --json',
     ],
     refs_only: true,
     authority_boundary: {
@@ -1100,7 +1100,6 @@ export function buildProfileSelectionReceipt(targetAgent: MinimalTargetAgent): J
       RESEARCH_DRIVEN_DESIGN_PROFILE_ROUTE_REF,
       'opl profiles select --intent <target-agent-intent> [--intent-signal <canonical-signal>] --json',
       'opl profiles select --intent <target-agent-intent> --reference-source <source-ref> --json',
-      'opl profiles select --intent <target-agent-intent> --research-source <source-ref> --json',
       'opl profiles inspect evidence_grounded_decision_agent_profile.v1 --json',
     ],
     source_readback_refs: [
