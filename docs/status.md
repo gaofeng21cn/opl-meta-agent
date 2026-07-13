@@ -123,6 +123,8 @@ test:behavior`；完整 Node suite 进入 `npm run test:full` / `scripts/verify.
 full`。默认验证只检查 repo hygiene；需要删除 ignored cache/build byproducts
 时显式运行 `scripts/verify.sh cleanup`。
 
+验证效率边界保持单一 canonical 入口：最外层 wrapper 只做一次 OPL Packages framework-link currentness check，嵌套 npm scripts 复用同一外部 temp/cache 环境；generated-interface 测试文件只生成一次 bundle；external-suite provenance 负例在进程内调用 canonical validator，并保留一条真实 CLI rejection；takeover producer 只物化一次再交给 OPL Foundry Lab consumer；full suite 已覆盖的 source-structure advisory readback不在 suite 后重复执行。这些合并只减少重复证明，不减少 authority、owner-chain、fail-closed 或 generated-surface 边界覆盖。
+
 `line-budget` / `line-budget:strict` npm 与 shell aliases 已退役。Canonical
 maintenance lane 是 `source-structure` / `source-structure:strict`；
 `contracts/source_structure_policy.json#compatibility_aliases` 和

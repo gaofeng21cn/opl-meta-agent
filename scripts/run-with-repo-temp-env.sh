@@ -6,6 +6,10 @@ if [ "$#" -eq 0 ]; then
   exit 2
 fi
 
+if [ "${OPL_REPO_TEMP_ENV_ACTIVE:-}" = "1" ]; then
+  exec "$@"
+fi
+
 repo_root="$(cd "$(dirname "$0")/.." && pwd -P)"
 framework_link_check_status=0
 framework_link_check_output="$(
