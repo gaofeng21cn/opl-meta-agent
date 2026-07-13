@@ -141,6 +141,31 @@ test('OMA declares isolated Stage Review for every AI producer', () => {
   });
 });
 
+test('formal Review routes only from the terminal quality-budget decision point', () => {
+  const rolePrompt = readFileSync('agent/prompts/stage-quality-cycle-roles.md', 'utf8');
+  const reviewer = rolePrompt.match(/## Reviewer\n\n([\s\S]*?)\n\n## Repairer/)?.[1] ?? '';
+  const repairer = rolePrompt.match(/## Repairer\n\n([\s\S]*?)\n\n## Re Reviewer/)?.[1] ?? '';
+  const reReviewer = rolePrompt.match(/## Re Reviewer\n\n([\s\S]*)$/)?.[1] ?? '';
+
+  assert.match(reviewer, /repair budget 仍可用/);
+  assert.match(reviewer, /`outcome=repair_required`.*非终局 Attempt/);
+  assert.match(reviewer, /StageRun 投影为 `completed_with_quality_debt`/);
+  assert.match(reviewer, /保留 `outcome=repair_required`/);
+  assert.match(reviewer, /未关闭 required findings 与 quality-debt refs/);
+
+  assert.match(reReviewer, /`quality_round_index < max_repair_rounds`/);
+  assert.match(reReviewer, /`quality_round_index = max_repair_rounds`/);
+  assert.match(reReviewer, /保留 `outcome=repair_required`/);
+  assert.match(reReviewer, /StageRun 投影为 `completed_with_quality_debt`/);
+  assert.match(reReviewer, /仍开放 findings、repair regression 或 critical finding refs/);
+
+  for (const section of [reviewer, reReviewer]) {
+    assert.match(section, /`blocked`、`human_gate` 或零可消费 artifact 不返回 decision 或 recommendation/);
+  }
+  assert.match(repairer, /不做终局 Stage 判断/);
+  assert.match(repairer, /不得返回 `stage_route_decision`/);
+});
+
 test('optimizer-iteration is the isolated Agent Design Meta Review on the baseline route', () => {
   const manifest = readJson('agent/stages/manifest.json');
   const profile = readJson('contracts/stage_quality_cycle_policy.json');
