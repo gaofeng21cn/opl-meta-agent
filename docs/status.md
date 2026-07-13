@@ -37,7 +37,7 @@ OPL family `Foundry Agent OS` 目标下，OMA 的 target delta 读 [OMA Foundry 
 
 OMA 已采用 OPL Standard Agent AI-first Principle Pack：`contracts/standard-agent-principles-adoption.json` 持有机器 adoption，`agent/principles/opl-standard-agent-principles.md` 投影 OPL 通用原则，`agent/principles/domain-specialization.md` 固定 OMA 领域特化。当前读法是：`intent-intake` 是 OMA 的 domain intake mapping，不是独立 Skill；OPL 持有通用 principle / generated surface / workspace-source shell，OMA 持有 agent-building semantics、专业 pack、quality gate、owner receipt / typed blocker 和 target-agent handoff 边界。
 
-StageRun Kernel 当前补充了 agent-building canary：`intent-intake -> stage-decomposition-candidates -> mechanism-and-test-review -> owner-approval-or-typed-blocker`。`contracts/stage_run_canary_evidence.json` 固定了一份 controlled fixture evidence，覆盖 candidate generation、grounded reflection、comparative selection、evolution/revision、meta-review learning、independent quality gate 与 owner receipt closeout refs，并提供 `operator_summary` 给 operator 读取受控 canary 的阶段、refs、closeout 和 next-delta 摘要。该证据只证明 repo-local StageRun canary shape 可被合同和测试消费，不声明 live domain progress；工具只作为 affordance refs，不能变成固定 workflow、domain verdict、owner approval 或 wrapper 恢复路径。
+StageRun Kernel 当前补充了 agent-building canary：`intent-intake -> stage-decomposition-candidates -> mechanism-and-test-review -> owner-approval-or-typed-blocker`。`contracts/stage_run_canary_evidence.json` 固定了一份 controlled fixture evidence，覆盖 candidate generation、grounded reflection、comparative selection、evolution/revision、strategy retrospective、independent quality gate 与 owner receipt closeout refs，并提供 `operator_summary` 给 operator 读取受控 canary 的阶段、refs、closeout 和 next-delta 摘要。该证据只证明 repo-local StageRun canary shape 可被合同和测试消费，不声明 live domain progress；工具只作为 affordance refs，不能变成固定 workflow、domain verdict、owner approval 或 wrapper 恢复路径。
 
 Target-agent owner-chain evidence 已新增为机器合同：`contracts/target_agent_owner_chain_evidence.json` 记录 OPL-hosted `build-agent-baseline`、`takeover-target-agent-test` 和 `improve-from-external-agent-lab-suite` path 可接受的 target-agent owner receipt、typed blocker、developer work-order 和 no-regression ref shapes，并把 false-authority flags 固定为 refs-only。执行 receipt 与 lifecycle readback 直接归 `opl work-order execute`，不再经过 OMA action。该 readout 证明 OMA 能表达 live progress evidence 的 owner-chain ref shape；它不真实修改外部 target repo，不生成实际 candidate agent body，不声明 target domain ready、production ready、target artifact authority、quality/export verdict 或 target owner receipt body。
 
@@ -178,6 +178,10 @@ Foundry 无 observation 时返回平台 blocker `ofleb_3a070f16c8f637b1d5a64adf`
 ## 不可升级的声明
 
 Generated surface proof、registry/App projection readiness、controlled canary evidence、controlled canary operator summary、overclaim boundary pass、legacy runtime residue guard、suite pass、schema completeness、contract completeness、work-order shape、source-shape conformance 或 OPL refs-only consumption 都不能写成 target domain ready、live domain progress、family production ready、quality verdict、artifact readiness、owner receipt body、App live rendering、human approval 或 default promotion。
+
+## Stage Review 当前结构
+
+当前 declarative pack 已声明独立上下文 Stage Review、三轮质量预算和 `optimizer-iteration` Agent Design Meta Review；`build-agent-baseline` route 机器合同也已要求经过 optimizer。该状态不等于已有 live reviewer receipt、target owner acceptance、default promotion 或 production readiness。
 
 ## 当前读法
 

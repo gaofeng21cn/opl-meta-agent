@@ -101,6 +101,10 @@ test('controlled StageRun canary requires an owner closeout and forbids readines
   assert.equal(evidence.evidence_scope, 'controlled_fixture_not_live_domain_progress');
   assert.match(String(evidence.stage_run_ref), /^stage-run-ref:opl-meta-agent\//);
   assert.match(String(evidence.stage_manifest_ref), /^stage-manifest-ref:opl-meta-agent\//);
+  assert.ok('strategy_retrospective' in (evidence.strategy_trace as JsonObject));
+  assert.equal('meta_review_learning' in (evidence.strategy_trace as JsonObject), false);
+  assert.ok('strategy_retrospective_ref' in (evidence.role_artifact_refs as JsonObject));
+  assert.equal('meta_review_ref' in (evidence.role_artifact_refs as JsonObject), false);
 
   assert.equal(operatorSummary.evidence_scope, evidence.evidence_scope);
   assert.equal(operatorSummary.stage_run_ref, evidence.stage_run_ref);

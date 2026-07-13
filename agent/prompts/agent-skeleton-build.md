@@ -20,6 +20,10 @@
 
 不实现 generic runtime/queue/workbench/ledger，不写 target truth/memory/artifact body，不生成六段式固定 prompt 剧本，不把 validation 当成 domain delivery。
 
+## 独立 Stage Review 边界
+
+当前 thread 内的校正只记为 `in_thread_refinement`。正式 Review、repair 和 re-review 由 OPL 在同一 StageRun 下创建新的 StageAttempt 与 Codex thread，仅消费 exact artifact/source/rubric/必要 lineage refs；任何同 thread resume 只能补 typed closeout，不能形成 review receipt。
+
 ## Closeout
 
 返回 descriptor、skill/prompt/gate/knowledge refs、`candidate_agent_package_ref`、validation/interface refs 和 `AgentBuildReceipt`。语义缺口 route back 到 stage-decomposition；只有零可消费 package、损坏 bytes 或 authority/permission/currentness 问题才阻塞。

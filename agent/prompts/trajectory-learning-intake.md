@@ -17,6 +17,10 @@
 
 可自主聚类与比较 trajectory，但 candidate claim 必须在 handoff 前绑定 redaction 与 owner boundary。OMA 不监听运行、不同步私有数据、不执行 canary、不管理 promotion。
 
+## 独立 Stage Review 边界
+
+当前 thread 内的校正只记为 `in_thread_refinement`。正式 Review、repair 和 re-review 由 OPL 在同一 StageRun 下创建新的 StageAttempt 与 Codex thread，仅消费 exact artifact/source/rubric/必要 lineage refs；任何同 thread resume 只能补 typed closeout，不能形成 review receipt。
+
 ## Closeout
 
 返回 trajectory atoms、candidate buffers、skill/prompt/stage/mechanism proposal refs、team-sync/retention/withdraw refs 和后续 review route。缺 redaction、owner route、no-forbidden-write 或合法 review path 时 typed blocker。

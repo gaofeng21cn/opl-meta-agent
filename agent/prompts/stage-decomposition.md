@@ -23,6 +23,10 @@ Source-derived 路线必须从安全解析、source-anchor 支撑的内容进入
 
 不导入外部 runtime/domain verdict，不用 schema 代替 Stage 语义设计，不要求每个 source workflow step 独立成 Stage。
 
+## 独立 Stage Review 边界
+
+当前 thread 内的校正只记为 `in_thread_refinement`。正式 Review、repair 和 re-review 由 OPL 在同一 StageRun 下创建新的 StageAttempt 与 Codex thread，仅消费 exact artifact/source/rubric/必要 lineage refs；任何同 thread resume 只能补 typed closeout，不能形成 review receipt。
+
 ## Closeout
 
 返回 admitted `AgentPackPlan`、Stage graph、action/skill/knowledge/gate/memory/artifact refs、artifact morphology brief、owner/authority map、pattern dispositions 和 `StageDecompositionSubpacketSet`。有可消费 plan 时普通缺口记质量债务与 route-back；零可消费设计、unsafe source、authority/permission/identity/currentness 或显式 owner 决策才 typed blocker/human gate。

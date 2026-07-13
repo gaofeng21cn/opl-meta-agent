@@ -189,3 +189,9 @@ Mechanism patch proposal 是 self-learning / takeover loop 的 proposal-only 输
 3. `edit`：引用 `next_mechanism_candidate_ref` 与 candidate 的 proposed change refs。
 
 可编辑面只允许是 agent-building 机制面，例如 prompt policy、skill policy、stage policy、Agent Lab suite policy、takeover review policy、optimizer candidate policy 或 quality gate policy。proposal 不能直接写 target truth、memory body、artifact body、quality/export verdict，也不能绕过 explicit promotion gate。
+
+## 独立 Stage Review 与 Agent Design Meta Review
+
+OMA 绑定 `official_high_value_knowledge_deliverable.v1`。AI producer Stage 的 producer、reviewer、repairer、re-reviewer 是同一 StageRun 下的独立 StageAttempts，每个 Attempt 使用新的 Codex thread；同一 thread 内校正只叫 `in_thread_refinement`，protocol closeout resume 不算 Review。
+
+`optimizer-iteration` 保留 machine ID，角色改为独立 Agent Design Meta Review。正式 baseline route 固定经过 `baseline-run -> optimizer-iteration -> baseline-delivery`；Meta Review 只消费 target-bound results、exact artifact/hash、Stage Review receipts、rubric 与必要 lineage，输出 defect-owner route-back、no-patch coordination、work-order candidate 或质量债，不在本 Stage 内修改上游 pack。

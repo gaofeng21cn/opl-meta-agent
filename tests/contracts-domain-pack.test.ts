@@ -83,6 +83,7 @@ test('domain pack files and declarative stage refs resolve to usable repo files'
 
   const actualDomainPackPaths = [
     'agent/stages/manifest.json',
+    'contracts/stage_quality_cycle_policy.json',
     ...listMarkdownFiles('agent')
       .filter((relativePath) => !relativePath.endsWith('/README.md'))
       .filter((relativePath) => !relativePath.endsWith('/TOMBSTONE.md')),

@@ -17,6 +17,10 @@
 
 研究范围由 target brief、真实交付物形态和 owner split 共同决定。可并行搜索与比较来源；结论必须在 handoff 前绑定 source refs。不要因外部资料有编号 workflow 就预先决定 target Stage 数量。
 
+## 独立 Stage Review 边界
+
+当前 thread 内的校正只记为 `in_thread_refinement`。正式 Review、repair 和 re-review 由 OPL 在同一 StageRun 下创建新的 StageAttempt 与 Codex thread，仅消费 exact artifact/source/rubric/必要 lineage refs；任何同 thread resume 只能补 typed closeout，不能形成 review receipt。
+
 ## Closeout
 
 返回 `research_brief_ref`、`research_source_refs`、`expert_practice_notes`、`research_synthesis_refs` 和 pattern dispositions。证据不足但已有可用综合时带质量债务推进；无法形成任何可信设计依据时返回 research blocker。
