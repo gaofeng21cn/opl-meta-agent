@@ -22,17 +22,35 @@ test('OMA declares isolated Stage Review for every AI producer', () => {
   assert.equal(attemptContract.same_thread_resume_role, 'protocol_closeout_resume');
   assert.equal(attemptContract.same_thread_resume_counts_as_review, false);
   assert.equal(attemptContract.same_thread_resume_consumes_quality_budget, false);
+  assert.deepEqual(attemptContract.attempt_output_contract, {
+    envelope_path: 'route_impact.stage_quality_cycle',
+    outcome_field: 'outcome',
+    outcome_required_for_roles: ['reviewer', 're_reviewer'],
+    outcome_values: ['pass', 'repair_required', 'quality_debt', 'blocked', 'human_gate'],
+    attempts_must_not_emit_receipt_verdict: true,
+    receipt_materializer_owner: 'opl_stage_run_controller',
+    review_receipt_verdict_mapping: {
+      pass: 'pass',
+      repair_required: 'repair_required',
+      quality_debt: 'quality_debt',
+      blocked: 'hard_stop',
+      human_gate: 'hard_stop',
+    },
+  });
   assert.deepEqual(Object.keys(attemptContract.role_prompt_refs).sort(), ['producer', 're_reviewer', 'repairer', 'reviewer']);
   assert.deepEqual(attemptContract.required_role_output_ref_fields.reviewer, [
-    'finding_refs', 'verdict', 'evidence_refs', 'acceptance_criteria_refs', 'reviewed_artifact_hashes',
+    'route_impact.stage_quality_cycle.outcome', 'finding_refs', 'evidence_refs',
+    'acceptance_criteria_refs', 'reviewed_artifact_hashes',
   ]);
   assert.deepEqual(attemptContract.required_role_output_ref_fields.repairer, [
     'repair_map_refs', 'changed_artifact_refs', 'changed_artifact_hashes', 'lineage_refs',
   ]);
   assert.deepEqual(attemptContract.required_role_output_ref_fields.re_reviewer, [
-    're_review_closure_refs', 'verdict', 'evidence_refs',
+    'route_impact.stage_quality_cycle.outcome', 're_review_closure_refs', 'evidence_refs',
     'remaining_quality_debt_refs', 'reviewed_artifact_hashes',
   ]);
+  assert.equal(attemptContract.required_role_output_ref_fields.reviewer.includes('verdict'), false);
+  assert.equal(attemptContract.required_role_output_ref_fields.re_reviewer.includes('verdict'), false);
   assert.deepEqual(attemptContract.finding_closure_contract, {
     closure_statuses: ['closed', 'partially_closed', 'still_open'],
     next_repair_round_triggers: [
@@ -54,7 +72,11 @@ test('OMA declares isolated Stage Review for every AI producer', () => {
   assert.match(rolePrompt, /route_impact\.stage_route_decision/);
   assert.match(rolePrompt, /route_impact\.stage_route_recommendation/);
   assert.match(rolePrompt, /正式 Review receipt 由 StageRunController 物化/);
-  assert.match(rolePrompt, /`verdict`、整体 `evidence_refs`、`acceptance_criteria_refs`/);
+  assert.match(rolePrompt, /`route_impact\.stage_quality_cycle\.outcome`/);
+  ['pass', 'repair_required', 'quality_debt', 'blocked', 'human_gate'].forEach((outcome) => {
+    assert.equal(rolePrompt.includes(`\`${outcome}\``), true);
+  });
+  assert.match(rolePrompt, /`hard_stop` 不是 Attempt outcome/);
   ['closed', 'partially_closed', 'still_open'].forEach((status) => {
     assert.equal(rolePrompt.includes(`\`${status}\``), true);
   });

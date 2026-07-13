@@ -14,6 +14,21 @@
     "same_thread_resume_role": "protocol_closeout_resume",
     "same_thread_resume_counts_as_review": false,
     "same_thread_resume_consumes_quality_budget": false,
+    "attempt_output_contract": {
+      "envelope_path": "route_impact.stage_quality_cycle",
+      "outcome_field": "outcome",
+      "outcome_required_for_roles": ["reviewer", "re_reviewer"],
+      "outcome_values": ["pass", "repair_required", "quality_debt", "blocked", "human_gate"],
+      "attempts_must_not_emit_receipt_verdict": true,
+      "receipt_materializer_owner": "opl_stage_run_controller",
+      "review_receipt_verdict_mapping": {
+        "pass": "pass",
+        "repair_required": "repair_required",
+        "quality_debt": "quality_debt",
+        "blocked": "hard_stop",
+        "human_gate": "hard_stop"
+      }
+    },
     "role_prompt_refs": {
       "producer": "agent/prompts/stage-quality-cycle-roles.md#producer",
       "reviewer": "agent/prompts/stage-quality-cycle-roles.md#reviewer",
@@ -22,9 +37,9 @@
     },
     "required_role_output_ref_fields": {
       "producer": ["artifact_refs", "artifact_hashes", "source_refs", "lineage_refs"],
-      "reviewer": ["finding_refs", "verdict", "evidence_refs", "acceptance_criteria_refs", "reviewed_artifact_hashes"],
+      "reviewer": ["route_impact.stage_quality_cycle.outcome", "finding_refs", "evidence_refs", "acceptance_criteria_refs", "reviewed_artifact_hashes"],
       "repairer": ["repair_map_refs", "changed_artifact_refs", "changed_artifact_hashes", "lineage_refs"],
-      "re_reviewer": ["re_review_closure_refs", "verdict", "evidence_refs", "remaining_quality_debt_refs", "reviewed_artifact_hashes"]
+      "re_reviewer": ["route_impact.stage_quality_cycle.outcome", "re_review_closure_refs", "evidence_refs", "remaining_quality_debt_refs", "reviewed_artifact_hashes"]
     },
     "finding_closure_contract": {
       "closure_statuses": ["closed", "partially_closed", "still_open"],
