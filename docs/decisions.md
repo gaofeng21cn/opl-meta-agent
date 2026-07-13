@@ -130,7 +130,7 @@ Machine boundary: 本文是人读有效决策记录。机器真相继续归 `con
 
 - 决策：`baseline-delivery` 不产生、转换或冻结 target package bytes，只把已由 `AgentBuildReceipt`、Stage Review、Agent Design Meta Review 与外部 evidence 绑定的 immutable refs/hash 组织成 `baseline_handoff_candidate_ref`。
 - 理由：再套一层正式 Stage Review 会重复前置 Meta Review 与 downstream target-owner review；该 Stage 没有新的 artifact-body judgment 或 acceptance authority。
-- 影响：本 Stage 保持 primary-only，`formal_review.required=false`、`max_repair_rounds=0`，producer 是唯一 decisive Attempt。合法 handoff 返回 `route_impact.stage_route_decision.decision_kind=complete`；refs/version 漂移才 route-back 到 declared owning Stage。它不得签发 `baseline_delivery_receipt`，不得声明 owner acceptance、baseline accepted、quality/ready、promotion 或 delivery complete；active descriptor/workbench 只投影 `baseline_handoff_candidate_ref`，历史同名 receipt 只保留 provenance，最终 acceptance 继续由 target owner 持有。
+- 影响：本 Stage 保持 primary-only，`formal_review.required=false`、`max_repair_rounds=0`，producer 是唯一 decisive Attempt，并允许同 thread 做非权威 `in_thread_refinement`。合法 handoff 返回 `route_impact.stage_route_decision.decision_kind=complete`；refs/version 漂移才 route-back 到 declared owning Stage。它不得签发 `baseline_delivery_receipt`，不得声明 owner acceptance、baseline accepted、quality/ready、promotion 或 delivery complete；active descriptor/workbench 只投影 `baseline_handoff_candidate_ref`，历史同名 receipt 只保留 provenance，最终 acceptance 继续由 target owner 持有。
 
 ### Target-domain artifact morphology 是 Foundry 流程必需设计面
 

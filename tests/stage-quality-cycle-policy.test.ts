@@ -10,6 +10,10 @@ test('OMA declares isolated Stage Review for every AI producer', () => {
   assert.equal(manifest.quality_governance_profile_ref, 'contracts/opl-framework/official-knowledge-deliverable-quality-profile.json');
   assert.equal(manifest.meta_review_policy_ref, 'contracts/stage_quality_cycle_policy.json#/meta_review_policy');
   assert.equal(profile.framework_contract_ref, 'contracts/opl-framework/stage-quality-cycle-contract.json');
+  assert.equal(
+    profile.route_selection_contract_ref,
+    'contracts/opl-framework/stage-quality-cycle-contract.json#/cross_stage_route_selection',
+  );
   const attemptContract = profile.review_attempt_contract;
   assert.deepEqual(attemptContract.attempt_roles, ['producer', 'reviewer', 'repairer', 're_reviewer']);
   assert.equal(attemptContract.new_stage_attempt_per_role, true);
@@ -20,12 +24,25 @@ test('OMA declares isolated Stage Review for every AI producer', () => {
   assert.equal(attemptContract.same_thread_resume_consumes_quality_budget, false);
   assert.deepEqual(Object.keys(attemptContract.role_prompt_refs).sort(), ['producer', 're_reviewer', 'repairer', 'reviewer']);
   assert.deepEqual(attemptContract.required_role_output_ref_fields.reviewer, [
-    'finding_refs', 'reviewed_artifact_hashes',
+    'finding_refs', 'verdict', 'evidence_refs', 'acceptance_criteria_refs', 'reviewed_artifact_hashes',
   ]);
   assert.deepEqual(attemptContract.required_role_output_ref_fields.repairer, [
     'repair_map_refs', 'changed_artifact_refs', 'changed_artifact_hashes', 'lineage_refs',
   ]);
-  assert.ok(attemptContract.required_role_output_ref_fields.re_reviewer.includes('re_review_closure_refs'));
+  assert.deepEqual(attemptContract.required_role_output_ref_fields.re_reviewer, [
+    're_review_closure_refs', 'verdict', 'evidence_refs',
+    'remaining_quality_debt_refs', 'reviewed_artifact_hashes',
+  ]);
+  assert.deepEqual(attemptContract.finding_closure_contract, {
+    closure_statuses: ['closed', 'partially_closed', 'still_open'],
+    next_repair_round_triggers: [
+      'required_finding_not_closed', 'repair_regression', 'critical_new_finding',
+    ],
+    ordinary_new_suggestion_disposition: 'optional_observation_or_quality_debt_without_reopening_loop',
+    reviewer_creates_repair_map: false,
+    repairer_closes_findings: false,
+    review_receipt_materializer: 'opl_stage_run_controller',
+  });
 
   const rolePrompt = readFileSync('agent/prompts/stage-quality-cycle-roles.md', 'utf8');
   ['finding_id', 'severity', 'required', 'evidence_refs', 'repair_expectation'].forEach((field) => {
@@ -37,6 +54,14 @@ test('OMA declares isolated Stage Review for every AI producer', () => {
   assert.match(rolePrompt, /route_impact\.stage_route_decision/);
   assert.match(rolePrompt, /route_impact\.stage_route_recommendation/);
   assert.match(rolePrompt, /正式 Review receipt 由 StageRunController 物化/);
+  assert.match(rolePrompt, /`verdict`、整体 `evidence_refs`、`acceptance_criteria_refs`/);
+  ['closed', 'partially_closed', 'still_open'].forEach((status) => {
+    assert.equal(rolePrompt.includes(`\`${status}\``), true);
+  });
+  ['required_finding_not_closed', 'repair_regression', 'critical_new_finding'].forEach((trigger) => {
+    assert.equal(rolePrompt.includes(`\`${trigger}\``), true);
+  });
+  assert.match(rolePrompt, /`optional_observation` 或 quality debt，不得重开循环/);
   ['route_back_stage_ref', 'selected_next_stage_ref', 'next_stage_ref', 'workflow_complete'].forEach((field) => {
     assert.equal(rolePrompt.includes(`\`${field}\``), true);
   });
@@ -101,8 +126,17 @@ test('optimizer-iteration is the isolated Agent Design Meta Review on the baseli
   assert.equal(meta.new_execution_session_required, true);
   assert.equal(meta.no_context_inheritance, true);
   assert.equal(meta.max_route_back_rounds, 3);
+  assert.equal(meta.terminal_route_output, 'route_impact.stage_route_decision');
+  assert.equal(meta.terminal_route_owner, 'producer');
+  assert.ok(meta.required_output_ref_fields.includes('route_decision_evidence_refs'));
+  assert.equal(meta.required_output_ref_fields.includes('defect_owner_route_back_refs'), false);
   assert.ok(meta.defect_owner_route_back.stage_refs.includes('stage-decomposition'));
   assert.ok(meta.defect_owner_route_back.stage_refs.includes('agent-skeleton-build'));
+  const metaPrompt = readFileSync(String(meta.stage_prompt_ref), 'utf8');
+  assert.match(metaPrompt, /primary-only StageRun/);
+  assert.match(metaPrompt, /`producer` 是终局 route owner/);
+  assert.match(metaPrompt, /route_impact\.stage_route_decision/);
+  assert.match(metaPrompt, /route_decision_evidence_refs/);
 });
 
 test('baseline-delivery remains a primary-only immutable refs handoff to the owner gate', () => {
@@ -128,6 +162,10 @@ test('baseline-delivery remains a primary-only immutable refs handoff to the own
     review_depth: 'full',
     context_isolation_required: true,
     max_repair_rounds: 0,
+  });
+  assert.deepEqual(profile.stages['baseline-delivery'].in_thread_refinement, {
+    allowed: true,
+    authoritative: false,
   });
 
   const prompt = readFileSync(String(delivery.prompt_ref), 'utf8');

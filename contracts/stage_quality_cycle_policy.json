@@ -4,6 +4,7 @@
   "domain_id": "opl-meta-agent",
   "owner": "opl-meta-agent",
   "framework_contract_ref": "contracts/opl-framework/stage-quality-cycle-contract.json",
+  "route_selection_contract_ref": "contracts/opl-framework/stage-quality-cycle-contract.json#/cross_stage_route_selection",
   "quality_governance_profile_ref": "contracts/opl-framework/official-knowledge-deliverable-quality-profile.json",
   "review_attempt_contract": {
     "attempt_roles": ["producer", "reviewer", "repairer", "re_reviewer"],
@@ -21,9 +22,17 @@
     },
     "required_role_output_ref_fields": {
       "producer": ["artifact_refs", "artifact_hashes", "source_refs", "lineage_refs"],
-      "reviewer": ["finding_refs", "reviewed_artifact_hashes"],
+      "reviewer": ["finding_refs", "verdict", "evidence_refs", "acceptance_criteria_refs", "reviewed_artifact_hashes"],
       "repairer": ["repair_map_refs", "changed_artifact_refs", "changed_artifact_hashes", "lineage_refs"],
-      "re_reviewer": ["re_review_closure_refs", "remaining_quality_debt_refs", "reviewed_artifact_hashes"]
+      "re_reviewer": ["re_review_closure_refs", "verdict", "evidence_refs", "remaining_quality_debt_refs", "reviewed_artifact_hashes"]
+    },
+    "finding_closure_contract": {
+      "closure_statuses": ["closed", "partially_closed", "still_open"],
+      "next_repair_round_triggers": ["required_finding_not_closed", "repair_regression", "critical_new_finding"],
+      "ordinary_new_suggestion_disposition": "optional_observation_or_quality_debt_without_reopening_loop",
+      "reviewer_creates_repair_map": false,
+      "repairer_closes_findings": false,
+      "review_receipt_materializer": "opl_stage_run_controller"
     }
   },
   "stages": {
@@ -181,7 +190,7 @@
         "re_reviewer": "agent/prompts/stage-quality-cycle-roles.md#re-reviewer"
       },
       "quality_rubric_refs": ["agent/quality_gates/baseline-delivery.md"],
-      "in_thread_refinement": {"allowed": false, "authoritative": false},
+      "in_thread_refinement": {"allowed": true, "authoritative": false},
       "formal_review": {"required": false, "risk_tier": "high", "review_depth": "full", "context_isolation_required": true, "max_repair_rounds": 0},
       "budget_exhaustion": "complete_with_quality_debt_if_consumable",
       "attempt_boundary": {"inherits_stage_goal_scope_authority": true, "role_overlay_may_only_narrow": true, "controller_creates_next_attempt": true, "attempt_is_not_sub_stage": true}
@@ -229,7 +238,9 @@
     "attempt_role": "producer",
     "stage_prompt_ref": "agent/prompts/optimizer-iteration.md",
     "professional_review_mode": "multi_axis_executor_managed",
-    "required_output_ref_fields": ["finding_refs", "defect_owner_route_back_refs", "closure_criteria_refs", "remaining_quality_debt_refs"],
+    "required_output_ref_fields": ["finding_refs", "route_decision_evidence_refs", "closure_criteria_refs", "remaining_quality_debt_refs"],
+    "terminal_route_output": "route_impact.stage_route_decision",
+    "terminal_route_owner": "producer",
     "independent_stage_run_required": true,
     "new_execution_session_required": true,
     "no_context_inheritance": true,

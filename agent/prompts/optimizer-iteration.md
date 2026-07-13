@@ -22,4 +22,4 @@
 
 ## Closeout
 
-返回整体 verdict、defect-owner matrix、route-back 或 no-patch coordination、capability judgment、mechanism/capability candidate、patch traceability、developer work-order request、失效下游 refs、verification/owner-closeout expectations 和 quality-debt/typed-blocker shape。不得返回伪 execution receipt、candidate branch、regression result 或 target owner receipt。
+返回整体 verdict、defect-owner matrix、route-back 或 no-patch coordination、capability judgment、mechanism/capability candidate、patch traceability、developer work-order request、失效下游 refs、verification/owner-closeout expectations 和 quality-debt/typed-blocker shape。该 Meta Review 是 primary-only StageRun，`producer` 是终局 route owner：整体通过或带可消费质量债推进时返回唯一 `route_impact.stage_route_decision`；发现上游根因时用 `decision_kind=route_back` 指向最早可关闭根因的 declared `target_stage_id`。每个决定都必须携带非空 `evidence_refs`，并投影为 `route_decision_evidence_refs`；不得只返回非权威 recommendation，也不得使用旧 route 字段。不得返回伪 execution receipt、candidate branch、regression result 或 target owner receipt。
