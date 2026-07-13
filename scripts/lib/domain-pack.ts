@@ -1393,7 +1393,7 @@ function buildTargetAgentPrimarySkillCapability(targetAgent: MinimalTargetAgent)
     verification_refs: [
       'git diff --check',
       'opl agents scaffold --validate <target-agent-dir> --json',
-      'opl connect agent-packages validate-manifest --manifest-url <sidecar> --json',
+      'opl packages validate-manifest --manifest-url <sidecar> --json',
     ],
     forbidden_surfaces: [
       'target domain truth',
