@@ -78,14 +78,6 @@
       "domain_policy": "domain_repo_supplies_evidence_refs_without_target_domain_authority"
     },
     {
-      "surface_id": "functional_harness_cases",
-      "owner": "one-person-lab",
-      "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available",
-      "source_contract": "contracts/pack_compiler_input.json",
-      "domain_policy": "domain_repo_supplies_fixtures_expected_receipts_and_forbidden_write_assertions"
-    },
-    {
       "surface_id": "trajectory_learning_projection",
       "owner": "one-person-lab",
       "target_role": "opl_generated_surface",

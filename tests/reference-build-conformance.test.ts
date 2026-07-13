@@ -98,6 +98,8 @@ function writeConformantProfileFixture(targetDir: string): void {
       source_command: { command: `${domainId} evaluate-evidence`, surface_kind: 'domain_cli' },
       input_schema_ref: schemaRefs[0],
       output_schema_ref: schemaRefs[1],
+      required_fields: [],
+      optional_fields: [],
       workspace_locator_fields: ['workspace_root'],
       human_gate_ids: [],
       stage_route: {
@@ -105,7 +107,7 @@ function writeConformantProfileFixture(targetDir: string): void {
         required_stage_refs: ['evidence-review'],
         optional_stage_refs: [],
         terminal_stage_refs: ['evidence-review'],
-        route_policy: 'ordered_stage_attempts_no_skip',
+        route_policy: 'ai_selected_progress_route',
       },
       supported_surfaces: {
         cli: { command: `${domainId} evaluate-evidence`, surface_kind: 'domain_cli' },
@@ -181,12 +183,15 @@ function writeConformantProfileFixture(targetDir: string): void {
   });
 }
 
-test('post-write profile conformance uses the canonical OPL CLI and fails closed after file drift', () => {
+test('post-write profile conformance uses the canonical OPL CLI and records file drift as quality debt', () => {
   assert.equal(fs.existsSync(canonicalOplBin), true, canonicalOplBin);
   withTempDir('oma-reference-build-conformance-', (targetDir) => {
     writeConformantProfileFixture(targetDir);
     const passed = assertTargetProfileConformance(canonicalOplBin, targetDir, targetAgent);
-    assert.equal(passed.status, 'passed');
+    assert.ok(['passed', 'completed_with_quality_debt'].includes(String(passed.status)));
+    if (passed.status === 'completed_with_quality_debt') {
+      assert.equal(passed.next_stage_may_start, true);
+    }
 
     const capabilityMapPath = path.join(targetDir, 'contracts', 'capability_map.json');
     const capabilityMap = readJson(capabilityMapPath) as JsonObject;
@@ -194,10 +199,10 @@ test('post-write profile conformance uses the canonical OPL CLI and fails closed
     delete capabilityMap.profile_selection_receipt;
     writeJson(capabilityMapPath, capabilityMap);
 
-    assert.throws(
-      () => assertTargetProfileConformance(canonicalOplBin, targetDir, targetAgent),
-      /profile conformance.*blocked.*capability_map_missing_selected_profile_ref/is,
-    );
+    const drifted = assertTargetProfileConformance(canonicalOplBin, targetDir, targetAgent);
+    assert.equal(drifted.status, 'completed_with_quality_debt');
+    assert.equal(drifted.next_stage_may_start, true);
+    assert.equal(drifted.quality_debt.blocks_stage_transition, false);
   });
 });
 

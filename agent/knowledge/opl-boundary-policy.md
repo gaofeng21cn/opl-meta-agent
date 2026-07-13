@@ -34,6 +34,6 @@ External learning notes, suite findings, scorecards, optimizer candidates, and p
 
 所有 prompt、stage、skill 和 gate 都必须先声明 owner split，再声明可写面。发现边界不清时，输出 blocker ref，不继续包装成成功 receipt。
 
-质量、设计方向、机制采用和 agent 能力提升必须由独立 AI reviewer 或 owner gate 基于直接证据判断。执行 attempt 与 reviewer attempt 必须分离；若缺少 reviewer critique、source refs、provenance 或 no-shared-context 证据，已有可消费 artifact 进入 `review_pending` / `completed_with_quality_debt` 并继续 stage transition，且不得声明 quality、delivery、promotion 或 ready。零可消费 artifact 或真实 authority/safety/permission/currentness/human gate 才 typed blocker。
+质量、设计方向、机制采用和 agent 能力提升必须由独立 AI reviewer 或 owner gate 基于直接证据判断。执行 attempt 与 reviewer attempt 必须分离；若缺少 reviewer critique、source refs、provenance 或 no-shared-context 证据，artifact 进入 `review_pending` / `completed_with_quality_debt` 并继续 stage transition，且不得声明 quality、delivery、promotion 或 ready。零、损坏或不可读 artifact 物化 no-output/failure diagnostic；只有 executor unavailable、真实 authority/safety/permission、wrong-target identity/currentness、不可逆动作或显式 human decision 才 typed blocker。
 
 Hard blockers apply to patch/promotion/ready claims: missing owner route, forbidden target write, missing no-forbidden-write proof, absent independent reviewer evidence, missing quality floor when optimizing efficiency, or lack of target owner receipt / typed blocker return shape. Missing optional external learning or advisory suite detail should normally become a route-back, work-order gap, or reviewer-attention note, not a global stop.

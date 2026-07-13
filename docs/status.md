@@ -33,7 +33,7 @@ OPL family `Foundry Agent OS` 目标下，OMA 的 target delta 读 [OMA Foundry 
 
 `contracts/foundry-agent-os-domain-kernel-manifest.json` 是 W4 `domain-kernel-manifest` 的 OMA machine-readable 落点。它把 retained Agent-Building Authority Kernel、OPL upcollect surfaces、`current_owner_delta` 默认读根、owner receipt / typed blocker / reviewer-evidence signer 归属、target-agent forbidden authority 和 OPL/Agent Lab/Vault/Console/Runway/Pack/Capability Registry false-authority flags 固定为可测试合同；它不声明 target-agent ready、quality/export ready、App live rendering ready、human approval、default promotion、family production-ready、production-ready 或 physical delete authority。
 
-本仓已具备 OPL standard domain-agent scaffold request adapter、真实 `agent/` domain pack、refs-only generated / registration / App projection input、Agent Lab / takeover / developer work-order semantic request surface、State Index Kernel refs-only adoption、StageRun controlled canary evidence 和 source-purity guard。`build-agent-baseline` 已改为消费 OPL StageRun query readbacks：ordered route 未闭合时只返回 typed continuation，闭合后校验 `stage-decomposition` 文件计划与 `agent-skeleton-build` 文件正文，生成 `opl_agent_scaffold_materialization_request` 并委托 OPL 物化。OMA 不再默认写 target-agent contracts/stages、Foundry request bundle、计算落盘 digest、签发最终 build receipt或包装 `opl work-order execute`；当前 tracked source 没有 repo-owned generic runtime、stage attempt runner、generated shell、workbench、sidecar 或 compatibility surface。
+本仓已具备 OPL standard domain-agent scaffold request adapter、真实 `agent/` domain pack和 Agent Lab/takeover/work-order surface。`build-agent-baseline` 把 OPL StageRun readbacks当作输入而非 ordered/typed gate：raw/partial artifact 以质量债继续，Codex 独占 stage 路由。OMA 不拥有 generic runtime、stage runner、generated shell、workbench、sidecar、transition authority 或 compatibility surface。
 
 OMA 已采用 OPL Standard Agent AI-first Principle Pack：`contracts/standard-agent-principles-adoption.json` 持有机器 adoption，`agent/principles/opl-standard-agent-principles.md` 投影 OPL 通用原则，`agent/principles/domain-specialization.md` 固定 OMA 领域特化。当前读法是：`intent-intake` 是 OMA 的 domain intake mapping，不是独立 Skill；OPL 持有通用 principle / generated surface / workspace-source shell，OMA 持有 agent-building semantics、专业 pack、quality gate、owner receipt / typed blocker 和 target-agent handoff 边界。
 
@@ -122,6 +122,8 @@ owner-chain 与 live-progress fixture-oracle behavior tests 进入显式 `npm ru
 test:behavior`；完整 Node suite 进入 `npm run test:full` / `scripts/verify.sh
 full`。默认验证只检查 repo hygiene；需要删除 ignored cache/build byproducts
 时显式运行 `scripts/verify.sh cleanup`。
+
+验证效率边界保持单一 canonical 入口：最外层 wrapper 只做一次 OPL Packages framework-link currentness check，嵌套 npm scripts 复用同一外部 temp/cache 环境；generated-interface 测试文件只生成一次 bundle；external-suite provenance 负例在进程内调用 canonical validator，并保留一条真实 CLI rejection；takeover producer 只物化一次再交给 OPL Foundry Lab consumer；full suite 已覆盖的 source-structure advisory readback不在 suite 后重复执行。这些合并只减少重复证明，不减少 authority、owner-chain、fail-closed 或 generated-surface 边界覆盖。
 
 `line-budget` / `line-budget:strict` npm 与 shell aliases 已退役。Canonical
 maintenance lane 是 `source-structure` / `source-structure:strict`；

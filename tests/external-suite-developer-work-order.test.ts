@@ -4,6 +4,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import type { JsonObject } from './support/contracts.ts';
+import { validateFoundryLabSuiteResult } from '../scripts/improve-from-agent-lab-suite.ts';
+import { readTargetAgent } from '../scripts/lib/meta-agent-loop-io.ts';
 import {
   assertMatchesJsonSchema,
   parseJsonText,
@@ -155,6 +157,7 @@ test('external suite result rejects cross-suite, cross-target, cross-task, and u
     });
     writeJson(suitePath, suite);
     writeAiReviewerEvaluation(reviewerEvaluationPath);
+    const targetAgent = readTargetAgent(targetAgentDir);
 
     const scenarios: Array<{
       name: string;
@@ -231,22 +234,17 @@ test('external suite result rejects cross-suite, cross-target, cross-task, and u
 
     for (const scenario of scenarios) {
       const suiteResultPath = path.join(outputRoot, `${scenario.name}-result.json`);
-      const scenarioOutput = path.join(outputRoot, `${scenario.name}-output`);
       const resultPayload = buildFoundryExecutionResult({
         suite,
         targetAgentDir,
       });
       scenario.mutate(resultPayload);
       writeJson(suiteResultPath, resultPayload);
-      const result = runImproveCliProcess({
-        suitePath,
-        suiteResultPath,
-        targetAgentDir,
-        outputRoot: scenarioOutput,
-        reviewerEvaluationPath,
-      });
-      assert.notEqual(result.status, 0, `${scenario.name} mismatch was accepted`);
-      assert.match(result.stderr, scenario.expectedError);
+      assert.throws(
+        () => validateFoundryLabSuiteResult(suiteResultPath, suite, targetAgent),
+        scenario.expectedError,
+        `${scenario.name} mismatch was accepted`,
+      );
     }
 
     const wrongTargetSuite = structuredClone(suite);
@@ -305,8 +303,9 @@ test('passed Foundry result without an execution receipt cannot claim no source 
       outputRoot,
       reviewerEvaluationPath,
     });
-    assert.equal(payload.status, 'candidate_blocked_missing_declarative_work_order_inputs');
+    assert.equal(payload.status, 'completed_with_quality_debt');
     assert.deepEqual(payload.missing_required_fields, ['foundry_lab_execution_receipt_ref']);
+    assert.equal(payload.next_stage_may_start, true);
     assert.equal(payload.foundry_lab_execution_receipt_ref, undefined);
     assert.equal(payload.semantic_requests, undefined);
   });

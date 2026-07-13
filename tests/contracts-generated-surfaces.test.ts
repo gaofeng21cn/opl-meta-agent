@@ -13,7 +13,12 @@ import {
 } from './support/contracts.ts';
 import type { JsonObject } from './support/contracts.ts';
 
+let cachedGeneratedInterfaceBundle: JsonObject | undefined;
+
 function generatedInterfaceBundle(): JsonObject {
+  if (cachedGeneratedInterfaceBundle) {
+    return cachedGeneratedInterfaceBundle;
+  }
   const result = spawnSync(oplBin, [
     'agents',
     'interfaces',
@@ -26,7 +31,9 @@ function generatedInterfaceBundle(): JsonObject {
     maxBuffer: 16 * 1024 * 1024,
   });
   assert.equal(result.status, 0, result.stderr);
-  return parseJsonText(result.stdout).generated_agent_interfaces;
+  const bundle = parseJsonText(result.stdout).generated_agent_interfaces as JsonObject;
+  cachedGeneratedInterfaceBundle = bundle;
+  return bundle;
 }
 
 test('generated-surface contracts remain OPL-owned refs-only projections', () => {

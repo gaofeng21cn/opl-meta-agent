@@ -29,7 +29,7 @@ function writeMedicalSuite(
   }));
 }
 
-test('external suite improvement fails closed when AI reviewer evaluation is missing', () => {
+test('external suite improvement accepts a missing AI reviewer as quality debt', () => {
   withOutputRoot('oma-missing-reviewer-', (outputRoot) => {
     const targetAgentDir = path.join(outputRoot, 'med-autoscience');
     const suitePath = path.join(outputRoot, 'suite.json');
@@ -41,11 +41,12 @@ test('external suite improvement fails closed when AI reviewer evaluation is mis
       status: 'blocked',
       foundry_lab_execution_receipt_ref: 'foundry-lab-execution-receipt:missing-reviewer',
     });
-    assert.throws(() => parseImproveFromAgentLabSuiteArgs([
+    const parsed = parseImproveFromAgentLabSuiteArgs([
       '--suite', suitePath,
       '--suite-result', suiteResultPath,
       '--target-agent-dir', targetAgentDir,
-    ]), /ai reviewer evaluation/i);
+    ]);
+    assert.equal(parsed.aiReviewerEvaluationPath, '');
   });
 });
 
@@ -57,7 +58,7 @@ const reviewerFailureCases = [
 ];
 
 for (const testCase of reviewerFailureCases) {
-  test(`external suite improvement fails closed when ${testCase.name}`, () => {
+  test(`external suite improvement preserves progress when ${testCase.name}`, () => {
     withOutputRoot('oma-reviewer-gate-', (outputRoot) => {
       const targetAgentDir = path.join(outputRoot, 'med-autoscience');
       const suitePath = path.join(outputRoot, 'suite.json');
@@ -70,10 +71,21 @@ for (const testCase of reviewerFailureCases) {
       writeMedicalSuite(suitePath, targetAgentDir);
       writeAiReviewerEvaluation(reviewerEvaluationPath, testCase.reviewer);
 
-      assert.throws(
-        () => runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath }),
-        testCase.expected,
-      );
+      if (testCase.descriptor === 'valid') {
+        const payload = runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
+        assert.equal(payload.status, 'completed_with_quality_debt');
+        assert.equal(payload.next_stage_may_start, true);
+        assert.equal(
+          payload.quality_debt?.blocks_delivery_patch_or_promotion_claims
+            ?? payload.authority_boundary?.quality_debt_blocks_delivery_patch_or_promotion_claims,
+          true,
+        );
+      } else {
+        assert.throws(
+          () => runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath }),
+          testCase.expected,
+        );
+      }
     });
   });
 }
@@ -152,7 +164,7 @@ test('external suite improvement uses capability map as patch-target source when
   });
 });
 
-test('external blocked suite emits a blocker ref when target-owned improvement policy is missing', () => {
+test('external blocked suite emits quality debt when target-owned improvement policy is missing', () => {
   withOutputRoot('oma-missing-target-policy-', (outputRoot) => {
     const targetAgentDir = path.join(outputRoot, 'med-autoscience');
     const suitePath = path.join(outputRoot, 'suite.json');
@@ -163,12 +175,13 @@ test('external blocked suite emits a blocker ref when target-owned improvement p
 
     const payload = runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
     const candidate = payload.agent_building_judgment.target_capability_improvement_candidate;
-    assert.equal(payload.status, 'candidate_blocked_missing_declarative_work_order_inputs');
+    assert.equal(payload.status, 'completed_with_quality_debt');
     assert.equal(fs.existsSync(path.join(outputRoot, 'developer-patch-work-order.json')), false);
     assert.equal(fs.existsSync(path.join(outputRoot, 'typed-blocker.json')), false);
     assert.deepEqual(candidate.proposed_change_refs, []);
     assert.equal(candidate.traceability_status, 'target_owned_patch_refs_missing');
-    assert.match(candidate.expected_typed_blocker_ref, /^expected-typed-blocker-ref:/);
+    assert.match(candidate.quality_debt_ref, /^quality-debt:/);
+    assert.equal(payload.next_stage_may_start, true);
     assert.equal(payload.authority_boundary.executable_work_order_materialized, false);
   });
 });

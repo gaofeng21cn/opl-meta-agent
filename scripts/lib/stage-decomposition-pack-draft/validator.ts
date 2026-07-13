@@ -522,15 +522,18 @@ function validateStageCompletionPolicy(
   if (policy.completion_judgment_owner !== 'domain_stage') {
     throw new Error(`stage-decomposition pack draft stage ${stageId} completion judgment must be domain-stage owned.`);
   }
-  if (policy.closeout_packet_required !== true) {
-    throw new Error(`stage-decomposition pack draft stage ${stageId} stage_completion_policy.closeout_packet_required must be true.`);
+  if (policy.closeout_packet_required !== false) {
+    throw new Error(`stage-decomposition pack draft stage ${stageId} closeout packet must not gate progress.`);
+  }
+  if (policy.raw_artifact_sufficient_for_progress !== true) {
+    throw new Error(`stage-decomposition pack draft stage ${stageId} must allow raw artifact progress.`);
   }
   [
     'provider_completion_is_domain_completion',
     'opl_content_judgment_allowed',
   ].forEach((field) => assertBooleanFalse(policy, field, `stage ${stageId}.stage_completion_policy.${field}`));
-  if (policy.next_stage_transition_owner !== 'opl_runtime') {
-    throw new Error(`stage-decomposition pack draft stage ${stageId} next_stage_transition_owner must be opl_runtime.`);
+  if (policy.next_stage_transition_owner !== 'codex_cli') {
+    throw new Error(`stage-decomposition pack draft stage ${stageId} next_stage_transition_owner must be codex_cli.`);
   }
   const outcomes = asStringArray(
     policy.required_closeout_outcomes,
@@ -562,10 +565,15 @@ function validateStageCompletionPolicy(
     }
   });
   const boundary = asRecord(policy.authority_boundary, `stage ${stageId}.stage_completion_policy.authority_boundary`);
+  if (boundary.readable_file_counts_as_stage_progress !== true) {
+    throw new Error(
+      `stage-decomposition pack draft stage ${stageId} must allow readable file artifacts to advance progression.`,
+    );
+  }
   [
     'opl_can_decide_domain_completion',
     'provider_completion_counts_as_stage_complete',
-    'file_presence_counts_as_stage_complete',
+    'framework_can_accept_reject_or_override_codex_route',
     'suite_pass_counts_as_stage_complete',
     'conformance_pass_counts_as_stage_complete',
   ].forEach((field) => assertBooleanFalse(boundary, field, `stage ${stageId}.stage_completion_policy.authority_boundary.${field}`));

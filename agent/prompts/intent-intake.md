@@ -25,4 +25,4 @@
 
 ## Closeout
 
-返回 `intent_brief_ref`、`acceptance_criteria_ref`、`authority_boundary_ref`、选定 route 及该 route 的 source/profile/research/existing-agent refs。只有零可消费 brief、权限/安全/identity/currentness/authority 问题或显式 owner 决策才返回 typed blocker/human gate。
+返回 `intent_brief_ref`、`acceptance_criteria_ref`、`authority_boundary_ref`、选定 route 及该 route 的 source/profile/research/existing-agent refs。零、损坏或不可读 brief 物化 no-output/failure diagnostic 并继续；只有 executor unavailable、权限/安全/authority、wrong-target identity/currentness、不可逆动作或显式 owner/human 决策才返回 typed blocker/human gate。

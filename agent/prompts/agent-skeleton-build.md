@@ -26,4 +26,4 @@
 
 ## Closeout
 
-返回 descriptor、skill/prompt/gate/knowledge refs、`candidate_agent_package_ref`、validation/interface refs 和 `AgentBuildReceipt`。语义缺口 route back 到 stage-decomposition；只有零可消费 package、损坏 bytes 或 authority/permission/currentness 问题才阻塞。
+返回 descriptor、skill/prompt/gate/knowledge refs、`candidate_agent_package_ref`、validation/interface refs 和 `AgentBuildReceipt`。语义缺口 route back 到 stage-decomposition；零、损坏或不可读 package 物化 no-output/failure diagnostic 并继续。只有 executor unavailable、authority/safety/permission、wrong-target identity/currentness、不可逆动作或显式 human decision 才阻塞。

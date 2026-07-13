@@ -173,6 +173,16 @@ test('build-agent-baseline action metadata exposes canonical intent signals and 
   });
 });
 
+test('stage manifest gives Codex unrestricted declared-stage routing', () => {
+  const policy = readJson('agent/stages/manifest.json').progress_first_policy;
+  assert.equal(policy.route_selection_owner, 'codex_cli');
+  assert.equal(policy.codex_may_advance_skip_repeat_reverse_or_route_back, true);
+  assert.equal(policy.any_declared_stage_may_start_from_any_prior_stage_result, true);
+  assert.equal(policy.declared_requires_are_quality_context_not_launch_gates, true);
+  assert.equal(policy.next_stage_refs_are_recommendations_not_constraints, true);
+  assert.equal(policy.no_output_or_failure_diagnostic_advances_stage, true);
+});
+
 test('representative action inputs and outputs accept valid instances and reject invalid ones', () => {
   const buildInputRef = 'contracts/schemas/build-agent-baseline.input.schema.json';
   assert.equal(validate(buildInputRef, {
@@ -241,16 +251,17 @@ test('external-suite action schema matches the three real OMA judgment branches'
     { foundry_lab_execution_receipt_ref: foundryReceipt },
   )).ok, true);
   assert.equal(validate(outputRef, improveOutput(
-    'candidate_blocked_missing_declarative_work_order_inputs',
+    'completed_with_quality_debt',
     {
       candidate_refs: [
         'candidate:target-agent/capability-gap',
-        'expected-typed-blocker-ref:target-agent/missing-inputs',
+        'quality-debt:target-agent/missing-inputs',
       ],
       missing_required_fields: ['foundry_lab_execution_receipt_ref'],
       authority_boundary: {
         ...authorityBoundary(),
-        typed_blocker_body_materialized_by_oma: false,
+        quality_debt_blocks_stage_transition: false,
+        quality_debt_blocks_delivery_patch_or_promotion_claims: true,
         executable_work_order_materialized: false,
       },
     },
@@ -276,7 +287,7 @@ test('external-suite action schema matches the three real OMA judgment branches'
   )).ok, true);
 
   assert.equal(validate(outputRef, improveOutput(
-    'candidate_blocked_missing_declarative_work_order_inputs',
+    'completed_with_quality_debt',
     {
       missing_required_fields: ['foundry_lab_execution_receipt_ref'],
       semantic_requests: {

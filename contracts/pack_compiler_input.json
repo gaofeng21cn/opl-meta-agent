@@ -89,8 +89,7 @@
     "product_entry_manifest",
     "domain_handler",
     "status_read_model",
-    "workbench_drilldown",
-    "functional_harness_cases"
+    "workbench_drilldown"
   ],
   "domain_repo_can_own_generated_surface": false,
   "authority_boundary": {

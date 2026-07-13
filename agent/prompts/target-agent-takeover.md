@@ -23,4 +23,4 @@
 
 ## Closeout
 
-返回 `target_takeover_assessment_ref`、evaluation priorities、candidate/route-back refs 和 `candidate_pack_or_takeover_assessment_ready`。缺少可审阅 target bytes 或 identity/authority 不清时 typed blocker/human gate。
+返回 `target_takeover_assessment_ref`、evaluation priorities、candidate/route-back refs 和 `candidate_pack_or_takeover_assessment_ready`。缺少、损坏或不可读 target bytes 时物化 no-output/failure diagnostic 和 route-back input，仍可进入任一 declared stage；只有 unavailable executor、wrong-target identity/currentness、权限/安全/authority、不可逆动作或显式 human decision 才 typed blocker/human gate。

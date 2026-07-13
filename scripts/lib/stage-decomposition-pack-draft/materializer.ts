@@ -200,9 +200,18 @@ export function assertTargetProfileConformance(
     throw new Error('OPL profile conformance readback is missing profile_conformance.');
   }
   if (conformance.status !== 'passed') {
-    throw new Error(
-      `OPL profile conformance blocked after target write: ${JSON.stringify(conformance.blockers ?? [])}`,
-    );
+    return {
+      ...conformance,
+      status: 'completed_with_quality_debt',
+      source_status: conformance.status,
+      quality_debt: {
+        reasons: Array.isArray(conformance.blockers) ? conformance.blockers : [],
+        blocks_stage_transition: false,
+        blocks_delivery_promotion_or_ready_claims: true,
+      },
+      next_stage_may_start: true,
+      route_back_selection_owner: 'codex_cli',
+    };
   }
   return conformance;
 }

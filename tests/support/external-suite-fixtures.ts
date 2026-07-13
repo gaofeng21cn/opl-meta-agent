@@ -23,13 +23,21 @@ function stageCompletionPolicy(ref: string): JsonObject {
     surface_kind: 'domain_stage_completion_policy',
     policy_ref: `stage-completion-policy:${ref}`,
     completion_judgment_owner: 'domain_stage',
-    closeout_packet_required: true,
+    closeout_packet_required: false,
+    raw_artifact_sufficient_for_progress: true,
     provider_completion_is_domain_completion: false,
     opl_content_judgment_allowed: false,
-    next_stage_transition_owner: 'opl_runtime',
+    next_stage_transition_owner: 'codex_cli',
     required_closeout_outcomes: 'completed_and_continue completed_and_wait_owner route_back blocked rejected'.split(' '),
     accepted_closeout_ref_fields: ['owner_receipt_ref', 'typed_blocker_ref', 'human_gate_ref', 'route_back_ref'],
-    authority_boundary: { opl_can_decide_domain_completion: false, provider_completion_counts_as_stage_complete: false },
+    authority_boundary: {
+      opl_can_decide_domain_completion: false,
+      provider_completion_counts_as_stage_complete: false,
+      readable_file_counts_as_stage_progress: true,
+      framework_can_accept_reject_or_override_codex_route: false,
+      suite_pass_counts_as_stage_complete: false,
+      conformance_pass_counts_as_stage_complete: false,
+    },
   };
 }
 

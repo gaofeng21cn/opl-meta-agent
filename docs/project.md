@@ -33,4 +33,4 @@ Producer 随后生成 thin `foundry_evaluation_request` 与 canonical Foundry ev
 
 Mechanism patch proposal 记录 `mechanism_ref/version`、`editable_surfaces`、`observe/diagnose/edit`、`segment_run_ref`、`evidence_delta_ref` 与 `next_mechanism_candidate_ref`。它只表达可进入 gate 的机制补丁建议，不写 target truth、memory body、artifact body、quality verdict，也不无 gate promote default agent。
 
-当前 semantic pack 明确采用 executor-first / Codex-first：Codex 负责专家判断、问题重构、反例搜索、工具与知识缺口识别、stage graph 取舍和机制改进判断；合同只固定 owner boundary、权限、安全、receipt、projection 和 fail-closed 条件，不能把 scorecard、suite pass 或 contract completeness 写成质量裁决。
+当前 semantic pack 明确采用 executor-first / Codex-first：Codex 负责专家判断、问题重构、反例搜索、工具与知识缺口识别、stage graph 取舍、advance/skip/repeat/reverse/route-back 和机制改进判断；合同只固定 owner boundary、权限、安全、receipt、projection 和真实 hard-stop 条件，不能把 scorecard、suite pass、缺输出或 contract completeness 写成 transition gate 或质量裁决。

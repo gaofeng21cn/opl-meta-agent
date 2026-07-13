@@ -34,7 +34,7 @@ Convert evidence into bounded refs-only developer patch work orders, typed block
 6. Classify scripts or helpers as `retain`, `absorb`, `delete`, `tombstone`, `route-back`, or `work-order`.
 7. Require real non-self active callers, repo-local source refs, no-forbidden-write evidence, OPL primitive parity or explicit fixture/proof refs, no-active-caller evidence, and tombstone/provenance refs before recommending deletion readiness. Missing proof is a hygiene finding, not deletion authority.
 8. Check owner-answer shape before closeout: accepted shapes are owner receipt, typed blocker, human gate, route-back, rejected, completed-and-continue, or completed-and-wait-owner. Anything else routes back instead of being patched into a broader contract.
-9. Prefer keep, route, or bounded work order before adding wrappers. `build-agent-baseline` may fail closed on missing refs, but this skill owns the contract-light choice of what those refs mean and which work-order path is justified.
+9. Prefer keep, route, or bounded work order before adding wrappers. `build-agent-baseline` validators may close a delivery/promotion claim on missing refs, but the caller must preserve any artifact or materialize a progress diagnostic as quality debt and allow the next stage to start. This skill owns the contract-light choice of what those refs mean and which work-order path is justified.
 
 ## Forbidden Authority
 

@@ -21,7 +21,7 @@
 3. 将轨迹拆成 single-intent AtomTask refs；每个 AtomTask 只包含 intent summary、locator、evidence refs、used policy refs 和 share boundary refs。
 4. 对 AtomTask 进行机制归因：prompt gap、skill gap、stage-policy gap、quality gate gap、tool policy gap、suite policy gap、redaction gap、team sync gap 或 evidence gap。
 5. 将 AtomTask 放入 candidate buffer，按目标 surface 聚合，并标注 evidence strength、UX/canary signal、risk、reviewer-needed 和 owner route。
-6. 当 buffer 足以支持机制候选时，生成 skill / prompt / stage-policy proposal refs；证据不足但已有可消费 candidate 时生成 `review_pending` / `completed_with_quality_debt` 并继续，只有零可消费 candidate 或安全/权限/authority/currentness/human gate 才 typed blocker。
+6. 当 buffer 足以支持机制候选时，生成 skill / prompt / stage-policy proposal refs；证据不足时生成 `review_pending` / `completed_with_quality_debt` 并继续，零/损坏/不可读 candidate 则物化 no-output/failure diagnostic。只有 executor unavailable、安全/权限/authority、wrong-target identity/currentness、不可逆动作或显式 human decision 才 typed blocker。
 7. 为每个 proposal 写明 Agent Lab gate、independent reviewer direct-evidence requirement、rollback/version refs、canary signal refs 和 redaction/team sync boundary refs。
 
 ## 输出
