@@ -7,11 +7,11 @@
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
-      "opl_agent_scaffold_materialization",
-      "generated_interface_bundle",
-      "opl_foundry_lab_evaluation_work_order_consumer_dependency_open"
+      "opl_standard_agent_developer_proof_receipt",
+      "opl_agent_lab_complete_control_plane"
     ],
     "writes_only": [
+      "opl_standard_agent_developer_proof_request_ref",
       "candidate_agent_package_ref",
       "foundry_evaluation_request_ref",
       "foundry_lab_work_order_candidate_ref"
@@ -45,7 +45,7 @@
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
-      "opl_foundry_lab_suite_result_ref",
+      "opl_agent_lab_complete_control_plane",
       "opl_work_order_execute_primitive"
     ],
     "writes_only": [
@@ -82,7 +82,7 @@
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
-      "opl_foundry_lab_evaluation_work_order_consumer_dependency_open"
+      "opl_agent_lab_complete_control_plane"
     ],
     "writes_only": [
       "foundry_evaluation_request_ref",
@@ -148,7 +148,7 @@
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
-      "opl_foundry_lab_evaluation_work_order_consumer_dependency_open"
+      "opl_agent_lab_complete_control_plane"
     ],
     "writes_only": [
       "foundry_lab_work_order_candidate_ref"
@@ -196,11 +196,8 @@
       "fixture_or_proof_helper"
     ],
     "authority_function_refs": [],
-    "consumes_opl_surfaces": [
-      "opl_agent_lab_complete_control_plane"
-    ],
+    "consumes_opl_surfaces": [],
     "writes_only": [
-      "opl_command_json_ref",
       "target_agent_descriptor_ref",
       "json_materialization_ref"
     ],
@@ -241,7 +238,6 @@
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
-      "opl_family_runtime_stage_attempt",
       "opl_standard_domain_agent_scaffold"
     ],
     "writes_only": [
@@ -260,7 +256,6 @@
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
-      "opl_family_runtime_stage_attempt",
       "opl_standard_domain_agent_scaffold"
     ],
     "writes_only": [
@@ -284,8 +279,7 @@
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
-      "opl_family_runtime_stage_attempt",
-      "opl_agent_scaffold_materialization"
+      "opl_standard_domain_agent_scaffold"
     ],
     "writes_only": [
       "opl_agent_scaffold_materialization_request_ref",
@@ -343,7 +337,6 @@
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
-      "opl_family_runtime_stage_attempt",
       "opl_stage_native_artifact_contract",
       "opl_stage_folder_contract"
     ],
@@ -366,7 +359,6 @@
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
-      "opl_family_runtime_stage_attempt",
       "opl_standard_domain_agent_scaffold"
     ],
     "writes_only": [
@@ -377,22 +369,6 @@
       "stage_artifact_conformance_ref",
       "stage_artifact_workbench_consumption_ref",
       "typed_blocker_ref"
-    ],
-    "forbidden_roles": []
-  },
-  {
-    "script_ref": "scripts/lib/action-stage-route.ts",
-    "classes": [
-      "smoke_helper",
-      "fixture_or_proof_helper"
-    ],
-    "authority_function_refs": [],
-    "consumes_opl_surfaces": [
-      "opl_family_runtime_stage_attempt_query_readback"
-    ],
-    "writes_only": [
-      "action_stage_continuation_ref",
-      "action_stage_route_closeout_gate_ref"
     ],
     "forbidden_roles": []
   },
@@ -426,6 +402,21 @@
       "opl_physical_kernel_locator_ref",
       "stage_artifact_conformance_ref",
       "stage_artifact_workbench_consumption_ref"
+    ],
+    "forbidden_roles": []
+  },
+  {
+    "script_ref": "scripts/lib/standard-agent-developer-proof.ts",
+    "classes": [
+      "fixture_or_proof_helper"
+    ],
+    "authority_function_refs": [],
+    "consumes_opl_surfaces": [
+      "opl_standard_agent_developer_proof_receipt"
+    ],
+    "writes_only": [
+      "opl_standard_agent_developer_proof_request_ref",
+      "developer_proof_contract_mismatch_ref"
     ],
     "forbidden_roles": []
   },
@@ -589,7 +580,7 @@
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
-      "opl_foundry_lab_evaluation_work_order_consumer_dependency_open"
+      "opl_agent_lab_complete_control_plane"
     ],
     "writes_only": [
       "foundry_evaluation_request_ref",

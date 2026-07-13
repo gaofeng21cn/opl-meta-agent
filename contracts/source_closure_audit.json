@@ -5,7 +5,7 @@
     {
       "file": "scripts/build-agent-baseline.ts",
       "symbol": "runBuildAgentBaseline",
-      "source_digest": "sha256:5a70df5c6fbf35b50166a5561bcdd052cf23754efc5083c3d367f7bbb625e922",
+      "source_digest": "sha256:044059cdaf404e5e8051ef7e0eac9a49cfbb0d24d180396424d1ad4bad6fed46",
       "allowed_effects": [
         "filesystem_write"
       ],
@@ -27,7 +27,7 @@
     {
       "file": "scripts/lib/meta-agent-loop-io.ts",
       "symbol": "writeJson",
-      "source_digest": "sha256:66f70daf6b7e833bced921d6f2a2a9ae19e143f1cc59ba18e78ff5406378f426",
+      "source_digest": "sha256:acda6df1b34db8a320075f20a682238a2f1acbb6ebea07ed94689645fa511e98",
       "allowed_effects": [
         "filesystem_write"
       ],

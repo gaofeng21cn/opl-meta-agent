@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs as parseNodeArgs } from 'node:util';
 import {
   buildTargetAgentCapabilityMapProjection,
@@ -14,9 +14,7 @@ import {
   readDomainPackSummary,
 } from './lib/domain-pack.ts';
 import {
-  assertTargetProfileConformance,
   buildScaffoldMaterializationRequest,
-  delegateScaffoldMaterialization,
   repairStageDecompositionCloseoutPacket,
 } from './lib/stage-decomposition-pack-draft/materializer.ts';
 import type {
@@ -27,18 +25,12 @@ import {
   validateStageDecompositionCloseoutPacket,
 } from './lib/stage-decomposition-pack-draft/validator.ts';
 import {
-  buildActionStageRouteContext,
-  evaluateActionStageRoute,
-} from './lib/action-stage-route.ts';
-import {
   type AiReviewerEvaluation,
   assertAiReviewerArtifactMorphologyEvidence,
   loadAiReviewerEvaluation,
 } from './lib/meta-agent-loop-ai-reviewer.ts';
 import {
   type TargetAgent,
-  resolveOplBin,
-  runOpl,
   sha256FileBytes,
   writeJson,
 } from './lib/meta-agent-loop-io.ts';
@@ -48,15 +40,30 @@ import {
 import {
   buildFoundryLabWorkOrder,
 } from './lib/foundry-lab-work-order.ts';
+import {
+  applyDeveloperProofProfileSelection,
+  buildStandardAgentDeveloperProofRequest,
+  normalizeRequestedProfileRefs,
+  readStandardAgentDeveloperProofReceipt,
+  type StandardAgentDeveloperProofRequest,
+} from './lib/standard-agent-developer-proof.ts';
 
 const repoRoot = path.resolve(import.meta.dirname, '..');
 
 export type BuildAgentBaselineArgs = {
   outputDir: string;
-  oplBin: string;
   aiReviewerEvaluationPath: string;
   targetAgent: TargetAgent;
-  stageRunReadbackPaths: string[];
+  stageDecompositionCloseoutRef: string | null;
+  agentSkeletonBuildCloseoutRef: string | null;
+  developerProofReceiptRef?: string | null;
+};
+
+type DomainCloseoutArtifact = {
+  stage_id: 'stage-decomposition' | 'agent-skeleton-build';
+  closeout_packet_ref: string;
+  closeout_packet_path: string;
+  closeout_packet: JsonObject;
 };
 
 function nonEmptyValue(flag: string, value: string | undefined): string {
@@ -89,7 +96,6 @@ function referenceDesignEvidenceRefs(targetAgent: TargetAgent): string[] {
 export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineArgs {
   const parsed: {
     outputDir: string | null;
-    oplBin: string;
     aiReviewerEvaluationPath: string | null;
     domainId: string | null;
     domainLabel: string | null;
@@ -105,10 +111,11 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
     researchSourceRefs: string[];
     expertPracticeNotes: string[];
     researchSynthesisRefs: string[];
-    stageRunReadbackPaths: string[];
+    stageDecompositionCloseoutRef: string | null;
+    agentSkeletonBuildCloseoutRef: string | null;
+    developerProofReceiptRef: string | null;
   } = {
     outputDir: null,
-    oplBin: resolveOplBin(),
     aiReviewerEvaluationPath: null,
     domainId: null,
     domainLabel: null,
@@ -124,14 +131,15 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
     researchSourceRefs: [],
     expertPracticeNotes: [],
     researchSynthesisRefs: [],
-    stageRunReadbackPaths: [],
+    stageDecompositionCloseoutRef: null,
+    agentSkeletonBuildCloseoutRef: null,
+    developerProofReceiptRef: null,
   };
 
   const { values } = parseNodeArgs({
     args: argv,
     options: {
       'output-dir': { type: 'string' },
-      'opl-bin': { type: 'string' },
       'ai-reviewer-evaluation': { type: 'string' },
       'domain-id': { type: 'string' },
       'domain-label': { type: 'string' },
@@ -147,16 +155,15 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
       'research-source': { type: 'string', multiple: true },
       'expert-practice': { type: 'string', multiple: true },
       'research-synthesis': { type: 'string', multiple: true },
-      'stage-run-readback': { type: 'string', multiple: true },
+      'stage-decomposition-closeout-ref': { type: 'string' },
+      'agent-skeleton-build-closeout-ref': { type: 'string' },
+      'developer-proof-receipt-ref': { type: 'string' },
     },
     strict: true,
     allowPositionals: false,
   });
   if (typeof values['output-dir'] === 'string') {
     parsed.outputDir = path.resolve(nonEmptyValue('--output-dir', values['output-dir']));
-  }
-  if (typeof values['opl-bin'] === 'string') {
-    parsed.oplBin = resolveOplBin(nonEmptyValue('--opl-bin', values['opl-bin']));
   }
   if (typeof values['ai-reviewer-evaluation'] === 'string') {
     parsed.aiReviewerEvaluationPath = path.resolve(nonEmptyValue('--ai-reviewer-evaluation', values['ai-reviewer-evaluation']));
@@ -215,10 +222,24 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
     '--research-synthesis',
     values['research-synthesis'],
   );
-  parsed.stageRunReadbackPaths = nonEmptyStringList(
-    '--stage-run-readback',
-    values['stage-run-readback'],
-  ).map((readbackPath) => path.resolve(readbackPath));
+  if (typeof values['stage-decomposition-closeout-ref'] === 'string') {
+    parsed.stageDecompositionCloseoutRef = nonEmptyValue(
+      '--stage-decomposition-closeout-ref',
+      values['stage-decomposition-closeout-ref'],
+    );
+  }
+  if (typeof values['agent-skeleton-build-closeout-ref'] === 'string') {
+    parsed.agentSkeletonBuildCloseoutRef = nonEmptyValue(
+      '--agent-skeleton-build-closeout-ref',
+      values['agent-skeleton-build-closeout-ref'],
+    );
+  }
+  if (typeof values['developer-proof-receipt-ref'] === 'string') {
+    parsed.developerProofReceiptRef = nonEmptyValue(
+      '--developer-proof-receipt-ref',
+      values['developer-proof-receipt-ref'],
+    );
+  }
 
   if (!parsed.domainId) {
     throw new Error(
@@ -266,10 +287,42 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
   };
   return {
     outputDir: parsed.outputDir,
-    oplBin: parsed.oplBin,
     aiReviewerEvaluationPath: parsed.aiReviewerEvaluationPath ?? '',
     targetAgent,
-    stageRunReadbackPaths: parsed.stageRunReadbackPaths,
+    stageDecompositionCloseoutRef: parsed.stageDecompositionCloseoutRef,
+    agentSkeletonBuildCloseoutRef: parsed.agentSkeletonBuildCloseoutRef,
+    developerProofReceiptRef: parsed.developerProofReceiptRef,
+  };
+}
+
+function readDomainCloseoutArtifact(
+  sourceRef: string,
+  expectedStageId: DomainCloseoutArtifact['stage_id'],
+): DomainCloseoutArtifact {
+  let sourcePath: string;
+  if (sourceRef.startsWith('file:')) {
+    try {
+      sourcePath = fileURLToPath(sourceRef);
+    } catch {
+      throw new Error(`${expectedStageId} closeout ref must be a valid file URL or local path.`);
+    }
+  } else {
+    sourcePath = path.resolve(sourceRef);
+  }
+  if (!fs.existsSync(sourcePath) || !fs.statSync(sourcePath).isFile()) {
+    throw new Error(`${expectedStageId} closeout packet is not a readable file: ${sourcePath}`);
+  }
+  const packet = JSON.parse(fs.readFileSync(sourcePath, 'utf8')) as JsonObject;
+  if (packet.surface_kind !== 'stage_attempt_closeout_packet' || packet.stage_id !== expectedStageId) {
+    throw new Error(
+      `${expectedStageId} closeout ref must resolve to its OMA stage_attempt_closeout_packet.`,
+    );
+  }
+  return {
+    stage_id: expectedStageId,
+    closeout_packet_ref: pathToFileURL(sourcePath).href,
+    closeout_packet_path: sourcePath,
+    closeout_packet: packet,
   };
 }
 
@@ -341,123 +394,6 @@ function writeStageDecompositionDebt(
   const debtPath = path.join(outputDir, `${targetAgent.domain_id}-stage-decomposition-quality-debt.json`);
   writeJson(debtPath, debt);
   return debtPath;
-}
-
-function stringArray(value: unknown): string[] {
-  return Array.isArray(value)
-    ? value.filter((entry): entry is string => typeof entry === 'string' && Boolean(entry.trim()))
-      .map((entry) => entry.trim())
-    : [];
-}
-
-function jsonObject(value: unknown, field: string): JsonObject {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new Error(`${field} must be a JSON object.`);
-  }
-  return value as JsonObject;
-}
-
-function assertScaffoldValidationPassed(scaffoldValidation: JsonObject): void {
-  const scaffold = jsonObject(
-    scaffoldValidation.standard_domain_agent_scaffold,
-    'OPL scaffold validation standard_domain_agent_scaffold',
-  );
-  const validation = jsonObject(
-    scaffold.validation,
-    'OPL scaffold validation standard_domain_agent_scaffold.validation',
-  );
-  if (validation.status !== 'passed') {
-    const blockers = stringArray(validation.blockers);
-    throw new Error(
-      `OPL scaffold validation did not pass: ${blockers.length > 0 ? blockers.join(', ') : 'unknown_scaffold_validation_failure'}.`,
-    );
-  }
-}
-
-function canonicalBuiltinProfileRef(value: string): string {
-  if (value.startsWith('opl-profile-route:')) {
-    throw new Error(`Selected OPL profile must be a builtin profile, not a route ref: ${value}`);
-  }
-  const profileId = value.startsWith('opl-profile:')
-    ? value.slice('opl-profile:'.length)
-    : value;
-  if (!/^[A-Za-z0-9._-]+$/.test(profileId)) {
-    throw new Error(`Selected OPL profile ref is invalid: ${value}`);
-  }
-  return `opl-profile:${profileId}`;
-}
-
-function validatedExplicitProfileRefs(targetAgent: TargetAgent, oplBin: string): string[] {
-  const profileRefs = [...new Set(
-    stringArray(targetAgent.selected_opl_profile_refs).map(canonicalBuiltinProfileRef),
-  )];
-  for (const profileRef of profileRefs) {
-    const profileId = profileRef.slice('opl-profile:'.length);
-    const readback = runOpl(oplBin, ['profiles', 'inspect', profileId, '--json']);
-    const inspect = jsonObject(readback.agent_profile_inspect, 'OPL profile inspect readback');
-    const profile = inspect.status === 'found'
-      ? jsonObject(inspect.profile, 'OPL profile inspect profile')
-      : null;
-    if (!profile || profile.profile_ref !== profileRef) {
-      throw new Error(`Selected OPL profile is unknown or unavailable: ${profileRef}`);
-    }
-  }
-  return profileRefs;
-}
-
-export function resolveTargetAgentProfileSelection(
-  targetAgent: TargetAgent,
-  oplBin: string,
-): TargetAgent {
-  const explicitProfileRefs = validatedExplicitProfileRefs(targetAgent, oplBin);
-  if (explicitProfileRefs.length > 1) {
-    throw new Error(`Multiple builtin OPL profiles are not supported for one target agent: ${explicitProfileRefs.join(', ')}`);
-  }
-  const intent = targetAgent.target_brief?.trim();
-  if (!intent) {
-    return explicitProfileRefs.length > 0
-      ? { ...targetAgent, selected_opl_profile_refs: explicitProfileRefs }
-      : targetAgent;
-  }
-  const selectorArgs = ['profiles', 'select', '--intent', intent];
-  stringArray(targetAgent.intent_signals).forEach((signal) => {
-    selectorArgs.push('--intent-signal', signal);
-  });
-  stringArray(targetAgent.reference_design_source_refs).forEach((sourceRef) => {
-    selectorArgs.push('--reference-source', sourceRef);
-  });
-  stringArray(targetAgent.reference_design_pattern_packet_refs).forEach((packetRef) => {
-    selectorArgs.push('--pattern-packet', packetRef);
-  });
-  const readback = runOpl(oplBin, [...selectorArgs, '--json']);
-  const receipt = readback.profile_selection_receipt;
-  if (typeof receipt !== 'object' || receipt === null || Array.isArray(receipt)) {
-    throw new Error('OPL profile selector readback is missing profile_selection_receipt.');
-  }
-  const selectorProfileRefs = stringArray((receipt as JsonObject).selected_profile_refs)
-    .filter((profileRef) => profileRef.startsWith('opl-profile:') && !profileRef.startsWith('opl-profile-route:'))
-    .map(canonicalBuiltinProfileRef);
-  const selectedProfileRefs = [...new Set([
-    ...explicitProfileRefs,
-    ...selectorProfileRefs,
-  ])];
-  if (selectedProfileRefs.length > 1) {
-    throw new Error(`Multiple builtin OPL profiles are not supported for one target agent: ${selectedProfileRefs.join(', ')}`);
-  }
-  const matchedSignals = stringArray((receipt as JsonObject).matched_trigger_signals);
-  return {
-    ...targetAgent,
-    ...(selectedProfileRefs.length > 0
-      ? {
-          selected_opl_profile_refs: selectedProfileRefs,
-          profile_selection_rationale: targetAgent.profile_selection_rationale?.trim()
-            || `OPL profile selector matched lower-bound signals: ${matchedSignals.join(', ') || 'explicit profile selection'}.`,
-        }
-      : {
-          selected_opl_profile_refs: undefined,
-          profile_selection_rationale: undefined,
-        }),
-  };
 }
 
 function buildBaselineFoundryEvaluationRequest({
@@ -568,26 +504,72 @@ function buildTargetDescriptorProjection(targetAgent: TargetAgent): JsonObject {
   };
 }
 
+function developerProofProgress({
+  outputDir,
+  targetAgent,
+  request,
+  requestPath,
+  receiptRef,
+  failure,
+}: {
+  outputDir: string;
+  targetAgent: TargetAgent;
+  request: StandardAgentDeveloperProofRequest;
+  requestPath: string;
+  receiptRef: string | null;
+  failure: unknown | null;
+}): JsonObject {
+  const reason = failure
+    ? `OPL Framework developer proof receipt failed closed: ${errorMessage(failure)}`
+    : 'OPL Framework developer proof receipt is pending.';
+  const debt = stageDecompositionDebtFromError(new Error(reason), targetAgent);
+  const debtPath = writeStageDecompositionDebt(outputDir, targetAgent, debt);
+  return {
+    surface_kind: 'opl_meta_agent_baseline_progress',
+    version: 'opl-meta-agent.baseline-progress.v1',
+    status: 'completed_with_quality_debt',
+    target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
+    quality_debt_ref: debtPath,
+    stage_closeout: debt,
+    developer_proof_request: request,
+    developer_proof_request_ref: request.request_ref,
+    developer_proof_request_path: requestPath,
+    developer_proof_receipt_state: failure
+      ? 'invalid_receipt_fail_closed'
+      : 'pending_framework_receipt',
+    required_developer_proof_receipt_surface_kind:
+      'opl_standard_agent_developer_proof_receipt',
+    ...(receiptRef ? { developer_proof_receipt_ref: receiptRef } : {}),
+    ...(failure
+      ? {
+          developer_proof_failure: {
+            failure_kind: 'developer_proof_contract_mismatch',
+            message: errorMessage(failure),
+            materialization_or_validation_accepted_as_evidence: false,
+          },
+        }
+      : {}),
+    next_stage_may_start: true,
+    semantic_route_decision_owner: 'decisive_codex_attempt',
+    stage_transition_materialization_owner: 'opl_stage_run_controller',
+  };
+}
+
 export function runBuildAgentBaseline({
     outputDir,
-    oplBin,
     aiReviewerEvaluationPath,
     targetAgent,
-    stageRunReadbackPaths,
+    stageDecompositionCloseoutRef,
+    agentSkeletonBuildCloseoutRef,
+    developerProofReceiptRef = null,
   }: BuildAgentBaselineArgs): JsonObject {
-  const routeProgress = evaluateActionStageRoute({
-    repoRoot,
-    actionId: 'build-agent-baseline',
-    stageRunReadbackPaths,
-  });
-  const routeContext = buildActionStageRouteContext(routeProgress);
   fs.mkdirSync(outputDir, { recursive: true });
-  const stageDecompositionCloseout = routeProgress.stage_closeouts.find(
-    (entry) => entry.stage_id === 'stage-decomposition',
-  );
-  const agentSkeletonBuildCloseout = routeProgress.stage_closeouts.find(
-    (entry) => entry.stage_id === 'agent-skeleton-build',
-  );
+  const stageDecompositionCloseout = stageDecompositionCloseoutRef
+    ? readDomainCloseoutArtifact(stageDecompositionCloseoutRef, 'stage-decomposition')
+    : null;
+  const agentSkeletonBuildCloseout = agentSkeletonBuildCloseoutRef
+    ? readDomainCloseoutArtifact(agentSkeletonBuildCloseoutRef, 'agent-skeleton-build')
+    : null;
   if (!stageDecompositionCloseout || !agentSkeletonBuildCloseout) {
     const missingStages = [
       ...(!stageDecompositionCloseout ? ['stage-decomposition'] : []),
@@ -642,7 +624,7 @@ export function runBuildAgentBaseline({
   const foundryLabWorkOrderPath = path.join(outputDir, 'foundry-lab-work-order.json');
 
   try {
-    targetAgent = resolveTargetAgentProfileSelection(targetAgent, oplBin);
+    targetAgent = normalizeRequestedProfileRefs(targetAgent);
     buildProfileSelectionReceipt(targetAgent);
   } catch (error) {
     const debt = stageDecompositionDebtFromError(error, targetAgent);
@@ -669,8 +651,12 @@ export function runBuildAgentBaseline({
     outputDir,
     'scaffold-materialization-request.json',
   );
+  const developerProofRequestPath = path.join(
+    outputDir,
+    'standard-agent-developer-proof-request.json',
+  );
   let stageDecompositionPackDraft: StageDecompositionPackDraft;
-  let scaffoldMaterializationReceipt: JsonObject;
+  let developerProofRequest: StandardAgentDeveloperProofRequest;
   try {
     stageDecompositionPackDraft = validateOrRepairStageDecompositionCloseoutPacket(
       stageDecompositionCloseout.closeout_packet,
@@ -692,12 +678,17 @@ export function runBuildAgentBaseline({
       capabilityMapProjection: buildTargetAgentCapabilityMapProjection(targetAgent, null),
       packageManifest: buildTargetAgentPackageManifest(targetAgent),
     });
-    scaffoldMaterializationReceipt = delegateScaffoldMaterialization({
-      oplBin,
-      targetAgentDir,
-      requestPath: scaffoldMaterializationRequestPath,
-      request: scaffoldMaterializationRequest,
+    writeJson(scaffoldMaterializationRequestPath, scaffoldMaterializationRequest);
+    developerProofRequest = buildStandardAgentDeveloperProofRequest({
+      requestRef: pathToFileURL(developerProofRequestPath).href,
+      targetAgent,
+      targetRepoRef: pathToFileURL(targetAgentDir).href,
+      packageManifestRef: pathToFileURL(targetAgentPackageManifestPath).href,
+      scaffoldMaterializationRequestRef: pathToFileURL(scaffoldMaterializationRequestPath).href,
+      stageDecompositionCloseoutRef: stageDecompositionCloseout.closeout_packet_ref,
+      agentSkeletonBuildCloseoutRef: agentSkeletonBuildCloseout.closeout_packet_ref,
     });
+    writeJson(developerProofRequestPath, developerProofRequest);
   } catch (error) {
     const debt = stageDecompositionDebtFromError(error, targetAgent);
     const debtPath = writeStageDecompositionDebt(outputDir, targetAgent, debt);
@@ -715,16 +706,52 @@ export function runBuildAgentBaseline({
       stage_transition_materialization_owner: 'opl_stage_run_controller',
     };
   }
+  if (!developerProofReceiptRef) {
+    return developerProofProgress({
+      outputDir,
+      targetAgent,
+      request: developerProofRequest,
+      requestPath: developerProofRequestPath,
+      receiptRef: null,
+      failure: null,
+    });
+  }
+  let scaffoldMaterializationReceipt: JsonObject;
+  let scaffoldValidation: JsonObject;
+  let generatedInterfaces: JsonObject;
+  let targetAgentPackageManifestValidation: JsonObject;
+  let targetProfileConformance: JsonObject;
+  try {
+    const developerProof = readStandardAgentDeveloperProofReceipt({
+      receiptRef: developerProofReceiptRef,
+      requestPath: developerProofRequestPath,
+      request: developerProofRequest,
+    });
+    targetAgent = applyDeveloperProofProfileSelection(
+      targetAgent,
+      developerProof.outputs.profileSelectionReceipt,
+    );
+    scaffoldMaterializationReceipt = developerProof.outputs.scaffoldMaterializationReceipt;
+    scaffoldValidation = developerProof.outputs.scaffoldValidation;
+    generatedInterfaces = developerProof.outputs.generatedInterfaces;
+    targetAgentPackageManifestValidation = developerProof.outputs.packageManifestValidation;
+    targetProfileConformance = developerProof.outputs.profileConformance;
+  } catch (error) {
+    return developerProofProgress({
+      outputDir,
+      targetAgent,
+      request: developerProofRequest,
+      requestPath: developerProofRequestPath,
+      receiptRef: developerProofReceiptRef,
+      failure: error,
+    });
+  }
   const agentBuildReceipt = scaffoldMaterializationReceipt.build_receipt as JsonObject;
   const descriptorPath = path.join(targetAgentDir, 'contracts', 'domain_descriptor.json');
   const profileSelectionReceipt = buildProfileSelectionReceipt(targetAgent);
   const agentBuildReceiptPath = path.join(targetAgentDir, 'contracts', 'agent_build_receipt.json');
   const agentBuildReceiptRef = agentBuildReceipt.receipt_ref ?? null;
   let targetDomainPackSummary: JsonObject;
-  let scaffoldValidation: JsonObject;
-  let generatedInterfaces: JsonObject;
-  let targetAgentPackageManifestValidation: JsonObject;
-  let targetProfileConformance: JsonObject;
   try {
     if (
       profileSelectionReceipt.expected_build_receipt_ref
@@ -735,19 +762,6 @@ export function runBuildAgentBaseline({
     targetDomainPackSummary = readDomainPackSummary(targetAgentDir, {
       domainId: targetAgent.domain_id,
     });
-    scaffoldValidation = runOpl(oplBin, [
-      'agents', 'scaffold', '--validate', targetAgentDir, '--json',
-    ]);
-    assertScaffoldValidationPassed(scaffoldValidation);
-    generatedInterfaces = runOpl(oplBin, [
-      'agents', 'interfaces', '--repo-dir', targetAgentDir, '--json',
-    ]);
-    targetAgentPackageManifestValidation = runOpl(oplBin, [
-      'packages', 'validate-manifest',
-      '--manifest-url', pathToFileURL(targetAgentPackageManifestPath).href,
-      '--trust-tier', 'first_party', '--source-kind', 'local_file', '--json',
-    ]);
-    targetProfileConformance = assertTargetProfileConformance(oplBin, targetAgentDir, targetAgent);
   } catch (error) {
     const debt = stageDecompositionDebtFromError(error, targetAgent);
     const debtPath = writeStageDecompositionDebt(outputDir, targetAgent, debt);
@@ -792,9 +806,7 @@ export function runBuildAgentBaseline({
       descriptorPath,
       targetAgentPackageManifestPath,
       targetAgentCapabilityMapPath,
-      stageDecompositionCloseout.stage_attempt_ref,
       stageDecompositionCloseout.closeout_packet_ref,
-      agentSkeletonBuildCloseout.stage_attempt_ref,
       agentSkeletonBuildCloseout.closeout_packet_ref,
       ...referenceDesignEvidenceRefs(targetAgent),
     ].filter((ref): ref is string => typeof ref === 'string' && ref.length > 0),
@@ -831,9 +843,12 @@ export function runBuildAgentBaseline({
     source_domain_pack: domainPackSummary,
     target_agent_domain_pack: targetDomainPackSummary,
     artifacts: {
-      stage_decomposition_stage_run_readback_path: stageDecompositionCloseout.readback_path,
-      agent_skeleton_build_stage_run_readback_path: agentSkeletonBuildCloseout.readback_path,
+      stage_decomposition_closeout_packet_ref: stageDecompositionCloseout.closeout_packet_ref,
+      agent_skeleton_build_closeout_packet_ref: agentSkeletonBuildCloseout.closeout_packet_ref,
       scaffold_materialization_request_path: scaffoldMaterializationRequestPath,
+      developer_proof_request_path: developerProofRequestPath,
+      developer_proof_request_ref: developerProofRequest.request_ref,
+      developer_proof_receipt_ref: developerProofReceiptRef,
       foundry_evaluation_request_path: evaluationRequestPath,
       foundry_lab_work_order_path: foundryLabWorkOrderPath,
       opl_agent_package_manifest_path: targetAgentPackageManifestPath,
@@ -848,19 +863,16 @@ export function runBuildAgentBaseline({
       targetAgentPackageManifestValidation.opl_agent_package_manifest,
     opl_generated_interfaces: generatedInterfaces.generated_agent_interfaces,
     opl_profile_conformance: targetProfileConformance,
-    stage_decomposition_attempt: {
+    stage_decomposition_artifact: {
       stage_id: stageDecompositionCloseout.stage_id,
-      stage_attempt_ref: stageDecompositionCloseout.stage_attempt_ref,
       closeout_packet_ref: stageDecompositionCloseout.closeout_packet_ref,
       closeout_refs: stageDecompositionCloseout.closeout_packet.closeout_refs,
     },
-    agent_skeleton_build_attempt: {
+    agent_skeleton_build_artifact: {
       stage_id: agentSkeletonBuildCloseout.stage_id,
-      stage_attempt_ref: agentSkeletonBuildCloseout.stage_attempt_ref,
       closeout_packet_ref: agentSkeletonBuildCloseout.closeout_packet_ref,
       closeout_refs: agentSkeletonBuildCloseout.closeout_packet.closeout_refs,
     },
-    action_stage_route_context: routeContext,
     agent_building_judgment: {
       ai_reviewer_evaluation_ref: aiReviewerEvaluationPath,
       verdict: aiReviewerEvaluation.verdict,

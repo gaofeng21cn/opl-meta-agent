@@ -1,14 +1,15 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import {
-  assertTargetProfileConformance,
-} from '../scripts/lib/stage-decomposition-pack-draft/materializer.ts';
-import {
   buildProfileSelectionReceipt,
   type JsonObject,
 } from '../scripts/lib/domain-pack.ts';
+import {
+  buildStandardAgentDeveloperProofRequest,
+} from '../scripts/lib/standard-agent-developer-proof.ts';
 import {
   oplOwnerRepoRoot,
   readJsonFile as readJson,
@@ -24,6 +25,23 @@ const targetAgent = {
   selected_opl_profile_refs: [profileRef],
   profile_selection_rationale: 'The target requires the evidence-grounded decision profile.',
 };
+
+function readCanonicalProfileConformance(targetDir: string): JsonObject {
+  const result = spawnSync(canonicalOplBin, [
+    'profiles',
+    'conformance',
+    '--repo-dir',
+    targetDir,
+    '--profile',
+    profileRef.slice('opl-profile:'.length),
+    '--json',
+  ], {
+    encoding: 'utf8',
+    maxBuffer: 16 * 1024 * 1024,
+  });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  return (JSON.parse(result.stdout) as JsonObject).profile_conformance as JsonObject;
+}
 
 function writeConformantProfileFixture(targetDir: string): void {
   const profileSelectionReceipt = buildProfileSelectionReceipt(targetAgent);
@@ -182,15 +200,12 @@ function writeConformantProfileFixture(targetDir: string): void {
   });
 }
 
-test('post-write profile conformance uses the canonical OPL CLI and records file drift as quality debt', () => {
+test('post-write profile conformance remains an OPL-owned proof operation', () => {
   assert.equal(fs.existsSync(canonicalOplBin), true, canonicalOplBin);
   withTempDir('oma-reference-build-conformance-', (targetDir) => {
     writeConformantProfileFixture(targetDir);
-    const passed = assertTargetProfileConformance(canonicalOplBin, targetDir, targetAgent);
-    assert.ok(['passed', 'completed_with_quality_debt'].includes(String(passed.status)));
-    if (passed.status === 'completed_with_quality_debt') {
-      assert.equal(passed.next_stage_may_start, true);
-    }
+    const passed = readCanonicalProfileConformance(targetDir);
+    assert.ok(['passed', 'blocked'].includes(String(passed.status)));
 
     const capabilityMapPath = path.join(targetDir, 'contracts', 'capability_map.json');
     const capabilityMap = readJson(capabilityMapPath) as JsonObject;
@@ -198,20 +213,29 @@ test('post-write profile conformance uses the canonical OPL CLI and records file
     delete capabilityMap.profile_selection_receipt;
     writeJson(capabilityMapPath, capabilityMap);
 
-    const drifted = assertTargetProfileConformance(canonicalOplBin, targetDir, targetAgent);
-    assert.equal(drifted.status, 'completed_with_quality_debt');
-    assert.equal(drifted.next_stage_may_start, true);
-    assert.equal(drifted.quality_debt.blocks_stage_transition, false);
+    const drifted = readCanonicalProfileConformance(targetDir);
+    assert.equal(drifted.status, 'blocked');
   });
 });
 
-test('research-driven design stays not applicable when OPL exposes no matching conformance route', () => {
-  const result = assertTargetProfileConformance(canonicalOplBin, '/tmp/not-materialized', {
+test('research-driven design asks the Framework aggregate for an explicit not-applicable proof', () => {
+  const request = buildStandardAgentDeveloperProofRequest({
+    requestRef: 'file:///tmp/developer-proof-request.json',
+    targetRepoRef: 'file:///tmp/not-materialized',
+    packageManifestRef: 'file:///tmp/not-materialized/contracts/opl_agent_package_manifest.json',
+    scaffoldMaterializationRequestRef: 'file:///tmp/scaffold-request.json',
+    stageDecompositionCloseoutRef: 'file:///tmp/stage-decomposition-closeout.json',
+    agentSkeletonBuildCloseoutRef: 'file:///tmp/agent-skeleton-build-closeout.json',
+    targetAgent: {
     domain_id: 'research-driven-agent',
+    target_brief: 'Create a research-driven agent.',
     research_source_refs: ['research-source-ref:public/expert-workflow-review'],
     research_synthesis_refs: ['research-synthesis-ref:oma/research-driven-agent'],
+    },
   });
-  assert.equal(result.status, 'not_applicable');
-  assert.equal(result.reason, 'research_driven_design_route_not_exposed_by_opl_profiles_conformance');
-  assert.equal(result.authority_boundary.conformance_skipped_as_success, false);
+  assert.equal(request.inputs.profile_conformance.mode, 'not_applicable');
+  assert.equal(
+    request.inputs.profile_conformance.not_applicable_reason,
+    'research_driven_design_route_not_exposed_by_opl_profiles_conformance',
+  );
 });

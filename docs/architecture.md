@@ -67,9 +67,9 @@ OMA 生成 target agent 时只提供 agent-building 语义，不维护私有 rep
 
 当前默认链路是：
 
-1. `build-agent-baseline` 校验 OPL StageRun closeout，形成 OMA-owned target identity、stage graph、domain file bodies、descriptor/capability projection 和 `build_receipt_candidate`。
-2. OMA 写出 `opl_agent_scaffold_materialization_request`，并只调用 `opl agents scaffold --materialize-request <request.json> --target-dir <targetAgentDir> --json`。OPL 负责相对路径与 symlink escape 校验、标准 scaffold、allowlist merge、目标仓文件 IO、pack compiler input、materialized digests 和最终 `opl_agent_scaffold_materialization_receipt` / build receipt；命令缺失、非零或 receipt shape 不符时 OMA fail closed，不回退本地写入。
-3. OMA 调用 `opl agents scaffold --validate <targetAgentDir> --json` 和 `opl agents interfaces --repo-dir <targetAgentDir> --json`，消费 OPL 持有的 scaffold validation 与 generated interface projection。
+1. OPL hosted `stage_binding` 负责 StageRun attempt/query/readback、identity/currentness、route recommendation 校验与 transition materialization；OMA 只消费 `stage-decomposition` 和 `agent-skeleton-build` 的 domain closeout packet refs，形成 target identity、stage graph、domain file bodies与 descriptor/capability projection。
+2. OMA 写出单一 `opl_standard_agent_developer_proof_request`，其中绑定 `opl_agent_scaffold_materialization_request`、target repo/package manifest、两个 domain closeout packet、profile/design input refs，以及 `profile_inspect_select`、`scaffold_materialize_validate`、`generated_interfaces`、`package_manifest_validate`、`profile_conformance` 五项 Framework-owned operation。request 不是执行、materialization 或 validation 证据。
+3. OPL host 执行五项 operation，负责相对路径与 symlink escape 校验、标准 scaffold、allowlist merge、目标仓文件 IO、pack compiler input、materialized digests、generated interfaces 与 package/profile conformance，并返回 request-SHA/identity/input-ref bound 的 `opl_standard_agent_developer_proof_receipt`。OMA 只消费这一个 aggregate receipt；缺失时返回 typed pending，surface/SHA/identity/input refs/operation output 任一不匹配时 fail closed，不 spawn OPL/Codex、不回退本地 IO。
 4. Agent Lab suite、independent reviewer、new-agent delivery gate、target owner receipt / typed blocker / human gate 共同决定收口形态。
 
 这条链路的边界是：OPL scaffold 负责目录标准、物理 materialization、digest 和最终 build receipt；OMA 只负责目标智能体的语义设计、domain-authored request、候选包和受限改进建议；target domain owner 持有 domain truth、artifact body、quality/export verdict、owner receipt 和 typed blocker。OPL scaffold 自带的 README 只做人读索引，不能作为 semantic pack source；可被合同消费的 source 必须是非 README pack files、stage control plane refs 和 closeout packet refs。

@@ -22,7 +22,7 @@
 
 ## Receipt 约束
 
-- receipt 必须记录 `output_dir`、`opl_bin` 和 candidate package root。
+- receipt 必须记录 `output_dir`、candidate package root 与 OPL-hosted materialization/validation proof refs；不得记录或选择私有 `opl_bin` transport。
 - receipt 必须记录 target-agent brief 与 descriptor 字段，证明用户自然语言需求进入了候选 package。
 - receipt 必须包含 OPL scaffold validation 结果。
 - receipt 必须声明 candidate 不含 target truth、memory body 或 artifact body。

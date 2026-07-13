@@ -1,10 +1,7 @@
 import fs from 'node:fs';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
-import { runStandardAgentFrameworkCommandSync } from 'opl-framework/standard-agent-action-stage-run';
 import type { JsonObject } from './domain-pack.ts';
-
-const DEFAULT_OPL_BIN = 'opl';
 
 export type TargetAgent = {
   domain_id: string;
@@ -27,14 +24,6 @@ export type TargetAgent = {
   repo_dir?: string;
   descriptor?: JsonObject | null;
 };
-
-export function resolveOplBin(value = process.env.OPL_BIN ?? DEFAULT_OPL_BIN): string {
-  return value.includes(path.sep) ? path.resolve(value) : value;
-}
-
-export function runOpl(oplBin: string, args: string[]): JsonObject {
-  return runStandardAgentFrameworkCommandSync({ oplBin, args });
-}
 
 export function stableId(prefix: string, payload: unknown): string {
   const hash = createHash('sha256').update(JSON.stringify(payload)).digest('hex').slice(0, 12);

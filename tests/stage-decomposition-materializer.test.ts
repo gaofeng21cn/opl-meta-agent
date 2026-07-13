@@ -20,7 +20,6 @@ import {
 } from '../scripts/lib/stage-decomposition-pack-draft/builder.ts';
 import {
   buildScaffoldMaterializationRequest,
-  delegateScaffoldMaterialization,
   repairStageDecompositionCloseoutPacket,
 } from '../scripts/lib/stage-decomposition-pack-draft/materializer.ts';
 import {
@@ -244,60 +243,14 @@ test('stage-decomposition emits an OPL-owned scaffold materialization request', 
   ));
 });
 
-test('materialization adapter delegates to OPL and never writes target files itself', () => {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-scaffold-delegation-'));
+test('scaffold materialization helper remains a pure OMA request producer', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-scaffold-request-only-'));
   try {
-    const request = buildFixtureMaterializationRequest();
-    const requestPath = path.join(outputRoot, 'request.json');
     const targetDir = path.join(outputRoot, 'target-agent');
-    const fakeOpl = path.join(outputRoot, 'opl');
-    const expectedRef = (request.build_receipt_installation as JsonObject).expected_build_receipt_ref;
-    fs.writeFileSync(fakeOpl, `#!/usr/bin/env node
-const payload = {
-  standard_domain_agent_scaffold: {
-    materialization_receipt: {
-      surface_kind: 'opl_agent_scaffold_materialization_receipt',
-      status: 'materialized',
-      build_receipt_ref: ${JSON.stringify(expectedRef)},
-      build_receipt: { receipt_ref: ${JSON.stringify(expectedRef)} },
-      materialized_file_digests: [{ path: 'agent/stages/manifest.json', sha256: '${'a'.repeat(64)}' }],
-      validation_refs: ['validation-ref:scaffold/passed'],
-    },
-  },
-};
-process.stdout.write(JSON.stringify(payload));
-`);
-    fs.chmodSync(fakeOpl, 0o755);
-
-    const receipt = delegateScaffoldMaterialization({
-      oplBin: fakeOpl,
-      targetAgentDir: targetDir,
-      requestPath,
-      request,
-    });
-    assert.equal(receipt.build_receipt_ref, expectedRef);
-    assert.equal(fs.existsSync(requestPath), true);
+    const request = buildFixtureMaterializationRequest();
+    assert.equal(request.surface_kind, 'opl_agent_scaffold_materialization_request');
+    assert.equal((request.authority_boundary as JsonObject).oma_writes_target_agent_files, false);
     assert.equal(fs.existsSync(targetDir), false);
-  } finally {
-    fs.rmSync(outputRoot, { recursive: true, force: true });
-  }
-});
-
-test('materialization adapter fails closed on a missing OPL receipt', () => {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-scaffold-delegation-blocked-'));
-  try {
-    const fakeOpl = path.join(outputRoot, 'opl');
-    fs.writeFileSync(fakeOpl, '#!/bin/sh\nprintf \'%s\\n\' \'{"standard_domain_agent_scaffold":{"state":"scaffold_generated"}}\'\n');
-    fs.chmodSync(fakeOpl, 0o755);
-    assert.throws(
-      () => delegateScaffoldMaterialization({
-        oplBin: fakeOpl,
-        targetAgentDir: path.join(outputRoot, 'target-agent'),
-        requestPath: path.join(outputRoot, 'request.json'),
-        request: buildFixtureMaterializationRequest(),
-      }),
-      /did not return opl_agent_scaffold_materialization_receipt/i,
-    );
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }

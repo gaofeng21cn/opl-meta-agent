@@ -7,7 +7,6 @@ import {
   type JsonObject,
 } from '../domain-pack.ts';
 import type { TargetAgent } from '../meta-agent-loop-io.ts';
-import { runOpl, writeJson } from '../meta-agent-loop-io.ts';
 import type {
   AgentSkeletonBuildFile,
   StageDecompositionCloseoutPacket,
@@ -31,12 +30,6 @@ export type StageDecompositionCloseoutRepairResult = {
 
 function cloneJson<T>(value: T): T {
   return structuredClone(value);
-}
-
-function uniqueStrings(values: unknown[]): string[] {
-  return [...new Set(values.filter((value): value is string =>
-    typeof value === 'string' && value.trim().length > 0
-  ).map((value) => value.trim()))];
 }
 
 function refValues(value: unknown, field: string): string[] {
@@ -142,79 +135,6 @@ function buildDeclarativeStageManifest(draft: StageDecompositionPackDraft): Json
       };
     }),
   };
-}
-
-function conformanceProfileId(targetAgent: TargetAgent): string | null {
-  const selectedProfileRefs = uniqueStrings(targetAgent.selected_opl_profile_refs ?? []);
-  if (selectedProfileRefs.length > 1) {
-    throw new Error(`OPL profile conformance requires exactly one builtin profile, found: ${selectedProfileRefs.join(', ')}`);
-  }
-  const selectedProfileRef = selectedProfileRefs[0];
-  if (selectedProfileRef) {
-    if (!selectedProfileRef.startsWith('opl-profile:') || selectedProfileRef.startsWith('opl-profile-route:')) {
-      throw new Error(`OPL profile conformance received an invalid builtin profile ref: ${selectedProfileRef}`);
-    }
-    return selectedProfileRef.slice('opl-profile:'.length);
-  }
-  if (
-    (targetAgent.reference_design_source_refs?.length ?? 0) > 0
-    || (targetAgent.reference_design_pattern_packet_refs?.length ?? 0) > 0
-  ) {
-    return 'source_derived_design_profile_route.v1';
-  }
-  if (
-    (targetAgent.research_source_refs?.length ?? 0) > 0
-    || (targetAgent.expert_practice_notes?.length ?? 0) > 0
-    || (targetAgent.research_synthesis_refs?.length ?? 0) > 0
-  ) {
-    return null;
-  }
-  throw new Error('OPL profile conformance requires one builtin profile or an explicit design-basis route.');
-}
-
-export function assertTargetProfileConformance(
-  oplBin: string,
-  targetAgentDir: string,
-  targetAgent: TargetAgent,
-): JsonObject {
-  const profileId = conformanceProfileId(targetAgent);
-  if (!profileId) {
-    return {
-      surface_kind: 'opl_agent_profile_conformance_not_applicable',
-      version: 'agent-profile-conformance-not-applicable.v1',
-      repo_dir: targetAgentDir,
-      status: 'not_applicable',
-      reason: 'research_driven_design_route_not_exposed_by_opl_profiles_conformance',
-      authority_boundary: {
-        conformance_skipped_as_success: false,
-        domain_ready_claimed: false,
-        production_ready_claimed: false,
-      },
-    };
-  }
-  const args = ['profiles', 'conformance', '--repo-dir', targetAgentDir];
-  args.push('--profile', profileId);
-  const readback = runOpl(oplBin, [...args, '--json']);
-  const conformance = readback.profile_conformance;
-  if (!isRecord(conformance)) {
-    throw new Error('OPL profile conformance readback is missing profile_conformance.');
-  }
-  if (conformance.status !== 'passed') {
-    return {
-      ...conformance,
-      status: 'completed_with_quality_debt',
-      source_status: conformance.status,
-      quality_debt: {
-        reasons: Array.isArray(conformance.blockers) ? conformance.blockers : [],
-        blocks_stage_transition: false,
-        blocks_delivery_promotion_or_ready_claims: true,
-      },
-      next_stage_may_start: true,
-      semantic_route_decision_owner: 'decisive_codex_attempt',
-      stage_transition_materialization_owner: 'opl_stage_run_controller',
-    };
-  }
-  return conformance;
 }
 
 function stringArray(value: unknown): string[] | null {
@@ -549,65 +469,4 @@ export function buildScaffoldMaterializationRequest({
       opl_can_authorize_quality_or_export: false,
     },
   };
-}
-
-function scaffoldMaterializationReceipt(result: JsonObject): JsonObject {
-  const scaffold = isRecord(result.standard_domain_agent_scaffold)
-    ? result.standard_domain_agent_scaffold
-    : null;
-  const receipt = scaffold && isRecord(scaffold.materialization_receipt)
-    ? scaffold.materialization_receipt
-    : null;
-  if (!receipt || receipt.surface_kind !== 'opl_agent_scaffold_materialization_receipt') {
-    throw new Error('OPL scaffold materialization did not return opl_agent_scaffold_materialization_receipt.');
-  }
-  if (receipt.status !== 'materialized') {
-    throw new Error(`OPL scaffold materialization receipt is not materialized: ${String(receipt.status)}`);
-  }
-  const buildReceipt = isRecord(receipt.build_receipt) ? receipt.build_receipt : null;
-  const buildReceiptRef = asString(receipt.build_receipt_ref, 'materialization_receipt.build_receipt_ref');
-  if (!buildReceipt || buildReceipt.receipt_ref !== buildReceiptRef) {
-    throw new Error('OPL scaffold materialization receipt build receipt/ref mismatch.');
-  }
-  if (asRecordArray(receipt.materialized_file_digests, 'materialization_receipt.materialized_file_digests').length === 0) {
-    throw new Error('OPL scaffold materialization receipt requires materialized file digests.');
-  }
-  if (asStringArray(receipt.validation_refs, 'materialization_receipt.validation_refs').length === 0) {
-    throw new Error('OPL scaffold materialization receipt requires validation refs.');
-  }
-  return receipt;
-}
-
-export function delegateScaffoldMaterialization({
-  oplBin,
-  targetAgentDir,
-  requestPath,
-  request,
-}: {
-  oplBin: string;
-  targetAgentDir: string;
-  requestPath: string;
-  request: JsonObject;
-}): JsonObject {
-  writeJson(requestPath, request);
-  const result = runOpl(oplBin, [
-    'agents',
-    'scaffold',
-    '--materialize-request',
-    requestPath,
-    '--target-dir',
-    targetAgentDir,
-    '--json',
-  ]);
-  const receipt = scaffoldMaterializationReceipt(result);
-  const expectedBuildReceiptRef = isRecord(request.build_receipt_installation)
-    ? asString(
-      request.build_receipt_installation.expected_build_receipt_ref,
-      'request.build_receipt_installation.expected_build_receipt_ref',
-    )
-    : '';
-  if (receipt.build_receipt_ref !== expectedBuildReceiptRef) {
-    throw new Error('OPL scaffold materialization returned an unexpected build receipt ref.');
-  }
-  return receipt;
 }

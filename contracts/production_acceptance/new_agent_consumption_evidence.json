@@ -159,7 +159,6 @@
     "scripts/lib/stage-decomposition-pack-draft/materializer.ts",
     "scripts/lib/stage-decomposition-pack-draft/shared.ts",
     "scripts/lib/stage-decomposition-pack-draft/validator.ts",
-    "scripts/lib/action-stage-route.ts",
     "tests/bootstrap-loop.test.ts",
     "tests/stage-decomposition-materializer.test.ts",
     "contracts/production_acceptance/meta-agent-production-acceptance.json",
@@ -170,21 +169,24 @@
   "historical_fixture_proof_lane": {
     "status": "historical_provenance_only",
     "used_fixture_runner": true,
-    "ordered_opl_stage_run_readbacks_required_now": true,
+    "ordered_opl_stage_run_readbacks_required_now": false,
+    "opl_hosted_stage_binding_required_now": true,
+    "oma_local_route_evaluator_retired": true,
     "implicit_fixture_graph_retired": true,
     "current_behavior_verification_refs": [
-      "tests/bootstrap-loop.test.ts#/build-agent-baseline returns a typed continuation before StageRun closeout evidence exists",
-      "tests/bootstrap-loop.test.ts#/build-agent-baseline rejects StageRun evidence that skips the route entry stage"
+      "tests/bootstrap-loop.test.ts#/build-agent-baseline advances with quality debt before OMA stage artifacts exist",
+      "tests/bootstrap-loop.test.ts#/build-agent-baseline rejects a domain artifact bound to the wrong OMA stage"
     ],
     "cannot_claim_current_public_entry": true,
     "cannot_generate_default_stage_graph_without_closeout": true
   },
   "verification_refs": [
-    "cmd:rtk npm run build-agent-baseline -- --output-dir /tmp/oma-new-agent-consumption-20260528/build-v2 --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl --stage-runner fixture --domain-id publication-brief-agent --domain-label 'Publication Brief Agent' --delivery-domain 'publication briefing' --target-brief <brief> --ai-reviewer-evaluation /tmp/oma-new-agent-consumption-20260528/ai-reviewer-evaluation.json",
+    "contract:contracts/action_catalog.json#build-agent-baseline.stage_binding",
+    "test:tests/standard-agent-developer-proof.test.ts",
+    "test:tests/bootstrap-loop.test.ts#build-agent-baseline consumes explicit OMA domain closeout packet refs",
     "cmd:rtk /Users/gaofeng/workspace/one-person-lab/bin/opl agents conformance --agent publication-brief-agent=/tmp/oma-new-agent-consumption-20260528/build-v2/publication-brief-agent --json",
     "cmd:rtk /Users/gaofeng/workspace/one-person-lab/bin/opl agents interfaces --repo-dir /tmp/oma-new-agent-consumption-20260528/build-v2/publication-brief-agent --json",
     "cmd:rtk /Users/gaofeng/workspace/one-person-lab/bin/opl agents readiness --repo-dir /tmp/oma-new-agent-consumption-20260528/build-v2/publication-brief-agent --json",
-    "cmd:rtk npm run build-agent-baseline -- --output-dir /tmp/oma-new-agent-consumption-20260601-green/build-v2 --opl-bin /Users/gaofeng/workspace/one-person-lab/bin/opl --stage-runner fixture --domain-id handoff-analyst-agent --domain-label 'Handoff Analyst Agent' --delivery-domain 'operator handoff analysis' --target-brief <brief> --ai-reviewer-evaluation /tmp/oma-new-agent-consumption-20260601-green/ai-reviewer-evaluation.json",
     "cmd:rtk /Users/gaofeng/workspace/one-person-lab/bin/opl agents scaffold --validate /tmp/oma-new-agent-consumption-20260601-green/build-v2/handoff-analyst-agent --json",
     "cmd:rtk /Users/gaofeng/workspace/one-person-lab/bin/opl agents conformance --agent handoff-analyst-agent=/tmp/oma-new-agent-consumption-20260601-green/build-v2/handoff-analyst-agent --json",
     "cmd:rtk /Users/gaofeng/workspace/one-person-lab/bin/opl agents interfaces --repo-dir /tmp/oma-new-agent-consumption-20260601-green/build-v2/handoff-analyst-agent --json",

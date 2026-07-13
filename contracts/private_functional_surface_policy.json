@@ -49,21 +49,6 @@
   ],
   "allowed_opl_surface_consumption_refs": [
     {
-      "surface_ref": "codex_cli_stage_runner",
-      "surface_owner": "one-person-lab",
-      "surface_role": "executor_adapter_or_stage_runner",
-      "allowed_script_classes": [
-        "smoke_helper",
-        "fixture_or_proof_helper"
-      ],
-      "boundary": {
-        "can_create_runtime_truth": false,
-        "can_write_target_truth": false,
-        "can_write_owner_receipt_body": false,
-        "can_claim_default_executor_promotion": false
-      }
-    },
-    {
       "surface_ref": "generated_interface_bundle",
       "surface_owner": "one-person-lab",
       "surface_role": "generated_or_hosted_interface_surface",
@@ -98,19 +83,18 @@
       }
     },
     {
-      "surface_ref": "opl_family_runtime_stage_attempt",
+      "surface_ref": "opl_standard_agent_developer_proof_receipt",
       "surface_owner": "one-person-lab",
-      "surface_role": "stage_attempt_runtime_primitive",
+      "surface_role": "hosted_profile_scaffold_interface_package_and_conformance_proof_receipt",
       "allowed_script_classes": [
         "smoke_helper",
-        "fixture_or_proof_helper",
-        "developer_work_order_materializer"
+        "fixture_or_proof_helper"
       ],
       "boundary": {
         "can_create_runtime_truth": false,
         "can_write_target_truth": false,
         "can_write_owner_receipt_body": false,
-        "can_claim_queue_or_attempt_ledger_ownership": false
+        "can_claim_operation_execution_or_receipt_ownership": false
       }
     },
     {
@@ -173,22 +157,6 @@
         "can_write_target_truth": false,
         "can_write_owner_receipt_body": false,
         "can_claim_work_order_absorb_or_cleanup_ownership": false
-      }
-    },
-    {
-      "surface_ref": "standard_domain_agent_scaffold",
-      "surface_owner": "one-person-lab",
-      "surface_role": "legacy_named_standard_domain_agent_scaffold_ref",
-      "allowed_script_classes": [
-        "authority_function_implementation_ref",
-        "smoke_helper",
-        "fixture_or_proof_helper"
-      ],
-      "boundary": {
-        "can_create_runtime_truth": false,
-        "can_write_target_truth": false,
-        "can_write_owner_receipt_body": false,
-        "can_claim_scaffold_generator_ownership": false
       }
     }
   ],

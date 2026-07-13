@@ -25,9 +25,8 @@
         "opl_agent_package_manifest_validation",
         "opl_generated_interfaces",
         "opl_profile_conformance",
-        "stage_decomposition_attempt",
-        "agent_skeleton_build_attempt",
-        "action_stage_route_context",
+        "stage_decomposition_artifact",
+        "agent_skeleton_build_artifact",
         "agent_building_judgment",
         "foundry_lab_handoff",
         "authority_boundary"
@@ -135,9 +134,12 @@
     "artifacts": {
       "type": "object",
       "required": [
-        "stage_decomposition_stage_run_readback_path",
-        "agent_skeleton_build_stage_run_readback_path",
+        "stage_decomposition_closeout_packet_ref",
+        "agent_skeleton_build_closeout_packet_ref",
         "scaffold_materialization_request_path",
+        "developer_proof_request_path",
+        "developer_proof_request_ref",
+        "developer_proof_receipt_ref",
         "foundry_evaluation_request_path",
         "foundry_lab_work_order_path",
         "opl_agent_package_manifest_path",
@@ -147,13 +149,22 @@
         "agent_build_receipt_ref"
       ],
       "properties": {
-        "stage_decomposition_stage_run_readback_path": {
+        "stage_decomposition_closeout_packet_ref": {
           "$ref": "#/$defs/nonEmptyString"
         },
-        "agent_skeleton_build_stage_run_readback_path": {
+        "agent_skeleton_build_closeout_packet_ref": {
           "$ref": "#/$defs/nonEmptyString"
         },
         "scaffold_materialization_request_path": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "developer_proof_request_path": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "developer_proof_request_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "developer_proof_receipt_ref": {
           "$ref": "#/$defs/nonEmptyString"
         },
         "foundry_evaluation_request_path": {
@@ -201,13 +212,10 @@
       },
       "additionalProperties": true
     },
-    "stage_decomposition_attempt": {
+    "stage_decomposition_artifact": {
       "type": "object"
     },
-    "agent_skeleton_build_attempt": {
-      "type": "object"
-    },
-    "action_stage_route_context": {
+    "agent_skeleton_build_artifact": {
       "type": "object"
     },
     "target_agent_ref": { "$ref": "#/$defs/nonEmptyString" },
@@ -215,6 +223,30 @@
     "missing_specialized_input_stages": { "$ref": "#/$defs/stringArray" },
     "materialized_artifact_refs": { "$ref": "#/$defs/stringArray" },
     "stage_closeout": { "type": "object" },
+    "developer_proof_request": { "type": "object" },
+    "developer_proof_request_ref": { "$ref": "#/$defs/nonEmptyString" },
+    "developer_proof_request_path": { "$ref": "#/$defs/nonEmptyString" },
+    "developer_proof_receipt_ref": { "$ref": "#/$defs/nonEmptyString" },
+    "developer_proof_receipt_state": {
+      "enum": ["pending_framework_receipt", "invalid_receipt_fail_closed"]
+    },
+    "required_developer_proof_receipt_surface_kind": {
+      "const": "opl_standard_agent_developer_proof_receipt"
+    },
+    "developer_proof_failure": {
+      "type": "object",
+      "required": [
+        "failure_kind",
+        "message",
+        "materialization_or_validation_accepted_as_evidence"
+      ],
+      "properties": {
+        "failure_kind": { "const": "developer_proof_contract_mismatch" },
+        "message": { "$ref": "#/$defs/nonEmptyString" },
+        "materialization_or_validation_accepted_as_evidence": { "const": false }
+      },
+      "additionalProperties": false
+    },
     "next_stage_may_start": { "type": "boolean" },
     "semantic_route_decision_owner": { "const": "decisive_codex_attempt" },
     "stage_transition_materialization_owner": { "const": "opl_stage_run_controller" },

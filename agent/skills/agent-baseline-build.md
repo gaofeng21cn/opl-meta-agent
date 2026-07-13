@@ -7,7 +7,6 @@
 ## 输入
 
 - `output_dir`
-- `opl_bin`
 - `ai_reviewer_evaluation`
 - `domain_id`
 - `domain_label`
@@ -23,23 +22,24 @@
 - source-derived design machine objects：`ReferenceDesignPacket`、`TransferMap`、`AgentPackPlan`、morphology 与 `DesignAdmissionReceipt` 必须来自已解析的真实 patterns/anchors。它们可相互校正，但 safe packet/source evidence 先于 claim，admission 先于物化，`AgentBuildReceipt` 绑定物化后 bytes。`StageDecompositionSubpacketSet` 记录这些 refs 与 boundary provenance，不规定固定认知顺序。
 - 可选 `research_source_refs` / `expert_practice_notes` / `research_synthesis_refs`：用户只有模糊想法时，由 OMA/Codex 调研专家实践后形成。
 - research-driven design machine objects：`ResearchSynthesisPacket`、`TransferMap`、`AgentPackPlan`，当没有参考设计但需要从外部成熟经验提炼 agent 设计时必须生成并保留；三类设计对象必须来自 research synthesis ref、expert practice note 或 research source ref，不能只是目标需求复述；物化前必须有 `DesignAdmissionReceipt` 和 `StageDecompositionSubpacketSet`，物化后保留 `AgentBuildReceipt` / `build_receipt`。
-- stage-decomposition runner settings or explicit `stage_decomposition_closeout`
+- OPL hosted StageRun 注入的 `stage_decomposition_closeout_ref` 与 `agent_skeleton_build_closeout_ref`
+- 可选 `developer_proof_receipt_ref`：只接受 OPL host 对当前 request SHA、target identity 与五项 input refs 签发的 aggregate proof receipt。
 - intent、stage、action、memory、artifact 和 quality gate refs。
 - artifact morphology brief refs：native source format、artifact body owner、creative source/export refs、sharding strategy、extent/scale contract、asset custody/file-path policy、thin assembler/helper boundary 和 realistic target task review refs。
 
 `domain_id`、`domain_label`、`delivery_domain` 和 `target_brief` 来自用户自然语言需求；builtin / hybrid 路线的 `selected_opl_profile_refs` 和 `profile_selection_rationale` 来自 OPL profile catalog / selector，不靠 OMA 记忆猜测。source-derived 路线必须有用户提供或 Codex/source ingest 形成的 reference design source refs / pattern packet refs，并由 OMA 提炼可迁移设计思路。research-driven 路线必须有 research source refs、expert practice notes 或 research synthesis refs，并由 OMA 先调研“专家会怎么做”再迁移成目标 stage pack。只有目标 agent 的交付物、authority boundary 或质量门槛不清时才回问；不要要求用户理解底层脚本参数。
-`stage_decomposition_closeout` 必须是 Codex `stage-decomposition` typed closeout；如果未显式提供，默认 runner 仍必须产出 typed closeout，不能从自由文本摘要推断 stage graph。
+两个 closeout ref 必须分别指向 Codex `stage-decomposition` 与 `agent-skeleton-build` 的 OMA-owned typed closeout packet；不得从自由文本摘要推断 stage graph 或 file bodies，也不得把 raw OPL StageRun query 交给 OMA helper 解释。
 
 ## 流程
 
 1. 准备 output workspace，确认不会写入 source checkout 的 runtime artifact。
 2. 从自然语言目标生成稳定的 target-agent descriptor 字段和 candidate agent package 路径。
 3. 消费 OPL profile/source/research route refs，并让真实 artifact morphology、owner split、design objects 与 source-step dispositions 共同决定 target graph。每个 workflow step 必须可追溯，但可按开放判断、owner、knowledge、gate、handoff 或 failure route 合并为 Stage-internal method；不得强制一 step 一 Stage。
-4. 启动或读取 `stage-decomposition` typed closeout，从其中的 stage graph、action refs、artifact morphology brief、pack file bodies、profile selection mode、selected profile refs / source-derived design refs / research-driven design refs、三类设计对象、`DesignAdmissionReceipt`、`StageDecompositionSubpacketSet`、`AgentBuildReceipt` / `build_receipt`、profile requirements、independent gate policy、reference design refs / pattern packet refs / research synthesis refs 和 quality gate declaration 生成 candidate agent package 的标准目录和 contracts。
-5. 写入 prompts、skills、stages、quality gates、knowledge policy，并保留 generated-from-closeout proof。
+4. 由 OPL hosted StageRun 读取 `stage-decomposition` 与 `agent-skeleton-build` typed closeout refs，从前者的 stage graph、action refs、artifact morphology brief、profile/design objects 与 gate declarations，以及后者的 pack file bodies，构造 OPL scaffold materialization request；OMA 不启动或查询 StageRun。
+5. 把 prompts、skills、stages、quality gates 与 knowledge policy 作为 declarative file plan/body 写入 scaffold request；物理文件写入只由 OPL host 执行，并保留 generated-from-closeout proof。
 6. 确认 target artifact locator 引用 morphology refs，且长书、长 deck、长文、素材型交付或数据型交付的 creative source 是可分片 native source，不是脚本字符串或单一导出物。
-7. 调用 OPL scaffold validation。
-8. 调用 OPL generated interface projection。
+7. 将 scaffold materialization/validation request 交给 OPL host，并消费其 exact proof receipt。
+8. 消费 OPL host 返回的 generated interface、package manifest validation 与 profile conformance proof refs。
 9. 构造 thin Foundry evaluation request 与 canonical Foundry evaluation work order；request 只包含 realistic target task 的 domain-owned intent/refs，不得包含 target identity、environment、probe、scorecard spec、completion policy、observation、pass/fail、gate status、suite plan 或 result/receipt body。
 10. 对 existing target agent 可调用 takeover action，生成 takeover evaluation request、target-bound evaluation work order、gated self-evolution candidate ref 和 mechanism candidate ref；不得本地编译或执行 suite，亦不得生成 takeover receipt。
 11. 把 evaluation work order 交给 OPL Foundry Lab；由 OPL 编译唯一 suite plan。只有 OPL 返回的 suite result 与 execution receipt 才能作为 `improve:external-suite --suite-result` 输入；reviewer evidence 必须覆盖 artifact morphology 风险，不能只有 scaffold/suite refs。
@@ -52,6 +52,7 @@
 - `opl_agent_package_manifest_ref`，指向目标 agent repo 的 `contracts/opl_agent_package_manifest.json`
 - scaffold validation ref
 - generated interface bundle ref
+- `opl_standard_agent_developer_proof_request` 与 request-bound `opl_standard_agent_developer_proof_receipt` ref
 - profile selection mode / selected OPL profile refs / source-derived design receipt / research-driven design receipt / profile selection receipt ref / profile requirements
 - `ReferenceDesignPacket` 或 `ResearchSynthesisPacket` / `TransferMap` / `AgentPackPlan` refs 与非空对象；`DesignAdmissionReceipt` refs；`StageDecompositionSubpacketSet` provenance/boundary refs；物化后的 `AgentBuildReceipt` / `build_receipt` refs；每个 design-derived Stage 的 source/disposition refs
 - reference design source refs / pattern notes / pattern packet refs

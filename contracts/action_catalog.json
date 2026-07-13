@@ -33,7 +33,6 @@
       ],
       "optional_fields": [
         "output_dir",
-        "opl_bin",
         "domain_label",
         "delivery_domain",
         "target_brief",
@@ -47,11 +46,12 @@
         "research_source_refs",
         "expert_practice_notes",
         "research_synthesis_refs",
-        "stage_run_readback_refs"
+        "stage_decomposition_closeout_ref",
+        "agent_skeleton_build_closeout_ref",
+        "developer_proof_receipt_ref"
       ],
       "workspace_locator_fields": [
         "output_dir",
-        "opl_bin",
         "ai_reviewer_evaluation",
         "domain_id",
         "domain_label",
@@ -66,7 +66,9 @@
         "research_source_refs",
         "expert_practice_notes",
         "research_synthesis_refs",
-        "stage_run_readback_refs"
+        "stage_decomposition_closeout_ref",
+        "agent_skeleton_build_closeout_ref",
+        "developer_proof_receipt_ref"
       ],
       "human_gate_ids": [
         "baseline_delivery_owner_review"

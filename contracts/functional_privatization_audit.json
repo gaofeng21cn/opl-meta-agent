@@ -145,8 +145,8 @@
         "repo-local behavior tests"
       ],
       "active_caller_status": "developer_tool_only_unreachable_from_standard_action_or_handler_entries",
-      "consumes_opl_surface": "restricted_framework_command_client_and_foundry_lab_refs",
-      "retention_reason": "These scripts preserve repo-local development, fixture and migration diagnostics only. They are exact-digest developer tools outside every package bin, action, handler and generated default entry; OPL hosts standard actions, physical request materialization, suite execution, receipts, work-order lifecycle and delivery-gate assembly."
+      "consumes_opl_surface": "hosted_developer_proof_packet_receipts_and_foundry_lab_refs",
+      "retention_reason": "These scripts preserve repo-local development, fixture and migration diagnostics only. They are exact-digest developer tools outside every package bin, action, handler and generated default entry; they do not spawn OPL/Codex or interpret StageRun readbacks. OPL hosts standard actions, profile selection, physical request materialization, validation, generated interfaces, package/profile conformance, suite execution, receipts, work-order lifecycle and delivery-gate assembly."
     },
     {
       "module_id": "mechanism_patch_proposal_authorizer",

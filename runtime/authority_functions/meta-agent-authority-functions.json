@@ -132,11 +132,11 @@
         ],
         "authority_function_refs": [],
         "consumes_opl_surfaces": [
-          "opl_agent_scaffold_materialization",
-          "generated_interface_bundle",
-          "opl_foundry_lab_evaluation_work_order_consumer_dependency_open"
+          "opl_standard_agent_developer_proof_receipt",
+          "opl_agent_lab_complete_control_plane"
         ],
         "writes_only": [
+          "opl_standard_agent_developer_proof_request_ref",
           "candidate_agent_package_ref",
           "foundry_evaluation_request_ref",
           "foundry_lab_work_order_candidate_ref"
@@ -170,7 +170,7 @@
         ],
         "authority_function_refs": [],
         "consumes_opl_surfaces": [
-          "opl_foundry_lab_suite_result_ref",
+          "opl_agent_lab_complete_control_plane",
           "opl_work_order_execute_primitive"
         ],
         "writes_only": [
@@ -207,7 +207,7 @@
         ],
         "authority_function_refs": [],
         "consumes_opl_surfaces": [
-          "opl_foundry_lab_evaluation_work_order_consumer_dependency_open"
+          "opl_agent_lab_complete_control_plane"
         ],
         "writes_only": [
           "foundry_evaluation_request_ref",
@@ -273,7 +273,7 @@
         ],
         "authority_function_refs": [],
         "consumes_opl_surfaces": [
-          "opl_foundry_lab_evaluation_work_order_consumer_dependency_open"
+          "opl_agent_lab_complete_control_plane"
         ],
         "writes_only": [
           "foundry_lab_work_order_candidate_ref"
@@ -321,11 +321,8 @@
           "fixture_or_proof_helper"
         ],
         "authority_function_refs": [],
-        "consumes_opl_surfaces": [
-          "opl_agent_lab_complete_control_plane"
-        ],
+        "consumes_opl_surfaces": [],
         "writes_only": [
-          "opl_command_json_ref",
           "target_agent_descriptor_ref",
           "json_materialization_ref"
         ],
@@ -366,7 +363,6 @@
         ],
         "authority_function_refs": [],
         "consumes_opl_surfaces": [
-          "opl_family_runtime_stage_attempt",
           "opl_standard_domain_agent_scaffold"
         ],
         "writes_only": [
@@ -385,7 +381,6 @@
         ],
         "authority_function_refs": [],
         "consumes_opl_surfaces": [
-          "opl_family_runtime_stage_attempt",
           "opl_standard_domain_agent_scaffold"
         ],
         "writes_only": [
@@ -409,8 +404,7 @@
         ],
         "authority_function_refs": [],
         "consumes_opl_surfaces": [
-          "opl_family_runtime_stage_attempt",
-          "opl_agent_scaffold_materialization"
+          "opl_standard_domain_agent_scaffold"
         ],
         "writes_only": [
           "opl_agent_scaffold_materialization_request_ref",
@@ -468,7 +462,6 @@
         ],
         "authority_function_refs": [],
         "consumes_opl_surfaces": [
-          "opl_family_runtime_stage_attempt",
           "opl_stage_native_artifact_contract",
           "opl_stage_folder_contract"
         ],
@@ -491,7 +484,6 @@
         ],
         "authority_function_refs": [],
         "consumes_opl_surfaces": [
-          "opl_family_runtime_stage_attempt",
           "opl_standard_domain_agent_scaffold"
         ],
         "writes_only": [
@@ -502,22 +494,6 @@
           "stage_artifact_conformance_ref",
           "stage_artifact_workbench_consumption_ref",
           "typed_blocker_ref"
-        ],
-        "forbidden_roles": []
-      },
-      {
-        "script_ref": "scripts/lib/action-stage-route.ts",
-        "classes": [
-          "smoke_helper",
-          "fixture_or_proof_helper"
-        ],
-        "authority_function_refs": [],
-        "consumes_opl_surfaces": [
-          "opl_family_runtime_stage_attempt_query_readback"
-        ],
-        "writes_only": [
-          "action_stage_continuation_ref",
-          "action_stage_route_closeout_gate_ref"
         ],
         "forbidden_roles": []
       },
@@ -551,6 +527,21 @@
           "opl_physical_kernel_locator_ref",
           "stage_artifact_conformance_ref",
           "stage_artifact_workbench_consumption_ref"
+        ],
+        "forbidden_roles": []
+      },
+      {
+        "script_ref": "scripts/lib/standard-agent-developer-proof.ts",
+        "classes": [
+          "fixture_or_proof_helper"
+        ],
+        "authority_function_refs": [],
+        "consumes_opl_surfaces": [
+          "opl_standard_agent_developer_proof_receipt"
+        ],
+        "writes_only": [
+          "opl_standard_agent_developer_proof_request_ref",
+          "developer_proof_contract_mismatch_ref"
         ],
         "forbidden_roles": []
       },
@@ -714,7 +705,7 @@
         ],
         "authority_function_refs": [],
         "consumes_opl_surfaces": [
-          "opl_foundry_lab_evaluation_work_order_consumer_dependency_open"
+          "opl_agent_lab_complete_control_plane"
         ],
         "writes_only": [
           "foundry_evaluation_request_ref",
@@ -810,12 +801,12 @@
           "scripts/lib/stage-decomposition-pack-draft/shared.ts",
           "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts",
           "scripts/lib/stage-decomposition-pack-draft/validator.ts",
-          "scripts/lib/action-stage-route.ts",
-          "scripts/lib/stage-native-artifact-contract.ts"
+          "scripts/lib/stage-native-artifact-contract.ts",
+          "scripts/lib/standard-agent-developer-proof.ts"
         ],
-        "current_role": "typed_stage_closeout_validator_action_stage_route_readback_and_opl_scaffold_request_adapter",
+        "current_role": "typed_domain_closeout_validator_and_hosted_developer_proof_request_receipt_adapter",
         "retention_state": "retained_current_authority_function",
-        "retention_reason": "current OMA thin authority surface for stage-decomposition closeout validation, domain-authored scaffold request emission, thin evaluation-request emission, and declarative Foundry Lab work-order handoff; OPL owns target file IO, path safety, scaffold merge, digests, final build receipt, Agent Lab suite-plan compilation/execution/results/ledgers, pack compiler, generated interface, runtime state, promotion, and target worktree lifecycle",
+        "retention_reason": "current OMA thin authority surface for domain closeout validation, aggregate developer-proof request emission, strict aggregate receipt consumption, thin evaluation-request emission, and declarative Foundry Lab work-order handoff; it does not spawn OPL/Codex or interpret StageRun readbacks. OPL owns operation execution, target file IO, path safety, scaffold merge, digests, final build receipt, package/profile proof, Agent Lab suite-plan execution/results/ledgers, runtime state, promotion, and target worktree lifecycle",
         "retention_evidence_refs": [
           "package.json#scripts.build-agent-baseline",
           "contracts/stage_native_artifact_vocabulary.json",
@@ -824,9 +815,9 @@
           "tests/stage-decomposition-materializer.test.ts",
           "tests/takeover-loop.test.ts"
         ],
-        "allowed_until": "opl_stage_attempt_and_pack_materializer_parity_can_replace_local_smoke_path",
+        "allowed_until": "opl_hosted_developer_proof_and_pack_materializer_parity_can_replace_local_developer_proof_path",
         "required_before_retire_or_absorb": [
-          "opl_stage_attempt_launch_and_read_model_parity_ref",
+          "opl_hosted_developer_proof_request_receipt_parity_ref",
           "opl_pack_compiler_typed_closeout_materializer_parity_ref",
           "stable_standard_foundry_policies_moved_to_contract_or_opl_primitive_ref",
           "opl_physical_kernel_locator_conformance_workbench_consumption_parity_ref",
@@ -835,6 +826,7 @@
           "no_implicit_fixture_graph_ref",
           "no_domain_pack_helper_pack_compiler_or_generated_interface_owner_ref",
           "no_oma_runtime_state_owner_promotion_worktree_or_receipt_body_ref",
+          "no_spawn_opl_codex_or_raw_stage_run_readback_ref",
           "no_active_npm_or_test_caller_ref",
           "tombstone_or_provenance_ref"
         ],
@@ -1093,11 +1085,13 @@
         "repo_owned_queue_or_attempt_ledger_materializer",
         "repo_owned_target_worktree_lifecycle_materializer"
       ],
-      "retained_materializer_role": "refs_only_target_agent_semantics_scaffold_request_evaluation_request_work_order_candidate_or_expected_blocker_ref_materializer",
+      "retained_materializer_role": "refs_only_target_agent_semantics_developer_proof_request_evaluation_request_work_order_candidate_or_expected_blocker_ref_materializer",
       "allowed_outputs": [
         "candidate_agent_package_ref",
         "opl_agent_scaffold_materialization_request_ref",
         "expected_opl_agent_scaffold_materialization_receipt_ref",
+        "opl_standard_agent_developer_proof_request_ref",
+        "developer_proof_contract_mismatch_ref",
         "foundry_evaluation_request_ref",
         "foundry_lab_work_order_candidate_ref",
         "developer_patch_work_order_ref",
@@ -1263,8 +1257,8 @@
       "scripts/lib/stage-decomposition-pack-draft/shared.ts",
       "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts",
       "scripts/lib/stage-decomposition-pack-draft/validator.ts",
-      "scripts/lib/action-stage-route.ts",
       "scripts/lib/stage-native-artifact-contract.ts",
+      "scripts/lib/standard-agent-developer-proof.ts",
       "scripts/lib/sync-json-bundle.ts",
       "scripts/lib/target-improvement-policy.ts",
       "scripts/lib/work-order-builders.ts",
@@ -1305,14 +1299,16 @@
             "package.json#scripts.source-structure",
             "package.json#scripts.source-structure:json",
             "package.json#scripts.source-structure:strict",
-            "scripts/verify.sh#shell",
-            "tests/source-structure-lane.test.ts#test_ref"
+            "scripts/verify.sh#shell"
           ]
         },
         {
           "script_ref": "scripts/improve-from-agent-lab-suite.ts",
           "active_caller_refs": [
             "package.json#scripts.improve:external-suite",
+            "tests/external-suite-developer-work-order.test.ts#import",
+            "tests/external-suite-developer-work-order.test.ts#test_ref",
+            "tests/external-suite-reviewer-gates.test.ts#import",
             "tests/external-suite-reviewer-gates.test.ts#test_ref",
             "tests/new-agent-delivery-gate.test.ts#test_ref",
             "tests/support/external-suite-fixtures.ts#import",
@@ -1336,7 +1332,6 @@
         {
           "script_ref": "scripts/lib/agent-evidence-typed-blocker.ts",
           "active_caller_refs": [
-            "scripts/improve-from-agent-lab-suite.ts#import",
             "scripts/lib/agent-evidence-materializer.ts#import"
           ]
         },
@@ -1355,11 +1350,12 @@
             "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/builder.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/materializer.ts#import",
+            "scripts/lib/stage-decomposition-pack-draft/reference-design-validator.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/shared.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/validator.ts#import",
-            "scripts/lib/action-stage-route.ts#import",
             "scripts/lib/stage-native-artifact-contract.ts#import",
+            "scripts/lib/standard-agent-developer-proof.ts#import",
             "scripts/lib/target-improvement-policy.ts#import",
             "scripts/lib/work-order-builders.ts#import",
             "scripts/lib/work-order-efficiency.ts#import",
@@ -1368,8 +1364,14 @@
             "scripts/takeover-agent.ts#import",
             "tests/bootstrap-loop.test.ts#import",
             "tests/bootstrap-loop.test.ts#test_ref",
+            "tests/reference-build-conformance.test.ts#import",
+            "tests/reference-build-conformance.test.ts#test_ref",
+            "tests/reference-design-packet-contract.test.ts#import",
+            "tests/reference-design-packet-contract.test.ts#test_ref",
             "tests/stage-decomposition-materializer.test.ts#import",
             "tests/stage-decomposition-materializer.test.ts#test_ref",
+            "tests/standard-agent-developer-proof.test.ts#import",
+            "tests/standard-agent-developer-proof.test.ts#test_ref",
             "tests/support/contracts.ts#import",
             "tests/support/contracts.ts#test_ref",
             "tests/support/external-suite-fixtures.ts#import",
@@ -1389,6 +1391,8 @@
             "scripts/build-agent-baseline.ts#import",
             "scripts/lib/agent-evidence-materializer.ts#import",
             "scripts/takeover-agent.ts#import",
+            "tests/foundry-lab-work-order.test.ts#import",
+            "tests/foundry-lab-work-order.test.ts#test_ref",
             "tests/new-agent-delivery-gate.test.ts#import",
             "tests/new-agent-delivery-gate.test.ts#test_ref"
           ]
@@ -1406,7 +1410,6 @@
             "scripts/build-agent-baseline.ts#import",
             "scripts/improve-from-agent-lab-suite.ts#import",
             "scripts/lib/agent-evidence-materializer.ts#import",
-            "scripts/lib/meta-agent-loop-receipts.ts#import",
             "scripts/lib/target-improvement-policy.ts#import",
             "scripts/takeover-agent.ts#import",
             "tests/target-improvement-policy.test.ts#import",
@@ -1423,30 +1426,42 @@
             "scripts/lib/external-suite-materializer.ts#import",
             "scripts/lib/foundry-lab-work-order.ts#import",
             "scripts/lib/meta-agent-loop-ai-reviewer.ts#import",
-            "scripts/lib/meta-agent-loop-receipts.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/builder.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/materializer.ts#import",
+            "scripts/lib/stage-decomposition-pack-draft/reference-design-validator.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/shared.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/validator.ts#import",
+            "scripts/lib/standard-agent-developer-proof.ts#import",
             "scripts/lib/target-improvement-policy.ts#import",
             "scripts/takeover-agent.ts#import",
             "tests/bootstrap-loop.test.ts#import",
-            "tests/bootstrap-loop.test.ts#test_ref"
+            "tests/bootstrap-loop.test.ts#test_ref",
+            "tests/external-suite-developer-work-order.test.ts#import",
+            "tests/external-suite-developer-work-order.test.ts#test_ref",
+            "tests/foundry-lab-work-order.test.ts#import",
+            "tests/foundry-lab-work-order.test.ts#test_ref",
+            "tests/support/external-suite-fixtures.ts#import",
+            "tests/support/external-suite-fixtures.ts#test_ref"
           ]
         },
         {
           "script_ref": "scripts/lib/meta-agent-loop-receipts.ts",
           "active_caller_refs": [
             "scripts/build-agent-baseline.ts#import",
+            "scripts/lib/agent-evidence-materializer.ts#import",
             "scripts/takeover-agent.ts#import"
           ]
         },
         {
           "script_ref": "scripts/lib/reference-design-workflow.ts",
           "active_caller_refs": [
-            "scripts/lib/domain-pack.ts#import"
+            "scripts/lib/domain-pack.ts#import",
+            "tests/bootstrap-loop.test.ts#import",
+            "tests/bootstrap-loop.test.ts#test_ref",
+            "tests/expert-workflow-pattern-library.test.ts#import",
+            "tests/expert-workflow-pattern-library.test.ts#test_ref"
           ]
         },
         {
@@ -1482,10 +1497,10 @@
           "script_ref": "scripts/lib/stage-decomposition-pack-draft/shared.ts",
           "active_caller_refs": [
             "scripts/build-agent-baseline.ts#import",
-            "scripts/lib/meta-agent-loop-receipts.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/builder.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/materializer.ts#import",
+            "scripts/lib/stage-decomposition-pack-draft/reference-design-validator.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/validator.ts#import"
           ]
@@ -1505,17 +1520,23 @@
           ]
         },
         {
-          "script_ref": "scripts/lib/action-stage-route.ts",
-          "active_caller_refs": [
-            "scripts/build-agent-baseline.ts#import"
-          ]
-        },
-        {
           "script_ref": "scripts/lib/stage-native-artifact-contract.ts",
           "active_caller_refs": [
             "scripts/lib/agent-evidence-materializer.ts#import",
             "scripts/lib/stage-decomposition-pack-draft/builder.ts#import",
             "scripts/takeover-agent.ts#import"
+          ]
+        },
+        {
+          "script_ref": "scripts/lib/standard-agent-developer-proof.ts",
+          "active_caller_refs": [
+            "scripts/build-agent-baseline.ts#import",
+            "tests/bootstrap-loop.test.ts#import",
+            "tests/bootstrap-loop.test.ts#test_ref",
+            "tests/reference-build-conformance.test.ts#import",
+            "tests/reference-build-conformance.test.ts#test_ref",
+            "tests/standard-agent-developer-proof.test.ts#import",
+            "tests/standard-agent-developer-proof.test.ts#test_ref"
           ]
         },
         {
@@ -1536,7 +1557,6 @@
         {
           "script_ref": "scripts/lib/work-order-builders.ts",
           "active_caller_refs": [
-            "scripts/improve-from-agent-lab-suite.ts#import",
             "scripts/lib/external-suite-materializer.ts#import"
           ]
         },
@@ -1588,8 +1608,7 @@
             "package.json#scripts.test:full",
             "package.json#scripts.test:smoke",
             "package.json#scripts.typecheck",
-            "tests/contracts-repo-hygiene.test.ts#test_ref",
-            "tests/source-structure-lane.test.ts#test_ref"
+            "tests/contracts-repo-hygiene.test.ts#test_ref"
           ]
         },
         {
@@ -1615,8 +1634,7 @@
           "active_caller_refs": [
             "package.json#scripts.verify",
             "tests/agent-evidence-materializer.test.ts#test_ref",
-            "tests/contracts-repo-hygiene.test.ts#test_ref",
-            "tests/source-structure-lane.test.ts#test_ref"
+            "tests/contracts-repo-hygiene.test.ts#test_ref"
           ]
         }
       ]

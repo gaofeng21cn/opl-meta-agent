@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { validateJsonSchemaPayload } from 'opl-framework/json-schema-registry';
 import {
   buildAiReviewerEvaluation,
@@ -28,10 +28,16 @@ import {
   buildWorkflowTransferMappings,
 } from '../scripts/lib/reference-design-workflow.ts';
 import {
+  type BuildAgentBaselineArgs,
   parseBuildAgentBaselineArgs,
-  resolveTargetAgentProfileSelection,
   runBuildAgentBaseline,
 } from '../scripts/build-agent-baseline.ts';
+import {
+  applyDeveloperProofProfileSelection,
+  normalizeRequestedProfileRefs,
+  type StandardAgentDeveloperProofReceipt,
+  type StandardAgentDeveloperProofRequest,
+} from '../scripts/lib/standard-agent-developer-proof.ts';
 import {
   buildFixtureAgentSkeletonBuildCloseout,
   buildFixtureStageDecompositionCloseout,
@@ -225,169 +231,199 @@ function writeStageCloseoutWithoutSubpacketProjection(filePath: string, agent: T
   writeJson(filePath, packet);
 }
 
-const buildBaselineRouteStageIds = [
-  'intent-intake',
-  'stage-decomposition',
-  'agent-skeleton-build',
-  'eval-suite-build',
-  'baseline-run',
-  'baseline-delivery',
-] as const;
-
-function writeBuildStageRunReadbacks(
+function writeBuildStageArtifactRefs(
   outputRoot: string,
-  domainId: string,
-  stagePackets: Map<string, JsonObject> = new Map(),
-  stageIds: readonly string[] = buildBaselineRouteStageIds,
-): string[] {
-  return stageIds.map((stageId, index) => {
-    const readbackPath = path.join(outputRoot, `${index + 1}-${stageId}-stage-run-readback.json`);
-    const sourcePacket = stagePackets.get(stageId) ?? {
-      surface_kind: 'stage_attempt_closeout_packet',
-      stage_id: stageId,
-      closeout_refs: [`receipt:opl-meta-agent/${domainId}/${stageId}`],
-    };
-    const closeoutId = typeof sourcePacket.closeout_id === 'string'
-      ? sourcePacket.closeout_id
-      : `${domainId}-${stageId}-closeout`;
-    const previousStageId = stageIds[index - 1];
-    const previousPacket = previousStageId ? stagePackets.get(previousStageId) : undefined;
-    const previousCloseoutId = typeof previousPacket?.closeout_id === 'string'
-      ? previousPacket.closeout_id
-      : previousStageId ? `${domainId}-${previousStageId}-closeout` : null;
-    const previousCloseoutRef = previousStageId && previousCloseoutId
-      ? `opl://stage_attempts/${domainId}-${previousStageId}/closeouts/${encodeURIComponent(previousCloseoutId)}`
-      : null;
-    const consumedRefs = Array.isArray(sourcePacket.consumed_refs)
-      ? sourcePacket.consumed_refs.filter((ref): ref is string => typeof ref === 'string')
-      : [];
-    const packet = {
-      ...sourcePacket,
-      closeout_id: closeoutId,
-      consumed_refs: previousCloseoutRef
-        ? [...new Set([...consumedRefs, previousCloseoutRef])]
-        : consumedRefs,
-    };
-    writeJson(readbackPath, {
-      family_runtime_stage_attempt_query: {
-        attempt_ref: `opl://stage_attempts/${domainId}-${stageId}`,
-        stage_attempt_query: {
-          attempt: {
-            stage_attempt_id: `${domainId}-${stageId}`,
-            domain_id: 'opl-meta-agent',
-            stage_id: stageId,
-            status: 'completed',
-            closeout_receipt_status: 'accepted_typed_closeout',
-          },
-          canonical_outcome: 'completed_with_receipt',
-          conflict_or_blocker_envelopes: [],
-          closeouts: [{
-            closeout_id: closeoutId,
-            stage_attempt_id: `${domainId}-${stageId}`,
-            packet,
-          }],
-        },
-      },
-    });
-    return readbackPath;
-  });
+  stagePackets: Map<string, JsonObject>,
+): {
+  stageDecompositionCloseoutRef: string | null;
+  agentSkeletonBuildCloseoutRef: string | null;
+} {
+  const writePacket = (stageId: 'stage-decomposition' | 'agent-skeleton-build') => {
+    const packet = stagePackets.get(stageId);
+    if (!packet) return null;
+    const packetPath = path.join(outputRoot, `${stageId}-closeout-packet.json`);
+    writeJson(packetPath, packet);
+    return packetPath;
+  };
+  return {
+    stageDecompositionCloseoutRef: writePacket('stage-decomposition'),
+    agentSkeletonBuildCloseoutRef: writePacket('agent-skeleton-build'),
+  };
 }
 
-function writeNormalizedBuildStageRunReadbacks(
-  outputRoot: string,
-  domainId: string,
-  stagePackets: Map<string, JsonObject>,
-  options: {
-    omitOuterPredecessorConsumptionFor?: string;
-    includePayloadPredecessorConsumption?: boolean;
-  } = {},
-): string[] {
-  const payloadDir = path.join(outputRoot, 'stage-closeout-payloads');
-  fs.mkdirSync(payloadDir, { recursive: true });
-  return buildBaselineRouteStageIds.map((stageId, index) => {
-    const sourcePacket = stagePackets.get(stageId) ?? {
-      surface_kind: 'stage_attempt_closeout_packet',
-      stage_id: stageId,
-      closeout_refs: [`receipt:opl-meta-agent/${domainId}/${stageId}`],
-    };
-    const closeoutId = typeof sourcePacket.closeout_id === 'string'
-      ? sourcePacket.closeout_id
-      : `${domainId}-${stageId}-closeout`;
-    const payloadPath = path.join(payloadDir, `${stageId}.json`);
-    const previousStageId = buildBaselineRouteStageIds[index - 1];
-    const previousPacket = previousStageId ? stagePackets.get(previousStageId) : undefined;
-    const previousCloseoutId = typeof previousPacket?.closeout_id === 'string'
-      ? previousPacket.closeout_id
-      : previousStageId ? `${domainId}-${previousStageId}-closeout` : null;
-    const previousCloseoutRef = previousStageId
-      ? `opl://stage_attempts/${domainId}-${previousStageId}/closeouts/${encodeURIComponent(previousCloseoutId!)}`
-      : null;
-    const consumedRefs = Array.isArray(sourcePacket.consumed_refs)
-      ? sourcePacket.consumed_refs.filter((ref): ref is string => typeof ref === 'string')
-      : [];
-    const payloadConsumedRefs = previousCloseoutRef
-      && options.includePayloadPredecessorConsumption === true
-      ? [...new Set([...consumedRefs, previousCloseoutRef])]
-      : consumedRefs;
-    const outerConsumedRefs = previousCloseoutRef
-      && options.omitOuterPredecessorConsumptionFor !== stageId
-      ? [previousCloseoutRef]
-      : [];
-    writeJson(payloadPath, {
-      ...sourcePacket,
-      consumed_refs: payloadConsumedRefs,
-    });
-    const payloadRef = pathToFileURL(payloadPath).href;
-    const payloadSha256 = createHash('sha256').update(fs.readFileSync(payloadPath)).digest('hex');
-    const readbackPath = path.join(outputRoot, `${index + 1}-${stageId}-normalized-stage-run-readback.json`);
-    writeJson(readbackPath, {
-      family_runtime_stage_attempt_query: {
-        attempt_ref: `opl://stage_attempts/${domainId}-${stageId}`,
-        stage_attempt_query: {
-          attempt: {
-            stage_attempt_id: `${domainId}-${stageId}`,
-            domain_id: 'opl-meta-agent',
-            stage_id: stageId,
-            workspace_locator: { workspace_root: outputRoot },
-            status: 'completed',
-            closeout_receipt_status: 'accepted_typed_closeout',
-          },
-          canonical_outcome: 'completed_with_receipt',
-          conflict_or_blocker_envelopes: [],
-          closeouts: [{
-            closeout_id: closeoutId,
-            stage_attempt_id: `${domainId}-${stageId}`,
-            packet: {
-              surface_kind: 'stage_attempt_closeout_packet',
-              closeout_id: closeoutId,
-              closeout_refs: [payloadRef],
-              domain_output: {
-                surface_kind: 'domain_owned_stage_output_ref',
-                version: 'domain-owned-stage-output-ref.v1',
-                domain_id: 'opl-meta-agent',
-                output_ref: payloadRef,
-              },
-              closeout_ref_metadata: [{
-                ref: payloadRef,
-                kind: 'oma_stage_closeout_payload',
-                sha256: payloadSha256,
-              }],
-              consumed_refs: outerConsumedRefs,
-              consumed_memory_refs: [],
-              writeback_receipt_refs: [],
-              rejected_writes: [],
-              next_owner: 'opl-meta-agent',
-              authority_boundary: {
-                opl: 'closeout_transport_only',
-                oma: 'domain_payload_owner',
-              },
-            },
-          }],
+function runOplJson(args: string[]): JsonObject {
+  const result = spawnSync(oplBin, [...args, '--json'], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    maxBuffer: 16 * 1024 * 1024,
+  });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  return JSON.parse(result.stdout) as JsonObject;
+}
+
+function materializeDeveloperProofReceipt(
+  requestPath: string,
+  mutate?: (receipt: StandardAgentDeveloperProofReceipt) => void,
+): string {
+  const request = readJson(requestPath) as StandardAgentDeveloperProofRequest;
+  const profileInput = request.inputs.profile_inspect_select;
+  const inspectionReadbacks = profileInput.requested_profile_refs.map((profileRef) => {
+    const profileId = profileRef.slice('opl-profile:'.length);
+    return runOplJson(['profiles', 'inspect', profileId]).agent_profile_inspect as JsonObject;
+  });
+  const selectorArgs = ['profiles', 'select', '--intent', profileInput.target_brief];
+  profileInput.intent_signals.forEach((signal) => selectorArgs.push('--intent-signal', signal));
+  profileInput.reference_design_source_refs.forEach((ref) =>
+    selectorArgs.push('--reference-source', ref)
+  );
+  profileInput.reference_design_pattern_packet_refs.forEach((ref) =>
+    selectorArgs.push('--pattern-packet', ref)
+  );
+  profileInput.research_source_refs.forEach((ref) => selectorArgs.push('--research-source', ref));
+  const profileSelectionReadback = runOplJson(selectorArgs);
+  const profileSelectionReceipt = profileSelectionReadback.profile_selection_receipt as JsonObject;
+  profileSelectionReceipt.selected_profile_refs = [...new Set([
+    ...profileInput.requested_profile_refs,
+    ...((profileSelectionReceipt.selected_profile_refs as string[] | undefined) ?? []),
+  ])];
+
+  const scaffoldInput = request.inputs.scaffold_materialize_validate;
+  const scaffoldRequestPath = fileURLToPath(scaffoldInput.scaffold_materialization_request_ref);
+  const targetDir = fileURLToPath(scaffoldInput.target_repo_ref);
+  const materialization = runOplJson([
+    'agents',
+    'scaffold',
+    '--materialize-request',
+    scaffoldRequestPath,
+    '--target-dir',
+    targetDir,
+  ]);
+  const standardScaffold = materialization.standard_domain_agent_scaffold as JsonObject;
+  const materializationReceipt = standardScaffold.materialization_receipt as JsonObject;
+  const scaffoldValidation = runOplJson([
+    'agents',
+    'scaffold',
+    '--validate',
+    targetDir,
+  ]).standard_domain_agent_scaffold as JsonObject;
+  const generatedInterfaces = runOplJson([
+    'agents',
+    'interfaces',
+    '--repo-dir',
+    targetDir,
+  ]).generated_agent_interfaces as JsonObject;
+  const manifestInput = request.inputs.package_manifest_validate;
+  const packageManifestValidation = runOplJson([
+    'packages',
+    'validate-manifest',
+    '--manifest-url',
+    manifestInput.package_manifest_ref,
+    '--trust-tier',
+    manifestInput.trust_tier,
+    '--source-kind',
+    manifestInput.source_kind,
+  ]).opl_agent_package_manifest as JsonObject;
+  const conformanceInput = request.inputs.profile_conformance;
+  const profileConformance = conformanceInput.mode === 'not_applicable'
+    ? {
+        surface_kind: 'opl_agent_profile_conformance_not_applicable',
+        status: 'not_applicable',
+        reason: conformanceInput.not_applicable_reason,
+      }
+    : runOplJson([
+        'profiles',
+        'conformance',
+        '--repo-dir',
+        targetDir,
+        ...(conformanceInput.profile_id ? ['--profile', conformanceInput.profile_id] : []),
+      ]).profile_conformance as JsonObject;
+  const inputRefs = Object.fromEntries(
+    request.operations.map((operation) => [operation.operation_id, operation.input_refs]),
+  ) as Record<string, string[]>;
+  const receipt: StandardAgentDeveloperProofReceipt = {
+    surface_kind: 'opl_standard_agent_developer_proof_receipt',
+    version: 'opl-standard-agent-developer-proof-receipt.v1',
+    request_id: request.request_id,
+    request_ref: request.request_ref,
+    request_sha256: createHash('sha256').update(fs.readFileSync(requestPath)).digest('hex'),
+    target_identity: request.target_identity,
+    status: 'passed',
+    proofs: {
+      profile_inspect_select: {
+        operation_id: 'profile_inspect_select',
+        status: 'passed',
+        input_refs: inputRefs.profile_inspect_select,
+        output: {
+          profile_selection_receipt: profileSelectionReceipt,
+          profile_inspection_readbacks: inspectionReadbacks,
         },
       },
-    });
-    return readbackPath;
-  });
+      scaffold_materialize_validate: {
+        operation_id: 'scaffold_materialize_validate',
+        status: 'passed',
+        input_refs: inputRefs.scaffold_materialize_validate,
+        output: {
+          scaffold_materialization_receipt: materializationReceipt,
+          standard_domain_agent_scaffold: scaffoldValidation,
+        },
+      },
+      generated_interfaces: {
+        operation_id: 'generated_interfaces',
+        status: 'passed',
+        input_refs: inputRefs.generated_interfaces,
+        output: { generated_agent_interfaces: generatedInterfaces },
+      },
+      package_manifest_validate: {
+        operation_id: 'package_manifest_validate',
+        status: 'passed',
+        input_refs: inputRefs.package_manifest_validate,
+        output: { opl_agent_package_manifest: packageManifestValidation },
+      },
+      profile_conformance: {
+        operation_id: 'profile_conformance',
+        status: 'passed',
+        input_refs: inputRefs.profile_conformance,
+        output: { profile_conformance: profileConformance },
+      },
+    },
+    authority_boundary: {
+      execution_owner: 'one-person-lab/OPL Framework',
+      receipt_owner: 'one-person-lab/OPL Framework',
+      oma_consumes_receipt_only: true,
+      receipt_can_write_target_domain_truth: false,
+      receipt_can_authorize_target_quality_or_export: false,
+    },
+  };
+  mutate?.(receipt);
+  const receiptPath = path.join(path.dirname(requestPath), 'standard-agent-developer-proof-receipt.json');
+  writeJson(receiptPath, receipt as unknown as JsonObject);
+  return receiptPath;
+}
+
+function runBaselineWithDeveloperProof(
+  args: BuildAgentBaselineArgs,
+  mutate?: (receipt: StandardAgentDeveloperProofReceipt) => void,
+): ReturnType<typeof runBuildAgentBaseline> {
+  const pending = runBuildAgentBaseline({ ...args, developerProofReceiptRef: null });
+  assert.equal(pending.developer_proof_receipt_state, 'pending_framework_receipt');
+  assert.equal(
+    (pending.developer_proof_request as JsonObject).surface_kind,
+    'opl_standard_agent_developer_proof_request',
+  );
+  const requestSchemaRef =
+    'contracts/schemas/standard-agent-developer-proof-request.producer.schema.json';
+  const requestSchema = readJson(path.join(repoRoot, requestSchemaRef));
+  const requestValidation = validateJsonSchemaPayload({
+    schemaId: String(requestSchema.$id),
+    schema: requestSchema,
+    sourceRef: requestSchemaRef,
+  }, pending.developer_proof_request);
+  assert.equal(requestValidation.ok, true, JSON.stringify(requestValidation));
+  const receiptPath = materializeDeveloperProofReceipt(
+    String(pending.developer_proof_request_path),
+    mutate,
+  );
+  return runBuildAgentBaseline({ ...args, developerProofReceiptRef: receiptPath });
 }
 
 function runBaselineFixture(
@@ -397,18 +433,19 @@ function runBaselineFixture(
   agent: BaselineFixtureTargetAgent,
   extraArgs: string[],
 ): ReturnType<typeof runBuildAgentBaseline> {
-  const stageRunReadbackPaths = writeBuildStageRunReadbacks(outputRoot, agent.domain_id, new Map([
+  const stageArtifacts = writeBuildStageArtifactRefs(outputRoot, new Map([
     ['stage-decomposition', readJson(closeoutPath)],
     ['agent-skeleton-build', buildFixtureAgentSkeletonBuildCloseout({ targetAgent: agent })],
   ]));
-  return runBuildAgentBaseline(parseBuildAgentBaselineArgs([
+  return runBaselineWithDeveloperProof(parseBuildAgentBaselineArgs([
     '--output-dir',
     outputRoot,
-    '--opl-bin',
-    oplBin,
     '--ai-reviewer-evaluation',
     reviewerPath,
-    ...stageRunReadbackPaths.flatMap((readbackPath) => ['--stage-run-readback', readbackPath]),
+    '--stage-decomposition-closeout-ref',
+    stageArtifacts.stageDecompositionCloseoutRef!,
+    '--agent-skeleton-build-closeout-ref',
+    stageArtifacts.agentSkeletonBuildCloseoutRef!,
     '--domain-id',
     agent.domain_id,
     '--domain-label',
@@ -419,28 +456,6 @@ function runBaselineFixture(
     agent.target_brief,
     ...extraArgs,
   ]));
-}
-
-function writeBlockedScaffoldValidationOplShim(dir: string): string {
-  const shimPath = path.join(dir, 'opl-blocked-scaffold-validation.sh');
-  const blockedValidation = JSON.stringify({
-    standard_domain_agent_scaffold: {
-      state: 'validation_blocked',
-      validation: {
-        status: 'blocked',
-        blockers: ['fixture_scaffold_validation_blocker'],
-      },
-    },
-  });
-  fs.writeFileSync(shimPath, `#!/bin/sh
-if [ "$1" = "agents" ] && [ "$2" = "scaffold" ] && [ "$3" = "--validate" ]; then
-  printf '%s\\n' '${blockedValidation}'
-  exit 0
-fi
-exec ${JSON.stringify(oplBin)} "$@"
-`);
-  fs.chmodSync(shimPath, 0o755);
-  return shimPath;
 }
 
 function validateBuildAgentBaselineOutput(payload: unknown) {
@@ -478,14 +493,14 @@ function assertRefFields(surface: JsonObject, expected: Record<string, string>):
   Object.entries(expected).forEach(([field, value]) => assert.equal(surface[field], value, field));
 }
 
-test('build-agent-baseline advances with quality debt before StageRun closeout evidence exists', () => {
+test('build-agent-baseline advances with quality debt before OMA stage artifacts exist', () => {
   withTempDir('oma-bootstrap-continuation-', (outputRoot) => {
     const payload = runBuildAgentBaseline({
       outputDir: outputRoot,
-      oplBin,
       aiReviewerEvaluationPath: path.join(outputRoot, 'not-consumed-before-stage-closeout.json'),
       targetAgent,
-      stageRunReadbackPaths: [],
+      stageDecompositionCloseoutRef: null,
+      agentSkeletonBuildCloseoutRef: null,
     });
     assert.equal(payload.status, 'completed_with_quality_debt');
     assert.equal(payload.next_stage_may_start, true);
@@ -501,20 +516,16 @@ test('build-agent-baseline advances with quality debt before StageRun closeout e
   });
 });
 
-test('build-agent-baseline accepts an AI-selected StageRun that skips the route entry stage', () => {
-  withTempDir('oma-bootstrap-route-skip-', (outputRoot) => {
-    const stageRunReadbackPaths = writeBuildStageRunReadbacks(
-      outputRoot,
-      targetAgent.domain_id,
-      new Map(),
-      ['stage-decomposition'],
-    );
+test('build-agent-baseline reports the exact missing OMA stage artifact', () => {
+  withTempDir('oma-bootstrap-missing-stage-artifact-', (outputRoot) => {
+    const stageArtifacts = writeBuildStageArtifactRefs(outputRoot, new Map([
+      ['stage-decomposition', buildFixtureStageDecompositionCloseout({ targetAgent })],
+    ]));
     const payload = runBuildAgentBaseline({
       outputDir: outputRoot,
-      oplBin,
       aiReviewerEvaluationPath: path.join(outputRoot, 'not-consumed-before-route-validation.json'),
       targetAgent,
-      stageRunReadbackPaths,
+      ...stageArtifacts,
     });
     assert.equal(payload.status, 'completed_with_quality_debt');
     assert.equal(payload.next_stage_may_start, true);
@@ -522,198 +533,86 @@ test('build-agent-baseline accepts an AI-selected StageRun that skips the route 
   });
 });
 
-test('build-agent-baseline advances runtime-state gaps but rejects wrong-target StageRun identity', () => {
-  const mutations: Array<[string, boolean, (readback: JsonObject) => void]> = [
-    ['foreign domain', true, (readback) => {
-      readback.family_runtime_stage_attempt_query.stage_attempt_query.attempt.domain_id = 'foreign-agent';
-    }],
-    ['attempt ref mismatch', true, (readback) => {
-      readback.family_runtime_stage_attempt_query.attempt_ref = 'opl://stage_attempts/foreign-attempt';
-    }],
-    ['blocked attempt', false, (readback) => {
-      readback.family_runtime_stage_attempt_query.stage_attempt_query.attempt.status = 'blocked';
-    }],
-    ['unaccepted closeout', false, (readback) => {
-      readback.family_runtime_stage_attempt_query.stage_attempt_query.attempt.closeout_receipt_status = 'receipt_conflict';
-    }],
-    ['noncanonical outcome', false, (readback) => {
-      readback.family_runtime_stage_attempt_query.stage_attempt_query.canonical_outcome = 'blocked';
-    }],
-    ['conflicted closeout', false, (readback) => {
-      readback.family_runtime_stage_attempt_query.stage_attempt_query.conflict_or_blocker_envelopes = [{
-        status: 'blocked',
-      }];
-    }],
-    ['ledger attempt mismatch', true, (readback) => {
-      readback.family_runtime_stage_attempt_query.stage_attempt_query.closeouts[0].stage_attempt_id = 'foreign-attempt';
-    }],
-    ['packet closeout mismatch', true, (readback) => {
-      readback.family_runtime_stage_attempt_query.stage_attempt_query.closeouts[0].packet.closeout_id = 'foreign-closeout';
-    }],
-  ];
-  for (const [label, hardStop, mutate] of mutations) {
-    withTempDir(`oma-bootstrap-invalid-stage-readback-${label.replaceAll(' ', '-')}-`, (outputRoot) => {
-      const [readbackPath] = writeBuildStageRunReadbacks(
-        outputRoot,
-        targetAgent.domain_id,
-        new Map(),
-        ['intent-intake'],
-      );
-      const readback = readJson(readbackPath);
-      mutate(readback);
-      writeJson(readbackPath, readback);
-      const invoke = () => runBuildAgentBaseline({
-          outputDir: outputRoot,
-          oplBin,
-          aiReviewerEvaluationPath: path.join(outputRoot, 'not-consumed-before-route-validation.json'),
-          targetAgent,
-          stageRunReadbackPaths: [readbackPath],
-        });
-      if (hardStop) {
-        assert.throws(invoke, /StageRun|attempt|closeout|domain|canonical|conflict/i, label);
-      } else {
-        const payload = invoke();
-        assert.equal(payload.status, 'completed_with_quality_debt', label);
-        assert.equal(payload.next_stage_may_start, true, label);
-      }
+test('build-agent-baseline rejects a domain artifact bound to the wrong OMA stage', () => {
+  withTempDir('oma-bootstrap-wrong-stage-artifact-', (outputRoot) => {
+    const wrongPacketPath = path.join(outputRoot, 'wrong-stage-closeout.json');
+    writeJson(wrongPacketPath, {
+      surface_kind: 'stage_attempt_closeout_packet',
+      stage_id: 'intent-intake',
+      closeout_refs: [],
     });
-  }
-});
-
-test('build-agent-baseline accepts outer canonical predecessor consumption when decoded payload omits it', () => {
-  withTempDir('oma-bootstrap-normalized-opl-readbacks-', (outputRoot) => {
-    const reviewerPath = path.join(outputRoot, 'reviewer.json');
-    writeReviewerEvaluation(reviewerPath);
-    const stageRunReadbackPaths = writeNormalizedBuildStageRunReadbacks(
-      outputRoot,
-      targetAgent.domain_id,
-      new Map<string, JsonObject>([
-        ['stage-decomposition', buildFixtureStageDecompositionCloseout({ targetAgent })],
-        ['agent-skeleton-build', buildFixtureAgentSkeletonBuildCloseout({ targetAgent })],
-      ]),
+    assert.throws(
+      () => runBuildAgentBaseline({
+        outputDir: outputRoot,
+        aiReviewerEvaluationPath: '',
+        targetAgent,
+        stageDecompositionCloseoutRef: wrongPacketPath,
+        agentSkeletonBuildCloseoutRef: null,
+      }),
+      /stage-decomposition closeout ref must resolve to its OMA stage_attempt_closeout_packet/,
     );
-
-    const payload = runBuildAgentBaseline({
-      outputDir: outputRoot,
-      oplBin,
-      aiReviewerEvaluationPath: reviewerPath,
-      targetAgent,
-      stageRunReadbackPaths,
-    });
-
-    assert.equal(payload.status, 'candidate_package_materialized_ready_for_opl_foundry_lab_evaluation');
-    assert.equal(payload.action_stage_route_context.next_stage_may_start, true);
-    assert.equal(
-      payload.action_stage_route_context.semantic_route_decision_owner,
-      'decisive_codex_attempt',
-    );
-    assert.equal(
-      payload.action_stage_route_context.stage_transition_materialization_owner,
-      'opl_stage_run_controller',
-    );
-    assert.equal(Object.hasOwn(payload.action_stage_route_context, 'route_selection_owner'), false);
   });
 });
 
-test('build-agent-baseline does not let predecessor envelope bookkeeping block progress', () => {
-  withTempDir('oma-bootstrap-stage-predecessor-consumption-', (outputRoot) => {
+test('build-agent-baseline consumes explicit OMA domain closeout packet refs', () => {
+  withTempDir('oma-bootstrap-domain-closeout-refs-', (outputRoot) => {
     const reviewerPath = path.join(outputRoot, 'reviewer.json');
     writeReviewerEvaluation(reviewerPath);
-    const stageRunReadbackPaths = writeNormalizedBuildStageRunReadbacks(
-      outputRoot,
-      targetAgent.domain_id,
-      new Map<string, JsonObject>([
-        ['stage-decomposition', buildFixtureStageDecompositionCloseout({ targetAgent })],
-        ['agent-skeleton-build', buildFixtureAgentSkeletonBuildCloseout({ targetAgent })],
-      ]),
-      {
-        omitOuterPredecessorConsumptionFor: 'stage-decomposition',
-        includePayloadPredecessorConsumption: true,
-      },
-    );
+    const stageArtifacts = writeBuildStageArtifactRefs(outputRoot, new Map<string, JsonObject>([
+      ['stage-decomposition', buildFixtureStageDecompositionCloseout({ targetAgent })],
+      ['agent-skeleton-build', buildFixtureAgentSkeletonBuildCloseout({ targetAgent })],
+    ]));
 
-    const payload = runBuildAgentBaseline({
+    const payload = runBaselineWithDeveloperProof({
       outputDir: outputRoot,
-      oplBin,
       aiReviewerEvaluationPath: reviewerPath,
       targetAgent,
-      stageRunReadbackPaths,
+      ...stageArtifacts,
     });
+
     assert.equal(payload.status, 'candidate_package_materialized_ready_for_opl_foundry_lab_evaluation');
-    assert.equal(payload.action_stage_route_context.next_stage_may_start, true);
+    assert.match(payload.stage_decomposition_artifact.closeout_packet_ref, /^file:/);
+    assert.match(payload.agent_skeleton_build_artifact.closeout_packet_ref, /^file:/);
+    assert.equal(Object.hasOwn(payload, 'action_stage_route_context'), false);
   });
-});
-
-test('build-agent-baseline rejects drifted or escaping StageRun domain payload refs', () => {
-  const mutations: Array<[
-    string,
-    (readback: JsonObject, metadata: JsonObject, outputRoot: string) => void,
-    RegExp,
-  ]> = [
-    ['sha drift', (_readback, metadata) => { metadata.sha256 = '0'.repeat(64); }, /sha256 mismatch/i],
-    ['workspace escape', (readback, metadata, outputRoot) => {
-      const outsideRef = pathToFileURL(path.join(outputRoot, '..', 'outside.json')).href;
-      const packet = readback.family_runtime_stage_attempt_query
-        .stage_attempt_query.closeouts[0].packet as JsonObject;
-      metadata.ref = outsideRef;
-      packet.closeout_refs = [outsideRef];
-      (packet.domain_output as JsonObject).output_ref = outsideRef;
-    }, /escapes workspace_root/i],
-  ];
-  for (const [label, mutate, expected] of mutations) {
-    withTempDir(`oma-bootstrap-stage-payload-${label.replaceAll(' ', '-')}-`, (outputRoot) => {
-      const stageRunReadbackPaths = writeNormalizedBuildStageRunReadbacks(
-        outputRoot,
-        targetAgent.domain_id,
-        new Map<string, JsonObject>([
-          ['stage-decomposition', buildFixtureStageDecompositionCloseout({ targetAgent })],
-          ['agent-skeleton-build', buildFixtureAgentSkeletonBuildCloseout({ targetAgent })],
-        ]),
-      );
-      const readback = readJson(stageRunReadbackPaths[1]);
-      const metadata = readback.family_runtime_stage_attempt_query
-        .stage_attempt_query.closeouts[0].packet.closeout_ref_metadata[0] as JsonObject;
-      mutate(readback, metadata, outputRoot);
-      writeJson(stageRunReadbackPaths[1], readback);
-
-      assert.throws(
-        () => runBuildAgentBaseline({
-          outputDir: outputRoot,
-          oplBin,
-          aiReviewerEvaluationPath: path.join(outputRoot, 'not-consumed-before-payload-validation.json'),
-          targetAgent,
-          stageRunReadbackPaths,
-        }),
-        expected,
-        label,
-      );
-    });
-  }
 });
 
 test('build-agent-baseline preserves materialized artifacts when OPL scaffold validation reports debt', () => {
   withTempDir('oma-bootstrap-scaffold-blocked-', (outputRoot) => {
     const reviewerPath = path.join(outputRoot, 'reviewer.json');
     writeReviewerEvaluation(reviewerPath);
-    const stageRunReadbackPaths = writeBuildStageRunReadbacks(
-      outputRoot,
-      targetAgent.domain_id,
-      new Map<string, JsonObject>([
-        ['stage-decomposition', buildFixtureStageDecompositionCloseout({ targetAgent })],
-        ['agent-skeleton-build', buildFixtureAgentSkeletonBuildCloseout({ targetAgent })],
-      ]),
-    );
+    const stageArtifacts = writeBuildStageArtifactRefs(outputRoot, new Map<string, JsonObject>([
+      ['stage-decomposition', buildFixtureStageDecompositionCloseout({ targetAgent })],
+      ['agent-skeleton-build', buildFixtureAgentSkeletonBuildCloseout({ targetAgent })],
+    ]));
 
-    const payload = runBuildAgentBaseline({
+    const payload = runBaselineWithDeveloperProof({
       outputDir: outputRoot,
-      oplBin: writeBlockedScaffoldValidationOplShim(outputRoot),
       aiReviewerEvaluationPath: reviewerPath,
       targetAgent,
-      stageRunReadbackPaths,
+      ...stageArtifacts,
+    }, (receipt) => {
+      const output = receipt.proofs.scaffold_materialize_validate.output;
+      const scaffold = output.standard_domain_agent_scaffold as JsonObject;
+      const validation = scaffold.validation as JsonObject;
+      validation.status = 'blocked';
+      validation.blockers = ['fixture_scaffold_validation_blocker'];
     });
     assert.equal(payload.status, 'completed_with_quality_debt');
     assert.equal(payload.next_stage_may_start, true);
-    assert.ok((payload.materialized_artifact_refs as string[]).length > 0);
+    assert.equal(payload.developer_proof_receipt_state, 'invalid_receipt_fail_closed');
+    assert.equal(
+      (payload.developer_proof_failure as JsonObject)
+        .materialization_or_validation_accepted_as_evidence,
+      false,
+    );
+    assert.equal(
+      Object.hasOwn(
+        payload.developer_proof_failure as JsonObject,
+        'candidate_materialized_or_validated',
+      ),
+      false,
+    );
     const debt = readJson(payload.quality_debt_ref as string);
     assert.match((debt.quality_debt_reasons as string[]).join(' '), /fixture_scaffold_validation_blocker/i);
     assert.equal(fs.existsSync(path.join(outputRoot, 'agent-lab-suite-seed.json')), false);
@@ -1251,8 +1150,6 @@ test('build-agent-baseline consumes raw OPL receipts for a Chinese hybrid intent
   const parsed = parseBuildAgentBaselineArgs([
     '--output-dir',
     '/tmp/oma-intent-signal-standard-boundary',
-    '--opl-bin',
-    oplBin,
     '--ai-reviewer-evaluation',
     '/tmp/reviewer.json',
     '--domain-id',
@@ -1277,7 +1174,7 @@ test('build-agent-baseline consumes raw OPL receipts for a Chinese hybrid intent
 
   assert.equal(parsed.targetAgent.target_brief, chineseIntent);
   assert.deepEqual(parsed.targetAgent.intent_signals, intentSignals);
-  const selected = resolveTargetAgentProfileSelection(parsed.targetAgent, parsed.oplBin);
+  const selected = applyDeveloperProofProfileSelection(parsed.targetAgent, hybridReceipt);
 
   assert.equal(selected.target_brief, chineseIntent);
   assert.deepEqual(selected.intent_signals, intentSignals);
@@ -1285,20 +1182,24 @@ test('build-agent-baseline consumes raw OPL receipts for a Chinese hybrid intent
   assert.deepEqual(selected.reference_design_source_refs, sourceDerivedTargetAgent.reference_design_source_refs);
 });
 
-test('OMA canonicalizes and validates explicit builtin profile refs', () => {
-  const selected = resolveTargetAgentProfileSelection({
+test('OMA canonicalizes explicit profile refs and defers availability proof to OPL', () => {
+  const selected = normalizeRequestedProfileRefs({
     ...targetAgent,
     selected_opl_profile_refs: ['evidence_grounded_decision_agent_profile.v1'],
-  }, oplBin);
+  });
   assert.deepEqual(selected.selected_opl_profile_refs, [
     'opl-profile:evidence_grounded_decision_agent_profile.v1',
   ]);
+  assert.deepEqual(normalizeRequestedProfileRefs({
+    ...targetAgent,
+    selected_opl_profile_refs: ['unknown_profile.v1'],
+  }).selected_opl_profile_refs, ['opl-profile:unknown_profile.v1']);
   assert.throws(
-    () => resolveTargetAgentProfileSelection({
+    () => normalizeRequestedProfileRefs({
       ...targetAgent,
-      selected_opl_profile_refs: ['unknown_profile.v1'],
-    }, oplBin),
-    /unknown or unavailable/i,
+      selected_opl_profile_refs: ['../invalid-profile'],
+    }),
+    /profile ref is invalid/i,
   );
 });
 
@@ -1579,10 +1480,20 @@ test('raw reference source and opaque packet become routeable quality debt', () 
 
     const payload = runBuildAgentBaseline({
       outputDir: outputRoot,
-      oplBin,
       aiReviewerEvaluationPath: reviewerPath,
       targetAgent: rawTargetAgent,
-      stageRunReadbackPaths: writeBuildStageRunReadbacks(outputRoot, rawTargetAgent.domain_id),
+      ...writeBuildStageArtifactRefs(outputRoot, new Map<string, JsonObject>([
+        ['stage-decomposition', {
+          surface_kind: 'stage_attempt_closeout_packet',
+          stage_id: 'stage-decomposition',
+          closeout_refs: [],
+        }],
+        ['agent-skeleton-build', {
+          surface_kind: 'stage_attempt_closeout_packet',
+          stage_id: 'agent-skeleton-build',
+          closeout_refs: [],
+        }],
+      ])),
     });
     assert.equal(payload.status, 'completed_with_quality_debt');
     assert.equal(payload.next_stage_may_start, true);
@@ -1604,19 +1515,14 @@ test('raw reference source and opaque packet become routeable quality debt', () 
 
 test('build-agent-baseline records missing independent reviewer evidence as quality debt', () => {
   withTempDir('oma-bootstrap-missing-reviewer-pass4-', (outputRoot) => {
-    const payload = runBuildAgentBaseline({
+    const payload = runBaselineWithDeveloperProof({
       outputDir: outputRoot,
-      oplBin,
       aiReviewerEvaluationPath: '',
       targetAgent,
-      stageRunReadbackPaths: writeBuildStageRunReadbacks(
-        outputRoot,
-        targetAgent.domain_id,
-        new Map<string, JsonObject>([
-          ['stage-decomposition', buildFixtureStageDecompositionCloseout({ targetAgent })],
-          ['agent-skeleton-build', buildFixtureAgentSkeletonBuildCloseout({ targetAgent })],
-        ]),
-      ),
+      ...writeBuildStageArtifactRefs(outputRoot, new Map<string, JsonObject>([
+        ['stage-decomposition', buildFixtureStageDecompositionCloseout({ targetAgent })],
+        ['agent-skeleton-build', buildFixtureAgentSkeletonBuildCloseout({ targetAgent })],
+      ])),
     });
     assert.equal(payload.status, 'completed_with_quality_debt');
     assert.equal(payload.next_stage_may_start, true);

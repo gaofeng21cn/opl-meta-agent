@@ -13,10 +13,6 @@
       "type": "string",
       "minLength": 1
     },
-    "opl_bin": {
-      "type": "string",
-      "minLength": 1
-    },
     "ai_reviewer_evaluation": {
       "type": "string",
       "minLength": 1,
@@ -71,9 +67,17 @@
     "research_synthesis_refs": {
       "$ref": "#/$defs/nonEmptyStringArray"
     },
-    "stage_run_readback_refs": {
-      "$ref": "#/$defs/nonEmptyStringArray",
-      "description": "OPL family-runtime StageRun readbacks used as Codex context. Raw, partial, skipped, repeated, reversed, or route-back stage outputs are allowed; quality gaps do not block later stages."
+    "stage_decomposition_closeout_ref": {
+      "$ref": "#/$defs/nonEmptyString",
+      "description": "OMA-owned stage-decomposition closeout packet ref supplied by the OPL-hosted stage route."
+    },
+    "agent_skeleton_build_closeout_ref": {
+      "$ref": "#/$defs/nonEmptyString",
+      "description": "OMA-owned agent-skeleton-build closeout packet ref supplied by the OPL-hosted stage route."
+    },
+    "developer_proof_receipt_ref": {
+      "$ref": "#/$defs/nonEmptyString",
+      "description": "Optional host-produced opl_standard_agent_developer_proof_receipt ref. No individual command readbacks are accepted."
     }
   },
   "anyOf": [

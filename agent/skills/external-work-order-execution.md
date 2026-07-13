@@ -7,7 +7,6 @@
 ## 输入
 
 - `work_order_path`
-- `opl_bin`
 - 可选 `output_path`
 - 可选 OPL work-order passthrough args
 
@@ -15,7 +14,7 @@
 
 1. 读取 developer patch work order。
 2. 校验 work order 是 OMA 可委托的 refs-only developer patch work order，并确认禁止写 target truth、memory body、artifact body、quality/export verdict 和 default promotion。
-3. 调用 `opl work-order execute --work-order <work_order_path> --json`，把 passthrough args 原样交给 OPL work-order primitive。
+3. 在 OPL hosted StageRun 提供的 tool boundary 内调用 `opl work-order execute --work-order <work_order_path> --json`，把 passthrough args 原样交给 OPL work-order primitive；不由 repo-local helper 自建命令 transport。
 4. 写入 delegation receipt，记录 OMA 只做薄委托，target worktree lifecycle、queue、attempt ledger、absorb、cleanup、post-absorb target-domain owner closeout hook 调用和 execution receipt 均由 OPL Framework / target owner 控制面持有。
 
 ## 输出

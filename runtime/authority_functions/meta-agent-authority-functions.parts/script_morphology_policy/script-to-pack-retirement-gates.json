@@ -69,12 +69,12 @@
       "scripts/lib/stage-decomposition-pack-draft/shared.ts",
       "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts",
       "scripts/lib/stage-decomposition-pack-draft/validator.ts",
-      "scripts/lib/action-stage-route.ts",
-      "scripts/lib/stage-native-artifact-contract.ts"
+      "scripts/lib/stage-native-artifact-contract.ts",
+      "scripts/lib/standard-agent-developer-proof.ts"
     ],
-    "current_role": "typed_stage_closeout_validator_action_stage_route_readback_and_opl_scaffold_request_adapter",
+    "current_role": "typed_domain_closeout_validator_and_hosted_developer_proof_request_receipt_adapter",
     "retention_state": "retained_current_authority_function",
-    "retention_reason": "current OMA thin authority surface for stage-decomposition closeout validation, domain-authored scaffold request emission, thin evaluation-request emission, and declarative Foundry Lab work-order handoff; OPL owns target file IO, path safety, scaffold merge, digests, final build receipt, Agent Lab suite-plan compilation/execution/results/ledgers, pack compiler, generated interface, runtime state, promotion, and target worktree lifecycle",
+    "retention_reason": "current OMA thin authority surface for domain closeout validation, aggregate developer-proof request emission, strict aggregate receipt consumption, thin evaluation-request emission, and declarative Foundry Lab work-order handoff; it does not spawn OPL/Codex or interpret StageRun readbacks. OPL owns operation execution, target file IO, path safety, scaffold merge, digests, final build receipt, package/profile proof, Agent Lab suite-plan execution/results/ledgers, runtime state, promotion, and target worktree lifecycle",
     "retention_evidence_refs": [
       "package.json#scripts.build-agent-baseline",
       "contracts/stage_native_artifact_vocabulary.json",
@@ -83,9 +83,9 @@
       "tests/stage-decomposition-materializer.test.ts",
       "tests/takeover-loop.test.ts"
     ],
-    "allowed_until": "opl_stage_attempt_and_pack_materializer_parity_can_replace_local_smoke_path",
+    "allowed_until": "opl_hosted_developer_proof_and_pack_materializer_parity_can_replace_local_developer_proof_path",
     "required_before_retire_or_absorb": [
-      "opl_stage_attempt_launch_and_read_model_parity_ref",
+      "opl_hosted_developer_proof_request_receipt_parity_ref",
       "opl_pack_compiler_typed_closeout_materializer_parity_ref",
       "stable_standard_foundry_policies_moved_to_contract_or_opl_primitive_ref",
       "opl_physical_kernel_locator_conformance_workbench_consumption_parity_ref",
@@ -94,6 +94,7 @@
       "no_implicit_fixture_graph_ref",
       "no_domain_pack_helper_pack_compiler_or_generated_interface_owner_ref",
       "no_oma_runtime_state_owner_promotion_worktree_or_receipt_body_ref",
+      "no_spawn_opl_codex_or_raw_stage_run_readback_ref",
       "no_active_npm_or_test_caller_ref",
       "tombstone_or_provenance_ref"
     ],
