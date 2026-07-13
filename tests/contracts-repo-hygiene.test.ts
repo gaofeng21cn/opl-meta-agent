@@ -50,6 +50,18 @@ test('verification entrypoints route caches outside the checkout and expose hygi
   ].forEach((fragment) => assert.match(gitignore, new RegExp(`^${fragment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'm')));
 });
 
+test('owner package and Codex carrier versions stay aligned', () => {
+  const packageJson = readJson('package.json');
+  const packageLock = readJson('package-lock.json');
+  const packageManifest = readJson('contracts/opl_agent_package_manifest.json');
+  const pluginManifest = readJson('plugins/opl-meta-agent/.codex-plugin/plugin.json');
+
+  assert.equal(packageLock.version, packageJson.version);
+  assert.equal(packageLock.packages[''].version, packageJson.version);
+  assert.equal(packageManifest.version, packageJson.version);
+  assert.equal(pluginManifest.version, packageJson.version);
+});
+
 test('tracked contract, test, and docs surfaces do not carry placeholder markers', () => {
   const scannedDirs = ['agent', 'contracts', 'tests', 'docs'];
   const scannedFiles = [
