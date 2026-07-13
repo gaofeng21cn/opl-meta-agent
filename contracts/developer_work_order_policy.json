@@ -18,6 +18,64 @@
     "can_authorize_submission_readiness": false,
     "can_promote_default_agent": false
   },
+  "accepted_external_suite_inputs": {
+    "surface_kind": "opl_meta_agent_external_suite_input_contract",
+    "accepted_suite_kind": "agent_lab_external_suite",
+    "accepted_feedback_profiles": [
+      "target_agent_feedback_external_suite"
+    ],
+    "required_work_order_readback_fields": [
+      "agent_evolution_decision_ref",
+      "failure_class",
+      "target_agent.domain_id",
+      "target_owner_route",
+      "target_editable_surface_refs",
+      "forbidden_surfaces",
+      "expected_behavior_delta",
+      "source_external_suite_intake.feedback_ref",
+      "source_external_suite_intake.source_feedback_refs",
+      "source_agent_lab_result_ref",
+      "source_external_suite_intake",
+      "reviewer_evidence_refs",
+      "verification_refs",
+      "authority_boundary",
+      "opl_work_order_delegation_aperture",
+      "target_owner_closeout_refs",
+      "owner_closeout_readback",
+      "target_progress_accounting"
+    ],
+    "profile_required_fields": {
+      "target_agent_feedback_external_suite": [
+        "agent_evolution_decision_ref",
+        "failure_class",
+        "target_agent.domain_id",
+        "target_owner_route",
+        "target_editable_surface_refs",
+        "forbidden_surfaces",
+        "expected_behavior_delta",
+        "source_external_suite_intake.accepted_input_profiles",
+        "source_external_suite_intake.feedback_ref_or_source_feedback_refs",
+        "source_agent_lab_result_ref",
+        "source_external_suite_intake.source_agent_lab_result_ref",
+        "reviewer_evidence_refs",
+        "ai_reviewer_evidence.direct_evidence_refs",
+        "verification_refs",
+        "authority_boundary",
+        "no_forbidden_write_proof",
+        "opl_work_order_delegation_aperture",
+        "target_owner_closeout_refs",
+        "owner_closeout_readback",
+        "target_progress_accounting"
+      ]
+    },
+    "authority_boundary": {
+      "can_write_target_domain_truth": false,
+      "can_write_target_domain_memory_body": false,
+      "can_mutate_target_domain_artifact_body": false,
+      "can_authorize_target_domain_quality_or_export": false,
+      "can_promote_default_agent_without_gate": false
+    }
+  },
   "default_forbidden_target_paths_or_surfaces": [
     "target domain truth surfaces",
     "target domain memory body",

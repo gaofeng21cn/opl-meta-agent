@@ -1,0 +1,58 @@
+{
+  "surface_kind": "standard_agent_source_closure_audit",
+  "version": "standard-agent-source-closure-audit.v1",
+  "entries": [
+    {
+      "file": "scripts/build-agent-baseline.ts",
+      "symbol": "runBuildAgentBaseline",
+      "source_digest": "sha256:7266b7b68213573f95e8f52d35c15d457fde1db5d93f0934acf39d2f218bef39",
+      "allowed_effects": [
+        "filesystem_write"
+      ],
+      "role": "developer_tool",
+      "allowed_targets": []
+    },
+    {
+      "file": "scripts/check-source-structure.ts",
+      "symbol": "trackedFiles",
+      "source_digest": "sha256:871b25ec496826ffcc39a688a957eabccf42d53fc07867664bbf0d817618bbbb",
+      "allowed_effects": [
+        "process_spawn"
+      ],
+      "role": "developer_tool",
+      "allowed_targets": [
+        "git"
+      ]
+    },
+    {
+      "file": "scripts/lib/meta-agent-loop-io.ts",
+      "symbol": "writeJson",
+      "source_digest": "sha256:66f70daf6b7e833bced921d6f2a2a9ae19e143f1cc59ba18e78ff5406378f426",
+      "allowed_effects": [
+        "filesystem_write"
+      ],
+      "role": "developer_tool",
+      "allowed_targets": []
+    },
+    {
+      "file": "scripts/lib/sync-json-bundle.ts",
+      "symbol": "writeJson",
+      "source_digest": "sha256:63c86fc9759887eb0831d78f70c1a180f108b887f7a8c2d8805520dd75501f05",
+      "allowed_effects": [
+        "filesystem_write"
+      ],
+      "role": "developer_tool",
+      "allowed_targets": []
+    },
+    {
+      "file": "scripts/takeover-agent.ts",
+      "symbol": "runTakeoverAgent",
+      "source_digest": "sha256:3a8f91de2e4505108c31c9d50742039286ed0f5361b895ae3a9f15c074e3c8b1",
+      "allowed_effects": [
+        "filesystem_write"
+      ],
+      "role": "developer_tool",
+      "allowed_targets": []
+    }
+  ]
+}

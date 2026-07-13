@@ -19,6 +19,8 @@ function actionById(actions: JsonObject[], actionId: string): JsonObject {
 
 test('action catalog and owner receipts forbid target-domain authority writes', () => {
   const actionCatalog = readJson('contracts/action_catalog.json');
+  const foundrySeries = readJson('contracts/foundry_agent_series.json');
+  const developerWorkOrderPolicy = readJson('contracts/developer_work_order_policy.json');
   const ownerReceipt = readJson('contracts/owner_receipt_contract.json');
   const actions = asObjects(actionCatalog.actions);
   const actionIds = [
@@ -37,7 +39,7 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
     'can_train_or_deploy_model_weights',
   ];
 
-  assert.equal(actionCatalog.version, 'family-action-catalog.v1');
+  assert.equal(actionCatalog.version, 'family-action-catalog.v2');
   assert.deepEqual(actions.map((action) => action.action_id), actionIds);
   assert.doesNotMatch(
     JSON.stringify(actionCatalog),
@@ -54,7 +56,15 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   const externalSuiteAction = actionById(actions, 'improve-from-external-agent-lab-suite');
   const trajectoryAction = actionById(actions, 'materialize-trajectory-learning-proposal');
 
-  assert.match(String(baselineAction.source_command.command), /^npm run build-agent-baseline --/);
+  assert.deepEqual(baselineAction.execution_binding, {
+    kind: 'stage_binding',
+    stage_manifest_ref: 'agent/stages/manifest.json',
+  });
+  assert.deepEqual(takeoverAction.execution_binding, {
+    kind: 'stage_binding',
+    stage_manifest_ref: 'agent/stages/manifest.json',
+  });
+  assert.equal(Object.hasOwn(baselineAction, 'source_command'), false);
   assert.equal(Object.hasOwn(baselineAction, 'new_agent_delivery_gate'), false);
   assert.equal(Object.hasOwn(takeoverAction, 'new_agent_delivery_gate'), false);
   assert.match(String(baselineAction.summary), /without creating a suite result or owner receipt/);
@@ -67,7 +77,10 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
     'can_modify_target_agent_tests',
     'can_modify_target_agent_docs',
   ].forEach((field) => assert.equal(externalSuiteAction.authority_boundary[field], false, field));
-  assert.equal(externalSuiteAction.accepted_external_suite_inputs.accepted_suite_kind, 'agent_lab_external_suite');
+  assert.equal(
+    developerWorkOrderPolicy.accepted_external_suite_inputs.accepted_suite_kind,
+    'agent_lab_external_suite',
+  );
 
   assertFalseFlags(trajectoryAction.authority_boundary as JsonObject, [
     'can_run_trajectory_daemon',
@@ -75,7 +88,8 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
     'can_claim_ux_score_as_quality_verdict',
   ], 'materialize-trajectory-learning-proposal.authority_boundary');
 
-  const feedbackReadback = actionCatalog.target_agent_feedback_self_evolution_readback as JsonObject;
+  const feedbackReadback = foundrySeries.domain_specific_profile
+    .target_agent_feedback_self_evolution_readback as JsonObject;
   assertIncludesAll(asStrings(feedbackReadback.required_action_route), [
     'improve-from-external-agent-lab-suite',
     'opl work-order execute',

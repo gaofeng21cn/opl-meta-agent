@@ -134,12 +134,34 @@ test('stage-decomposition emits an OPL-owned scaffold materialization request', 
   const jsonProjections = request.json_projections as JsonObject[];
   assert.ok(jsonProjections.every((projection) => projection.merge_policy === 'merge_object'));
   assert.equal(new Set(jsonProjections.map((projection) => projection.path)).size, 2);
+  assert.deepEqual((request.build_receipt_installation as JsonObject).projection_paths, [
+    'contracts/domain_descriptor.json',
+    'contracts/capability_map.json',
+  ]);
   const stageControl = draft.stage_control_plane;
   const stageManifest = (request.stage_manifest as JsonObject).value as JsonObject;
   const contracts = request.contracts as JsonObject[];
+  const actionCatalog = contracts.find((entry) => entry.path === 'contracts/action_catalog.json')?.value as JsonObject;
   const foundrySeries = contracts.find((entry) => entry.path === 'contracts/foundry_agent_series.json')?.value as JsonObject;
   const artifactMorphology = contracts.find((entry) => entry.path === 'contracts/artifact_morphology_contract.json')?.value as JsonObject;
   const compilerInput = request.pack_compiler_input as JsonObject;
+  assert.equal(contracts.some((entry) => entry.path === 'contracts/stage_control_plane.json'), false);
+  assert.equal(actionCatalog.version, 'family-action-catalog.v2');
+  const action = (actionCatalog.actions as JsonObject[])[0];
+  assert.deepEqual(action.execution_binding, {
+    kind: 'stage_binding',
+    stage_manifest_ref: 'agent/stages/manifest.json',
+  });
+  assert.deepEqual(action.stage_route, {
+    entry_stage_ref: 'evidence-synthesis-plan',
+    required_stage_refs: ['evidence-synthesis-plan'],
+    optional_stage_refs: [],
+    terminal_stage_refs: ['evidence-synthesis-plan'],
+    route_policy: 'ai_selected_progress_route',
+  });
+  assert.deepEqual(action.required_fields, ['workspace_root']);
+  assert.deepEqual(action.optional_fields, []);
+  assert.equal(Object.hasOwn(action, 'source_command'), false);
   assert.deepEqual(compilerInput.implementation_profile, {
     profile_id: 'opl.standard_domain_agent.v1',
     agent_identity: 'declarative_standard_agent_pack',

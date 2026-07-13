@@ -377,7 +377,6 @@
         "agent/quality_gates/mechanism-patch-adoption.md"
       ],
       "allowed_action_refs": [
-        "generate-mechanism-patch-proposal",
         "materialize-trajectory-learning-proposal"
       ],
       "requires": [

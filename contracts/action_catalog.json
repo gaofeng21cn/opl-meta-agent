@@ -1,127 +1,18 @@
 {
   "surface_kind": "family_action_catalog",
-  "version": "family-action-catalog.v1",
+  "version": "family-action-catalog.v2",
   "catalog_id": "opl_meta_agent_action_catalog",
   "target_domain_id": "opl-meta-agent",
   "owner": "opl-meta-agent",
   "authority_boundary": {
-    "opl_role": "generated_interface_projection_only",
     "domain_truth_owner": "opl-meta-agent",
+    "opl_role": "projection_consumer_only",
+    "write_policy": "no_domain_truth_writes",
     "opl_can_write_domain_truth": false,
     "opl_can_write_memory_body": false,
     "opl_can_authorize_quality_or_export": false,
-    "domain_repo_can_own_generated_surface": false
-  },
-  "registration_projection_evidence_contract_refs": {
-    "opl_domain_manifest_registration_ref": "contracts/opl_domain_manifest_registration.json",
-    "app_workbench_projection_ref": "contracts/app_workbench_projection.json",
-    "real_target_agent_scaleout_evidence_ref": "contracts/real_target_agent_scaleout_evidence.json",
-    "target_agent_owner_chain_evidence_ref": "contracts/target_agent_owner_chain_evidence.json",
-    "trajectory_learning_contract_ref": "contracts/trajectory_learning_contract.json",
-    "live_stage_run_progress_evidence_ref": "contracts/live_stage_run_progress_evidence.json"
-  },
-  "feedback_self_evolution_trigger": {
-    "surface_kind": "opl_foundry_agent_feedback_self_evolution_trigger",
-    "schema_version": 1,
-        "policy_ref": "contracts/opl-framework/foundry-agent-series-contract.json#/standard_feedback_self_evolution_trigger_policy",
-    "policy_id": "standard_agent_feedback_self_evolution_trigger.v1",
-    "target_agent_id": "opl-meta-agent",
-    "target_domain_id": "opl-meta-agent",
-    "adapter_kind": "domain_thin_feedback_adapter",
-    "feedbackops_event_kind": "target_agent_feedback_external_suite",
-    "accepted_feedback_profile": "target_agent_feedback_external_suite",
-    "idempotency_key": "feedbackops:opl-meta-agent/target-evolution/latest",
-    "external_suite_ref": "target-agent-feedback-external-suite:opl-meta-agent/latest",
-    "required_trigger_fields": [
-      "feedbackops_event_kind",
-      "accepted_feedback_profile",
-      "target_agent_id",
-      "idempotency_key",
-      "external_suite_ref",
-      "developer_mode_execution_gate_refs",
-      "oma_evolution_skill_ref",
-      "owner_closeout_readback_refs"
-    ],
-    "trigger_chain": [
-      "domain_or_package_thin_feedback_adapter",
-      "opl_feedbackops_agent_lab_status_projection",
-      "opl_meta_agent_oma_agent_evolution_work_order",
-      "developer_mode_direct_fix_or_fork_pr_route",
-      "target_owner_closeout_readback"
-    ],
-    "feedback_capture_requires_developer_mode": false,
-    "repo_fix_execution_requires_opl_developer_mode": true,
-    "developer_mode_execution_gate_refs": [
-      "opl-developer-mode:repo-fix-execution",
-      "opl-developer-mode:direct-fix-or-fork-pr-route"
-    ],
-    "oma_evolution_skill_ref": "opl-meta-agent:oma-agent-evolution",
-    "default_oma_skill_ref": "opl-meta-agent:oma-agent-evolution",
-    "status_projection_ref": "contracts/opl-framework/agent-lab-contract.json#domain_feedback_self_evolution_surface",
-    "owner_closeout_readback_refs": [
-      "contracts/developer_work_order_policy.json",
-      "contracts/target_agent_owner_chain_evidence.json",
-      "contracts/real_target_agent_scaleout_evidence.json",
-      "contracts/app_workbench_projection.json#/drilldown_readiness_receipt/developer_work_order_machine_ref_fields"
-    ],
-    "contract_can_trigger_execution": false,
-    "target_route": {
-      "domain_owner": "opl-meta-agent",
-      "agent_lab_owner": "one-person-lab",
-      "meta_agent_owner": "opl-meta-agent",
-      "target_repo": "opl-meta-agent"
-    },
-    "authority_boundary": {
-      "refs_only": true,
-      "can_write_domain_truth": false,
-      "can_mutate_artifact_body": false,
-      "can_authorize_quality_or_export": false,
-      "can_create_owner_receipt": false,
-      "can_create_typed_blocker": false,
-      "can_execute_repo_patch_without_developer_mode": false
-    }
-  },
-  "target_agent_feedback_self_evolution_readback": {
-    "surface_kind": "opl_meta_agent_external_feedback_trigger_consumption_readback",
-    "schema_version": 1,
-    "target_agent_id": "target-agent",
-    "feedback_profile": "target_agent_feedback_external_suite",
-    "accepted_materialized_input": "agent_lab_external_suite",
-    "source_trigger_ref": "target-agent:feedback_self_evolution_trigger/latest",
-    "status_projection": {
-      "suite_materialized_only": "runnable_pending",
-      "contract_itself_triggers_execution": false,
-      "must_not_report_as": [
-        "executed",
-        "target_owner_closeout_complete",
-        "target_owner_receipt_written_by_oma"
-      ],
-      "executed_requires_refs": [
-        "developer_patch_work_order_ref",
-        "opl_work_order_execute_receipt_ref",
-        "target_owner_closeout_readback_ref"
-      ]
-    },
-    "required_action_route": [
-      "improve-from-external-agent-lab-suite",
-      "opl work-order execute",
-      "target_owner_closeout_readback"
-    ],
-    "consumer_actions": {
-      "materialized_suite_consumer": "improve-from-external-agent-lab-suite",
-      "work_order_execution_owner": "one-person-lab/OPL work-order execute",
-      "target_owner_closeout_owner": "target-domain via OPL"
-    },
-    "authority_boundary": {
-      "oma_can_consume_materialized_agent_lab_suite": true,
-      "oma_can_author_developer_work_order_semantics": true,
-      "oma_can_materialize_developer_work_order_file": false,
-      "oma_can_own_runner_or_queue": false,
-      "oma_can_manage_target_worktree_lifecycle": false,
-      "oma_can_write_target_owner_receipt_body": false,
-      "oma_can_write_target_domain_truth": false,
-      "oma_can_create_target_typed_blocker_body": false
-    }
+    "domain_repo_can_own_generated_surface": false,
+    "provider_completion_is_domain_completion": false
   },
   "actions": [
     {
@@ -130,12 +21,34 @@
       "summary": "Generate and validate an OPL-compatible candidate Agent Pack, consume structured AI reviewer evidence, and emit a thin Foundry evaluation request plus canonical OPL Foundry Lab work order without creating a suite result or owner receipt.",
       "owner": "opl-meta-agent",
       "effect": "mutating",
-      "source_command": {
-        "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief> [--intent-signal <intent_signal>] [--selected-opl-profile <selected_opl_profile_ref>] [--profile-selection-rationale <profile_selection_rationale>] [--profile-requirement <profile_requirement_ref>] [--reference-design-source <reference_design_source_ref>] [--reference-design-pattern <reference_design_pattern_note>] [--reference-design-pattern-packet <reference_design_pattern_packet_ref>] [--research-source <research_source_ref>] [--expert-practice <expert_practice_note>] [--research-synthesis <research_synthesis_ref>] [--stage-run-readback <opl_stage_run_readback_path>]...",
-        "surface_kind": "domain_smoke_cli"
+      "execution_binding": {
+        "kind": "stage_binding",
+        "stage_manifest_ref": "agent/stages/manifest.json"
       },
       "input_schema_ref": "contracts/schemas/build-agent-baseline.input.schema.json",
       "output_schema_ref": "contracts/schemas/build-agent-baseline.output.schema.json",
+      "required_fields": [
+        "domain_id",
+        "ai_reviewer_evaluation"
+      ],
+      "optional_fields": [
+        "output_dir",
+        "opl_bin",
+        "domain_label",
+        "delivery_domain",
+        "target_brief",
+        "intent_signals",
+        "selected_opl_profile_refs",
+        "profile_selection_rationale",
+        "profile_requirement_refs",
+        "reference_design_source_refs",
+        "reference_design_pattern_notes",
+        "reference_design_pattern_packet_refs",
+        "research_source_refs",
+        "expert_practice_notes",
+        "research_synthesis_refs",
+        "stage_run_readback_refs"
+      ],
       "workspace_locator_fields": [
         "output_dir",
         "opl_bin",
@@ -178,26 +91,17 @@
         "route_policy": "ai_selected_progress_route"
       },
       "supported_surfaces": {
-        "cli": {
-          "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief> [--intent-signal <intent_signal>] [--selected-opl-profile <selected_opl_profile_ref>] [--profile-selection-rationale <profile_selection_rationale>] [--profile-requirement <profile_requirement_ref>] [--reference-design-source <reference_design_source_ref>] [--reference-design-pattern <reference_design_pattern_note>] [--reference-design-pattern-packet <reference_design_pattern_packet_ref>] [--research-source <research_source_ref>] [--expert-practice <expert_practice_note>] [--research-synthesis <research_synthesis_ref>] [--stage-run-readback <opl_stage_run_readback_path>]...",
-          "surface_kind": "domain_smoke_cli"
-        },
+        "cli": {},
         "mcp": {
           "tool_name": "opl_meta_agent_build_agent_baseline",
-          "surface_kind": "opl_generated_mcp_descriptor",
           "descriptor_only": true,
           "public_runtime": false
         },
         "skill": {
-          "command_contract_id": "opl-meta-agent.build-agent-baseline",
-          "surface_kind": "opl_generated_skill_contract",
-          "intent_mapping": "Codex extracts domain_id, domain_label, delivery_domain, target_brief, optional canonical intent_signals, optional selected_opl_profile_refs, optional profile_selection_rationale, optional profile_requirement_refs, optional reference_design_source_refs, optional reference_design_pattern_notes, optional reference_design_pattern_packet_refs, optional research_source_refs, optional expert_practice_notes, optional research_synthesis_refs, output_dir, opl_bin, and ai_reviewer_evaluation from the user natural-language request before invoking this action. The original target_brief remains the design intent; repeatable intent_signals only provide lower-bound OPL profile selector inputs."
+          "command_contract_id": "opl-meta-agent.build-agent-baseline"
         },
         "product_entry": {
-          "action_key": "build-agent-baseline",
-          "command": "npm run build-agent-baseline -- --output-dir <output_dir> --opl-bin <opl_bin> --ai-reviewer-evaluation <ai_reviewer_evaluation> --domain-id <domain_id> --domain-label <domain_label> --delivery-domain <delivery_domain> --target-brief <target_brief> [--intent-signal <intent_signal>] [--selected-opl-profile <selected_opl_profile_ref>] [--profile-selection-rationale <profile_selection_rationale>] [--profile-requirement <profile_requirement_ref>] [--reference-design-source <reference_design_source_ref>] [--reference-design-pattern <reference_design_pattern_note>] [--reference-design-pattern-packet <reference_design_pattern_packet_ref>] [--research-source <research_source_ref>] [--expert-practice <expert_practice_note>] [--research-synthesis <research_synthesis_ref>] [--stage-run-readback <opl_stage_run_readback_path>]...",
-          "intent_mapping": "The product entry preserves the original target_brief and forwards optional canonical intent_signals as repeatable --intent-signal values. Signals only affect lower-bound OPL profile matching and do not replace source-derived design.",
-          "surface_kind": "domain_product_entry_action"
+          "action_key": "build-agent-baseline"
         },
         "openai": {
           "tool_name": "opl_meta_agent_build_agent_baseline"
@@ -221,12 +125,19 @@
       "summary": "Read an existing OPL-compatible agent repo, consume structured AI reviewer evidence, and emit a thin takeover evaluation request plus canonical OPL Foundry Lab evaluation work order without local suite execution or owner receipt creation.",
       "owner": "opl-meta-agent",
       "effect": "mutating",
-      "source_command": {
-        "command": "npm run takeover:test -- --agent-dir <agent_dir> --output-dir <output_dir> --ai-reviewer-evaluation <ai_reviewer_evaluation>",
-        "surface_kind": "domain_smoke_cli"
+      "execution_binding": {
+        "kind": "stage_binding",
+        "stage_manifest_ref": "agent/stages/manifest.json"
       },
       "input_schema_ref": "contracts/schemas/takeover-target-agent-test.input.schema.json",
       "output_schema_ref": "contracts/schemas/takeover-target-agent-test.output.schema.json",
+      "required_fields": [
+        "agent_dir",
+        "ai_reviewer_evaluation"
+      ],
+      "optional_fields": [
+        "output_dir"
+      ],
       "workspace_locator_fields": [
         "agent_dir",
         "output_dir",
@@ -250,24 +161,17 @@
         "route_policy": "ai_selected_progress_route"
       },
       "supported_surfaces": {
-        "cli": {
-          "command": "npm run takeover:test -- --agent-dir <agent_dir> --output-dir <output_dir> --ai-reviewer-evaluation <ai_reviewer_evaluation>",
-          "surface_kind": "domain_smoke_cli"
-        },
+        "cli": {},
         "mcp": {
           "tool_name": "opl_meta_agent_takeover_target_agent_test",
-          "surface_kind": "opl_generated_mcp_descriptor",
           "descriptor_only": true,
           "public_runtime": false
         },
         "skill": {
-          "command_contract_id": "opl-meta-agent.takeover-target-agent-test",
-          "surface_kind": "opl_generated_skill_contract"
+          "command_contract_id": "opl-meta-agent.takeover-target-agent-test"
         },
         "product_entry": {
-          "action_key": "takeover-target-agent-test",
-          "command": "npm run takeover:test -- --agent-dir <agent_dir> --output-dir <output_dir> --ai-reviewer-evaluation <ai_reviewer_evaluation>",
-          "surface_kind": "domain_product_entry_action"
+          "action_key": "takeover-target-agent-test"
         },
         "openai": {
           "tool_name": "opl_meta_agent_takeover_target_agent_test"
@@ -291,12 +195,21 @@
       "summary": "Consume an explicit OPL Foundry Lab suite result and structured AI reviewer evidence, then emit an OMA capability judgment and a typed developer patch work-order request without writing request files or executing the work order.",
       "owner": "opl-meta-agent",
       "effect": "mutating",
-      "source_command": {
-        "command": "npm run improve:external-suite -- --suite <suite_path> --suite-result <suite_result_path> --target-agent-dir <agent_dir> --ai-reviewer-evaluation <ai_reviewer_evaluation>",
-        "surface_kind": "domain_smoke_cli"
+      "execution_binding": {
+        "kind": "stage_binding",
+        "stage_manifest_ref": "agent/stages/manifest.json"
       },
       "input_schema_ref": "contracts/schemas/improve-from-external-agent-lab-suite.input.schema.json",
       "output_schema_ref": "contracts/schemas/improve-from-external-agent-lab-suite.output.schema.json",
+      "required_fields": [
+        "suite_path",
+        "suite_result_path",
+        "agent_dir",
+        "ai_reviewer_evaluation"
+      ],
+      "optional_fields": [
+        "feedback_ref"
+      ],
       "workspace_locator_fields": [
         "suite_path",
         "suite_result_path",
@@ -320,83 +233,18 @@
         ],
         "route_policy": "ai_selected_progress_route"
       },
-      "accepted_external_suite_inputs": {
-        "surface_kind": "opl_meta_agent_external_suite_input_contract",
-        "accepted_suite_kind": "agent_lab_external_suite",
-        "accepted_feedback_profiles": [
-          "target_agent_feedback_external_suite"
-        ],
-      "required_work_order_readback_fields": [
-        "agent_evolution_decision_ref",
-        "failure_class",
-        "target_agent.domain_id",
-        "target_owner_route",
-        "target_editable_surface_refs",
-        "forbidden_surfaces",
-        "expected_behavior_delta",
-        "source_external_suite_intake.feedback_ref",
-        "source_external_suite_intake.source_feedback_refs",
-        "source_agent_lab_result_ref",
-        "source_external_suite_intake",
-        "reviewer_evidence_refs",
-        "verification_refs",
-        "authority_boundary",
-        "opl_work_order_delegation_aperture",
-        "target_owner_closeout_refs",
-        "owner_closeout_readback",
-        "target_progress_accounting"
-      ],
-      "profile_required_fields": {
-        "target_agent_feedback_external_suite": [
-          "agent_evolution_decision_ref",
-          "failure_class",
-          "target_agent.domain_id",
-          "target_owner_route",
-          "target_editable_surface_refs",
-          "forbidden_surfaces",
-          "expected_behavior_delta",
-          "source_external_suite_intake.accepted_input_profiles",
-          "source_external_suite_intake.feedback_ref_or_source_feedback_refs",
-          "source_agent_lab_result_ref",
-          "source_external_suite_intake.source_agent_lab_result_ref",
-          "reviewer_evidence_refs",
-          "ai_reviewer_evidence.direct_evidence_refs",
-          "verification_refs",
-          "authority_boundary",
-          "no_forbidden_write_proof",
-          "opl_work_order_delegation_aperture",
-          "target_owner_closeout_refs",
-          "owner_closeout_readback",
-          "target_progress_accounting"
-        ]
-      },
-        "authority_boundary": {
-          "can_write_target_domain_truth": false,
-          "can_write_target_domain_memory_body": false,
-          "can_mutate_target_domain_artifact_body": false,
-          "can_authorize_target_domain_quality_or_export": false,
-          "can_promote_default_agent_without_gate": false
-        }
-      },
       "supported_surfaces": {
-        "cli": {
-          "command": "npm run improve:external-suite -- --suite <suite_path> --suite-result <suite_result_path> --target-agent-dir <agent_dir> --ai-reviewer-evaluation <ai_reviewer_evaluation>",
-          "surface_kind": "domain_smoke_cli"
-        },
+        "cli": {},
         "mcp": {
           "tool_name": "opl_meta_agent_improve_from_external_agent_lab_suite",
-          "surface_kind": "opl_generated_mcp_descriptor",
           "descriptor_only": true,
           "public_runtime": false
         },
         "skill": {
-          "command_contract_id": "opl-meta-agent.improve-from-external-agent-lab-suite",
-          "surface_kind": "opl_generated_skill_contract"
+          "command_contract_id": "opl-meta-agent.improve-from-external-agent-lab-suite"
         },
         "product_entry": {
-          "action_key": "improve-from-external-agent-lab-suite",
-          "command": "npm run improve:external-suite -- --suite <suite_path> --suite-result <suite_result_path> --target-agent-dir <agent_dir> --ai-reviewer-evaluation <ai_reviewer_evaluation>",
-          "surface_kind": "domain_product_entry_action"
+          "action_key": "improve-from-external-agent-lab-suite"
         },
         "openai": {
           "tool_name": "opl_meta_agent_improve_from_external_agent_lab_suite"
@@ -423,12 +271,24 @@
       "summary": "Convert Agent Lab run evidence and a gated learning candidate into a proposal-only mechanism patch record.",
       "owner": "opl-meta-agent",
       "effect": "mutating",
-      "source_command": {
-        "command": "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer",
-        "surface_kind": "minimal_authority_function_ref_only_contract"
+      "execution_binding": {
+        "kind": "handler_ref",
+        "handler_ref": "handler:oma.mechanism-patch-proposal-authorizer"
       },
       "input_schema_ref": "contracts/schemas/generate-mechanism-patch-proposal.input.schema.json",
       "output_schema_ref": "contracts/schemas/generate-mechanism-patch-proposal.output.schema.json",
+      "required_fields": [
+        "mechanism_ref",
+        "segment_run_ref",
+        "evidence_delta_ref",
+        "next_mechanism_candidate_ref"
+      ],
+      "optional_fields": [
+        "editable_surfaces",
+        "observe_refs",
+        "diagnose_refs",
+        "edit_refs"
+      ],
       "workspace_locator_fields": [
         "mechanism_ref",
         "segment_run_ref",
@@ -438,38 +298,18 @@
       "human_gate_ids": [
         "mechanism_patch_owner_review"
       ],
-      "stage_route": {
-        "entry_stage_ref": "online-learning",
-        "required_stage_refs": [
-          "online-learning"
-        ],
-        "optional_stage_refs": [],
-        "terminal_stage_refs": [
-          "online-learning"
-        ],
-        "route_policy": "ai_selected_progress_route"
-      },
       "supported_surfaces": {
-        "cli": {
-          "command": "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer",
-          "surface_kind": "not_exposed_repo_local_cli",
-          "handler_ref": "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer"
-        },
+        "cli": {},
         "mcp": {
           "tool_name": "opl_meta_agent_generate_mechanism_patch_proposal",
-          "surface_kind": "opl_generated_mcp_descriptor",
           "descriptor_only": true,
           "public_runtime": false
         },
         "skill": {
-          "command_contract_id": "opl-meta-agent.generate-mechanism-patch-proposal",
-          "surface_kind": "opl_generated_skill_contract"
+          "command_contract_id": "opl-meta-agent.generate-mechanism-patch-proposal"
         },
         "product_entry": {
-          "action_key": "generate-mechanism-patch-proposal",
-          "command": "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer",
-          "surface_kind": "opl_generated_product_entry_descriptor",
-          "handler_ref": "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer"
+          "action_key": "generate-mechanism-patch-proposal"
         },
         "openai": {
           "tool_name": "opl_meta_agent_generate_mechanism_patch_proposal"
@@ -493,12 +333,25 @@
       "summary": "Consume redacted trajectory atom refs and candidate buffer evidence, then emit skill, prompt, stage-policy, or mechanism patch proposal refs without running a trajectory daemon or promoting any agent default.",
       "owner": "opl-meta-agent",
       "effect": "mutating",
-      "source_command": {
-        "command": "contract-ref:contracts/trajectory_learning_contract.json#/candidate_surfaces",
-        "surface_kind": "minimal_authority_function_ref_only_contract"
+      "execution_binding": {
+        "kind": "stage_binding",
+        "stage_manifest_ref": "agent/stages/manifest.json"
       },
       "input_schema_ref": "contracts/schemas/materialize-trajectory-learning-proposal.input.schema.json",
       "output_schema_ref": "contracts/schemas/materialize-trajectory-learning-proposal.output.schema.json",
+      "required_fields": [
+        "redacted_trajectory_ref",
+        "trajectory_atom_refs",
+        "candidate_buffer_ref",
+        "independent_ai_review_ref",
+        "agent_lab_promotion_gate_ref"
+      ],
+      "optional_fields": [
+        "redaction_proof_refs",
+        "source_owner_refs",
+        "team_sync_policy_refs",
+        "ux_canary_signal_refs"
+      ],
       "workspace_locator_fields": [
         "redacted_trajectory_ref",
         "trajectory_atom_refs",
@@ -525,26 +378,17 @@
         "route_policy": "ai_selected_progress_route"
       },
       "supported_surfaces": {
-        "cli": {
-          "command": "contract-ref:contracts/trajectory_learning_contract.json#/candidate_surfaces",
-          "surface_kind": "not_exposed_repo_local_cli",
-          "handler_ref": "contract-ref:contracts/trajectory_learning_contract.json#/candidate_surfaces"
-        },
+        "cli": {},
         "mcp": {
           "tool_name": "opl_meta_agent_materialize_trajectory_learning_proposal",
-          "surface_kind": "opl_generated_mcp_descriptor",
           "descriptor_only": true,
           "public_runtime": false
         },
         "skill": {
-          "command_contract_id": "opl-meta-agent.materialize-trajectory-learning-proposal",
-          "surface_kind": "opl_generated_skill_contract"
+          "command_contract_id": "opl-meta-agent.materialize-trajectory-learning-proposal"
         },
         "product_entry": {
-          "action_key": "materialize-trajectory-learning-proposal",
-          "command": "contract-ref:contracts/trajectory_learning_contract.json#/candidate_surfaces",
-          "surface_kind": "opl_generated_product_entry_descriptor",
-          "handler_ref": "contract-ref:contracts/trajectory_learning_contract.json#/candidate_surfaces"
+          "action_key": "materialize-trajectory-learning-proposal"
         },
         "openai": {
           "tool_name": "opl_meta_agent_materialize_trajectory_learning_proposal"
@@ -566,34 +410,8 @@
       }
     }
   ],
-  "forbidden_generic_owner_roles": [
-    "generic_scheduler_owner",
-    "generic_daemon_owner",
-    "generic_lifecycle_owner",
-    "generic_queue_owner",
-    "generic_attempt_ledger_owner",
-    "generic_state_machine_runner_owner",
-    "generic_cli_mcp_product_wrapper_owner",
-    "generic_sidecar_owner",
-    "generic_session_store_owner",
-    "generic_status_workbench_owner",
-    "generic_workspace_source_intake_owner",
-    "generic_memory_transport_owner",
-    "generic_artifact_gallery_owner",
-    "generic_operator_workbench_owner",
-    "generic_observability_slo_owner",
-    "generic_persistence_engine_owner",
-    "generic_sqlite_lifecycle_owner",
-    "generic_native_helper_envelope_owner",
-    "generic_review_repair_transport_owner",
-    "generated_surface_owner_in_domain_repo",
-    "generic_trajectory_daemon_owner",
-    "user_scope_skill_installer_owner"
-  ],
   "notes": [
     "OPL Framework generates CLI/MCP/Skill/product-entry/tool descriptors from this catalog.",
     "This repo retains only agent-building domain semantics and minimal authority outputs."
-  ],
-  "marker": "generated_by_opl_standard_domain_agent_scaffold_v1",
-  "trajectory_learning_contract_ref": "contracts/trajectory_learning_contract.json"
+  ]
 }

@@ -84,7 +84,7 @@ function writeConformantProfileFixture(targetDir: string): void {
   });
   writeJson(path.join(targetDir, 'contracts', 'action_catalog.json'), {
     surface_kind: 'family_action_catalog',
-    version: 'family-action-catalog.v1',
+    version: 'family-action-catalog.v2',
     catalog_id: `${domainId}.profile-actions`,
     target_domain_id: domainId,
     owner: domainId,
@@ -95,7 +95,10 @@ function writeConformantProfileFixture(targetDir: string): void {
       summary: 'Evaluate evidence under the target owner gate.',
       owner: domainId,
       effect: 'mutating',
-      source_command: { command: `${domainId} evaluate-evidence`, surface_kind: 'domain_cli' },
+      execution_binding: {
+        kind: 'stage_binding',
+        stage_manifest_ref: 'agent/stages/manifest.json',
+      },
       input_schema_ref: schemaRefs[0],
       output_schema_ref: schemaRefs[1],
       required_fields: [],
@@ -110,14 +113,10 @@ function writeConformantProfileFixture(targetDir: string): void {
         route_policy: 'ai_selected_progress_route',
       },
       supported_surfaces: {
-        cli: { command: `${domainId} evaluate-evidence`, surface_kind: 'domain_cli' },
-        mcp: { tool_name: 'evaluate_evidence', surface_kind: 'domain_mcp' },
-        skill: { command_contract_id: 'evaluate-evidence', surface_kind: 'domain_skill' },
-        product_entry: {
-          action_key: 'evaluate-evidence',
-          command: `${domainId} evaluate-evidence`,
-          surface_kind: 'domain_product_entry',
-        },
+        cli: {},
+        mcp: { tool_name: 'evaluate_evidence', descriptor_only: true, public_runtime: false },
+        skill: { command_contract_id: 'evaluate-evidence' },
+        product_entry: { action_key: 'evaluate-evidence' },
         openai: { tool_name: 'evaluate_evidence' },
         ai_sdk: { tool_name: 'evaluate_evidence' },
       },

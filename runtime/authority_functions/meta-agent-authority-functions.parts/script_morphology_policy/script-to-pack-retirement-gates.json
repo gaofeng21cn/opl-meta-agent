@@ -217,16 +217,20 @@
   {
     "gate_id": "retained_thin_authority_helpers_and_takeover_smoke",
     "tracked_script_refs": [
+      "scripts/lib/mechanism-patch-proposal-handler.ts",
       "scripts/lib/meta-agent-loop-ai-reviewer.ts",
       "scripts/lib/meta-agent-loop-io.ts",
       "scripts/lib/meta-agent-loop-receipts.ts",
       "scripts/takeover-agent.ts"
     ],
-    "current_role": "direct_io_reviewer_receipt_helpers_and_external_takeover_smoke",
+    "current_role": "exact_handler_authority_direct_io_reviewer_receipt_helpers_and_external_takeover_smoke",
     "retention_state": "retained_current_authority_function",
-    "retention_reason": "current OMA thin helper surface for direct JSON/OPL invocation, AI reviewer evidence projection, refs-only owner receipt and work-order candidate materialization, and takeover smoke output without owning target truth, target artifact bodies, target memory, target worktree lifecycle, OPL runner, App shell, registry, promotion gates, or target owner receipt bodies",
+    "retention_reason": "The mechanism proposal handler is the only standard action-reachable minimal authority function and is bound through the exact domain handler registry. The remaining scripts are developer/test helpers outside standard action entrypoints for restricted OPL invocation, AI reviewer evidence projection, refs-only receipt candidates and takeover smoke; none owns target truth, artifact or memory bodies, worktree lifecycle, OPL runner, App shell, registry, promotion gates, or target owner receipt bodies.",
     "retention_evidence_refs": [
+      "contracts/domain_handler_registry.json",
+      "contracts/source_closure_audit.json",
       "package.json#scripts.takeover:test",
+      "tests/standard-agent-v2-boundary.test.ts",
       "tests/takeover-loop.test.ts",
       "tests/target-improvement-policy.test.ts",
       "tests/agent-evidence-materializer.test.ts",
@@ -236,6 +240,7 @@
     "allowed_until": "active_import_or_npm_test_caller_requires_refs_only_helper_or_takeover_receipt_materialization",
     "required_before_retire_or_absorb": [
       "stable_helper_policy_moved_to_agent_contracts_authority_or_opl_primitive_ref",
+      "minimal_authority_handler_no_longer_required_ref",
       "opl_generated_interface_or_invocation_helper_parity_ref",
       "opl_agent_lab_takeover_handoff_parity_ref",
       "no_target_truth_verdict_artifact_memory_or_owner_receipt_body_ref",

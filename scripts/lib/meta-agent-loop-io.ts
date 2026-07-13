@@ -1,7 +1,7 @@
 import fs from 'node:fs';
-import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
+import { runStandardAgentFrameworkCommandSync } from 'opl-framework/standard-agent-action-stage-run';
 import type { JsonObject } from './domain-pack.ts';
 
 const DEFAULT_OPL_BIN = 'opl';
@@ -33,25 +33,7 @@ export function resolveOplBin(value = process.env.OPL_BIN ?? DEFAULT_OPL_BIN): s
 }
 
 export function runOpl(oplBin: string, args: string[]): JsonObject {
-  const result = spawnSync(oplBin, args, {
-    encoding: 'utf8',
-    maxBuffer: 16 * 1024 * 1024,
-    env: {
-      ...process.env,
-      NODE_NO_WARNINGS: '1',
-    },
-  });
-
-  if (result.status !== 0) {
-    throw new Error(`OPL command failed: ${oplBin} ${args.join(' ')}\n${result.stderr || result.stdout}`);
-  }
-
-  try {
-    return JSON.parse(result.stdout);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`OPL command did not return JSON: ${oplBin} ${args.join(' ')}\n${result.stdout}\n${message}`);
-  }
+  return runStandardAgentFrameworkCommandSync({ oplBin, args });
 }
 
 export function stableId(prefix: string, payload: unknown): string {

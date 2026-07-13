@@ -31,14 +31,12 @@ import {
   CANONICAL_FOUNDRY_POLICY_REFS,
   DEFAULT_STAGE_EXECUTOR_BINDING_REF,
   DOMAIN_FOUNDRY_POLICY_DELTA,
-  FORBIDDEN_GENERIC_OWNER_ROLES,
   SHARED_POLICY_RELEASE,
   STANDARD_STAGE_PACK_CONFORMANCE_VERSION,
   STAGE_COMPLETION_POLICY,
   STAGE_PROGRESS_DELTA_POLICY,
   TYPED_BLOCKER_LINEAGE_POLICY,
   USER_STAGE_LOG_CONTRACT,
-  commandPrefix,
   domainLabelFor,
   optionalString,
   ref,
@@ -254,66 +252,75 @@ function buildActionCatalog({
   targetAgent,
   actionId,
   owner,
+  stageIds,
 }: {
   targetAgent: TargetAgent;
   actionId: string;
   owner: string;
+  stageIds: string[];
 }): JsonObject {
   const domainId = targetAgent.domain_id;
-  const brief = targetBriefFor(targetAgent);
+  const catalogId = `${snakeId(domainId)}_action_catalog`;
+  const entryStageRef = requiredMachineString(stageIds[0], 'action_catalog.stage_route.entry_stage_ref');
+  const terminalStageRef = requiredMachineString(
+    stageIds.at(-1),
+    'action_catalog.stage_route.terminal_stage_refs[0]',
+  );
   const actionSummary = actionId === 'draft-agent-output'
     ? `Draft the owner-gated ${owner} delivery from declared workspace refs.`
     : `Run the owner-gated ${owner} stage from declared workspace refs.`;
   return {
     surface_kind: 'family_action_catalog',
-    version: 'family-action-catalog.v1',
-    catalog_id: `${snakeId(domainId)}_action_catalog`,
+    version: 'family-action-catalog.v2',
+    catalog_id: catalogId,
     target_domain_id: domainId,
     owner,
     authority_boundary: {
-      opl_role: 'generated_interface_projection_only',
       domain_truth_owner: owner,
+      opl_role: 'projection_consumer_only',
+      write_policy: 'no_domain_truth_writes',
       opl_can_write_domain_truth: false,
       opl_can_write_memory_body: false,
       opl_can_authorize_quality_or_export: false,
       domain_repo_can_own_generated_surface: false,
+      provider_completion_is_domain_completion: false,
     },
     actions: [
       {
         action_id: actionId,
         title: actionId.split('-').map((part) => part[0]?.toUpperCase() + part.slice(1)).join(' '),
         summary: actionSummary,
-        natural_language_intent: brief,
-        reference_design_boundary: buildReferenceDesignBoundary(targetAgent),
         owner,
         effect: 'mutating',
-        source_command: {
-          command: `${commandPrefix(domainId)} ${commandPrefix(actionId)} --workspace-root <workspace_root>`,
-          surface_kind: 'domain_cli',
+        execution_binding: {
+          kind: 'stage_binding',
+          stage_manifest_ref: 'agent/stages/manifest.json',
         },
         input_schema_ref: `contracts/schemas/${actionId}.input.schema.json`,
         output_schema_ref: `contracts/schemas/${actionId}.output.schema.json`,
+        required_fields: ['workspace_root'],
+        optional_fields: [],
         workspace_locator_fields: ['workspace_root'],
         human_gate_ids: [`${snakeId(actionId)}_owner_review`],
+        stage_route: {
+          entry_stage_ref: entryStageRef,
+          required_stage_refs: [...stageIds],
+          optional_stage_refs: [],
+          terminal_stage_refs: [terminalStageRef],
+          route_policy: 'ai_selected_progress_route',
+        },
         supported_surfaces: {
-          cli: {
-            command: `${commandPrefix(domainId)} ${commandPrefix(actionId)} --workspace-root <workspace_root>`,
-            surface_kind: 'domain_cli',
-          },
+          cli: {},
           mcp: {
             tool_name: `${snakeId(domainId)}_${snakeId(actionId)}`,
-            surface_kind: 'opl_generated_mcp_descriptor',
             descriptor_only: true,
             public_runtime: false,
           },
           skill: {
             command_contract_id: `${domainId}.${actionId}`,
-            surface_kind: 'opl_generated_skill_contract',
           },
           product_entry: {
             action_key: actionId,
-            command: `${commandPrefix(domainId)} product ${commandPrefix(actionId)} --workspace-root <workspace_root>`,
-            surface_kind: 'domain_product_entry_action',
           },
           openai: {
             tool_name: `${snakeId(domainId)}_${snakeId(actionId)}`,
@@ -322,10 +329,25 @@ function buildActionCatalog({
             tool_name: `${snakeId(domainId)}_${snakeId(actionId)}`,
           },
         },
-        authority_boundary: authorityBoundary(owner),
+        authority_boundary: {
+          domain_truth_owner: owner,
+          opl_role: 'projection_consumer_only',
+          write_policy: 'no_domain_truth_writes',
+          can_write_target_domain_truth: false,
+          can_write_target_domain_memory_body: false,
+          can_mutate_target_domain_artifact_body: false,
+          can_authorize_target_domain_quality_or_export: false,
+          opl_can_write_domain_truth: false,
+          opl_can_write_memory_body: false,
+          opl_can_authorize_quality_or_export: false,
+          provider_completion_is_domain_completion: false,
+        },
       },
     ],
-    forbidden_generic_owner_roles: [...FORBIDDEN_GENERIC_OWNER_ROLES],
+    notes: [
+      'OPL Framework derives hosted CLI, MCP, Skill, product-entry, OpenAI, and AI SDK descriptors from this catalog.',
+      'The target repo retains declarative domain semantics and owner-gated authority only.',
+    ],
   };
 }
 
@@ -1108,6 +1130,7 @@ function actionSchemaFiles(targetAgent: TargetAgent, actionId: string): AgentSke
       title: `${actionId} ${kind}`,
       type: 'object',
       properties,
+      required: Object.keys(properties),
       additionalProperties: true,
     }, null, 2)}\n`,
   });
@@ -1240,7 +1263,7 @@ export function buildFixtureStageDecompositionCloseout(input: FixtureStageSpec):
     },
     no_forbidden_write_policy: noForbiddenWritePolicy(owner),
     artifact_morphology_contract: artifactMorphologyContract,
-    action_catalog: buildActionCatalog({ targetAgent, actionId, owner }),
+    action_catalog: buildActionCatalog({ targetAgent, actionId, owner, stageIds: materializedStageIds }),
     stage_control_plane: stageControlPlane,
     stage_native_artifact_contract: stageNativeArtifactContract,
     foundry_agent_series: buildFoundryAgentSeriesContract(targetAgent, stageControlPlane, owner),

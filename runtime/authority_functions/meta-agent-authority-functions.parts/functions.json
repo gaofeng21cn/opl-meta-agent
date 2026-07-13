@@ -1,35 +1,10 @@
 [
   {
-    "function_id": "candidate_agent_package_builder",
-    "classification": "minimal_authority_function",
-    "authority_ref": "authority-function-ref:opl-meta-agent/candidate-agent-package-builder",
-    "implementation_refs": [
-      "scripts/build-agent-baseline.ts",
-      "scripts/lib/meta-agent-loop-receipts.ts"
-    ],
-    "invoked_by_refs": [
-      "action-ref:build-agent-baseline"
-    ],
-    "output_refs": [
-      "candidate_agent_package_ref",
-      "foundry_evaluation_request_ref",
-      "foundry_lab_work_order_candidate_ref"
-    ],
-    "boundary": {
-      "refs_only": true,
-      "can_own_agent_building_semantics": true,
-      "can_claim_generic_runtime_owner": false,
-      "can_write_target_domain_truth": false,
-      "can_write_target_memory_body": false,
-      "can_authorize_target_quality_or_export": false
-    }
-  },
-  {
     "function_id": "mechanism_patch_proposal_authorizer",
     "classification": "minimal_authority_function",
     "authority_ref": "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer",
     "implementation_refs": [
-      "scripts/lib/foundry-lab-work-order.ts"
+      "scripts/lib/mechanism-patch-proposal-handler.ts"
     ],
     "invoked_by_refs": [
       "action-ref:generate-mechanism-patch-proposal"

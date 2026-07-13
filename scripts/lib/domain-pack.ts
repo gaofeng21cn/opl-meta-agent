@@ -481,7 +481,7 @@ export function buildAgentPackPlan(
     target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
     planned_stage_refs: plannedStages,
     planned_control_refs: [
-      'contracts/stage_control_plane.json',
+      'agent/stages/manifest.json',
       'contracts/action_catalog.json',
       'contracts/artifact_morphology_contract.json',
       'contracts/stage_native_artifact_contract.json',

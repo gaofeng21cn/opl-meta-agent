@@ -344,7 +344,7 @@
           "role": "oma_action_catalog"
         }
       ],
-      "sync_policy": "domain_agent_builtin_or_opl_connect_when_externalized",
+      "sync_policy": "domain_agent_builtin_or_opl_packages_when_externalized",
       "externalization_reason": "repo-owned standard OPL agent capability locator; resolver metadata only, not domain truth or readiness evidence",
       "improvement_tokens": [
         "opl",

@@ -80,7 +80,6 @@
     "golden_path_profile"
   ],
   "minimal_authority_functions": [
-    "candidate_agent_package_builder",
     "mechanism_patch_proposal_authorizer"
   ],
   "generated_surfaces_requested": [
@@ -271,6 +270,8 @@
     "executor_policy_source_ref": "agent/stages/manifest.json#/stages/*/trust_lane",
     "owner_receipt_schema_source_ref": "contracts/owner_receipt_contract.json",
     "authority_functions_source_ref": "runtime/authority_functions/meta-agent-authority-functions.json",
+    "domain_handler_registry_source_ref": "contracts/domain_handler_registry.json",
+    "source_closure_audit_source_ref": "contracts/source_closure_audit.json",
     "functional_privatization_audit_source_ref": "contracts/functional_privatization_audit.json",
     "generated_surface_handoff_source_ref": "contracts/generated_surface_handoff.json",
     "capability_map_source_ref": "contracts/capability_map.json"

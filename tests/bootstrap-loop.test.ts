@@ -39,6 +39,14 @@ import {
 
 const oplBin = path.join(oplOwnerRepoRoot, 'bin', 'opl');
 
+function generatedStageControl(payload: JsonObject): JsonObject {
+  const interfaces = payload.opl_generated_interfaces as JsonObject;
+  const productEntry = interfaces?.product_entry as JsonObject;
+  const stageControl = productEntry?.family_stage_control_plane;
+  assert.ok(stageControl && typeof stageControl === 'object' && !Array.isArray(stageControl));
+  return stageControl as JsonObject;
+}
+
 type BaselineFixtureTargetAgent = TargetAgent & {
   domain_label: NonNullable<TargetAgent['domain_label']>;
   delivery_domain: NonNullable<TargetAgent['delivery_domain']>;
@@ -737,7 +745,7 @@ test('build-agent-baseline writes a conformant hybrid package and canonical Foun
     const descriptor = readJson(path.join(targetDir, 'contracts/domain_descriptor.json'));
     const capabilityMap = readJson(path.join(targetDir, 'contracts/capability_map.json'));
     const packageManifest = readJson(path.join(targetDir, 'contracts/opl_agent_package_manifest.json'));
-    const stageControl = readJson(path.join(targetDir, 'contracts/stage_control_plane.json'));
+    const stageControl = generatedStageControl(payload);
     const firstStage = stageControl.stages[0] as JsonObject;
     const primarySkill = fs.readFileSync(path.join(targetDir, 'agent/primary_skill/SKILL.md'), 'utf8');
     const generatedPrompt = fs.readFileSync(path.join(targetDir, firstStage.prompt_refs[0].ref), 'utf8');
@@ -758,6 +766,7 @@ test('build-agent-baseline writes a conformant hybrid package and canonical Foun
     assert.equal(fs.existsSync(path.join(outputRoot, 'agent-lab-suite.json')), false);
     assert.equal(fs.existsSync(path.join(outputRoot, 'online-learning-candidate.json')), false);
     assert.equal(fs.existsSync(path.join(outputRoot, 'mechanism-patch-proposal.json')), false);
+    assert.equal(fs.existsSync(path.join(targetDir, 'contracts/stage_control_plane.json')), false);
     assert.equal(descriptor.domain_id, targetAgent.domain_id);
     assert.equal(packageManifest.distribution_payload, undefined);
     assert.deepEqual(descriptor.selected_opl_profile_refs, targetAgent.selected_opl_profile_refs);
@@ -772,32 +781,17 @@ test('build-agent-baseline writes a conformant hybrid package and canonical Foun
     assert.match(profileCatalogRefs, /opl profiles inspect/);
     assert.doesNotMatch(profileCatalogRefs, /opl foundry evidence-profile inspect/);
     assert.ok(capabilityMap.profile_requirements.required_stage_archetypes.includes('mode_routing'));
-    assert.deepEqual(stageControl.selected_profile_refs, targetAgent.selected_opl_profile_refs);
     assert.ok(
-      stageControl.profile_requirements.required_evidence_objects.includes('EvidencePacket'),
+      capabilityMap.profile_requirements.required_evidence_objects.includes('EvidencePacket'),
     );
     assert.equal(stageControl.stages[0].selected_executor.executor_kind, 'codex_cli');
-    assert.deepEqual(stageControl.stages[0].selected_profile_refs, targetAgent.selected_opl_profile_refs);
-    assert.ok(
-      stageControl.stages[0].inputs.some((entry: JsonObject) =>
-        entry.ref_kind === 'profile_selection_receipt_ref'
-      ),
-    );
     assert.deepEqual(
-      stageControl.stages[0].reference_design_boundary.source_refs,
+      capabilityMap.reference_design_source_refs,
       targetAgent.reference_design_source_refs,
     );
     assert.deepEqual(
-      stageControl.stages[0].reference_design_boundary.pattern_packet_refs,
+      capabilityMap.reference_design_pattern_packet_refs,
       targetAgent.reference_design_pattern_packet_refs,
-    );
-    assert.ok(
-      stageControl.stages[0].inputs.some((entry: JsonObject) => entry.ref_kind === 'reference_design_source_refs'),
-    );
-    assert.ok(
-      stageControl.stages[0].inputs.some((entry: JsonObject) =>
-        entry.ref_kind === 'reference_design_pattern_packet_refs'
-      ),
     );
     assert.ok(evidenceRefs.includes(targetAgent.reference_design_source_refs[0]));
     assert.ok(evidenceRefs.includes(targetAgent.reference_design_pattern_packet_refs[0]));
@@ -829,7 +823,7 @@ test('build-agent-baseline writes a conformant hybrid package and canonical Foun
     assert.ok(primarySkill.includes(targetAgent.reference_design_pattern_packet_refs[0]));
     assert.ok(generatedPrompt.includes(targetAgent.selected_opl_profile_refs[0]));
     assert.ok(generatedKnowledge.includes('EvidencePacket'));
-    assert.ok(stageControl.profile_requirements.required_reference_pack_roles.includes('evidence_source_freshness_policy'));
+    assert.ok(capabilityMap.profile_requirements.required_reference_pack_roles.includes('evidence_source_freshness_policy'));
   });
 });
 
@@ -850,7 +844,8 @@ test('build-agent-baseline repairs mechanical subpacket projection before confor
     ]);
 
     const targetDir = path.join(outputRoot, sourceDerivedTargetAgent.domain_id);
-    const stageControl = readJson(path.join(targetDir, 'contracts/stage_control_plane.json'));
+    const capabilityMap = readJson(path.join(targetDir, 'contracts/capability_map.json'));
+    const stageControl = generatedStageControl(payload);
     const stage = stageControl.stages[0] as JsonObject;
     const stageContract = stage.stage_contract as JsonObject;
     assert.equal(payload.status, 'candidate_package_materialized_ready_for_opl_foundry_lab_evaluation');
@@ -860,20 +855,13 @@ test('build-agent-baseline repairs mechanical subpacket projection before confor
       false,
     );
     assert.equal(
-      stageControl.stage_decomposition_subpacket_set_ref,
+      capabilityMap.stage_decomposition_subpacket_set_ref,
       sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef,
     );
-    assert.equal(
-      stage.stage_decomposition_subpacket_set_ref,
-      sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef,
-    );
-    assert.ok((stage.inputs as JsonObject[]).some((entry) =>
-      entry.ref_kind === 'stage_decomposition_subpacket_set_ref'
-      && entry.ref === sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef
-    ));
     assert.ok((stageContract.requires as string[]).includes(
       `stage-decomposition-subpacket-set-ref:${sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef}`,
     ));
+    assert.equal(fs.existsSync(path.join(targetDir, 'contracts/stage_control_plane.json')), false);
   });
 });
 
@@ -896,7 +884,7 @@ test('build-agent-baseline materializes source-derived proof with canonical OPL 
     const targetDir = path.join(outputRoot, sourceDerivedTargetAgent.domain_id);
     const descriptor = readJson(path.join(targetDir, 'contracts/domain_descriptor.json'));
     const capabilityMap = readJson(path.join(targetDir, 'contracts/capability_map.json'));
-    const stageControl = readJson(path.join(targetDir, 'contracts/stage_control_plane.json'));
+    const stageControl = generatedStageControl(payload);
     const buildReceipt = readJson(path.join(targetDir, 'contracts/agent_build_receipt.json'));
     const compilerInput = readJson(path.join(targetDir, 'contracts/pack_compiler_input.json'));
     const generatedSeries = readJson(path.join(targetDir, 'contracts/foundry_agent_series.json'));
@@ -920,10 +908,11 @@ test('build-agent-baseline materializes source-derived proof with canonical OPL 
     assert.equal(payload.opl_profile_conformance.status, 'passed');
     assertBuildAgentBaselineOutputSchema(payload);
     assert.equal(fs.existsSync(path.join(outputRoot, 'baseline-delivery-receipt.json')), false);
+    assert.equal(fs.existsSync(path.join(targetDir, 'contracts/stage_control_plane.json')), false);
     assert.equal(descriptor.profile_selection_mode, 'source_derived_design');
     assert.equal(descriptor.selected_opl_profile_refs, undefined);
     assert.deepEqual(capabilityMap.selected_profile_refs, []);
-    assert.deepEqual(stageControl.selected_profile_refs, []);
+    assert.deepEqual(capabilityMap.selected_profile_refs, []);
     assert.deepEqual(descriptor.build_receipt.required_design_objects, sourceDerivedRequiredDesignObjects);
     assert.ok(descriptor.build_receipt.forbidden_claims.includes('runtime_live_promoted'));
     assertRefFields(capabilityMap.profile_selection_receipt as JsonObject, {
@@ -935,8 +924,8 @@ test('build-agent-baseline materializes source-derived proof with canonical OPL 
       stage_decomposition_subpacket_set_ref: sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef,
     });
     assert.equal(Object.hasOwn(capabilityMap.profile_selection_receipt, 'build_receipt'), false);
-    assert.equal(stageControl.build_receipt.build_source_kind, 'source_derived_design');
-    assert.equal(stageControl.build_receipt.receipt_kind, 'AgentBuildReceipt');
+    assert.equal(buildReceipt.build_source_kind, 'source_derived_design');
+    assert.equal(buildReceipt.receipt_kind, 'AgentBuildReceipt');
     assert.equal(stageControl.stages.length, 5);
     assert.deepEqual(
       stageControl.stages
@@ -949,7 +938,7 @@ test('build-agent-baseline materializes source-derived proof with canonical OPL 
       stageControl.stages.at(-1).target_only_requirement_ref,
       'target-only-requirement:surgery-risk-from-paper-agent/owner-gated-closeout',
     );
-    assert.equal(stageControl.build_receipt.receipt_timing, 'post_materialization');
+    assert.equal(buildReceipt.receipt_timing, 'post_materialization');
     for (const field of [
       'domain_can_write_other_domain_truth',
       'domain_can_write_other_domain_memory_body',
@@ -966,14 +955,14 @@ test('build-agent-baseline materializes source-derived proof with canonical OPL 
       assert.ok(compilerInput.required_domain_pack_paths.includes(schemaRef), schemaRef);
       assert.equal(readJson(path.join(targetDir, schemaRef)).type, 'object');
     }
-    [descriptor, capabilityMap, stageControl].forEach((surface) => assert.deepEqual(surface.build_receipt, buildReceipt));
+    [descriptor, capabilityMap].forEach((surface) => assert.deepEqual(surface.build_receipt, buildReceipt));
     assert.deepEqual(
-      stageControl.build_receipt.materialization.materialized_stage_ids,
+      buildReceipt.materialization.materialized_stage_ids,
       stageControl.stages.map((stage: JsonObject) => stage.stage_id),
     );
-    const plan = stageControl.agent_pack_plan as JsonObject;
+    const plan = capabilityMap.agent_pack_plan as JsonObject;
     const digestRefs = new Set(
-      stageControl.build_receipt.materialization.materialized_file_digests
+      buildReceipt.materialization.materialized_file_digests
         .map((entry: JsonObject) => entry.ref),
     );
     const plannedRefs = [
@@ -993,19 +982,18 @@ test('build-agent-baseline materializes source-derived proof with canonical OPL 
       'contracts/schemas/draft-agent-output.input.schema.json',
       'contracts/schemas/draft-agent-output.output.schema.json',
     ].forEach((ref) => assert.ok(digestRefs.has(ref), `missing action schema build receipt digest: ${ref}`));
-    assert.deepEqual(stageControl.build_receipt.target_only_requirement_refs, [
+    assert.deepEqual(buildReceipt.target_only_requirement_refs, [
       'target-only-requirement:surgery-risk-from-paper-agent/owner-gated-closeout',
     ]);
     assert.deepEqual(stageControl.stages[0].stage_pattern_source_refs, [
       sourceDerivedObjectRefs.sourcePatternRef,
     ]);
     const firstStage = stageControl.stages[0] as JsonObject;
-    [
-      ['reference_design_packet_ref', sourceDerivedObjectRefs.referenceDesignPacketRef],
-      ['design_admission_receipt_ref', sourceDerivedObjectRefs.designAdmissionReceiptRef],
-      ['stage_decomposition_subpacket_set_ref', sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef],
-    ].forEach(([kind, ref]) => assertStageInput(firstStage, kind, ref));
-    assert.equal((firstStage.inputs as JsonObject[]).some((entry) => entry.ref_kind === 'build_receipt_ref'), false);
+    assertRefFields(capabilityMap, {
+      reference_design_packet_ref: sourceDerivedObjectRefs.referenceDesignPacketRef,
+      design_admission_receipt_ref: sourceDerivedObjectRefs.designAdmissionReceiptRef,
+      stage_decomposition_subpacket_set_ref: sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef,
+    });
     [
       `reference-design-packet-ref:${sourceDerivedObjectRefs.referenceDesignPacketRef}`,
       `transfer-map-ref:${sourceDerivedObjectRefs.transferMapRef}`,
@@ -1013,9 +1001,9 @@ test('build-agent-baseline materializes source-derived proof with canonical OPL 
       `design-admission-receipt-ref:${sourceDerivedObjectRefs.designAdmissionReceiptRef}`,
       `stage-decomposition-subpacket-set-ref:${sourceDerivedObjectRefs.stageDecompositionSubpacketSetRef}`,
     ].forEach((ref) => assert.ok(firstStage.stage_contract.requires.includes(ref), ref));
-    assert.ok(firstStage.stage_contract.expected_receipt_refs.some((entry: JsonObject) =>
+    assert.equal(firstStage.stage_contract.expected_receipt_refs.some((entry: JsonObject) =>
       entry.ref === sourceDerivedObjectRefs.buildReceiptRef
-    ));
+    ), false, 'post-materialization AgentBuildReceipt must not become a target stage receipt');
     assert.deepEqual(sourceDesignReceipt.required_design_objects, sourceDerivedRequiredDesignObjects);
     assert.deepEqual(sourceDesignReceipt.required_machine_objects, sourceDerivedRequiredDesignObjects);
     assertRefFields(capabilityMap.profile_selection_receipt as JsonObject, {
@@ -1061,7 +1049,8 @@ test('build-agent-baseline materializes a research-driven target package from va
     const targetDir = path.join(outputRoot, researchDrivenTargetAgent.domain_id);
     const descriptor = readJson(path.join(targetDir, 'contracts/domain_descriptor.json'));
     const capabilityMap = readJson(path.join(targetDir, 'contracts/capability_map.json'));
-    const stageControl = readJson(path.join(targetDir, 'contracts/stage_control_plane.json'));
+    const stageControl = generatedStageControl(payload);
+    const buildReceipt = readJson(path.join(targetDir, 'contracts/agent_build_receipt.json'));
     const workOrder = readJson(path.join(outputRoot, 'foundry-lab-work-order.json'));
     const evaluationRequest = readJson(path.join(outputRoot, 'foundry-evaluation-request.json'));
     const primarySkill = fs.readFileSync(path.join(targetDir, 'agent/primary_skill/SKILL.md'), 'utf8');
@@ -1071,10 +1060,11 @@ test('build-agent-baseline materializes a research-driven target package from va
     assert.equal(payload.opl_profile_conformance.status, 'not_applicable');
     assertBuildAgentBaselineOutputSchema(payload);
     assert.equal(payload.artifacts.agent_build_receipt_ref, researchDrivenObjectRefs.buildReceiptRef);
-    [descriptor, capabilityMap, stageControl].forEach((surface) => {
+    [descriptor, capabilityMap].forEach((surface) => {
       assert.equal(surface.profile_selection_mode, 'research_driven_design');
       assert.equal(surface.research_driven_design_receipt.route_ref, 'opl-profile-route:research_driven_design_profile_route.v1');
     });
+    assert.equal(fs.existsSync(path.join(targetDir, 'contracts/stage_control_plane.json')), false);
     assert.equal(descriptor.selected_opl_profile_refs, undefined);
     assert.deepEqual(descriptor.research_source_refs, researchDrivenTargetAgent.research_source_refs);
     assert.deepEqual(descriptor.expert_practice_notes, researchDrivenTargetAgent.expert_practice_notes);
@@ -1083,20 +1073,19 @@ test('build-agent-baseline materializes a research-driven target package from va
     assert.deepEqual(descriptor.build_receipt.required_design_objects, researchDrivenRequiredDesignObjects);
     assert.equal(descriptor.build_receipt.build_source_kind, 'research_driven_design');
     assert.deepEqual(capabilityMap.selected_profile_refs, []);
-    assertRefFields(stageControl, {
+    assertRefFields(capabilityMap, {
       research_synthesis_packet_ref: researchDrivenObjectRefs.researchSynthesisPacketRef,
       design_admission_receipt_ref: researchDrivenObjectRefs.designAdmissionReceiptRef,
       stage_decomposition_subpacket_set_ref: researchDrivenObjectRefs.stageDecompositionSubpacketSetRef,
     });
-    assert.deepEqual(stageControl.build_receipt.required_design_objects, researchDrivenRequiredDesignObjects);
+    assert.deepEqual(buildReceipt.required_design_objects, researchDrivenRequiredDesignObjects);
     assert.equal(stageControl.stages.length, 4);
-    assert.deepEqual(stageControl.stages.flatMap((stage: JsonObject) => stage.stage_pattern_source_refs), [
+    assert.deepEqual(stageControl.stages.flatMap((stage: JsonObject) => stage.stage_pattern_source_refs ?? []), [
       researchDrivenTargetAgent.research_synthesis_refs[0],
       researchDrivenObjectRefs.expertPracticeNoteRef,
       researchDrivenObjectRefs.researchSourcePatternRef,
     ]);
     const firstStage = stageControl.stages[0] as JsonObject;
-    assertStageInput(firstStage, 'research_synthesis_packet_ref', researchDrivenObjectRefs.researchSynthesisPacketRef);
     [
       `research-synthesis-packet-ref:${researchDrivenObjectRefs.researchSynthesisPacketRef}`,
       `design-admission-receipt-ref:${researchDrivenObjectRefs.designAdmissionReceiptRef}`,

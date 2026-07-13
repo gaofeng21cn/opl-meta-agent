@@ -28,6 +28,15 @@
     "online_learning_dataset_refs",
     "mechanism_patch_proposal_ref"
   ],
+  "standard_contract_refs": {
+    "action_catalog": "contracts/action_catalog.json",
+    "foundry_agent_series": "contracts/foundry_agent_series.json",
+    "stage_manifest": "agent/stages/manifest.json",
+    "pack_compiler_input": "contracts/pack_compiler_input.json",
+    "generated_surface_handoff": "contracts/generated_surface_handoff.json",
+    "domain_handler_registry": "contracts/domain_handler_registry.json",
+    "source_closure_audit": "contracts/source_closure_audit.json"
+  },
   "standard_agent_interface": {
     "version": "opl_standard_agent_interface.v1",
     "workspace_binding": {
@@ -39,13 +48,10 @@
       "default_workspace_id": "agent-foundry-workspace",
       "default_project_id": "agent-001",
       "required_locator_fields": ["workspace_root"],
-      "optional_locator_fields": [],
-      "entry_command_template": null,
-      "manifest_command_template": null
+      "optional_locator_fields": []
     },
     "runtime": {
       "runtime_domain_id": "opl-meta-agent",
-      "dispatch_command": null,
       "registration_ref": "contracts/opl_domain_manifest_registration.json"
     },
     "progress": {

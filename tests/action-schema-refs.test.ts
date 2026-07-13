@@ -132,16 +132,12 @@ test('build-agent-baseline action metadata exposes canonical intent signals and 
   const catalog = readJson('contracts/action_catalog.json');
   const action = (catalog.actions as JsonObject[]).find((entry) => entry.action_id === 'build-agent-baseline');
   assert.ok(action);
-  const commands = [
-    action.source_command.command,
-    action.supported_surfaces.cli.command,
-    action.supported_surfaces.product_entry.command,
-  ] as string[];
-  const intentSignalFlag = '[--intent-signal <intent_signal>]';
-  const intentMappings = [
-    action.supported_surfaces.skill.intent_mapping,
-    action.supported_surfaces.product_entry.intent_mapping,
-  ];
+  assert.deepEqual(action.execution_binding, {
+    kind: 'stage_binding',
+    stage_manifest_ref: 'agent/stages/manifest.json',
+  });
+  assert.equal(Object.hasOwn(action, 'source_command'), false);
+  assert.deepEqual(action.supported_surfaces.cli, {});
   const routeFields = [
     'reference_design_source_refs',
     'reference_design_pattern_notes',
@@ -150,26 +146,11 @@ test('build-agent-baseline action metadata exposes canonical intent signals and 
     'expert_practice_notes',
     'research_synthesis_refs',
   ];
-  const routeFlags = [
-    '--reference-design-source',
-    '--reference-design-pattern',
-    '--reference-design-pattern-packet',
-    '--research-source',
-    '--expert-practice',
-    '--research-synthesis',
-  ];
-  commands.forEach((command) => {
-    assert.ok(command.includes(intentSignalFlag), intentSignalFlag);
-    routeFlags.forEach((flag) => assert.ok(command.includes(flag), flag));
-  });
-  intentMappings.forEach((mapping) => {
-    assert.equal(typeof mapping, 'string');
-    assert.match(mapping, /optional canonical intent_signals/);
-  });
+  assert.ok(action.optional_fields.includes('intent_signals'));
   assert.equal(action.workspace_locator_fields.includes('intent_signals'), false);
   routeFields.forEach((field) => {
+    assert.ok(action.optional_fields.includes(field), field);
     assert.ok(action.workspace_locator_fields.includes(field), field);
-    assert.ok(action.supported_surfaces.skill.intent_mapping.includes(field), field);
   });
 });
 

@@ -59,7 +59,7 @@ generated surface proof、registration readiness、App projection readiness、su
 - Agent skeleton / contract / prompt / skill / quality gate 生成策略。
 - Thin Foundry evaluation request、blocked external-suite intake 和 developer patch work order policy；OPL Foundry Lab owns suite spec、scorecard refs、recovery probes 与 compiled suite plan。
 - Baseline delivery receipt、testing takeover receipt、online-learning candidate refs 和 mechanism patch proposal refs。
-- Minimal authority functions：candidate agent package builder 和 mechanism patch proposal authorizer。
+- 唯一 minimal authority function：mechanism patch proposal authorizer。Candidate Agent Pack 的判断与构建语义留在 declarative stage pack，由 OPL-hosted StageRun 执行，不再形成独立 authority function。
 
 OPL Framework 持有：
 
@@ -78,20 +78,19 @@ OPL Framework 持有：
 
 `required_domain_pack_paths` 只列真实 pack 语义文件：prompts、stages、skills、quality gates 和 knowledge。README 只能是人读入口或目录说明，不能作为 required semantic pack path。OPL scaffold validation 应能证明每个 required path 存在、非空、无占位，并且 stage prompt / skill / knowledge / evaluation refs 都解析到真实 repo 文件。
 
-CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framework 从 action / stage contracts 生成或托管。`opl-meta-agent` 只暴露 domain handler target、refs-only action output、minimal authority function refs、owner receipt 和 typed blocker；它不能声明 generated surface owner。
+CLI、MCP、Skill、product-entry、OpenAI tool 和 AI SDK 描述由 OPL Framework 从 action / stage contracts 生成或托管。`family-action-catalog.v2` 只允许 `stage_binding` 或精确 `handler_ref`，不携带 repo-private command template。`opl-meta-agent` 只暴露 declarative stage bindings、唯一 domain handler target、refs-only action output、minimal authority function ref、owner receipt 和 typed blocker；它不能声明 generated surface owner。
 
 ## Minimal Authority Functions
 
-当前 repo-local scripts 的长期角色必须落在 `runtime/authority_functions/meta-agent-authority-functions.json` 这类 explicit authority refs 上：
+标准 action 可达的 repo-local implementation 必须落在 `runtime/authority_functions/meta-agent-authority-functions.json` 与 `contracts/domain_handler_registry.json` 的同一精确绑定上：
 
 | Authority function | Implementation refs | 允许输出 | 禁止事项 |
 | --- | --- | --- | --- |
-| `candidate_agent_package_builder` | `scripts/build-agent-baseline.ts`, `scripts/lib/meta-agent-loop-receipts.ts` | candidate agent package ref、owner receipt ref | generic runtime owner、target truth write、target quality/export verdict |
-| `mechanism_patch_proposal_authorizer` | `scripts/lib/meta-agent-loop-receipts.ts` | mechanism patch proposal ref、owner receipt ref | target memory body write、artifact body write、default promotion |
+| `mechanism_patch_proposal_authorizer` | `scripts/lib/mechanism-patch-proposal-handler.ts#generateMechanismPatchProposal` | mechanism patch candidate ref | target memory body write、artifact body write、quality/export verdict、owner receipt body、default promotion |
 
-这些函数可以持有 agent-building semantics，但只能以 refs-only / receipt / blocker 方式工作。它们不能成为第二套 OPL runtime，也不能替目标 domain owner 作 truth、memory、artifact、quality/export 或 promotion 决策。
+该函数可以持有 agent-building mechanism judgment，但只能输出 proposal/candidate ref。它不能成为第二套 OPL runtime，也不能替目标 domain owner 作 truth、memory、artifact、quality/export、owner receipt 或 promotion 决策。Candidate Agent Pack 构建、takeover、external-suite improvement 和 trajectory proposal 已全部进入 declarative `stage_binding`，不再以脚本或 authority function 定义标准 action。
 
-理想物理源码形态应让这条边界在目录层面可见：`agent/` 保存 agent-building prompts、stages、skills、knowledge 和 quality gates；`contracts/` 保存 registration、generated surface handoff、App projection、scaleout evidence 和 no-forbidden-write contracts；`runtime/authority_functions/` 保存 authority manifest；`scripts/` 只保存 authority implementation refs、smoke action targets、fixture/proof helper 或 developer work-order materializer。随着功能成熟，可声明的 agent-building policy 应迁回 `agent/` 或 `contracts/`，不让 scripts 增长成私有 meta-runtime、promotion engine、registry owner 或 App/workbench shell。
+理想物理源码形态应让这条边界在目录层面可见：`agent/` 保存 agent-building prompts、stages、skills、knowledge 和 quality gates；`contracts/` 保存 action/handler binding、registration、generated surface handoff、App projection、scaleout evidence 和 no-forbidden-write contracts；`runtime/authority_functions/` 保存唯一 authority manifest；`scripts/` 只保存该精确 authority implementation，以及不可从标准 action/handler/package bin/generated default entry 到达的 developer、fixture、proof 或 provenance source。`contracts/source_closure_audit.json` 负责证明可达闭包，`contracts/functional_privatization_audit.json` 以 `provenance_or_fixture` 接纳 retained developer source；两套合同不共享分类词汇。随着功能成熟，可声明的 agent-building policy 应迁回 `agent/` 或 `contracts/`，不让 scripts 增长成私有 meta-runtime、promotion engine、registry owner 或 App/workbench shell。
 
 ## 理想完成门槛
 

@@ -19,6 +19,7 @@ const scriptToPackGateRef = 'script-to-pack-gate-receipt:opl-meta-agent/current-
 test('target-agent owner-chain evidence preserves action ref shapes and live-progress linkage', () => {
   const profile = readJson('contracts/stage_run_kernel_profile.json');
   const actionCatalog = readJson('contracts/action_catalog.json');
+  const functionalAudit = readJson('contracts/functional_privatization_audit.json');
   const evidence = readJson(ownerChainEvidenceRef);
   const productionAcceptance = readJson(productionAcceptanceRef);
   const liveProgress = readJson(liveProgressEvidenceRef);
@@ -38,7 +39,7 @@ test('target-agent owner-chain evidence preserves action ref shapes and live-pro
   assert.equal(evidence.target_artifact_authority_claimed, false);
   assert.equal(canary.target_agent_owner_chain_evidence_ref, ownerChainEvidenceRef);
   assert.equal(
-    actionCatalog.registration_projection_evidence_contract_refs.target_agent_owner_chain_evidence_ref,
+    functionalAudit.registration_projection_evidence_contract_refs.target_agent_owner_chain_evidence_ref,
     ownerChainEvidenceRef,
   );
   Object.values(evidence.source_refs as JsonObject).forEach((ref) => assertContractRefExists(ref as string));

@@ -40,6 +40,7 @@
     "opl_domain_manifest_registration_ref": "contracts/opl_domain_manifest_registration.json",
     "app_workbench_projection_ref": "contracts/app_workbench_projection.json",
     "real_target_agent_scaleout_evidence_ref": "contracts/real_target_agent_scaleout_evidence.json",
+    "target_agent_owner_chain_evidence_ref": "contracts/target_agent_owner_chain_evidence.json",
     "trajectory_learning_contract_ref": "contracts/trajectory_learning_contract.json",
     "live_stage_run_progress_evidence_ref": "contracts/live_stage_run_progress_evidence.json",
     "script_to_pack_gate_receipt_ref": "contracts/script_to_pack_gate_receipt.json"
@@ -55,6 +56,7 @@
     "owner_receipt_refs",
     "typed_blocker",
     "refs_only_domain_adapter",
+    "provenance_or_fixture",
     "minimal_authority_function"
   ],
   "forbidden_generic_owner_roles": [
@@ -107,28 +109,26 @@
       "active_caller_status": "declarative_pack_active"
     },
     {
-      "module_id": "candidate_agent_package_builder",
-      "classification": "minimal_authority_function",
+      "module_id": "candidate_agent_package_semantics",
+      "classification": "declarative_pack",
       "owner": "opl-meta-agent",
-      "authority_function_ref": "authority-function-ref:opl-meta-agent/candidate-agent-package-builder",
-      "authority_function_contract_ref": "runtime/authority_functions/meta-agent-authority-functions.json",
-      "implementation_refs": [
-        "scripts/build-agent-baseline.ts",
-        "scripts/lib/meta-agent-loop-receipts.ts"
-      ],
       "code_paths": [
-        "runtime/authority_functions/meta-agent-authority-functions.json"
+        "agent/stages/manifest.json",
+        "agent/prompts/agent-skeleton-build.md",
+        "agent/prompts/baseline-delivery.md",
+        "agent/quality_gates/baseline-delivery.md",
+        "contracts/pack_compiler_input.json"
       ],
       "active_callers": [
-        "build-agent-baseline action"
+        "OPL-hosted build-agent-baseline stage route"
       ],
-      "active_caller_status": "domain_authority_active",
-      "role_scope": "refs_only_minimal_authority_function_not_generic_runtime_owner",
-      "cannot_absorb_reason": "OPL can generate the generic scaffold and interface bundle, but opl-meta-agent owns target-agent construction semantics and candidate-package judgment. Owner receipt bodies remain outside OMA."
+      "active_caller_status": "declarative_pack_active_via_opl_stage_binding",
+      "role_scope": "domain_owned_candidate_package_semantics_consumed_by_opl_hosted_stage",
+      "cannot_absorb_reason": "OPL hosts the stage attempt, scaffold, pack compiler, generated interface and receipt lifecycle; OMA retains only target-agent construction semantics in its declarative pack."
     },
     {
-      "module_id": "opl_agent_lab_adapter",
-      "classification": "refs_only_domain_adapter",
+      "module_id": "oma_repo_developer_tools",
+      "classification": "provenance_or_fixture",
       "owner": "opl-meta-agent",
       "code_paths": [
         "scripts/build-agent-baseline.ts",
@@ -141,14 +141,12 @@
         "scripts/lib/foundry-lab-work-order.ts"
       ],
       "active_callers": [
-        "build-agent-baseline action",
-        "takeover-target-agent-test action",
-        "agent-evidence handoff action",
-        "improve-from-external-agent-lab-suite judgment action"
+        "package.json developer and fixture scripts",
+        "repo-local behavior tests"
       ],
-      "active_caller_status": "refs_only_adapter_active",
-      "consumes_opl_surface": "opl_foundry_lab_suite_result_refs_with_evaluation_work_order_consumer_dependency_open",
-      "retention_reason": "OMA emits typed declarative evaluation requests, candidate refs, Foundry Lab evaluation work-order candidates, and developer patch work-order semantic requests, or consumes an explicit Foundry Lab suite-result ref for agent-building judgment. OMA does not create output directories or request files and has no work-order execution action. OPL Foundry Lab owns physical request materialization, suite execution, execution receipts, work-order lifecycle, and delivery-gate assembly; target owners own owner receipt and typed blocker bodies."
+      "active_caller_status": "developer_tool_only_unreachable_from_standard_action_or_handler_entries",
+      "consumes_opl_surface": "restricted_framework_command_client_and_foundry_lab_refs",
+      "retention_reason": "These scripts preserve repo-local development, fixture and migration diagnostics only. They are exact-digest developer tools outside every package bin, action, handler and generated default entry; OPL hosts standard actions, physical request materialization, suite execution, receipts, work-order lifecycle and delivery-gate assembly."
     },
     {
       "module_id": "mechanism_patch_proposal_authorizer",
@@ -157,15 +155,15 @@
       "authority_function_ref": "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer",
       "authority_function_contract_ref": "runtime/authority_functions/meta-agent-authority-functions.json",
       "implementation_refs": [
-        "scripts/lib/foundry-lab-work-order.ts"
+        "scripts/lib/mechanism-patch-proposal-handler.ts"
       ],
       "code_paths": [
         "runtime/authority_functions/meta-agent-authority-functions.json"
       ],
       "active_callers": [
-        "generate-mechanism-patch-proposal action"
+        "generate-mechanism-patch-proposal handler_ref"
       ],
-      "active_caller_status": "domain_authority_active",
+      "active_caller_status": "domain_authority_active_via_exact_handler_registry_binding",
       "role_scope": "refs_only_minimal_authority_function_not_generic_runtime_owner",
       "cannot_absorb_reason": "OMA retains agent-building mechanism judgment as candidate refs. OPL Foundry Lab owns mechanism ledger materialization and target owners own owner receipt bodies."
     },

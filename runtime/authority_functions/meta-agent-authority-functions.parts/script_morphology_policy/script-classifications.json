@@ -2,13 +2,10 @@
   {
     "script_ref": "scripts/build-agent-baseline.ts",
     "classes": [
-      "authority_function_implementation_ref",
       "smoke_helper",
       "fixture_or_proof_helper"
     ],
-    "authority_function_refs": [
-      "authority-function-ref:opl-meta-agent/candidate-agent-package-builder"
-    ],
+    "authority_function_refs": [],
     "consumes_opl_surfaces": [
       "opl_agent_scaffold_materialization",
       "generated_interface_bundle",
@@ -159,6 +156,26 @@
     "forbidden_roles": []
   },
   {
+    "script_ref": "scripts/lib/mechanism-patch-proposal-handler.ts",
+    "classes": [
+      "authority_function_implementation_ref"
+    ],
+    "authority_function_refs": [
+      "authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer"
+    ],
+    "consumes_opl_surfaces": [
+      "generated_interface_bundle"
+    ],
+    "writes_only": [
+      "mechanism_patch_candidate_ref"
+    ],
+    "contract_refs": [
+      "contracts/domain_handler_registry.json",
+      "contracts/action_catalog.json"
+    ],
+    "forbidden_roles": []
+  },
+  {
     "script_ref": "scripts/lib/meta-agent-loop-ai-reviewer.ts",
     "classes": [
       "fixture_or_proof_helper",
@@ -192,13 +209,10 @@
   {
     "script_ref": "scripts/lib/meta-agent-loop-receipts.ts",
     "classes": [
-      "authority_function_implementation_ref",
       "fixture_or_proof_helper",
       "developer_work_order_materializer"
     ],
-    "authority_function_refs": [
-      "authority-function-ref:opl-meta-agent/candidate-agent-package-builder"
-    ],
+    "authority_function_refs": [],
     "consumes_opl_surfaces": [],
     "writes_only": [
       "foundry_evaluation_request_ref"

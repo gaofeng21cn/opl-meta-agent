@@ -119,8 +119,7 @@
         "projection_paths": {
           "const": [
             "contracts/domain_descriptor.json",
-            "contracts/capability_map.json",
-            "contracts/stage_control_plane.json"
+            "contracts/capability_map.json"
           ]
         }
       },
@@ -179,7 +178,12 @@
       "type": "object",
       "required": ["path", "value", "write_policy"],
       "properties": {
-        "path": { "$ref": "#/$defs/safeRelativePath" },
+        "path": {
+          "allOf": [
+            { "$ref": "#/$defs/safeRelativePath" },
+            { "not": { "const": "contracts/stage_control_plane.json" } }
+          ]
+        },
         "value": { "type": "object" },
         "write_policy": { "const": "replace_declared_files_only" }
       },

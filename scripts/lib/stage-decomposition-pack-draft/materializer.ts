@@ -512,7 +512,6 @@ export function buildScaffoldMaterializationRequest({
     contracts: [
       ['contracts/action_catalog.json', draft.action_catalog],
       ['contracts/artifact_morphology_contract.json', draft.artifact_morphology_contract],
-      ['contracts/stage_control_plane.json', draft.stage_control_plane],
       ['contracts/stage_native_artifact_contract.json', draft.stage_native_artifact_contract],
       ['contracts/foundry_agent_series.json', draft.foundry_agent_series],
     ].map(([contractPath, value]) => ({
@@ -531,7 +530,6 @@ export function buildScaffoldMaterializationRequest({
       projection_paths: [
         'contracts/domain_descriptor.json',
         'contracts/capability_map.json',
-        'contracts/stage_control_plane.json',
       ],
     },
     validation_requests: [

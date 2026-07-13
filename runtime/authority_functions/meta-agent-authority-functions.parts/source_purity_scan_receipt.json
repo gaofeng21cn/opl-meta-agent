@@ -28,6 +28,7 @@
     "scripts/lib/domain-pack.ts",
     "scripts/lib/external-suite-materializer.ts",
     "scripts/lib/foundry-lab-work-order.ts",
+    "scripts/lib/mechanism-patch-proposal-handler.ts",
     "scripts/lib/meta-agent-loop-ai-reviewer.ts",
     "scripts/lib/meta-agent-loop-io.ts",
     "scripts/lib/meta-agent-loop-receipts.ts",
@@ -167,6 +168,13 @@
           "scripts/takeover-agent.ts#import",
           "tests/new-agent-delivery-gate.test.ts#import",
           "tests/new-agent-delivery-gate.test.ts#test_ref"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/mechanism-patch-proposal-handler.ts",
+        "active_caller_refs": [
+          "tests/standard-agent-v2-boundary.test.ts#import",
+          "tests/standard-agent-v2-boundary.test.ts#test_ref"
         ]
       },
       {

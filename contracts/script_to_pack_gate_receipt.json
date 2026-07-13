@@ -314,10 +314,10 @@
     "active_caller_scan_policy_id": "oma.script-active-caller-scan.v1",
     "source_ref_integrity_guard_id": "oma.script_morphology.source_ref_integrity_guard.v1",
     "source_ref_integrity_status": "passed",
-    "source_ref_integrity_checked_ref_count": 33,
+    "source_ref_integrity_checked_ref_count": 34,
     "source_ref_integrity_invalid_ref_count": 0,
-    "scanned_script_count": 33,
-    "gated_script_count": 33,
+    "scanned_script_count": 34,
+    "gated_script_count": 34,
     "orphan_script_count": 0,
     "script_gate_count": 6,
     "scanned_script_refs": [
@@ -330,6 +330,7 @@
       "scripts/lib/domain-pack.ts",
       "scripts/lib/external-suite-materializer.ts",
       "scripts/lib/foundry-lab-work-order.ts",
+      "scripts/lib/mechanism-patch-proposal-handler.ts",
       "scripts/lib/meta-agent-loop-ai-reviewer.ts",
       "scripts/lib/meta-agent-loop-io.ts",
       "scripts/lib/meta-agent-loop-receipts.ts",
@@ -365,6 +366,7 @@
       "scripts/lib/domain-pack.ts",
       "scripts/lib/external-suite-materializer.ts",
       "scripts/lib/foundry-lab-work-order.ts",
+      "scripts/lib/mechanism-patch-proposal-handler.ts",
       "scripts/lib/meta-agent-loop-ai-reviewer.ts",
       "scripts/lib/meta-agent-loop-io.ts",
       "scripts/lib/meta-agent-loop-receipts.ts",
@@ -400,7 +402,7 @@
     "repo_owned_generic_runtime_materializer_count": 0,
     "repo_owned_queue_or_attempt_ledger_materializer_count": 0,
     "repo_owned_target_worktree_lifecycle_materializer_count": 0,
-    "retained_current_count": 33
+    "retained_current_count": 34
   },
   "closed_current_machine_gate_refs": [
     "runtime/authority_functions/meta-agent-authority-functions.json#source_purity_scan_receipt.active_script_caller_scan",

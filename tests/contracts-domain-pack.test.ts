@@ -32,10 +32,10 @@ test('opl-meta-agent descriptor keeps OPL runtime authority outside the repo', (
     default_project_id: 'agent-001',
     required_locator_fields: ['workspace_root'],
     optional_locator_fields: [],
-    entry_command_template: null,
-    manifest_command_template: null,
   });
-  assert.equal(descriptor.standard_agent_interface.runtime.dispatch_command, null);
+  assert.equal(Object.hasOwn(descriptor.standard_agent_interface.workspace_binding, 'entry_command_template'), false);
+  assert.equal(Object.hasOwn(descriptor.standard_agent_interface.workspace_binding, 'manifest_command_template'), false);
+  assert.equal(Object.hasOwn(descriptor.standard_agent_interface.runtime, 'dispatch_command'), false);
   assert.deepEqual(descriptor.standard_agent_interface.progress.deliverable_delta_aliases, [
     'target_agent_substantive_delta',
   ]);
@@ -198,6 +198,10 @@ test('declared action routes publish every required predecessor condition', () =
   );
   asObjects(actionCatalog.actions).forEach((action) => {
     const actionId = String(action.action_id);
+    if ((action.execution_binding as JsonObject).kind === 'handler_ref') {
+      assert.equal(Object.hasOwn(action, 'stage_route'), false);
+      return;
+    }
     const route = action.stage_route;
     const requiredStages = asStrings(route.required_stage_refs);
     for (let index = 1; index < requiredStages.length; index += 1) {

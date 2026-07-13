@@ -83,18 +83,9 @@ test('minimal authority functions are explicit refs, not generic runtime owners'
   const authorityFunctions = readJson('runtime/authority_functions/meta-agent-authority-functions.json');
   const expectedAuthorityFunctions = [
     {
-      moduleId: 'candidate_agent_package_builder',
-      authorityRef: 'authority-function-ref:opl-meta-agent/candidate-agent-package-builder',
-      implementationRefs: [
-        scriptRef('build-agent-baseline.ts'),
-        scriptRef('lib', 'meta-agent-loop-receipts.ts'),
-      ],
-      invokedByRefs: ['action-ref:build-agent-baseline'],
-    },
-    {
       moduleId: 'mechanism_patch_proposal_authorizer',
       authorityRef: 'authority-function-ref:opl-meta-agent/mechanism-patch-proposal-authorizer',
-      implementationRefs: [scriptRef('lib', 'foundry-lab-work-order.ts')],
+      implementationRefs: [scriptRef('lib', 'mechanism-patch-proposal-handler.ts')],
       invokedByRefs: ['action-ref:generate-mechanism-patch-proposal'],
     },
   ];
