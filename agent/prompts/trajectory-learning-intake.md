@@ -19,4 +19,4 @@
 
 ## Closeout
 
-返回 trajectory atoms、candidate buffers、skill/prompt/stage/mechanism proposal refs、team-sync/retention/withdraw refs 和后续 review route。缺 redaction、owner route、no-forbidden-write 或合法 review path 时 typed blocker。
+返回 trajectory atoms、candidate buffers、skill/prompt/stage/mechanism proposal refs、team-sync/retention/withdraw refs 和后续 review route。缺 redaction proof、owner route、no-forbidden-write proof 或合法 review path 时，输出不可采纳的 quality-debt/no-output diagnostic 并继续后续 declared stage；仅当继续读取或写入会越过真实权限、安全、隐私、authority、identity/currentness、不可逆动作或显式 human-decision 边界时 typed blocker/human gate。

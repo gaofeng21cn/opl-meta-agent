@@ -25,4 +25,4 @@ Source-derived 路线必须从安全解析、source-anchor 支撑的内容进入
 
 ## Closeout
 
-返回 admitted `AgentPackPlan`、Stage graph、action/skill/knowledge/gate/memory/artifact refs、artifact morphology brief、owner/authority map、pattern dispositions 和 `StageDecompositionSubpacketSet`。有可消费 plan 时普通缺口记质量债务与 route-back；零可消费设计、unsafe source、authority/permission/identity/currentness 或显式 owner 决策才 typed blocker/human gate。
+返回 admitted `AgentPackPlan`、Stage graph、action/skill/knowledge/gate/memory/artifact refs、artifact morphology brief、owner/authority map、pattern dispositions 和 `StageDecompositionSubpacketSet`。普通缺口记质量债务与 route-back；零、损坏或不可读设计物化为 no-output/failure diagnostic，仍可进入任一 declared stage。只有 unavailable executor、unsafe source access、authority/permission、wrong-target identity/currentness、不可逆动作或显式 owner/human 决策才 typed blocker/human gate。

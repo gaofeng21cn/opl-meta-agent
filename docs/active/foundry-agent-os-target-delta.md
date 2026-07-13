@@ -46,7 +46,7 @@ OMA 必须保留：
 - target capability improvement candidate、mechanism patch proposal 和 online-learning candidate；
 - independent reviewer evidence requirements、direct-evidence verdict schema 和 provenance requirements；
 - script-to-pack / materializer hygiene policy、typed blocker materialization 和 route-back evidence；
-- OMA-owned typed blocker：当缺 target owner route、editable surface policy、reviewer evidence、executor lease、no-forbidden-write proof、verification refs 或 OPL primitive receipt 时返回 blocker。
+- OMA-owned quality debt：缺 target owner route、editable surface policy、reviewer evidence、executor lease、no-forbidden-write proof、verification refs 或 OPL primitive receipt 时返回 partial/no-output diagnostic、route-back input 或 non-executable work-order candidate；它只关闭 execution/promotion/delivery/ready claim。真实权限/安全/authority、wrong-target identity/currentness、不可逆动作、executor unavailable 或显式 human decision 才返回 typed blocker。
 
 这些 surface 不能被 suite pass、schema completeness、generated surface readiness、contract completeness、source-shape conformance、App projection readiness 或 refs-only scaleout closeout 替代。
 

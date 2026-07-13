@@ -36,7 +36,7 @@
 ## 质量债务与硬停
 
 - 下列缺口在已有可消费 package 时记录为质量债务，进入 optimizer、owner review 或后续 delivery stage，不回滚或终止 stage graph。
-- 只有零可消费 package、package 损坏不可读、权限/凭据、显式 human decision、authority violation 或 identity/currentness mismatch 才硬停。
+- 零、损坏或不可读 package 物化为 no-output/failure diagnostic 并继续后续 declared stage。只有 unavailable executor、权限/凭据/安全、显式 human decision、authority violation、不可逆动作或 identity/currentness mismatch 才硬停。
 - 所有拒绝项继续阻止 baseline quality acceptance 和 promotion，不再自动阻止 artifact handoff。
 
 ## 拒绝标准

@@ -75,7 +75,7 @@
 - stage graph 和 action catalog 来自 typed closeout，而不是脚本内固定 graph。
 - source-derived / research-driven closeout 必须保留 `StageDecompositionSubpacketSet`，证明设计依据、迁移、pack、morphology、准入和 post-materialization build proof 的 refs 与边界完整；不用于冻结模型的认知顺序。
 - artifact morphology brief 来自 typed closeout，并被 artifact locator、suite task manifest、takeover/external-suite evidence 和 delivery receipt 引用。
-- free text closeout、partial refs、缺 independent gate policy、缺 quality gate declaration 或 self-review 在已有可消费 pack artifact 时记录 `completed_with_quality_debt` 并 route-back；它们阻止 baseline delivery、promotion 和 ready 声明，不阻止 stage transition。只有零可消费 artifact、artifact 损坏、权限/安全/authority/currentness 或显式人工决策才硬停止。
+- free text closeout、partial refs、缺 independent gate policy、缺 quality gate declaration 或 self-review 记录 `completed_with_quality_debt` 并 route-back；它们阻止 baseline delivery、promotion 和 ready 声明，不阻止 stage transition。零、损坏或不可读 artifact 物化 no-output/failure diagnostic 并继续；只有 executor unavailable、权限/安全/authority、wrong-target identity/currentness、不可逆动作或显式人工决策才硬停止。
 - baseline delivery gate 通过前不签发交付。
 - `build-agent-baseline` / takeover producer 状态只表示 Foundry evaluation handoff ready，不能声明 evaluation complete 或 delivery complete。
 - 新建智能体交付必须包含 Agent Lab takeover / external suite evidence 和 independent AI reviewer evidence；只跑 scaffold validation、generated interface projection 或 OPL-generated suite plan 不足以完成交付。

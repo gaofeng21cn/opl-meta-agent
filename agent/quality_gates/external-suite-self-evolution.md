@@ -23,7 +23,7 @@
 - reviewer direct evidence 不能只有 suite/scaffold refs，必须指向真实 contract、artifact、receipt、scorecard、diff、ledger 或 owner feedback。
 - developer work order 显式声明 Codex/executor-first aperture，并把可写面限制到 target owner gate 允许的 source、tests、docs、prompt/skill/stage/quality-gate policy。
 - editable surfaces 限定在 target owner gate 允许的 source、tests、docs 或 mechanism policy。
-- patch traceability、target verification、owner route、no-forbidden-write proof、rollback/canary/version refs 和 machine closeout refs 同时存在，才允许执行或 promotion。已有可消费 work order/candidate 时，缺项记录为 `completed_with_quality_debt` 并继续到 owner review/下一 OMA stage；只有零可消费输出或 authority/identity/human gate 问题才 typed blocker。
+- patch traceability、target verification、owner route、no-forbidden-write proof、rollback/canary/version refs 和 machine closeout refs 同时存在，才允许执行或 promotion。缺项记录为 `completed_with_quality_debt` 并继续到 owner review/下一 OMA stage；零、损坏或不可读输出物化为 no-output/failure diagnostic。只有 unavailable executor、authority/safety/permission、wrong-target identity/currentness、不可逆动作或显式 human decision 才 typed blocker/human gate。
 - 效率 work order 保持 target-agent generic，只消费标准 suite / production evidence refs；latency、usage cost、cache reuse 或 target verification 证据必须和 quality floor refs 一起进入 work order、completeness 与 closeout 投影。
 - regression 覆盖原 failure、forbidden writes 和 runtime/read-model consumption。
 - version receipt 声明 branch/worktree、absorb gate 和 cleanup state。
