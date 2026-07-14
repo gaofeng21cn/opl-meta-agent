@@ -1,6 +1,6 @@
 import type { JsonObject } from './domain-pack.ts';
 
-type FoundryEvaluationRequestOptions = {
+type FoundryEvaluationSemanticRequestOptions = {
   requestId: string;
   suiteId: string;
   suiteKind: 'agent_lab_external_suite' | 'agent_production_evidence_suite';
@@ -30,17 +30,7 @@ type FoundryEvaluationRequestOptions = {
   productionEvidenceGateIds?: string[];
 };
 
-const OMA_EVALUATION_REQUEST_AUTHORITY_BOUNDARY = {
-  refs_only: true,
-  oma_can_execute_agent_lab_suite: false,
-  oma_can_write_agent_lab_result: false,
-  oma_can_write_owner_receipt_body: false,
-  oma_can_write_promotion_gate: false,
-  oma_can_claim_target_domain_ready: false,
-  oma_can_claim_target_production_ready: false,
-} as const;
-
-export function buildFoundryEvaluationRequest({
+export function buildFoundryEvaluationSemanticRequest({
   requestId,
   suiteId,
   suiteKind,
@@ -68,14 +58,12 @@ export function buildFoundryEvaluationRequest({
   promotionGateRequiredRefs = [],
   regressionSuiteRefs = [],
   productionEvidenceGateIds = [],
-}: FoundryEvaluationRequestOptions): JsonObject {
+}: FoundryEvaluationSemanticRequestOptions): JsonObject {
   if (suiteKind === 'agent_production_evidence_suite' && productionEvidenceGateIds.length === 0) {
-    throw new Error('Foundry evaluation requests for production evidence require production evidence gate ids.');
+    throw new Error('Foundry evaluation semantic requests for production evidence require production evidence gate ids.');
   }
 
   return {
-    surface_kind: 'opl_meta_agent_foundry_evaluation_request',
-    version: 'opl-meta-agent.foundry-evaluation-request.v1',
     request_id: requestId,
     suite_id: suiteId,
     suite_kind: suiteKind,
@@ -114,6 +102,5 @@ export function buildFoundryEvaluationRequest({
     ...(suiteKind === 'agent_production_evidence_suite'
       ? { production_evidence_gate_ids: productionEvidenceGateIds }
       : {}),
-    authority_boundary: OMA_EVALUATION_REQUEST_AUTHORITY_BOUNDARY,
   };
 }

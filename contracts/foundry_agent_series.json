@@ -101,6 +101,7 @@
       "feedback_profile": "target_agent_feedback_external_suite",
       "accepted_materialized_input": "agent_lab_external_suite",
       "source_trigger_ref": "target-agent:feedback_self_evolution_trigger/latest",
+      "agent_evolution_skill_ref": "opl-meta-agent:oma-agent-evolution",
       "status_projection": {
         "suite_materialized_only": "runnable_pending",
         "contract_itself_triggers_execution": false,

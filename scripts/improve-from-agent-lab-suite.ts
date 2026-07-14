@@ -19,15 +19,11 @@ import {
   readTargetAgent,
   stableId,
 } from './lib/meta-agent-loop-io.ts';
-import type { SuiteResult } from './lib/external-suite-materializer.ts';
 import {
   collectEfficiencyNonRegressionRefs,
   type EfficiencyNonRegressionRefs,
   missingEfficiencyNonRegressionFields,
 } from './lib/work-order-efficiency.ts';
-import {
-  validateDeveloperPatchWorkOrder,
-} from './lib/work-order-validation.ts';
 import {
   type PatchTraceabilityEntry,
   type TargetImprovementPolicy,
@@ -38,7 +34,8 @@ import {
 } from './lib/target-improvement-policy.ts';
 import {
   type CapabilityCandidate,
-  buildDeveloperPatchWorkOrder,
+  type SuiteResult,
+  buildDeveloperPatchMaterializationRequest,
 } from './lib/external-suite-materializer.ts';
 const repoRoot = path.resolve(import.meta.dirname, '..');
 
@@ -372,162 +369,6 @@ export function validateFoundryLabSuiteResult(
   } as SuiteResult;
 }
 
-function suiteTaskFamilies(suite: JsonObject): string[] {
-  return uniqueStrings((Array.isArray(suite.tasks) ? suite.tasks : [])
-    .map((task) => task.task_family)
-    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
-    .map((value) => value.trim()));
-}
-
-function feedbackProfiles({
-  suite,
-  suiteRefs,
-}: {
-  suite: JsonObject;
-  suiteRefs: string[];
-}): string[] {
-  const joined = [
-    String(suite.suite_id ?? ''),
-    String(suite.suite_kind ?? ''),
-    ...suiteTaskFamilies(suite),
-    ...suiteRefs,
-  ].join('\n').toLowerCase();
-  const normalizedJoined = joined.replace(/-/g, '_');
-  const profiles: string[] = [];
-  if (
-    normalizedJoined.includes('high_quality_medical_manuscript')
-    || normalizedJoined.includes('reviewer_revision')
-    || normalizedJoined.includes('feedback')
-  ) {
-    profiles.push('target_agent_feedback_external_suite');
-  }
-  if (
-    normalizedJoined.includes('high_quality_medical_manuscript')
-    || normalizedJoined.includes('reviewer_revision')
-  ) {
-    profiles.push('mas_feedback_agent_lab_external_suite');
-  }
-  if (normalizedJoined.includes('high_quality_medical_manuscript')) {
-    profiles.push('high_quality_medical_manuscript_feedback');
-  }
-  if (normalizedJoined.includes('reviewer_revision')) {
-    profiles.push('reviewer_revision_feedback');
-  }
-  return uniqueStrings(profiles);
-}
-
-function reviewerEvidenceRefs({
-  aiReviewerEvaluation,
-  aiReviewerEvaluationRef,
-  suiteRefs,
-}: {
-  aiReviewerEvaluation: AiReviewerEvaluation;
-  aiReviewerEvaluationRef: string;
-  suiteRefs: string[];
-}): string[] {
-  return uniqueStrings([
-    aiReviewerEvaluationRef,
-    ...aiReviewerEvaluation.source_refs,
-    ...aiReviewerEvaluation.direct_evidence_refs,
-    ...suiteRefs.filter((ref) =>
-      ref.includes('review')
-      || ref.includes('reviewer')
-      || ref.includes('evidence')
-      || ref.includes('rubric-gap:')
-      || ref.includes('quality-scorecard:')
-      || ref.includes('quality-gate:')
-    ),
-  ]);
-}
-
-function sourceFeedbackRefs({
-  suite,
-  feedbackRef,
-}: {
-  suite: JsonObject;
-  feedbackRef: string | null;
-}): string[] {
-  return uniqueStrings([
-    ...(feedbackRef ? [feedbackRef] : []),
-    ...(Array.isArray(suite.tasks) ? suite.tasks : []).flatMap((task) => [
-      ...arrayOfStrings(task.feedback_refs),
-      ...arrayOfStrings(task.reviewer_evidence_refs),
-    ]),
-  ]);
-}
-
-function buildExternalSuiteConsumptionContract({
-  suite,
-  suiteResult,
-  targetAgent,
-  feedbackRef,
-  suiteRefs,
-  reviewerRefs,
-  developerPatchWorkOrder,
-}: {
-  suite: JsonObject;
-  suiteResult: SuiteResult;
-  targetAgent: TargetAgent;
-  feedbackRef: string | null;
-  suiteRefs: string[];
-  reviewerRefs: string[];
-  developerPatchWorkOrder: JsonObject;
-}): JsonObject {
-  const profiles = feedbackProfiles({ suite, suiteRefs });
-  const targetCloseoutRefs = arrayOfStrings(developerPatchWorkOrder.target_closeout_refs);
-  return {
-    source_external_suite_intake: {
-      surface_kind: 'opl_meta_agent_external_agent_lab_suite_intake',
-      status: 'accepted_external_agent_lab_suite_input',
-      suite_id: suite.suite_id,
-      suite_kind: suite.suite_kind,
-      accepted_input_profiles: profiles,
-      task_families: suiteTaskFamilies(suite),
-      target_agent: targetAgent.domain_id,
-      source_agent_lab_result_ref: suiteResult.result_id,
-      feedback_ref: feedbackRef,
-      source_feedback_refs: sourceFeedbackRefs({ suite, feedbackRef }),
-      consumed_as_refs_only: true,
-      authority_boundary: {
-        can_write_target_domain_truth: false,
-        can_write_target_domain_memory_body: false,
-        can_mutate_target_domain_artifact_body: false,
-        can_authorize_target_domain_quality_or_export: false,
-        can_promote_default_agent_without_gate: false,
-      },
-    },
-    reviewer_evidence_refs: reviewerRefs,
-    target_owner_closeout_refs: targetCloseoutRefs,
-    opl_work_order_delegation_aperture: {
-      delegates_to_opl_work_order_execute: true,
-      primitive_owner: 'one-person-lab/OPL',
-      command: 'work-order execute',
-      executor_first: true,
-      executor: 'codex_cli',
-      executor_lease_ref: developerPatchWorkOrder.executor_lease_ref,
-      patch_execution_bundle_ref: developerPatchWorkOrder.patch_execution_bundle_ref,
-      target_owner_closeout_refs: targetCloseoutRefs,
-      owner_closeout_hook_delegated: true,
-      target_owner_closeout_owner: 'target-domain via OPL',
-      oma_can_manage_target_worktree_lifecycle: false,
-      oma_can_write_owner_receipt_body: false,
-      required_opl_work_order_primitive_refs: developerPatchWorkOrder.required_opl_work_order_primitive_refs,
-      authority_boundary: {
-        can_manage_target_worktree_lifecycle: false,
-        can_absorb_target_branch: false,
-        can_clean_target_worktree: false,
-        can_invoke_target_owner_closeout_hook: false,
-        can_write_target_owner_receipt_body: false,
-        can_write_target_domain_truth: false,
-        can_write_target_domain_memory_body: false,
-        can_mutate_target_domain_artifact_body: false,
-        can_authorize_target_domain_quality_or_export: false,
-        can_promote_default_agent_without_gate: false,
-      },
-    },
-  };
-}
-
 function improvementAreaForTarget(targetAgent: TargetAgent): string {
   return `${targetAgent.domain_id.replace(/[^a-z0-9]+/gi, '_').toLowerCase()}_agent_lab_result_consumption_capability`;
 }
@@ -717,11 +558,6 @@ export function runImproveFromAgentLabSuite({
   const policy = targetImprovementPolicy(targetAgentDir);
 
   const suiteRefs = collectSuiteRefs(suite);
-  const directReviewerEvidenceRefs = reviewerEvidenceRefs({
-    aiReviewerEvaluation,
-    aiReviewerEvaluationRef: aiReviewerEvaluationPath,
-    suiteRefs,
-  });
   const proposedChangeRefs = inferProposedChangeRefs({
     suiteRefs,
     aiReviewerEvaluation,
@@ -839,7 +675,7 @@ export function runImproveFromAgentLabSuite({
     };
   }
 
-  const developerPatchWorkOrder = buildDeveloperPatchWorkOrder({
+  const developerPatch = buildDeveloperPatchMaterializationRequest({
     targetAgent,
     suite,
     suiteResult,
@@ -847,24 +683,14 @@ export function runImproveFromAgentLabSuite({
     capabilityCandidate,
     policy,
   });
-  Object.assign(developerPatchWorkOrder, buildExternalSuiteConsumptionContract({
-    suite,
-    suiteResult,
-    targetAgent,
-    feedbackRef,
-    suiteRefs,
-    reviewerRefs: directReviewerEvidenceRefs,
-    developerPatchWorkOrder,
-  }));
-  Object.assign(developerPatchWorkOrder.work_order_completeness as JsonObject, {
-    reviewer_evidence: { refs: directReviewerEvidenceRefs },
-    opl_work_order_delegation_aperture: developerPatchWorkOrder.opl_work_order_delegation_aperture,
-  });
-  validateDeveloperPatchWorkOrder(developerPatchWorkOrder);
+  const workOrderMaterializationRequest = developerPatch.materializationRequest;
+  const developerRequestId = String(
+    (workOrderMaterializationRequest.semantic_request as JsonObject).request_id,
+  );
   return {
     surface_kind: 'opl_meta_agent_external_suite_judgment',
     version: 'opl-meta-agent.external-suite-judgment.v1',
-    status: 'developer_patch_work_order_ready_for_opl_foundry_lab',
+    status: 'developer_patch_semantic_request_ready_for_opl_materialization',
     product_id: 'opl-meta-agent',
     target_agent: capabilityCandidate.target_agent,
     source_agent_lab_result_ref: suiteResult.result_id,
@@ -873,30 +699,18 @@ export function runImproveFromAgentLabSuite({
     evaluation_provenance_refs: suiteResult.refs.evaluation_provenance_refs,
     candidate_refs: [
       capabilityCandidate.candidate_id,
-      developerPatchWorkOrder.work_order_id,
+      developerRequestId,
     ],
     ...domainPackReceiptFields(domainPackSummary),
     source_domain_pack: domainPackSummary,
     agent_building_judgment: {
       target_capability_improvement_candidate: capabilityCandidate,
-      developer_patch_work_order: developerPatchWorkOrder,
+      developer_patch_evidence: developerPatch.agentBuildingEvidence,
     },
     semantic_requests: {
-      developer_patch_work_order: developerPatchWorkOrder,
-      physical_materialization_owner: 'one-person-lab/OPL Foundry Lab',
-      materialization_surface: 'opl work-order materialize-request --request <semantic-request.json> --target-dir <new-dir>',
-      oma_writes_request_files: false,
-      requested_file_name: 'developer-patch-work-order.json',
-      execution_surface: 'opl work-order execute --work-order <developer-patch-work-order.json>',
+      work_order_materialization_request: workOrderMaterializationRequest,
     },
-    authority_boundary: {
-      ...capabilityCandidate.authority_boundary,
-      oma_can_execute_agent_lab_suite: false,
-      oma_can_execute_developer_work_order: false,
-      oma_can_write_owner_receipt_body: false,
-      oma_can_write_typed_blocker_body: false,
-      oma_can_manage_target_worktree_lifecycle: false,
-    },
+    authority_boundary: workOrderMaterializationRequest.authority_boundary,
   };
 }
 

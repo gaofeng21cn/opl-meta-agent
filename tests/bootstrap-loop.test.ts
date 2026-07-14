@@ -643,8 +643,8 @@ test('build-agent-baseline writes a conformant hybrid package and canonical Foun
     ]);
 
     const targetDir = path.join(outputRoot, targetAgent.domain_id);
-    const workOrder = readJson(path.join(outputRoot, 'foundry-lab-work-order.json'));
-    const evaluationRequest = readJson(path.join(outputRoot, 'foundry-evaluation-request.json'));
+    const materializationRequest = payload.foundry_lab_handoff.materialization_request as JsonObject;
+    const evaluationRequest = materializationRequest.semantic_request as JsonObject;
     const descriptor = readJson(path.join(targetDir, 'contracts/domain_descriptor.json'));
     const capabilityMap = readJson(path.join(targetDir, 'contracts/capability_map.json'));
     const packageManifest = readJson(path.join(targetDir, 'contracts/opl_agent_package_manifest.json'));
@@ -698,17 +698,18 @@ test('build-agent-baseline writes a conformant hybrid package and canonical Foun
     );
     assert.ok(evidenceRefs.includes(targetAgent.reference_design_source_refs[0]));
     assert.ok(evidenceRefs.includes(targetAgent.reference_design_pattern_packet_refs[0]));
-    assert.equal(workOrder.work_order_kind, 'agent_baseline_evaluation');
-    assert.equal(workOrder.status, 'ready_for_opl_foundry_lab_evaluation');
-    assert.equal(workOrder.consumer_dependency.status, 'available');
+    assert.equal(materializationRequest.request_kind, 'foundry_evaluation');
+    assert.equal(materializationRequest.request_owner, 'oma');
+    assert.equal(materializationRequest.producer_agent_id, 'oma');
+    assert.equal(materializationRequest.target_agent.domain_id, targetAgent.domain_id);
     assert.equal(
-      workOrder.execution_aperture.action_ref,
-      'opl agent-lab evaluation-work-order execute --work-order <work-order.json> --output <dir>',
+      materializationRequest.target_agent.target_agent_ref,
+      `domain-agent:${targetAgent.domain_id}`,
     );
-    assert.equal(workOrder.target_agent.domain_id, targetAgent.domain_id);
-    assert.equal(workOrder.target_agent.target_agent_ref, `domain-agent:${targetAgent.domain_id}`);
-    assert.equal(workOrder.target_agent.descriptor_ref, path.join(targetDir, 'contracts/domain_descriptor.json'));
-    assert.equal(workOrder.evaluation_request.ref, 'foundry-evaluation-request.json');
+    assert.equal(
+      materializationRequest.target_agent.descriptor_ref,
+      path.join(targetDir, 'contracts/domain_descriptor.json'),
+    );
     assert.equal(evaluationRequest.task_intents[0].domain_id, 'opl-meta-agent');
     assert.equal(Object.hasOwn(evaluationRequest.task_intents[0], 'target_agent_ref'), false);
     assert.equal(Object.hasOwn(evaluationRequest.task_intents[0], 'scorecard_spec'), false);
@@ -721,8 +722,10 @@ test('build-agent-baseline writes a conformant hybrid package and canonical Foun
       ),
       false,
     );
-    assert.equal(workOrder.authority_boundary.oma_can_execute_agent_lab_suite, false);
-    assert.equal(workOrder.authority_boundary.oma_can_write_owner_receipt_body, false);
+    assert.equal(materializationRequest.authority_boundary.producer_assigns_work_order_id, false);
+    assert.equal(materializationRequest.authority_boundary.producer_executes_work_order, false);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'foundry-lab-work-order.json')), false);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'foundry-evaluation-request.json')), false);
     assert.ok(primarySkill.includes(targetAgent.reference_design_pattern_packet_refs[0]));
     assert.ok(generatedPrompt.includes(targetAgent.selected_opl_profile_refs[0]));
     assert.ok(generatedKnowledge.includes('EvidencePacket'));
@@ -954,8 +957,8 @@ test('build-agent-baseline materializes a research-driven target package from va
     const capabilityMap = readJson(path.join(targetDir, 'contracts/capability_map.json'));
     const stageControl = generatedStageControl(payload);
     const buildReceipt = readJson(path.join(targetDir, 'contracts/agent_build_receipt.json'));
-    const workOrder = readJson(path.join(outputRoot, 'foundry-lab-work-order.json'));
-    const evaluationRequest = readJson(path.join(outputRoot, 'foundry-evaluation-request.json'));
+    const materializationRequest = payload.foundry_lab_handoff.materialization_request as JsonObject;
+    const evaluationRequest = materializationRequest.semantic_request as JsonObject;
     const primarySkill = fs.readFileSync(path.join(targetDir, 'agent/primary_skill/SKILL.md'), 'utf8');
     const generatedPrompt = fs.readFileSync(path.join(targetDir, stageControl.stages[0].prompt_refs[0].ref), 'utf8');
 
@@ -995,7 +998,7 @@ test('build-agent-baseline materializes a research-driven target package from va
       `stage-decomposition-subpacket-set-ref:${researchDrivenObjectRefs.stageDecompositionSubpacketSetRef}`,
     ].forEach((ref) => assert.ok(firstStage.stage_contract.requires.includes(ref), ref));
     assert.deepEqual(
-      workOrder.source_refs.includes(researchDrivenTargetAgent.research_source_refs[0]),
+      evaluationRequest.source_refs.includes(researchDrivenTargetAgent.research_source_refs[0]),
       true,
     );
     assert.ok(evaluationRequest.task_intents[0].evidence_refs.includes(researchDrivenTargetAgent.research_source_refs[0]));
@@ -1527,7 +1530,15 @@ test('build-agent-baseline records missing independent reviewer evidence as qual
     assert.equal(payload.status, 'completed_with_quality_debt');
     assert.equal(payload.next_stage_may_start, true);
     assert.equal(payload.quality_debt.blocks_delivery_or_promotion_claims, true);
-    assert.equal(fs.existsSync(path.join(outputRoot, 'foundry-lab-work-order.json')), true);
+    assert.equal(fs.existsSync(path.join(outputRoot, 'foundry-lab-work-order.json')), false);
+    assert.equal(
+      payload.foundry_lab_handoff.materialization_request.request_kind,
+      'foundry_evaluation',
+    );
+    assert.equal(
+      payload.foundry_lab_handoff.materialization_request.semantic_request.reviewer_refs.length,
+      1,
+    );
   });
 });
 

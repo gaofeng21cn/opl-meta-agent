@@ -11,6 +11,7 @@ import { assertEveryFlagFalse } from './support/source-purity.ts';
 test('foundry agent series keeps only OMA identity and domain deltas beside canonical refs', () => {
   const series = readJson('contracts/foundry_agent_series.json');
   const domainProfile = series.domain_specific_profile as JsonObject;
+  const feedbackReadback = domainProfile.target_agent_feedback_self_evolution_readback as JsonObject;
   const vocabularyPolicy = domainProfile.target_agent_generic_vocabulary_policy as JsonObject;
   const seriesAuthority = series.authority_boundary as JsonObject;
 
@@ -44,6 +45,13 @@ test('foundry agent series keeps only OMA identity and domain deltas beside cano
   assertEveryFlagFalse(domainProfile.authority_boundary, 'domain-specific authority boundary');
   assert.ok(asStrings(vocabularyPolicy.allowed_top_level_suite_kinds).length > 0);
   assert.equal(vocabularyPolicy.oma_must_not_add_target_domain_compatibility_layer, true);
+  assert.equal(feedbackReadback.agent_evolution_skill_ref, 'opl-meta-agent:oma-agent-evolution');
+  assert.equal(Object.hasOwn(feedbackReadback, 'oma_evolution_skill_ref'), false);
+  assert.equal(Object.hasOwn(feedbackReadback, 'writes_visual_truth'), false);
+  assert.equal(
+    (feedbackReadback.authority_boundary as JsonObject).oma_can_write_target_domain_truth,
+    false,
+  );
 
   assertEveryFlagFalse(seriesAuthority as Record<string, boolean>, 'series authority');
 });

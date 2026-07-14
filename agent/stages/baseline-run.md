@@ -2,7 +2,7 @@
 
 ## 操作策略
 
-把 candidate Agent Pack、AgentBuildReceipt 和 reviewer evidence 编译成 thin evaluation request 与 target-bound Foundry evaluation work order。该 stage 不实现 Agent Lab runner、suite-plan compiler，也不物化 hosted result/receipt ledger。
+把 candidate Agent Pack、AgentBuildReceipt 和 reviewer evidence 编译成 evaluation semantics 与 canonical work-order materialization request。该 stage 不分配 work-order identity，不实现 Agent Lab runner、suite-plan compiler，也不物化 hosted result/receipt ledger。
 
 ## Handoff
 

@@ -2,83 +2,51 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://one-person-lab.local/contracts/opl-meta-agent/actions/improve-from-external-agent-lab-suite.output.schema.json",
   "title": "Improve From External Agent Lab Suite Output",
-  "description": "OMA judgment over an explicit OPL Foundry Lab result. OMA may emit a capability candidate and developer patch work order, but not a suite result, owner receipt, or typed-blocker body.",
+  "description": "OMA judgment over an explicit OPL Foundry Lab result. OMA may emit an agent-building developer-patch semantic request; OPL owns work-order materialization, identity, execution, receipts, worktree lifecycle, and target-owner closeout.",
   "type": "object",
   "required": [
-    "surface_kind",
-    "version",
-    "status",
-    "product_id",
-    "target_agent",
-    "source_agent_lab_result_ref",
-    "candidate_refs",
-    "agent_building_judgment",
+    "surface_kind", "version", "status", "product_id", "target_agent",
+    "source_agent_lab_result_ref", "candidate_refs", "agent_building_judgment",
     "authority_boundary"
   ],
   "properties": {
-    "surface_kind": {
-      "const": "opl_meta_agent_external_suite_judgment"
-    },
-    "version": {
-      "const": "opl-meta-agent.external-suite-judgment.v1"
-    },
+    "surface_kind": { "const": "opl_meta_agent_external_suite_judgment" },
+    "version": { "const": "opl-meta-agent.external-suite-judgment.v1" },
     "status": {
       "enum": [
         "no_source_patch_required",
         "completed_with_quality_debt",
-        "developer_patch_work_order_ready_for_opl_foundry_lab"
+        "developer_patch_semantic_request_ready_for_opl_materialization"
       ]
     },
-    "product_id": {
-      "const": "opl-meta-agent"
-    },
+    "product_id": { "const": "opl-meta-agent" },
     "target_agent": {
       "type": "object",
-      "required": [
-        "domain_id"
-      ],
+      "required": ["domain_id"],
       "additionalProperties": true
     },
-    "source_agent_lab_result_ref": {
-      "$ref": "#/$defs/nonEmptyString"
-    },
-    "foundry_lab_execution_receipt_ref": {
-      "$ref": "#/$defs/nonEmptyString"
-    },
-    "candidate_refs": {
-      "$ref": "#/$defs/nonEmptyStringArray"
-    },
-    "missing_required_fields": {
-      "$ref": "#/$defs/nonEmptyStringArray"
-    },
+    "source_agent_lab_result_ref": { "$ref": "#/$defs/nonEmptyString" },
+    "foundry_lab_execution_receipt_ref": { "$ref": "#/$defs/nonEmptyString" },
+    "evaluation_target_agent": { "type": "object" },
+    "evaluation_provenance_refs": { "$ref": "#/$defs/stringArray" },
+    "candidate_refs": { "$ref": "#/$defs/nonEmptyStringArray" },
+    "missing_required_fields": { "$ref": "#/$defs/nonEmptyStringArray" },
+    "quality_debt": { "type": "object" },
+    "next_stage_may_start": { "const": true },
+    "semantic_route_decision_owner": { "const": "decisive_codex_attempt" },
+    "stage_transition_materialization_owner": { "const": "opl_stage_run_controller" },
+    "domain_pack_status": { "type": "string" },
+    "prompt_policy_refs": { "$ref": "#/$defs/stringArray" },
+    "skill_policy_refs": { "$ref": "#/$defs/stringArray" },
+    "quality_gate_refs": { "$ref": "#/$defs/stringArray" },
+    "knowledge_policy_refs": { "$ref": "#/$defs/stringArray" },
+    "source_domain_pack": { "type": "object" },
     "semantic_requests": {
       "type": "object",
-      "required": [
-        "developer_patch_work_order",
-        "physical_materialization_owner",
-        "materialization_surface",
-        "oma_writes_request_files",
-        "requested_file_name",
-        "execution_surface"
-      ],
+      "required": ["work_order_materialization_request"],
       "properties": {
-        "developer_patch_work_order": {
-          "type": "object"
-        },
-        "physical_materialization_owner": {
-          "$ref": "#/$defs/nonEmptyString"
-        },
-        "materialization_surface": {
-          "$ref": "#/$defs/nonEmptyString"
-        },
-        "oma_writes_request_files": {
-          "const": false
-        },
-        "requested_file_name": {
-          "const": "developer-patch-work-order.json"
-        },
-        "execution_surface": {
-          "$ref": "#/$defs/nonEmptyString"
+        "work_order_materialization_request": {
+          "$ref": "#/$defs/workOrderMaterializationRequest"
         }
       },
       "additionalProperties": false
@@ -86,132 +54,204 @@
     "agent_building_judgment": {
       "type": "object",
       "required": ["target_capability_improvement_candidate"],
-      "additionalProperties": true
+      "properties": {
+        "target_capability_improvement_candidate": { "type": "object" },
+        "developer_patch_evidence": { "type": "object" }
+      },
+      "additionalProperties": false
     },
     "authority_boundary": {
-      "$ref": "#/$defs/authorityBoundary"
+      "oneOf": [
+        { "$ref": "#/$defs/candidateAuthorityBoundary" },
+        { "$ref": "#/$defs/materializationAuthorityBoundary" }
+      ]
     }
   },
   "oneOf": [
     {
-      "properties": {
-        "status": {
-          "const": "no_source_patch_required"
-        }
-      },
-      "required": [
-        "foundry_lab_execution_receipt_ref"
-      ],
+      "properties": { "status": { "const": "no_source_patch_required" } },
+      "required": ["foundry_lab_execution_receipt_ref"],
       "not": {
         "anyOf": [
-          {
-            "required": [
-              "missing_required_fields"
-            ]
-          },
+          { "required": ["missing_required_fields"] },
           { "required": ["semantic_requests"] }
         ]
       }
     },
     {
-      "properties": {
-        "status": {
-          "const": "completed_with_quality_debt"
-        },
-        "authority_boundary": {
-          "type": "object",
-          "required": [
-            "quality_debt_blocks_stage_transition",
-            "quality_debt_blocks_delivery_patch_or_promotion_claims",
-            "executable_work_order_materialized"
-          ],
-          "properties": {
-            "quality_debt_blocks_stage_transition": {
-              "const": false
-            },
-            "quality_debt_blocks_delivery_patch_or_promotion_claims": {
-              "const": true
-            },
-            "executable_work_order_materialized": {
-              "const": false
-            }
-          }
-        }
-      },
-      "required": [
-        "missing_required_fields"
-      ],
+      "properties": { "status": { "const": "completed_with_quality_debt" } },
       "not": { "required": ["semantic_requests"] }
     },
     {
       "properties": {
-        "status": {
-          "const": "developer_patch_work_order_ready_for_opl_foundry_lab"
-        },
-        "semantic_requests": {
-          "required": ["developer_patch_work_order"]
-        }
+        "status": { "const": "developer_patch_semantic_request_ready_for_opl_materialization" },
+        "authority_boundary": { "$ref": "#/$defs/materializationAuthorityBoundary" }
       },
       "required": [
-        "foundry_lab_execution_receipt_ref",
-        "agent_building_judgment",
-        "semantic_requests"
+        "foundry_lab_execution_receipt_ref", "agent_building_judgment", "semantic_requests"
       ],
-      "not": {
-        "required": [
-          "missing_required_fields"
-        ]
-      }
+      "not": { "required": ["missing_required_fields"] }
     }
   ],
   "$defs": {
-    "nonEmptyString": {
-      "type": "string",
-      "minLength": 1
+    "nonEmptyString": { "type": "string", "minLength": 1 },
+    "stringArray": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/nonEmptyString" },
+      "uniqueItems": true
     },
     "nonEmptyStringArray": {
       "type": "array",
       "minItems": 1,
-      "items": {
-        "$ref": "#/$defs/nonEmptyString"
-      }
+      "items": { "$ref": "#/$defs/nonEmptyString" },
+      "uniqueItems": true
     },
-    "authorityBoundary": {
+    "materializationTargetAgent": {
+      "type": "object",
+      "required": ["domain_id", "repo_dir"],
+      "properties": {
+        "domain_id": { "$ref": "#/$defs/nonEmptyString" },
+        "repo_dir": { "$ref": "#/$defs/nonEmptyString" },
+        "target_agent_ref": { "$ref": "#/$defs/nonEmptyString" },
+        "descriptor_ref": { "$ref": "#/$defs/nonEmptyString" }
+      },
+      "additionalProperties": false
+    },
+    "efficiencyNonRegressionRefs": {
+      "type": "object",
+      "properties": {
+        "quality_floor_refs": { "$ref": "#/$defs/stringArray" },
+        "latency_baseline_refs": { "$ref": "#/$defs/stringArray" },
+        "usage_cost_refs": { "$ref": "#/$defs/stringArray" },
+        "cache_reuse_refs": { "$ref": "#/$defs/stringArray" },
+        "target_verification_refs": { "$ref": "#/$defs/stringArray" }
+      },
+      "additionalProperties": false
+    },
+    "developerPatchJudgment": {
       "type": "object",
       "required": [
-        "can_write_target_domain_truth",
-        "can_write_target_domain_memory_body",
-        "can_mutate_target_domain_artifact_body",
-        "can_authorize_target_domain_quality_or_export",
-        "can_promote_default_agent_without_gate"
+        "target_capability_improvement_candidate_ref", "root_cause", "targeted_fix",
+        "predicted_impact", "failure_class", "source_morphology_proof_ref",
+        "private_residue_decision_ref", "target_runtime_read_model_consumption_ref",
+        "failure_evidence_refs", "target_editable_surface_refs", "forbidden_surfaces",
+        "expected_behavior_delta", "verification_refs", "reviewer_refs", "owner_route_refs",
+        "no_forbidden_write_proof_refs", "patch_traceability_refs"
       ],
       "properties": {
-        "can_write_target_domain_truth": {
-          "const": false
+        "target_capability_improvement_candidate_ref": { "$ref": "#/$defs/nonEmptyString" },
+        "root_cause": { "$ref": "#/$defs/nonEmptyString" },
+        "targeted_fix": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "predicted_impact": { "$ref": "#/$defs/nonEmptyString" },
+        "failure_class": {
+          "enum": [
+            "stage-route", "specialist-skill", "tool-connector", "quality-gate",
+            "read-model-currentness", "authority-boundary", "app-observability"
+          ]
         },
-        "can_write_target_domain_memory_body": {
-          "const": false
-        },
-        "can_mutate_target_domain_artifact_body": {
-          "const": false
-        },
-        "can_authorize_target_domain_quality_or_export": {
-          "const": false
-        },
-        "can_promote_default_agent_without_gate": {
-          "const": false
-        },
-        "oma_can_execute_agent_lab_suite": {
-          "const": false
-        },
-        "oma_can_write_owner_receipt_body": {
-          "const": false
-        },
-        "oma_can_write_typed_blocker_body": {
-          "const": false
-        }
+        "source_morphology_proof_ref": { "$ref": "#/$defs/nonEmptyString" },
+        "private_residue_decision_ref": { "$ref": "#/$defs/nonEmptyString" },
+        "target_runtime_read_model_consumption_ref": { "$ref": "#/$defs/nonEmptyString" },
+        "failure_evidence_refs": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "target_editable_surface_refs": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "forbidden_surfaces": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "expected_behavior_delta": { "$ref": "#/$defs/nonEmptyString" },
+        "verification_refs": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "reviewer_refs": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "owner_route_refs": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "no_forbidden_write_proof_refs": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "patch_traceability_refs": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "efficiency_non_regression_refs": { "$ref": "#/$defs/efficiencyNonRegressionRefs" }
       },
-      "additionalProperties": true
+      "additionalProperties": false
+    },
+    "developerPatchSemanticRequest": {
+      "type": "object",
+      "required": [
+        "request_id", "source_agent_lab_result_ref", "foundry_lab_execution_receipt_ref",
+        "agent_building_judgment", "source_refs", "reviewer_refs", "candidate_refs"
+      ],
+      "properties": {
+        "request_id": { "$ref": "#/$defs/nonEmptyString" },
+        "source_agent_lab_result_ref": { "$ref": "#/$defs/nonEmptyString" },
+        "foundry_lab_execution_receipt_ref": { "$ref": "#/$defs/nonEmptyString" },
+        "agent_building_judgment": { "$ref": "#/$defs/developerPatchJudgment" },
+        "source_refs": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "reviewer_refs": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "candidate_refs": { "$ref": "#/$defs/nonEmptyStringArray" }
+      },
+      "additionalProperties": false
+    },
+    "workOrderMaterializationRequest": {
+      "type": "object",
+      "required": [
+        "surface_kind", "version", "canonical_schema_ref", "request_kind", "request_owner",
+        "producer_agent_id", "execution_owner", "target_agent", "semantic_request",
+        "authority_boundary"
+      ],
+      "properties": {
+        "surface_kind": { "const": "opl_work_order_materialization_request" },
+        "version": { "const": "opl-work-order-materialization-request.v2" },
+        "canonical_schema_ref": {
+          "const": "contracts/opl-framework/work-order-materialization-request.schema.json"
+        },
+        "request_kind": { "const": "developer_patch" },
+        "request_owner": { "const": "oma" },
+        "producer_agent_id": { "const": "oma" },
+        "execution_owner": { "const": "one-person-lab/OPL Foundry Lab" },
+        "target_agent": { "$ref": "#/$defs/materializationTargetAgent" },
+        "semantic_request": { "$ref": "#/$defs/developerPatchSemanticRequest" },
+        "authority_boundary": { "$ref": "#/$defs/materializationAuthorityBoundary" }
+      },
+      "additionalProperties": false
+    },
+    "candidateAuthorityBoundary": {
+      "type": "object",
+      "required": [
+        "source_patch_allowed_after_owner_gate", "can_write_target_domain_truth",
+        "can_write_target_domain_memory_body", "can_mutate_target_domain_artifact_body",
+        "can_authorize_target_domain_quality_or_export", "can_promote_default_agent_without_gate",
+        "can_train_or_deploy_model_weights"
+      ],
+      "properties": {
+        "source_patch_allowed_after_owner_gate": { "type": "boolean" },
+        "can_write_target_domain_truth": { "const": false },
+        "can_write_target_domain_memory_body": { "const": false },
+        "can_mutate_target_domain_artifact_body": { "const": false },
+        "can_authorize_target_domain_quality_or_export": { "const": false },
+        "can_promote_default_agent_without_gate": { "const": false },
+        "can_train_or_deploy_model_weights": { "const": false },
+        "quality_debt_blocks_stage_transition": { "const": false },
+        "quality_debt_blocks_delivery_patch_or_promotion_claims": { "const": true },
+        "executable_work_order_materialized": { "const": false }
+      },
+      "additionalProperties": false
+    },
+    "materializationAuthorityBoundary": {
+      "type": "object",
+      "required": [
+        "semantic_scope", "work_order_materialization_owner", "work_order_lifecycle_owner",
+        "target_worktree_lifecycle_owner", "target_owner_closeout_owner",
+        "producer_writes_framework_request_bundle", "producer_assigns_work_order_id",
+        "producer_manages_executor_lease", "producer_manages_target_worktree",
+        "producer_executes_work_order", "producer_writes_work_order_receipt",
+        "producer_writes_target_owner_closeout"
+      ],
+      "properties": {
+        "semantic_scope": { "const": "agent_building_request_only" },
+        "work_order_materialization_owner": { "const": "one-person-lab/OPL Foundry Lab" },
+        "work_order_lifecycle_owner": { "const": "one-person-lab/OPL Foundry Lab" },
+        "target_worktree_lifecycle_owner": { "const": "one-person-lab/OPL Foundry Lab" },
+        "target_owner_closeout_owner": { "const": "target-domain" },
+        "producer_writes_framework_request_bundle": { "const": false },
+        "producer_assigns_work_order_id": { "const": false },
+        "producer_manages_executor_lease": { "const": false },
+        "producer_manages_target_worktree": { "const": false },
+        "producer_executes_work_order": { "const": false },
+        "producer_writes_work_order_receipt": { "const": false },
+        "producer_writes_target_owner_closeout": { "const": false }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": true

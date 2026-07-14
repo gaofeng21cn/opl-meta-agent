@@ -60,7 +60,11 @@ function runImproveCliProcess(args: {
   ], { cwd: repoRoot, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
 }
 
-test('external blocked Agent Lab suite becomes a MAS developer patch work order', () => {
+function developerPatchRequest(payload: JsonObject): JsonObject {
+  return payload.semantic_requests.work_order_materialization_request as JsonObject;
+}
+
+test('external blocked Agent Lab suite becomes a MAS developer patch semantic request', () => {
   withOutputRoot('oma-medical-suite-', (outputRoot) => {
     const targetAgentDir = path.join(outputRoot, 'med-autoscience');
     const suitePath = path.join(outputRoot, 'suite.json');
@@ -99,10 +103,10 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
       'contracts/schemas/improve-from-external-agent-lab-suite.output.schema.json',
       payload,
     );
-    assert.equal(payload.status, 'developer_patch_work_order_ready_for_opl_foundry_lab');
-    const workOrder = payload.agent_building_judgment.developer_patch_work_order;
+    assert.equal(payload.status, 'developer_patch_semantic_request_ready_for_opl_materialization');
+    const request = developerPatchRequest(payload);
+    const judgment = request.semantic_request.agent_building_judgment as JsonObject;
     const candidate = payload.agent_building_judgment.target_capability_improvement_candidate;
-    assert.equal(payload.semantic_requests.oma_writes_request_files, false);
     assert.equal(fs.existsSync(path.join(outputRoot, 'developer-patch-work-order.json')), false);
     assert.equal(fs.existsSync(path.join(outputRoot, 'target-capability-improvement-candidate.json')), false);
     const expectedTarget = {
@@ -114,25 +118,31 @@ test('external blocked Agent Lab suite becomes a MAS developer patch work order'
       'evaluation-receipt:mas-suite:high-quality-medical-manuscript',
       'trajectory-observation-receipt:agent-lab-task:med-autoscience/high_quality_medical_manuscript_self_evolution',
     ];
-    assert.equal(workOrder.status, 'ready_for_target_agent_source_patch');
-    assert.equal(workOrder.target_agent.domain_id, 'med-autoscience');
-    assert.equal(workOrder.target_agent.target_agent_ref, 'domain-agent:med-autoscience');
-    assert.deepEqual(workOrder.evaluation_target_agent, expectedTarget);
-    assert.deepEqual(workOrder.evaluation_provenance_refs, expectedProvenanceRefs);
+    assert.equal(request.request_kind, 'developer_patch');
+    assert.equal(request.request_owner, 'oma');
+    assert.equal(request.producer_agent_id, 'oma');
+    assert.equal(request.target_agent.domain_id, 'med-autoscience');
+    assert.equal(request.target_agent.target_agent_ref, 'domain-agent:med-autoscience');
+    assert.deepEqual(payload.evaluation_target_agent, expectedTarget);
+    assert.deepEqual(payload.evaluation_provenance_refs, expectedProvenanceRefs);
     assert.deepEqual(candidate.evaluation_target_agent, expectedTarget);
     assert.deepEqual(candidate.evaluation_provenance_refs, expectedProvenanceRefs);
     assert.equal(
       payload.foundry_lab_execution_receipt_ref,
       'foundry-lab-execution-receipt:mas-suite:high-quality-medical-manuscript',
     );
-    const hdlTrace = (workOrder.patch_traceability_matrix as JsonObject[])
+    const hdlTrace = (candidate.patch_traceability_matrix as JsonObject[])
       .find((entry) => entry.gap_token === 'hdl');
     assert.ok(hdlTrace);
     assert.deepEqual(hdlTrace.required_patch_refs, [
       'quality_contract_ref:mas/prediction_model_first_draft_quality/variable_unit_harmonization',
     ]);
     assert.deepEqual(hdlTrace.target_repo_file_hints, medicalPolicy.paths);
-    assert.equal(workOrder.authority_boundary.can_write_target_domain_truth, false);
+    assert.equal(judgment.failure_class, 'quality-gate');
+    assert.match(String(judgment.source_morphology_proof_ref), /^source-morphology-proof:/);
+    assert.match(String(judgment.private_residue_decision_ref), /^private-residue-decision:/);
+    assert.equal(request.authority_boundary.producer_assigns_work_order_id, false);
+    assert.equal(request.authority_boundary.producer_executes_work_order, false);
   });
 });
 
@@ -346,7 +356,7 @@ test('candidate identity ignores provenance order while work-order identity bind
       });
       return {
         candidate: payload.agent_building_judgment.target_capability_improvement_candidate,
-        workOrder: payload.agent_building_judgment.developer_patch_work_order,
+        request: developerPatchRequest(payload),
       };
     };
 
@@ -374,9 +384,15 @@ test('candidate identity ignores provenance order while work-order identity bind
     const second = run('reordered', reordered);
     const third = run('changed-receipt', changedReceipt);
     assert.equal(second.candidate.candidate_id, first.candidate.candidate_id);
-    assert.equal(second.workOrder.work_order_id, first.workOrder.work_order_id);
+    assert.equal(
+      second.request.semantic_request.request_id,
+      first.request.semantic_request.request_id,
+    );
     assert.equal(third.candidate.candidate_id, first.candidate.candidate_id);
-    assert.notEqual(third.workOrder.work_order_id, first.workOrder.work_order_id);
+    assert.notEqual(
+      third.request.semantic_request.request_id,
+      first.request.semantic_request.request_id,
+    );
   });
 });
 
@@ -407,13 +423,11 @@ test('generic target-agent feedback external suite is accepted without MAS-only 
     });
 
     const payload = runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
-    const workOrder = payload.agent_building_judgment.developer_patch_work_order;
-    assert.equal(payload.status, 'developer_patch_work_order_ready_for_opl_foundry_lab');
-    assert.equal(workOrder.target_agent.domain_id, 'target-agent');
-    assert.deepEqual(workOrder.source_external_suite_intake.accepted_input_profiles, [
-      'target_agent_feedback_external_suite',
-    ]);
-    assert.ok(workOrder.source_external_suite_intake.source_feedback_refs.includes(directReview));
+    const request = developerPatchRequest(payload);
+    assert.equal(payload.status, 'developer_patch_semantic_request_ready_for_opl_materialization');
+    assert.equal(request.target_agent.domain_id, 'target-agent');
+    assert.ok(request.semantic_request.reviewer_refs.includes(directReview));
+    assert.equal(JSON.stringify(request).includes('mas_feedback_agent_lab_external_suite'), false);
   });
 });
 
@@ -440,15 +454,12 @@ test('MAS reviewer_revision feedback external suite is accepted as developer wor
     });
 
     const payload = runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
-    const workOrder = payload.agent_building_judgment.developer_patch_work_order;
-    assert.deepEqual(workOrder.source_external_suite_intake.accepted_input_profiles, [
-      'target_agent_feedback_external_suite',
-      'mas_feedback_agent_lab_external_suite',
-      'reviewer_revision_feedback',
-    ]);
-    assert.deepEqual(workOrder.source_external_suite_intake.task_families, [
-      'reviewer_revision_feedback_self_evolution',
-    ]);
-    assert.ok(workOrder.reviewer_evidence_refs.includes(reviewerEvidence));
+    const request = developerPatchRequest(payload);
+    assert.equal(request.target_agent.domain_id, 'med-autoscience');
+    assert.ok(request.semantic_request.reviewer_refs.includes(reviewerEvidence));
+    assert.ok(request.semantic_request.source_refs.includes(
+      'rubric-gap:mas/002/internal-quality-language-purge',
+    ));
+    assert.equal(Object.hasOwn(request, 'work_order_id'), false);
   });
 });

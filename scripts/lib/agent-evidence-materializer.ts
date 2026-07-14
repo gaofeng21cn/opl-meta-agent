@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import { createHash } from 'node:crypto';
 import path from 'node:path';
 import type { JsonObject } from './domain-pack.ts';
 import {
@@ -23,11 +22,8 @@ import {
   buildExpectedTypedBlockerRef,
 } from './agent-evidence-typed-blocker.ts';
 import {
-  buildFoundryLabWorkOrder,
-} from './foundry-lab-work-order.ts';
-import {
-  buildFoundryEvaluationRequest,
-} from './meta-agent-loop-receipts.ts';
+  buildFoundryEvaluationSemanticRequest,
+} from './foundry-evaluation-semantic-request.ts';
 import {
   buildStageNativeArtifactAttemptRefs,
 } from './stage-native-artifact-contract.ts';
@@ -35,10 +31,12 @@ import {
   collectEfficiencyNonRegressionRefs,
 } from './work-order-efficiency.ts';
 import {
+  buildWorkOrderMaterializationRequest,
+} from './work-order-materialization-request.ts';
+import {
   forbiddenWriteSurfaces,
   noForbiddenWriteProofRefs,
   productionAcceptanceEvidenceRefs,
-  requiredReturnShapes,
   targetOwnerRoute,
   uniqueRefs,
   verificationRefs,
@@ -86,7 +84,7 @@ export function buildAgentEvidenceEvaluationRequest({
     : [];
   const scorecardRef = `scorecard:${targetAgent.domainId}/production-evidence-tail/testing-takeover`;
 
-  return buildFoundryEvaluationRequest({
+  return buildFoundryEvaluationSemanticRequest({
     requestId: `oma-foundry-evaluation-request:${suiteId}`,
     suiteId,
     suiteKind: 'agent_production_evidence_suite',
@@ -136,19 +134,6 @@ export function buildAgentEvidenceEvaluationRequest({
     promotionGateRequiredRefs: noForbiddenRefs,
     productionEvidenceGateIds,
   });
-}
-
-export function buildOwnerReceiptRefs(contracts: AgentContracts, targetAgent: TargetAgentIdentity): JsonObject {
-  return {
-    surface_kind: 'opl_meta_agent_target_owner_receipt_refs',
-    version: 'opl-meta-agent.target-owner-receipt-refs.v1',
-    status: 'refs_only_no_owner_receipt_signed_by_meta_agent',
-    target_agent_ref: targetAgent.targetAgentRef,
-    owner: targetAgent.owner,
-    receipt_refs: productionAcceptanceEvidenceRefs(contracts.productionAcceptance),
-    required_return_shapes: requiredReturnShapes(contracts),
-    target_owner_route: targetOwnerRoute(contracts),
-  };
 }
 
 export function buildCapabilityCandidate({
@@ -234,10 +219,6 @@ export function buildCapabilityCandidate({
   };
 }
 
-function semanticJsonSha256(value: JsonObject): string {
-  return createHash('sha256').update(`${JSON.stringify(value, null, 2)}\n`).digest('hex');
-}
-
 export function buildAgentEvidenceRequestFromCli(argv = process.argv.slice(2)): JsonObject {
   const args = parseAgentEvidenceArgs(argv);
   const contracts = loadAgentContracts(args.agentRepo, args.productionAcceptancePath);
@@ -252,8 +233,6 @@ export function buildAgentEvidenceRequestFromCli(argv = process.argv.slice(2)): 
     aiReviewerEvaluation,
     aiReviewerEvaluationPath: args.aiReviewerEvaluationPath,
   });
-  const ownerReceiptRefs = buildOwnerReceiptRefs(contracts, targetAgent);
-
   const capabilityCandidate = buildCapabilityCandidate({
     contracts,
     evaluationRequest,
@@ -261,43 +240,44 @@ export function buildAgentEvidenceRequestFromCli(argv = process.argv.slice(2)): 
     aiReviewerEvaluationPath: args.aiReviewerEvaluationPath,
     targetAgent,
   });
-  const foundryLabWorkOrder = buildFoundryLabWorkOrder({
-    workOrderKind: 'target_agent_production_evidence_evaluation',
+  const sourceRefs = [
+    ...sourceContractRefs(contracts),
+    ...productionAcceptanceEvidenceRefs(contracts.productionAcceptance),
+  ];
+  const reviewerRefs = aiReviewerEvaluation && args.aiReviewerEvaluationPath
+    ? [
+        args.aiReviewerEvaluationPath,
+        ...aiReviewerEvaluation.source_refs,
+        ...aiReviewerEvaluation.direct_evidence_refs,
+      ]
+    : [];
+  const candidateRefs = [
+    String(capabilityCandidate.candidate_id),
+    ...([capabilityCandidate.expected_typed_blocker_ref]
+      .filter((ref): ref is string => typeof ref === 'string')),
+  ];
+  const workOrderMaterializationRequest = buildWorkOrderMaterializationRequest({
+    requestKind: 'foundry_evaluation',
     targetAgent: {
       domain_id: targetAgent.domainId,
-      domain_label: targetAgent.domainLabel,
       repo_dir: args.agentRepo,
       target_agent_ref: targetAgent.targetAgentRef,
       descriptor_ref: path.join(args.agentRepo, 'contracts/domain_descriptor.json'),
     },
-    evaluationRequest,
-    evaluationRequestRef: 'foundry-evaluation-request.json',
-    evaluationRequestSha256: semanticJsonSha256(evaluationRequest),
-    sourceRefs: [
-      ...sourceContractRefs(contracts),
-      'owner-receipt-refs.json',
-      ...productionAcceptanceEvidenceRefs(contracts.productionAcceptance),
-    ],
-    reviewerRefs: aiReviewerEvaluation && args.aiReviewerEvaluationPath
-      ? [
-          args.aiReviewerEvaluationPath,
-          ...aiReviewerEvaluation.source_refs,
-          ...aiReviewerEvaluation.direct_evidence_refs,
-        ]
-      : [],
-    candidateRefs: [
-      String(capabilityCandidate.candidate_id),
-      ...([capabilityCandidate.expected_typed_blocker_ref]
-        .filter((ref): ref is string => typeof ref === 'string')),
-    ],
+    semanticRequest: {
+      ...evaluationRequest,
+      source_refs: sourceRefs,
+      reviewer_refs: reviewerRefs,
+      candidate_refs: candidateRefs,
+    },
   });
 
   return {
     surface_kind: 'opl_meta_agent_agent_evidence_handoff',
     version: 'opl-meta-agent.agent-evidence-handoff.v1',
     status: aiReviewerEvaluation
-      ? 'foundry_lab_evaluation_candidate_ready_for_opl_foundry_lab'
-      : 'foundry_lab_evaluation_candidate_ready_reviewer_evidence_missing',
+      ? 'foundry_evaluation_semantic_request_ready_for_opl_materialization'
+      : 'foundry_evaluation_semantic_request_ready_reviewer_evidence_missing',
     product_id: 'opl-meta-agent',
     target_agent: capabilityCandidate.target_agent,
     agent_building_judgment: {
@@ -305,20 +285,9 @@ export function buildAgentEvidenceRequestFromCli(argv = process.argv.slice(2)): 
       expected_typed_blocker_ref: capabilityCandidate.expected_typed_blocker_ref,
     },
     semantic_requests: {
-      foundry_evaluation_request: evaluationRequest,
-      owner_receipt_refs: ownerReceiptRefs,
-      foundry_lab_work_order: foundryLabWorkOrder,
-      physical_materialization_owner: 'one-person-lab/OPL Foundry Lab',
-      materialization_surface: 'opl work-order materialize-request --request <semantic-request.json> --target-dir <new-dir>',
-      oma_writes_request_files: false,
-      requested_file_names: {
-        foundry_evaluation_request: 'foundry-evaluation-request.json',
-        owner_receipt_refs: 'owner-receipt-refs.json',
-        target_capability_improvement_candidate: 'target-capability-improvement-candidate.json',
-        foundry_lab_work_order: 'foundry-lab-work-order.json',
-      },
+      work_order_materialization_request: workOrderMaterializationRequest,
     },
-    authority_boundary: foundryLabWorkOrder.authority_boundary,
+    authority_boundary: workOrderMaterializationRequest.authority_boundary,
   };
 }
 

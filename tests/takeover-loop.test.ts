@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -11,7 +10,6 @@ import {
 } from '../scripts/takeover-agent.ts';
 import {
   assertMatchesJsonSchema,
-  oplBin,
   parseJsonText,
   readJsonFile as readJson,
   repoRoot,
@@ -54,7 +52,7 @@ function validateTakeoverOutput(payload: unknown) {
   }, payload);
 }
 
-test('takeover emits a thin evaluation request and Foundry Lab work order without local execution receipts', () => {
+test('takeover emits a thin semantic request without private work-order mechanics', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-takeover-'));
   try {
     const targetDir = path.join(outputRoot, 'target-agent');
@@ -80,7 +78,11 @@ test('takeover emits a thin evaluation request and Foundry Lab work order withou
 
     assert.equal(payload.surface_kind, 'opl_meta_agent_takeover_handoff');
     assert.equal(payload.status, 'takeover_candidate_materialized_ready_for_opl_foundry_lab_evaluation');
-    assert.equal(payload.authority_boundary.oma_can_execute_agent_lab_suite, false);
+    assert.equal(payload.authority_boundary.producer_executes_work_order, false);
+    assert.equal(payload.authority_boundary.producer_assigns_work_order_id, false);
+    assert.equal(payload.authority_boundary.producer_manages_executor_lease, false);
+    assert.equal(payload.authority_boundary.producer_manages_target_worktree, false);
+    assert.equal(payload.authority_boundary.producer_writes_work_order_receipt, false);
     assert.equal(payload.takeover_policy.can_write_target_owner_receipt_body, false);
     assert.deepEqual(payload.agent_building_judgment.suggestions, [
       'Repeatable suggestion.',
@@ -91,65 +93,36 @@ test('takeover emits a thin evaluation request and Foundry Lab work order withou
       'mechanism-candidate:opl-meta-agent/takeover-fixture-agent/testing-takeover-loop',
     ]);
 
-    const evaluationRequest = readJson(path.join(takeoverRoot, 'foundry-evaluation-request.json'));
-    assert.equal(evaluationRequest.surface_kind, 'opl_meta_agent_foundry_evaluation_request');
-    assert.equal(evaluationRequest.suite_kind, 'agent_lab_external_suite');
-    assert.equal(evaluationRequest.task_intents[0].domain_id, 'opl-meta-agent');
-    assert.equal(Object.hasOwn(evaluationRequest, 'target_agent_ref'), false);
-    assert.equal(Object.hasOwn(evaluationRequest, 'tasks'), false);
-    assert.equal(Object.hasOwn(evaluationRequest.task_intents[0], 'environment'), false);
-    assert.equal(Object.hasOwn(evaluationRequest.task_intents[0], 'recovery_probe_specs'), false);
-
-    const workOrder = readJson(path.join(takeoverRoot, 'foundry-lab-work-order.json'));
-    assert.equal(workOrder.work_order_kind, 'target_agent_takeover_evaluation');
-    assert.equal(workOrder.status, 'ready_for_opl_foundry_lab_evaluation');
-    assert.equal(workOrder.consumer_dependency.status, 'available');
-    assert.equal(workOrder.target_agent.target_agent_ref, 'domain-agent:takeover-fixture-agent');
-    assert.equal(workOrder.target_agent.descriptor_ref, path.join(targetDir, 'contracts/domain_descriptor.json'));
-    assert.equal(workOrder.evaluation_request.ref, 'foundry-evaluation-request.json');
+    const materializationRequest = payload.foundry_lab_handoff.materialization_request;
+    assert.equal(materializationRequest.surface_kind, 'opl_work_order_materialization_request');
+    assert.equal(materializationRequest.version, 'opl-work-order-materialization-request.v2');
+    assert.equal(materializationRequest.request_kind, 'foundry_evaluation');
+    assert.equal(materializationRequest.request_owner, 'oma');
+    assert.equal(materializationRequest.producer_agent_id, 'oma');
+    assert.equal(materializationRequest.target_agent.target_agent_ref, 'domain-agent:takeover-fixture-agent');
     assert.equal(
-      workOrder.evaluation_request.sha256,
-      createHash('sha256')
-        .update(fs.readFileSync(path.join(takeoverRoot, 'foundry-evaluation-request.json')))
-        .digest('hex'),
+      materializationRequest.target_agent.descriptor_ref,
+      path.join(targetDir, 'contracts/domain_descriptor.json'),
     );
-    assert.equal(workOrder.execution_owner, 'one-person-lab/OPL Foundry Lab');
-    assert.equal(workOrder.authority_boundary.oma_can_write_owner_receipt_body, false);
-    assert.equal(Object.hasOwn(workOrder, 'suite_seed'), false);
+    const semanticRequest = materializationRequest.semantic_request;
+    assert.equal(semanticRequest.suite_kind, 'agent_lab_external_suite');
+    assert.equal(semanticRequest.task_intents[0].domain_id, 'opl-meta-agent');
+    assert.equal(Object.hasOwn(semanticRequest, 'work_order_id'), false);
+    assert.equal(Object.hasOwn(semanticRequest, 'tasks'), false);
+    assert.equal(Object.hasOwn(semanticRequest.task_intents[0], 'environment'), false);
+    assert.equal(Object.hasOwn(semanticRequest.task_intents[0], 'recovery_probe_specs'), false);
+
+    assert.equal(fs.existsSync(path.join(takeoverRoot, 'foundry-evaluation-request.json')), false);
+    assert.equal(fs.existsSync(path.join(takeoverRoot, 'foundry-lab-work-order.json')), false);
     assert.equal(fs.existsSync(path.join(takeoverRoot, 'agent-lab-takeover-suite-seed.json')), false);
     assert.equal(fs.existsSync(path.join(takeoverRoot, 'takeover-receipt.json')), false);
     assert.equal(fs.existsSync(path.join(takeoverRoot, 'new-agent-delivery-gate.json')), false);
 
-    const foundryOutputDir = path.join(outputRoot, 'foundry-output');
-    const consumer = spawnSync(oplBin, [
-      'agent-lab',
-      'evaluation-work-order',
-      'execute',
-      '--work-order', path.join(takeoverRoot, 'foundry-lab-work-order.json'),
-      '--output', foundryOutputDir,
-      '--json',
-    ], {
-      cwd: repoRoot,
-      encoding: 'utf8',
-      maxBuffer: 16 * 1024 * 1024,
-      env: {
-        ...process.env,
-        OPL_STATE_DIR: path.join(outputRoot, 'opl-state'),
-      },
-    });
-    assert.equal(consumer.status, 0, consumer.stderr || consumer.stdout);
-    const execution = parseJsonText(consumer.stdout).agent_lab_evaluation_work_order_execution;
-    const suitePlan = readJson(execution.artifacts.evaluation_suite_plan_path);
-    assert.equal(execution.status, 'blocked_missing_evaluation_observations');
-    assert.equal(execution.suite_result, null);
-    assert.equal(Object.hasOwn(execution, 'suite_seed_path'), false);
-    assert.equal(suitePlan.surface_kind, 'opl_foundry_lab_evaluation_suite_plan');
-    assert.equal(suitePlan.producer, 'one-person-lab/OPL Foundry Lab');
-    assert.equal(suitePlan.tasks[0].task_id, evaluationRequest.task_intents[0].task_id);
-
     for (const mutate of [
       (candidate: Record<string, any>) => { candidate.suite_seed = {}; },
-      (candidate: Record<string, any>) => { candidate.foundry_lab_handoff.work_order.suite_plan = {}; },
+      (candidate: Record<string, any>) => {
+        candidate.foundry_lab_handoff.materialization_request.semantic_request.suite_plan = {};
+      },
       (candidate: Record<string, any>) => { candidate.target_agent.unknown_target_identity = 'forbidden'; },
       (candidate: Record<string, any>) => { candidate.authority_boundary.unknown_authority = false; },
     ]) {
