@@ -37,7 +37,7 @@
 ## 质量债务与硬停
 
 - 下列缺口在已有可消费 package 时记录为质量债务，进入 optimizer、owner review 或后续 declared stage，不回滚或终止 stage graph。
-- 零、损坏或不可读 package 物化为 no-output/failure diagnostic，不返回 route decision/recommendation，也不选择后续 declared Stage；由 StageRunController 按 zero-consumable-artifact 边界终局化。Unavailable executor、权限/凭据/安全、显式 human decision、authority violation、不可逆动作或 identity/currentness mismatch 返回 typed blocker/human gate，同样不选择 route。
+- 零、损坏或不可读 package 必须先物化 exact-ref-and-hash no-output/failure diagnostic。该 diagnostic 是可消费进展 artifact，primary-only decisive producer 应以其证据 route-back 到最窄 declared owning Stage；只有 package 与 diagnostic 均无法物化时才是 literal zero-consumable-artifact，不返回 route decision/recommendation，由 StageRunController 终局化。Unavailable executor、权限/凭据/安全、显式 human decision、authority violation、不可逆动作或 identity/currentness mismatch 返回 typed blocker/human gate，同样不选择 route。
 - 所有拒绝项继续阻止 owner acceptance、baseline accepted、quality/ready 和 promotion，不再自动阻止 refs-only artifact handoff candidate。
 
 ## 拒绝标准

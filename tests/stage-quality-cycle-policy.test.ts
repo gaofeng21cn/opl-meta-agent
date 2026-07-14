@@ -267,11 +267,16 @@ test('baseline-delivery remains a primary-only immutable refs handoff to the own
   assert.match(prompt, /oma-eval-takeover-review/);
   assert.match(prompt, /oma-work-order-hygiene/);
   assert.match(prompt, /Build receipt 必须来自物化后 bytes/);
-  assert.match(prompt, /零、损坏或不可读 package.*不返回 route decision 或 recommendation/);
-  assert.match(prompt, /StageRunController 按 zero-consumable-artifact 边界终局化/);
+  assert.match(prompt, /零、损坏或不可读 package 必须先物化 exact-ref-and-hash no-output\/failure diagnostic/);
+  assert.match(prompt, /diagnostic 是可消费进展 artifact/);
+  assert.match(prompt, /route-back 到最窄 declared owning Stage/);
+  assert.match(prompt, /package 与 diagnostic 均无法物化时才是 literal zero-consumable-artifact/);
   const gate = readFileSync('agent/quality_gates/baseline-delivery.md', 'utf8');
-  assert.match(gate, /零、损坏或不可读 package.*不返回 route decision\/recommendation/);
-  assert.match(gate, /不选择后续 declared Stage/);
+  assert.match(gate, /零、损坏或不可读 package 必须先物化 exact-ref-and-hash no-output\/failure diagnostic/);
+  assert.match(gate, /diagnostic 是可消费进展 artifact/);
+  assert.match(gate, /route-back 到最窄 declared owning Stage/);
+  assert.match(gate, /package 与 diagnostic 均无法物化时才是 literal zero-consumable-artifact/);
+  assert.match(gate, /不返回 route decision\/recommendation/);
 
   const descriptor = readJson('contracts/domain_descriptor.json');
   assert.ok(descriptor.outputs.includes('baseline_handoff_candidate_ref'));
