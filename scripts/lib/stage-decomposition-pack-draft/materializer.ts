@@ -355,11 +355,17 @@ export function buildScaffoldMaterializationRequest({
   packageManifest,
 }: ScaffoldMaterializationRequestInput): JsonObject {
   const expectedBuildReceiptRef = buildAgentBuildReceiptRef(targetAgent);
-  const buildReceiptCandidate = buildAgentBuildReceipt(targetAgent) ?? {
-    surface_kind: 'opl_meta_agent_build_receipt_candidate',
+  const omaBuildReceiptCandidate = buildAgentBuildReceipt(targetAgent);
+  const buildReceiptCandidate = omaBuildReceiptCandidate ? {
+    ...omaBuildReceiptCandidate,
+    surface_kind: 'opl_foundry_agent_build_receipt_candidate',
+    producer_agent_id: 'oma',
+  } : {
+    surface_kind: 'opl_foundry_agent_build_receipt_candidate',
     version: 'opl-meta-agent.agent-build-receipt-candidate.v1',
     receipt_ref: expectedBuildReceiptRef,
     target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
+    producer_agent_id: 'oma',
     build_source_kind: 'builtin_profile',
     authority_boundary: {
       candidate_only: true,
@@ -392,9 +398,9 @@ export function buildScaffoldMaterializationRequest({
 
   return {
     surface_kind: 'opl_agent_scaffold_materialization_request',
-    version: 'opl-agent-scaffold-materialization-request.v1',
+    version: 'opl-agent-scaffold-materialization-request.v2',
     canonical_schema_ref: 'contracts/opl-framework/agent-scaffold-materialization-request.schema.json',
-    request_owner: 'opl-meta-agent',
+    producer_agent_id: 'oma',
     execution_owner: 'one-person-lab/OPL Foundry Lab',
     target_identity: {
       domain_id: targetAgent.domain_id,
@@ -459,8 +465,8 @@ export function buildScaffoldMaterializationRequest({
       'agent_profile_conformance',
     ],
     authority_boundary: {
-      oma_authors_agent_building_semantics: true,
-      oma_writes_target_agent_files: false,
+      producer_authors_agent_building_semantics: true,
+      producer_writes_target_agent_files: false,
       opl_owns_physical_scaffold_materialization: true,
       opl_owns_materialized_file_digests: true,
       opl_owns_final_build_receipt: true,

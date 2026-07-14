@@ -115,6 +115,9 @@ test('stage-decomposition emits an OPL-owned scaffold materialization request', 
     sourceRef: schemaRef,
   }, request);
   assert.equal(validation.ok, true, JSON.stringify(validation));
+  assert.equal(request.version, 'opl-agent-scaffold-materialization-request.v2');
+  assert.equal(request.producer_agent_id, 'oma');
+  assert.equal(Object.hasOwn(request, 'request_owner'), false);
   const escapingRequest = structuredClone(request);
   (escapingRequest.files as JsonObject[])[0].path = '../outside-target.md';
   const escapingValidation = validateJsonSchemaPayload({
@@ -124,8 +127,19 @@ test('stage-decomposition emits an OPL-owned scaffold materialization request', 
   }, escapingRequest);
   assert.equal(escapingValidation.ok, false);
   assert.equal(request.execution_owner, 'one-person-lab/OPL Foundry Lab');
-  assert.equal((request.authority_boundary as JsonObject).oma_writes_target_agent_files, false);
+  assert.equal(
+    (request.authority_boundary as JsonObject).producer_writes_target_agent_files,
+    false,
+  );
+  assert.equal(
+    Object.hasOwn(request.authority_boundary as JsonObject, 'oma_writes_target_agent_files'),
+    false,
+  );
   assert.equal((request.authority_boundary as JsonObject).opl_owns_final_build_receipt, true);
+  assert.equal(
+    (request.build_receipt_candidate as JsonObject).surface_kind,
+    'opl_foundry_agent_build_receipt_candidate',
+  );
   assert.deepEqual((request.overwrite_policy as JsonObject).allowed_merge_object_paths, [
     'contracts/domain_descriptor.json',
     'contracts/capability_map.json',
@@ -249,10 +263,36 @@ test('scaffold materialization helper remains a pure OMA request producer', () =
     const targetDir = path.join(outputRoot, 'target-agent');
     const request = buildFixtureMaterializationRequest();
     assert.equal(request.surface_kind, 'opl_agent_scaffold_materialization_request');
-    assert.equal((request.authority_boundary as JsonObject).oma_writes_target_agent_files, false);
+    assert.equal((request.authority_boundary as JsonObject).producer_writes_target_agent_files, false);
+    assert.equal(Object.hasOwn(request, 'request_owner'), false);
     assert.equal(fs.existsSync(targetDir), false);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
+test('scaffold producer schema rejects retired v1 and OMA-private authority fields', () => {
+  const schemaRef = 'contracts/schemas/agent-scaffold-materialization-request.producer.schema.json';
+  const schema = readJson(path.join(repoRoot, schemaRef));
+  const request = buildFixtureMaterializationRequest();
+  for (const mutate of [
+    (candidate: JsonObject) => {
+      candidate.version = 'opl-agent-scaffold-materialization-request.v1';
+    },
+    (candidate: JsonObject) => {
+      candidate.request_owner = 'opl-meta-agent';
+    },
+    (candidate: JsonObject) => {
+      candidate.authority_boundary.oma_writes_target_agent_files = false;
+    },
+  ]) {
+    const forged = structuredClone(request);
+    mutate(forged);
+    assert.equal(validateJsonSchemaPayload({
+      schemaId: String(schema.$id),
+      schema,
+      sourceRef: schemaRef,
+    }, forged).ok, false);
   }
 });
 

@@ -118,10 +118,13 @@ test('external suite improvement accepts capability pack target descriptor', () 
     writeAiReviewerEvaluation(reviewerEvaluationPath);
 
     const payload = runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
-    const workOrder = payload.agent_building_judgment.developer_patch_work_order;
-    assert.equal(workOrder.target_agent.domain_id, 'mas-scholar-skills');
-    assert.deepEqual(workOrder.proposed_change_refs, ['professional_skill_medical_manuscript_writing']);
-    assert.deepEqual(workOrder.target_repo_file_hints, ['skills/medical-manuscript-writing/SKILL.md']);
+    const request = payload.semantic_requests.work_order_materialization_request;
+    const candidate = payload.agent_building_judgment.target_capability_improvement_candidate;
+    assert.equal(request.target_agent.domain_id, 'mas-scholar-skills');
+    assert.deepEqual(candidate.proposed_change_refs, ['professional_skill_medical_manuscript_writing']);
+    assert.deepEqual(candidate.patch_traceability_matrix[0].target_repo_file_hints, [
+      'skills/medical-manuscript-writing/SKILL.md',
+    ]);
   });
 });
 

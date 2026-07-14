@@ -2,14 +2,13 @@
 
 ## 操作策略
 
-读取既有 OPL-compatible target agent 的 descriptor/contracts 与 independent reviewer evidence，生成 thin takeover evaluation request、target-bound Foundry evaluation work order 和 proposal-only candidate refs。OMA 不执行 suite，也不签 takeover/owner receipt。
+读取既有 OPL-compatible target agent 的 descriptor/contracts 与 independent reviewer evidence，生成 takeover semantic request、canonical work-order materialization request 和 proposal-only candidate refs。OMA 不分配 work-order identity、不执行 suite，也不签 takeover/owner receipt。
 
 ## Handoff
 
 向 OPL Foundry Lab 或 owner review 交付：
 
-- `foundry_evaluation_request_ref`
-- `foundry_lab_evaluation_work_order_ref`
+- `work_order_materialization_request_ref`
 - `gated_self_evolution_candidate_ref`
 - `mechanism_candidate_ref`
 - `candidate_pack_or_takeover_assessment_ready`

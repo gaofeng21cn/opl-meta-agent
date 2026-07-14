@@ -1,152 +1,178 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import { validateJsonSchemaPayload } from 'opl-framework/json-schema-registry';
 import {
-  FOUNDRY_LAB_EVALUATION_ACTION_REF,
-  FOUNDRY_LAB_EVALUATION_OWNER,
-  buildFoundryLabWorkOrder,
-} from '../scripts/lib/foundry-lab-work-order.ts';
-import { sha256FileBytes, writeJson } from '../scripts/lib/meta-agent-loop-io.ts';
+  buildWorkOrderMaterializationRequest,
+} from '../scripts/lib/work-order-materialization-request.ts';
+import {
+  assertMatchesJsonSchema,
+  type JsonObject,
+  readJson,
+} from './support/contracts.ts';
 
-const targetAgent = {
-  domain_id: 'colorectal-surgery-risk-agent',
-  domain_label: 'Colorectal Surgery Risk Agent',
-  repo_dir: '/tmp/colorectal-surgery-risk-agent',
-  target_agent_ref: 'domain-agent:colorectal-surgery-risk-agent',
-  descriptor_ref: '/tmp/colorectal-surgery-risk-agent/contracts/domain_descriptor.json',
-};
+const schemaRef = 'contracts/schemas/opl-work-order-materialization-request.v2.schema.json';
+const canonicalSchemaRef = 'contracts/opl-framework/work-order-materialization-request.schema.json';
+const canonicalSchemaPath = fileURLToPath(new URL(
+  `../../${canonicalSchemaRef}`,
+  import.meta.resolve('opl-framework/json-schema-registry'),
+));
 
-const evaluationRequest = {
-  surface_kind: 'opl_meta_agent_foundry_evaluation_request',
-  version: 'opl-meta-agent.foundry-evaluation-request.v1',
-  request_id: 'oma-evaluation-request:colorectal-surgery-risk-agent/baseline',
-  suite_id: 'opl-meta-agent-baseline-suite:colorectal-surgery-risk-agent',
-  suite_kind: 'agent_lab_external_suite',
-  task_intents: [{ task_id: 'agent-lab-task:colorectal-surgery-risk-agent/baseline' }],
-};
+function fixture(name: string): JsonObject {
+  return readJson(`tests/fixtures/${name}`);
+}
 
-const evaluationRequestSha256 = 'a'.repeat(64);
-
-function build(overrides: Record<string, unknown> = {}) {
-  return buildFoundryLabWorkOrder({
-    workOrderKind: 'agent_baseline_evaluation',
-    targetAgent,
-    evaluationRequest,
-    evaluationRequestRef: 'oma-evaluation-request.json',
-    evaluationRequestSha256,
-    sourceRefs: ['source:b', 'source:a', 'source:a'],
-    reviewerRefs: ['review:b', 'review:a'],
-    candidateRefs: ['candidate:b', 'candidate:a'],
-    ...overrides,
+function buildFromFixture(value: JsonObject): JsonObject {
+  return buildWorkOrderMaterializationRequest({
+    requestKind: value.request_kind as 'developer_patch' | 'foundry_evaluation',
+    targetAgent: value.target_agent as {
+      domain_id: string;
+      repo_dir: string;
+      target_agent_ref?: string;
+      descriptor_ref?: string;
+    },
+    semanticRequest: value.semantic_request as JsonObject,
   });
 }
 
-test('Foundry evaluation work order matches the canonical OPL consumer ABI', () => {
-  const workOrder = build();
+function schemaValidation(payload: unknown) {
+  const schema = readJson(schemaRef);
+  return validateJsonSchemaPayload({
+    schemaId: String(schema.$id),
+    schema,
+    sourceRef: schemaRef,
+  }, payload);
+}
 
-  assert.equal(workOrder.status, 'ready_for_opl_foundry_lab_evaluation');
-  assert.equal(workOrder.execution_owner, FOUNDRY_LAB_EVALUATION_OWNER);
-  assert.deepEqual(workOrder.target_agent, targetAgent);
-  assert.deepEqual(workOrder.consumer_dependency, {
-    status: 'available',
-    owner: FOUNDRY_LAB_EVALUATION_OWNER,
-    required_consumer_role: 'compile_evaluation_work_order_to_agent_lab_suite_and_execute',
-  });
-  assert.deepEqual(workOrder.execution_aperture, {
-    action_ref: FOUNDRY_LAB_EVALUATION_ACTION_REF,
-    work_order_lifecycle_owner: FOUNDRY_LAB_EVALUATION_OWNER,
-    result_ledger_owner: FOUNDRY_LAB_EVALUATION_OWNER,
-    target_owner_closeout_owner: 'target-domain',
-  });
-  assert.deepEqual(workOrder.evaluation_request, {
-    ref: 'oma-evaluation-request.json',
-    sha256: evaluationRequestSha256,
-    request_id: evaluationRequest.request_id,
-    suite_id: evaluationRequest.suite_id,
-    suite_kind: evaluationRequest.suite_kind,
-  });
-  assert.equal(Object.hasOwn(workOrder, 'suite_seed'), false);
-  assert.equal(Object.hasOwn(workOrder, 'suite_result'), false);
-  assert.equal(Object.hasOwn(workOrder, 'foundry_lab_execution_receipt'), false);
+function canonicalSchemaValidation(payload: unknown) {
+  const schema = JSON.parse(fs.readFileSync(canonicalSchemaPath, 'utf8')) as JsonObject;
+  return validateJsonSchemaPayload({
+    schemaId: String(schema.$id),
+    schema,
+    sourceRef: canonicalSchemaPath,
+  }, payload);
+}
+
+test('OMA emits self-contained v2 requests and leaves work-order identity to OPL', () => {
+  for (const name of [
+    'opl-work-order-materialization-request.v2.json',
+    'opl-work-order-materialization-request.developer-patch.v2.json',
+  ]) {
+    const expected = fixture(name);
+    const request = buildFromFixture(expected);
+    assert.deepEqual(request, expected);
+    assertMatchesJsonSchema(schemaRef, request);
+    assert.equal(canonicalSchemaValidation(request).ok, true);
+    assert.equal(Object.hasOwn(request, 'work_order_id'), false);
+    assert.equal(Object.hasOwn(request, 'executor_lease_ref'), false);
+    assert.equal(Object.hasOwn(request, 'worktree'), false);
+    assert.equal(Object.hasOwn(request, 'lifecycle'), false);
+    assert.equal(Object.hasOwn(request, 'closeout'), false);
+  }
 });
 
-test('Foundry work-order identity binds target identity and canonical provenance refs', () => {
-  const canonical = build();
-  const reordered = build({
-    sourceRefs: ['source:a', 'source:b'],
-    reviewerRefs: ['review:a', 'review:b'],
-    candidateRefs: ['candidate:a', 'candidate:b'],
-  });
-  assert.equal(reordered.work_order_id, canonical.work_order_id);
-  assert.deepEqual(canonical.source_refs, ['source:a', 'source:b']);
-  assert.deepEqual(canonical.reviewer_refs, ['review:a', 'review:b']);
-  assert.deepEqual(canonical.candidate_refs, ['candidate:a', 'candidate:b']);
-
-  const changedTargetRef = build({
-    targetAgent: { ...targetAgent, target_agent_ref: 'domain-agent:other-target' },
-  });
-  const changedDescriptor = build({
-    targetAgent: { ...targetAgent, descriptor_ref: '/tmp/other/contracts/domain_descriptor.json' },
-  });
-  const changedProvenance = build({ candidateRefs: ['candidate:a', 'candidate:c'] });
-  const changedTask = build({
-    evaluationRequest: {
-      ...evaluationRequest,
-      task_intents: [{ task_id: 'agent-lab-task:colorectal-surgery-risk-agent/transportability' }],
-    },
-  });
-  const changedRequestBytes = build({ evaluationRequestSha256: 'b'.repeat(64) });
-  assert.notEqual(changedTargetRef.work_order_id, canonical.work_order_id);
-  assert.notEqual(changedDescriptor.work_order_id, canonical.work_order_id);
-  assert.notEqual(changedProvenance.work_order_id, canonical.work_order_id);
-  assert.notEqual(changedTask.work_order_id, canonical.work_order_id);
-  assert.notEqual(changedRequestBytes.work_order_id, canonical.work_order_id);
-});
-
-test('Foundry work-order rejects a non-canonical evaluation request digest', () => {
+test('foundry evaluation requests require the exact target identity consumed by OPL', () => {
+  const value = fixture('opl-work-order-materialization-request.v2.json');
+  const target = value.target_agent as JsonObject;
   assert.throws(
-    () => build({ evaluationRequestSha256: 'SHA256:not-a-raw-byte-digest' }),
-    /evaluation_request\.sha256/i,
+    () => buildWorkOrderMaterializationRequest({
+      requestKind: 'foundry_evaluation',
+      targetAgent: {
+        domain_id: String(target.domain_id),
+        repo_dir: String(target.repo_dir),
+      },
+      semanticRequest: value.semantic_request as JsonObject,
+    }),
+    /target_agent_ref and target_agent\.descriptor_ref/i,
+  );
+  for (const field of ['target_agent_ref', 'descriptor_ref']) {
+    const invalid = structuredClone(value);
+    delete (invalid.target_agent as JsonObject)[field];
+    assert.equal(schemaValidation(invalid).ok, false, `local schema accepted missing ${field}`);
+    assert.equal(
+      canonicalSchemaValidation(invalid).ok,
+      false,
+      `Framework schema accepted missing ${field}`,
+    );
+  }
+});
+
+test('request_kind branches are mutually exclusive', () => {
+  const foundry = fixture('opl-work-order-materialization-request.v2.json');
+  const developer = fixture('opl-work-order-materialization-request.developer-patch.v2.json');
+  assert.throws(
+    () => buildWorkOrderMaterializationRequest({
+      requestKind: 'developer_patch',
+      targetAgent: foundry.target_agent as never,
+      semanticRequest: foundry.semantic_request as JsonObject,
+    }),
+    /does not allow semantic_request\.suite_id/i,
+  );
+  assert.throws(
+    () => buildWorkOrderMaterializationRequest({
+      requestKind: 'foundry_evaluation',
+      targetAgent: developer.target_agent as never,
+      semanticRequest: developer.semantic_request as JsonObject,
+    }),
+    /does not allow semantic_request\.source_agent_lab_result_ref/i,
   );
 });
 
-test('Foundry work-order identity changes when request bytes change but logical ids do not', () => {
-  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oma-foundry-request-digest-'));
-  try {
-    const firstRequest = {
-      ...evaluationRequest,
-      task_intents: [{
-        task_id: evaluationRequest.task_intents[0].task_id,
-        instructions_ref: 'instructions:target-agent/baseline-v1',
-      }],
-    };
-    const secondRequest = {
-      ...firstRequest,
-      task_intents: [{
-        ...firstRequest.task_intents[0],
-        instructions_ref: 'instructions:target-agent/baseline-v2',
-      }],
-    };
-    const firstPath = path.join(outputRoot, 'first.json');
-    const secondPath = path.join(outputRoot, 'second.json');
-    writeJson(firstPath, firstRequest);
-    writeJson(secondPath, secondRequest);
+test('developer patch requests require all three boundary proofs', () => {
+  const value = fixture('opl-work-order-materialization-request.developer-patch.v2.json');
+  const requiredProofs = [
+    'source_morphology_proof_ref',
+    'private_residue_decision_ref',
+    'target_runtime_read_model_consumption_ref',
+  ];
+  for (const field of requiredProofs) {
+    const semanticRequest = structuredClone(value.semantic_request as JsonObject);
+    delete (semanticRequest.agent_building_judgment as JsonObject)[field];
+    assert.throws(
+      () => buildWorkOrderMaterializationRequest({
+        requestKind: 'developer_patch',
+        targetAgent: value.target_agent as never,
+        semanticRequest,
+      }),
+      new RegExp(field),
+    );
+  }
+});
 
-    const first = build({
-      evaluationRequest: firstRequest,
-      evaluationRequestSha256: sha256FileBytes(firstPath),
-    });
-    const second = build({
-      evaluationRequest: secondRequest,
-      evaluationRequestSha256: sha256FileBytes(secondPath),
-    });
-    assert.equal(first.evaluation_request.request_id, second.evaluation_request.request_id);
-    assert.equal(first.evaluation_request.suite_id, second.evaluation_request.suite_id);
-    assert.notEqual(first.evaluation_request.sha256, second.evaluation_request.sha256);
-    assert.notEqual(first.work_order_id, second.work_order_id);
-  } finally {
-    fs.rmSync(outputRoot, { recursive: true, force: true });
+test('retired private ABI and Framework mechanics fail closed', () => {
+  const value = fixture('opl-work-order-materialization-request.v2.json');
+  const mutations: Array<[string, (semantic: JsonObject) => void]> = [
+    ['work_order_id', (semantic) => { semantic.work_order_id = 'oma-owned-id'; }],
+    ['oma_can_execute', (semantic) => { semantic.oma_can_execute = false; }],
+    ['omaSemanticEnvelope', (semantic) => { semantic.omaSemanticEnvelope = {}; }],
+    ['retired Foundry ABI', (semantic) => { semantic.source_refs = ['opl_meta_agent_foundry_request:v1']; }],
+  ];
+  for (const [, mutate] of mutations) {
+    const semanticRequest = structuredClone(value.semantic_request as JsonObject);
+    mutate(semanticRequest);
+    assert.throws(
+      () => buildWorkOrderMaterializationRequest({
+        requestKind: 'foundry_evaluation',
+        targetAgent: value.target_agent as never,
+        semanticRequest,
+      }),
+    );
+  }
+
+  const invalid = structuredClone(value);
+  (invalid.semantic_request as JsonObject).worktree_ref = 'worktree:oma/private';
+  assert.equal(schemaValidation(invalid).ok, false);
+  assert.equal(canonicalSchemaValidation(invalid).ok, false);
+
+  for (const field of ['work_order_id', 'executor_lease_ref', 'worktree', 'lifecycle', 'receipt']) {
+    const privateMechanic = structuredClone(value);
+    privateMechanic[field] = `retired:${field}`;
+    assert.equal(schemaValidation(privateMechanic).ok, false, `local schema accepted ${field}`);
+    assert.equal(
+      canonicalSchemaValidation(privateMechanic).ok,
+      false,
+      `Framework schema accepted ${field}`,
+    );
   }
 });

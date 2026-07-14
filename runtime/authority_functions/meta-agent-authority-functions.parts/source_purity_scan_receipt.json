@@ -27,11 +27,10 @@
     "scripts/lib/agent-evidence-typed-blocker.ts",
     "scripts/lib/domain-pack.ts",
     "scripts/lib/external-suite-materializer.ts",
-    "scripts/lib/foundry-lab-work-order.ts",
+    "scripts/lib/foundry-evaluation-semantic-request.ts",
     "scripts/lib/mechanism-patch-proposal-handler.ts",
     "scripts/lib/meta-agent-loop-ai-reviewer.ts",
     "scripts/lib/meta-agent-loop-io.ts",
-    "scripts/lib/meta-agent-loop-receipts.ts",
     "scripts/lib/reference-design-workflow.ts",
     "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts",
     "scripts/lib/stage-decomposition-pack-draft/builder.ts",
@@ -44,10 +43,9 @@
     "scripts/lib/standard-agent-developer-proof.ts",
     "scripts/lib/sync-json-bundle.ts",
     "scripts/lib/target-improvement-policy.ts",
-    "scripts/lib/work-order-builders.ts",
     "scripts/lib/work-order-efficiency.ts",
+    "scripts/lib/work-order-materialization-request.ts",
     "scripts/lib/work-order-refs.ts",
-    "scripts/lib/work-order-validation.ts",
     "scripts/repo-hygiene.sh",
     "scripts/run-with-repo-temp-env.sh",
     "scripts/sync-authority-functions.ts",
@@ -126,10 +124,9 @@
           "scripts/lib/agent-evidence-contracts.ts#import",
           "scripts/lib/agent-evidence-materializer.ts#import",
           "scripts/lib/external-suite-materializer.ts#import",
-          "scripts/lib/foundry-lab-work-order.ts#import",
+          "scripts/lib/foundry-evaluation-semantic-request.ts#import",
           "scripts/lib/meta-agent-loop-ai-reviewer.ts#import",
           "scripts/lib/meta-agent-loop-io.ts#import",
-          "scripts/lib/meta-agent-loop-receipts.ts#import",
           "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts#import",
           "scripts/lib/stage-decomposition-pack-draft/builder.ts#import",
           "scripts/lib/stage-decomposition-pack-draft/materializer.ts#import",
@@ -140,10 +137,9 @@
           "scripts/lib/stage-native-artifact-contract.ts#import",
           "scripts/lib/standard-agent-developer-proof.ts#import",
           "scripts/lib/target-improvement-policy.ts#import",
-          "scripts/lib/work-order-builders.ts#import",
           "scripts/lib/work-order-efficiency.ts#import",
+          "scripts/lib/work-order-materialization-request.ts#import",
           "scripts/lib/work-order-refs.ts#import",
-          "scripts/lib/work-order-validation.ts#import",
           "scripts/takeover-agent.ts#import",
           "tests/bootstrap-loop.test.ts#import",
           "tests/bootstrap-loop.test.ts#test_ref",
@@ -169,15 +165,11 @@
         ]
       },
       {
-        "script_ref": "scripts/lib/foundry-lab-work-order.ts",
+        "script_ref": "scripts/lib/foundry-evaluation-semantic-request.ts",
         "active_caller_refs": [
           "scripts/build-agent-baseline.ts#import",
           "scripts/lib/agent-evidence-materializer.ts#import",
-          "scripts/takeover-agent.ts#import",
-          "tests/foundry-lab-work-order.test.ts#import",
-          "tests/foundry-lab-work-order.test.ts#test_ref",
-          "tests/new-agent-delivery-gate.test.ts#import",
-          "tests/new-agent-delivery-gate.test.ts#test_ref"
+          "scripts/takeover-agent.ts#import"
         ]
       },
       {
@@ -207,7 +199,6 @@
           "scripts/lib/agent-evidence-contracts.ts#import",
           "scripts/lib/agent-evidence-materializer.ts#import",
           "scripts/lib/external-suite-materializer.ts#import",
-          "scripts/lib/foundry-lab-work-order.ts#import",
           "scripts/lib/meta-agent-loop-ai-reviewer.ts#import",
           "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts#import",
           "scripts/lib/stage-decomposition-pack-draft/builder.ts#import",
@@ -223,18 +214,8 @@
           "tests/bootstrap-loop.test.ts#test_ref",
           "tests/external-suite-developer-work-order.test.ts#import",
           "tests/external-suite-developer-work-order.test.ts#test_ref",
-          "tests/foundry-lab-work-order.test.ts#import",
-          "tests/foundry-lab-work-order.test.ts#test_ref",
           "tests/support/external-suite-fixtures.ts#import",
           "tests/support/external-suite-fixtures.ts#test_ref"
-        ]
-      },
-      {
-        "script_ref": "scripts/lib/meta-agent-loop-receipts.ts",
-        "active_caller_refs": [
-          "scripts/build-agent-baseline.ts#import",
-          "scripts/lib/agent-evidence-materializer.ts#import",
-          "scripts/takeover-agent.ts#import"
         ]
       },
       {
@@ -338,18 +319,22 @@
         ]
       },
       {
-        "script_ref": "scripts/lib/work-order-builders.ts",
-        "active_caller_refs": [
-          "scripts/lib/external-suite-materializer.ts#import"
-        ]
-      },
-      {
         "script_ref": "scripts/lib/work-order-efficiency.ts",
         "active_caller_refs": [
           "scripts/improve-from-agent-lab-suite.ts#import",
           "scripts/lib/agent-evidence-materializer.ts#import",
+          "scripts/lib/external-suite-materializer.ts#import"
+        ]
+      },
+      {
+        "script_ref": "scripts/lib/work-order-materialization-request.ts",
+        "active_caller_refs": [
+          "scripts/build-agent-baseline.ts#import",
+          "scripts/lib/agent-evidence-materializer.ts#import",
           "scripts/lib/external-suite-materializer.ts#import",
-          "scripts/lib/work-order-builders.ts#import"
+          "scripts/takeover-agent.ts#import",
+          "tests/foundry-lab-work-order.test.ts#import",
+          "tests/foundry-lab-work-order.test.ts#test_ref"
         ]
       },
       {
@@ -357,17 +342,8 @@
         "active_caller_refs": [
           "scripts/lib/agent-evidence-contracts.ts#import",
           "scripts/lib/agent-evidence-materializer.ts#import",
-          "scripts/lib/external-suite-materializer.ts#import",
           "scripts/lib/target-improvement-policy.ts#import",
-          "scripts/lib/work-order-builders.ts#import",
-          "scripts/lib/work-order-efficiency.ts#import",
-          "scripts/lib/work-order-validation.ts#import"
-        ]
-      },
-      {
-        "script_ref": "scripts/lib/work-order-validation.ts",
-        "active_caller_refs": [
-          "scripts/improve-from-agent-lab-suite.ts#import"
+          "scripts/lib/work-order-efficiency.ts#import"
         ]
       },
       {
@@ -478,18 +454,18 @@
       "repo_owned_queue_or_attempt_ledger_materializer",
       "repo_owned_target_worktree_lifecycle_materializer"
     ],
-    "retained_materializer_role": "refs_only_target_agent_semantics_scaffold_request_evaluation_request_work_order_candidate_or_expected_blocker_ref_materializer",
+    "retained_materializer_role": "refs_only_target_agent_semantics_scaffold_request_evaluation_semantics_work_order_materialization_request_or_expected_blocker_ref_materializer",
     "allowed_outputs": [
       "candidate_agent_package_ref",
       "opl_agent_scaffold_materialization_request_ref",
       "expected_opl_agent_scaffold_materialization_receipt_ref",
-      "foundry_evaluation_request_ref",
-      "foundry_lab_work_order_candidate_ref",
-      "developer_patch_work_order_ref",
       "target_capability_improvement_candidate_ref",
       "mechanism_patch_candidate_ref",
       "expected_typed_blocker_ref",
-      "refs_only_contract_template_ref"
+      "refs_only_contract_template_ref",
+      "foundry_evaluation_semantic_request_ref",
+      "opl_work_order_materialization_request_ref",
+      "developer_patch_semantic_request_ref"
     ],
     "retired_materializer_tails": [
       "build_agent_baseline_no_closeout_implicit_fixture_graph",

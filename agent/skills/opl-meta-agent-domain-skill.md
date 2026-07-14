@@ -17,9 +17,9 @@
 2. 执行 `web-experience-research`、用户提供参考设计读取，或消费 OPL source ingest / Codex extraction 形成的 canonical refs-only pattern packet。外部 packet 必须是 `opl.reference_design_pattern_packet.v1`，只在 packet 本地目录解引用 semantic JSON-pointer refs；raw/opaque source 不得伪造成已提炼 workflow。只吸收可迁移模式，不复制外部 runtime、私有数据或领域 truth。若用户提供论文/PDF/repo/案例系统，参考来源是设计来源，seed library/profile/catalog 只作为 fallback、secondary 或 OPL conformance 下限。
 3. 执行 `stage-decomposition` Codex stage attempt，产出 typed closeout packet。设计对象与 morphology 可相互迭代，但 source/research evidence 先于其 claim、admission 先于物化、`AgentBuildReceipt` 绑定物化后 bytes。`StageDecompositionSubpacketSet` 保存 provenance/boundary refs；每个 source workflow step 有 adopt/adapt/merge/stage-internal/reject disposition，不要求独立 Stage。
 4. 执行 `agent-skeleton-build`，只校验并物化 closeout 中的 candidate package，再跑 scaffold/interface validation；scaffold 只是物理骨架，不是目标 agent 设计来源。
-5. 执行 `eval-suite-build` 和 `baseline-run`，生成 thin evaluation request 与 target-bound Foundry evaluation work order；不在 OMA 内编译或执行 Agent Lab suite。
-6. 对 existing target agent 可执行 takeover producer，生成 takeover evaluation request、Foundry evaluation work order 和 proposal-only candidate refs；不生成 suite plan、suite result 或 takeover receipt。
-7. 由 OPL Foundry Lab 编译并执行 evaluation work order。只有外部返回的 suite result / execution receipt 才能进入 `improve:external-suite`，生成 target capability judgment、developer patch work order、no-source-patch judgment 或 expected blocker ref。
+5. 执行 `eval-suite-build` 和 `baseline-run`，生成 evaluation semantic request 与 canonical work-order materialization request；不在 OMA 内分配 work-order identity、编译或执行 Agent Lab suite。
+6. 对 existing target agent 可执行 takeover producer，生成 takeover semantic request、canonical materialization request 和 proposal-only candidate refs；不生成 suite plan、suite result 或 takeover receipt。
+7. 由 OPL Foundry Lab 物化、编译并执行 evaluation work order。只有外部返回的 suite result / execution receipt 才能进入 `improve:external-suite`，生成 target capability judgment、developer-patch semantic request、no-source-patch judgment 或 expected blocker ref。
 8. 实际 target patch、verification、Agent Lab re-evaluation、absorb/cleanup 和 owner closeout 由 OPL / target owner 执行；OMA 只消费返回 refs 并维持 no-forbidden-write boundary。
 9. 只有 OPL evaluation、independent review、self-evolution 与 target-owner closeout evidence 齐全后，才通过 downstream `baseline-delivery` gate；producer action 本身只交付 candidate Agent Pack、AgentBuildReceipt 和 Foundry handoff。
 

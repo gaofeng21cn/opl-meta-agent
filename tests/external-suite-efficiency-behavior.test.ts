@@ -44,11 +44,17 @@ test('external suite efficiency evidence is projected into developer work order 
     });
 
     const payload = runImproveFromSuite({ suitePath, targetAgentDir, outputRoot, reviewerEvaluationPath });
-    const workOrder = payload.agent_building_judgment.developer_patch_work_order;
-    assert.equal(payload.status, 'developer_patch_work_order_ready_for_opl_foundry_lab');
-    assert.deepEqual(workOrder.efficiency_non_regression_refs, efficiencyRefs);
-    assert.equal(workOrder.implementation_controls.quality_floor_non_regression_required, true);
-    assert.equal(workOrder.authority_boundary.can_authorize_target_domain_quality_or_export, false);
+    const request = payload.semantic_requests.work_order_materialization_request;
+    const judgment = request.semantic_request.agent_building_judgment;
+    assert.equal(payload.status, 'developer_patch_semantic_request_ready_for_opl_materialization');
+    assert.deepEqual(judgment.efficiency_non_regression_refs, efficiencyRefs);
+    assert.ok(judgment.verification_refs.includes(efficiencyRefs.target_verification_refs[0]));
+    assert.equal(request.authority_boundary.producer_executes_work_order, false);
+    assert.equal(
+      payload.agent_building_judgment.target_capability_improvement_candidate
+        .authority_boundary.can_authorize_target_domain_quality_or_export,
+      false,
+    );
   });
 });
 

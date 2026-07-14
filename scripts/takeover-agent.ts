@@ -15,17 +15,15 @@ import {
   loadAiReviewerEvaluation,
 } from './lib/meta-agent-loop-ai-reviewer.ts';
 import {
-  buildFoundryEvaluationRequest,
-} from './lib/meta-agent-loop-receipts.ts';
+  buildFoundryEvaluationSemanticRequest,
+} from './lib/foundry-evaluation-semantic-request.ts';
 import {
   type TargetAgent,
   readTargetAgent,
-  sha256FileBytes,
-  writeJson,
 } from './lib/meta-agent-loop-io.ts';
 import {
-  buildFoundryLabWorkOrder,
-} from './lib/foundry-lab-work-order.ts';
+  buildWorkOrderMaterializationRequest,
+} from './lib/work-order-materialization-request.ts';
 import {
   buildStageNativeArtifactAttemptRefs,
 } from './lib/stage-native-artifact-contract.ts';
@@ -83,14 +81,14 @@ export function parseTakeoverAgentArgs(argv: string[]): TakeoverArgs {
   };
 }
 
-function buildTakeoverFoundryEvaluationRequest(targetAgent: TargetAgent): JsonObject {
+function buildTakeoverFoundryEvaluationSemanticRequest(targetAgent: TargetAgent): JsonObject {
   const stageNativeArtifactRefs = buildStageNativeArtifactAttemptRefs({
     domainId: targetAgent.domain_id,
     stageId: 'target-agent-takeover',
     domainTruthOwner: 'opl-meta-agent',
     attemptId: 'testing-takeover',
   });
-  return buildFoundryEvaluationRequest({
+  return buildFoundryEvaluationSemanticRequest({
     requestId: `oma-foundry-evaluation-request:${targetAgent.domain_id}/takeover`,
     suiteId: `opl-meta-agent-takeover-suite:${targetAgent.domain_id}`,
     suiteKind: 'agent_lab_external_suite',
@@ -144,10 +142,8 @@ function buildTakeoverFoundryEvaluationRequest(targetAgent: TargetAgent): JsonOb
 
 export function runTakeoverAgent({
   targetAgentDir,
-  outputDir,
   aiReviewerEvaluationPath,
 }: TakeoverArgs): JsonObject {
-  fs.mkdirSync(outputDir, { recursive: true });
   const domainPackSummary: DomainPackSummary = readDomainPackSummary(repoRoot, { domainId: 'opl-meta-agent' });
   const targetAgent = readTargetAgent(targetAgentDir);
   let reviewerQualityDebt: string | null = null;
@@ -175,39 +171,36 @@ export function runTakeoverAgent({
     };
   }
 
-  const evaluationRequestPath = path.join(outputDir, 'foundry-evaluation-request.json');
-  const foundryLabWorkOrderPath = path.join(outputDir, 'foundry-lab-work-order.json');
-  const evaluationRequest = buildTakeoverFoundryEvaluationRequest(targetAgent);
-  writeJson(evaluationRequestPath, evaluationRequest);
+  const evaluationSemanticRequest = buildTakeoverFoundryEvaluationSemanticRequest(targetAgent);
 
   const candidateRefs = [
     'improvement-candidate:opl-meta-agent/' + targetAgent.domain_id + '/gated-self-evolution',
     'mechanism-candidate:opl-meta-agent/' + targetAgent.domain_id + '/testing-takeover-loop',
   ];
-  const foundryLabWorkOrder = buildFoundryLabWorkOrder({
-    workOrderKind: 'target_agent_takeover_evaluation',
+  const sourceRefs = [
+    targetAgent.descriptor_ref,
+    ...aiReviewerEvaluation.source_refs,
+  ].filter((ref): ref is string => typeof ref === 'string' && ref.length > 0);
+  const reviewerRefs = [
+    aiReviewerEvaluationPath,
+    ...aiReviewerEvaluation.source_refs,
+    ...aiReviewerEvaluation.direct_evidence_refs,
+  ].filter((ref): ref is string => typeof ref === 'string' && ref.length > 0);
+  const workOrderMaterializationRequest = buildWorkOrderMaterializationRequest({
+    requestKind: 'foundry_evaluation',
     targetAgent: {
       domain_id: targetAgent.domain_id,
-      domain_label: targetAgent.domain_label,
-      repo_dir: targetAgent.repo_dir,
+      repo_dir: targetAgent.repo_dir ?? targetAgentDir,
       target_agent_ref: targetAgent.target_agent_ref ?? `domain-agent:${targetAgent.domain_id}`,
       descriptor_ref: String(targetAgent.descriptor_ref),
     },
-    evaluationRequest,
-    evaluationRequestRef: path.basename(evaluationRequestPath),
-    evaluationRequestSha256: sha256FileBytes(evaluationRequestPath),
-    sourceRefs: [
-      targetAgent.descriptor_ref,
-      ...aiReviewerEvaluation.source_refs,
-    ].filter((ref): ref is string => typeof ref === 'string' && ref.length > 0),
-    reviewerRefs: [
-      aiReviewerEvaluationPath,
-      ...aiReviewerEvaluation.source_refs,
-      ...aiReviewerEvaluation.direct_evidence_refs,
-    ],
-    candidateRefs,
+    semanticRequest: {
+      ...evaluationSemanticRequest,
+      source_refs: sourceRefs,
+      reviewer_refs: reviewerRefs,
+      candidate_refs: candidateRefs,
+    },
   });
-  writeJson(foundryLabWorkOrderPath, foundryLabWorkOrder);
 
   return {
     surface_kind: 'opl_meta_agent_takeover_handoff',
@@ -236,19 +229,14 @@ export function runTakeoverAgent({
     },
     ...domainPackReceiptFields(domainPackSummary),
     source_domain_pack: domainPackSummary,
-    artifacts: {
-      foundry_evaluation_request_path: evaluationRequestPath,
-      foundry_lab_work_order_path: foundryLabWorkOrderPath,
-    },
     agent_building_judgment: {
-      ai_reviewer_evaluation_ref: aiReviewerEvaluationPath,
+      ai_reviewer_evaluation_ref: aiReviewerEvaluationPath || aiReviewerEvaluation.run_ref,
       verdict: aiReviewerEvaluation.verdict,
       suggestions: aiReviewerEvaluation.suggestions,
       candidate_refs: candidateRefs,
     },
     foundry_lab_handoff: {
-      evaluation_request: evaluationRequest,
-      work_order: foundryLabWorkOrder,
+      materialization_request: workOrderMaterializationRequest,
     },
     ...(reviewerQualityDebt
       ? {
@@ -262,7 +250,7 @@ export function runTakeoverAgent({
           stage_transition_materialization_owner: 'opl_stage_run_controller',
         }
       : {}),
-    authority_boundary: foundryLabWorkOrder.authority_boundary,
+    authority_boundary: workOrderMaterializationRequest.authority_boundary,
   };
 }
 

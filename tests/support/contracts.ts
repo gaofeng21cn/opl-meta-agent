@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { assertJsonSchemaPayload } from 'opl-framework/json-schema-registry';
 import type { JsonObject } from '../../scripts/lib/domain-pack.ts';
 
@@ -11,7 +12,10 @@ export const repoRoot = path.resolve(import.meta.dirname, '../..');
 export const oplBin = process.env.OPL_BIN
   ?? 'opl';
 export const oplOwnerRepoRoot = process.env.OPL_OWNER_REPO_ROOT
-  ?? '/Users/gaofeng/workspace/one-person-lab';
+  ?? path.resolve(
+    path.dirname(fileURLToPath(import.meta.resolve('opl-framework/json-schema-registry'))),
+    '../..',
+  );
 export const placeholderPattern = new RegExp(`\\b(?:TO${'DO'}|T${'BD'})\\b`, 'i');
 export function asObjects(value: unknown): JsonObject[] {
   return value as JsonObject[];

@@ -31,15 +31,14 @@ import {
 } from './lib/meta-agent-loop-ai-reviewer.ts';
 import {
   type TargetAgent,
-  sha256FileBytes,
   writeJson,
 } from './lib/meta-agent-loop-io.ts';
 import {
-  buildFoundryEvaluationRequest,
-} from './lib/meta-agent-loop-receipts.ts';
+  buildFoundryEvaluationSemanticRequest,
+} from './lib/foundry-evaluation-semantic-request.ts';
 import {
-  buildFoundryLabWorkOrder,
-} from './lib/foundry-lab-work-order.ts';
+  buildWorkOrderMaterializationRequest,
+} from './lib/work-order-materialization-request.ts';
 import {
   applyDeveloperProofProfileSelection,
   buildStandardAgentDeveloperProofRequest,
@@ -396,7 +395,7 @@ function writeStageDecompositionDebt(
   return debtPath;
 }
 
-function buildBaselineFoundryEvaluationRequest({
+function buildBaselineFoundryEvaluationSemanticRequest({
   targetAgent,
   aiReviewerEvaluation,
   aiReviewerEvaluationRef,
@@ -405,7 +404,7 @@ function buildBaselineFoundryEvaluationRequest({
   aiReviewerEvaluation: AiReviewerEvaluation;
   aiReviewerEvaluationRef: string;
 }): JsonObject {
-  return buildFoundryEvaluationRequest({
+  return buildFoundryEvaluationSemanticRequest({
     requestId: `oma-foundry-evaluation-request:${targetAgent.domain_id}/baseline`,
     suiteId: `opl-meta-agent-baseline-suite:${targetAgent.domain_id}`,
     suiteKind: 'agent_lab_external_suite',
@@ -620,9 +619,6 @@ export function runBuildAgentBaseline({
   }
 
   const targetAgentDir = path.join(outputDir, targetAgent.domain_id);
-  const evaluationRequestPath = path.join(outputDir, 'foundry-evaluation-request.json');
-  const foundryLabWorkOrderPath = path.join(outputDir, 'foundry-lab-work-order.json');
-
   try {
     targetAgent = normalizeRequestedProfileRefs(targetAgent);
     buildProfileSelectionReceipt(targetAgent);
@@ -784,43 +780,44 @@ export function runBuildAgentBaseline({
       stage_transition_materialization_owner: 'opl_stage_run_controller',
     };
   }
-  const evaluationRequest = buildBaselineFoundryEvaluationRequest({
+  const aiReviewerEvaluationRef = aiReviewerEvaluationPath || aiReviewerEvaluation.run_ref;
+  const evaluationSemanticRequest = buildBaselineFoundryEvaluationSemanticRequest({
     targetAgent,
     aiReviewerEvaluation,
-    aiReviewerEvaluationRef: aiReviewerEvaluationPath,
+    aiReviewerEvaluationRef,
   });
-  writeJson(evaluationRequestPath, evaluationRequest);
-
-  const foundryLabWorkOrder = buildFoundryLabWorkOrder({
-    workOrderKind: 'agent_baseline_evaluation',
+  const sourceRefs = [
+    descriptorPath,
+    targetAgentPackageManifestPath,
+    targetAgentCapabilityMapPath,
+    stageDecompositionCloseout.closeout_packet_ref,
+    agentSkeletonBuildCloseout.closeout_packet_ref,
+    ...referenceDesignEvidenceRefs(targetAgent),
+  ].filter((ref): ref is string => typeof ref === 'string' && ref.length > 0);
+  const reviewerRefs = [
+    aiReviewerEvaluationRef,
+    ...aiReviewerEvaluation.source_refs,
+    ...aiReviewerEvaluation.direct_evidence_refs,
+  ].filter((ref): ref is string => typeof ref === 'string' && ref.length > 0);
+  const candidateRefs = [
+    'candidate-agent-package:' + targetAgent.domain_id,
+    'improvement-candidate:opl-meta-agent/' + targetAgent.domain_id + '/rubric-gap-tightening',
+  ];
+  const workOrderMaterializationRequest = buildWorkOrderMaterializationRequest({
+    requestKind: 'foundry_evaluation',
     targetAgent: {
-      ...targetAgent,
+      domain_id: targetAgent.domain_id,
       repo_dir: targetAgentDir,
       target_agent_ref: `domain-agent:${targetAgent.domain_id}`,
       descriptor_ref: path.join(targetAgentDir, 'contracts', 'domain_descriptor.json'),
     },
-    evaluationRequest,
-    evaluationRequestRef: path.basename(evaluationRequestPath),
-    evaluationRequestSha256: sha256FileBytes(evaluationRequestPath),
-    sourceRefs: [
-      descriptorPath,
-      targetAgentPackageManifestPath,
-      targetAgentCapabilityMapPath,
-      stageDecompositionCloseout.closeout_packet_ref,
-      agentSkeletonBuildCloseout.closeout_packet_ref,
-      ...referenceDesignEvidenceRefs(targetAgent),
-    ].filter((ref): ref is string => typeof ref === 'string' && ref.length > 0),
-    reviewerRefs: [
-      aiReviewerEvaluationPath,
-      ...aiReviewerEvaluation.source_refs,
-      ...aiReviewerEvaluation.direct_evidence_refs,
-    ],
-    candidateRefs: [
-      'candidate-agent-package:' + targetAgent.domain_id,
-      'improvement-candidate:opl-meta-agent/' + targetAgent.domain_id + '/rubric-gap-tightening',
-    ],
+    semanticRequest: {
+      ...evaluationSemanticRequest,
+      source_refs: sourceRefs,
+      reviewer_refs: reviewerRefs,
+      candidate_refs: candidateRefs,
+    },
   });
-  writeJson(foundryLabWorkOrderPath, foundryLabWorkOrder);
 
   return {
     surface_kind: 'opl_meta_agent_candidate_package_handoff',
@@ -849,8 +846,6 @@ export function runBuildAgentBaseline({
       developer_proof_request_path: developerProofRequestPath,
       developer_proof_request_ref: developerProofRequest.request_ref,
       developer_proof_receipt_ref: developerProofReceiptRef,
-      foundry_evaluation_request_path: evaluationRequestPath,
-      foundry_lab_work_order_path: foundryLabWorkOrderPath,
       opl_agent_package_manifest_path: targetAgentPackageManifestPath,
       target_agent_capability_map_path: targetAgentCapabilityMapPath,
       target_agent_primary_skill_path: targetPrimarySkillPath,
@@ -874,7 +869,7 @@ export function runBuildAgentBaseline({
       closeout_refs: agentSkeletonBuildCloseout.closeout_packet.closeout_refs,
     },
     agent_building_judgment: {
-      ai_reviewer_evaluation_ref: aiReviewerEvaluationPath,
+      ai_reviewer_evaluation_ref: aiReviewerEvaluationRef,
       verdict: aiReviewerEvaluation.verdict,
       source_refs: aiReviewerEvaluation.source_refs,
       direct_evidence_refs: aiReviewerEvaluation.direct_evidence_refs,
@@ -892,10 +887,9 @@ export function runBuildAgentBaseline({
         }
       : {}),
     foundry_lab_handoff: {
-      evaluation_request: evaluationRequest,
-      work_order: foundryLabWorkOrder,
+      materialization_request: workOrderMaterializationRequest,
     },
-    authority_boundary: foundryLabWorkOrder.authority_boundary,
+    authority_boundary: workOrderMaterializationRequest.authority_boundary,
   };
 }
 

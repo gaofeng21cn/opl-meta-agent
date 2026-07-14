@@ -5,7 +5,7 @@
     {
       "file": "scripts/build-agent-baseline.ts",
       "symbol": "runBuildAgentBaseline",
-      "source_digest": "sha256:044059cdaf404e5e8051ef7e0eac9a49cfbb0d24d180396424d1ad4bad6fed46",
+      "source_digest": "sha256:88c9165f2b1dd7b1c19d65a270fff8dd69538d2961c06004d70cc88725856fb7",
       "allowed_effects": [
         "filesystem_write"
       ],
@@ -47,7 +47,7 @@
     {
       "file": "scripts/takeover-agent.ts",
       "symbol": "runTakeoverAgent",
-      "source_digest": "sha256:73c58f7be1d02c1c69932b82fc63cee12440077984d41e7e09d459242fe55d05",
+      "source_digest": "sha256:67c7ea0de72017549ce216a8d65fe41a6533cf018e5e255179d5462150b63fc4",
       "allowed_effects": [
         "filesystem_write"
       ],

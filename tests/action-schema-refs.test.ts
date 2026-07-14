@@ -34,11 +34,13 @@ function validate(schemaRef: string, payload: unknown) {
 
 function authorityBoundary(): JsonObject {
   return {
+    source_patch_allowed_after_owner_gate: false,
     can_write_target_domain_truth: false,
     can_write_target_domain_memory_body: false,
     can_mutate_target_domain_artifact_body: false,
     can_authorize_target_domain_quality_or_export: false,
     can_promote_default_agent_without_gate: false,
+    can_train_or_deploy_model_weights: false,
   };
 }
 
@@ -78,23 +80,6 @@ function improveOutput(status: string, delta: JsonObject = {}): JsonObject {
       target_capability_improvement_candidate: capabilityCandidate,
     },
     ...delta,
-  };
-}
-
-function developerPatchWorkOrder(status: 'ready_for_target_agent_source_patch' | 'no_patch_required'): JsonObject {
-  return {
-    surface_kind: 'opl_meta_agent_developer_patch_work_order',
-    version: 'opl-meta-agent.developer-patch-work-order.v1',
-    work_order_id: `work-order:target-agent/${status}`,
-    status,
-    product_id: 'opl-meta-agent',
-    target_agent: targetAgent,
-    executor_lease_ref: 'executor-lease:codex-cli/target-agent',
-    reviewer_pool_refs: ['reviewer-pool:target-agent/independent'],
-    patch_execution_bundle_ref: 'patch-bundle:target-agent/current',
-    target_closeout_refs: ['target-owner-receipt-or-typed-blocker:target-agent/current'],
-    foundry_lab_execution_receipt_ref: 'receipt:opl-foundry-lab/target-agent/external-suite',
-    authority_boundary: authorityBoundary(),
   };
 }
 
@@ -244,7 +229,10 @@ test('representative action inputs and outputs accept valid instances and reject
 test('external-suite action schema matches the three real OMA judgment branches', () => {
   const outputRef = 'contracts/schemas/improve-from-external-agent-lab-suite.output.schema.json';
   const foundryReceipt = 'receipt:opl-foundry-lab/target-agent/external-suite';
-  const developerWorkOrder = developerPatchWorkOrder('ready_for_target_agent_source_patch');
+  const materializationRequest = readJson(
+    'tests/fixtures/opl-work-order-materialization-request.developer-patch.v2.json',
+  );
+  const requestId = materializationRequest.semantic_request.request_id;
 
   assert.equal(validate(outputRef, improveOutput(
     'no_source_patch_required',
@@ -267,22 +255,18 @@ test('external-suite action schema matches the three real OMA judgment branches'
     },
   )).ok, true);
   assert.equal(validate(outputRef, improveOutput(
-    'developer_patch_work_order_ready_for_opl_foundry_lab',
+    'developer_patch_semantic_request_ready_for_opl_materialization',
     {
       foundry_lab_execution_receipt_ref: foundryReceipt,
-      candidate_refs: [capabilityCandidate.candidate_id, developerWorkOrder.work_order_id],
+      candidate_refs: [capabilityCandidate.candidate_id, requestId],
       agent_building_judgment: {
         target_capability_improvement_candidate: capabilityCandidate,
-        developer_patch_work_order: developerWorkOrder,
+        developer_patch_evidence: { source_morphology_proof_ref: 'proof:source-morphology' },
       },
       semantic_requests: {
-        developer_patch_work_order: developerWorkOrder,
-        physical_materialization_owner: 'one-person-lab/OPL Foundry Lab',
-        materialization_surface: 'opl work-order materialize-request --request <semantic-request.json> --target-dir <new-dir>',
-        oma_writes_request_files: false,
-        requested_file_name: 'developer-patch-work-order.json',
-        execution_surface: 'opl work-order execute --work-order <developer-patch-work-order.json>',
+        work_order_materialization_request: materializationRequest,
       },
+      authority_boundary: materializationRequest.authority_boundary,
     },
   )).ok, true);
 
@@ -291,17 +275,12 @@ test('external-suite action schema matches the three real OMA judgment branches'
     {
       missing_required_fields: ['foundry_lab_execution_receipt_ref'],
       semantic_requests: {
-        developer_patch_work_order: developerWorkOrder,
-        physical_materialization_owner: 'one-person-lab/OPL Foundry Lab',
-        materialization_surface: 'opl work-order materialize-request --request <semantic-request.json> --target-dir <new-dir>',
-        oma_writes_request_files: false,
-        requested_file_name: 'developer-patch-work-order.json',
-        execution_surface: 'opl work-order execute --work-order <developer-patch-work-order.json>',
+        work_order_materialization_request: materializationRequest,
       },
     },
   )).ok, false, 'missing-input branch must not contain an executable developer work order');
   assert.equal(validate(outputRef, improveOutput(
-    'developer_patch_work_order_ready_for_opl_foundry_lab',
+    'developer_patch_semantic_request_ready_for_opl_materialization',
     { foundry_lab_execution_receipt_ref: foundryReceipt },
-  )).ok, false, 'ready branch requires the developer work-order artifact and judgment');
+  )).ok, false, 'ready branch requires the semantic materialization request and judgment');
 });

@@ -141,7 +141,7 @@
     "forbidden_roles": []
   },
   {
-    "script_ref": "scripts/lib/foundry-lab-work-order.ts",
+    "script_ref": "scripts/lib/work-order-materialization-request.ts",
     "classes": [
       "fixture_or_proof_helper",
       "developer_work_order_materializer"
@@ -151,7 +151,7 @@
       "opl_agent_lab_complete_control_plane"
     ],
     "writes_only": [
-      "foundry_lab_work_order_candidate_ref"
+      "opl_work_order_materialization_request_ref"
     ],
     "forbidden_roles": []
   },
@@ -204,7 +204,7 @@
     "forbidden_roles": []
   },
   {
-    "script_ref": "scripts/lib/meta-agent-loop-receipts.ts",
+    "script_ref": "scripts/lib/foundry-evaluation-semantic-request.ts",
     "classes": [
       "fixture_or_proof_helper",
       "developer_work_order_materializer"
@@ -212,7 +212,7 @@
     "authority_function_refs": [],
     "consumes_opl_surfaces": [],
     "writes_only": [
-      "foundry_evaluation_request_ref"
+      "foundry_evaluation_semantic_request_ref"
     ],
     "forbidden_roles": []
   },
@@ -462,26 +462,6 @@
     "forbidden_roles": []
   },
   {
-    "script_ref": "scripts/lib/work-order-builders.ts",
-    "classes": [
-      "fixture_or_proof_helper",
-      "developer_work_order_materializer"
-    ],
-    "authority_function_refs": [],
-    "consumes_opl_surfaces": [],
-    "writes_only": [
-      "developer_patch_work_order_ref",
-      "target_runtime_read_model_consumption_ref",
-      "workspace_environment_proof_ref",
-      "no_forbidden_write_proof_ref",
-      "opl_work_order_readiness_primitive_ref",
-      "opl_work_order_promotion_readiness_primitive_ref",
-      "opl_work_order_promotion_gate_projection_ref",
-      "opl_work_order_owner_gated_promotion_projection_ref"
-    ],
-    "forbidden_roles": []
-  },
-  {
     "script_ref": "scripts/lib/work-order-efficiency.ts",
     "classes": [
       "fixture_or_proof_helper",
@@ -512,19 +492,6 @@
     "contract_refs": [
       "contracts/developer_work_order_policy.json"
     ]
-  },
-  {
-    "script_ref": "scripts/lib/work-order-validation.ts",
-    "classes": [
-      "fixture_or_proof_helper",
-      "developer_work_order_materializer"
-    ],
-    "authority_function_refs": [],
-    "consumes_opl_surfaces": [],
-    "writes_only": [
-      "developer_patch_work_order_shape_validation_ref"
-    ],
-    "forbidden_roles": []
   },
   {
     "script_ref": "scripts/repo-hygiene.sh",

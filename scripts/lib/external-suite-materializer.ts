@@ -8,24 +8,12 @@ import type {
   TargetImprovementPolicy,
 } from './target-improvement-policy.ts';
 import {
-  buildAgentEvolutionWorkOrderFields,
-  buildOplWorkOrderPrimitiveRefs,
-  buildRefsOnlyWorkOrderCompleteness,
-  buildRuntimeConsumptionVerification,
-  buildTargetPatchLoopMachineRefs,
-  buildTargetProgressAccounting,
-  buildTargetWorkspaceEnvironmentVerification,
-  buildWorkOrderBundleRefs,
-  buildWorkOrderCurrentness,
-  targetPatchLoopCloseoutEvidence,
-} from './work-order-builders.ts';
-import {
   hasEfficiencyNonRegressionEvidence,
   type EfficiencyNonRegressionRefs,
 } from './work-order-efficiency.ts';
 import {
-  stringList,
-} from './work-order-refs.ts';
+  buildWorkOrderMaterializationRequest,
+} from './work-order-materialization-request.ts';
 
 export type CapabilityCandidate = JsonObject & {
   candidate_id: string;
@@ -54,82 +42,27 @@ export type SuiteResult = JsonObject & {
   foundry_lab_execution_receipt_ref?: string;
 };
 
-function unique(values: string[]): string[] {
-  return [...new Set(values.filter((value) => value.trim().length > 0))];
+function unique(values: unknown[]): string[] {
+  return [...new Set(values
+    .filter((value): value is string => typeof value === 'string')
+    .map((value) => value.trim())
+    .filter(Boolean))];
 }
 
-function buildSourceMorphologyProof({
-  targetAgent,
-  suite,
-  suiteResult,
-  workOrderId,
-  capabilityCandidate,
-  patchMode,
-}: {
-  targetAgent: TargetAgent;
-  suite: JsonObject;
-  suiteResult: SuiteResult;
-  workOrderId: string;
-  capabilityCandidate: CapabilityCandidate;
-  patchMode: string;
-}): JsonObject {
-  const ref = `source-morphology-proof:${targetAgent.domain_id}/${workOrderId}/${patchMode}`;
-  return {
-    ref,
-    morphology_kind: 'external_agent_lab_suite_to_target_agent_developer_patch_work_order',
-    target_agent_id: targetAgent.domain_id,
-    work_order_ref: workOrderId,
-    source_suite_ref: String(suite.suite_id ?? 'external-agent-lab-suite'),
-    source_agent_lab_result_ref: suiteResult.result_id,
-    target_capability_improvement_candidate_ref: capabilityCandidate.candidate_id,
-    input_surface_refs: unique([
-      String(suite.suite_id ?? ''),
-      suiteResult.result_id,
-      suiteResult.evaluation_target_agent.target_agent_ref,
-      suiteResult.evaluation_target_agent.descriptor_ref,
-      ...suiteResult.refs.evaluation_provenance_refs,
-      String(capabilityCandidate.ai_reviewer_evaluation_ref ?? ''),
-      capabilityCandidate.candidate_id,
-    ]),
-    consumed_as_refs_only: true,
-    source_patch_required: patchMode === 'source-patch',
-    authority_boundary: {
-      can_write_target_domain_truth: false,
-      can_write_target_domain_memory_body: false,
-      can_mutate_target_domain_artifact_body: false,
-      can_authorize_target_domain_quality_or_export: false,
-      can_promote_default_agent_without_gate: false,
-    },
-  };
+function strings(value: unknown): string[] {
+  return Array.isArray(value) ? unique(value) : [];
 }
 
-function buildPrivateResidueDecision({
-  targetAgent,
-  workOrderId,
-  patchMode,
-  sourceMorphologyProofRef,
-}: {
-  targetAgent: TargetAgent;
-  workOrderId: string;
-  patchMode: string;
-  sourceMorphologyProofRef: string;
-}): JsonObject {
-  const ref = `private-residue-decision:${targetAgent.domain_id}/${workOrderId}/${patchMode}/refs-only`;
-  return {
-    ref,
-    decision: 'refs_only_no_private_residue_promotion',
-    target_agent_id: targetAgent.domain_id,
-    work_order_ref: workOrderId,
-    source_morphology_proof_ref: sourceMorphologyProofRef,
-    local_refs_may_be_retained_for_owner_consumption: true,
-    private_residue_body_materialized: false,
-    target_truth_write_authorized: false,
-    target_artifact_mutation_authorized: false,
-    owner_receipt_or_typed_blocker_body_authorized: false,
-  };
+function text(value: unknown, fallback: string): string {
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : fallback;
 }
 
-export function buildDeveloperPatchWorkOrder({
+export type DeveloperPatchMaterialization = {
+  materializationRequest: JsonObject;
+  agentBuildingEvidence: JsonObject;
+};
+
+export function buildDeveloperPatchMaterializationRequest({
   targetAgent,
   suite,
   suiteResult,
@@ -143,311 +76,139 @@ export function buildDeveloperPatchWorkOrder({
   foundryLabExecutionReceiptRef: string;
   capabilityCandidate: CapabilityCandidate;
   policy: TargetImprovementPolicy;
-}): JsonObject {
-  const noPatchRequired = suiteResult.status === 'passed';
-  const efficiencyNonRegressionRefs = capabilityCandidate.efficiency_non_regression_refs;
-  const hasEfficiencyEvidence = hasEfficiencyNonRegressionEvidence(efficiencyNonRegressionRefs);
-  const workOrderId = stableId('oma_developer_patch_work_order', [
-    targetAgent.domain_id,
-    suite.suite_id,
-    suiteResult.result_id,
-    capabilityCandidate.candidate_id,
-    foundryLabExecutionReceiptRef,
+}): DeveloperPatchMaterialization {
+  const requestId = stableId('oma_developer_patch_request', {
+    target_agent: targetAgent.domain_id,
+    suite_id: suite.suite_id,
+    suite_result_ref: suiteResult.result_id,
+    candidate_ref: capabilityCandidate.candidate_id,
+    foundry_lab_execution_receipt_ref: foundryLabExecutionReceiptRef,
+  });
+  const traceability = capabilityCandidate.patch_traceability_matrix;
+  const rootCauses = unique(traceability.map((entry) => entry.root_cause));
+  const targetedFix = unique([
+    ...capabilityCandidate.proposed_change_refs,
+    ...traceability.flatMap((entry) => entry.targeted_fix),
   ]);
-  const targetRepoFileHints = unique(capabilityCandidate.patch_traceability_matrix.flatMap((entry) =>
-    entry.target_repo_file_hints
-  ));
-  const matchedCapabilityIds = unique(capabilityCandidate.patch_traceability_matrix.flatMap((entry) =>
-    stringList(entry.capability_ids)
-  ));
-  const canonicalTargetPaths = unique(capabilityCandidate.patch_traceability_matrix.flatMap((entry) =>
-    stringList(entry.canonical_target_paths)
-  ));
-  const failureTokenRegistryRefs = unique(capabilityCandidate.patch_traceability_matrix.flatMap((entry) =>
-    stringList(entry.failure_token_registry_refs)
-  ));
-  const improvementTokens = unique(capabilityCandidate.patch_traceability_matrix.flatMap((entry) =>
-    stringList(entry.improvement_tokens)
-  ));
-  const forbiddenTargetPathsOrSurfaces = unique([
+  const failureEvidenceRefs = unique([
+    ...strings(capabilityCandidate.failure_taxonomy_refs),
+    ...strings(capabilityCandidate.ai_reviewer_evidence?.source_refs),
+    ...strings(capabilityCandidate.ai_reviewer_evidence?.direct_evidence_refs),
+    ...traceability.flatMap((entry) => entry.failure_evidence),
+    ...traceability.flatMap((entry) => entry.source_failure_refs),
+  ]);
+  const verificationRefs = unique([
+    ...traceability.flatMap((entry) => entry.required_verification_refs),
+    ...traceability.flatMap((entry) => entry.capability_verification_refs),
+    ...strings(capabilityCandidate.efficiency_non_regression_refs.target_verification_refs),
+  ]);
+  const reviewerRefs = unique([
+    capabilityCandidate.ai_reviewer_evaluation_ref,
+    ...strings(capabilityCandidate.ai_reviewer_evidence?.source_refs),
+    ...strings(capabilityCandidate.ai_reviewer_evidence?.direct_evidence_refs),
+  ]);
+  const forbiddenSurfaces = unique([
     ...policy.forbiddenTargetPathsOrSurfaces,
-    ...capabilityCandidate.patch_traceability_matrix.flatMap((entry) =>
-      stringList(entry.forbidden_target_paths_or_surfaces)
-    ),
+    ...traceability.flatMap((entry) => entry.forbidden_target_paths_or_surfaces),
   ]);
-  const requiredVerificationRefs = unique((noPatchRequired
-    ? [
-        'target_owner_receipt_projection_ref',
-        'no_target_domain_truth_write_proof',
-      ]
-    : unique(capabilityCandidate.patch_traceability_matrix.flatMap((entry) =>
-        entry.required_verification_refs
-      )).concat([
-        'target_runtime_consumption_verification_receipt',
-        'target_workspace_environment_consumption_receipt',
-      ])).concat(stringList(efficiencyNonRegressionRefs.target_verification_refs)));
-  const noForbiddenWriteProofRefs = noPatchRequired
-    ? ['no_target_domain_truth_write_proof']
-    : ['no_target_domain_truth_write_proof', 'repo_hygiene_no_checkout_venv_proof'];
-  const failureEvidence = unique([
-    ...capabilityCandidate.failure_taxonomy_refs,
-    ...capabilityCandidate.ai_reviewer_evidence.source_refs,
-    ...capabilityCandidate.ai_reviewer_evidence.direct_evidence_refs,
-    ...capabilityCandidate.patch_traceability_matrix.flatMap((entry) => entry.failure_evidence),
-  ]);
-  const patchMode = noPatchRequired ? 'no-source-patch' : 'source-patch';
-  const sourceMorphologyProof = buildSourceMorphologyProof({
-    targetAgent,
-    suite,
-    suiteResult,
-    workOrderId,
-    capabilityCandidate,
-    patchMode,
-  });
-  const privateResidueDecision = buildPrivateResidueDecision({
-    targetAgent,
-    workOrderId,
-    patchMode,
-    sourceMorphologyProofRef: String(sourceMorphologyProof.ref),
-  });
-  const reviewerPoolRefs = unique([
-    String(capabilityCandidate.ai_reviewer_evaluation_ref),
-    ...capabilityCandidate.ai_reviewer_evidence.source_refs,
-    ...capabilityCandidate.ai_reviewer_evidence.direct_evidence_refs,
-  ]);
-  const machineCloseoutRefs = buildTargetPatchLoopMachineRefs({
-    domainId: targetAgent.domain_id,
-    suiteResultRef: suiteResult.result_id,
-    workOrderId,
-    requiredVerificationRefs,
-    noForbiddenWriteProofRefs,
-    patchMode,
-    efficiencyNonRegressionRefs,
-  });
-  const bundleRefs = buildWorkOrderBundleRefs({
-    domainId: targetAgent.domain_id,
-    workOrderId,
-    reviewerRefs: reviewerPoolRefs,
-    machineCloseoutRefs,
-  });
-  const ownerRouteRef = `target-agent-owner:${capabilityCandidate.target_agent.domain_id}`;
-  const substantiveDeliverableDeltaRefs = noPatchRequired
-    ? []
-    : capabilityCandidate.proposed_change_refs;
   const ownerRouteRefs = [
-    ownerRouteRef,
+    `target-agent-owner:${targetAgent.domain_id}`,
     `promotion-gate:opl-meta-agent/${targetAgent.domain_id}/external-suite-self-evolution`,
   ];
-  const agentEvolutionReadback = buildAgentEvolutionWorkOrderFields({
-    domainId: targetAgent.domain_id,
-    workOrderId,
-    failureClass: 'quality-gate',
-    ownerRouteRef,
-    ownerRouteRefs,
-    targetEditableSurfaceRefs: noPatchRequired ? [] : capabilityCandidate.target_editable_surface_refs,
-    forbiddenSurfaces: forbiddenTargetPathsOrSurfaces,
-    expectedChangeRefs: noPatchRequired ? ['owner_receipt_coordination_record'] : capabilityCandidate.proposed_change_refs,
-    expectedBehaviorSummary: noPatchRequired
-      ? 'Target owner consumes OMA coordination refs without a source patch.'
-      : 'Target agent owner-gated source patch closes the Agent Lab and independent reviewer quality-gate gap.',
-    verificationRefs: requiredVerificationRefs,
-    targetCloseoutRefs: bundleRefs.target_closeout_refs as string[],
-    ownerReceiptOrTypedBlockerRef: String(machineCloseoutRefs.target_owner_receipt_or_typed_blocker_ref),
-    readModelConsumptionRef: String(machineCloseoutRefs.target_runtime_read_model_consumption_ref),
-  });
-  return {
-    surface_kind: 'opl_meta_agent_developer_patch_work_order',
-    version: 'opl-meta-agent.developer-patch-work-order.v1',
-    work_order_id: workOrderId,
-    status: noPatchRequired ? 'no_patch_required' : 'ready_for_target_agent_source_patch',
-    product_id: 'opl-meta-agent',
-    target_agent: capabilityCandidate.target_agent,
-    source_agent_lab_result_ref: suiteResult.result_id,
-    evaluation_target_agent: suiteResult.evaluation_target_agent,
-    evaluation_provenance_refs: suiteResult.refs.evaluation_provenance_refs,
-    evaluation_provenance_bindings: suiteResult.evaluation_provenance_bindings,
-    source_morphology_proof_ref: sourceMorphologyProof.ref,
-    source_morphology_proof: sourceMorphologyProof,
-    private_residue_decision_ref: privateResidueDecision.ref,
-    private_residue_decision: privateResidueDecision,
-    ...agentEvolutionReadback,
-    work_order_currentness: buildWorkOrderCurrentness({
-      domainId: targetAgent.domain_id,
-      suiteResultRef: suiteResult.result_id,
-      workOrderId,
-      ownerRouteRef,
-    }),
+  const noForbiddenWriteProofRefs = [
+    `no-forbidden-write:${targetAgent.domain_id}/${requestId}`,
+  ];
+  const patchTraceabilityRefs = traceability.map((entry, index) =>
+    stableId('patch_traceability', {
+      candidate_ref: capabilityCandidate.candidate_id,
+      index,
+      gap_token: entry.gap_token,
+      required_patch_refs: entry.required_patch_refs,
+    })
+  );
+  const sourceMorphologyProofRef = `source-morphology-proof:${targetAgent.domain_id}/${requestId}`;
+  const privateResidueDecisionRef = `private-residue-decision:${targetAgent.domain_id}/${requestId}`;
+  const targetRuntimeReadModelConsumptionRef =
+    `target-runtime-read-model-consumption:${targetAgent.domain_id}/${requestId}`;
+  const sourceRefs = unique([
+    String(suite.suite_id ?? ''),
+    suiteResult.result_id,
+    suiteResult.evaluation_target_agent.target_agent_ref,
+    suiteResult.evaluation_target_agent.descriptor_ref,
+    ...suiteResult.refs.evaluation_provenance_refs,
+    ...failureEvidenceRefs,
+  ]);
+  const expectedBehaviorDelta =
+    'The target owner applies only evidence-traceable source changes, reruns target verification, and exposes the repaired behavior through the target runtime/read model without transferring domain authority to OMA.';
+
+  const agentBuildingJudgment: JsonObject = {
     target_capability_improvement_candidate_ref: capabilityCandidate.candidate_id,
-    foundry_lab_execution_receipt_ref: foundryLabExecutionReceiptRef,
-    ai_reviewer_evaluation_ref: capabilityCandidate.ai_reviewer_evaluation_ref,
-    ai_reviewer_review: capabilityCandidate.ai_reviewer_review,
-    ai_reviewer_independence: capabilityCandidate.ai_reviewer_independence,
-    ai_reviewer_evidence: capabilityCandidate.ai_reviewer_evidence,
-    ai_reviewer_scorecard: capabilityCandidate.ai_reviewer_scorecard,
-    ai_reviewer_recovery_refs: capabilityCandidate.ai_reviewer_recovery_refs,
-    review_provenance: capabilityCandidate.review_provenance,
-    ...bundleRefs,
-    work_order_completeness: buildRefsOnlyWorkOrderCompleteness({
-      requiredFieldsPresent: true,
-      executorLeaseRef: String(bundleRefs.executor_lease_ref),
-      reviewerPoolRefs,
-      patchExecutionBundleRef: String(bundleRefs.patch_execution_bundle_ref),
-      targetCloseoutRefs: bundleRefs.target_closeout_refs as string[],
-      reviewerRefs: reviewerPoolRefs,
-      workOrderId,
-      proposedChangeRefs: capabilityCandidate.proposed_change_refs,
-      traceabilityStatus: noPatchRequired ? 'no_source_patch_required' : capabilityCandidate.traceability_status,
-      requiredVerificationRefs,
-      targetVerificationExtraRefs: [
-        'target_owner_receipt_or_typed_blocker',
-        noPatchRequired ? 'target_owner_receipt_projection_ref' : 'target_repo_test_receipt',
-      ],
-      ownerRouteRefs: [
-        ...ownerRouteRefs,
-        `target-owner-receipt-or-typed-blocker:${capabilityCandidate.target_agent.domain_id}/${workOrderId}`,
-      ],
-      noForbiddenWriteProofRefs,
-      executorAllowedScope: noPatchRequired ? 'coordination_record_only' : 'target_agent_owner_gated_patch',
-      executorAllowedWriteSurfaces: noPatchRequired ? [] : capabilityCandidate.target_editable_surface_refs,
-      executorForbiddenWriteSurfaces: [
-        'target_domain_truth',
-        'target_domain_memory_body',
-        'target_domain_artifact_body',
-        'target_quality_or_export_verdict',
-        'default_agent_promotion_without_gate',
-      ],
-      canaryRefs: [
-        ...(capabilityCandidate.ai_reviewer_evaluation.canary_refs ?? []),
-        `agent-lab-canary:${suiteResult.result_id}`,
-      ],
-      rollbackRefs: [
-        ...(capabilityCandidate.ai_reviewer_evaluation.rollback_refs ?? []),
-        ...noForbiddenWriteProofRefs,
-        noPatchRequired ? 'owner_receipt_coordination_record' : 'target_agent_previous_head_ref',
-      ],
-      versionRefs: [
-        ...(capabilityCandidate.ai_reviewer_evaluation.version_refs ?? []),
-        noPatchRequired ? 'owner_receipt_coordination_record' : 'git_commit',
-      ],
-      failClosedBlockerRef:
-        `typed-blocker:opl-meta-agent/${capabilityCandidate.target_agent.domain_id}/${workOrderId}/missing-required-work-order-field`,
-      efficiencyNonRegressionRefs,
-    }),
-    required_opl_work_order_primitive_refs: buildOplWorkOrderPrimitiveRefs({
-      domainId: targetAgent.domain_id,
-      workOrderId,
-      patchMode,
-      promotionGateRef: `promotion-gate:opl-meta-agent/${targetAgent.domain_id}/external-suite-self-evolution`,
-    }),
-    ahe_developer_work_order: {
-      failure_evidence: failureEvidence,
-      root_cause: noPatchRequired
-        ? 'Agent Lab result passed; remaining work is coordination and owner receipt projection proof.'
-        : 'Agent Lab and independent AI reviewer evidence identify target-agent capability gaps that require owner-gated source changes.',
-      targeted_fix: noPatchRequired
-        ? ['owner_receipt_coordination_record']
-        : capabilityCandidate.proposed_change_refs,
-      predicted_impact: capabilityCandidate.ai_reviewer_review.predicted_impact,
-    },
-    failure_evidence_refs: failureEvidence,
-    matched_capability_ids: matchedCapabilityIds,
-    canonical_target_paths: noPatchRequired ? [] : canonicalTargetPaths,
-    failure_token_registry_refs: failureTokenRegistryRefs,
-    improvement_tokens: improvementTokens,
-    target_progress_accounting: buildTargetProgressAccounting({
-      substantiveDeliverableDeltaRefs,
-      machineCloseoutRefs,
-    }),
-    required_patch_surfaces: noPatchRequired ? [] : capabilityCandidate.target_editable_surface_refs,
-    allowed_editable_surfaces: noPatchRequired ? [] : capabilityCandidate.target_editable_surface_refs,
-    target_repo_file_hints: noPatchRequired ? [] : targetRepoFileHints,
-    required_verification_refs: requiredVerificationRefs,
-    forbidden_target_paths_or_surfaces: forbiddenTargetPathsOrSurfaces,
-    ...(hasEfficiencyEvidence ? { efficiency_non_regression_refs: efficiencyNonRegressionRefs } : {}),
-    rollback_version_refs: noPatchRequired
-      ? ['owner_receipt_coordination_record']
-      : ['git_commit', 'target_agent_previous_head_ref', 'temporary_worktree_ref'],
+    root_cause: rootCauses.join(' ') ||
+      'Agent Lab and independent reviewer evidence identify an owner-gated target-agent capability gap.',
+    targeted_fix: targetedFix,
+    predicted_impact: text(
+      capabilityCandidate.ai_reviewer_review?.predicted_impact,
+      'The target-owned patch closes the observed capability gap without moving authority to OMA.',
+    ),
+    failure_class: 'quality-gate',
+    source_morphology_proof_ref: sourceMorphologyProofRef,
+    private_residue_decision_ref: privateResidueDecisionRef,
+    target_runtime_read_model_consumption_ref: targetRuntimeReadModelConsumptionRef,
+    failure_evidence_refs: failureEvidenceRefs,
+    target_editable_surface_refs: capabilityCandidate.target_editable_surface_refs,
+    forbidden_surfaces: forbiddenSurfaces,
+    expected_behavior_delta: expectedBehaviorDelta,
+    verification_refs: verificationRefs,
+    reviewer_refs: reviewerRefs,
     owner_route_refs: ownerRouteRefs,
-    target_owner_closeout_refs: bundleRefs.target_closeout_refs,
-    no_forbidden_write_proof: {
-      required: true,
-      proof_refs: noForbiddenWriteProofRefs,
-      can_write_target_domain_truth: false,
-      can_write_target_domain_memory_body: false,
-      can_mutate_target_domain_artifact_body: false,
-      can_authorize_target_domain_quality_or_export: false,
+    no_forbidden_write_proof_refs: noForbiddenWriteProofRefs,
+    patch_traceability_refs: patchTraceabilityRefs,
+    ...(hasEfficiencyNonRegressionEvidence(capabilityCandidate.efficiency_non_regression_refs)
+      ? { efficiency_non_regression_refs: capabilityCandidate.efficiency_non_regression_refs }
+      : {}),
+  };
+
+  const agentBuildingEvidence: JsonObject = {
+    source_morphology_proof: {
+      ref: sourceMorphologyProofRef,
+      source_agent_lab_result_ref: suiteResult.result_id,
+      target_capability_improvement_candidate_ref: capabilityCandidate.candidate_id,
+      input_surface_refs: sourceRefs,
+      consumed_as_refs_only: true,
     },
-    owner_closeout_boundary: {
-      owner: 'target-domain via OPL',
-      owner_closeout_hook_delegated: true,
-      target_owner_receipt_or_typed_blocker_required: true,
-      target_owner_closeout_refs: bundleRefs.target_closeout_refs,
-      oma_can_write_target_owner_receipt_body: false,
-      oma_can_write_target_owner_typed_blocker_body: false,
-      oma_can_create_target_typed_blocker: false,
-      oma_can_invoke_target_owner_closeout_hook: false,
-      can_write_target_domain_truth: false,
-      can_write_target_domain_memory_body: false,
-      can_mutate_target_domain_artifact_body: false,
-      can_authorize_target_domain_quality_or_export: false,
+    private_residue_decision: {
+      ref: privateResidueDecisionRef,
+      decision: 'refs_only_no_private_residue_promotion',
+      source_morphology_proof_ref: sourceMorphologyProofRef,
+      private_residue_body_materialized: false,
     },
-    machine_closeout_refs: machineCloseoutRefs,
-    proposed_change_refs: capabilityCandidate.proposed_change_refs,
-    patch_traceability_matrix: noPatchRequired ? [] : capabilityCandidate.patch_traceability_matrix,
-    implementation_controls: {
-      coordination_record_only: noPatchRequired,
-      source_patch_required: !noPatchRequired,
-      patch_must_be_limited_to_traceable_surfaces: !noPatchRequired,
-      developer_must_read_target_repo_context_before_editing: !noPatchRequired,
-      developer_patch_receipt_required: !noPatchRequired,
-      target_repo_test_receipt_required: !noPatchRequired,
-      target_runtime_consumption_verification_required: !noPatchRequired,
-      target_workspace_environment_consumption_proof_required: !noPatchRequired,
-      dependency_lock_or_profile_migration_proof_required: !noPatchRequired,
-      owner_entry_redrive_required: !noPatchRequired,
-      repo_hygiene_no_checkout_venv_proof_required: !noPatchRequired,
-      target_owner_receipt_projection_required: noPatchRequired,
-      no_target_domain_truth_write_proof_required: true,
-      no_quality_verdict_or_submission_readiness_authority: true,
-      quality_floor_non_regression_required: hasEfficiencyEvidence,
-      forbidden_target_paths_or_surfaces: forbiddenTargetPathsOrSurfaces,
-      required_closeout_evidence: targetPatchLoopCloseoutEvidence({
-        sourcePatchRequired: !noPatchRequired,
-      }),
+    target_runtime_read_model_consumption: {
+      ref: targetRuntimeReadModelConsumptionRef,
+      required_surface_refs: policy.runtimeRequiredSurfaceRefs,
+      expected_outcomes: policy.runtimeExpectedOutcomes,
+      target_owner_verification_required: true,
     },
-    runtime_consumption_verification: buildRuntimeConsumptionVerification({
-      requiredSurfaceRefs: policy.runtimeRequiredSurfaceRefs,
-      expectedOutcomes: policy.runtimeExpectedOutcomes,
+  };
+
+  return {
+    materializationRequest: buildWorkOrderMaterializationRequest({
+      requestKind: 'developer_patch',
+      targetAgent: {
+        domain_id: targetAgent.domain_id,
+        repo_dir: targetAgent.repo_dir ?? '',
+        target_agent_ref: suiteResult.evaluation_target_agent.target_agent_ref,
+        descriptor_ref: suiteResult.evaluation_target_agent.descriptor_ref,
+      },
+      semanticRequest: {
+        request_id: requestId,
+        source_agent_lab_result_ref: suiteResult.result_id,
+        foundry_lab_execution_receipt_ref: foundryLabExecutionReceiptRef,
+        agent_building_judgment: agentBuildingJudgment,
+        source_refs: sourceRefs,
+        reviewer_refs: reviewerRefs,
+        candidate_refs: [capabilityCandidate.candidate_id],
+      },
     }),
-    target_workspace_environment_verification: buildTargetWorkspaceEnvironmentVerification(),
-    version_management: {
-      target_agent_version_owner: 'target_agent_repo',
-      required_version_artifacts: noPatchRequired
-        ? [
-          'owner_receipt_coordination_record',
-          'target_owner_receipt_projection_ref',
-        ]
-        : [
-          'git_commit',
-          'test_receipt',
-          'runtime_consumption_verification_receipt',
-          'workspace_environment_consumption_receipt',
-          'developer_patch_receipt',
-          'target_agent_status_or_decision_doc_update',
-        ],
-      absorb_back_required: !noPatchRequired,
-      temporary_worktree_cleanup_required: !noPatchRequired,
-    },
-    authority_boundary: {
-      can_modify_target_agent_source_repo: !noPatchRequired,
-      can_modify_target_agent_tests: !noPatchRequired,
-      can_modify_target_agent_docs: !noPatchRequired,
-      can_write_target_domain_truth: false,
-      can_write_target_domain_memory_body: false,
-      can_mutate_target_domain_artifact_body: false,
-      can_authorize_target_domain_quality_or_export: false,
-      can_promote_default_agent_without_gate: false,
-      can_train_or_deploy_model_weights: false,
-    },
+    agentBuildingEvidence,
   };
 }
