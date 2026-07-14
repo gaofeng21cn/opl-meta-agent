@@ -24,6 +24,7 @@ test('StageRun Kernel profile delegates schemas and rejects wrapper authority', 
   const profile = readJson('contracts/stage_run_kernel_profile.json');
   const oplRefs = profile.opl_contract_refs as JsonObject;
   const retirementPolicy = profile.legacy_surface_retirement_policy as JsonObject;
+  const routePolicy = profile.codex_semantic_route_policy as JsonObject;
   const schemaRefs = [
     profile.kernel_contract_ref,
     profile.stage_manifest_schema_ref,
@@ -45,6 +46,13 @@ test('StageRun Kernel profile delegates schemas and rejects wrapper authority', 
   assert.equal(oplRefs.domain_repo_role, 'consumer_profile_ref_only');
   assert.equal(oplRefs.repo_local_file_required, false);
   assert.deepEqual(asStrings(oplRefs.refs), schemaRefs);
+
+  assert.equal(routePolicy.semantic_route_decision_owner, 'decisive_codex_attempt');
+  assert.equal(
+    routePolicy.stage_transition_materialization_owner,
+    'opl_stage_run_controller',
+  );
+  assert.equal(Object.hasOwn(routePolicy, 'semantic_owner'), false);
 
   assert.equal(retirementPolicy.policy_kind, 'script_wrapper_status_workbench_retirement');
   assert.equal(retirementPolicy.retirement_state, 'retained_only_as_migration_input_or_diagnostic_provenance');
