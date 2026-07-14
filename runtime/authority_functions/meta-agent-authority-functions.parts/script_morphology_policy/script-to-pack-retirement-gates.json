@@ -7,12 +7,10 @@
       "scripts/lib/agent-evidence-materializer.ts",
       "scripts/lib/agent-evidence-typed-blocker.ts",
       "scripts/lib/external-suite-materializer.ts",
-      "scripts/lib/foundry-lab-work-order.ts",
+      "scripts/lib/work-order-materialization-request.ts",
       "scripts/lib/target-improvement-policy.ts",
-      "scripts/lib/work-order-builders.ts",
       "scripts/lib/work-order-efficiency.ts",
-      "scripts/lib/work-order-refs.ts",
-      "scripts/lib/work-order-validation.ts"
+      "scripts/lib/work-order-refs.ts"
     ],
     "current_role": "target_agent_suite_result_judgment_candidate_and_declarative_work_order_materializer",
     "retention_state": "retained_current_authority_function",
@@ -221,7 +219,7 @@
       "scripts/lib/mechanism-patch-proposal-handler.ts",
       "scripts/lib/meta-agent-loop-ai-reviewer.ts",
       "scripts/lib/meta-agent-loop-io.ts",
-      "scripts/lib/meta-agent-loop-receipts.ts",
+      "scripts/lib/foundry-evaluation-semantic-request.ts",
       "scripts/takeover-agent.ts"
     ],
     "current_role": "exact_handler_authority_direct_io_reviewer_receipt_helpers_and_external_takeover_smoke",

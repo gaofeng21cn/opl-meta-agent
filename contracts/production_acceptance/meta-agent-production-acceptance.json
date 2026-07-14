@@ -126,7 +126,7 @@
       "agent/prompts/optimizer-iteration.md",
       "agent/stages/optimizer-iteration.md",
       "scripts/improve-from-agent-lab-suite.ts",
-      "scripts/lib/meta-agent-loop-receipts.ts",
+      "scripts/lib/foundry-evaluation-semantic-request.ts",
       "tests/external-suite-developer-work-order.test.ts",
       "tests/external-suite-owner-receipt-behavior.test.ts",
       "tests/external-suite-reviewer-gates.test.ts"
