@@ -14,6 +14,18 @@ test('OMA declares isolated Stage Review for every AI producer', () => {
     profile.route_selection_contract_ref,
     'contracts/opl-framework/stage-quality-cycle-contract.json#/cross_stage_route_selection',
   );
+  assert.deepEqual(profile.cross_stage_route_selection, {
+    primary_only_decisive_attempt_role: 'producer',
+    formal_review_decisive_attempt_roles: ['reviewer', 're_reviewer'],
+    repairer_can_be_decisive_attempt: false,
+    producer_can_be_decisive_attempt_in_formal_review: false,
+    repair_required_review_or_re_review_may_select_cross_stage_route_back_before_budget_exhaustion: true,
+    repair_required_cross_stage_route_back_requires_target_different_from_current_stage: true,
+    repair_required_review_or_re_review_may_select_other_terminal_route_before_budget_exhaustion: false,
+    repair_required_review_or_re_review_may_select_terminal_route_after_budget_exhaustion: true,
+    same_stage_repair_required_with_budget_remaining_continues_quality_loop: true,
+    cross_stage_route_back_requires_narrowest_canonical_owner_stage: true,
+  });
   const attemptContract = profile.review_attempt_contract;
   assert.deepEqual(attemptContract.attempt_roles, ['producer', 'reviewer', 'repairer', 're_reviewer']);
   assert.equal(attemptContract.new_stage_attempt_per_role, true);
@@ -28,7 +40,6 @@ test('OMA declares isolated Stage Review for every AI producer', () => {
     primary_only_decisive_attempt_role: 'producer',
     formal_review_decisive_attempt_roles: ['reviewer', 're_reviewer'],
     repairer_can_be_decisive_attempt: false,
-    repair_required_with_budget_remaining_route_output: 'route_impact.stage_route_recommendation',
     repair_required_without_budget_and_consumable_artifact_route_output: 'route_impact.stage_route_decision',
     repair_budget_exhaustion_terminal_status: 'completed_with_quality_debt',
     hard_stop_or_zero_consumable_artifact_route_output: 'none',
@@ -89,7 +100,8 @@ test('OMA declares isolated Stage Review for every AI producer', () => {
   assert.match(rolePrompt, /正式 Review receipt 由 StageRunController 物化/);
   assert.match(rolePrompt, /semantic_route_decision_owner=decisive_codex_attempt/);
   assert.match(rolePrompt, /stage_transition_materialization_owner=opl_stage_run_controller/);
-  assert.match(rolePrompt, /repair budget 仍可用/);
+  assert.match(rolePrompt, /`same_stage_repair_required`/);
+  assert.match(rolePrompt, /`cross_stage_route_back_before_budget_exhaustion`/);
   assert.match(rolePrompt, /repair budget 已耗尽且 artifact 可消费/);
   assert.match(rolePrompt, /Controller 以 `completed_with_quality_debt` 终局/);
   assert.match(rolePrompt, /`pass \+ optional_observation` 合法/);
@@ -141,19 +153,28 @@ test('OMA declares isolated Stage Review for every AI producer', () => {
   });
 });
 
-test('formal Review routes only from the terminal quality-budget decision point', () => {
+test('formal Review can route an externally owned repair early but keeps same-Stage repair bounded', () => {
   const rolePrompt = readFileSync('agent/prompts/stage-quality-cycle-roles.md', 'utf8');
   const reviewer = rolePrompt.match(/## Reviewer\n\n([\s\S]*?)\n\n## Repairer/)?.[1] ?? '';
   const repairer = rolePrompt.match(/## Repairer\n\n([\s\S]*?)\n\n## Re Reviewer/)?.[1] ?? '';
   const reReviewer = rolePrompt.match(/## Re Reviewer\n\n([\s\S]*)$/)?.[1] ?? '';
 
-  assert.match(reviewer, /repair budget 仍可用/);
-  assert.match(reviewer, /`outcome=repair_required`.*非终局 Attempt/);
+  assert.match(reviewer, /`same_stage_repair_required`/);
+  assert.match(reviewer, /repair budget 仍可用时 reviewer 是非终局 Attempt/);
+  assert.match(reviewer, /`cross_stage_route_back_before_budget_exhaustion`/);
+  assert.match(reviewer, /另一个 declared Stage 是最窄 canonical owner/);
+  assert.match(reviewer, /不同于当前 Stage 的 `target_stage_id`/);
+  assert.match(reviewer, /预算耗尽前唯一合法的 terminal route/);
   assert.match(reviewer, /StageRun 投影为 `completed_with_quality_debt`/);
   assert.match(reviewer, /保留 `outcome=repair_required`/);
   assert.match(reviewer, /未关闭 required findings 与 quality-debt refs/);
 
+  assert.match(reReviewer, /`same_stage_repair_required`/);
   assert.match(reReviewer, /`quality_round_index < max_repair_rounds`/);
+  assert.match(reReviewer, /`cross_stage_route_back_before_budget_exhaustion`/);
+  assert.match(reReviewer, /另一个 declared Stage 是最窄 canonical owner/);
+  assert.match(reReviewer, /不同于当前 Stage 的 `target_stage_id`/);
+  assert.match(reReviewer, /预算耗尽前唯一合法的 terminal route/);
   assert.match(reReviewer, /`quality_round_index = max_repair_rounds`/);
   assert.match(reReviewer, /保留 `outcome=repair_required`/);
   assert.match(reReviewer, /StageRun 投影为 `completed_with_quality_debt`/);
@@ -243,6 +264,14 @@ test('baseline-delivery remains a primary-only immutable refs handoff to the own
   assert.match(prompt, /不表示 owner acceptance/);
   assert.match(prompt, /route_impact\.stage_route_decision/);
   assert.match(prompt, /decision_kind=complete/);
+  assert.match(prompt, /oma-eval-takeover-review/);
+  assert.match(prompt, /oma-work-order-hygiene/);
+  assert.match(prompt, /Build receipt 必须来自物化后 bytes/);
+  assert.match(prompt, /零、损坏或不可读 package.*不返回 route decision 或 recommendation/);
+  assert.match(prompt, /StageRunController 按 zero-consumable-artifact 边界终局化/);
+  const gate = readFileSync('agent/quality_gates/baseline-delivery.md', 'utf8');
+  assert.match(gate, /零、损坏或不可读 package.*不返回 route decision\/recommendation/);
+  assert.match(gate, /不选择后续 declared Stage/);
 
   const descriptor = readJson('contracts/domain_descriptor.json');
   assert.ok(descriptor.outputs.includes('baseline_handoff_candidate_ref'));
