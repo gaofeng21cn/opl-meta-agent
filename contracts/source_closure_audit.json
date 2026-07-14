@@ -43,16 +43,6 @@
       ],
       "role": "developer_tool",
       "allowed_targets": []
-    },
-    {
-      "file": "scripts/takeover-agent.ts",
-      "symbol": "runTakeoverAgent",
-      "source_digest": "sha256:67c7ea0de72017549ce216a8d65fe41a6533cf018e5e255179d5462150b63fc4",
-      "allowed_effects": [
-        "filesystem_write"
-      ],
-      "role": "developer_tool",
-      "allowed_targets": []
     }
   ]
 }

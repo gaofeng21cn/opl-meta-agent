@@ -113,12 +113,17 @@ test('minimal authority refs, source audit and generated surface ids have one ex
   ]);
 
   const auditEntries = asObjects(audit.entries);
-  assert.equal(auditEntries.length, 5);
+  assert.equal(auditEntries.length, 4);
   auditEntries.forEach((entry) => {
     assert.equal(entry.role, 'developer_tool');
     assert.equal(entry.source_digest, sha256File(String(entry.file)));
     assert.equal(/[*?{}[\]]/.test(String(entry.file)), false);
   });
+  assert.equal(
+    auditEntries.some((entry) => entry.file === 'scripts/takeover-agent.ts'),
+    false,
+    'the in-memory takeover request producer must not carry a stale filesystem-write authorization',
+  );
   const spawnEntry = auditEntries.find((entry) => entry.allowed_effects.includes('process_spawn'));
   assert.deepEqual(spawnEntry?.allowed_targets, ['git']);
 
