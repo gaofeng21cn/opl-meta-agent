@@ -56,7 +56,6 @@ test('takeover emits a thin semantic request without private work-order mechanic
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-takeover-'));
   try {
     const targetDir = path.join(outputRoot, 'target-agent');
-    const takeoverRoot = path.join(outputRoot, 'takeover');
     const reviewerPath = path.join(outputRoot, 'reviewer.json');
     writeJson(path.join(targetDir, 'contracts/domain_descriptor.json'), {
       domain_id: 'takeover-fixture-agent',
@@ -69,7 +68,6 @@ test('takeover emits a thin semantic request without private work-order mechanic
     const result = spawnSync(process.execPath, [
       path.join(repoRoot, 'scripts/takeover-agent.ts'),
       '--agent-dir', targetDir,
-      '--output-dir', takeoverRoot,
       '--ai-reviewer-evaluation', reviewerPath,
     ], { cwd: repoRoot, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
     assert.equal(result.status, 0, result.stderr || result.stdout);
@@ -77,13 +75,20 @@ test('takeover emits a thin semantic request without private work-order mechanic
     assertMatchesJsonSchema('contracts/schemas/takeover-target-agent-test.output.schema.json', payload);
 
     assert.equal(payload.surface_kind, 'opl_meta_agent_takeover_handoff');
-    assert.equal(payload.status, 'takeover_candidate_materialized_ready_for_opl_foundry_lab_evaluation');
+    assert.equal(payload.status, 'takeover_semantic_request_ready_for_opl_foundry_lab_materialization');
     assert.equal(payload.authority_boundary.producer_executes_work_order, false);
+    assert.equal(payload.authority_boundary.producer_writes_framework_request_bundle, false);
     assert.equal(payload.authority_boundary.producer_assigns_work_order_id, false);
     assert.equal(payload.authority_boundary.producer_manages_executor_lease, false);
     assert.equal(payload.authority_boundary.producer_manages_target_worktree, false);
     assert.equal(payload.authority_boundary.producer_writes_work_order_receipt, false);
     assert.equal(payload.takeover_policy.can_write_target_owner_receipt_body, false);
+    const noMaterializationGuard = readJson(
+      path.join(repoRoot, 'contracts/private_functional_surface_policy.json'),
+    ).takeover_semantic_request_no_materialization_guard;
+    for (const capability of noMaterializationGuard.forbidden_authority_capabilities) {
+      assert.equal(payload.authority_boundary[capability], false, capability);
+    }
     assert.deepEqual(payload.agent_building_judgment.suggestions, [
       'Repeatable suggestion.',
       'Repeatable suggestion.',
@@ -112,11 +117,7 @@ test('takeover emits a thin semantic request without private work-order mechanic
     assert.equal(Object.hasOwn(semanticRequest.task_intents[0], 'environment'), false);
     assert.equal(Object.hasOwn(semanticRequest.task_intents[0], 'recovery_probe_specs'), false);
 
-    assert.equal(fs.existsSync(path.join(takeoverRoot, 'foundry-evaluation-request.json')), false);
-    assert.equal(fs.existsSync(path.join(takeoverRoot, 'foundry-lab-work-order.json')), false);
-    assert.equal(fs.existsSync(path.join(takeoverRoot, 'agent-lab-takeover-suite-seed.json')), false);
-    assert.equal(fs.existsSync(path.join(takeoverRoot, 'takeover-receipt.json')), false);
-    assert.equal(fs.existsSync(path.join(takeoverRoot, 'new-agent-delivery-gate.json')), false);
+    assert.deepEqual(fs.readdirSync(outputRoot).sort(), ['reviewer.json', 'target-agent']);
 
     for (const mutate of [
       (candidate: Record<string, any>) => { candidate.suite_seed = {}; },
@@ -148,6 +149,14 @@ test('takeover parser retires local Agent Lab execution flags and fixture aliase
     ]),
     /Unknown option '--opl-bin'/,
   );
+  assert.throws(
+    () => parseTakeoverAgentArgs([
+      '--agent-dir', '/tmp/target-agent',
+      '--ai-reviewer-evaluation', '/tmp/reviewer.json',
+      '--output-dir', '/tmp/takeover-output',
+    ]),
+    /Unknown option '--output-dir'/,
+  );
 });
 
 test('takeover preserves its handoff with quality debt when morphology review evidence is missing', () => {
@@ -166,7 +175,6 @@ test('takeover preserves its handoff with quality debt when morphology review ev
     const result = spawnSync(process.execPath, [
       path.join(repoRoot, 'scripts/takeover-agent.ts'),
       '--agent-dir', targetDir,
-      '--output-dir', path.join(outputRoot, 'takeover'),
       '--ai-reviewer-evaluation', reviewerPath,
     ], { cwd: repoRoot, encoding: 'utf8' });
     assert.equal(result.status, 0, result.stderr);

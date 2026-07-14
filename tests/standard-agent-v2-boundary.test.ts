@@ -113,7 +113,7 @@ test('minimal authority refs, source audit and generated surface ids have one ex
   ]);
 
   const auditEntries = asObjects(audit.entries);
-  assert.equal(auditEntries.length, 4);
+  assert.equal(auditEntries.length, 5);
   auditEntries.forEach((entry) => {
     assert.equal(entry.role, 'developer_tool');
     assert.equal(entry.source_digest, sha256File(String(entry.file)));
@@ -124,6 +124,13 @@ test('minimal authority refs, source audit and generated surface ids have one ex
     false,
     'the in-memory takeover request producer must not carry a stale filesystem-write authorization',
   );
+  const baselineArgParserEntry = auditEntries.find((entry) => (
+    entry.file === 'scripts/build-agent-baseline.ts'
+    && entry.symbol === 'parseBuildAgentBaselineArgs'
+  ));
+  assert.deepEqual(baselineArgParserEntry?.allowed_effects, ['filesystem_write']);
+  assert.deepEqual(baselineArgParserEntry?.allowed_targets, []);
+  assert.equal(baselineArgParserEntry?.role, 'developer_tool');
   const spawnEntry = auditEntries.find((entry) => entry.allowed_effects.includes('process_spawn'));
   assert.deepEqual(spawnEntry?.allowed_targets, ['git']);
 
@@ -142,6 +149,28 @@ test('minimal authority refs, source audit and generated surface ids have one ex
     });
   });
   assert.equal(new Set(surfaceIds).size, surfaceIds.length);
+});
+
+test('OMA retains semantic request authoring without private work-order materialization authority', () => {
+  const privatePolicy = readJson('contracts/private_functional_surface_policy.json');
+  const functionalAudit = readJson('contracts/functional_privatization_audit.json');
+  const stageRunProfile = readJson('contracts/stage_run_kernel_profile.json');
+  const stageArtifactAdoption = readJson('contracts/stage_artifact_kernel_adoption.json');
+  const foundryKernel = readJson('contracts/foundry-agent-os-domain-kernel-manifest.json');
+  const roleLists = [
+    asStrings(functionalAudit.domain_allowed_roles),
+    asStrings(stageRunProfile.domain_authority_retained),
+    asStrings(stageArtifactAdoption.domain_authority_retained),
+    asStrings(foundryKernel.domain_authority_kernel.retained_surfaces),
+    asObjects(privatePolicy.allowed_script_morphology_classes)
+      .map((entry) => String(entry.class_id)),
+  ];
+
+  roleLists.forEach((roles) => {
+    assert.equal(roles.includes('work_order_semantic_request_authoring'), true);
+    assert.equal(roles.includes('developer_work_order_materialization'), false);
+    assert.equal(roles.includes('developer_work_order_materializer'), false);
+  });
 });
 
 test('OMA package lifecycle delegates only to the current OPL Packages surface', () => {

@@ -14,10 +14,6 @@
       "minLength": 1,
       "description": "Path to the existing target agent repository."
     },
-    "output_dir": {
-      "type": "string",
-      "minLength": 1
-    },
     "ai_reviewer_evaluation": {
       "type": "string",
       "minLength": 1,

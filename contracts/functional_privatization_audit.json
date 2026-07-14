@@ -52,7 +52,7 @@
     "baseline_review_semantics",
     "optimizer_review_semantics",
     "mechanism_proposal_semantics",
-    "developer_work_order_materialization",
+    "work_order_semantic_request_authoring",
     "owner_receipt_refs",
     "typed_blocker",
     "refs_only_domain_adapter",

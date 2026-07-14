@@ -12,9 +12,9 @@
       "scripts/lib/work-order-efficiency.ts",
       "scripts/lib/work-order-refs.ts"
     ],
-    "current_role": "target_agent_suite_result_judgment_candidate_and_declarative_work_order_materializer",
+    "current_role": "target_agent_suite_result_judgment_and_work_order_semantic_request_authoring",
     "retention_state": "retained_current_authority_function",
-    "retention_reason": "current OMA refs-only group emits thin Foundry evaluation requests, Foundry Lab work orders, target capability candidates, developer work orders, and expected blocker refs, or consumes an explicit target-owned Foundry Lab suite-result ref for agent-building judgment. It does not compile or execute Agent Lab suites, write suite results, owner receipt or typed blocker bodies, learning/promotion/mechanism/scaleout ledgers, delivery gates, target worktree lifecycle, target truth, or quality verdicts",
+    "retention_reason": "current OMA refs-only group emits thin Foundry evaluation requests, canonical work-order materialization requests, target capability candidates, developer-patch semantic requests, and expected blocker refs, or consumes an explicit target-owned Foundry Lab suite-result ref for agent-building judgment. It does not materialize a work-order file, assign identity, manage lease/worktree/lifecycle, compile or execute Agent Lab suites, or write suite results, owner receipt or typed blocker bodies, learning/promotion/mechanism/scaleout ledgers, delivery gates, target truth, or quality verdicts",
     "retention_evidence_refs": [
       "contracts/developer_work_order_policy.json",
       "contracts/developer_work_order_policy.json#/target_improvement_default_change_ref_policy",
@@ -236,7 +236,7 @@
       "tests/external-suite-efficiency-handoff.test.ts",
       "tests/source-purity/script-morphology.test-case.ts"
     ],
-    "allowed_until": "active_import_or_npm_test_caller_requires_refs_only_helper_or_takeover_receipt_materialization",
+    "allowed_until": "active_import_or_npm_test_caller_requires_refs_only_helper_or_takeover_semantic_request_authoring",
     "required_before_retire_or_absorb": [
       "stable_helper_policy_moved_to_agent_contracts_authority_or_opl_primitive_ref",
       "minimal_authority_handler_no_longer_required_ref",

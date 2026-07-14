@@ -3,7 +3,8 @@
     "script_ref": "scripts/build-agent-baseline.ts",
     "classes": [
       "smoke_helper",
-      "fixture_or_proof_helper"
+      "fixture_or_proof_helper",
+      "work_order_semantic_request_authoring"
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
@@ -40,7 +41,7 @@
     "script_ref": "scripts/improve-from-agent-lab-suite.ts",
     "classes": [
       "smoke_helper",
-      "developer_work_order_materializer",
+      "work_order_semantic_request_authoring",
       "fixture_or_proof_helper"
     ],
     "authority_function_refs": [],
@@ -59,7 +60,7 @@
     "script_ref": "scripts/lib/agent-evidence-contracts.ts",
     "classes": [
       "fixture_or_proof_helper",
-      "developer_work_order_materializer"
+      "work_order_semantic_request_authoring"
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [],
@@ -78,7 +79,7 @@
     "classes": [
       "smoke_helper",
       "fixture_or_proof_helper",
-      "developer_work_order_materializer"
+      "work_order_semantic_request_authoring"
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
@@ -97,7 +98,7 @@
     "script_ref": "scripts/lib/agent-evidence-typed-blocker.ts",
     "classes": [
       "fixture_or_proof_helper",
-      "developer_work_order_materializer"
+      "work_order_semantic_request_authoring"
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [],
@@ -128,7 +129,7 @@
     "script_ref": "scripts/lib/external-suite-materializer.ts",
     "classes": [
       "fixture_or_proof_helper",
-      "developer_work_order_materializer"
+      "work_order_semantic_request_authoring"
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [],
@@ -144,7 +145,7 @@
     "script_ref": "scripts/lib/work-order-materialization-request.ts",
     "classes": [
       "fixture_or_proof_helper",
-      "developer_work_order_materializer"
+      "work_order_semantic_request_authoring"
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
@@ -179,7 +180,7 @@
     "script_ref": "scripts/lib/meta-agent-loop-ai-reviewer.ts",
     "classes": [
       "fixture_or_proof_helper",
-      "developer_work_order_materializer"
+      "work_order_semantic_request_authoring"
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [],
@@ -207,7 +208,7 @@
     "script_ref": "scripts/lib/foundry-evaluation-semantic-request.ts",
     "classes": [
       "fixture_or_proof_helper",
-      "developer_work_order_materializer"
+      "work_order_semantic_request_authoring"
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [],
@@ -234,7 +235,7 @@
     "script_ref": "scripts/lib/stage-decomposition-pack-draft/artifact-morphology-validator.ts",
     "classes": [
       "fixture_or_proof_helper",
-      "developer_work_order_materializer"
+      "work_order_semantic_request_authoring"
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
@@ -252,7 +253,7 @@
     "script_ref": "scripts/lib/stage-decomposition-pack-draft/builder.ts",
     "classes": [
       "fixture_or_proof_helper",
-      "developer_work_order_materializer"
+      "work_order_semantic_request_authoring"
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
@@ -275,7 +276,7 @@
     "script_ref": "scripts/lib/stage-decomposition-pack-draft/materializer.ts",
     "classes": [
       "fixture_or_proof_helper",
-      "developer_work_order_materializer"
+      "work_order_semantic_request_authoring"
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
@@ -333,7 +334,7 @@
     "script_ref": "scripts/lib/stage-decomposition-pack-draft/stage-native-contract-validator.ts",
     "classes": [
       "fixture_or_proof_helper",
-      "developer_work_order_materializer"
+      "work_order_semantic_request_authoring"
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
@@ -355,7 +356,7 @@
     "script_ref": "scripts/lib/stage-decomposition-pack-draft/validator.ts",
     "classes": [
       "fixture_or_proof_helper",
-      "developer_work_order_materializer"
+      "work_order_semantic_request_authoring"
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
@@ -376,7 +377,7 @@
     "script_ref": "scripts/lib/stage-native-artifact-contract.ts",
     "classes": [
       "fixture_or_proof_helper",
-      "developer_work_order_materializer"
+      "work_order_semantic_request_authoring"
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [
@@ -441,7 +442,7 @@
     "script_ref": "scripts/lib/target-improvement-policy.ts",
     "classes": [
       "fixture_or_proof_helper",
-      "developer_work_order_materializer"
+      "work_order_semantic_request_authoring"
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [],
@@ -465,7 +466,7 @@
     "script_ref": "scripts/lib/work-order-efficiency.ts",
     "classes": [
       "fixture_or_proof_helper",
-      "developer_work_order_materializer"
+      "work_order_semantic_request_authoring"
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [],
@@ -478,7 +479,7 @@
     "script_ref": "scripts/lib/work-order-refs.ts",
     "classes": [
       "fixture_or_proof_helper",
-      "developer_work_order_materializer"
+      "work_order_semantic_request_authoring"
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [],
@@ -543,7 +544,8 @@
     "script_ref": "scripts/takeover-agent.ts",
     "classes": [
       "smoke_helper",
-      "fixture_or_proof_helper"
+      "fixture_or_proof_helper",
+      "work_order_semantic_request_authoring"
     ],
     "authority_function_refs": [],
     "consumes_opl_surfaces": [

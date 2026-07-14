@@ -101,7 +101,7 @@
   },
   "domain_authority_retained": [
     "agent_building_semantics",
-    "developer_work_order_materialization",
+    "work_order_semantic_request_authoring",
     "mechanism_patch_proposal_authorization",
     "oma_owned_receipt_or_typed_blocker"
   ],

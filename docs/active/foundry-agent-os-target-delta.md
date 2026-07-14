@@ -42,7 +42,7 @@ OMA 必须保留：
 
 - 用户意图理解、target brief、agent-building semantics 和 stage decomposition；
 - candidate agent package materialization policy、thin Foundry evaluation request policy、baseline delivery receipt policy；
-- developer patch work order materialization，包括 AHE failure/root-cause/fix/impact refs、allowed editable surfaces、required verification refs、rollback/canary/version refs、owner route refs 和 no-forbidden-write proof；
+- developer-patch work-order semantic request authoring，包括 AHE failure/root-cause/fix/impact refs、allowed editable surfaces、required verification refs、rollback/canary/version refs、owner route refs 和 no-forbidden-write proof；work-order file、identity、lease、worktree、execution、lifecycle 与 receipt 物化归 OPL；
 - target capability improvement candidate、mechanism patch proposal 和 online-learning candidate；
 - independent reviewer evidence requirements、direct-evidence verdict schema 和 provenance requirements；
 - script-to-pack / materializer hygiene policy、typed blocker materialization 和 route-back evidence；
@@ -69,7 +69,7 @@ OMA 后续落地按下面的 gate 收口：
 | Pack compile parity | OPL generated surfaces 能从 `agent/`、stage control、action catalog、work-order policy 和 OMA contracts 生成同一 descriptor / command / status shape。 |
 | Agent Lab delegation parity | OMA 只生成 thin evaluation request、candidate、work-order 或 blocker；suite-plan compilation、suite execution、promotion gate、worktree lifecycle、absorb/cleanup 和 closeout hook 由 OPL / target owner 执行并返回 refs。 |
 | No forbidden authority | OMA / OPL generated surface / Agent Lab / Vault / Console / Runway 不能写 target truth、artifact body、memory body、quality/export verdict、owner receipt body 或 default promotion authority。 |
-| Script-to-pack thinning | 保留脚本必须被 machine gate 分类为 authority implementation、smoke/proof helper、thin delegation 或 developer work-order materializer；稳定 policy 迁入 `agent/`、contracts 或 OPL primitive。 |
+| Script-to-pack thinning | 保留脚本必须被 machine gate 分类为 authority implementation、smoke/proof helper、thin delegation 或 work-order semantic-request author；稳定 policy 迁入 `agent/`、contracts 或 OPL primitive。 |
 | Production evidence | registry discovery receipt、App render / runtime drilldown receipt、repeat target cohorts、real source patch / rerun / owner receipt samples、independent reviewer direct evidence 和 no-active-legacy-caller scan 形成真实证据。 |
 
 ## 禁止声明

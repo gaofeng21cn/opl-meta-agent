@@ -68,9 +68,20 @@ test('action catalog and owner receipts forbid target-domain authority writes', 
   assert.equal(Object.hasOwn(baselineAction, 'new_agent_delivery_gate'), false);
   assert.equal(Object.hasOwn(takeoverAction, 'new_agent_delivery_gate'), false);
   assert.match(String(baselineAction.summary), /without creating a suite result or owner receipt/);
-  assert.match(String(takeoverAction.summary), /without local suite execution or owner receipt creation/);
+  assert.match(String(takeoverAction.summary), /work-order materialization request/);
+  assert.match(
+    String(takeoverAction.summary),
+    /without writing a request file, executing a suite, or creating an owner receipt/,
+  );
   assert.equal(takeoverAction.supported_surfaces.mcp.descriptor_only, true);
   assert.equal(takeoverAction.supported_surfaces.mcp.public_runtime, false);
+  assert.deepEqual(asStrings(takeoverAction.optional_fields), []);
+  assert.deepEqual(asStrings(takeoverAction.workspace_locator_fields), [
+    'agent_dir',
+    'ai_reviewer_evaluation',
+  ]);
+  const takeoverInputSchema = readJson(String(takeoverAction.input_schema_ref));
+  assert.equal(Object.hasOwn(takeoverInputSchema.properties, 'output_dir'), false);
 
   [
     'can_modify_target_agent_source_repo',

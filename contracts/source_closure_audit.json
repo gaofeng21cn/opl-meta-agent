@@ -13,6 +13,16 @@
       "allowed_targets": []
     },
     {
+      "file": "scripts/build-agent-baseline.ts",
+      "symbol": "parseBuildAgentBaselineArgs",
+      "source_digest": "sha256:88c9165f2b1dd7b1c19d65a270fff8dd69538d2961c06004d70cc88725856fb7",
+      "allowed_effects": [
+        "filesystem_write"
+      ],
+      "role": "developer_tool",
+      "allowed_targets": []
+    },
+    {
       "file": "scripts/check-source-structure.ts",
       "symbol": "trackedFiles",
       "source_digest": "sha256:871b25ec496826ffcc39a688a957eabccf42d53fc07867664bbf0d817618bbbb",

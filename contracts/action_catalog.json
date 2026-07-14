@@ -18,7 +18,7 @@
     {
       "action_id": "build-agent-baseline",
       "title": "Build Agent Baseline",
-      "summary": "Generate and validate an OPL-compatible candidate Agent Pack, consume structured AI reviewer evidence, and emit a thin Foundry evaluation request plus canonical OPL Foundry Lab work order without creating a suite result or owner receipt.",
+      "summary": "Generate and validate an OPL-compatible candidate Agent Pack, consume structured AI reviewer evidence, and emit a thin Foundry evaluation semantic request plus a canonical OPL Foundry Lab work-order materialization request without creating a suite result or owner receipt.",
       "owner": "opl-meta-agent",
       "effect": "mutating",
       "execution_binding": {
@@ -124,7 +124,7 @@
     {
       "action_id": "takeover-target-agent-test",
       "title": "Take Over Target Agent Test",
-      "summary": "Read an existing OPL-compatible agent repo, consume structured AI reviewer evidence, and emit a thin takeover evaluation request plus canonical OPL Foundry Lab evaluation work order without local suite execution or owner receipt creation.",
+      "summary": "Read an existing OPL-compatible agent repo, consume structured AI reviewer evidence, and emit an in-memory takeover evaluation semantic request plus a canonical OPL Foundry Lab work-order materialization request without writing a request file, executing a suite, or creating an owner receipt.",
       "owner": "opl-meta-agent",
       "effect": "mutating",
       "execution_binding": {
@@ -137,12 +137,9 @@
         "agent_dir",
         "ai_reviewer_evaluation"
       ],
-      "optional_fields": [
-        "output_dir"
-      ],
+      "optional_fields": [],
       "workspace_locator_fields": [
         "agent_dir",
-        "output_dir",
         "ai_reviewer_evaluation"
       ],
       "human_gate_ids": [

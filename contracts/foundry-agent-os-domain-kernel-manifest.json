@@ -28,7 +28,7 @@
       "target_brief_materialization",
       "stage_decomposition",
       "candidate_agent_package_materialization_policy",
-      "developer_work_order_materialization",
+      "work_order_semantic_request_authoring",
       "mechanism_patch_proposal_materialization",
       "target_capability_improvement_candidate",
       "independent_reviewer_evidence_requirements",

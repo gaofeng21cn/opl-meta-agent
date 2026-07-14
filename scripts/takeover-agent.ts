@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { parseArgs as parseNodeArgs } from 'node:util';
 import {
@@ -32,18 +31,15 @@ const repoRoot = path.resolve(import.meta.dirname, '..');
 
 export type TakeoverArgs = {
   targetAgentDir: string;
-  outputDir: string;
   aiReviewerEvaluationPath: string;
 };
 
 export function parseTakeoverAgentArgs(argv: string[]): TakeoverArgs {
   const parsed: {
     targetAgentDir: string | null;
-    outputDir: string | null;
     aiReviewerEvaluationPath: string | null;
   } = {
     targetAgentDir: null,
-    outputDir: null,
     aiReviewerEvaluationPath: null,
   };
 
@@ -51,7 +47,6 @@ export function parseTakeoverAgentArgs(argv: string[]): TakeoverArgs {
     args: argv,
     options: {
       'agent-dir': { type: 'string' },
-      'output-dir': { type: 'string' },
       'ai-reviewer-evaluation': { type: 'string' },
     },
     strict: true,
@@ -59,9 +54,6 @@ export function parseTakeoverAgentArgs(argv: string[]): TakeoverArgs {
   });
   if (typeof values['agent-dir'] === 'string') {
     parsed.targetAgentDir = path.resolve(values['agent-dir']);
-  }
-  if (typeof values['output-dir'] === 'string') {
-    parsed.outputDir = path.resolve(values['output-dir']);
   }
   if (typeof values['ai-reviewer-evaluation'] === 'string') {
     parsed.aiReviewerEvaluationPath = path.resolve(values['ai-reviewer-evaluation']);
@@ -73,10 +65,8 @@ export function parseTakeoverAgentArgs(argv: string[]): TakeoverArgs {
   if (!fs.existsSync(parsed.targetAgentDir)) {
     throw new Error(`Target agent path does not exist: ${parsed.targetAgentDir}`);
   }
-  parsed.outputDir ??= fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-takeover-'));
   return {
     targetAgentDir: parsed.targetAgentDir,
-    outputDir: parsed.outputDir,
     aiReviewerEvaluationPath: parsed.aiReviewerEvaluationPath ?? '',
   };
 }
@@ -207,7 +197,7 @@ export function runTakeoverAgent({
     version: 'opl-meta-agent.takeover-handoff.v1',
     status: reviewerQualityDebt
       ? 'completed_with_quality_debt'
-      : 'takeover_candidate_materialized_ready_for_opl_foundry_lab_evaluation',
+      : 'takeover_semantic_request_ready_for_opl_foundry_lab_materialization',
     product_id: 'opl-meta-agent',
     takeover_policy: {
       target_opl_compatible_agents_allowed: true,

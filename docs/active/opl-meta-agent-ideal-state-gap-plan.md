@@ -114,7 +114,7 @@ Owner split 固定为：
 
 Active plan 只保留非 live 功能/结构缺口：script-to-pack / source-purity 持续治理、retained script active-caller classification、OPL primitive replacement mapping、developer work-order policy、target-agent handoff vocabulary、no-forbidden-write guard、no-active-caller 与 tombstone/provenance。若新增或增长 scripts/materializers，必须先进入 machine gate、caller graph、source-ref integrity 和 retirement gates；readback 可以列 missing evidence 和 owner-delta route，但不能授权 physical delete、owner receipt、typed blocker instance、OPL primitive parity、App/registry/generated-hosted readiness、default promotion 或 target/domain/production readiness。
 
-本轮按 `launcher|wrapper|alias|compat|legacy|status|sidecar|product-entry|helper|facade` 关键词复核后，没有发现可直接物理删除的孤立普通入口。命中的 script/materializer/helper/status/workbench residue 已在 source-purity guard、script-to-pack receipt、私有实现迁移台账和本计划中归为 authority implementation、smoke/proof helper、thin delegation、developer work-order materializer 或 provenance refs；退役仍必须满足 OPL primitive parity、真实 active-caller 迁出、no-forbidden-write、no-active-caller 与 tombstone/provenance。
+本轮按 `launcher|wrapper|alias|compat|legacy|status|sidecar|product-entry|helper|facade` 关键词复核后，没有发现可直接物理删除的孤立普通入口。命中的 script/materializer/helper/status/workbench residue 已在 source-purity guard、script-to-pack receipt、私有实现迁移台账和本计划中归为 authority implementation、smoke/proof helper、thin delegation、work-order semantic-request author 或 provenance refs；退役仍必须满足 OPL primitive parity、真实 active-caller 迁出、no-forbidden-write、no-active-caller 与 tombstone/provenance。
 
 ## 下一轮工作范围
 

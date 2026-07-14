@@ -52,7 +52,7 @@ Target agent handoff 必须保留：
 6. owner route、no-forbidden-write proof、source morphology、generated surface consumption、private residue decision 和 accepted owner-answer shape。
 
 缺任一项时记录质量债、owner-gated next step、route-back 或 no-output diagnostic，继续 evaluation、review、自进化或后续 declared stage；只是不声明 target agent delivered、domain ready、production ready、quality verdict、App live ready 或 default promotion。仅真实 authority/safety/permission/identity/currentness/不可逆动作/显式 human decision 才返回 hard-stop typed blocker 或 human gate。
-Producer action 自身的 `candidate_package_materialized_ready_for_opl_foundry_lab_evaluation` 或 `takeover_candidate_materialized_ready_for_opl_foundry_lab_evaluation` 只表示 evaluation handoff 已就绪，不是 new-agent delivery gate readback，也不是上述完成条件。
+Producer action 自身的 `candidate_package_materialized_ready_for_opl_foundry_lab_evaluation` 表示 OMA domain artifact 已物化并可交给 OPL evaluation；`takeover_semantic_request_ready_for_opl_foundry_lab_materialization` 只表示内存中的 takeover semantic request 已就绪。二者都不是 new-agent delivery gate readback，也不是上述完成条件。
 
 ## Authority Boundary
 

@@ -42,11 +42,54 @@
       "interface_shape": "script may materialize deterministic fixtures, proof refs, receipts, or no-forbidden-write evidence without owning runtime state"
     },
     {
-      "class_id": "developer_work_order_materializer",
+      "class_id": "work_order_semantic_request_authoring",
       "long_term_allowed": true,
-      "interface_shape": "script may convert blocked evidence or developer setup intent into explicit work-order/setup materialization, without becoming a generic runtime, registry owner, or generated CLI/MCP/Skill/product-entry/domain-handler/status/workbench materializer"
+      "interface_shape": "script may author an OMA-owned semantic request or refs-only request candidate in memory; OPL owns request-file materialization, work-order identity, lease, worktree, execution, lifecycle and receipts"
     }
   ],
+  "takeover_semantic_request_no_materialization_guard": {
+    "guard_id": "oma.takeover-semantic-request.no-materialization.v1",
+    "state": "active_machine_guard",
+    "script_ref": "scripts/takeover-agent.ts",
+    "action_id": "takeover-target-agent-test",
+    "input_schema_ref": "contracts/schemas/takeover-target-agent-test.input.schema.json",
+    "retained_role": "work_order_semantic_request_authoring",
+    "forbidden_cli_options": [
+      "--output-dir"
+    ],
+    "forbidden_input_fields": [
+      "output_dir"
+    ],
+    "forbidden_source_tokens": [
+      "node:os",
+      "mkdtempSync",
+      "mkdirSync",
+      "writeFileSync",
+      "appendFileSync",
+      "createWriteStream",
+      "copyFileSync",
+      "renameSync",
+      "rmSync"
+    ],
+    "forbidden_authority_capabilities": [
+      "producer_writes_framework_request_bundle",
+      "producer_assigns_work_order_id",
+      "producer_manages_executor_lease",
+      "producer_manages_target_worktree",
+      "producer_executes_work_order",
+      "producer_writes_work_order_receipt",
+      "producer_writes_target_owner_closeout"
+    ],
+    "authority_boundary": {
+      "can_write_request_file": false,
+      "can_assign_work_order_identity": false,
+      "can_manage_executor_lease": false,
+      "can_manage_target_worktree": false,
+      "can_execute_work_order": false,
+      "can_materialize_execution_receipt": false,
+      "can_materialize_target_owner_closeout": false
+    }
+  },
   "allowed_opl_surface_consumption_refs": [
     {
       "surface_ref": "generated_interface_bundle",
@@ -72,7 +115,7 @@
         "authority_function_implementation_ref",
         "smoke_helper",
         "fixture_or_proof_helper",
-        "developer_work_order_materializer"
+        "work_order_semantic_request_authoring"
       ],
       "boundary": {
         "can_create_runtime_truth": false,
@@ -103,7 +146,7 @@
       "surface_role": "stage_artifact_folder_contract",
       "allowed_script_classes": [
         "fixture_or_proof_helper",
-        "developer_work_order_materializer"
+        "work_order_semantic_request_authoring"
       ],
       "boundary": {
         "can_create_runtime_truth": false,
@@ -118,7 +161,7 @@
       "surface_role": "stage_native_artifact_contract",
       "allowed_script_classes": [
         "fixture_or_proof_helper",
-        "developer_work_order_materializer"
+        "work_order_semantic_request_authoring"
       ],
       "boundary": {
         "can_create_runtime_truth": false,
@@ -134,7 +177,7 @@
       "surface_role": "standard_domain_agent_scaffold",
       "allowed_script_classes": [
         "fixture_or_proof_helper",
-        "developer_work_order_materializer"
+        "work_order_semantic_request_authoring"
       ],
       "boundary": {
         "can_create_runtime_truth": false,
@@ -150,7 +193,7 @@
       "allowed_script_classes": [
         "smoke_helper",
         "fixture_or_proof_helper",
-        "developer_work_order_materializer"
+        "work_order_semantic_request_authoring"
       ],
       "boundary": {
         "can_create_runtime_truth": false,

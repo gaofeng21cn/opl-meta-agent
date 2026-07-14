@@ -13,7 +13,7 @@
     "version": { "const": "opl-meta-agent.takeover-handoff.v1" },
     "status": {
       "enum": [
-        "takeover_candidate_materialized_ready_for_opl_foundry_lab_evaluation",
+        "takeover_semantic_request_ready_for_opl_foundry_lab_materialization",
         "completed_with_quality_debt"
       ]
     },

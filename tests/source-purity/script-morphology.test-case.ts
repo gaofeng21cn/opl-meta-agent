@@ -5,6 +5,7 @@ import {
   asObjects,
   asStrings,
   readJson,
+  readText,
   type JsonObject,
 } from '../support/contracts.ts';
 import {
@@ -42,6 +43,20 @@ test('script morphology source-purity gate protects current boundaries without i
   assert.deepEqual(asStrings(morphologyPolicy.allowed_classes), asObjects(privatePolicy.allowed_script_morphology_classes)
     .map((entry) => entry.class_id));
   assert.deepEqual(asStrings(morphologyPolicy.forbidden_roles), asStrings(privatePolicy.forbidden_script_roles));
+
+  const takeoverGuard = assertPolicyObject(
+    privatePolicy,
+    'takeover_semantic_request_no_materialization_guard',
+  );
+  const takeoverSource = readText(String(takeoverGuard.script_ref));
+  assert.equal(takeoverGuard.retained_role, 'work_order_semantic_request_authoring');
+  asStrings(takeoverGuard.forbidden_source_tokens).forEach((token) => {
+    assert.equal(takeoverSource.includes(token), false, `takeover source must not contain ${token}`);
+  });
+  assertEveryFlagFalse(
+    asBooleanRecord(takeoverGuard.authority_boundary),
+    'takeover semantic request materialization boundary',
+  );
 
   const falseReadyClaimGuard = assertPolicyObject(morphologyPolicy, 'false_ready_claim_guard');
   const falseReadyClaimKeys = asStrings(falseReadyClaimGuard.forbidden_true_claim_keys);
@@ -124,6 +139,13 @@ test('script morphology source-purity gate protects current boundaries without i
       assert.ok(asStrings(morphologyPolicy.allowed_classes).includes(classId));
     });
   });
+  const takeoverClassification = classifications.find(
+    (entry) => entry.script_ref === takeoverGuard.script_ref,
+  );
+  assert.ok(takeoverClassification);
+  assert.ok(
+    asStrings(takeoverClassification.classes).includes('work_order_semantic_request_authoring'),
+  );
 
   assertIncludesAll(asStrings(receipt.retained_non_polluting_domain_authority_surfaces), [
     'agent/',

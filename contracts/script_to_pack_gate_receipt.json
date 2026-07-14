@@ -204,7 +204,7 @@
       "authority_function_implementation_ref",
       "smoke_helper",
       "fixture_or_proof_helper",
-      "developer_work_order_materializer"
+      "work_order_semantic_request_authoring"
     ],
     "forbidden_roles": [
       "generic_runtime_owner",
@@ -276,7 +276,7 @@
         "repo_owned_queue_or_attempt_ledger_materializer",
         "repo_owned_target_worktree_lifecycle_materializer"
       ],
-      "retained_materializer_role": "refs_only_target_agent_semantics_developer_proof_request_evaluation_request_work_order_candidate_or_expected_blocker_ref_materializer",
+      "retained_materializer_role": "work_order_semantic_request_authoring",
       "allowed_outputs": [
         "candidate_agent_package_ref",
         "opl_agent_scaffold_materialization_request_ref",
