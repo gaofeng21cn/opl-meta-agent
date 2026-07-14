@@ -39,6 +39,16 @@
   },
   "standard_agent_interface": {
     "version": "opl_standard_agent_interface.v1",
+    "stage_catalog": {
+      "source_kind": "agent_repo_relative_json",
+      "relative_path": "agent/stages/manifest.json",
+      "items_pointer": "/stages",
+      "field_map": {
+        "stage_id": "stage_id",
+        "display_name": "title",
+        "display_names": "display_names"
+      }
+    },
     "workspace_binding": {
       "locator_surface_kind": "opl_meta_agent_workspace",
       "default_profile_id": "one_off",

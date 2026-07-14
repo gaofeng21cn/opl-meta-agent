@@ -33,6 +33,16 @@ test('opl-meta-agent descriptor keeps OPL runtime authority outside the repo', (
     required_locator_fields: ['workspace_root'],
     optional_locator_fields: [],
   });
+  assert.deepEqual(descriptor.standard_agent_interface.stage_catalog, {
+    source_kind: 'agent_repo_relative_json',
+    relative_path: 'agent/stages/manifest.json',
+    items_pointer: '/stages',
+    field_map: {
+      stage_id: 'stage_id',
+      display_name: 'title',
+      display_names: 'display_names',
+    },
+  });
   assert.equal(Object.hasOwn(descriptor.standard_agent_interface.workspace_binding, 'entry_command_template'), false);
   assert.equal(Object.hasOwn(descriptor.standard_agent_interface.workspace_binding, 'manifest_command_template'), false);
   assert.equal(Object.hasOwn(descriptor.standard_agent_interface.runtime, 'dispatch_command'), false);
@@ -141,7 +151,25 @@ test('declarative stage manifest is the OPL Pack compiler source', () => {
     'online-learning',
   ]);
 
+  const expectedZhCnDisplayNames: Record<string, string> = {
+    'intent-intake': '意图受理',
+    'web-experience-research': '外部模式调研',
+    'stage-decomposition': '阶段拆解',
+    'agent-skeleton-build': '智能体包构建',
+    'eval-suite-build': '评测方案设计',
+    'baseline-run': 'Foundry 评测交接',
+    'target-agent-takeover': '目标智能体接管评审',
+    'optimizer-iteration': '智能体设计总评审',
+    'baseline-delivery': '基线交接',
+    'trajectory-learning-intake': '轨迹学习受理',
+    'online-learning': '学习提案评审',
+  };
+
   stages.forEach((stage) => {
+    assert.deepEqual(stage.display_names, {
+      'en-US': stage.title,
+      'zh-CN': expectedZhCnDisplayNames[String(stage.stage_id)],
+    });
     assertUsablePackFile(String(stage.policy_ref));
     assertUsablePackFile(String(stage.prompt_ref));
     asStrings(stage.knowledge_refs).forEach(assertUsablePackFile);

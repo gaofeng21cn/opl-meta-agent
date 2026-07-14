@@ -35,6 +35,10 @@
       "stage_id": "intent-intake",
       "stage_kind": "intake",
       "title": "Intent intake",
+      "display_names": {
+        "en-US": "Intent intake",
+        "zh-CN": "意图受理"
+      },
       "summary": "Normalize the target Agent goal, design-basis route, acceptance criteria, and authority boundary.",
       "goal": "Select the target Agent build route without inventing domain truth or framework capability.",
       "policy_ref": "agent/stages/intent-intake.md",
@@ -74,6 +78,10 @@
       "stage_id": "web-experience-research",
       "stage_kind": "source_preparation",
       "title": "External pattern research",
+      "display_names": {
+        "en-US": "External pattern research",
+        "zh-CN": "外部模式调研"
+      },
       "summary": "Research transferable expert-workflow patterns when the user did not provide a primary reference design.",
       "goal": "Produce refs-only research synthesis without importing an external runtime or domain verdict.",
       "policy_ref": "agent/stages/web-experience-research.md",
@@ -105,6 +113,10 @@
       "stage_id": "stage-decomposition",
       "stage_kind": "planning",
       "title": "Stage decomposition",
+      "display_names": {
+        "en-US": "Stage decomposition",
+        "zh-CN": "阶段拆解"
+      },
       "summary": "Map the admitted design basis into target Agent stages, handoffs, and gates.",
       "goal": "Produce an admitted Agent Pack plan with one major open semantic judgment per stage.",
       "policy_ref": "agent/stages/stage-decomposition.md",
@@ -137,6 +149,10 @@
       "stage_kind": "creation",
       "lane_kind": "proof",
       "title": "Agent Pack materialization",
+      "display_names": {
+        "en-US": "Agent Pack materialization",
+        "zh-CN": "智能体包构建"
+      },
       "summary": "Materialize the admitted target Agent Pack and its build proof in the designated output root.",
       "goal": "Create an OPL-compatible candidate package without writing target domain truth or framework runtime state.",
       "policy_ref": "agent/stages/agent-skeleton-build.md",
@@ -168,6 +184,10 @@
       "stage_id": "eval-suite-build",
       "stage_kind": "creation",
       "title": "Evaluation suite design",
+      "display_names": {
+        "en-US": "Evaluation suite design",
+        "zh-CN": "评测方案设计"
+      },
       "summary": "Compile acceptance criteria into a thin target-domain evaluation request for OPL Foundry Lab.",
       "goal": "Define evaluation tasks and gates without executing Agent Lab or writing a suite result.",
       "policy_ref": "agent/stages/eval-suite-build.md",
@@ -200,6 +220,10 @@
       "stage_id": "baseline-run",
       "stage_kind": "review",
       "title": "Foundry evaluation handoff",
+      "display_names": {
+        "en-US": "Foundry evaluation handoff",
+        "zh-CN": "Foundry 评测交接"
+      },
       "summary": "Bind the thin evaluation request and target identity into an OPL Foundry Lab evaluation work order.",
       "goal": "Hand evaluation to OPL Foundry Lab without fabricating a result, receipt, or owner verdict.",
       "policy_ref": "agent/stages/baseline-run.md",
@@ -232,6 +256,10 @@
       "stage_id": "target-agent-takeover",
       "stage_kind": "review",
       "title": "Target Agent takeover review",
+      "display_names": {
+        "en-US": "Target Agent takeover review",
+        "zh-CN": "目标智能体接管评审"
+      },
       "summary": "Review an existing target Agent and emit a typed takeover assessment for evaluation design.",
       "goal": "Prepare takeover evidence without designing the suite, executing it, or signing a target owner receipt.",
       "policy_ref": "agent/stages/target-agent-takeover.md",
@@ -266,6 +294,10 @@
       "stage_kind": "review",
       "stage_role": "cross_stage_meta_review",
       "title": "Agent Design Meta Review",
+      "display_names": {
+        "en-US": "Agent Design Meta Review",
+        "zh-CN": "智能体设计总评审"
+      },
       "summary": "Consume a bound Foundry result and reviewer evidence to prepare an owner-gated developer work order.",
       "goal": "Map observed gaps to exact target-owned surfaces without executing or absorbing the patch in OMA.",
       "policy_ref": "agent/stages/optimizer-iteration.md",
@@ -302,6 +334,10 @@
       "stage_id": "baseline-delivery",
       "stage_kind": "packaging",
       "title": "Baseline handoff",
+      "display_names": {
+        "en-US": "Baseline handoff",
+        "zh-CN": "基线交接"
+      },
       "summary": "Package the candidate Agent and external evaluation refs for operator or target-owner review.",
       "goal": "Emit a versioned handoff without claiming target domain or production readiness.",
       "policy_ref": "agent/stages/baseline-delivery.md",
@@ -336,6 +372,10 @@
       "stage_id": "trajectory-learning-intake",
       "stage_kind": "revision",
       "title": "Trajectory learning intake",
+      "display_names": {
+        "en-US": "Trajectory learning intake",
+        "zh-CN": "轨迹学习受理"
+      },
       "summary": "Turn redacted trajectory and patch-loop refs into proposal-only learning candidates.",
       "goal": "Prepare bounded learning atoms without creating a runtime queue or promotion decision.",
       "policy_ref": "agent/stages/trajectory-learning-intake.md",
@@ -366,6 +406,10 @@
       "stage_id": "online-learning",
       "stage_kind": "revision",
       "title": "Proposal-only learning review",
+      "display_names": {
+        "en-US": "Proposal-only learning review",
+        "zh-CN": "学习提案评审"
+      },
       "summary": "Review learning candidates and materialize skill, prompt, stage-policy, or mechanism proposal refs.",
       "goal": "Route reviewed proposals to an owner-gated improvement path without changing defaults.",
       "policy_ref": "agent/stages/online-learning.md",

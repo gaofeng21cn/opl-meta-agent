@@ -70,6 +70,28 @@ function validateNoForbiddenWritePolicy(policy: JsonObject): void {
   ].forEach((field) => assertBooleanFalse(policy, field, `no_forbidden_write_policy.${field}`));
 }
 
+function validateStageDisplayNames(stage: JsonObject, stageId: string): void {
+  const title = asString(stage.title, `stage ${stageId}.title`);
+  const displayNames = asRecord(stage.display_names, `stage ${stageId}.display_names`);
+  if (JSON.stringify(Object.keys(displayNames).sort()) !== JSON.stringify(['en-US', 'zh-CN'])) {
+    throw new Error(
+      `stage-decomposition pack draft stage ${stageId}.display_names must contain exactly en-US and zh-CN.`,
+    );
+  }
+  const enUs = asString(displayNames['en-US'], `stage ${stageId}.display_names.en-US`);
+  const zhCn = asString(displayNames['zh-CN'], `stage ${stageId}.display_names.zh-CN`);
+  if (enUs !== title) {
+    throw new Error(
+      `stage-decomposition pack draft stage ${stageId}.display_names.en-US must equal title.`,
+    );
+  }
+  if (zhCn === title || !/\p{Script=Han}/u.test(zhCn)) {
+    throw new Error(
+      `stage-decomposition pack draft stage ${stageId}.display_names.zh-CN must be a localized Chinese name.`,
+    );
+  }
+}
+
 function normalizeOptionalStringArray(value: unknown, field: string): string[] | null {
   if (value === undefined || value === null) {
     return null;
@@ -649,6 +671,7 @@ function validateStageControlPlane(
   }
   stages.forEach((stage) => {
     const stageId = asString(stage.stage_id, 'stage.stage_id');
+    validateStageDisplayNames(stage, stageId);
     assertMatchingProfileSelectionFields(stage, targetAgent, `stage ${stageId}`);
     if (stage.profile_selection_receipt_ref !== 'contracts/capability_map.json#/profile_selection_receipt') {
       throw new Error(`stage-decomposition pack draft stage ${stageId} missing profile_selection_receipt_ref.`);

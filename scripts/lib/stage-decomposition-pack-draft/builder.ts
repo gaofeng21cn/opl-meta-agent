@@ -73,6 +73,23 @@ function stringList(value: string[] | null | undefined): string[] {
   return Array.isArray(value) ? value.filter((entry) => entry.trim()).map((entry) => entry.trim()) : [];
 }
 
+const fixtureStageDisplayNamesZhCn: Record<string, string> = {
+  'agent-output-draft': '智能体输出起草',
+  'evidence-synthesis-plan': '证据综合规划',
+  'agent-output-draft-owner-gate': '负责人交接门禁',
+  'reference-design-pattern-packet-surgical-risk-fixture-v1-risk-case-intake': '风险案例受理',
+  'reference-design-pattern-packet-surgical-risk-fixture-v1-model-evidence-review': '模型证据评审',
+  'reference-design-pattern-packet-surgical-risk-fixture-v1-risk-interpretation': '风险解读',
+  'reference-design-pattern-packet-surgical-risk-fixture-v1-owner-handoff-gate': '负责人交接门禁',
+};
+
+function buildFixtureStageDisplayNames(stageId: string, title: string): JsonObject {
+  return {
+    'en-US': title,
+    'zh-CN': fixtureStageDisplayNamesZhCn[stageId] ?? '目标阶段',
+  };
+}
+
 function buildReferenceDesignBoundary(targetAgent: TargetAgent): JsonObject {
   const receipt = buildProfileSelectionReceipt(targetAgent);
   return {
@@ -601,6 +618,7 @@ function buildSingleStageControlPlane({
         stage_id: stageId,
         stage_kind: 'creation',
         title,
+        display_names: buildFixtureStageDisplayNames(stageId, title),
         summary,
         goal: targetBriefFor(targetAgent),
         owner,

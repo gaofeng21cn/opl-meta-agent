@@ -189,6 +189,10 @@ test('stage-decomposition emits an OPL-owned scaffold materialization request', 
   });
   const stage = (stageControl.stages as JsonObject[])[0];
     assert.equal(stage.stage_id, 'evidence-synthesis-plan');
+    assert.deepEqual(stage.display_names, {
+      'en-US': 'Evidence Synthesis Plan',
+      'zh-CN': '证据综合规划',
+    });
     assert.equal(stage.selected_executor.executor_kind, 'codex_cli');
     assert.equal(stage.authority_boundary.can_write_target_domain_truth, false);
     assert.equal(stage.stage_contract.stage_completion_policy.provider_completion_is_domain_completion, false);
@@ -209,6 +213,10 @@ test('stage-decomposition emits an OPL-owned scaffold materialization request', 
     assert.deepEqual(stageManifest.stages.map((entry: JsonObject) => entry.stage_id), [
       'evidence-synthesis-plan',
     ]);
+    assert.deepEqual(stageManifest.stages[0].display_names, {
+      'en-US': 'Evidence Synthesis Plan',
+      'zh-CN': '证据综合规划',
+    });
     assert.deepEqual(stageManifest.stages[0].allowed_action_refs, ['plan-evidence-synthesis']);
     assert.equal(stageManifest.stages[0].policy_ref, 'agent/stages/evidence-synthesis-plan.md');
     assert.equal(stageManifest.stages[0].prompt_ref, 'agent/prompts/evidence-synthesis-plan.md');
@@ -347,6 +355,41 @@ test('stage-decomposition validator fails closed on untyped or unsafe closeout',
   assert.throws(
     () => validateStageDecompositionCloseoutPacket(packet, { targetAgent }),
     /independent_gate_policy/i,
+  );
+});
+
+test('stage-decomposition validator requires exact bilingual stage display names', () => {
+  const missingNames = buildFixtureStageDecompositionCloseout({ targetAgent });
+  const missingNamesDraft = missingNames.stage_decomposition_pack_draft as JsonObject;
+  const missingNamesStage = (
+    (missingNamesDraft.stage_control_plane as JsonObject).stages as JsonObject[]
+  )[0];
+  delete missingNamesStage.display_names;
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(missingNames, { targetAgent }),
+    /display_names/i,
+  );
+
+  const mismatchedEnglish = buildFixtureStageDecompositionCloseout({ targetAgent });
+  const mismatchedEnglishDraft = mismatchedEnglish.stage_decomposition_pack_draft as JsonObject;
+  const mismatchedEnglishStage = (
+    (mismatchedEnglishDraft.stage_control_plane as JsonObject).stages as JsonObject[]
+  )[0];
+  (mismatchedEnglishStage.display_names as JsonObject)['en-US'] = 'Different title';
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(mismatchedEnglish, { targetAgent }),
+    /en-US must equal title/i,
+  );
+
+  const englishOnly = buildFixtureStageDecompositionCloseout({ targetAgent });
+  const englishOnlyDraft = englishOnly.stage_decomposition_pack_draft as JsonObject;
+  const englishOnlyStage = (
+    (englishOnlyDraft.stage_control_plane as JsonObject).stages as JsonObject[]
+  )[0];
+  (englishOnlyStage.display_names as JsonObject)['zh-CN'] = 'Agent Output Draft';
+  assert.throws(
+    () => validateStageDecompositionCloseoutPacket(englishOnly, { targetAgent }),
+    /zh-CN must be a localized Chinese name/i,
   );
 });
 

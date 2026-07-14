@@ -56,6 +56,21 @@ function declarativeStageContract(stageContract: JsonObject): JsonObject {
   );
 }
 
+function declarativeStageDisplayNames(stage: JsonObject, index: number, title: string): JsonObject {
+  if (!isRecord(stage.display_names)) {
+    throw new Error(`stage_control_plane.stages[${index}].display_names must be an object.`);
+  }
+  const enUs = asString(stage.display_names['en-US'], `stage_control_plane.stages[${index}].display_names.en-US`);
+  const zhCn = asString(stage.display_names['zh-CN'], `stage_control_plane.stages[${index}].display_names.zh-CN`);
+  if (enUs !== title) {
+    throw new Error(`stage_control_plane.stages[${index}].display_names.en-US must equal title.`);
+  }
+  return {
+    'en-US': enUs,
+    'zh-CN': zhCn,
+  };
+}
+
 function buildDeclarativeStageManifest(draft: StageDecompositionPackDraft): JsonObject {
   const domainId = draft.target_agent.domain_id;
   const stages = asRecordArray(draft.stage_control_plane.stages, 'stage_control_plane.stages');
@@ -88,10 +103,12 @@ function buildDeclarativeStageManifest(draft: StageDecompositionPackDraft): Json
       const trustLane = isRecord(stage.trust_boundary)
         ? optionalString(stage.trust_boundary.lane)
         : null;
+      const title = asString(stage.title, `stage_control_plane.stages[${index}].title`);
       return {
         stage_id: stageId,
         stage_kind: asString(stage.stage_kind, `stage_control_plane.stages[${index}].stage_kind`),
-        title: asString(stage.title, `stage_control_plane.stages[${index}].title`),
+        title,
+        display_names: declarativeStageDisplayNames(stage, index, title),
         summary: optionalString(stage.summary) ?? undefined,
         goal: asString(stage.goal, `stage_control_plane.stages[${index}].goal`),
         policy_ref: policyRef,
