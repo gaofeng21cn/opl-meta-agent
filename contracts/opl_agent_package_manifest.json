@@ -24,6 +24,7 @@
   },
   "codex_surface": {
     "plugin_id": "opl-meta-agent",
+    "carrier_source_commit": "4761b7ce27275cfcac73444ac82945631e56aa86",
     "standalone_distribution": "generated_carrier_surface",
     "required_skill_ids": [
       "opl-meta-agent"

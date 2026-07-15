@@ -19,6 +19,7 @@ import {
   readJson,
   readTargetAgent,
   stableId,
+  writeJson,
 } from './lib/meta-agent-loop-io.ts';
 import {
   collectEfficiencyNonRegressionRefs,
@@ -725,11 +726,6 @@ function requiredModeOption(value: unknown, option: string): string {
   return path.resolve(value);
 }
 
-function writeJsonOutput(filePath: string, payload: JsonObject): void {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
-}
-
 function sha256File(filePath: string): string {
   return `sha256:${crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex')}`;
 }
@@ -786,7 +782,7 @@ function runSelfEvolutionMode(mode: string, argv: string[]): JsonObject {
       sourceExecutionReceiptRef: executionReceiptPath,
       targetPolicyRef: policyPath,
     });
-    writeJsonOutput(outputSuitePath, preparation.preparedSuite);
+    writeJson(outputSuitePath, preparation.preparedSuite);
     return {
       ...preparation.preparationReceipt,
       prepared_suite_path: outputSuitePath,
@@ -819,7 +815,7 @@ function runSelfEvolutionMode(mode: string, argv: string[]): JsonObject {
       preparedSuiteRef: preparedSuitePath,
       suiteResult: unwrapAgentLabSuiteResult(readJson(suiteResultPath)),
     });
-    writeJsonOutput(outputDraftPath, draft);
+    writeJson(outputDraftPath, draft);
     return {
       surface_kind: 'oma_target_owner_closeout_replay_preparation',
       version: 'oma-target-owner-closeout-replay.v1',
