@@ -5,17 +5,7 @@
     {
       "file": "scripts/build-agent-baseline.ts",
       "symbol": "runBuildAgentBaseline",
-      "source_digest": "sha256:88c9165f2b1dd7b1c19d65a270fff8dd69538d2961c06004d70cc88725856fb7",
-      "allowed_effects": [
-        "filesystem_write"
-      ],
-      "role": "developer_tool",
-      "allowed_targets": []
-    },
-    {
-      "file": "scripts/build-agent-baseline.ts",
-      "symbol": "parseBuildAgentBaselineArgs",
-      "source_digest": "sha256:88c9165f2b1dd7b1c19d65a270fff8dd69538d2961c06004d70cc88725856fb7",
+      "source_digest": "sha256:5250c856d0c1377883b3af6dc0338b4738cd582db6e20c39d7e7f7584a1ec817",
       "allowed_effects": [
         "filesystem_write"
       ],

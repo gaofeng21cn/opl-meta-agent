@@ -1,9 +1,14 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { validateJsonSchemaPayload } from 'opl-framework/json-schema-registry';
+import {
+  parseBuildAgentBaselineArgs,
+  runBuildAgentBaseline,
+} from '../scripts/build-agent-baseline.ts';
 import { generateMechanismPatchProposal } from '../scripts/lib/mechanism-patch-proposal-handler.ts';
 import {
   asObjects,
@@ -113,7 +118,7 @@ test('minimal authority refs, source audit and generated surface ids have one ex
   ]);
 
   const auditEntries = asObjects(audit.entries);
-  assert.equal(auditEntries.length, 5);
+  assert.equal(auditEntries.length, 4);
   auditEntries.forEach((entry) => {
     assert.equal(entry.role, 'developer_tool');
     assert.equal(entry.source_digest, sha256File(String(entry.file)));
@@ -124,13 +129,14 @@ test('minimal authority refs, source audit and generated surface ids have one ex
     false,
     'the in-memory takeover request producer must not carry a stale filesystem-write authorization',
   );
-  const baselineArgParserEntry = auditEntries.find((entry) => (
-    entry.file === 'scripts/build-agent-baseline.ts'
-    && entry.symbol === 'parseBuildAgentBaselineArgs'
-  ));
-  assert.deepEqual(baselineArgParserEntry?.allowed_effects, ['filesystem_write']);
-  assert.deepEqual(baselineArgParserEntry?.allowed_targets, []);
-  assert.equal(baselineArgParserEntry?.role, 'developer_tool');
+  assert.equal(
+    auditEntries.some((entry) => (
+      entry.file === 'scripts/build-agent-baseline.ts'
+      && entry.symbol === 'parseBuildAgentBaselineArgs'
+    )),
+    false,
+    'argument parsing must stay pure; default output materialization belongs to the baseline runner',
+  );
   const spawnEntry = auditEntries.find((entry) => entry.allowed_effects.includes('process_spawn'));
   assert.deepEqual(spawnEntry?.allowed_targets, ['git']);
 
@@ -149,6 +155,29 @@ test('minimal authority refs, source audit and generated surface ids have one ex
     });
   });
   assert.equal(new Set(surfaceIds).size, surfaceIds.length);
+});
+
+test('baseline argument parsing stays pure and the runner owns default output materialization', () => {
+  const parsed = parseBuildAgentBaselineArgs([
+    '--domain-id',
+    'default-output-agent',
+    '--target-brief',
+    'Create an OPL-compatible fixture agent.',
+  ]);
+  assert.equal(parsed.outputDir, '');
+
+  const payload = runBuildAgentBaseline(parsed);
+  const qualityDebtPath = String(payload.quality_debt_ref);
+  const outputRoot = path.dirname(qualityDebtPath);
+  const expectedPrefix = path.join(os.tmpdir(), 'opl-meta-agent-bootstrap-');
+  try {
+    assert.equal(outputRoot.startsWith(expectedPrefix), true);
+    assert.equal(fs.existsSync(qualityDebtPath), true);
+  } finally {
+    if (outputRoot.startsWith(expectedPrefix)) {
+      fs.rmSync(outputRoot, { recursive: true, force: true });
+    }
+  }
 });
 
 test('OMA retains semantic request authoring without private work-order materialization authority', () => {

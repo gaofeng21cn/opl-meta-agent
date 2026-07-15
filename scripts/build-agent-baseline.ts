@@ -245,7 +245,6 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
       'Missing required --domain-id <domain_id>; build-agent-baseline requires an explicit target agent.',
     );
   }
-  parsed.outputDir ??= fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-bootstrap-'));
   const domainLabel = parsed.domainLabel ?? parsed.domainId;
   const targetAgent: TargetAgent = {
     domain_id: parsed.domainId,
@@ -285,7 +284,7 @@ export function parseBuildAgentBaselineArgs(argv: string[]): BuildAgentBaselineA
       : {}),
   };
   return {
-    outputDir: parsed.outputDir,
+    outputDir: parsed.outputDir ?? '',
     aiReviewerEvaluationPath: parsed.aiReviewerEvaluationPath ?? '',
     targetAgent,
     stageDecompositionCloseoutRef: parsed.stageDecompositionCloseoutRef,
@@ -555,13 +554,15 @@ function developerProofProgress({
 }
 
 export function runBuildAgentBaseline({
-    outputDir,
+    outputDir: requestedOutputDir,
     aiReviewerEvaluationPath,
     targetAgent,
     stageDecompositionCloseoutRef,
     agentSkeletonBuildCloseoutRef,
     developerProofReceiptRef = null,
   }: BuildAgentBaselineArgs): JsonObject {
+  const outputDir = requestedOutputDir
+    || fs.mkdtempSync(path.join(os.tmpdir(), 'opl-meta-agent-bootstrap-'));
   fs.mkdirSync(outputDir, { recursive: true });
   const stageDecompositionCloseout = stageDecompositionCloseoutRef
     ? readDomainCloseoutArtifact(stageDecompositionCloseoutRef, 'stage-decomposition')
