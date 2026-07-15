@@ -15,6 +15,7 @@
 - developer work order completeness：reviewer refs、executor aperture、target verification refs、owner route refs、no-forbidden-write proof、canary refs、rollback refs 和 version refs。
 - 若存在效率证据，必须提供通用 target-agent `efficiency_non_regression_refs`：`quality_floor_refs`、`latency_baseline_refs`、`usage_cost_refs`、`cache_reuse_refs`、`target_verification_refs`。
 - machine closeout refs：blocked suite、developer work order、patch traceability、target verification、runtime/read-model consumption、workspace proof、no-forbidden-write、target owner receipt or typed blocker、patch absorption、worktree cleanup 和 Agent Lab re-evaluation。
+- fresh re-evaluation 必须消费 target agent declarative policy 中的 canonical Stage completion policy projection；机制修复使用独立的 high-risk owner-gated promotion gate，不能复用或覆盖论文/业务 domain quality gate。
 - regression result refs。
 
 ## 通过标准
@@ -35,6 +36,8 @@
 - developer work order 缺 reviewer refs、executor aperture、patch traceability、target verification、owner route、no-forbidden-write proof、canary、rollback 或 version refs。
 - developer work order 缺 target owner receipt or typed blocker、patch absorption、worktree cleanup 或 Agent Lab re-evaluation closeout ref。
 - efficiency evidence 缺 `quality_floor_refs`，或 reviewer direct evidence 缺失。
+- fresh result 未同时观察到 `domain_stage_completion_policies_observed=true` 与 `promotion_gates_observed=true`，或把 `domain_scorecard_blocked` 改成通过。
+- target-owner response 未合法收敛为 `domain_receipt`、`no_regression_evidence` 或 `typed_blocker`，或任一 response 声称 domain/publication/submission ready。
 - 为效率优化新增 domain 专用 command family，而非消费标准 target handoff/evidence refs。
 - 通过启发式后处理绕过真实机制缺口。
 - 修改 target truth、memory body、artifact body 或 quality verdict。

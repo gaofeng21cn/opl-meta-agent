@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { parseArgs as parseNodeArgs } from 'node:util';
@@ -35,7 +36,10 @@ import {
 import {
   type CapabilityCandidate,
   type SuiteResult,
+  buildSelfEvolutionOwnerCloseoutReplayDraft,
   buildDeveloperPatchMaterializationRequest,
+  consumeSelfEvolutionOwnerCloseout,
+  prepareSelfEvolutionReEvaluation,
 } from './lib/external-suite-materializer.ts';
 const repoRoot = path.resolve(import.meta.dirname, '..');
 
@@ -714,8 +718,141 @@ export function runImproveFromAgentLabSuite({
   };
 }
 
+function requiredModeOption(value: unknown, option: string): string {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new Error(`Missing required --${option} <path>.`);
+  }
+  return path.resolve(value);
+}
+
+function writeJsonOutput(filePath: string, payload: JsonObject): void {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+}
+
+function sha256File(filePath: string): string {
+  return `sha256:${crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex')}`;
+}
+
+function unwrapAgentLabSuiteResult(payload: JsonObject): JsonObject {
+  return jsonObject(jsonObject(payload.agent_lab_run)?.suite_result)
+    ?? jsonObject(payload.suite_result)
+    ?? payload;
+}
+
+function runSelfEvolutionMode(mode: string, argv: string[]): JsonObject {
+  if (mode === 'prepare-re-evaluation') {
+    const { values } = parseNodeArgs({
+      args: argv,
+      options: {
+        suite: { type: 'string' },
+        'execution-receipt': { type: 'string' },
+        'target-agent-dir': { type: 'string' },
+        policy: { type: 'string' },
+        'output-suite': { type: 'string' },
+      },
+      strict: true,
+      allowPositionals: false,
+    });
+    const suitePath = requiredModeOption(values.suite, 'suite');
+    const executionReceiptPath = requiredModeOption(
+      values['execution-receipt'],
+      'execution-receipt',
+    );
+    const targetAgentDir = requiredModeOption(values['target-agent-dir'], 'target-agent-dir');
+    const policyPath = values.policy
+      ? path.resolve(values.policy)
+      : path.join(targetAgentDir, 'contracts/agent_lab_self_evolution_policy.json');
+    const outputSuitePath = requiredModeOption(values['output-suite'], 'output-suite');
+    const policy = readJson(policyPath);
+    const projection = jsonObject(policy.stage_completion_policy_projection);
+    if (!projection) {
+      throw new Error('Target self-evolution policy is missing stage_completion_policy_projection.');
+    }
+    const sourceRef = nonEmptyString(
+      projection.source_ref,
+      'target policy stage_completion_policy_projection.source_ref',
+      policyPath,
+    );
+    const sourcePath = path.resolve(targetAgentDir, sourceRef.split('#', 1)[0]);
+    if (projection.source_file_sha256 !== sha256File(sourcePath)) {
+      throw new Error('Target self-evolution stage policy projection is stale against its canonical source.');
+    }
+    const preparation = prepareSelfEvolutionReEvaluation({
+      suite: readJson(suitePath),
+      executionReceipt: readJson(executionReceiptPath),
+      targetPolicy: policy,
+      sourceSuiteRef: suitePath,
+      sourceExecutionReceiptRef: executionReceiptPath,
+      targetPolicyRef: policyPath,
+    });
+    writeJsonOutput(outputSuitePath, preparation.preparedSuite);
+    return {
+      ...preparation.preparationReceipt,
+      prepared_suite_path: outputSuitePath,
+      prepared_suite_sha256: sha256File(outputSuitePath),
+    };
+  }
+  if (mode === 'prepare-owner-closeout') {
+    const { values } = parseNodeArgs({
+      args: argv,
+      options: {
+        'execution-receipt': { type: 'string' },
+        'suite-result': { type: 'string' },
+        'prepared-suite': { type: 'string' },
+        'output-draft': { type: 'string' },
+      },
+      strict: true,
+      allowPositionals: false,
+    });
+    const executionReceiptPath = requiredModeOption(
+      values['execution-receipt'],
+      'execution-receipt',
+    );
+    const suiteResultPath = requiredModeOption(values['suite-result'], 'suite-result');
+    const preparedSuitePath = requiredModeOption(values['prepared-suite'], 'prepared-suite');
+    const outputDraftPath = requiredModeOption(values['output-draft'], 'output-draft');
+    const draft = buildSelfEvolutionOwnerCloseoutReplayDraft({
+      executionReceipt: readJson(executionReceiptPath),
+      sourceExecutionReceiptRef: executionReceiptPath,
+      sourceExecutionReceiptSha256: sha256File(executionReceiptPath),
+      preparedSuiteRef: preparedSuitePath,
+      suiteResult: unwrapAgentLabSuiteResult(readJson(suiteResultPath)),
+    });
+    writeJsonOutput(outputDraftPath, draft);
+    return {
+      surface_kind: 'oma_target_owner_closeout_replay_preparation',
+      version: 'oma-target-owner-closeout-replay.v1',
+      status: 'ready_for_target_owner_consumption',
+      replay_draft_path: outputDraftPath,
+      replay_draft_sha256: sha256File(outputDraftPath),
+      is_opl_execution_receipt: false,
+      oma_writes_target_owner_answer: false,
+    };
+  }
+  if (mode === 'consume-owner-closeout') {
+    const { values } = parseNodeArgs({
+      args: argv,
+      options: { 'owner-response': { type: 'string' } },
+      strict: true,
+      allowPositionals: false,
+    });
+    const ownerResponsePath = requiredModeOption(values['owner-response'], 'owner-response');
+    return consumeSelfEvolutionOwnerCloseout(readJson(ownerResponsePath));
+  }
+  throw new Error(`Unsupported self-evolution mode: ${mode}`);
+}
+
 function main() {
-  const payload = runImproveFromAgentLabSuite(parseImproveFromAgentLabSuiteArgs(process.argv.slice(2)));
+  const argv = process.argv.slice(2);
+  const mode = argv[0];
+  const payload = mode && [
+    'prepare-re-evaluation',
+    'prepare-owner-closeout',
+    'consume-owner-closeout',
+  ].includes(mode)
+    ? runSelfEvolutionMode(mode, argv.slice(1))
+    : runImproveFromAgentLabSuite(parseImproveFromAgentLabSuiteArgs(argv));
 
   process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
 }

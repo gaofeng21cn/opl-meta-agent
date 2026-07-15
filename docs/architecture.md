@@ -86,6 +86,8 @@ OMA 生成 target agent 时只提供 agent-building 语义，不维护私有 rep
 
 因此，OMA 的 self-evolution 不是“自己判断并推广目标 agent”，而是把可审计证据转成受限 patch loop。Codex 只能在 work order 授权的文件范围内修改目标仓；目标验证和 owner receipt 回填后，下一轮仍回到 Agent Lab 做 evidence delta、falsification 和 promotion gate 评估。
 
+`contracts/self_evolution_closeout.json` 固定 fresh re-evaluation 与 target-owner closeout 的三条契约链。`prepare-re-evaluation` 保持原 suite/task/target identity 与 domain scorecard 不变，只投影目标仓 canonical Stage completion policy，并把已吸收、已验证 patch 的 mechanism-only promotion gate 明确为 `manual_review_required`；该 gate 通过只表示机制候选具备 owner 审查条件，不表示目标 domain 质量通过。`prepare-owner-closeout` 只生成非 OPL execution-receipt 的 refs-only replay draft；`consume-owner-closeout` 只消费 target owner 返回的 accepted、waived 或 blocked answer。三种 terminal outcome 均不能授权 target-domain、publication、submission、quality、export 或 default-promotion ready。
+
 `oma-agent-design-evolution` 是本仓 workflow-level 专业能力，不属于 MAS ScholarSkills。它把失败路由到 `stage-route`、`specialist-skill`、`tool-connector`、`quality-gate`、`read-model-currentness`、`authority-boundary`、`app-observability` 或 trajectory/owner-route policy gap，并据此组织 OMA-owned agent design/source patch work order、mechanism proposal、route-back 或 typed blocker shape。MAS、MAG、RCA 等 target domain 仍只通过标准 handoff、owner route、feedback refs 和 owner closeout refs 参与；OPL Agent Lab / FeedbackOps / App 只提供 refs-only evidence、projection 或队列，不持有 MAS study truth。
 
 ## Clean-Room Skill Pattern Intake
@@ -179,6 +181,8 @@ Usable landing 的当前真实 target patch-loop / scaleout evidence 已由 MAS/
 OMA 侧执行入口保持薄委托：`execute:external-work-order` 读取已经生成的 developer patch work order，只校验 refs-only shape 与 authority boundary，然后调用 OPL Framework 的 `opl work-order execute --work-order <path> --json`。target worktree lifecycle、generic runner、queue、attempt ledger、absorb、cleanup、post-absorb owner closeout hook invocation 和 execution receipt 均由 OPL Framework primitive / target owner 控制面持有；Agent Lab 只消费 re-evaluation refs；OMA 不在本仓实现第二套执行器、worktree 管理或 owner receipt writer。
 
 MAS `reviewer_revision` feedback self-evolution trigger 进入 OMA 时按标准 external-suite 消费：`improve-from-external-agent-lab-suite -> opl work-order execute -> target owner closeout/readback`。如果 MAS 侧只物化了 suite/result，且 trigger contract 声明 `contract_itself_triggers_execution=false`，OMA/App readback 必须显示 `runnable_pending`，不能显示 `executed`。执行态只能由 OPL work-order execute receipt 加 target owner closeout/readback 证明；OMA 只持有 suite consumer、agent-building judgment 和 work-order semantic request 边界。
+
+在已退役 OMA private control plane 的 declarative-pack 架构下，fresh re-evaluation preparation、owner replay draft 与 owner-answer consumption 都复用 `improve-from-agent-lab-suite.ts` 的显式模式，不建立第二套 runner、receipt writer 或 lifecycle。未来 executable work order 是否自动携带 target-owned closeout hook，仍由 OPL materializer 从 target package declaration 投影；OMA 不能用 replay draft 冒充这项 Framework readback。
 
 该 takeover 只覆盖 evaluation handoff 和候选 refs 生成。target domain truth、quality verdict、artifact body、memory body、owner closeout 和默认 agent promotion authority 继续由 target owner / OPL 持有；work order 与 candidate 必须显式声明 OMA 不能执行 suite、写 result/owner receipt 或无 gate promotion。
 

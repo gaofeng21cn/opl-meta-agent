@@ -66,5 +66,21 @@
     "ai_reviewer_suggestions_present",
     "ai_reviewer_source_refs_valid",
     "ai_reviewer_provenance_present"
-  ]
+  ],
+  "self_evolution_target_owner_consumption": {
+    "contract_ref": "contracts/self_evolution_closeout.json",
+    "accepted_return_shapes": [
+      "domain_receipt",
+      "no_regression_evidence",
+      "typed_blocker"
+    ],
+    "terminal_statuses": [
+      "target_owner_accepted",
+      "target_owner_waived",
+      "target_owner_blocked"
+    ],
+    "domain_scorecard_acceptance_implied": false,
+    "publication_or_submission_ready_implied": false,
+    "default_agent_promotion_implied": false
+  }
 }
