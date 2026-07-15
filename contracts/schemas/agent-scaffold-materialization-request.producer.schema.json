@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://one-person-lab.local/contracts/opl-meta-agent/agent-scaffold-materialization-request.producer.schema.json",
   "title": "OMA Agent Scaffold Materialization Request Producer Projection",
-  "description": "Validates the OMA-authored request projection consumed by the canonical OPL scaffold materializer. The canonical executable contract remains OPL-owned.",
+  "description": "Validates the OMA-authored request projection consumed by the canonical OPL scaffold materializer. This producer mirror must remain compatible with the referenced Framework schema; the executable contract remains OPL-owned.",
   "type": "object",
   "required": [
     "surface_kind",

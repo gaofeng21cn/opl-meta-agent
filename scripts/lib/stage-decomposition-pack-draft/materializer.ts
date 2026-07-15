@@ -22,6 +22,11 @@ import {
   validateMaterializationPath,
 } from './shared.ts';
 
+export const OPL_AGENT_SCAFFOLD_MATERIALIZATION_REQUEST_VERSION =
+  'opl-agent-scaffold-materialization-request.v2';
+export const OPL_AGENT_SCAFFOLD_MATERIALIZATION_REQUEST_SCHEMA_REF =
+  'contracts/opl-framework/agent-scaffold-materialization-request.schema.json';
+
 export type StageDecompositionCloseoutRepairResult = {
   packet: unknown;
   repaired: boolean;
@@ -415,8 +420,8 @@ export function buildScaffoldMaterializationRequest({
 
   return {
     surface_kind: 'opl_agent_scaffold_materialization_request',
-    version: 'opl-agent-scaffold-materialization-request.v2',
-    canonical_schema_ref: 'contracts/opl-framework/agent-scaffold-materialization-request.schema.json',
+    version: OPL_AGENT_SCAFFOLD_MATERIALIZATION_REQUEST_VERSION,
+    canonical_schema_ref: OPL_AGENT_SCAFFOLD_MATERIALIZATION_REQUEST_SCHEMA_REF,
     producer_agent_id: 'oma',
     execution_owner: 'one-person-lab/OPL Foundry Lab',
     target_identity: {

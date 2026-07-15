@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 import { validateJsonSchemaPayload } from 'opl-framework/json-schema-registry';
 import {
   buildTargetAgentCapabilityMapProjection,
@@ -20,6 +21,8 @@ import {
 } from '../scripts/lib/stage-decomposition-pack-draft/builder.ts';
 import {
   buildScaffoldMaterializationRequest,
+  OPL_AGENT_SCAFFOLD_MATERIALIZATION_REQUEST_SCHEMA_REF,
+  OPL_AGENT_SCAFFOLD_MATERIALIZATION_REQUEST_VERSION,
   repairStageDecompositionCloseoutPacket,
 } from '../scripts/lib/stage-decomposition-pack-draft/materializer.ts';
 import {
@@ -38,6 +41,11 @@ const targetAgent = {
   profile_selection_rationale:
     'The target agent needs refs-only grounding, mode routing, and owner-gated decision support.',
 };
+
+const canonicalScaffoldSchemaPath = fileURLToPath(new URL(
+  `../../${OPL_AGENT_SCAFFOLD_MATERIALIZATION_REQUEST_SCHEMA_REF}`,
+  import.meta.resolve('opl-framework/json-schema-registry'),
+));
 
 const sourceDerivedTargetAgent = {
   domain_id: 'surgery-risk-from-paper-agent',
@@ -115,7 +123,14 @@ test('stage-decomposition emits an OPL-owned scaffold materialization request', 
     sourceRef: schemaRef,
   }, request);
   assert.equal(validation.ok, true, JSON.stringify(validation));
-  assert.equal(request.version, 'opl-agent-scaffold-materialization-request.v2');
+  const canonicalSchema = JSON.parse(fs.readFileSync(canonicalScaffoldSchemaPath, 'utf8')) as JsonObject;
+  const canonicalValidation = validateJsonSchemaPayload({
+    schemaId: String(canonicalSchema.$id),
+    schema: canonicalSchema,
+    sourceRef: canonicalScaffoldSchemaPath,
+  }, request);
+  assert.equal(canonicalValidation.ok, true, JSON.stringify(canonicalValidation));
+  assert.equal(request.version, OPL_AGENT_SCAFFOLD_MATERIALIZATION_REQUEST_VERSION);
   assert.equal(request.producer_agent_id, 'oma');
   assert.equal(Object.hasOwn(request, 'request_owner'), false);
   const escapingRequest = structuredClone(request);
