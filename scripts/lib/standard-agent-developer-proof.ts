@@ -62,7 +62,7 @@ export type StandardAgentDeveloperProofRequest = {
     package_manifest_validate: {
       package_manifest_ref: string;
       scaffold_proof_binding_ref: string;
-      trust_tier: 'first_party';
+      trust_tier: 'third_party_unverified';
       source_kind: 'local_file';
     };
     profile_conformance: {
@@ -313,7 +313,7 @@ export function buildStandardAgentDeveloperProofRequest({
     package_manifest_validate: {
       package_manifest_ref: packageManifestRef,
       scaffold_proof_binding_ref: scaffoldProofBindingRef,
-      trust_tier: 'first_party',
+      trust_tier: 'third_party_unverified',
       source_kind: 'local_file',
     },
     profile_conformance: {

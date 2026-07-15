@@ -160,6 +160,11 @@ test('developer proof request lists exactly five Framework-owned operations and 
     ), true);
     assert.equal(request.authority_boundary.oma_executes_framework_operations, false);
     assert.equal(request.authority_boundary.request_is_execution_receipt, false);
+    assert.equal(
+      request.inputs.package_manifest_validate.trust_tier,
+      'third_party_unverified',
+    );
+    assert.equal(request.inputs.package_manifest_validate.source_kind, 'local_file');
     assert.equal(validate(
       'contracts/schemas/standard-agent-developer-proof-request.producer.schema.json',
       request,

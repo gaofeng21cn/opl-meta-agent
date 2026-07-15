@@ -98,7 +98,7 @@
           "properties": {
             "package_manifest_ref": { "$ref": "#/$defs/nonEmptyString" },
             "scaffold_proof_binding_ref": { "$ref": "#/$defs/nonEmptyString" },
-            "trust_tier": { "const": "first_party" },
+            "trust_tier": { "const": "third_party_unverified" },
             "source_kind": { "const": "local_file" }
           },
           "additionalProperties": false
