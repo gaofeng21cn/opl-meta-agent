@@ -21,7 +21,7 @@ The ordinary hosted entry is `opl agents run --domain oma --action engineer-agen
 
 OPL Foundry Kernel invokes exactly two internal operations. They are not public actions or tools.
 
-- `design` consumes `DesignRequest` and returns one complete `AgentBlueprint` with an embedded `EvalSpec`.
+- `design` consumes `DesignRequest` and returns one complete `AgentBlueprint` with an embedded `EvalSpec`. Request-owned `owner_authority_refs` are immutable trust anchors; the Blueprint must project them and `constraints.permission_refs` exactly in separate fields and cannot expand either set.
 - `diagnose` consumes the exact request, blueprint, and OPL-produced `EvidenceBundle`, then returns one complete `EvolutionProposal` with the next full blueprint.
 
 Content-bearing prompt, skill, knowledge, and helper refs use `opl-content://sha256/...`. The producing terminal Stage exposes the exact raw bytes as SHA-bound StageRun artifacts so OPL can persist and assemble them; OMA never selects candidate filesystem paths or writes version/activation state.

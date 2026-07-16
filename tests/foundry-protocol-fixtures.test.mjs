@@ -158,6 +158,7 @@ test('fixture digest lineage is stable over JCS canonical JSON', () => {
 });
 
 test('fixture no-change proposal preserves the exact blueprint and generated-Agent authority', () => {
+  const request = readJson('contracts/fixtures/foundry-protocol/design-request.json');
   const blueprint = readJson('contracts/fixtures/foundry-protocol/agent-blueprint.json');
   const proposal = readJson('contracts/fixtures/foundry-protocol/evolution-proposal.json');
   const next = proposal.next_blueprint;
@@ -168,6 +169,9 @@ test('fixture no-change proposal preserves the exact blueprint and generated-Age
   assert.deepEqual(proposal.new_tests, []);
 
   for (const candidate of [blueprint, next]) {
+    assert.deepEqual(candidate.authority_policy.permission_refs, request.constraints.permission_refs);
+    assert.deepEqual(candidate.authority_policy.owner_authority_refs, request.owner_authority_refs);
+    assert.equal(Object.hasOwn(candidate.authority_policy, 'owner_gate_refs'), false);
     const authorityFlags = Object.entries(candidate.authority_policy)
       .filter(([key]) => key.startsWith('generated_agent_can_modify_'));
     assert.equal(authorityFlags.length, 4);

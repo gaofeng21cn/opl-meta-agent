@@ -5,8 +5,8 @@
   "target_agent_id": "fixture-research-agent",
   "target_domain_id": "fixture_research",
   "target_version_ref": null,
-  "blueprint_digest": "sha256:9f6ef7364119028cb5b051cef5d7cb89ae6579a04a260615bd013a48f6a93202",
-  "evidence_digest": "sha256:be9383507bd9cdf8e7fb1703accbe19ac8d1f2fcd1ec4450bde4e4bb4c4d2a35",
+  "blueprint_digest": "sha256:0c28ec4590302ffe79dc5e21473fd0e7dc9b94db3c72d4c18986218543709be5",
+  "evidence_digest": "sha256:86fb80ea45383f576a5c55ca1053debc4b4fa522b118642cfd4a6b710067493d",
   "root_causes": [
     {
       "failure_class": "semantic_quality_gap",
@@ -24,7 +24,7 @@
     "target_agent_id": "fixture-research-agent",
     "target_domain_id": "fixture_research",
     "target_version_ref": null,
-    "design_request_digest": "sha256:ddaeb1b0d89c056d0ac5a1aa29cacbe48b21ffecb7b16bf783e4fffe9db069e2",
+    "design_request_digest": "sha256:5ab82899d94ef34ea391826efac5b6ce4e025af3f9c9d77e723f5cfaee414245",
     "generation": 0,
     "stage_graph": {
       "entry_stage_id": "evidence-synthesis",
@@ -122,7 +122,8 @@
       "truth_owner_ref": "opl://owner/fixture-research",
       "artifact_owner_ref": "opl://owner/fixture-research",
       "quality_owner_ref": "opl://owner/fixture-research",
-      "owner_gate_refs": [
+      "permission_refs": [],
+      "owner_authority_refs": [
         "opl://owner-gate/fixture-research-agent/active"
       ],
       "generated_agent_can_modify_versions": false,

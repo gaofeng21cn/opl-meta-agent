@@ -53,6 +53,7 @@ test('provider identity and stage routes are internally closed', () => {
     'contracts/pack_compiler_input.json',
   ].map(readJson);
   const provider = readJson('contracts/foundry_provider.json');
+  const descriptor = readJson('contracts/domain_descriptor.json');
   const manifest = readJson('agent/stages/manifest.json');
   const compiler = readJson('contracts/pack_compiler_input.json');
   const qualityPolicy = readJson('contracts/stage_quality_cycle_policy.json');
@@ -98,6 +99,15 @@ test('provider identity and stage routes are internally closed', () => {
 
   const routedStageIds = new Set();
   assert.equal(provider.carrier_slug, 'opl-meta-agent');
+  assert.deepEqual(Object.keys(descriptor.standard_agent_interface).sort(), [
+    'progress',
+    'routing',
+    'runtime',
+    'stage_catalog',
+    'version',
+    'workspace_binding',
+  ]);
+  assert.deepEqual(descriptor.standard_agent_interface.routing.workstream_ids, ['agent_engineering']);
   for (const operation of Object.values(provider.operations)) {
     for (const stageId of [operation.entry_stage_ref, operation.terminal_stage_ref, ...operation.required_stage_refs, ...operation.optional_stage_refs]) {
       assert.ok(stageIds.has(stageId), `missing provider stage ${stageId}`);
