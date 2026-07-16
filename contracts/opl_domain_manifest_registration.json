@@ -1,115 +1,30 @@
 {
   "surface_kind": "opl_domain_manifest_registration",
   "schema_version": 1,
-  "domain_id": "opl-meta-agent",
-  "owner": "opl-meta-agent",
+  "agent_id": "oma",
+  "package_id": "oma",
+  "domain_id": "agent_engineering",
+  "carrier_slug": "opl-meta-agent",
+  "owner": "oma",
   "registry_owner": "one-person-lab",
-  "registration_status": "discovery_receipt_ready",
-  "role": "domain_registration_metadata_refs_only",
+  "registration_status": "provider_descriptor_ready",
+  "role": "foundry_semantic_provider_registration",
   "domain_manifest": {
     "domain_label": "OPL Meta Agent",
-    "agent_role": "opl_based_foundry_agent",
-    "delivery_domain": "agent_development",
-    "canonical_semantic_pack_root": "agent/",
-    "canonical_semantic_pack_role": "repo_source_declarative_meta_agent_pack",
+    "agent_role": "foundry_semantic_provider",
     "domain_descriptor_ref": "contracts/domain_descriptor.json",
-    "stage_control_plane_ref": "opl-generated:family_stage_control_plane",
+    "stage_manifest_ref": "agent/stages/manifest.json",
     "action_catalog_ref": "contracts/action_catalog.json",
+    "provider_manifest_ref": "contracts/foundry_provider.json",
     "pack_compiler_input_ref": "contracts/pack_compiler_input.json",
-    "generated_surface_handoff_ref": "contracts/generated_surface_handoff.json",
-    "authority_functions_ref": "runtime/authority_functions/meta-agent-authority-functions.json",
-    "owner_receipt_contract_ref": "contracts/owner_receipt_contract.json",
-    "app_workbench_projection_ref": "contracts/app_workbench_projection.json",
-    "scaleout_evidence_contract_ref": "contracts/real_target_agent_scaleout_evidence.json",
-    "trajectory_learning_contract_ref": "contracts/trajectory_learning_contract.json",
-    "live_stage_run_progress_evidence_ref": "contracts/live_stage_run_progress_evidence.json"
+    "generated_surface_handoff_ref": "contracts/generated_surface_handoff.json"
   },
-  "human_doc_refs": [
-    "docs/status.md",
-    "docs/architecture.md",
-    "docs/active/opl-meta-agent-ideal-state-gap-plan.md",
-    "docs/references/opl-meta-agent-ideal-state.md"
-  ],
-  "consumed_by": [
-    "OPL domain registry",
-    "OPL discovery",
-    "OPL generated interface bundle",
-    "OPL App workbench"
-  ],
-  "provided_outputs": [
-    "domain_registration_ref",
-    "domain_descriptor_ref",
-    "stage_control_plane_ref",
-    "action_catalog_ref",
-    "generated_surface_handoff_ref",
-    "app_workbench_projection_ref",
-    "scaleout_evidence_contract_ref",
-    "trajectory_learning_contract_ref",
-    "live_stage_run_progress_evidence_ref"
-  ],
-  "discovery_receipt": {
-    "surface_kind": "opl_domain_manifest_discovery_receipt",
-    "receipt_ref": "discovery-receipt:opl-meta-agent/manifest-registration/2026-05-20",
-    "status": "ready_for_opl_registry_consumption",
-    "registry_owner": "one-person-lab",
-    "source_manifest_ref": "contracts/opl_domain_manifest_registration.json",
-    "consumed_contract_refs": [
-      "contracts/domain_descriptor.json",
-      "agent/stages/manifest.json",
-      "contracts/action_catalog.json",
-      "contracts/pack_compiler_input.json",
-      "contracts/generated_surface_handoff.json",
-      "contracts/app_workbench_projection.json",
-      "contracts/real_target_agent_scaleout_evidence.json",
-      "contracts/trajectory_learning_contract.json",
-      "contracts/live_stage_run_progress_evidence.json"
-    ],
-    "safe_action_route_refs": [
-      "safe-action:opl-meta-agent/build-agent-baseline",
-      "safe-action:opl-meta-agent/takeover-target-agent-test",
-      "safe-action:opl-meta-agent/improve-from-external-agent-lab-suite",
-      "safe-action:opl-meta-agent/generate-mechanism-patch-proposal",
-      "safe-action:opl-meta-agent/materialize-trajectory-learning-proposal"
-    ],
-    "blocked_claims": [
-      "app_live_rendering_complete",
-      "default_agent_promoted",
-      "target_domain_truth_written",
-      "ux_score_authorized_quality_verdict"
-    ],
-    "verified_by_refs": [
-      "tests/contracts-generated-surfaces.test.ts"
-    ],
-    "authority_boundary": {
-      "refs_only": true,
-      "can_write_target_domain_truth": false,
-      "can_write_target_domain_memory_body": false,
-      "can_mutate_target_domain_artifact_body": false,
-      "can_authorize_target_domain_quality_or_export": false,
-      "can_promote_default_agent_without_gate": false
-    }
-  },
+  "provided_outputs": ["AgentBlueprint", "EvalSpec", "EvolutionProposal"],
   "authority_boundary": {
-    "refs_only": true,
-    "not_generic_runtime_owner": true,
     "registry_owner_is_opl_framework": true,
-    "domain_repo_can_own_generated_surface": false,
     "domain_repo_can_own_generic_runtime": false,
-    "domain_repo_can_own_generic_scheduler": false,
-    "domain_repo_can_own_generic_queue": false,
-    "domain_repo_can_own_generic_attempt_ledger": false,
-    "domain_repo_can_own_generic_operator_workbench": false,
-    "can_write_target_domain_truth": false,
-    "can_write_target_domain_memory_body": false,
-    "can_mutate_target_domain_artifact_body": false,
-    "can_authorize_target_domain_quality_or_export": false,
-    "can_promote_default_agent_without_gate": false
-  },
-  "forbidden_claims": [
-    "opl_meta_agent_is_opl_framework_builtin_module",
-    "opl_meta_agent_owns_generic_runtime",
-    "opl_meta_agent_owns_operator_workbench",
-    "opl_meta_agent_writes_target_domain_truth",
-    "opl_meta_agent_promotes_target_agent_without_gate"
-  ]
+    "domain_repo_can_write_foundry_run_state": false,
+    "domain_repo_can_materialize_or_evaluate": false,
+    "domain_repo_can_activate_or_rollback": false
+  }
 }

@@ -1,0 +1,41 @@
+{
+  "surface_kind": "oma_foundry_protocol_fixture_manifest",
+  "version": "oma-foundry-protocol-fixtures.v1",
+  "agent_id": "oma",
+  "package_id": "oma",
+  "domain_id": "agent_engineering",
+  "carrier_slug": "opl-meta-agent",
+  "schema_authority_owner": "one-person-lab",
+  "validation_authority_owner": "one-person-lab",
+  "canonicalization": "JCS",
+  "digest_algorithm": "SHA-256",
+  "fixtures": [
+    {
+      "protocol_object": "DesignRequest",
+      "schema_ref": "opl://foundry-protocol/DesignRequest",
+      "fixture_ref": "contracts/fixtures/foundry-protocol/design-request.json"
+    },
+    {
+      "protocol_object": "AgentBlueprint",
+      "schema_ref": "opl://foundry-protocol/AgentBlueprint",
+      "fixture_ref": "contracts/fixtures/foundry-protocol/agent-blueprint.json"
+    },
+    {
+      "protocol_object": "EvidenceBundle",
+      "schema_ref": "opl://foundry-protocol/EvidenceBundle",
+      "fixture_ref": "contracts/fixtures/foundry-protocol/evidence-bundle.json"
+    },
+    {
+      "protocol_object": "EvolutionProposal",
+      "schema_ref": "opl://foundry-protocol/EvolutionProposal",
+      "fixture_ref": "contracts/fixtures/foundry-protocol/evolution-proposal.json"
+    }
+  ],
+  "authority_boundary": {
+    "fixtures_are_schema_authority": false,
+    "oma_can_validate_schema_conformance": false,
+    "opl_validator_is_required_for_integration_acceptance": true,
+    "fixtures_may_contain_physical_execution_coordinates": false,
+    "fixtures_may_contain_protected_test_bodies": false
+  }
+}

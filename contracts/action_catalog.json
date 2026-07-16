@@ -1,416 +1,62 @@
 {
   "surface_kind": "family_action_catalog",
   "version": "family-action-catalog.v2",
-  "catalog_id": "opl_meta_agent_action_catalog",
-  "target_domain_id": "opl-meta-agent",
-  "owner": "opl-meta-agent",
+  "catalog_id": "oma_action_catalog",
+  "target_domain_id": "agent_engineering",
+  "owner": "oma",
   "authority_boundary": {
-    "domain_truth_owner": "opl-meta-agent",
-    "opl_role": "projection_consumer_only",
+    "domain_truth_owner": "oma",
+    "opl_role": "foundry_runtime_owner",
     "write_policy": "no_domain_truth_writes",
     "opl_can_write_domain_truth": false,
     "opl_can_write_memory_body": false,
-    "opl_can_authorize_quality_or_export": false,
-    "domain_repo_can_own_generated_surface": false,
+    "opl_can_authorize_target_quality": false,
     "provider_completion_is_domain_completion": false
   },
   "actions": [
     {
-      "action_id": "build-agent-baseline",
-      "title": "Build Agent Baseline",
-      "summary": "Generate and validate an OPL-compatible candidate Agent Pack, consume structured AI reviewer evidence, and emit a thin Foundry evaluation semantic request plus a canonical OPL Foundry Lab work-order materialization request without creating a suite result or owner receipt.",
-      "owner": "opl-meta-agent",
+      "action_id": "engineer-agent",
+      "title": "Engineer Agent",
+      "summary": "Start one OPL-owned FoundryRun that uses OMA semantics to design and evolve an Agent, then OPL to independently evaluate, qualify, and optionally activate it.",
+      "owner": "oma",
       "effect": "mutating",
       "execution_binding": {
-        "kind": "stage_binding",
-        "stage_manifest_ref": "agent/stages/manifest.json"
+        "kind": "foundry_binding",
+        "provider_manifest_ref": "contracts/foundry_provider.json"
       },
-      "input_schema_ref": "contracts/schemas/build-agent-baseline.input.schema.json",
-      "output_schema_ref": "contracts/schemas/build-agent-baseline.output.schema.json",
+      "input_schema_ref": "opl://foundry-protocol/DesignRequest",
+      "output_schema_ref": "opl://foundry-control/FoundryRun",
       "required_fields": [
-        "domain_id",
-        "ai_reviewer_evaluation"
-      ],
-      "optional_fields": [
-        "output_dir",
-        "domain_label",
-        "delivery_domain",
-        "target_brief",
-        "intent_signals",
-        "selected_opl_profile_refs",
-        "profile_selection_rationale",
-        "profile_requirement_refs",
-        "reference_design_source_refs",
-        "reference_design_pattern_notes",
-        "reference_design_pattern_packet_refs",
-        "research_source_refs",
-        "expert_practice_notes",
-        "research_synthesis_refs",
-        "stage_decomposition_closeout_ref",
-        "agent_skeleton_build_closeout_ref",
-        "developer_proof_receipt_ref"
-      ],
-      "workspace_locator_fields": [
-        "output_dir",
-        "ai_reviewer_evaluation",
-        "domain_id",
-        "domain_label",
-        "delivery_domain",
-        "target_brief",
-        "selected_opl_profile_refs",
-        "profile_selection_rationale",
-        "profile_requirement_refs",
-        "reference_design_source_refs",
-        "reference_design_pattern_notes",
-        "reference_design_pattern_packet_refs",
-        "research_source_refs",
-        "expert_practice_notes",
-        "research_synthesis_refs",
-        "stage_decomposition_closeout_ref",
-        "agent_skeleton_build_closeout_ref",
-        "developer_proof_receipt_ref"
-      ],
-      "human_gate_ids": [
-        "baseline_delivery_owner_review"
-      ],
-      "stage_route": {
-        "entry_stage_ref": "intent-intake",
-        "required_stage_refs": [
-          "intent-intake",
-          "stage-decomposition",
-          "agent-skeleton-build",
-          "eval-suite-build",
-          "baseline-run",
-          "optimizer-iteration",
-          "baseline-delivery"
-        ],
-        "optional_stage_refs": [
-          "web-experience-research"
-        ],
-        "terminal_stage_refs": [
-          "baseline-delivery"
-        ],
-        "route_policy": "ai_selected_progress_route"
-      },
-      "supported_surfaces": {
-        "cli": {},
-        "mcp": {
-          "tool_name": "opl_meta_agent_build_agent_baseline",
-          "descriptor_only": true,
-          "public_runtime": false
-        },
-        "skill": {
-          "command_contract_id": "opl-meta-agent.build-agent-baseline"
-        },
-        "product_entry": {
-          "action_key": "build-agent-baseline"
-        },
-        "openai": {
-          "tool_name": "opl_meta_agent_build_agent_baseline"
-        },
-        "ai_sdk": {
-          "tool_name": "opl_meta_agent_build_agent_baseline"
-        }
-      },
-      "authority_boundary": {
-        "can_write_target_domain_truth": false,
-        "can_write_target_domain_memory_body": false,
-        "can_mutate_target_domain_artifact_body": false,
-        "can_authorize_target_domain_quality_or_export": false,
-        "can_promote_default_agent_without_gate": false,
-        "can_train_or_deploy_model_weights": false
-      }
-    },
-    {
-      "action_id": "takeover-target-agent-test",
-      "title": "Take Over Target Agent Test",
-      "summary": "Read an existing OPL-compatible agent repo, consume structured AI reviewer evidence, and emit an in-memory takeover evaluation semantic request plus a canonical OPL Foundry Lab work-order materialization request without writing a request file, executing a suite, or creating an owner receipt.",
-      "owner": "opl-meta-agent",
-      "effect": "mutating",
-      "execution_binding": {
-        "kind": "stage_binding",
-        "stage_manifest_ref": "agent/stages/manifest.json"
-      },
-      "input_schema_ref": "contracts/schemas/takeover-target-agent-test.input.schema.json",
-      "output_schema_ref": "contracts/schemas/takeover-target-agent-test.output.schema.json",
-      "required_fields": [
-        "agent_dir",
-        "ai_reviewer_evaluation"
+        "surface_kind", "version", "request_id", "mode", "target_agent_id", "target_domain_id",
+        "target_version_ref", "objective", "acceptance_criteria", "non_goals", "source_refs", "constraints",
+        "delivery_policy"
       ],
       "optional_fields": [],
-      "workspace_locator_fields": [
-        "agent_dir",
-        "ai_reviewer_evaluation"
-      ],
-      "human_gate_ids": [
-        "testing_takeover_owner_review"
-      ],
-      "stage_route": {
-        "entry_stage_ref": "intent-intake",
-        "required_stage_refs": [
-          "intent-intake",
-          "target-agent-takeover",
-          "eval-suite-build",
-          "baseline-run"
-        ],
-        "optional_stage_refs": [],
-        "terminal_stage_refs": [
-          "baseline-run"
-        ],
-        "route_policy": "ai_selected_progress_route"
-      },
+      "workspace_locator_fields": [],
+      "human_gate_ids": [],
       "supported_surfaces": {
         "cli": {},
-        "mcp": {
-          "tool_name": "opl_meta_agent_takeover_target_agent_test",
-          "descriptor_only": true,
-          "public_runtime": false
-        },
-        "skill": {
-          "command_contract_id": "opl-meta-agent.takeover-target-agent-test"
-        },
-        "product_entry": {
-          "action_key": "takeover-target-agent-test"
-        },
-        "openai": {
-          "tool_name": "opl_meta_agent_takeover_target_agent_test"
-        },
-        "ai_sdk": {
-          "tool_name": "opl_meta_agent_takeover_target_agent_test"
-        }
+        "mcp": { "tool_name": "oma_engineer_agent" },
+        "skill": { "command_contract_id": "oma.engineer-agent" },
+        "product_entry": { "action_key": "engineer-agent" },
+        "openai": { "tool_name": "oma_engineer_agent" },
+        "ai_sdk": { "tool_name": "oma_engineer_agent" }
       },
       "authority_boundary": {
-        "can_write_target_domain_truth": false,
-        "can_write_target_domain_memory_body": false,
-        "can_mutate_target_domain_artifact_body": false,
-        "can_authorize_target_domain_quality_or_export": false,
-        "can_promote_default_agent_without_gate": false,
-        "can_train_or_deploy_model_weights": false
-      }
-    },
-    {
-      "action_id": "improve-from-external-agent-lab-suite",
-      "title": "Improve From External Agent Lab Suite",
-      "summary": "Consume an explicit OPL Foundry Lab suite result and structured AI reviewer evidence, then emit an OMA capability judgment and a typed developer patch work-order request without writing request files or executing the work order.",
-      "owner": "opl-meta-agent",
-      "effect": "mutating",
-      "execution_binding": {
-        "kind": "stage_binding",
-        "stage_manifest_ref": "agent/stages/manifest.json"
-      },
-      "input_schema_ref": "contracts/schemas/improve-from-external-agent-lab-suite.input.schema.json",
-      "output_schema_ref": "contracts/schemas/improve-from-external-agent-lab-suite.output.schema.json",
-      "required_fields": [
-        "suite_path",
-        "suite_result_path",
-        "agent_dir",
-        "ai_reviewer_evaluation"
-      ],
-      "optional_fields": [
-        "feedback_ref"
-      ],
-      "workspace_locator_fields": [
-        "suite_path",
-        "suite_result_path",
-        "agent_dir",
-        "feedback_ref",
-        "ai_reviewer_evaluation"
-      ],
-      "human_gate_ids": [
-        "external_suite_self_evolution_owner_review",
-        "target_agent_owner_patch_gate",
-        "target_agent_version_absorb_gate"
-      ],
-      "stage_route": {
-        "entry_stage_ref": "optimizer-iteration",
-        "required_stage_refs": [
-          "optimizer-iteration"
-        ],
-        "optional_stage_refs": [],
-        "terminal_stage_refs": [
-          "optimizer-iteration"
-        ],
-        "route_policy": "ai_selected_progress_route"
-      },
-      "supported_surfaces": {
-        "cli": {},
-        "mcp": {
-          "tool_name": "opl_meta_agent_improve_from_external_agent_lab_suite",
-          "descriptor_only": true,
-          "public_runtime": false
-        },
-        "skill": {
-          "command_contract_id": "opl-meta-agent.improve-from-external-agent-lab-suite"
-        },
-        "product_entry": {
-          "action_key": "improve-from-external-agent-lab-suite"
-        },
-        "openai": {
-          "tool_name": "opl_meta_agent_improve_from_external_agent_lab_suite"
-        },
-        "ai_sdk": {
-          "tool_name": "opl_meta_agent_improve_from_external_agent_lab_suite"
-        }
-      },
-      "authority_boundary": {
-        "can_write_target_domain_truth": false,
-        "can_write_target_domain_memory_body": false,
-        "can_modify_target_agent_source_repo": false,
-        "can_modify_target_agent_tests": false,
-        "can_modify_target_agent_docs": false,
-        "can_mutate_target_domain_artifact_body": false,
-        "can_authorize_target_domain_quality_or_export": false,
-        "can_promote_default_agent_without_gate": false,
-        "can_train_or_deploy_model_weights": false
-      }
-    },
-    {
-      "action_id": "generate-mechanism-patch-proposal",
-      "title": "Generate Mechanism Patch Proposal",
-      "summary": "Convert Agent Lab run evidence and a gated learning candidate into a proposal-only mechanism patch record.",
-      "owner": "opl-meta-agent",
-      "effect": "mutating",
-      "execution_binding": {
-        "kind": "handler_ref",
-        "handler_ref": "handler:oma.mechanism-patch-proposal-authorizer"
-      },
-      "input_schema_ref": "contracts/schemas/generate-mechanism-patch-proposal.input.schema.json",
-      "output_schema_ref": "contracts/schemas/generate-mechanism-patch-proposal.output.schema.json",
-      "required_fields": [
-        "mechanism_ref",
-        "segment_run_ref",
-        "evidence_delta_ref",
-        "next_mechanism_candidate_ref"
-      ],
-      "optional_fields": [
-        "editable_surfaces",
-        "observe_refs",
-        "diagnose_refs",
-        "edit_refs"
-      ],
-      "workspace_locator_fields": [
-        "mechanism_ref",
-        "segment_run_ref",
-        "evidence_delta_ref",
-        "next_mechanism_candidate_ref"
-      ],
-      "human_gate_ids": [
-        "mechanism_patch_owner_review"
-      ],
-      "supported_surfaces": {
-        "cli": {},
-        "mcp": {
-          "tool_name": "opl_meta_agent_generate_mechanism_patch_proposal",
-          "descriptor_only": true,
-          "public_runtime": false
-        },
-        "skill": {
-          "command_contract_id": "opl-meta-agent.generate-mechanism-patch-proposal"
-        },
-        "product_entry": {
-          "action_key": "generate-mechanism-patch-proposal"
-        },
-        "openai": {
-          "tool_name": "opl_meta_agent_generate_mechanism_patch_proposal"
-        },
-        "ai_sdk": {
-          "tool_name": "opl_meta_agent_generate_mechanism_patch_proposal"
-        }
-      },
-      "authority_boundary": {
-        "can_write_target_domain_truth": false,
-        "can_write_target_domain_memory_body": false,
-        "can_mutate_target_domain_artifact_body": false,
-        "can_authorize_target_domain_quality_or_export": false,
-        "can_promote_default_agent_without_gate": false,
-        "can_train_or_deploy_model_weights": false
-      }
-    },
-    {
-      "action_id": "materialize-trajectory-learning-proposal",
-      "title": "Materialize Trajectory Learning Proposal",
-      "summary": "Consume redacted trajectory atom refs and candidate buffer evidence, then emit skill, prompt, stage-policy, or mechanism patch proposal refs without running a trajectory daemon or promoting any agent default.",
-      "owner": "opl-meta-agent",
-      "effect": "mutating",
-      "execution_binding": {
-        "kind": "stage_binding",
-        "stage_manifest_ref": "agent/stages/manifest.json"
-      },
-      "input_schema_ref": "contracts/schemas/materialize-trajectory-learning-proposal.input.schema.json",
-      "output_schema_ref": "contracts/schemas/materialize-trajectory-learning-proposal.output.schema.json",
-      "required_fields": [
-        "redacted_trajectory_ref",
-        "trajectory_atom_refs",
-        "candidate_buffer_ref",
-        "independent_ai_review_ref",
-        "agent_lab_promotion_gate_ref"
-      ],
-      "optional_fields": [
-        "redaction_proof_refs",
-        "source_owner_refs",
-        "team_sync_policy_refs",
-        "ux_canary_signal_refs"
-      ],
-      "workspace_locator_fields": [
-        "redacted_trajectory_ref",
-        "trajectory_atom_refs",
-        "candidate_buffer_ref",
-        "independent_ai_review_ref",
-        "agent_lab_promotion_gate_ref"
-      ],
-      "human_gate_ids": [
-        "trajectory_learning_owner_review",
-        "agent_lab_promotion_gate",
-        "no_user_scope_skill_install_gate"
-      ],
-      "stage_route": {
-        "entry_stage_ref": "intent-intake",
-        "required_stage_refs": [
-          "intent-intake",
-          "trajectory-learning-intake",
-          "online-learning"
-        ],
-        "optional_stage_refs": [],
-        "terminal_stage_refs": [
-          "online-learning"
-        ],
-        "route_policy": "ai_selected_progress_route"
-      },
-      "supported_surfaces": {
-        "cli": {},
-        "mcp": {
-          "tool_name": "opl_meta_agent_materialize_trajectory_learning_proposal",
-          "descriptor_only": true,
-          "public_runtime": false
-        },
-        "skill": {
-          "command_contract_id": "opl-meta-agent.materialize-trajectory-learning-proposal"
-        },
-        "product_entry": {
-          "action_key": "materialize-trajectory-learning-proposal"
-        },
-        "openai": {
-          "tool_name": "opl_meta_agent_materialize_trajectory_learning_proposal"
-        },
-        "ai_sdk": {
-          "tool_name": "opl_meta_agent_materialize_trajectory_learning_proposal"
-        }
-      },
-      "authority_boundary": {
-        "can_run_trajectory_daemon": false,
-        "can_install_user_scope_skills": false,
-        "can_write_target_domain_truth": false,
-        "can_write_target_domain_memory_body": false,
-        "can_mutate_target_domain_artifact_body": false,
-        "can_authorize_target_domain_quality_or_export": false,
-        "can_claim_ux_score_as_quality_verdict": false,
-        "can_promote_default_agent_without_gate": false,
-        "can_train_or_deploy_model_weights": false
+        "oma_can_write_foundry_run_state": false,
+        "oma_can_materialize_candidate_bytes": false,
+        "oma_can_execute_evaluation": false,
+        "oma_can_view_protected_test_bodies": false,
+        "oma_can_create_agent_version": false,
+        "oma_can_activate_or_rollback": false,
+        "oma_can_write_target_domain_truth": false,
+        "opl_can_write_target_domain_truth": false
       }
     }
   ],
   "notes": [
-    "OPL Framework generates CLI/MCP/Skill/product-entry/tool descriptors from this catalog.",
-    "This repo retains only agent-building domain semantics and minimal authority outputs."
+    "engineer-agent is the only public OMA action.",
+    "design and diagnose are internal Foundry provider operations, not public actions.",
+    "domain_truth_owner=oma refers only to Agent engineering semantics; Target Owner retains target-domain truth and OPL writes neither."
   ]
 }

@@ -1,41 +1,22 @@
 {
   "surface_kind": "domain_agent_descriptor",
   "schema_version": 1,
-  "domain_id": "opl-meta-agent",
+  "agent_id": "oma",
+  "package_id": "oma",
+  "domain_id": "agent_engineering",
+  "carrier_slug": "opl-meta-agent",
   "domain_label": "OPL Meta Agent",
-  "agent_role": "opl_based_foundry_agent",
-  "delivery_domain": "agent_development",
-  "purpose": "build, test, optimize, and deliver OPL-compatible high-value knowledge-work agents",
-  "consumes_opl_surfaces": [
-    "opl agent-lab complete --json",
-    "opl agents scaffold",
-    "family runtime stage attempt ledger",
-    "domain-agent descriptor",
-    "stage control plane",
-    "action catalog",
-    "domain memory descriptor locator",
-    "artifact locator contract",
-    "owner receipt contract"
-  ],
-  "outputs": [
-    "intent_brief_ref",
-    "research_brief_ref",
-    "stage_control_plane_ref",
-    "candidate_agent_package_ref",
-    "agent_lab_task_manifest_refs",
-    "improvement_candidate_refs",
-    "baseline_handoff_candidate_ref",
-    "online_learning_dataset_refs",
-    "mechanism_patch_proposal_ref"
-  ],
+  "agent_role": "foundry_semantic_provider",
+  "delivery_domain": "agent_engineering",
+  "purpose": "Design, evaluate semantically, diagnose, and evolve OPL-compatible Agents without owning execution or release state.",
+  "public_action_ids": ["engineer-agent"],
+  "internal_provider_operations": ["design", "diagnose"],
   "standard_contract_refs": {
     "action_catalog": "contracts/action_catalog.json",
-    "foundry_agent_series": "contracts/foundry_agent_series.json",
+    "foundry_provider": "contracts/foundry_provider.json",
     "stage_manifest": "agent/stages/manifest.json",
     "pack_compiler_input": "contracts/pack_compiler_input.json",
-    "generated_surface_handoff": "contracts/generated_surface_handoff.json",
-    "domain_handler_registry": "contracts/domain_handler_registry.json",
-    "source_closure_audit": "contracts/source_closure_audit.json"
+    "generated_surface_handoff": "contracts/generated_surface_handoff.json"
   },
   "standard_agent_interface": {
     "version": "opl_standard_agent_interface.v1",
@@ -49,43 +30,22 @@
         "display_names": "display_names"
       }
     },
-    "workspace_binding": {
-      "locator_surface_kind": "opl_meta_agent_workspace",
-      "default_profile_id": "one_off",
-      "workspace_kind": "agent_foundry_workspace",
-      "project_kind": "agent_capability",
-      "project_collection_label": "deliverables",
-      "default_workspace_id": "agent-foundry-workspace",
-      "default_project_id": "agent-001",
-      "required_locator_fields": ["workspace_root"],
-      "optional_locator_fields": []
-    },
     "runtime": {
-      "runtime_domain_id": "opl-meta-agent",
+      "runtime_domain_id": "agent_engineering",
       "registration_ref": "contracts/opl_domain_manifest_registration.json"
     },
-    "progress": {
-      "deliverable_delta_aliases": ["target_agent_substantive_delta"],
-      "platform_delta_aliases": ["platform_interface_repair_delta"]
-    },
     "routing": {
-      "explicit_aliases": ["oma", "opl-meta-agent", "agent-building"],
-      "workstream_ids": [],
-      "intent_signals": ["agent_building", "agent_takeover", "agent_improvement"],
-      "ambiguity_policy": "require_explicit_agent_building_intent"
+      "explicit_aliases": ["oma", "opl-meta-agent", "agent-engineering"],
+      "intent_signals": ["agent_creation", "agent_takeover", "agent_improvement"],
+      "ambiguity_policy": "require_explicit_agent_engineering_intent"
     }
   },
-  "marker": "generated_by_opl_standard_domain_agent_scaffold_v1",
   "authority_boundary": {
-    "opl_can_write_domain_truth": false,
-    "opl_can_write_memory_body": false,
-    "opl_can_authorize_quality_or_export": false,
-    "domain_owns_truth_quality_artifact_memory_and_receipts": true,
-    "opl_meta_agent_can_write_target_domain_truth": false,
-    "opl_meta_agent_can_write_target_domain_memory_body": false,
-    "opl_meta_agent_can_mutate_target_domain_artifact_body": false,
-    "opl_meta_agent_can_authorize_target_domain_quality_or_export": false,
-    "opl_meta_agent_can_promote_default_agent_without_gate": false,
-    "opl_meta_agent_can_train_or_deploy_model_weights": false
+    "oma_can_write_target_domain_truth": false,
+    "oma_can_materialize_candidate_bytes": false,
+    "oma_can_execute_or_judge_evaluation": false,
+    "oma_can_create_versions_or_change_activation": false,
+    "opl_can_write_target_domain_truth": false,
+    "provider_completion_is_qualification": false
   }
 }

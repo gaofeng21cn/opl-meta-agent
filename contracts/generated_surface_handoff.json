@@ -1,227 +1,24 @@
 {
   "surface_kind": "opl_generated_surface_handoff",
   "schema_version": 1,
-  "domain_id": "opl-meta-agent",
+  "agent_id": "oma",
+  "domain_id": "agent_engineering",
   "generated_surface_owner": "one-person-lab",
   "domain_repo_can_own_generated_surface": false,
-  "source_contract_ref": "contracts/pack_compiler_input.json",
-  "registration_contract_ref": "contracts/opl_domain_manifest_registration.json",
-  "app_workbench_projection_ref": "contracts/app_workbench_projection.json",
-  "scaleout_evidence_contract_ref": "contracts/real_target_agent_scaleout_evidence.json",
-  "registry_discovery_receipt_ref": "discovery-receipt:opl-meta-agent/manifest-registration/2026-05-20",
-  "app_drilldown_readiness_receipt_ref": "app-drilldown-readiness:opl-meta-agent/2026-05-20",
-  "domain_pack_role": "domain_truth_prompt_skill_stage_quality_refs_only",
-  "generated_interface_role": "invoke_and_project_without_domain_authority_escalation",
-  "generated_surfaces": [
-    {
-      "surface_id": "cli",
-      "owner": "one-person-lab",
-      "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available",
-      "source_contract": "contracts/pack_compiler_input.json",
-      "domain_policy": "domain_repo_declares_actions_stages_and_authority_receipts_only"
-    },
-    {
-      "surface_id": "mcp",
-      "owner": "one-person-lab",
-      "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available",
-      "source_contract": "contracts/pack_compiler_input.json",
-      "domain_policy": "domain_repo_does_not_handwrite_generic_tool_shell"
-    },
-    {
-      "surface_id": "skill",
-      "owner": "one-person-lab",
-      "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available",
-      "source_contract": "contracts/pack_compiler_input.json",
-      "domain_policy": "domain_repo_declares_skill_command_contract_refs_only"
-    },
-    {
-      "surface_id": "product_entry_manifest",
-      "owner": "one-person-lab",
-      "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available",
-      "source_contract": "contracts/opl_domain_manifest_registration.json",
-      "domain_policy": "domain_repo_declares_registration_product_entry_refs_and_domain_authority_refs"
-    },
-    {
-      "surface_id": "domain_handler",
-      "owner": "one-person-lab",
-      "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available",
-      "source_contract": "contracts/pack_compiler_input.json",
-      "domain_policy": "domain_repo_implements_only_domain_authority_function_targets"
-    },
-    {
-      "surface_id": "status_read_model",
-      "owner": "one-person-lab",
-      "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available",
-      "source_contract": "contracts/generated_surface_handoff.json",
-      "domain_policy": "domain_repo_returns_receipts_refs_and_typed_blockers"
-    },
-    {
-      "surface_id": "workbench_drilldown",
-      "owner": "one-person-lab",
-      "target_role": "opl_hosted_surface",
-      "status": "descriptor_source_available",
-      "source_contract": "contracts/app_workbench_projection.json",
-      "domain_policy": "domain_repo_supplies_refs_status_receipts_candidates_and_blockers_only"
-    },
-    {
-      "surface_id": "scaleout_evidence_projection",
-      "owner": "one-person-lab",
-      "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available",
-      "source_contract": "contracts/real_target_agent_scaleout_evidence.json",
-      "domain_policy": "domain_repo_supplies_evidence_refs_without_target_domain_authority"
-    },
-    {
-      "surface_id": "trajectory_learning_projection",
-      "owner": "one-person-lab",
-      "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available",
-      "source_contract": "contracts/trajectory_learning_contract.json",
-      "domain_policy": "domain_repo_supplies_redacted_trajectory_atom_candidate_and_proposal_refs_only"
-    },
-    {
-      "surface_id": "live_stage_run_progress_projection",
-      "owner": "one-person-lab",
-      "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available",
-      "source_contract": "contracts/live_stage_run_progress_evidence.json",
-      "domain_policy": "domain_repo_supplies_owner_receipt_typed_blocker_human_gate_no_regression_and_long_soak_refs_only"
-    }
-  ],
-  "required_domain_handoff": [
-    "domain_pack_paths_exist_and_are_non_empty",
-    "stage_prompt_refs_resolve_to_domain_pack_files",
-    "owner_receipt_schema",
-    "typed_blocker_schema",
-    "minimal_authority_function_refs",
-    "no_forbidden_write_evidence",
-    "opl_domain_manifest_registration_contract",
-    "app_workbench_projection_contract",
-    "real_target_agent_scaleout_evidence_contract",
-    "registry_discovery_receipt",
-    "app_drilldown_readiness_receipt",
-    "trajectory_learning_contract",
-    "trajectory_atomization_receipt_refs",
-    "candidate_buffer_receipt_refs",
-    "ux_signal_not_quality_verdict_boundary",
-    "live_stage_run_progress_evidence_contract",
-    "retired_default_surface_ids"
-  ],
-  "marker": "generated_by_opl_standard_domain_agent_scaffold_v1",
-  "canonical_semantic_pack_root": "agent/",
-  "handoff_surfaces": [
-    {
-      "surface_id": "cli",
-      "owner": "one-person-lab",
-      "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available_without_repo_local_default_surface",
-      "source_contract": "contracts/pack_compiler_input.json",
-      "current_paths": [],
-      "current_surface_refs": [
-        "opl-generated-default-caller:opl-meta-agent/cli"
-      ],
-      "domain_policy": "domain_repo_has_no_default_surface_and_supplies_domain_contracts_only",
-      "retired_default_surface_id": "cli"
-    },
-    {
-      "surface_id": "mcp",
-      "owner": "one-person-lab",
-      "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available_without_repo_local_default_surface",
-      "source_contract": "contracts/pack_compiler_input.json",
-      "current_paths": [],
-      "current_surface_refs": [
-        "opl-generated-default-caller:opl-meta-agent/mcp"
-      ],
-      "domain_policy": "domain_repo_has_no_default_surface_and_supplies_domain_contracts_only",
-      "retired_default_surface_id": "mcp"
-    },
-    {
-      "surface_id": "skill",
-      "owner": "one-person-lab",
-      "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available_without_repo_local_default_surface",
-      "source_contract": "contracts/pack_compiler_input.json",
-      "current_paths": [],
-      "current_surface_refs": [
-        "opl-generated-default-caller:opl-meta-agent/skill"
-      ],
-      "domain_policy": "domain_repo_has_no_default_surface_and_supplies_domain_contracts_only",
-      "retired_default_surface_id": "skill"
-    },
-    {
-      "surface_id": "product_entry",
-      "owner": "one-person-lab",
-      "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available_without_repo_local_default_surface",
-      "source_contract": "contracts/opl_domain_manifest_registration.json",
-      "current_paths": [],
-      "current_surface_refs": [
-        "opl-generated-default-caller:opl-meta-agent/product_entry"
-      ],
-      "domain_policy": "domain_repo_has_no_default_surface_and_supplies_domain_contracts_only",
-      "retired_default_surface_id": "product_entry"
-    },
-    {
-      "surface_id": "product_status",
-      "owner": "one-person-lab",
-      "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available_without_repo_local_default_surface",
-      "source_contract": "contracts/generated_surface_handoff.json",
-      "current_paths": [],
-      "current_surface_refs": [
-        "opl-generated-default-caller:opl-meta-agent/product_status"
-      ],
-      "domain_policy": "domain_repo_has_no_default_surface_and_supplies_domain_contracts_only",
-      "retired_default_surface_id": "product_status"
-    },
-    {
-      "surface_id": "product_session",
-      "owner": "one-person-lab",
-      "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available_without_repo_local_default_surface",
-      "source_contract": "agent/stages/manifest.json",
-      "current_paths": [],
-      "current_surface_refs": [
-        "opl-generated-default-caller:opl-meta-agent/product_session"
-      ],
-      "domain_policy": "domain_repo_has_no_default_surface_and_supplies_domain_contracts_only",
-      "retired_default_surface_id": "product_session"
-    },
-    {
-      "surface_id": "domain_handler",
-      "owner": "one-person-lab",
-      "target_role": "opl_generated_surface",
-      "status": "descriptor_source_available_without_repo_local_default_surface",
-      "source_contract": "contracts/pack_compiler_input.json",
-      "current_paths": [],
-      "current_surface_refs": [
-        "opl-generated-default-caller:opl-meta-agent/domain_handler"
-      ],
-      "domain_policy": "domain_repo_has_no_default_surface_and_supplies_domain_contracts_only",
-      "retired_default_surface_id": "domain_handler"
-    },
-    {
-      "surface_id": "workbench",
-      "owner": "one-person-lab",
-      "target_role": "opl_hosted_surface",
-      "status": "descriptor_source_available_without_repo_local_default_surface",
-      "source_contract": "contracts/app_workbench_projection.json",
-      "current_paths": [],
-      "current_surface_refs": [
-        "opl-generated-default-caller:opl-meta-agent/workbench"
-      ],
-      "domain_policy": "domain_repo_has_no_default_surface_and_supplies_domain_contracts_only",
-      "retired_default_surface_id": "workbench"
-    }
-  ],
-  "trajectory_learning_contract_ref": "contracts/trajectory_learning_contract.json",
-  "live_stage_run_progress_evidence_ref": "contracts/live_stage_run_progress_evidence.json",
-  "functional_privatization_audit_ref": "contracts/functional_privatization_audit.json"
+  "source_contract_ref": "contracts/action_catalog.json",
+  "provider_manifest_ref": "contracts/foundry_provider.json",
+  "generated_surfaces": ["cli", "mcp", "skill", "product_entry", "openai", "ai_sdk", "status_read_model"],
+  "public_action_ids": ["engineer-agent"],
+  "internal_provider_operations": ["design", "diagnose"],
+  "projection_policy": {
+    "project_public_actions_only": true,
+    "project_internal_provider_operations": false,
+    "hosted_action_binding_kind": "foundry_binding"
+  },
+  "authority_boundary": {
+    "generated_surface_can_write_target_truth": false,
+    "generated_surface_can_materialize_or_evaluate": false,
+    "generated_surface_can_create_version_or_change_activation": false,
+    "generated_surface_can_claim_qualification": false
+  }
 }

@@ -1,33 +1,17 @@
 {
   "name": "opl-meta-agent",
-  "version": "0.3.6",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "build-agent-baseline": "node scripts/build-agent-baseline.ts",
-    "improve:external-suite": "node scripts/improve-from-agent-lab-suite.ts",
-    "agent:evidence": "node scripts/lib/agent-evidence-materializer.ts",
-    "takeover:test": "node scripts/takeover-agent.ts",
     "repo:hygiene": "scripts/repo-hygiene.sh",
-    "authority-functions:check": "scripts/run-with-repo-temp-env.sh node scripts/sync-authority-functions.ts --check",
-    "authority-functions:write": "scripts/run-with-repo-temp-env.sh node scripts/sync-authority-functions.ts --write",
-    "authority-functions:split": "scripts/run-with-repo-temp-env.sh node scripts/sync-authority-functions.ts --split",
-    "source-structure": "scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --advisory",
-    "source-structure:json": "scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --advisory --json",
-    "source-structure:strict": "scripts/run-with-repo-temp-env.sh node scripts/check-source-structure.ts --strict",
     "verify": "scripts/verify.sh",
-    "typecheck": "scripts/run-with-repo-temp-env.sh tsc --noEmit",
-    "test": "npm run test:smoke",
-    "test:smoke": "scripts/run-with-repo-temp-env.sh node --test tests/action-schema-refs.test.ts tests/contracts-repo-hygiene.test.ts tests/managed-framework-link.test.ts tests/contracts-action-authority.test.ts tests/contracts-domain-pack.test.ts tests/contracts-generated-surfaces.test.ts tests/contracts-foundry-series.test.ts tests/source-purity.test.ts tests/source-purity-boundary.test.ts tests/standard-agent-v2-boundary.test.ts tests/new-agent-delivery-gate.test.ts",
-    "test:behavior": "scripts/run-with-repo-temp-env.sh node --test tests/bootstrap-loop.test.ts tests/stage-decomposition-materializer.test.ts tests/standard-agent-developer-proof.test.ts tests/takeover-loop.test.ts tests/agent-evidence-materializer.test.ts tests/external-suite-*.test.ts tests/self-evolution-closeout.test.ts tests/foundry-lab-work-order.test.ts tests/target-*.test.ts tests/live-stage-run-progress-evidence.test.ts tests/new-agent-consumption-evidence.test.ts",
-    "test:full": "scripts/run-with-repo-temp-env.sh node --test tests/*.test.ts"
+    "test": "node --test tests/*.test.mjs",
+    "test:contracts": "node --test tests/contracts.test.mjs",
+    "test:full": "node --test tests/*.test.mjs"
   },
   "license": "Apache-2.0",
   "engines": {
     "node": ">=24.2.0"
-  },
-  "devDependencies": {
-    "@types/node": "^25.9.0",
-    "typescript": "^6.0.3"
   }
 }
