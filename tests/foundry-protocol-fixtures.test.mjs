@@ -9,6 +9,16 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const readJson = (relativePath) => JSON.parse(fs.readFileSync(path.join(root, relativePath), 'utf8'));
 
 const protocolVersion = 'opl-foundry-protocol.v1';
+const contentRefPattern = /^opl-content:\/\/sha256\/[a-f0-9]{64}$/;
+const contentRefKinds = [
+  'prompt_refs',
+  'skill_refs',
+  'knowledge_refs',
+  'helper_refs',
+  'model_refs',
+  'tool_refs',
+  'schema_refs',
+];
 const protocolDefinitions = {
   DesignRequest: {
     schemaRef: 'opl://foundry-protocol/DesignRequest',
@@ -157,6 +167,58 @@ test('fixture digest lineage is stable over JCS canonical JSON', () => {
   assert.match(digest(proposal), /^sha256:[a-f0-9]{64}$/);
 });
 
+test('fixture blueprint closes every content-bearing schema over exact SHA refs', () => {
+  const blueprint = readJson('contracts/fixtures/foundry-protocol/agent-blueprint.json');
+  const proposal = readJson('contracts/fixtures/foundry-protocol/evolution-proposal.json');
+
+  for (const candidate of [blueprint, proposal.next_blueprint]) {
+    assert.deepEqual(Object.keys(candidate.content_refs).sort(), [...contentRefKinds].sort());
+    for (const kind of contentRefKinds) {
+      assert.ok(Array.isArray(candidate.content_refs[kind]), `${kind} must be an array`);
+      candidate.content_refs[kind].forEach((ref) => assert.match(ref, contentRefPattern));
+      assert.equal(new Set(candidate.content_refs[kind]).size, candidate.content_refs[kind].length);
+    }
+    for (const stage of candidate.stage_graph.stages) {
+      assert.ok(candidate.content_refs.prompt_refs.includes(stage.prompt_ref), `missing Stage prompt ${stage.prompt_ref}`);
+      stage.skill_refs.forEach((ref) => {
+        assert.ok(candidate.content_refs.skill_refs.includes(ref), `missing Stage skill ${ref}`);
+      });
+      stage.knowledge_refs.forEach((ref) => {
+        assert.ok(candidate.content_refs.knowledge_refs.includes(ref), `missing Stage knowledge ${ref}`);
+      });
+    }
+
+    const schemaRefs = new Set(candidate.content_refs.schema_refs);
+    assert.equal(schemaRefs.size, candidate.content_refs.schema_refs.length);
+    for (const action of candidate.actions) {
+      assert.ok(schemaRefs.has(action.input_schema_ref), `missing action input schema ${action.input_schema_ref}`);
+      assert.ok(schemaRefs.has(action.output_schema_ref), `missing action output schema ${action.output_schema_ref}`);
+    }
+    for (const contract of candidate.artifact_contracts) {
+      assert.ok(schemaRefs.has(contract.schema_ref), `missing artifact schema ${contract.schema_ref}`);
+    }
+  }
+});
+
+test('fixture evidence carries absolute candidate observations and typed safety evidence', () => {
+  const evidence = readJson('contracts/fixtures/foundry-protocol/evidence-bundle.json');
+
+  assert.deepEqual(evidence.candidate_cost_observations, { total_usd: 1.5 });
+  assert.deepEqual(evidence.candidate_latency_observations, { p95_seconds: 8 });
+  for (const observations of [evidence.candidate_cost_observations, evidence.candidate_latency_observations]) {
+    Object.values(observations).forEach((value) => assert.ok(Number.isFinite(value) && value >= 0));
+  }
+  assert.ok(evidence.safety_observations.length > 0);
+  for (const observation of evidence.safety_observations) {
+    assert.deepEqual(Object.keys(observation), ['observation_id', 'event_type', 'severity', 'evidence_refs']);
+    assert.ok(['low', 'medium', 'high', 'critical'].includes(observation.severity));
+    assert.ok(observation.evidence_refs.length > 0);
+  }
+  assert.ok(Object.hasOwn(evidence, 'safety_delta'));
+  assert.ok(Object.hasOwn(evidence, 'cost_delta'));
+  assert.ok(Object.hasOwn(evidence, 'latency_delta'));
+});
+
 test('fixture no-change proposal preserves the exact blueprint and generated-Agent authority', () => {
   const request = readJson('contracts/fixtures/foundry-protocol/design-request.json');
   const blueprint = readJson('contracts/fixtures/foundry-protocol/agent-blueprint.json');
@@ -170,8 +232,8 @@ test('fixture no-change proposal preserves the exact blueprint and generated-Age
 
   for (const candidate of [blueprint, next]) {
     assert.deepEqual(candidate.authority_policy.permission_refs, request.constraints.permission_refs);
-    assert.deepEqual(candidate.authority_policy.owner_authority_refs, request.owner_authority_refs);
-    assert.equal(Object.hasOwn(candidate.authority_policy, 'owner_gate_refs'), false);
+    assert.equal(Object.hasOwn(candidate.authority_policy, 'owner_authority_refs'), false);
+    assert.equal(Object.hasOwn(request, 'owner_authority_refs'), false);
     const authorityFlags = Object.entries(candidate.authority_policy)
       .filter(([key]) => key.startsWith('generated_agent_can_modify_'));
     assert.equal(authorityFlags.length, 4);

@@ -21,10 +21,10 @@ The ordinary hosted entry is `opl agents run --domain oma --action engineer-agen
 
 OPL Foundry Kernel invokes exactly two internal operations. They are not public actions or tools.
 
-- `design` consumes `DesignRequest` and returns one complete `AgentBlueprint` with an embedded `EvalSpec`. Request-owned `owner_authority_refs` are immutable trust anchors; the Blueprint must project them and `constraints.permission_refs` exactly in separate fields and cannot expand either set.
+- `design` consumes `DesignRequest` and returns one complete `AgentBlueprint` with an embedded `EvalSpec`. The Blueprint must project `constraints.permission_refs` exactly and cannot expand that set. Owner authorization is an independent OPL policy and receipt boundary; it is never supplied or expanded by OMA protocol objects.
 - `diagnose` consumes the exact request, blueprint, and OPL-produced `EvidenceBundle`, then returns one complete `EvolutionProposal` with the next full blueprint.
 
-Content-bearing prompt, skill, knowledge, and helper refs use `opl-content://sha256/...`. The producing terminal Stage exposes the exact raw bytes as SHA-bound StageRun artifacts so OPL can persist and assemble them; OMA never selects candidate filesystem paths or writes version/activation state.
+Content-bearing prompt, skill, knowledge, helper, model, tool, and schema refs use `opl-content://sha256/...`. Every action input/output schema and artifact-contract schema must belong to `content_refs.schema_refs`. The producing terminal Stage exposes the exact raw bytes for every content ref as SHA-bound StageRun artifacts so OPL can persist and assemble them; OMA never selects candidate filesystem paths or writes version/activation state.
 
 OMA may raise a risk hint but cannot lower OPL's computed risk. OMA may add tests but cannot remove or weaken existing tests and cannot see protected test bodies.
 
@@ -34,7 +34,7 @@ The design route covers mission intake, design-basis admission, optional target 
 
 ## Diagnosis Route
 
-Diagnosis binds every root cause to the exact evidence digest and returns semantic changes, expected benefit, new tests, trade-offs, and risk hints. Platform failures remain in OPL retry/failure handling. If no admissible Agent-semantic change exists, OMA returns the exact current blueprint and an empty semantic diff. It never returns a file patch or execution instruction. A generated Agent may emit observations and improvement signals, but it cannot modify its own version, tests, permissions, authority, or activation pointer.
+Diagnosis binds every root cause to the exact evidence digest and returns semantic changes, expected benefit, new tests, trade-offs, and risk hints. `candidate_cost_observations` and `candidate_latency_observations` are absolute candidate measurements; `safety_observations` are typed evidence, while the delta fields remain comparisons. Platform failures remain in OPL retry/failure handling. If no admissible Agent-semantic change exists, OMA returns the exact current blueprint and an empty semantic diff. It never returns a file patch or execution instruction. A generated Agent may emit observations and improvement signals, but it cannot modify its own version, tests, permissions, authority, or activation pointer.
 
 ## Completion Boundary
 

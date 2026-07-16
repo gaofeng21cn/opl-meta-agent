@@ -5,7 +5,7 @@
   "target_agent_id": "fixture-research-agent",
   "target_domain_id": "fixture_research",
   "target_version_ref": null,
-  "design_request_digest": "sha256:5ab82899d94ef34ea391826efac5b6ce4e025af3f9c9d77e723f5cfaee414245",
+  "design_request_digest": "sha256:ddaeb1b0d89c056d0ac5a1aa29cacbe48b21ffecb7b16bf783e4fffe9db069e2",
   "generation": 0,
   "stage_graph": {
     "entry_stage_id": "evidence-synthesis",
@@ -61,19 +61,19 @@
       "action_id": "produce-research-brief",
       "summary": "Produce an evidence-grounded research brief.",
       "entry_stage_id": "evidence-synthesis",
-      "input_schema_ref": "opl://schema/fixture-research-agent/brief-request.v1",
-      "output_schema_ref": "opl://schema/fixture-research-agent/research-brief.v1"
+      "input_schema_ref": "opl-content://sha256/7777777777777777777777777777777777777777777777777777777777777777",
+      "output_schema_ref": "opl-content://sha256/8888888888888888888888888888888888888888888888888888888888888888"
     }
   ],
   "artifact_contracts": [
     {
       "artifact_type": "claim_support_map",
-      "schema_ref": "opl://schema/fixture-research-agent/claim-support-map.v1",
+      "schema_ref": "opl-content://sha256/9999999999999999999999999999999999999999999999999999999999999999",
       "authority_owner_ref": "opl://owner/fixture-research"
     },
     {
       "artifact_type": "research_brief",
-      "schema_ref": "opl://schema/fixture-research-agent/research-brief.v1",
+      "schema_ref": "opl-content://sha256/8888888888888888888888888888888888888888888888888888888888888888",
       "authority_owner_ref": "opl://owner/fixture-research"
     }
   ],
@@ -93,7 +93,12 @@
     "model_refs": [
       "opl-content://sha256/4444444444444444444444444444444444444444444444444444444444444444"
     ],
-    "tool_refs": []
+    "tool_refs": [],
+    "schema_refs": [
+      "opl-content://sha256/7777777777777777777777777777777777777777777777777777777777777777",
+      "opl-content://sha256/8888888888888888888888888888888888888888888888888888888888888888",
+      "opl-content://sha256/9999999999999999999999999999999999999999999999999999999999999999"
+    ]
   },
   "capability_requirements": [
     "opl://capability/evidence-synthesis",
@@ -104,9 +109,6 @@
     "artifact_owner_ref": "opl://owner/fixture-research",
     "quality_owner_ref": "opl://owner/fixture-research",
     "permission_refs": [],
-    "owner_authority_refs": [
-      "opl://owner-gate/fixture-research-agent/active"
-    ],
     "generated_agent_can_modify_versions": false,
     "generated_agent_can_modify_evaluation": false,
     "generated_agent_can_modify_permissions": false,

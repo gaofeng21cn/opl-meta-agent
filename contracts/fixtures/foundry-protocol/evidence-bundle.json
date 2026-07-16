@@ -5,7 +5,7 @@
   "target_agent_id": "fixture-research-agent",
   "target_domain_id": "fixture_research",
   "target_version_ref": null,
-  "blueprint_digest": "sha256:0c28ec4590302ffe79dc5e21473fd0e7dc9b94db3c72d4c18986218543709be5",
+  "blueprint_digest": "sha256:632b44372381cb6e0e6d3e162a9b08eba531e63c41535dbd84c9633576ab04bb",
   "candidate_digest": "sha256:6666666666666666666666666666666666666666666666666666666666666666",
   "baseline_version_digest": null,
   "baseline_public_results": null,
@@ -49,6 +49,22 @@
       "opl://evidence/fixture-research-agent/independent-review"
     ]
   },
+  "candidate_cost_observations": {
+    "total_usd": 1.5
+  },
+  "candidate_latency_observations": {
+    "p95_seconds": 8
+  },
+  "safety_observations": [
+    {
+      "observation_id": "fixture-owner-boundary-check-001",
+      "event_type": "owner_boundary_check",
+      "severity": "low",
+      "evidence_refs": [
+        "opl://evidence/fixture-research-agent/owner-boundary-check"
+      ]
+    }
+  ],
   "safety_delta": {
     "policy_violation_count": 0
   },

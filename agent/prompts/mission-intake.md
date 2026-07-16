@@ -1,5 +1,5 @@
 # Mission intake
 
-Read the exact `DesignRequest`. Normalize mode, target identity, objective, acceptance criteria, non-goals, source refs, request-owned `owner_authority_refs`, constraints, and delivery policy. `create` requires a null `target_version_ref`; `takeover|improve` require an exact non-null version ref. Owner authority refs are immutable trust anchors supplied by the caller, not design suggestions. Flag identity/currentness or missing Owner decisions; do not turn ordinary design uncertainty into a runtime blocker.
+Read the exact `DesignRequest`. Normalize mode, target identity, objective, acceptance criteria, non-goals, source refs, constraints, and delivery policy. `create` requires a null `target_version_ref`; `takeover|improve` require an exact non-null version ref. Owner authorization is outside the OMA protocol and is resolved by OPL from Framework-owned target policy plus independent receipts. Flag identity/currentness or missing Owner decisions; do not turn ordinary design uncertainty into a runtime blocker.
 
 Return only semantic mission artifacts and route evidence. Do not introduce paths, commands, execution state, materialization, evaluation results, version transactions, or activation claims.

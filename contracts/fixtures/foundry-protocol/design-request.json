@@ -17,9 +17,6 @@
   "source_refs": [
     "opl://source/fixture-research-agent/mission-v1"
   ],
-  "owner_authority_refs": [
-    "opl://owner-gate/fixture-research-agent/active"
-  ],
   "constraints": {
     "capability_refs": [
       "opl://capability/evidence-synthesis"
