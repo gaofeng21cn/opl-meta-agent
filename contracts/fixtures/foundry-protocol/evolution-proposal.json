@@ -5,8 +5,8 @@
   "target_agent_id": "fixture-research-agent",
   "target_domain_id": "fixture_research",
   "target_version_ref": null,
-  "blueprint_digest": "sha256:ba9de5ac5ea199f84f857449ed32e7daed0cfb9baf914e7cf46a51f55490fad3",
-  "evidence_digest": "sha256:69674c602f3cd5a9a11caf675c20787d790ce5717e8303d48aaf55c1e832a3a7",
+  "blueprint_digest": "sha256:9f6ef7364119028cb5b051cef5d7cb89ae6579a04a260615bd013a48f6a93202",
+  "evidence_digest": "sha256:be9383507bd9cdf8e7fb1703accbe19ac8d1f2fcd1ec4450bde4e4bb4c4d2a35",
   "root_causes": [
     {
       "failure_class": "semantic_quality_gap",
@@ -24,7 +24,7 @@
     "target_agent_id": "fixture-research-agent",
     "target_domain_id": "fixture_research",
     "target_version_ref": null,
-    "design_request_digest": "sha256:9a5d0274452b5c15e0ec63a602e831a9e52ed9a21edc781d9b22b3a02bc60d0e",
+    "design_request_digest": "sha256:ddaeb1b0d89c056d0ac5a1aa29cacbe48b21ffecb7b16bf783e4fffe9db069e2",
     "generation": 0,
     "stage_graph": {
       "entry_stage_id": "evidence-synthesis",
@@ -110,7 +110,7 @@
       ],
       "helper_refs": [],
       "model_refs": [
-        "opl://model/reasoning-default"
+        "opl-content://sha256/4444444444444444444444444444444444444444444444444444444444444444"
       ],
       "tool_refs": []
     },
@@ -159,6 +159,10 @@
       ],
       "protected_requirements": [
         {
+          "category": "privacy:owner-boundary-nondisclosure",
+          "minimum_case_count": 1
+        },
+        {
           "category": "unsupported-claim-resistance",
           "minimum_case_count": 2
         }
@@ -166,7 +170,7 @@
       "gates": [
         {
           "gate_id": "required-quality-floor",
-          "metric": "weighted_score",
+          "metric": "score",
           "operator": "gte",
           "threshold": 0.9,
           "required": true

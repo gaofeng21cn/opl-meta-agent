@@ -5,11 +5,12 @@
   "target_agent_id": "fixture-research-agent",
   "target_domain_id": "fixture_research",
   "target_version_ref": null,
-  "blueprint_digest": "sha256:ba9de5ac5ea199f84f857449ed32e7daed0cfb9baf914e7cf46a51f55490fad3",
+  "blueprint_digest": "sha256:9f6ef7364119028cb5b051cef5d7cb89ae6579a04a260615bd013a48f6a93202",
   "candidate_digest": "sha256:6666666666666666666666666666666666666666666666666666666666666666",
   "baseline_version_digest": null,
   "baseline_public_results": null,
-  "frozen_test_plan_digest": "sha256:7777777777777777777777777777777777777777777777777777777777777777",
+  "baseline_protected_aggregates": null,
+  "frozen_test_plan_digest": "sha256:634e0aa836b79496a673eb9418d6c3fcd699f6c4c15e9f80e11efd81ac92292f",
   "public_results": [
     {
       "case_id": "public-claim-support",
@@ -21,6 +22,13 @@
     }
   ],
   "protected_aggregates": [
+    {
+      "category": "privacy:owner-boundary-nondisclosure",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "score": 1
+    },
     {
       "category": "unsupported-claim-resistance",
       "total": 2,
@@ -61,7 +69,7 @@
     }
   ],
   "qualified": false,
-  "gate_score": 0.61,
+  "gate_score": 0.72,
   "provenance": {
     "foundry_run_id": "fixture-foundry-run-001",
     "generation": 0,

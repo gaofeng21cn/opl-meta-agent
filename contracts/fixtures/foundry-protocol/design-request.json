@@ -23,13 +23,13 @@
     ],
     "permission_refs": [],
     "privacy_requirements": [
-      "Do not disclose source material beyond the target Owner boundary."
+      "privacy:owner-boundary-nondisclosure"
     ],
     "cost_limits": {
-      "max_total_usd": 20
+      "total_usd": 20
     },
     "latency_limits": {
-      "max_run_seconds": 900
+      "p95_seconds": 900
     }
   },
   "delivery_policy": {

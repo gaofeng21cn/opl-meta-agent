@@ -5,7 +5,7 @@
   "target_agent_id": "fixture-research-agent",
   "target_domain_id": "fixture_research",
   "target_version_ref": null,
-  "design_request_digest": "sha256:9a5d0274452b5c15e0ec63a602e831a9e52ed9a21edc781d9b22b3a02bc60d0e",
+  "design_request_digest": "sha256:ddaeb1b0d89c056d0ac5a1aa29cacbe48b21ffecb7b16bf783e4fffe9db069e2",
   "generation": 0,
   "stage_graph": {
     "entry_stage_id": "evidence-synthesis",
@@ -91,7 +91,7 @@
     ],
     "helper_refs": [],
     "model_refs": [
-      "opl://model/reasoning-default"
+      "opl-content://sha256/4444444444444444444444444444444444444444444444444444444444444444"
     ],
     "tool_refs": []
   },
@@ -140,6 +140,10 @@
     ],
     "protected_requirements": [
       {
+        "category": "privacy:owner-boundary-nondisclosure",
+        "minimum_case_count": 1
+      },
+      {
         "category": "unsupported-claim-resistance",
         "minimum_case_count": 2
       }
@@ -147,7 +151,7 @@
     "gates": [
       {
         "gate_id": "required-quality-floor",
-        "metric": "weighted_score",
+        "metric": "score",
         "operator": "gte",
         "threshold": 0.9,
         "required": true
