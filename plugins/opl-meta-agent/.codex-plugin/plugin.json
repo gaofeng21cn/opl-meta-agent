@@ -1,6 +1,6 @@
 {
   "name": "opl-meta-agent",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "description": "Codex plugin carrier for the OPL Meta Agent domain app.",
   "author": {
     "name": "Gao Feng",
