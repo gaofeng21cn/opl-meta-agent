@@ -16,7 +16,8 @@
     "foundry_provider": "contracts/foundry_provider.json",
     "stage_manifest": "agent/stages/manifest.json",
     "pack_compiler_input": "contracts/pack_compiler_input.json",
-    "generated_surface_handoff": "contracts/generated_surface_handoff.json"
+    "generated_surface_handoff": "contracts/generated_surface_handoff.json",
+    "functional_privatization_audit": "contracts/functional_privatization_audit.json"
   },
   "standard_agent_interface": {
     "version": "opl_standard_agent_interface.v1",

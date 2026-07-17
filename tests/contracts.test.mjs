@@ -139,6 +139,85 @@ test('provider identity and stage routes are internally closed', () => {
   }
 });
 
+test('generated surfaces resolve to real refs-only OMA targets without owner proof claims', () => {
+  const handoff = readJson('contracts/generated_surface_handoff.json');
+  const audit = readJson('contracts/functional_privatization_audit.json');
+  const compiler = readJson('contracts/pack_compiler_input.json');
+  const descriptor = readJson('contracts/domain_descriptor.json');
+  const registration = readJson('contracts/opl_domain_manifest_registration.json');
+  const expectedSurfaceIds = [
+    'cli',
+    'mcp',
+    'skill',
+    'product_entry_manifest',
+    'domain_handler',
+    'status_read_model',
+    'workbench_drilldown',
+  ];
+  const moduleBySurface = new Map();
+
+  assert.deepEqual(handoff.handoff_surfaces.map((surface) => surface.surface_id), expectedSurfaceIds);
+  assert.equal(handoff.generated_surface_owner, 'one-person-lab');
+  assert.equal(handoff.domain_repo_can_own_generated_surface, false);
+
+  for (const module of audit.modules) {
+    assert.equal(module.classification, 'refs_only_domain_adapter');
+    assert.equal(module.standardization_layer, 'private_platform_residue_inventory');
+    assert.ok(module.active_caller_status.startsWith('refs_only_'));
+    assert.ok(module.active_callers.length > 0);
+    assert.ok(module.migration_action.length > 0);
+    assert.ok(module.retention_reason.length > 0);
+    module.code_paths.forEach((relativePath) => {
+      assert.ok(fs.statSync(path.join(root, relativePath)).isFile(), `missing refs-only target ${relativePath}`);
+    });
+    module.current_surface_refs.forEach((surfaceId) => {
+      assert.equal(moduleBySurface.has(surfaceId), false, `duplicate target proof for ${surfaceId}`);
+      moduleBySurface.set(surfaceId, module);
+    });
+  }
+
+  for (const surface of handoff.handoff_surfaces) {
+    assert.equal(surface.owner, 'one-person-lab');
+    assert.match(surface.target_role, /^(?:opl_generated_|opl_hosted_|refs_only_)/);
+    surface.current_paths.forEach((relativePath) => {
+      assert.ok(fs.statSync(path.join(root, relativePath)).isFile(), `missing handoff target ${relativePath}`);
+    });
+    assert.ok(moduleBySurface.has(surface.surface_id), `missing active-caller module for ${surface.surface_id}`);
+  }
+
+  const foundryBindingSurface = handoff.handoff_surfaces.find((surface) => surface.surface_id === 'domain_handler');
+  const foundryBindingModule = moduleBySurface.get('domain_handler');
+  assert.equal(foundryBindingSurface.target_role, 'refs_only_foundry_provider_descriptor_target');
+  assert.equal(foundryBindingModule.module_id, 'oma_foundry_binding_descriptor_refs');
+  assert.equal(foundryBindingModule.active_caller_status.includes('domain_handler'), false);
+
+  assert.deepEqual(audit.bridge_exit_gate.physical_delete_authorization_refs, []);
+  assert.deepEqual(audit.authority_boundary, {
+    domain_can_claim_generic_runtime_owner: false,
+    domain_repo_can_own_generated_surface: false,
+    oma_can_write_foundry_run_state: false,
+    oma_can_materialize_or_evaluate: false,
+    oma_can_create_version_or_change_activation: false,
+    opl_can_write_target_domain_truth: false,
+    provider_completion_is_qualification: false,
+  });
+  assert.equal(audit.retired_generated_surface_provenance.length, 1);
+  audit.retired_generated_surface_provenance[0].provenance_refs.forEach((relativePath) => {
+    assert.ok(fs.statSync(path.join(root, relativePath)).isFile(), `missing retirement provenance ${relativePath}`);
+  });
+
+  assert.ok(compiler.required_domain_pack_paths.includes('contracts/functional_privatization_audit.json'));
+  assert.ok(compiler.declarative_domain_pack.length > 0);
+  assert.equal(
+    descriptor.standard_contract_refs.functional_privatization_audit,
+    'contracts/functional_privatization_audit.json',
+  );
+  assert.equal(
+    registration.domain_manifest.functional_privatization_audit_ref,
+    'contracts/functional_privatization_audit.json',
+  );
+});
+
 test('OMA protocol declarations contain no execution or release authority fields', () => {
   const forbiddenKeys = new Set([
     'repo_path', 'repo_dir', 'repo_root', 'worktree', 'branch', 'command', 'commands',

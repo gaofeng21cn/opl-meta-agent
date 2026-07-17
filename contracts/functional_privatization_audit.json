@@ -1,0 +1,94 @@
+{
+  "surface_kind": "functional_privatization_audit",
+  "schema_version": 1,
+  "owner": "oma",
+  "domain_id": "agent_engineering",
+  "target_domain_id": "agent_engineering",
+  "modules": [
+    {
+      "module_id": "oma_generated_public_action_descriptor_refs",
+      "classification": "refs_only_domain_adapter",
+      "owner": "oma",
+      "code_paths": ["contracts/action_catalog.json", "agent/primary_skill/SKILL.md"],
+      "current_surface_refs": ["cli", "mcp", "skill", "product_entry_manifest"],
+      "active_callers": [
+        "OPL generated CLI descriptor",
+        "OPL generated MCP descriptor",
+        "OPL generated skill descriptor",
+        "OPL generated product-entry descriptor"
+      ],
+      "active_caller_status": "refs_only_action_descriptors_consumed_by_opl_generated_surfaces",
+      "migration_action": "project_engineer_agent_foundry_binding_without_repo_owned_wrappers",
+      "retention_reason": "OMA retains semantic action and skill refs while OPL owns generated wrappers and invocation state.",
+      "standardization_layer": "private_platform_residue_inventory",
+      "semantic_equivalence_status": "cleared_by_boundary",
+      "semantic_equivalence_evidence_refs": [
+        "contracts/action_catalog.json#actions/0/execution_binding",
+        "contracts/generated_surface_handoff.json#handoff_surfaces"
+      ]
+    },
+    {
+      "module_id": "oma_foundry_binding_descriptor_refs",
+      "classification": "refs_only_domain_adapter",
+      "owner": "oma",
+      "code_paths": ["contracts/action_catalog.json", "contracts/foundry_provider.json"],
+      "current_surface_refs": ["domain_handler"],
+      "active_callers": ["OPL generated domain-handler descriptor for Foundry-bound actions"],
+      "active_caller_status": "refs_only_foundry_binding_descriptor_consumed_by_opl_foundry_kernel_with_no_repo_local_action_target",
+      "migration_action": "route_engineer_agent_to_opl_foundry_binding_without_repo_local_domain_handler",
+      "retention_reason": "OMA exposes design and diagnose provider operation refs while OPL owns invocation and FoundryRun state.",
+      "standardization_layer": "private_platform_residue_inventory",
+      "semantic_equivalence_status": "cleared_by_boundary",
+      "semantic_equivalence_evidence_refs": [
+        "contracts/action_catalog.json#actions/0/execution_binding",
+        "contracts/foundry_provider.json#operations"
+      ]
+    },
+    {
+      "module_id": "oma_foundry_run_projection_refs",
+      "classification": "refs_only_domain_adapter",
+      "owner": "oma",
+      "code_paths": [
+        "contracts/foundry_agent_series.json",
+        "contracts/foundry_provider.json",
+        "agent/stages/manifest.json"
+      ],
+      "current_surface_refs": ["status_read_model", "workbench_drilldown"],
+      "active_callers": ["OPL generated FoundryRun status read model", "OPL hosted Foundry workbench"],
+      "active_caller_status": "refs_only_foundry_provider_and_stage_refs_consumed_by_opl_generated_or_hosted_projections",
+      "migration_action": "project_provider_and_stage_refs_without_repo_owned_status_or_workbench_runtime",
+      "retention_reason": "OMA retains provider and Stage semantics while OPL owns FoundryRun state and hosted operator surfaces.",
+      "standardization_layer": "private_platform_residue_inventory",
+      "semantic_equivalence_status": "cleared_by_boundary",
+      "semantic_equivalence_evidence_refs": [
+        "contracts/foundry_agent_series.json#authority_boundary",
+        "contracts/foundry_provider.json#authority_boundary",
+        "agent/stages/manifest.json#authority_boundary"
+      ]
+    }
+  ],
+  "retired_generated_surface_provenance": [
+    {
+      "surface_id": "legacy_repo_local_execution_facade",
+      "replacement_ref": "contracts/generated_surface_handoff.json#handoff_surfaces",
+      "provenance_refs": ["docs/history/process/retired-surface-provenance.md"]
+    }
+  ],
+  "bridge_exit_gate": {
+    "physical_delete_authorization_refs": [],
+    "no_forbidden_write_refs": [
+      "contracts/generated_surface_handoff.json#authority_boundary",
+      "contracts/foundry_provider.json#authority_boundary"
+    ],
+    "provenance_refs": ["docs/history/process/retired-surface-provenance.md"]
+  },
+  "authority_boundary": {
+    "domain_can_claim_generic_runtime_owner": false,
+    "domain_repo_can_own_generated_surface": false,
+    "oma_can_write_foundry_run_state": false,
+    "oma_can_materialize_or_evaluate": false,
+    "oma_can_create_version_or_change_activation": false,
+    "opl_can_write_target_domain_truth": false,
+    "provider_completion_is_qualification": false
+  }
+}

@@ -17,7 +17,8 @@
     "action_catalog_ref": "contracts/action_catalog.json",
     "provider_manifest_ref": "contracts/foundry_provider.json",
     "pack_compiler_input_ref": "contracts/pack_compiler_input.json",
-    "generated_surface_handoff_ref": "contracts/generated_surface_handoff.json"
+    "generated_surface_handoff_ref": "contracts/generated_surface_handoff.json",
+    "functional_privatization_audit_ref": "contracts/functional_privatization_audit.json"
   },
   "provided_outputs": ["AgentBlueprint", "EvalSpec", "EvolutionProposal"],
   "authority_boundary": {
