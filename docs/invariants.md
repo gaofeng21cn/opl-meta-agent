@@ -1,5 +1,10 @@
 # Invariants
 
+Owner: `oma`
+Purpose: `invariants`
+State: `active_truth`
+Machine boundary: Human-readable hard constraints. Machine truth lives in contracts, agent files, tests, and OPL protocol validation.
+
 1. `engineer-agent` is the only public OMA action.
 2. `design|diagnose` are internal provider operations only.
 3. OMA never owns FoundryRun state, materialization, evaluation execution, evidence persistence, versions, activation, or rollback.

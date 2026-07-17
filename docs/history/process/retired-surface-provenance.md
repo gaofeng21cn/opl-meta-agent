@@ -1,6 +1,9 @@
 # Retired Surface Provenance
 
+Owner: `oma`
+Purpose: `retired_surface_provenance`
 State: `historical_tombstone`
+Machine boundary: Human-readable no-resurrection record. Current machine truth lives in contracts, agent files, tests, and OPL protocol validation.
 
 OMA now follows one boundary: OPL orchestrates; OMA decides Agent engineering semantics. The cutover is intentionally incompatible and has no legacy adapter.
 

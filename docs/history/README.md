@@ -1,5 +1,10 @@
 # OMA Historical Archive
 
+Owner: `oma`
+Purpose: `history_index`
+State: `historical_archive_index`
+Machine boundary: Human-readable migration navigation. Current machine truth lives in `contracts/`, `agent/`, tests, and OPL protocol validation.
+
 This directory contains migration tombstones and provenance only. It is not a source of current contracts, runtime status, readiness, qualification, activation, or Owner acceptance.
 
 Current OMA truth lives in:

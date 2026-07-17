@@ -1,5 +1,10 @@
 # Decisions
 
+Owner: `oma`
+Purpose: `decisions`
+State: `active_truth`
+Machine boundary: Human-readable accepted decisions. Machine truth lives in contracts, agent files, tests, and OPL protocol validation.
+
 ## 2026-07-16: OMA becomes a pure Foundry semantic provider
 
 Accepted.

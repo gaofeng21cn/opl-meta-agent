@@ -1,5 +1,10 @@
 # Architecture
 
+Owner: `oma`
+Purpose: `architecture`
+State: `active_truth`
+Machine boundary: Human-readable ownership and protocol flow. Machine truth lives in OMA contracts and agent files plus the OPL-owned Foundry schemas and validators.
+
 OMA is a pure semantic provider behind the OPL Foundry Kernel.
 
 ```text
