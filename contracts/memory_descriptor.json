@@ -1,0 +1,25 @@
+{
+  "surface_kind": "domain_memory_descriptor_locator",
+  "schema_version": 1,
+  "agent_id": "oma",
+  "package_id": "oma",
+  "domain_id": "agent_engineering",
+  "owner": "oma",
+  "memory_ref_id": "oma_agent_engineering_memory",
+  "memory_family": "agent_engineering_semantic_memory",
+  "memory_body_owner": "oma",
+  "memory_body_status": "domain_owned_not_materialized_in_repo",
+  "opl_projection_policy": "locator_and_receipt_refs_only",
+  "policy_refs": [
+    "agent/knowledge/evidence-learning-policy.md",
+    "agent/knowledge/transferable-agent-practices.md"
+  ],
+  "authority_boundary": {
+    "domain_memory_accept_reject_owner": "oma",
+    "opl_can_write_memory_body": false,
+    "opl_can_accept_or_reject_writeback": false,
+    "opl_can_own_memory_verdict": false,
+    "opl_can_authorize_quality_or_export": false,
+    "provider_completion_is_memory_acceptance": false
+  }
+}

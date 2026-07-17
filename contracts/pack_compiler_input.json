@@ -10,6 +10,7 @@
   "generated_surface_owner": "one-person-lab",
   "provider_manifest_ref": "contracts/foundry_provider.json",
   "functional_privatization_audit_ref": "contracts/functional_privatization_audit.json",
+  "memory_descriptor_ref": "contracts/memory_descriptor.json",
   "required_domain_pack_paths": [
     "agent/primary_skill/SKILL.md",
     "agent/professional_skills/oma-design-basis-architecture/SKILL.md",
@@ -54,6 +55,7 @@
     "contracts/fixtures/foundry-protocol/evolution-proposal.json",
     "contracts/generated_surface_handoff.json",
     "contracts/functional_privatization_audit.json",
+    "contracts/memory_descriptor.json",
     "contracts/opl_agent_package_manifest.json",
     "contracts/opl_domain_manifest_registration.json",
     "contracts/stage_quality_cycle_policy.json"
@@ -67,6 +69,7 @@
     "skill_refs",
     "policy_tables",
     "quality_rubric_refs",
+    "memory_policy",
     "foundry_provider_refs",
     "foundry_protocol_conformance_fixtures"
   ],

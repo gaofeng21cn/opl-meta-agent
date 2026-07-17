@@ -48,6 +48,7 @@ test('provider identity and stage routes are internally closed', () => {
     'contracts/foundry_agent_series.json',
     'contracts/foundry_provider.json',
     'contracts/foundry_protocol_fixture_manifest.json',
+    'contracts/memory_descriptor.json',
     'contracts/opl_agent_package_manifest.json',
     'contracts/opl_domain_manifest_registration.json',
     'contracts/pack_compiler_input.json',
@@ -144,6 +145,7 @@ test('generated surfaces resolve to real refs-only OMA targets without owner pro
   const audit = readJson('contracts/functional_privatization_audit.json');
   const compiler = readJson('contracts/pack_compiler_input.json');
   const descriptor = readJson('contracts/domain_descriptor.json');
+  const memory = readJson('contracts/memory_descriptor.json');
   const registration = readJson('contracts/opl_domain_manifest_registration.json');
   const expectedSurfaceIds = [
     'cli',
@@ -191,6 +193,27 @@ test('generated surfaces resolve to real refs-only OMA targets without owner pro
   assert.equal(foundryBindingModule.module_id, 'oma_foundry_binding_descriptor_refs');
   assert.equal(foundryBindingModule.active_caller_status.includes('domain_handler'), false);
 
+  assert.deepEqual(memory.authority_boundary, {
+    domain_memory_accept_reject_owner: 'oma',
+    opl_can_write_memory_body: false,
+    opl_can_accept_or_reject_writeback: false,
+    opl_can_own_memory_verdict: false,
+    opl_can_authorize_quality_or_export: false,
+    provider_completion_is_memory_acceptance: false,
+  });
+  assert.equal(memory.memory_body_owner, 'oma');
+  assert.equal(memory.memory_body_status, 'domain_owned_not_materialized_in_repo');
+  assert.equal(memory.opl_projection_policy, 'locator_and_receipt_refs_only');
+  memory.policy_refs.forEach((relativePath) => {
+    assert.ok(fs.statSync(path.join(root, relativePath)).isFile(), `missing memory policy ref ${relativePath}`);
+  });
+  const projectionModule = moduleBySurface.get('status_read_model');
+  assert.ok(projectionModule.code_paths.includes('contracts/memory_descriptor.json'));
+  for (const surfaceId of ['status_read_model', 'workbench_drilldown']) {
+    const surface = handoff.handoff_surfaces.find((entry) => entry.surface_id === surfaceId);
+    assert.ok(surface.current_paths.includes('contracts/memory_descriptor.json'));
+  }
+
   assert.deepEqual(audit.bridge_exit_gate.physical_delete_authorization_refs, []);
   assert.deepEqual(audit.authority_boundary, {
     domain_can_claim_generic_runtime_owner: false,
@@ -207,6 +230,9 @@ test('generated surfaces resolve to real refs-only OMA targets without owner pro
   });
 
   assert.ok(compiler.required_domain_pack_paths.includes('contracts/functional_privatization_audit.json'));
+  assert.ok(compiler.required_domain_pack_paths.includes('contracts/memory_descriptor.json'));
+  assert.equal(compiler.memory_descriptor_ref, 'contracts/memory_descriptor.json');
+  assert.ok(compiler.declarative_domain_pack.includes('memory_policy'));
   assert.ok(compiler.declarative_domain_pack.length > 0);
   assert.equal(
     descriptor.standard_contract_refs.functional_privatization_audit,
@@ -216,6 +242,8 @@ test('generated surfaces resolve to real refs-only OMA targets without owner pro
     registration.domain_manifest.functional_privatization_audit_ref,
     'contracts/functional_privatization_audit.json',
   );
+  assert.equal(descriptor.standard_contract_refs.memory_descriptor, 'contracts/memory_descriptor.json');
+  assert.equal(registration.domain_manifest.memory_descriptor_ref, 'contracts/memory_descriptor.json');
 });
 
 test('OMA protocol declarations contain no execution or release authority fields', () => {
@@ -291,14 +319,19 @@ test('all declared repo-local refs exist and primary skill mirror is exact', () 
 
 test('package and plugin carriers project the canonical OMA skill at one version', () => {
   const npmPackage = readJson('package.json');
+  const npmLock = readJson('package-lock.json');
   const agentPackage = readJson('contracts/opl_agent_package_manifest.json');
   const plugin = readJson('plugins/opl-meta-agent/.codex-plugin/plugin.json');
   const capabilityMap = readJson('contracts/capability_map.json');
   const projection = capabilityMap.primary_skill_capability.carrier_projection_contract;
+  const statusDoc = fs.readFileSync(path.join(root, 'docs/status.md'), 'utf8');
 
-  assert.equal(npmPackage.version, '0.4.0');
+  assert.equal(npmPackage.version, '0.4.1');
+  assert.equal(npmLock.version, npmPackage.version);
+  assert.equal(npmLock.packages[''].version, npmPackage.version);
   assert.equal(agentPackage.version, npmPackage.version);
   assert.equal(plugin.version, npmPackage.version);
+  assert.match(statusDoc, /current source release line is `0\.4\.1`/);
   assert.equal(plugin.name, 'opl-meta-agent');
   assert.equal(plugin.skills, './skills/');
   assert.deepEqual(agentPackage.codex_surface.required_skill_ids, ['opl-meta-agent']);

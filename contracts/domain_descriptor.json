@@ -17,7 +17,8 @@
     "stage_manifest": "agent/stages/manifest.json",
     "pack_compiler_input": "contracts/pack_compiler_input.json",
     "generated_surface_handoff": "contracts/generated_surface_handoff.json",
-    "functional_privatization_audit": "contracts/functional_privatization_audit.json"
+    "functional_privatization_audit": "contracts/functional_privatization_audit.json",
+    "memory_descriptor": "contracts/memory_descriptor.json"
   },
   "standard_agent_interface": {
     "version": "opl_standard_agent_interface.v1",

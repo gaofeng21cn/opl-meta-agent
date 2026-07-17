@@ -48,14 +48,14 @@
     {
       "surface_id": "status_read_model",
       "owner": "one-person-lab",
-      "current_paths": ["contracts/foundry_agent_series.json"],
+      "current_paths": ["contracts/foundry_agent_series.json", "contracts/memory_descriptor.json"],
       "current_role": "refs_only_foundry_run_projection_contract",
       "target_role": "opl_generated_foundry_run_refs_status_read_model_surface"
     },
     {
       "surface_id": "workbench_drilldown",
       "owner": "one-person-lab",
-      "current_paths": ["agent/stages/manifest.json"],
+      "current_paths": ["agent/stages/manifest.json", "contracts/memory_descriptor.json"],
       "current_role": "refs_only_foundry_stage_projection_contract",
       "target_role": "opl_hosted_foundry_run_refs_workbench_surface"
     }

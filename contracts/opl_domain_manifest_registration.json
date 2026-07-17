@@ -18,7 +18,8 @@
     "provider_manifest_ref": "contracts/foundry_provider.json",
     "pack_compiler_input_ref": "contracts/pack_compiler_input.json",
     "generated_surface_handoff_ref": "contracts/generated_surface_handoff.json",
-    "functional_privatization_audit_ref": "contracts/functional_privatization_audit.json"
+    "functional_privatization_audit_ref": "contracts/functional_privatization_audit.json",
+    "memory_descriptor_ref": "contracts/memory_descriptor.json"
   },
   "provided_outputs": ["AgentBlueprint", "EvalSpec", "EvolutionProposal"],
   "authority_boundary": {

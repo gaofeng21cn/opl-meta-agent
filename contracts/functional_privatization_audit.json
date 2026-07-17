@@ -51,18 +51,20 @@
       "code_paths": [
         "contracts/foundry_agent_series.json",
         "contracts/foundry_provider.json",
+        "contracts/memory_descriptor.json",
         "agent/stages/manifest.json"
       ],
       "current_surface_refs": ["status_read_model", "workbench_drilldown"],
       "active_callers": ["OPL generated FoundryRun status read model", "OPL hosted Foundry workbench"],
-      "active_caller_status": "refs_only_foundry_provider_and_stage_refs_consumed_by_opl_generated_or_hosted_projections",
-      "migration_action": "project_provider_and_stage_refs_without_repo_owned_status_or_workbench_runtime",
-      "retention_reason": "OMA retains provider and Stage semantics while OPL owns FoundryRun state and hosted operator surfaces.",
+      "active_caller_status": "refs_only_foundry_provider_stage_and_memory_locator_refs_consumed_by_opl_generated_or_hosted_projections",
+      "migration_action": "project_provider_stage_and_memory_locator_refs_without_repo_owned_status_or_workbench_runtime",
+      "retention_reason": "OMA retains provider, Stage, and memory locator semantics while OPL owns FoundryRun state and hosted operator surfaces.",
       "standardization_layer": "private_platform_residue_inventory",
       "semantic_equivalence_status": "cleared_by_boundary",
       "semantic_equivalence_evidence_refs": [
         "contracts/foundry_agent_series.json#authority_boundary",
         "contracts/foundry_provider.json#authority_boundary",
+        "contracts/memory_descriptor.json#authority_boundary",
         "agent/stages/manifest.json#authority_boundary"
       ]
     }
