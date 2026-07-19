@@ -425,6 +425,10 @@ test('repo-local execution layer is physically absent', () => {
   forbiddenPaths.forEach((relativePath) => assert.equal(fs.existsSync(path.join(root, relativePath)), false, `execution residue: ${relativePath}`));
 
   assert.deepEqual(fs.readdirSync(path.join(root, 'scripts')).sort(), ['repo-hygiene.sh', 'verify.sh']);
+  const repoHygiene = fs.readFileSync(path.join(root, 'scripts', 'repo-hygiene.sh'), 'utf8');
+  assert.match(repoHygiene, /source_hygiene_args=\(workspace source-hygiene --source-root/);
+  assert.match(repoHygiene, /source_hygiene_args\+=\(--fix\)/);
+  assert.doesNotMatch(repoHygiene, /\bfind \.|\brm -rf\b|git check-ignore/);
   const packageManifest = readJson('package.json');
   assert.deepEqual(Object.keys(packageManifest.scripts).sort(), [
     'repo:hygiene',

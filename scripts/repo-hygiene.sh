@@ -12,33 +12,12 @@ fi
 repo_root="$(git rev-parse --show-toplevel)"
 cd "${repo_root}"
 
-if [ "${fix}" = "1" ]; then
-  while IFS= read -r path_to_remove; do
-    if git check-ignore -q -- "${path_to_remove}"; then
-      rm -rf -- "${path_to_remove}"
-    fi
-  done < <(
-    find . \
-      -path './.git' -prune -o \
-      -path './.worktrees' -prune -o \
-      -path './worktrees' -prune -o \
-      \( \
-        -name '.venv' -o \
-        -name '__pycache__' -o \
-        -name '.pytest_cache' -o \
-        -name 'node_modules' -o \
-        -name 'dist' -o \
-        -name 'coverage' -o \
-        -name '*.egg-info' -o \
-        -name '*.pyc' -o \
-        -name '*.pyo' -o \
-        -name '.DS_Store' \
-      \) -prune -print
-  )
-fi
-
 # OPL owns generic source byproduct policy; OMA only keeps repository-specific forbidden surfaces below.
-opl workspace source-hygiene --source-root "${repo_root}"
+source_hygiene_args=(workspace source-hygiene --source-root "${repo_root}")
+if [ "${fix}" = "1" ]; then
+  source_hygiene_args+=(--fix)
+fi
+opl "${source_hygiene_args[@]}"
 
 domain_residue_pathspecs=(
   ':(glob)**/build/**'
