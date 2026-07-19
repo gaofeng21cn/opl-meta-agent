@@ -369,6 +369,7 @@ test('package and plugin carriers project the canonical OMA skill at one version
   assert.equal(npmLock.version, npmPackage.version);
   assert.equal(npmLock.packages[''].version, npmPackage.version);
   assert.equal(agentPackage.version, npmPackage.version);
+  assert.equal(agentPackage.carrier_source_role, 'codex_plugin_default_carrier_not_package_truth');
   assert.equal(plugin.version, npmPackage.version);
   assert.match(statusDoc, /current source release line is `0\.4\.1`/);
   assert.equal(plugin.name, 'opl-meta-agent');
