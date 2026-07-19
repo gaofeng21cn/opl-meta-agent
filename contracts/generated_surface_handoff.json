@@ -1,6 +1,7 @@
 {
-  "surface_kind": "opl_generated_surface_handoff",
+  "surface_kind": "opl_generated_surface_handoff_delta",
   "schema_version": 1,
+  "defaults_profile": "opl.hosted-foundry-generated-surface-handoff.v1",
   "agent_id": "oma",
   "domain_id": "agent_engineering",
   "generated_surface_owner": "one-person-lab",
@@ -8,53 +9,43 @@
   "source_contract_ref": "contracts/action_catalog.json",
   "provider_manifest_ref": "contracts/foundry_provider.json",
   "functional_privatization_audit_ref": "contracts/functional_privatization_audit.json",
-  "generated_surfaces": ["cli", "mcp", "skill", "product_entry", "openai", "ai_sdk", "status_read_model"],
-  "handoff_surfaces": [
+  "generated_surface_ids": ["cli", "mcp", "skill", "product_entry", "openai", "ai_sdk", "status_read_model"],
+  "handoff_surface_overrides": [
     {
       "surface_id": "cli",
-      "owner": "one-person-lab",
       "current_paths": ["contracts/action_catalog.json"],
       "current_role": "refs_only_family_action_catalog",
       "target_role": "opl_generated_cli_descriptor_surface"
     },
     {
       "surface_id": "mcp",
-      "owner": "one-person-lab",
       "current_paths": ["contracts/action_catalog.json"],
-      "current_role": "refs_only_family_action_catalog",
-      "target_role": "opl_generated_mcp_descriptor_surface"
+      "current_role": "refs_only_family_action_catalog"
     },
     {
       "surface_id": "skill",
-      "owner": "one-person-lab",
       "current_paths": ["agent/primary_skill/SKILL.md"],
-      "current_role": "refs_only_primary_skill_contract",
-      "target_role": "opl_generated_skill_descriptor_surface"
+      "current_role": "refs_only_primary_skill_contract"
     },
     {
       "surface_id": "product_entry_manifest",
-      "owner": "one-person-lab",
       "current_paths": ["contracts/action_catalog.json"],
-      "current_role": "refs_only_family_action_catalog",
-      "target_role": "opl_generated_product_entry_surface"
+      "current_role": "refs_only_family_action_catalog"
     },
     {
       "surface_id": "domain_handler",
-      "owner": "one-person-lab",
       "current_paths": ["contracts/action_catalog.json", "contracts/foundry_provider.json"],
       "current_role": "refs_only_foundry_binding_descriptor_no_domain_handler",
       "target_role": "refs_only_foundry_provider_descriptor_target"
     },
     {
       "surface_id": "status_read_model",
-      "owner": "one-person-lab",
       "current_paths": ["contracts/foundry_agent_series.json", "contracts/memory_descriptor.json"],
       "current_role": "refs_only_foundry_run_projection_contract",
       "target_role": "opl_generated_foundry_run_refs_status_read_model_surface"
     },
     {
       "surface_id": "workbench_drilldown",
-      "owner": "one-person-lab",
       "current_paths": ["agent/stages/manifest.json", "contracts/memory_descriptor.json"],
       "current_role": "refs_only_foundry_stage_projection_contract",
       "target_role": "opl_hosted_foundry_run_refs_workbench_surface"

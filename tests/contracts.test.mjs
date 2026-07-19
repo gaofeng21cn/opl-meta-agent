@@ -188,13 +188,30 @@ test('generated surfaces resolve to real refs-only OMA targets without owner pro
   ];
   const moduleBySurface = new Map();
 
-  assert.deepEqual(handoff.handoff_surfaces.map((surface) => surface.surface_id), expectedSurfaceIds);
+  assert.equal(handoff.surface_kind, 'opl_generated_surface_handoff_delta');
+  assert.equal(handoff.schema_version, 1);
+  assert.equal(handoff.defaults_profile, 'opl.hosted-foundry-generated-surface-handoff.v1');
+  assert.equal(handoff.agent_id, 'oma');
+  assert.deepEqual(handoff.generated_surface_ids, [
+    'cli',
+    'mcp',
+    'skill',
+    'product_entry',
+    'openai',
+    'ai_sdk',
+    'status_read_model',
+  ]);
+  assert.equal('generated_surfaces' in handoff, false);
+  assert.equal('handoff_surfaces' in handoff, false);
+  assert.deepEqual(handoff.handoff_surface_overrides.map((surface) => surface.surface_id), expectedSurfaceIds);
   assert.equal(handoff.generated_surface_owner, 'one-person-lab');
   assert.equal(handoff.domain_repo_can_own_generated_surface, false);
+  assert.equal(audit.defaults_profile, 'opl.standard-functional-privatization-audit.v1');
+  assert.equal('private_functional_surface_admission_policy_ref' in audit, false);
 
   for (const module of audit.modules) {
     assert.equal(module.classification, 'refs_only_domain_adapter');
-    assert.equal(module.standardization_layer, 'private_platform_residue_inventory');
+    assert.equal('standardization_layer' in module, false);
     assert.ok(module.active_caller_status.startsWith('refs_only_'));
     assert.ok(module.active_callers.length > 0);
     assert.ok(module.migration_action.length > 0);
@@ -208,16 +225,20 @@ test('generated surfaces resolve to real refs-only OMA targets without owner pro
     });
   }
 
-  for (const surface of handoff.handoff_surfaces) {
-    assert.equal(surface.owner, 'one-person-lab');
-    assert.match(surface.target_role, /^(?:opl_generated_|opl_hosted_|refs_only_)/);
+  for (const surface of handoff.handoff_surface_overrides) {
+    assert.equal('owner' in surface, false);
+    if (surface.target_role !== undefined) {
+      assert.match(surface.target_role, /^(?:opl_generated_|opl_hosted_|refs_only_)/);
+    }
     surface.current_paths.forEach((relativePath) => {
       assert.ok(fs.statSync(path.join(root, relativePath)).isFile(), `missing handoff target ${relativePath}`);
     });
     assert.ok(moduleBySurface.has(surface.surface_id), `missing active-caller module for ${surface.surface_id}`);
   }
 
-  const foundryBindingSurface = handoff.handoff_surfaces.find((surface) => surface.surface_id === 'domain_handler');
+  const foundryBindingSurface = handoff.handoff_surface_overrides.find(
+    (surface) => surface.surface_id === 'domain_handler',
+  );
   const foundryBindingModule = moduleBySurface.get('domain_handler');
   assert.equal(foundryBindingSurface.target_role, 'refs_only_foundry_provider_descriptor_target');
   assert.equal(foundryBindingModule.module_id, 'oma_foundry_binding_descriptor_refs');
@@ -240,7 +261,7 @@ test('generated surfaces resolve to real refs-only OMA targets without owner pro
   const projectionModule = moduleBySurface.get('status_read_model');
   assert.ok(projectionModule.code_paths.includes('contracts/memory_descriptor.json'));
   for (const surfaceId of ['status_read_model', 'workbench_drilldown']) {
-    const surface = handoff.handoff_surfaces.find((entry) => entry.surface_id === surfaceId);
+    const surface = handoff.handoff_surface_overrides.find((entry) => entry.surface_id === surfaceId);
     assert.ok(surface.current_paths.includes('contracts/memory_descriptor.json'));
   }
 

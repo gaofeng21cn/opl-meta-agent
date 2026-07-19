@@ -1,10 +1,10 @@
 {
   "surface_kind": "functional_privatization_audit",
   "schema_version": 1,
+  "defaults_profile": "opl.standard-functional-privatization-audit.v1",
   "owner": "oma",
   "domain_id": "agent_engineering",
   "target_domain_id": "agent_engineering",
-  "private_functional_surface_admission_policy_ref": "contracts/opl-framework/standard-domain-agent-skeleton-contract.json#/new_agent_scaffold/private_functional_surface_admission_policy",
   "physical_source_morphology_policy": {
     "policy_id": "oma.physical-source-morphology.v1",
     "state": "classified_hosted_semantic_provider_no_repo_local_runtime",
@@ -62,11 +62,10 @@
       "active_caller_status": "refs_only_action_descriptors_consumed_by_opl_generated_surfaces",
       "migration_action": "project_engineer_agent_foundry_binding_without_repo_owned_wrappers",
       "retention_reason": "OMA retains semantic action and skill refs while OPL owns generated wrappers and invocation state.",
-      "standardization_layer": "private_platform_residue_inventory",
       "semantic_equivalence_status": "cleared_by_boundary",
       "semantic_equivalence_evidence_refs": [
         "contracts/action_catalog.json#actions/0/execution_binding",
-        "contracts/generated_surface_handoff.json#handoff_surfaces"
+        "contracts/generated_surface_handoff.json#handoff_surface_overrides"
       ]
     },
     {
@@ -79,7 +78,6 @@
       "active_caller_status": "refs_only_foundry_binding_descriptor_consumed_by_opl_foundry_kernel_with_no_repo_local_action_target",
       "migration_action": "route_engineer_agent_to_opl_foundry_binding_without_repo_local_domain_handler",
       "retention_reason": "OMA exposes design and diagnose provider operation refs while OPL owns invocation and FoundryRun state.",
-      "standardization_layer": "private_platform_residue_inventory",
       "semantic_equivalence_status": "cleared_by_boundary",
       "semantic_equivalence_evidence_refs": [
         "contracts/action_catalog.json#actions/0/execution_binding",
@@ -101,7 +99,6 @@
       "active_caller_status": "refs_only_foundry_provider_stage_and_memory_locator_refs_consumed_by_opl_generated_or_hosted_projections",
       "migration_action": "project_provider_stage_and_memory_locator_refs_without_repo_owned_status_or_workbench_runtime",
       "retention_reason": "OMA retains provider, Stage, and memory locator semantics while OPL owns FoundryRun state and hosted operator surfaces.",
-      "standardization_layer": "private_platform_residue_inventory",
       "semantic_equivalence_status": "cleared_by_boundary",
       "semantic_equivalence_evidence_refs": [
         "contracts/foundry_agent_series.json#authority_boundary",
@@ -114,7 +111,7 @@
   "retired_generated_surface_provenance": [
     {
       "surface_id": "legacy_repo_local_execution_facade",
-      "replacement_ref": "contracts/generated_surface_handoff.json#handoff_surfaces",
+      "replacement_ref": "contracts/generated_surface_handoff.json#handoff_surface_overrides",
       "provenance_refs": ["docs/history/process/retired-surface-provenance.md"]
     }
   ],
