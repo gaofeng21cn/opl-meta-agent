@@ -7,6 +7,8 @@
   "carrier_slug": "opl-meta-agent",
   "schema_authority_owner": "one-person-lab",
   "validation_authority_owner": "one-person-lab",
+  "validation_surface_ref": "opl-framework/foundry-protocol-fixture-conformance",
+  "validation_surface_version": "opl-foundry-protocol-fixture-conformance.v1",
   "canonicalization": "JCS",
   "digest_algorithm": "SHA-256",
   "fixtures": [

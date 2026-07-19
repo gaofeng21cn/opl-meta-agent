@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
@@ -9,16 +8,6 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const readJson = (relativePath) => JSON.parse(fs.readFileSync(path.join(root, relativePath), 'utf8'));
 
 const protocolVersion = 'opl-foundry-protocol.v1';
-const contentRefPattern = /^opl-content:\/\/sha256\/[a-f0-9]{64}$/;
-const contentRefKinds = [
-  'prompt_refs',
-  'skill_refs',
-  'knowledge_refs',
-  'helper_refs',
-  'model_refs',
-  'tool_refs',
-  'schema_refs',
-];
 const protocolDefinitions = {
   DesignRequest: {
     schemaRef: 'opl://foundry-protocol/DesignRequest',
@@ -37,69 +26,6 @@ const protocolDefinitions = {
     surfaceKind: 'opl_foundry_evolution_proposal',
   },
 };
-
-const forbiddenProtocolKeys = new Set([
-  'repo_path',
-  'repo_dir',
-  'repo_root',
-  'worktree',
-  'branch',
-  'cli',
-  'command',
-  'commands',
-  'queue',
-  'lease',
-  'attempt',
-  'overwrite_policy',
-  'promotion_ledger',
-  'patch',
-  'patches',
-  'work_order',
-  'work_orders',
-  'execution_receipt',
-  'hidden_test_body',
-  'hidden_test_bodies',
-  'protected_test_body',
-  'protected_test_bodies',
-]);
-
-const forbiddenProtocolKeyPatterns = [
-  /(?:^|_)attempt(?:_|$)/,
-];
-
-function walk(value, visitor, pointer = '') {
-  visitor(value, pointer);
-  if (Array.isArray(value)) value.forEach((entry, index) => walk(entry, visitor, `${pointer}/${index}`));
-  else if (value && typeof value === 'object') {
-    Object.entries(value).forEach(([key, entry]) => walk(entry, visitor, `${pointer}/${key}`));
-  }
-}
-
-function assertFixtureBoundary(value) {
-  walk(value, (entry, pointer) => {
-    const key = pointer.split('/').at(-1);
-    assert.ok(!forbiddenProtocolKeys.has(key), `forbidden protocol field ${pointer}`);
-    forbiddenProtocolKeyPatterns.forEach((pattern) => {
-      assert.doesNotMatch(key, pattern, `forbidden protocol field ${pointer}`);
-    });
-    if (typeof entry === 'string') {
-      if (key !== 'semantic_path') {
-        assert.doesNotMatch(entry, /^(?:file:\/\/|\/|[A-Za-z]:[\\/])/, `physical path at ${pointer}`);
-      }
-      assert.doesNotMatch(entry, /^(?:git|npm|npx|node|opl)\s+/, `command at ${pointer}`);
-    }
-  });
-}
-
-function canonicalJson(value) {
-  if (value === null || typeof value !== 'object') return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
-  return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(',')}}`;
-}
-
-function digest(value) {
-  return `sha256:${crypto.createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
-}
 
 test('fixture manifest maps exactly the four OPL-owned Foundry protocol schemas', () => {
   const manifest = readJson('contracts/foundry_protocol_fixture_manifest.json');
@@ -121,12 +47,14 @@ test('fixture manifest maps exactly the four OPL-owned Foundry protocol schemas'
   assert.deepEqual([...providerRefs].sort(), Object.values(protocolDefinitions).map((entry) => entry.schemaRef).sort());
   assert.equal(manifest.schema_authority_owner, 'one-person-lab');
   assert.equal(manifest.validation_authority_owner, 'one-person-lab');
+  assert.equal(manifest.validation_surface_ref, 'opl-framework/foundry-protocol-fixture-conformance');
+  assert.equal(manifest.validation_surface_version, 'opl-foundry-protocol-fixture-conformance.v1');
   assert.equal(manifest.authority_boundary.fixtures_are_schema_authority, false);
   assert.equal(manifest.authority_boundary.oma_can_validate_schema_conformance, false);
   assert.equal(manifest.authority_boundary.opl_validator_is_required_for_integration_acceptance, true);
 });
 
-test('protocol fixtures are identity-coherent and carry no execution coordinates', () => {
+test('protocol fixtures preserve coherent OMA identity and independent review separation', () => {
   const manifest = readJson('contracts/foundry_protocol_fixture_manifest.json');
   const fixtures = Object.fromEntries(manifest.fixtures.map((entry) => [entry.protocol_object, readJson(entry.fixture_ref)]));
   const targetIdentity = ['target_agent_id', 'target_domain_id', 'target_version_ref'];
@@ -134,70 +62,16 @@ test('protocol fixtures are identity-coherent and carry no execution coordinates
   for (const [name, fixture] of Object.entries(fixtures)) {
     assert.equal(fixture.surface_kind, protocolDefinitions[name].surfaceKind);
     assert.equal(fixture.version, protocolVersion);
-    assertFixtureBoundary(fixture);
   }
   for (const key of targetIdentity) {
     const values = Object.values(fixtures).map((fixture) => fixture[key]);
     assert.ok(values.every((value) => value === values[0]), `target identity drift for ${key}`);
   }
 
-  assert.throws(() => assertFixtureBoundary({ ...fixtures.DesignRequest, repo_path: '/tmp/target' }), /forbidden protocol field/);
-  assert.throws(() => assertFixtureBoundary({ ...fixtures.EvidenceBundle, hidden_test_body: 'secret case' }), /forbidden protocol field/);
-  assert.throws(
-    () => assertFixtureBoundary({ ...fixtures.EvidenceBundle, review_attempt_ref: 'opl://review-attempt/example' }),
-    /forbidden protocol field/,
-  );
   assert.notEqual(
     fixtures.EvidenceBundle.independent_review.review_execution_ref,
     fixtures.EvidenceBundle.independent_review.evaluation_execution_ref,
   );
-});
-
-test('fixture digest lineage is stable over JCS canonical JSON', () => {
-  const request = readJson('contracts/fixtures/foundry-protocol/design-request.json');
-  const blueprint = readJson('contracts/fixtures/foundry-protocol/agent-blueprint.json');
-  const evidence = readJson('contracts/fixtures/foundry-protocol/evidence-bundle.json');
-  const proposal = readJson('contracts/fixtures/foundry-protocol/evolution-proposal.json');
-
-  assert.equal(blueprint.design_request_digest, digest(request));
-  assert.equal(evidence.blueprint_digest, digest(blueprint));
-  assert.equal(proposal.blueprint_digest, digest(blueprint));
-  assert.equal(proposal.evidence_digest, digest(evidence));
-  assert.equal(proposal.next_blueprint.design_request_digest, digest(request));
-  assert.match(digest(proposal), /^sha256:[a-f0-9]{64}$/);
-});
-
-test('fixture blueprint closes every content-bearing schema over exact SHA refs', () => {
-  const blueprint = readJson('contracts/fixtures/foundry-protocol/agent-blueprint.json');
-  const proposal = readJson('contracts/fixtures/foundry-protocol/evolution-proposal.json');
-
-  for (const candidate of [blueprint, proposal.next_blueprint]) {
-    assert.deepEqual(Object.keys(candidate.content_refs).sort(), [...contentRefKinds].sort());
-    for (const kind of contentRefKinds) {
-      assert.ok(Array.isArray(candidate.content_refs[kind]), `${kind} must be an array`);
-      candidate.content_refs[kind].forEach((ref) => assert.match(ref, contentRefPattern));
-      assert.equal(new Set(candidate.content_refs[kind]).size, candidate.content_refs[kind].length);
-    }
-    for (const stage of candidate.stage_graph.stages) {
-      assert.ok(candidate.content_refs.prompt_refs.includes(stage.prompt_ref), `missing Stage prompt ${stage.prompt_ref}`);
-      stage.skill_refs.forEach((ref) => {
-        assert.ok(candidate.content_refs.skill_refs.includes(ref), `missing Stage skill ${ref}`);
-      });
-      stage.knowledge_refs.forEach((ref) => {
-        assert.ok(candidate.content_refs.knowledge_refs.includes(ref), `missing Stage knowledge ${ref}`);
-      });
-    }
-
-    const schemaRefs = new Set(candidate.content_refs.schema_refs);
-    assert.equal(schemaRefs.size, candidate.content_refs.schema_refs.length);
-    for (const action of candidate.actions) {
-      assert.ok(schemaRefs.has(action.input_schema_ref), `missing action input schema ${action.input_schema_ref}`);
-      assert.ok(schemaRefs.has(action.output_schema_ref), `missing action output schema ${action.output_schema_ref}`);
-    }
-    for (const contract of candidate.artifact_contracts) {
-      assert.ok(schemaRefs.has(contract.schema_ref), `missing artifact schema ${contract.schema_ref}`);
-    }
-  }
 });
 
 test('fixture evidence carries absolute candidate observations and typed safety evidence', () => {
