@@ -293,6 +293,11 @@ test('OMA protocol declarations contain no execution or release authority fields
 test('all declared repo-local refs exist and primary skill mirror is exact', () => {
   const compiler = readJson('contracts/pack_compiler_input.json');
   const requiredPaths = new Set(compiler.required_domain_pack_paths);
+  const frameworkContractRefs = new Set([
+    'contracts/opl-framework/foundry-agent-series-contract.json',
+    'contracts/opl-framework/foundry-agent-series-policy-release.json',
+    'contracts/opl-framework/standard-domain-agent-skeleton-contract.json',
+  ]);
   assert.equal(requiredPaths.size, compiler.required_domain_pack_paths.length, 'duplicate required domain pack path');
   for (const relativePath of compiler.required_domain_pack_paths) {
     assert.ok(fs.statSync(path.join(root, relativePath)).isFile(), `missing ${relativePath}`);
@@ -342,6 +347,10 @@ test('all declared repo-local refs exist and primary skill mirror is exact', () 
     walk(readJson(relativePath), (value, pointer) => {
       if (typeof value !== 'string' || !/^(?:agent|contracts|docs|plugins|scripts)\//.test(value)) return;
       const localRef = value.split('#')[0];
+      if (localRef.startsWith('contracts/opl-framework/')) {
+        assert.ok(frameworkContractRefs.has(localRef), `${relativePath}${pointer} has unknown Framework contract ref ${value}`);
+        return;
+      }
       assert.ok(fs.existsSync(path.join(root, localRef)), `${relativePath}${pointer} has dangling repo-local ref ${value}`);
     });
   }

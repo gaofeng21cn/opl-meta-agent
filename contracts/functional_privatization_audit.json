@@ -4,6 +4,48 @@
   "owner": "oma",
   "domain_id": "agent_engineering",
   "target_domain_id": "agent_engineering",
+  "private_functional_surface_admission_policy_ref": "contracts/opl-framework/standard-domain-agent-skeleton-contract.json#/new_agent_scaffold/private_functional_surface_admission_policy",
+  "physical_source_morphology_policy": {
+    "policy_id": "oma.physical-source-morphology.v1",
+    "state": "classified_hosted_semantic_provider_no_repo_local_runtime",
+    "required_surface_ids": [
+      "agent_semantic_pack",
+      "hosted_foundry_binding_refs",
+      "foundry_protocol_conformance_fixtures"
+    ],
+    "classification_buckets": [
+      "declarative_domain_pack",
+      "refs_only_adapter",
+      "provenance_or_fixture"
+    ],
+    "surface_classifications": [
+      {
+        "surface_id": "agent_semantic_pack",
+        "classification": "declarative_domain_pack",
+        "source_refs": ["agent/"]
+      },
+      {
+        "surface_id": "hosted_foundry_binding_refs",
+        "classification": "refs_only_adapter",
+        "source_refs": [
+          "contracts/action_catalog.json",
+          "contracts/foundry_provider.json"
+        ]
+      },
+      {
+        "surface_id": "foundry_protocol_conformance_fixtures",
+        "classification": "provenance_or_fixture",
+        "source_refs": [
+          "contracts/foundry_protocol_fixture_manifest.json",
+          "contracts/fixtures/foundry-protocol/"
+        ]
+      }
+    ],
+    "authority_boundary": {
+      "domain_can_claim_generic_runtime_owner": false,
+      "domain_repo_can_own_generated_surface": false
+    }
+  },
   "modules": [
     {
       "module_id": "oma_generated_public_action_descriptor_refs",

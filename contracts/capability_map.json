@@ -8,7 +8,14 @@
   "owner": "oma",
   "state": "active_contract",
   "map_ref": "contracts/capability_map.json",
-  "resolver_policy": "resolver_index_only_no_runtime_authority",
+  "capability_pack": {
+    "pack_id": "oma.agent-capability-pack",
+    "pack_root_ref": "agent/",
+    "map_ref": "contracts/capability_map.json",
+    "pack_role": "declarative_domain_capability_pack",
+    "capability_pack_can_claim_domain_ready": false
+  },
+  "resolver_policy": "resolver_index_only_no_domain_truth",
   "primary_skill_capability": {
     "capability_id": "oma.primary-skill.codex-entry",
     "capability_kind": "primary_skill",
@@ -27,35 +34,205 @@
   },
   "capabilities": [
     {
+      "capability_id": "oma.primary-skill.codex-entry",
+      "surface_role": "primary_skill",
+      "capability_kind": "primary_skill",
+      "canonical_owner": "oma",
+      "physical_source_ref": {"ref_kind": "repo_path", "ref": "agent/primary_skill/SKILL.md", "role": "primary_skill_source"},
+      "runtime_projection_refs": [
+        {"ref_kind": "repo_path", "ref": "plugins/opl-meta-agent/skills/opl-meta-agent/SKILL.md", "role": "codex_plugin_carrier_projection"}
+      ],
+      "sync_policy": "repo_local_primary_skill_with_materialized_carrier",
+      "externalization_reason": "The primary skill routes Agent engineering semantics while OPL owns Foundry execution and generated surfaces.",
+      "improvement_tokens": ["oma", "primary_skill", "agent_engineering"],
+      "canonical_target_paths": ["agent/primary_skill/SKILL.md"],
+      "verification_refs": ["tests/contracts.test.mjs", "opl:agents-conformance:oma"],
+      "forbidden_surfaces": ["foundry_run_state", "candidate_materialization", "evaluation_execution", "version_activation_rollback", "target_domain_truth", "owner_receipt_body", "typed_blocker_body"],
+      "owner_closeout_boundary": {"owner": "oma", "required_return_shapes": ["owner_receipt_ref", "typed_blocker_ref", "human_gate_ref", "route_back_ref"], "can_write_owner_receipt_body": false, "can_create_typed_blocker": false},
+      "stage_refs": [],
+      "authority_boundary": {"can_write_domain_truth": false, "can_write_memory_body": false, "can_mutate_artifact_body": false, "can_sign_owner_receipt": false, "can_create_typed_blocker": false, "can_authorize_quality_or_export": false, "can_claim_domain_ready": false, "can_claim_production_ready": false}
+    },
+    {
       "capability_id": "oma.design-basis-architecture",
+      "surface_role": "professional_skill",
       "capability_kind": "professional_skill",
       "canonical_owner": "oma",
       "physical_source_ref": {"ref_kind": "repo_path", "ref": "agent/professional_skills/oma-design-basis-architecture/SKILL.md", "role": "professional_skill_source"},
-      "stage_refs": ["mission-intake", "design-basis-admission", "stage-architecture", "agent-blueprint-authoring"]
+      "runtime_projection_refs": [
+        {"ref_kind": "contract_ref", "ref": "agent/stages/manifest.json", "role": "semantic_stage_binding_projection"}
+      ],
+      "sync_policy": "repo_local_domain_semantic_source",
+      "externalization_reason": "The skill supplies design-basis and architecture semantics without owning FoundryRun state or materialization.",
+      "improvement_tokens": ["design_basis", "stage_architecture", "agent_blueprint"],
+      "canonical_target_paths": ["agent/professional_skills/oma-design-basis-architecture/SKILL.md"],
+      "verification_refs": ["tests/contracts.test.mjs", "opl:agents-conformance:oma"],
+      "forbidden_surfaces": ["foundry_run_state", "candidate_materialization", "evaluation_execution", "version_activation_rollback", "target_domain_truth", "owner_receipt_body", "typed_blocker_body"],
+      "owner_closeout_boundary": {"owner": "oma", "required_return_shapes": ["owner_receipt_ref", "typed_blocker_ref", "human_gate_ref", "route_back_ref"], "can_write_owner_receipt_body": false, "can_create_typed_blocker": false},
+      "stage_refs": ["mission-intake", "design-basis-admission", "stage-architecture", "agent-blueprint-authoring"],
+      "authority_boundary": {"can_write_domain_truth": false, "can_write_memory_body": false, "can_mutate_artifact_body": false, "can_sign_owner_receipt": false, "can_create_typed_blocker": false, "can_authorize_quality_or_export": false, "can_claim_domain_ready": false, "can_claim_production_ready": false}
     },
     {
       "capability_id": "oma.target-assessment-eval-design",
+      "surface_role": "professional_skill",
       "capability_kind": "professional_skill",
       "canonical_owner": "oma",
       "physical_source_ref": {"ref_kind": "repo_path", "ref": "agent/professional_skills/oma-target-assessment-eval-design/SKILL.md", "role": "professional_skill_source"},
-      "stage_refs": ["target-agent-assessment", "evaluation-design"]
+      "runtime_projection_refs": [
+        {"ref_kind": "contract_ref", "ref": "agent/stages/manifest.json", "role": "semantic_stage_binding_projection"}
+      ],
+      "sync_policy": "repo_local_domain_semantic_source",
+      "externalization_reason": "The skill supplies target assessment and evaluation design semantics while OPL owns evaluation execution and qualification.",
+      "improvement_tokens": ["target_agent_assessment", "evaluation_design", "eval_spec"],
+      "canonical_target_paths": ["agent/professional_skills/oma-target-assessment-eval-design/SKILL.md"],
+      "verification_refs": ["tests/contracts.test.mjs", "opl:agents-conformance:oma"],
+      "forbidden_surfaces": ["foundry_run_state", "candidate_materialization", "evaluation_execution", "version_activation_rollback", "target_domain_truth", "owner_receipt_body", "typed_blocker_body"],
+      "owner_closeout_boundary": {"owner": "oma", "required_return_shapes": ["owner_receipt_ref", "typed_blocker_ref", "human_gate_ref", "route_back_ref"], "can_write_owner_receipt_body": false, "can_create_typed_blocker": false},
+      "stage_refs": ["target-agent-assessment", "evaluation-design"],
+      "authority_boundary": {"can_write_domain_truth": false, "can_write_memory_body": false, "can_mutate_artifact_body": false, "can_sign_owner_receipt": false, "can_create_typed_blocker": false, "can_authorize_quality_or_export": false, "can_claim_domain_ready": false, "can_claim_production_ready": false}
     },
     {
       "capability_id": "oma.evidence-diagnosis",
+      "surface_role": "professional_skill",
       "capability_kind": "professional_skill",
       "canonical_owner": "oma",
       "physical_source_ref": {"ref_kind": "repo_path", "ref": "agent/professional_skills/oma-evidence-diagnosis/SKILL.md", "role": "professional_skill_source"},
-      "stage_refs": ["evidence-diagnosis"]
+      "runtime_projection_refs": [
+        {"ref_kind": "contract_ref", "ref": "agent/stages/manifest.json", "role": "semantic_stage_binding_projection"}
+      ],
+      "sync_policy": "repo_local_domain_semantic_source",
+      "externalization_reason": "The skill diagnoses evidence semantics without owning evidence persistence, protected tests, or FoundryRun state.",
+      "improvement_tokens": ["evidence_diagnosis", "failure_evidence", "protected_test_boundary"],
+      "canonical_target_paths": ["agent/professional_skills/oma-evidence-diagnosis/SKILL.md"],
+      "verification_refs": ["tests/contracts.test.mjs", "opl:agents-conformance:oma"],
+      "forbidden_surfaces": ["foundry_run_state", "candidate_materialization", "evaluation_execution", "version_activation_rollback", "target_domain_truth", "owner_receipt_body", "typed_blocker_body"],
+      "owner_closeout_boundary": {"owner": "oma", "required_return_shapes": ["owner_receipt_ref", "typed_blocker_ref", "human_gate_ref", "route_back_ref"], "can_write_owner_receipt_body": false, "can_create_typed_blocker": false},
+      "stage_refs": ["evidence-diagnosis"],
+      "authority_boundary": {"can_write_domain_truth": false, "can_write_memory_body": false, "can_mutate_artifact_body": false, "can_sign_owner_receipt": false, "can_create_typed_blocker": false, "can_authorize_quality_or_export": false, "can_claim_domain_ready": false, "can_claim_production_ready": false}
     },
     {
       "capability_id": "oma.evolution-proposal",
+      "surface_role": "professional_skill",
       "capability_kind": "professional_skill",
       "canonical_owner": "oma",
       "physical_source_ref": {"ref_kind": "repo_path", "ref": "agent/professional_skills/oma-evolution-proposal/SKILL.md", "role": "professional_skill_source"},
-      "stage_refs": ["evolution-proposal"]
+      "runtime_projection_refs": [
+        {"ref_kind": "contract_ref", "ref": "agent/stages/manifest.json", "role": "semantic_stage_binding_projection"}
+      ],
+      "sync_policy": "repo_local_domain_semantic_source",
+      "externalization_reason": "The skill proposes semantic evolution without materializing patches, versions, activation, or rollback.",
+      "improvement_tokens": ["evolution_proposal", "no_change_proposal", "revision_lineage"],
+      "canonical_target_paths": ["agent/professional_skills/oma-evolution-proposal/SKILL.md"],
+      "verification_refs": ["tests/contracts.test.mjs", "opl:agents-conformance:oma"],
+      "forbidden_surfaces": ["foundry_run_state", "candidate_materialization", "evaluation_execution", "version_activation_rollback", "target_domain_truth", "owner_receipt_body", "typed_blocker_body"],
+      "owner_closeout_boundary": {"owner": "oma", "required_return_shapes": ["owner_receipt_ref", "typed_blocker_ref", "human_gate_ref", "route_back_ref"], "can_write_owner_receipt_body": false, "can_create_typed_blocker": false},
+      "stage_refs": ["evolution-proposal"],
+      "authority_boundary": {"can_write_domain_truth": false, "can_write_memory_body": false, "can_mutate_artifact_body": false, "can_sign_owner_receipt": false, "can_create_typed_blocker": false, "can_authorize_quality_or_export": false, "can_claim_domain_ready": false, "can_claim_production_ready": false}
+    },
+    {
+      "capability_id": "oma.domain-affordance-catalog",
+      "surface_role": "tool_connector",
+      "capability_kind": "tool_connector",
+      "canonical_owner": "oma",
+      "physical_source_ref": {"ref_kind": "repo_path", "ref": "agent/tools/domain_affordances.md", "role": "semantic_affordance_catalog"},
+      "runtime_projection_refs": [
+        {"ref_kind": "contract_ref", "ref": "contracts/foundry_provider.json", "role": "hosted_foundry_provider_affordance_projection"}
+      ],
+      "sync_policy": "refs_only_hosted_provider_affordance_catalog",
+      "externalization_reason": "The catalog declares research and analysis affordances; OPL selects and invokes provider tools inside Foundry execution.",
+      "improvement_tokens": ["tool_affordance", "source_research", "evidence_analysis"],
+      "canonical_target_paths": ["agent/tools/domain_affordances.md"],
+      "verification_refs": ["tests/contracts.test.mjs", "opl:agents-conformance:oma"],
+      "forbidden_surfaces": ["foundry_run_state", "candidate_materialization", "evaluation_execution", "version_activation_rollback", "target_domain_truth", "owner_receipt_body", "typed_blocker_body"],
+      "owner_closeout_boundary": {"owner": "oma", "required_return_shapes": ["owner_receipt_ref", "typed_blocker_ref", "human_gate_ref", "route_back_ref"], "can_write_owner_receipt_body": false, "can_create_typed_blocker": false},
+      "stage_refs": [],
+      "authority_boundary": {"can_write_domain_truth": false, "can_write_memory_body": false, "can_mutate_artifact_body": false, "can_sign_owner_receipt": false, "can_create_typed_blocker": false, "can_authorize_quality_or_export": false, "can_claim_domain_ready": false, "can_claim_production_ready": false}
+    },
+    {
+      "capability_id": "oma.stage-prompts",
+      "surface_role": "stage_prompt",
+      "capability_kind": "stage_prompt",
+      "canonical_owner": "oma",
+      "physical_source_ref": {"ref_kind": "repo_path", "ref": "agent/prompts/stage-quality-cycle-roles.md", "role": "stage_prompt_policy_source"},
+      "runtime_projection_refs": [
+        {"ref_kind": "contract_ref", "ref": "agent/stages/manifest.json", "role": "declarative_stage_manifest"}
+      ],
+      "sync_policy": "repo_local_domain_stage_prompt_pack",
+      "externalization_reason": "OMA prompts define semantic stage goals and output expectations while OPL materializes and executes stage attempts.",
+      "improvement_tokens": ["stage_prompt", "agent_engineering_stage", "quality_cycle_roles"],
+      "canonical_target_paths": ["agent/prompts/stage-quality-cycle-roles.md"],
+      "verification_refs": ["tests/contracts.test.mjs", "opl:agents-conformance:oma"],
+      "forbidden_surfaces": ["foundry_run_state", "candidate_materialization", "evaluation_execution", "version_activation_rollback", "target_domain_truth", "owner_receipt_body", "typed_blocker_body"],
+      "owner_closeout_boundary": {"owner": "oma", "required_return_shapes": ["owner_receipt_ref", "typed_blocker_ref", "human_gate_ref", "route_back_ref"], "can_write_owner_receipt_body": false, "can_create_typed_blocker": false},
+      "stage_refs": ["mission-intake", "design-basis-admission", "target-agent-assessment", "stage-architecture", "agent-blueprint-authoring", "evaluation-design", "evidence-diagnosis", "evolution-proposal"],
+      "authority_boundary": {"can_write_domain_truth": false, "can_write_memory_body": false, "can_mutate_artifact_body": false, "can_sign_owner_receipt": false, "can_create_typed_blocker": false, "can_authorize_quality_or_export": false, "can_claim_domain_ready": false, "can_claim_production_ready": false}
+    },
+    {
+      "capability_id": "oma.agent-engineering-knowledge",
+      "surface_role": "knowledge_pack",
+      "capability_kind": "reference_pack",
+      "canonical_owner": "oma",
+      "physical_source_ref": {"ref_kind": "repo_path", "ref": "agent/knowledge/opl-boundary-policy.md", "role": "agent_engineering_knowledge_source"},
+      "runtime_projection_refs": [
+        {"ref_kind": "contract_ref", "ref": "contracts/domain_descriptor.json", "role": "domain_knowledge_projection"}
+      ],
+      "sync_policy": "repo_local_domain_knowledge_refs",
+      "externalization_reason": "OMA knowledge refs guide semantic design and diagnosis without transferring target truth or runtime authority.",
+      "improvement_tokens": ["knowledge_pack", "opl_boundary", "agent_maturity"],
+      "canonical_target_paths": ["agent/knowledge/opl-boundary-policy.md"],
+      "verification_refs": ["tests/contracts.test.mjs", "opl:agents-conformance:oma"],
+      "forbidden_surfaces": ["foundry_run_state", "candidate_materialization", "evaluation_execution", "version_activation_rollback", "target_domain_truth", "owner_receipt_body", "typed_blocker_body"],
+      "owner_closeout_boundary": {"owner": "oma", "required_return_shapes": ["owner_receipt_ref", "typed_blocker_ref", "human_gate_ref", "route_back_ref"], "can_write_owner_receipt_body": false, "can_create_typed_blocker": false},
+      "stage_refs": ["mission-intake", "design-basis-admission", "target-agent-assessment", "stage-architecture", "agent-blueprint-authoring", "evaluation-design", "evidence-diagnosis", "evolution-proposal"],
+      "authority_boundary": {"can_write_domain_truth": false, "can_write_memory_body": false, "can_mutate_artifact_body": false, "can_sign_owner_receipt": false, "can_create_typed_blocker": false, "can_authorize_quality_or_export": false, "can_claim_domain_ready": false, "can_claim_production_ready": false}
+    },
+    {
+      "capability_id": "oma.foundry-output-quality-gate",
+      "surface_role": "quality_gate",
+      "capability_kind": "contract_module",
+      "canonical_owner": "oma",
+      "physical_source_ref": {"ref_kind": "repo_path", "ref": "agent/quality_gates/foundry-provider-output.md", "role": "semantic_output_quality_gate"},
+      "runtime_projection_refs": [
+        {"ref_kind": "contract_ref", "ref": "contracts/stage_quality_cycle_policy.json", "role": "stage_quality_policy_projection"}
+      ],
+      "sync_policy": "repo_local_semantic_quality_gate_refs",
+      "externalization_reason": "OMA defines semantic quality criteria; OPL independently executes evaluation and owns qualification evidence.",
+      "improvement_tokens": ["foundry_provider_output", "semantic_quality_gate", "eval_spec_quality"],
+      "canonical_target_paths": ["agent/quality_gates/foundry-provider-output.md"],
+      "verification_refs": ["tests/contracts.test.mjs", "opl:agents-conformance:oma"],
+      "forbidden_surfaces": ["foundry_run_state", "candidate_materialization", "evaluation_execution", "version_activation_rollback", "target_domain_truth", "owner_receipt_body", "typed_blocker_body"],
+      "owner_closeout_boundary": {"owner": "oma", "required_return_shapes": ["owner_receipt_ref", "typed_blocker_ref", "human_gate_ref", "route_back_ref"], "can_write_owner_receipt_body": false, "can_create_typed_blocker": false},
+      "stage_refs": ["mission-intake", "design-basis-admission", "target-agent-assessment", "stage-architecture", "agent-blueprint-authoring", "evaluation-design", "evidence-diagnosis", "evolution-proposal"],
+      "authority_boundary": {"can_write_domain_truth": false, "can_write_memory_body": false, "can_mutate_artifact_body": false, "can_sign_owner_receipt": false, "can_create_typed_blocker": false, "can_authorize_quality_or_export": false, "can_claim_domain_ready": false, "can_claim_production_ready": false}
+    },
+    {
+      "capability_id": "oma.foundry-protocol-eval-fixtures",
+      "surface_role": "eval_suite",
+      "capability_kind": "contract_module",
+      "canonical_owner": "oma",
+      "physical_source_ref": {"ref_kind": "contract_ref", "ref": "contracts/foundry_protocol_fixture_manifest.json", "role": "refs_only_protocol_fixture_manifest"},
+      "runtime_projection_refs": [
+        {"ref_kind": "contract_ref", "ref": "contracts/foundry_provider.json", "role": "hosted_provider_protocol_projection"}
+      ],
+      "sync_policy": "refs_only_opl_schema_conformance_fixtures",
+      "externalization_reason": "The fixtures prove OMA protocol semantics against OPL-owned schemas without implementing a second validator or evaluation runtime.",
+      "improvement_tokens": ["foundry_protocol", "eval_fixture", "digest_lineage"],
+      "canonical_target_paths": ["contracts/foundry_protocol_fixture_manifest.json"],
+      "verification_refs": ["tests/foundry-protocol-fixtures.test.mjs", "opl:agents-conformance:oma"],
+      "forbidden_surfaces": ["foundry_run_state", "candidate_materialization", "evaluation_execution", "version_activation_rollback", "target_domain_truth", "owner_receipt_body", "typed_blocker_body"],
+      "owner_closeout_boundary": {"owner": "oma", "required_return_shapes": ["owner_receipt_ref", "typed_blocker_ref", "human_gate_ref", "route_back_ref"], "can_write_owner_receipt_body": false, "can_create_typed_blocker": false},
+      "stage_refs": ["mission-intake", "design-basis-admission", "target-agent-assessment", "stage-architecture", "agent-blueprint-authoring", "evaluation-design", "evidence-diagnosis", "evolution-proposal"],
+      "authority_boundary": {"can_write_domain_truth": false, "can_write_memory_body": false, "can_mutate_artifact_body": false, "can_sign_owner_receipt": false, "can_create_typed_blocker": false, "can_authorize_quality_or_export": false, "can_claim_domain_ready": false, "can_claim_production_ready": false}
     }
   ],
   "authority_boundary": {
+    "can_write_domain_truth": false,
+    "can_write_memory_body": false,
+    "can_mutate_artifact_body": false,
+    "can_sign_owner_receipt": false,
+    "can_create_typed_blocker": false,
+    "can_authorize_quality_or_export": false,
+    "can_claim_domain_ready": false,
+    "can_claim_production_ready": false,
     "capability_map_can_write_target_truth": false,
     "capability_map_can_authorize_evaluation_or_activation": false,
     "capability_map_can_claim_qualification": false
