@@ -41,6 +41,36 @@ test('OMA exposes one public Foundry action and two internal provider operations
   });
 });
 
+test('primary Skill fails closed unless the user explicitly requests Agent engineering', () => {
+  const canonical = fs.readFileSync(path.join(root, 'agent/primary_skill/SKILL.md'), 'utf8');
+  const carrier = fs.readFileSync(
+    path.join(root, 'plugins/opl-meta-agent/skills/opl-meta-agent/SKILL.md'),
+    'utf8',
+  );
+
+  assert.equal(carrier, canonical);
+  assert.match(canonical, /^name: opl-meta-agent$/m);
+  assert.match(canonical, /^description: Use only when Codex is explicitly asked to create, take over, assess for evolution, or improve an OPL-compatible Agent/m);
+  assert.match(canonical, /Do not use because OMA was mentioned or @-mentioned[\s\S]*deliverable validator, render, or QA check failed/);
+  for (const heading of [
+    'Admission',
+    'Action Routing',
+    'Default Workflow',
+    'Quality And Hard Stops',
+    'Output Expectations',
+    'References',
+  ]) {
+    assert.match(canonical, new RegExp(`^## ${heading}$`, 'm'));
+  }
+  assert.match(canonical, /both an identifiable target Agent and an explicit Agent-engineering objective/);
+  assert.match(canonical, /selected OMA shortcut, an `@OMA` mention[\s\S]*None grants permission to engineer an Agent/);
+  assert.match(canonical, /PPT, manuscript, paper, grant, render, validator, or QA failure authorizes repair of that deliverable/);
+  assert.match(canonical, /complete current request[\s\S]*Do not implement keyword, regex, `@`-mention, file-extension, or failure-code routing/);
+  assert.match(canonical, /Use the single public action `engineer-agent`/);
+  assert.match(canonical, /`create`[\s\S]*`takeover`[\s\S]*`improve`/);
+  assert.match(canonical, /provider completion means only that a protocol object was produced/);
+});
+
 test('provider identity and stage routes are internally closed', () => {
   const identityContracts = [
     'contracts/capability_map.json',
