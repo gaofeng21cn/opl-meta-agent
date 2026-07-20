@@ -1,12 +1,12 @@
 {
   "surface_kind": "opl_foundry_agent_blueprint",
   "version": "opl-foundry-protocol.v1",
-  "blueprint_id": "fixture-research-agent-blueprint-001",
+  "blueprint_id": "fixture-research-agent-blueprint-003",
   "target_agent_id": "fixture-research-agent",
   "target_domain_id": "fixture_research",
-  "target_version_ref": null,
-  "design_request_digest": "sha256:ddaeb1b0d89c056d0ac5a1aa29cacbe48b21ffecb7b16bf783e4fffe9db069e2",
-  "generation": 0,
+  "target_version_ref": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "design_request_digest": "sha256:281be60ac05a3fb23a0ffacca267fd48fb19530809aa01327283466cbc262c67",
+  "generation": 3,
   "stage_graph": {
     "entry_stage_id": "evidence-synthesis",
     "stages": [
@@ -129,10 +129,11 @@
     "All admitted sources expose stable semantic references."
   ],
   "design_evidence_refs": [
-    "opl://source/fixture-research-agent/mission-v1"
+    "opl://source/fixture-research-agent/version-003",
+    "opl://evidence/fixture-research-agent/skill-consumption-gap"
   ],
   "eval_spec": {
-    "eval_spec_id": "fixture-research-agent-eval-001",
+    "eval_spec_id": "fixture-research-agent-eval-003",
     "public_cases": [
       {
         "case_id": "public-claim-support",
@@ -173,7 +174,7 @@
       }
     ],
     "baseline_comparison": {
-      "required": false,
+      "required": true,
       "regression_tolerance": 0
     },
     "independent_evaluator_required": true
