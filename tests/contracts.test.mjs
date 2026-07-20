@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const readJson = (relativePath) => JSON.parse(fs.readFileSync(path.join(root, relativePath), 'utf8'));
+const epistemicDimensions = ['design_basis', 'agent_blueprint', 'evaluation_design', 'evolution'];
 
 function walk(value, visitor, pointer = '') {
   visitor(value, pointer);
@@ -13,6 +14,27 @@ function walk(value, visitor, pointer = '') {
   else if (value && typeof value === 'object') {
     Object.entries(value).forEach(([key, entry]) => walk(entry, visitor, `${pointer}/${key}`));
   }
+}
+
+function affectedDimensions(contract, changedDimensions) {
+  const outgoing = new Map();
+  for (const edge of contract.dependency_edges) {
+    outgoing.set(edge.source_dimension, [
+      ...(outgoing.get(edge.source_dimension) ?? []),
+      edge.dependent_dimension,
+    ]);
+  }
+  const affected = new Set(changedDimensions);
+  const pending = [...changedDimensions];
+  while (pending.length > 0) {
+    const source = pending.shift();
+    for (const dependent of outgoing.get(source) ?? []) {
+      if (affected.has(dependent)) continue;
+      affected.add(dependent);
+      pending.push(dependent);
+    }
+  }
+  return epistemicDimensions.filter((dimension) => affected.has(dimension));
 }
 
 test('OMA exposes one public Foundry action and two internal provider operations', () => {
@@ -69,6 +91,87 @@ test('primary Skill fails closed unless the user explicitly requests Agent engin
   assert.match(canonical, /Use the single public action `engineer-agent`/);
   assert.match(canonical, /`create`[\s\S]*`takeover`[\s\S]*`improve`/);
   assert.match(canonical, /provider completion means only that a protocol object was produced/);
+});
+
+test('OMA adopts epistemic provenance without making hashes review authority', () => {
+  const adoption = readJson('contracts/epistemic_review_adoption.json');
+  const qualityPolicy = readJson('contracts/stage_quality_cycle_policy.json');
+  const compiler = readJson('contracts/pack_compiler_input.json');
+  const rolePrompt = fs.readFileSync(path.join(root, 'agent/prompts/stage-quality-cycle-roles.md'), 'utf8');
+
+  assert.equal(adoption.surface_kind, 'oma_epistemic_review_adoption');
+  assert.match(adoption.purpose, /Prevent AI hallucination/);
+  assert.equal(adoption.evidence_profile, 'epistemic_provenance');
+  assert.equal(adoption.trust_model, 'trusted_local_workspace');
+  assert.equal(
+    adoption.adversary_model,
+    'trusted_local_workspace_without_malicious_whole-workspace_forgery',
+  );
+  assert.deepEqual(adoption.framework_baseline, {
+    currentness_contract_ref: 'contracts/opl-framework/epistemic-review-currentness-contract.json',
+    currentness_contract_surface_kind: 'opl_epistemic_review_currentness_contract',
+    currentness_contract_version: 'opl-epistemic-review-currentness-contract.v2',
+    scope_schema_ref: 'contracts/opl-framework/epistemic-review-scope-v2.schema.json',
+    scope_surface_kind: 'opl_epistemic_review_scope',
+    scope_version: 'opl-epistemic-review-scope.v2',
+    stage_quality_cycle_contract_ref: 'contracts/opl-framework/stage-quality-cycle-contract.json',
+    scope_budget_version: 'opl-stage-quality-scope-budget.v1',
+  });
+  assert.equal(adoption.currentness_policy.hash_change_alone_invalidates_review, false);
+  assert.equal(
+    adoption.currentness_policy.locator_hash_role,
+    'optional_locator_stale_hint_and_deduplication_only',
+  );
+  assert.equal(adoption.currentness_policy.exact_input_digest_is_content_authority, false);
+  assert.deepEqual(Object.keys(adoption.review_dimensions), epistemicDimensions);
+  assert.equal(adoption.authority_boundary.hash_is_content_authority, false);
+  assert.equal(adoption.authority_boundary.oma_can_create_parallel_currentness_engine, false);
+
+  assert.equal(
+    qualityPolicy.epistemic_review_currentness.adoption_ref,
+    'contracts/epistemic_review_adoption.json',
+  );
+  assert.deepEqual(qualityPolicy.epistemic_review_currentness.scope_budget_defaults, {
+    surface_kind: 'opl_stage_quality_scope_budget',
+    version: 'opl-stage-quality-scope-budget.v1',
+    max_attempts: 3,
+    max_elapsed_ms: 21600000,
+    max_tokens: 1000000,
+    token_budget_requires_observed_usage: true,
+    foreground_execution_must_use_managed_attempt: true,
+  });
+  for (const [stageId, policy] of Object.entries(qualityPolicy.stages)) {
+    assert.equal(
+      policy.formal_review.max_repair_rounds,
+      policy.formal_review.required ? 3 : 0,
+      stageId,
+    );
+  }
+  assert.ok(compiler.required_domain_pack_paths.includes('contracts/epistemic_review_adoption.json'));
+  assert.match(rolePrompt, /hashes locate the reviewed snapshot and support reproduction/);
+  assert.match(rolePrompt, /delta alone does not reopen Review/);
+
+  const expectations = adoption.counterexample_expectations;
+  for (const caseId of [
+    'hash_or_path_only_locator_change',
+    'governance_or_review_receipt_only_change',
+    'no_change_generation_transport',
+  ]) {
+    assert.deepEqual(expectations[caseId].stale_review_dimensions, [], caseId);
+    assert.deepEqual(expectations[caseId].current_review_dimensions, epistemicDimensions, caseId);
+  }
+  const blueprintChange = expectations.agent_blueprint_semantic_change_with_unchanged_hash;
+  assert.equal(blueprintChange.locator_hash_changed, false);
+  assert.equal(blueprintChange.fail_closed, true);
+  assert.deepEqual(
+    affectedDimensions(adoption, blueprintChange.semantic_changed_dimensions),
+    blueprintChange.stale_review_dimensions,
+  );
+  const evidenceClaimChange = expectations.evidence_bundle_claim_change;
+  assert.deepEqual(
+    affectedDimensions(adoption, evidenceClaimChange.semantic_changed_dimensions),
+    evidenceClaimChange.stale_review_dimensions,
+  );
 });
 
 test('provider identity and stage routes are internally closed', () => {
@@ -315,8 +418,11 @@ test('all declared repo-local refs exist and primary skill mirror is exact', () 
   const compiler = readJson('contracts/pack_compiler_input.json');
   const requiredPaths = new Set(compiler.required_domain_pack_paths);
   const frameworkContractRefs = new Set([
+    'contracts/opl-framework/epistemic-review-currentness-contract.json',
+    'contracts/opl-framework/epistemic-review-scope-v2.schema.json',
     'contracts/opl-framework/foundry-agent-series-contract.json',
     'contracts/opl-framework/foundry-agent-series-policy-release.json',
+    'contracts/opl-framework/stage-quality-cycle-contract.json',
     'contracts/opl-framework/standard-domain-agent-skeleton-contract.json',
   ]);
   assert.equal(requiredPaths.size, compiler.required_domain_pack_paths.length, 'duplicate required domain pack path');

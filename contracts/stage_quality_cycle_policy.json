@@ -7,7 +7,30 @@
     "roles": ["producer", "reviewer", "repairer", "re_reviewer"],
     "fresh_session_per_attempt": true,
     "exact_artifact_identity_required": true,
+    "exact_artifact_hash_role": "transport_locator_and_reproduction_hint_only",
+    "hash_change_alone_invalidates_review": false,
     "finding_lineage_required": true
+  },
+  "epistemic_review_currentness": {
+    "adoption_ref": "contracts/epistemic_review_adoption.json",
+    "evidence_profile": "epistemic_provenance",
+    "trust_model": "trusted_local_workspace",
+    "review_scope_surface_kind": "opl_epistemic_review_scope",
+    "review_scope_version": "opl-epistemic-review-scope.v2",
+    "currentness_unit": "reviewed_node_and_transitive_declared_dependencies",
+    "hash_is_content_authority": false,
+    "release_integrity_is_separate": true,
+    "framework_owns_currentness_and_budget_enforcement": true,
+    "domain_owner_declares_dependency_graph_review_scope_and_verdict": true,
+    "scope_budget_defaults": {
+      "surface_kind": "opl_stage_quality_scope_budget",
+      "version": "opl-stage-quality-scope-budget.v1",
+      "max_attempts": 3,
+      "max_elapsed_ms": 21600000,
+      "max_tokens": 1000000,
+      "token_budget_requires_observed_usage": true,
+      "foreground_execution_must_use_managed_attempt": true
+    }
   },
   "stages": {
     "mission-intake": {
@@ -40,7 +63,7 @@
       },
       "quality_rubric_refs": ["agent/quality_gates/foundry-provider-output.md"],
       "in_thread_refinement": { "allowed": true, "authoritative": false },
-      "formal_review": { "required": true, "risk_tier": "high", "review_depth": "multi_axis", "context_isolation_required": true, "max_repair_rounds": 2 },
+      "formal_review": { "required": true, "risk_tier": "high", "review_depth": "multi_axis", "context_isolation_required": true, "max_repair_rounds": 3 },
       "budget_exhaustion": "complete_with_quality_debt_if_consumable",
       "attempt_boundary": { "inherits_stage_goal_scope_authority": true, "role_overlay_may_only_narrow": true, "controller_creates_next_attempt": true, "attempt_is_not_sub_stage": true }
     },
@@ -57,7 +80,7 @@
       },
       "quality_rubric_refs": ["agent/quality_gates/foundry-provider-output.md"],
       "in_thread_refinement": { "allowed": true, "authoritative": false },
-      "formal_review": { "required": true, "risk_tier": "high", "review_depth": "multi_axis", "context_isolation_required": true, "max_repair_rounds": 2 },
+      "formal_review": { "required": true, "risk_tier": "high", "review_depth": "multi_axis", "context_isolation_required": true, "max_repair_rounds": 3 },
       "budget_exhaustion": "complete_with_quality_debt_if_consumable",
       "attempt_boundary": { "inherits_stage_goal_scope_authority": true, "role_overlay_may_only_narrow": true, "controller_creates_next_attempt": true, "attempt_is_not_sub_stage": true }
     },
@@ -74,7 +97,7 @@
       },
       "quality_rubric_refs": ["agent/quality_gates/foundry-provider-output.md"],
       "in_thread_refinement": { "allowed": true, "authoritative": false },
-      "formal_review": { "required": true, "risk_tier": "high", "review_depth": "multi_axis", "context_isolation_required": true, "max_repair_rounds": 2 },
+      "formal_review": { "required": true, "risk_tier": "high", "review_depth": "multi_axis", "context_isolation_required": true, "max_repair_rounds": 3 },
       "budget_exhaustion": "complete_with_quality_debt_if_consumable",
       "attempt_boundary": { "inherits_stage_goal_scope_authority": true, "role_overlay_may_only_narrow": true, "controller_creates_next_attempt": true, "attempt_is_not_sub_stage": true }
     },
@@ -91,7 +114,7 @@
       },
       "quality_rubric_refs": ["agent/quality_gates/foundry-provider-output.md"],
       "in_thread_refinement": { "allowed": true, "authoritative": false },
-      "formal_review": { "required": true, "risk_tier": "high", "review_depth": "multi_axis", "context_isolation_required": true, "max_repair_rounds": 2 },
+      "formal_review": { "required": true, "risk_tier": "high", "review_depth": "multi_axis", "context_isolation_required": true, "max_repair_rounds": 3 },
       "budget_exhaustion": "complete_with_quality_debt_if_consumable",
       "attempt_boundary": { "inherits_stage_goal_scope_authority": true, "role_overlay_may_only_narrow": true, "controller_creates_next_attempt": true, "attempt_is_not_sub_stage": true }
     },
@@ -108,7 +131,7 @@
       },
       "quality_rubric_refs": ["agent/quality_gates/foundry-provider-output.md"],
       "in_thread_refinement": { "allowed": true, "authoritative": false },
-      "formal_review": { "required": true, "risk_tier": "high", "review_depth": "multi_axis", "context_isolation_required": true, "max_repair_rounds": 2 },
+      "formal_review": { "required": true, "risk_tier": "high", "review_depth": "multi_axis", "context_isolation_required": true, "max_repair_rounds": 3 },
       "budget_exhaustion": "complete_with_quality_debt_if_consumable",
       "attempt_boundary": { "inherits_stage_goal_scope_authority": true, "role_overlay_may_only_narrow": true, "controller_creates_next_attempt": true, "attempt_is_not_sub_stage": true }
     },
@@ -125,7 +148,7 @@
       },
       "quality_rubric_refs": ["agent/quality_gates/foundry-provider-output.md"],
       "in_thread_refinement": { "allowed": true, "authoritative": false },
-      "formal_review": { "required": true, "risk_tier": "high", "review_depth": "multi_axis", "context_isolation_required": true, "max_repair_rounds": 2 },
+      "formal_review": { "required": true, "risk_tier": "high", "review_depth": "multi_axis", "context_isolation_required": true, "max_repair_rounds": 3 },
       "budget_exhaustion": "complete_with_quality_debt_if_consumable",
       "attempt_boundary": { "inherits_stage_goal_scope_authority": true, "role_overlay_may_only_narrow": true, "controller_creates_next_attempt": true, "attempt_is_not_sub_stage": true }
     },
@@ -142,7 +165,7 @@
       },
       "quality_rubric_refs": ["agent/quality_gates/foundry-provider-output.md"],
       "in_thread_refinement": { "allowed": true, "authoritative": false },
-      "formal_review": { "required": true, "risk_tier": "high", "review_depth": "multi_axis", "context_isolation_required": true, "max_repair_rounds": 2 },
+      "formal_review": { "required": true, "risk_tier": "high", "review_depth": "multi_axis", "context_isolation_required": true, "max_repair_rounds": 3 },
       "budget_exhaustion": "complete_with_quality_debt_if_consumable",
       "attempt_boundary": { "inherits_stage_goal_scope_authority": true, "role_overlay_may_only_narrow": true, "controller_creates_next_attempt": true, "attempt_is_not_sub_stage": true }
     }
