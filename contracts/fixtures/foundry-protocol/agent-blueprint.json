@@ -149,6 +149,14 @@
       {
         "category": "unsupported-claim-resistance",
         "minimum_case_count": 2
+      },
+      {
+        "category": "production-contract-reachability",
+        "minimum_case_count": 1
+      },
+      {
+        "category": "effective-role-prompt-reachability",
+        "minimum_case_count": 1
       }
     ],
     "gates": [

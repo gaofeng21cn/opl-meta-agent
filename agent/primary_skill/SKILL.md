@@ -44,6 +44,10 @@ The ordinary hosted entry is `opl agents run --domain oma --action engineer-agen
 
 - Return the OPL FoundryRun ref plus the admitted mode, exact target, scoped objective, and acceptance criteria.
 - Treat `AgentBlueprint`, `EvalSpec`, and `EvolutionProposal` as semantic protocol objects, never as file patches, repository commands, activation records, or proof of qualification.
+- Never emit a developer work order, repository patch, or execution instruction,
+  including for professional Skill maintenance. OMA may describe the Agent
+  semantics and evaluation obligations only; OPL and authorized repository
+  developers own implementation routes.
 - State explicitly that provider completion means only that a protocol object was produced. Only OPL evidence and target-owner receipts can establish qualification or adoption.
 
 ## References

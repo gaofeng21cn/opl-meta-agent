@@ -91,6 +91,40 @@ test('primary Skill fails closed unless the user explicitly requests Agent engin
   assert.match(canonical, /Use the single public action `engineer-agent`/);
   assert.match(canonical, /`create`[\s\S]*`takeover`[\s\S]*`improve`/);
   assert.match(canonical, /provider completion means only that a protocol object was produced/);
+  assert.match(canonical, /Never emit a developer work order, repository patch, or execution instruction/);
+});
+
+test('OMA evaluation design covers production and effective-prompt reachability', () => {
+  const skill = fs.readFileSync(
+    path.join(root, 'agent/professional_skills/oma-target-assessment-eval-design/SKILL.md'),
+    'utf8',
+  );
+  const prompt = fs.readFileSync(path.join(root, 'agent/prompts/evaluation-design.md'), 'utf8');
+  const blueprintPrompt = fs.readFileSync(
+    path.join(root, 'agent/prompts/agent-blueprint-authoring.md'),
+    'utf8',
+  );
+  const gate = fs.readFileSync(
+    path.join(root, 'agent/quality_gates/foundry-provider-output.md'),
+    'utf8',
+  );
+  const blueprint = readJson('contracts/fixtures/foundry-protocol/agent-blueprint.json');
+  const protectedCategories = new Set(
+    blueprint.eval_spec.protected_requirements.map((entry) => entry.category),
+  );
+
+  for (const text of [skill, prompt, gate]) {
+    assert.match(text, /production-contract reachability|production-contract-reachability/);
+    assert.match(text, /effective-role-prompt reachability|effective-role-prompt-reachability/);
+    assert.match(text, /test-only/i);
+  }
+  assert.match(blueprintPrompt, /public-action-to-terminal-output path/);
+  assert.match(
+    blueprintPrompt,
+    /role fragment that OPL compiles into\s+the effective prompt/,
+  );
+  assert.ok(protectedCategories.has('production-contract-reachability'));
+  assert.ok(protectedCategories.has('effective-role-prompt-reachability'));
 });
 
 test('OMA adopts epistemic provenance without making hashes review authority', () => {

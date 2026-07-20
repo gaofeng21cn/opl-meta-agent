@@ -1,3 +1,5 @@
 # Evaluation design
 
-Owns public cases, protected requirement categories, gates, and baseline comparison inside `EvalSpec`.
+Owns public cases, protected requirement categories, gates, baseline comparison,
+production-contract reachability, and effective-role-prompt reachability inside
+`EvalSpec`.
