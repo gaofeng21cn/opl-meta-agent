@@ -66,7 +66,17 @@
       "semantic_equivalence_evidence_refs": [
         "contracts/action_catalog.json#actions/0/execution_binding",
         "contracts/generated_surface_handoff.json#handoff_surface_overrides"
-      ]
+      ],
+      "bridge_exit_gate": {
+        "keep_as_authority_adapter_refs": [
+          "contracts/functional_privatization_audit.json#/modules/0"
+        ],
+        "no_forbidden_write_refs": [
+          "contracts/generated_surface_handoff.json#authority_boundary",
+          "contracts/foundry_provider.json#authority_boundary"
+        ],
+        "provenance_refs": ["docs/history/process/retired-surface-provenance.md"]
+      }
     },
     {
       "module_id": "oma_foundry_binding_descriptor_refs",
@@ -82,7 +92,17 @@
       "semantic_equivalence_evidence_refs": [
         "contracts/action_catalog.json#actions/0/execution_binding",
         "contracts/foundry_provider.json#operations"
-      ]
+      ],
+      "bridge_exit_gate": {
+        "keep_as_authority_adapter_refs": [
+          "contracts/functional_privatization_audit.json#/modules/1"
+        ],
+        "no_forbidden_write_refs": [
+          "contracts/generated_surface_handoff.json#authority_boundary",
+          "contracts/foundry_provider.json#authority_boundary"
+        ],
+        "provenance_refs": ["docs/history/process/retired-surface-provenance.md"]
+      }
     },
     {
       "module_id": "oma_foundry_run_projection_refs",
@@ -105,7 +125,17 @@
         "contracts/foundry_provider.json#authority_boundary",
         "contracts/memory_descriptor.json#authority_boundary",
         "agent/stages/manifest.json#authority_boundary"
-      ]
+      ],
+      "bridge_exit_gate": {
+        "keep_as_authority_adapter_refs": [
+          "contracts/functional_privatization_audit.json#/modules/2"
+        ],
+        "no_forbidden_write_refs": [
+          "contracts/generated_surface_handoff.json#authority_boundary",
+          "contracts/foundry_provider.json#authority_boundary"
+        ],
+        "provenance_refs": ["docs/history/process/retired-surface-provenance.md"]
+      }
     }
   ],
   "retired_generated_surface_provenance": [

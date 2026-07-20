@@ -312,13 +312,21 @@ test('generated surfaces resolve to real refs-only OMA targets without owner pro
   assert.equal(audit.defaults_profile, 'opl.standard-functional-privatization-audit.v1');
   assert.equal('private_functional_surface_admission_policy_ref' in audit, false);
 
-  for (const module of audit.modules) {
+  for (const [moduleIndex, module] of audit.modules.entries()) {
     assert.equal(module.classification, 'refs_only_domain_adapter');
     assert.equal('standardization_layer' in module, false);
     assert.ok(module.active_caller_status.startsWith('refs_only_'));
     assert.ok(module.active_callers.length > 0);
     assert.ok(module.migration_action.length > 0);
     assert.ok(module.retention_reason.length > 0);
+    assert.deepEqual(module.bridge_exit_gate.keep_as_authority_adapter_refs, [
+      `contracts/functional_privatization_audit.json#/modules/${moduleIndex}`,
+    ]);
+    assert.deepEqual(
+      module.bridge_exit_gate.no_forbidden_write_refs,
+      audit.bridge_exit_gate.no_forbidden_write_refs,
+    );
+    assert.deepEqual(module.bridge_exit_gate.provenance_refs, audit.bridge_exit_gate.provenance_refs);
     module.code_paths.forEach((relativePath) => {
       assert.ok(fs.statSync(path.join(root, relativePath)).isFile(), `missing refs-only target ${relativePath}`);
     });
