@@ -94,7 +94,7 @@ test('primary Skill fails closed unless the user explicitly requests Agent engin
   assert.match(canonical, /Never emit a developer work order, repository patch, or execution instruction/);
 });
 
-test('OMA evaluation design covers production and effective-prompt reachability', () => {
+test('OMA evaluation design covers production, effective-prompt, and professional-Skill reachability', () => {
   const skill = fs.readFileSync(
     path.join(root, 'agent/professional_skills/oma-target-assessment-eval-design/SKILL.md'),
     'utf8',
@@ -116,7 +116,18 @@ test('OMA evaluation design covers production and effective-prompt reachability'
   for (const text of [skill, prompt, gate]) {
     assert.match(text, /production-contract reachability|production-contract-reachability/);
     assert.match(text, /effective-role-prompt reachability|effective-role-prompt-reachability/);
+    assert.match(text, /professional-skill-consumption-reachability/);
+    assert.match(text, /Skill identity[\s\S]{0,40}version[\s\S]{0,40}content ref/i);
+    assert.match(text, /production invocation evidence/i);
+    assert.match(text, /Skill-owned behavioral rubric/i);
+    assert.match(text, /metadata(?:-only)? receipt/i);
     assert.match(text, /test-only/i);
+  }
+  assert.match(skill, /must jointly prove/i);
+  assert.match(prompt, /not sufficient alone/i);
+  assert.match(gate, /cannot pass alone/i);
+  for (const text of [skill, prompt, gate]) {
+    assert.match(text, /OMA (?:defines|specifies)[\s\S]*OPL owns/i);
   }
   assert.match(blueprintPrompt, /public-action-to-terminal-output path/);
   assert.match(
@@ -125,6 +136,7 @@ test('OMA evaluation design covers production and effective-prompt reachability'
   );
   assert.ok(protectedCategories.has('production-contract-reachability'));
   assert.ok(protectedCategories.has('effective-role-prompt-reachability'));
+  assert.ok(protectedCategories.has('professional-skill-consumption-reachability'));
 });
 
 test('OMA adopts epistemic provenance without making hashes review authority', () => {
@@ -215,6 +227,7 @@ test('provider identity and stage routes are internally closed', () => {
     'contracts/foundry_agent_series.json',
     'contracts/foundry_provider.json',
     'contracts/foundry_protocol_fixture_manifest.json',
+    'contracts/foundry_protocol_improve_fixture_manifest.json',
     'contracts/memory_descriptor.json',
     'contracts/opl_agent_package_manifest.json',
     'contracts/opl_domain_manifest_registration.json',

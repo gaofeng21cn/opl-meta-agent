@@ -1,31 +1,31 @@
 {
   "surface_kind": "opl_foundry_evolution_proposal",
   "version": "opl-foundry-protocol.v1",
-  "proposal_id": "fixture-research-agent-proposal-001",
+  "proposal_id": "fixture-research-agent-proposal-004",
   "target_agent_id": "fixture-research-agent",
   "target_domain_id": "fixture_research",
-  "target_version_ref": null,
-  "blueprint_digest": "sha256:31a663a2ed11b49e46507b789c9224d27cf669c68109bc4ccc835e115d9a2f06",
-  "evidence_digest": "sha256:77edf61e75a80e7c9cf9d46a5b7ee2aceb2867fe0295b82cc45ff67479effb8f",
+  "target_version_ref": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "blueprint_digest": "sha256:33b4700930f5722b741b20ca1f5d58ae297e8835de65613e60c2d9523a1907a9",
+  "evidence_digest": "sha256:1258b633d0644aeada1c2f6a3ed8dc86805dcb794932f0d5f383db54444343a6",
   "root_causes": [
     {
-      "failure_class": "semantic_quality_gap",
-      "explanation": "The evidence establishes a semantic gap, but the admitted constraints provide no supported repair that preserves the current authority and quality obligations.",
+      "failure_class": "professional_skill_consumption_gap",
+      "explanation": "The effective prompt names the professional Skill, but production invocation evidence does not bind the same exact Skill identity and content ref to the output under evaluation.",
       "evidence_refs": [
-        "opl://evidence/fixture-research-agent/public-claim-support",
-        "opl://evidence/fixture-research-agent/independent-review"
+        "opl://evidence/fixture-research-agent/skill-consumption-gap",
+        "opl://evidence/fixture-research-agent/independent-review/generation-3"
       ]
     }
   ],
   "next_blueprint": {
     "surface_kind": "opl_foundry_agent_blueprint",
     "version": "opl-foundry-protocol.v1",
-    "blueprint_id": "fixture-research-agent-blueprint-001",
+    "blueprint_id": "fixture-research-agent-blueprint-004",
     "target_agent_id": "fixture-research-agent",
     "target_domain_id": "fixture_research",
-    "target_version_ref": null,
-    "design_request_digest": "sha256:ddaeb1b0d89c056d0ac5a1aa29cacbe48b21ffecb7b16bf783e4fffe9db069e2",
-    "generation": 0,
+    "target_version_ref": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "design_request_digest": "sha256:281be60ac05a3fb23a0ffacca267fd48fb19530809aa01327283466cbc262c67",
+    "generation": 4,
     "stage_graph": {
       "entry_stage_id": "evidence-synthesis",
       "stages": [
@@ -39,7 +39,7 @@
           "output_artifact_types": [
             "claim_support_map"
           ],
-          "prompt_ref": "opl-content://sha256/1111111111111111111111111111111111111111111111111111111111111111",
+          "prompt_ref": "opl-content://sha256/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
           "skill_refs": [
             "opl-content://sha256/2222222222222222222222222222222222222222222222222222222222222222"
           ],
@@ -98,7 +98,7 @@
     ],
     "content_refs": {
       "prompt_refs": [
-        "opl-content://sha256/1111111111111111111111111111111111111111111111111111111111111111",
+        "opl-content://sha256/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         "opl-content://sha256/4444444444444444444444444444444444444444444444444444444444444444"
       ],
       "skill_refs": [
@@ -148,14 +148,21 @@
       "All admitted sources expose stable semantic references."
     ],
     "design_evidence_refs": [
-      "opl://source/fixture-research-agent/mission-v1"
+      "opl://source/fixture-research-agent/version-003",
+      "opl://evidence/fixture-research-agent/skill-consumption-gap"
     ],
     "eval_spec": {
-      "eval_spec_id": "fixture-research-agent-eval-001",
+      "eval_spec_id": "fixture-research-agent-eval-003",
       "public_cases": [
         {
           "case_id": "public-claim-support",
           "test_ref": "opl://test/fixture-research-agent/public-claim-support",
+          "weight": 1,
+          "required": true
+        },
+        {
+          "case_id": "public-professional-skill-consumption",
+          "test_ref": "opl://test/fixture-research-agent/public-professional-skill-consumption",
           "weight": 1,
           "required": true
         }
@@ -173,14 +180,14 @@
           "category": "production-contract-reachability",
           "minimum_case_count": 1
         },
-          {
-            "category": "effective-role-prompt-reachability",
-            "minimum_case_count": 1
-          },
-          {
-            "category": "professional-skill-consumption-reachability",
-            "minimum_case_count": 1
-          }
+        {
+          "category": "effective-role-prompt-reachability",
+          "minimum_case_count": 1
+        },
+        {
+          "category": "professional-skill-consumption-reachability",
+          "minimum_case_count": 1
+        }
       ],
       "gates": [
         {
@@ -192,18 +199,45 @@
         }
       ],
       "baseline_comparison": {
-        "required": false,
+        "required": true,
         "regression_tolerance": 0
       },
       "independent_evaluator_required": true
     },
     "risk_hint": "low"
   },
-  "semantic_diff": [],
-  "expected_benefits": [],
-  "new_tests": [],
-  "trade_offs": [
-    "The Agent remains unqualified until new design evidence or Owner constraints make a safe repair admissible."
+  "semantic_diff": [
+    {
+      "operation": "replace",
+      "semantic_path": "/stage_graph/stages/0/prompt_ref",
+      "rationale": "Select the professional Skill in the exact production role prompt and require the same invocation binding."
+    },
+    {
+      "operation": "replace",
+      "semantic_path": "/content_refs/prompt_refs/0",
+      "rationale": "Bind the changed production prompt by its exact terminal content ref."
+    },
+    {
+      "operation": "add",
+      "semantic_path": "/eval_spec/public_cases/1",
+      "rationale": "Add a public behavioral case that corresponds exactly to the newly proposed Skill-consumption test."
+    }
   ],
-  "risk_hints": []
+  "expected_benefits": [
+    "Professional Skill consumption becomes testable across prompt selection, production invocation, and materialized output behavior.",
+    "The exact baseline remains protected by the frozen non-regression policy."
+  ],
+  "new_tests": [
+    {
+      "case_id": "public-professional-skill-consumption",
+      "test_ref": "opl://test/fixture-research-agent/public-professional-skill-consumption",
+      "rationale": "Exercise the newly bound professional Skill consumption behavior through the public action."
+    }
+  ],
+  "trade_offs": [
+    "The extra evaluation case increases evaluation cost slightly."
+  ],
+  "risk_hints": [
+    "low"
+  ]
 }

@@ -1,0 +1,41 @@
+{
+  "surface_kind": "opl_foundry_design_request",
+  "version": "opl-foundry-protocol.v1",
+  "request_id": "fixture-improve-request-001",
+  "mode": "improve",
+  "target_agent_id": "fixture-research-agent",
+  "target_domain_id": "fixture_research",
+  "target_version_ref": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "objective": "Improve professional Skill consumption without weakening evidence-grounded research behavior.",
+  "acceptance_criteria": [
+    "Every substantive claim has a traceable evidence reference.",
+    "Professional Skill consumption is bound across prompt selection, production invocation, and output behavior.",
+    "The candidate does not regress against the exact baseline version."
+  ],
+  "non_goals": [
+    "Expand permissions or let the Agent modify its own implementation or activation state."
+  ],
+  "source_refs": [
+    "opl://source/fixture-research-agent/version-003",
+    "opl://evidence/fixture-research-agent/skill-consumption-gap"
+  ],
+  "constraints": {
+    "capability_refs": [
+      "opl://capability/evidence-synthesis"
+    ],
+    "permission_refs": [],
+    "privacy_requirements": [
+      "privacy:owner-boundary-nondisclosure"
+    ],
+    "cost_limits": {
+      "total_usd": 20
+    },
+    "latency_limits": {
+      "p95_seconds": 900
+    }
+  },
+  "delivery_policy": {
+    "activation_mode": "qualify_only",
+    "max_generations": 3
+  }
+}

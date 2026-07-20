@@ -5,12 +5,12 @@
   "target_agent_id": "fixture-research-agent",
   "target_domain_id": "fixture_research",
   "target_version_ref": null,
-  "blueprint_digest": "sha256:632b44372381cb6e0e6d3e162a9b08eba531e63c41535dbd84c9633576ab04bb",
+  "blueprint_digest": "sha256:31a663a2ed11b49e46507b789c9224d27cf669c68109bc4ccc835e115d9a2f06",
   "candidate_digest": "sha256:6666666666666666666666666666666666666666666666666666666666666666",
   "baseline_version_digest": null,
   "baseline_public_results": null,
   "baseline_protected_aggregates": null,
-  "frozen_test_plan_digest": "sha256:634e0aa836b79496a673eb9418d6c3fcd699f6c4c15e9f80e11efd81ac92292f",
+  "frozen_test_plan_digest": "sha256:d221249962f9e2df83ed446eda861a6f6c677ffe4f3b817b7bfc5bce3c648b72",
   "public_results": [
     {
       "case_id": "public-claim-support",
@@ -35,6 +35,27 @@
       "passed": 1,
       "failed": 1,
       "score": 0.5
+    },
+    {
+      "category": "production-contract-reachability",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "score": 1
+    },
+    {
+      "category": "effective-role-prompt-reachability",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "score": 1
+    },
+    {
+      "category": "professional-skill-consumption-reachability",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "score": 1
     }
   ],
   "independent_review": {

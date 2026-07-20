@@ -7,5 +7,7 @@
 - Every semantic claim is traceable to admitted design evidence or the supplied `EvidenceBundle`.
 - Existing public cases, protected requirements, gates, thresholds, and baseline comparison are not removed, weakened, or rewritten.
 - New or changed action contracts, output members, quality transports, and role-scoped prompt obligations have EvalSpec coverage for production-contract reachability and effective-role-prompt reachability; test-only callers, helper existence, whole-file keyword checks, and unselected prompt text are not passing evidence.
+- Every stage or action with a professional Skill dependency has conditional `professional-skill-consumption-reachability` coverage that jointly requires exact effective-role Skill selection, OPL production invocation evidence bound to the same Skill identity/version/content ref, and a materialized output that passes the Skill-owned behavioral rubric; a `skill_ref`, non-empty ledger, metadata-only receipt, or apparently compliant output cannot pass alone.
+- OMA defines Skill-consumption evaluation obligations only; OPL owns invocation capture, evidence binding, evaluation execution, and verdicts.
 - A changed blueprint increments generation exactly once; a no-change proposal preserves the exact blueprint and has an empty semantic diff.
 - No repository path, command, queue, lease, attempt, patch, work order, promotion record, protected-test body, qualification, activation, or ready claim appears.
