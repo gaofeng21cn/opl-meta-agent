@@ -18,12 +18,13 @@ Package identity, publication, physical carriage, and execution are separate:
 ```text
 Package     = oma identity + capabilities + dependencies + task/view descriptors
 Publication = OMA owner -> GHCR oma:latest-stable
-Carrier     = Package-declared runtime adapter + Codex Plugin/config/cache projection
+Carrier     = OCI, Codex Plugin, Git/local, or offline platform adapter
 Executor    = Codex CLI today; another adapter only when a real route is needed
 ```
 
-Base provides only the thin OCI download/verification adapter and hands bytes
-to the Package-declared carrier/runtime adapter.
+Base keeps only thin OCI/native adapters and aggregates fresh platform
+readback. Each carrier reports the bytes and projections it actually owns;
+the OMA descriptor does not declare or implement a carrier adapter.
 
 OMA owns the complete official Package bytes and independently advances
 `ghcr.io/gaofeng21cn/one-person-lab-packages/oma:latest-stable`. A shared

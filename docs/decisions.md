@@ -27,9 +27,10 @@ machine contracts and cross-repository migration gates.
 - Restrict Package exact refs to release integrity and frozen build/snapshot
   evidence. Preserve exact refs in the OMA Foundry protocol where they bind
   domain inputs and evidence; those refs are not Package locks.
-- Keep compatibility reads until the Framework-owned platform composition migration
-  proves equivalent behavior and no retained consumer. This decision alone
-  does not claim the target publication or runtime path is implemented.
+- Keep compatibility reads until the Framework-owned platform composition
+  migration proves equivalent behavior and no retained consumer. This
+  decision alone does not claim the target publication or runtime path is
+  implemented.
 
 ## 2026-07-16: OMA becomes a pure Foundry semantic provider
 
