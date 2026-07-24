@@ -235,6 +235,8 @@ test('provider identity and stage routes are internally closed', () => {
   ].map(readJson);
   const provider = readJson('contracts/foundry_provider.json');
   const descriptor = readJson('contracts/domain_descriptor.json');
+  const packageManifest = readJson('contracts/opl_agent_package_manifest.json');
+  const actionCatalog = readJson('contracts/action_catalog.json');
   const manifest = readJson('agent/stages/manifest.json');
   const compiler = readJson('contracts/pack_compiler_input.json');
   const qualityPolicy = readJson('contracts/stage_quality_cycle_policy.json');
@@ -266,6 +268,15 @@ test('provider identity and stage routes are internally closed', () => {
     assert.equal(contract.domain_id, 'agent_engineering');
     if ('carrier_slug' in contract) assert.equal(contract.carrier_slug, 'opl-meta-agent');
   }
+  assert.equal(packageManifest.kind, 'agent');
+  assert.equal(packageManifest.domain_descriptor_ref, 'contracts/domain_descriptor.json');
+  assert.equal(packageManifest.action_catalog_ref, 'contracts/action_catalog.json');
+  assert.deepEqual(packageManifest.view_refs, []);
+  assert.equal(descriptor.kind, 'agent');
+  assert.equal(descriptor.action_catalog_ref, packageManifest.action_catalog_ref);
+  assert.deepEqual(descriptor.view_refs, []);
+  assert.deepEqual(descriptor.public_action_ids, ['engineer-agent']);
+  assert.deepEqual(actionCatalog.actions.map((action) => action.action_id), ['engineer-agent']);
   assert.deepEqual([...stageIds], expectedStageIds);
   assert.deepEqual(
     Object.fromEntries(manifest.stages.map((stage) => [stage.stage_id, stage.stage_kind])),

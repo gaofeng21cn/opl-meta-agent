@@ -1,6 +1,7 @@
 {
   "surface_kind": "domain_agent_descriptor",
   "schema_version": 1,
+  "kind": "agent",
   "agent_id": "oma",
   "package_id": "oma",
   "domain_id": "agent_engineering",
@@ -10,6 +11,8 @@
   "delivery_domain": "agent_engineering",
   "purpose": "Design, evaluate semantically, diagnose, and evolve OPL-compatible Agents without owning execution or release state.",
   "public_action_ids": ["engineer-agent"],
+  "action_catalog_ref": "contracts/action_catalog.json",
+  "view_refs": [],
   "internal_provider_operations": ["design", "diagnose"],
   "standard_contract_refs": {
     "action_catalog": "contracts/action_catalog.json",
