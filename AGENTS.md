@@ -1,6 +1,6 @@
 # OPL Meta Agent
 
-本仓是 OPL Framework 的 Agent engineering 语义 provider。统一身份为 `agent_id/package_id=oma`、`domain_id=agent_engineering`、`carrier_slug=opl-meta-agent`。
+本仓是 OPL Framework 的 Agent engineering 语义 provider。统一 Package / Agent 身份为 `agent_id/package_id=oma`，领域身份为 `domain_id=agent_engineering`。`carrier_slug=opl-meta-agent` 只是当前 carrier locator，不属于 OMA Package identity，也不定义 installed truth 或 executor。
 
 - OMA 只拥有目标理解、设计依据、`AgentBlueprint`、`EvalSpec`、证据诊断和 `EvolutionProposal`。
 - OPL Framework 是 `FoundryRun`、物化、评测、证据、版本、canary、激活和回滚的唯一 owner。

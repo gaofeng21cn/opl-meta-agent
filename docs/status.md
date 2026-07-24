@@ -7,7 +7,9 @@ Machine boundary: Human-readable current summary. Machine truth lives in `contra
 
 The repository currently declares:
 
-- identity `agent_id/package_id=oma`, `domain_id=agent_engineering`, and `carrier_slug=opl-meta-agent`;
+- Package / Agent identity `agent_id/package_id=oma` and domain identity
+  `domain_id=agent_engineering`; current `carrier_slug=opl-meta-agent` is only a
+  carrier locator, not Package identity, installed truth, or executor identity;
 - one public `engineer-agent` action with `create`, `takeover`, and `improve` modes;
 - internal `design` and `diagnose` provider operations;
 - eight skill-bound semantic Stages and four professional methods;
