@@ -41,7 +41,7 @@ evidence; they do not become Package dependency locks. Cross-repository
 implementation and deletion status is owned by the
 [Framework platform composition migration SSOT](https://github.com/gaofeng21cn/one-person-lab/blob/main/docs/active/opl-package-platform-composition-migration.md).
 
-The current source release line is `0.4.3`. It includes owner-proof baseline `fcd31988ef224edd5d211c69eaeaf81c7b71814c` and the canonical refs-only memory descriptor. The synchronized carriers are `package.json`, `package-lock.json`, `contracts/opl_agent_package_manifest.json`, and the Codex plugin manifest. An annotated Git tag plus HTTPS and SSH:443 remote readback is the release transport receipt; source version declarations and tests alone do not prove publication.
+The current source release line is `0.4.4`. It includes owner-proof baseline `fcd31988ef224edd5d211c69eaeaf81c7b71814c` and the canonical refs-only memory descriptor. The synchronized carriers are `package.json`, `package-lock.json`, `contracts/opl_agent_package_manifest.json`, and the Codex plugin manifest. An annotated Git tag plus HTTPS and SSH:443 remote readback is the release transport receipt; source version declarations and tests alone do not prove publication.
 
 `scripts/verify.sh full` checks repository contracts and fixtures. Passing it proves the checked repository bytes are internally consistent; it does not prove a live Foundry run, qualification, activation, target-owner acceptance, release, or production adoption.
 
