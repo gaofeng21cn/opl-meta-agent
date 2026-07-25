@@ -272,6 +272,34 @@ test('provider identity and stage routes are internally closed', () => {
   assert.equal(packageManifest.domain_descriptor_ref, 'contracts/domain_descriptor.json');
   assert.equal(packageManifest.action_catalog_ref, 'contracts/action_catalog.json');
   assert.deepEqual(packageManifest.view_refs, []);
+  assert.deepEqual(packageManifest.presentation, {
+    display_name_i18n: {
+      'en-US': packageManifest.display_name,
+      'zh-CN': packageManifest.display_name,
+    },
+    description_i18n: {
+      'en-US': 'Turns an Agent engineering objective into a reviewable semantic design.',
+      'zh-CN': '将智能体工程目标转化为可审查的语义设计。',
+    },
+    session_routing_summary_i18n: {
+      'en-US': 'Create, take over, or improve an Agent through OPL Foundry.',
+      'zh-CN': '通过 OPL Foundry 创建、接管或改进智能体。',
+    },
+    home_shortcuts: [{
+      shortcut_id: actionCatalog.actions[0].action_id,
+      label_i18n: {
+        'en-US': actionCatalog.actions[0].title,
+        'zh-CN': '设计与演进智能体',
+      },
+      default_visible: true,
+      user_configurable: true,
+      route: {
+        route_kind: 'agent_package_shortcut',
+        executor: 'codex_cli',
+        codex_visible_entry: packageManifest.codex_surface.plugin_id,
+      },
+    }],
+  });
   assert.equal(descriptor.kind, 'agent');
   assert.equal(descriptor.action_catalog_ref, packageManifest.action_catalog_ref);
   assert.deepEqual(descriptor.view_refs, []);
