@@ -1,0 +1,20 @@
+{
+  "name": "opl-meta-agent",
+  "interface": {
+    "displayName": "OPL Meta Agent"
+  },
+  "plugins": [
+    {
+      "name": "opl-meta-agent",
+      "source": {
+        "source": "local",
+        "path": "./plugins/opl-meta-agent"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
