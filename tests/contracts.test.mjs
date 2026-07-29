@@ -581,6 +581,7 @@ test('package and plugin carriers project the canonical OMA skill at one version
   const npmPackage = readJson('package.json');
   const npmLock = readJson('package-lock.json');
   const agentPackage = readJson('contracts/opl_agent_package_manifest.json');
+  const carrierPackage = readJson('plugins/opl-meta-agent/opl-package.json');
   const plugin = readJson('plugins/opl-meta-agent/.codex-plugin/plugin.json');
   const capabilityMap = readJson('contracts/capability_map.json');
   const projection = capabilityMap.primary_skill_capability.carrier_projection_contract;
@@ -592,6 +593,32 @@ test('package and plugin carriers project the canonical OMA skill at one version
   assert.equal(agentPackage.version, npmPackage.version);
   assert.equal(agentPackage.carrier_source_role, 'codex_plugin_default_carrier_not_package_truth');
   assert.equal(plugin.version, npmPackage.version);
+  assert.deepEqual(carrierPackage, {
+    surface_kind: agentPackage.surface_kind,
+    kind: agentPackage.kind,
+    agent_id: agentPackage.agent_id,
+    package_id: agentPackage.package_id,
+    domain_id: agentPackage.domain_id,
+    display_name: agentPackage.display_name,
+    presentation: agentPackage.presentation,
+    publisher: agentPackage.publisher,
+    version: agentPackage.version,
+    source: agentPackage.source,
+    carrier_source_role: agentPackage.carrier_source_role,
+    domain_descriptor_ref: agentPackage.domain_descriptor_ref,
+    action_catalog_ref: agentPackage.action_catalog_ref,
+    view_refs: agentPackage.view_refs,
+    provider_manifest_ref: agentPackage.provider_manifest_ref,
+    entrypoints: [],
+    codex_surface: {
+      plugin_id: agentPackage.codex_surface.plugin_id,
+      plugin_source_path: '.',
+      required_skill_ids: agentPackage.codex_surface.required_skill_ids,
+    },
+    capability_dependencies: [],
+  });
+  assert.equal(carrierPackage.version, plugin.version);
+  assert.equal(carrierPackage.codex_surface.plugin_id, plugin.name);
   assert.match(statusDoc, /current source release line is `0\.4\.4`/);
   assert.equal(plugin.name, 'opl-meta-agent');
   assert.equal(plugin.skills, './skills/');
