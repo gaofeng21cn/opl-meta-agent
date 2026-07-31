@@ -41,7 +41,7 @@ evidence; they do not become Package dependency locks. Cross-repository
 implementation and deletion status is owned by the
 [Framework platform composition migration SSOT](https://github.com/gaofeng21cn/one-person-lab/blob/main/docs/active/opl-package-platform-composition-migration.md).
 
-The current source release line is `0.4.4`; it must stay synchronized across
+The current source release line is `0.4.5`; it must stay synchronized across
 `package.json`, `package-lock.json`, `contracts/opl_agent_package_manifest.json`,
 and the Codex plugin manifest. Active status does not retain a historical commit
 or transport snapshot as current proof. A Git tag and remote ref readback prove
