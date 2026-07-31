@@ -587,7 +587,7 @@ test('package and plugin carriers project the canonical OMA skill at one version
   const projection = capabilityMap.primary_skill_capability.carrier_projection_contract;
   const statusDoc = fs.readFileSync(path.join(root, 'docs/status.md'), 'utf8');
 
-  assert.equal(npmPackage.version, '0.4.4');
+  assert.equal(npmPackage.version, '0.4.5');
   assert.equal(npmLock.version, npmPackage.version);
   assert.equal(npmLock.packages[''].version, npmPackage.version);
   assert.equal(agentPackage.version, npmPackage.version);
@@ -619,7 +619,7 @@ test('package and plugin carriers project the canonical OMA skill at one version
   });
   assert.equal(carrierPackage.version, plugin.version);
   assert.equal(carrierPackage.codex_surface.plugin_id, plugin.name);
-  assert.match(statusDoc, /current source release line is `0\.4\.4`/);
+  assert.match(statusDoc, /current source release line is `0\.4\.5`/);
   assert.equal(plugin.name, 'opl-meta-agent');
   assert.equal(plugin.skills, './skills/');
   assert.deepEqual(agentPackage.codex_surface.required_skill_ids, ['opl-meta-agent']);
