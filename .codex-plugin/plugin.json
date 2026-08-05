@@ -9,19 +9,29 @@
   "homepage": "https://github.com/gaofeng21cn/opl-meta-agent",
   "repository": "https://github.com/gaofeng21cn/opl-meta-agent",
   "license": "Apache-2.0",
-  "keywords": ["opl", "meta-agent", "codex", "agent-engineering"],
-  "skills": "./skills/",
+  "keywords": [
+    "opl",
+    "meta-agent",
+    "codex",
+    "agent-engineering"
+  ],
+  "skills": "./plugins/opl-meta-agent/skills/",
   "interface": {
     "displayName": "OPL Meta Agent",
     "shortDescription": "Design and evolve OPL Agents.",
     "longDescription": "Provides OMA design and diagnosis semantics while OPL owns materialization, evaluation, versions, activation, and rollback.",
     "developerName": "Gao Feng",
     "category": "Productivity",
-    "capabilities": ["Interactive", "Write"],
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
     "websiteURL": "https://github.com/gaofeng21cn/opl-meta-agent",
-    "composerIcon": "./assets/icon.svg",
-    "logo": "./assets/icon.svg",
-    "defaultPrompt": ["Use OMA to create, take over, or improve an OPL-compatible Agent through engineer-agent."],
+    "composerIcon": "./plugins/opl-meta-agent/assets/icon.svg",
+    "logo": "./plugins/opl-meta-agent/assets/icon.svg",
+    "defaultPrompt": [
+      "Use OMA to create, take over, or improve an OPL-compatible Agent through engineer-agent."
+    ],
     "brandColor": "#4F5D95"
   }
 }

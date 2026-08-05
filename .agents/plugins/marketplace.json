@@ -8,7 +8,7 @@
       "name": "opl-meta-agent",
       "source": {
         "source": "local",
-        "path": "./plugins/opl-meta-agent"
+        "path": "./"
       },
       "policy": {
         "installation": "AVAILABLE",

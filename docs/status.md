@@ -25,16 +25,18 @@ capabilities, task semantics, and optional typed views. Its owner independently
 publishes complete bytes to the OMA GHCR `latest-stable`; Codex remains the
 current executor and its Plugin is only a carrier projection.
 
-This is not yet an implementation-complete claim. The current Package manifest
-still delegates lifecycle to `opl packages`, carries a source version, and
-declares the Codex Plugin Manager carrier at
-`opl-meta-agent@opl-meta-agent` from the OMA owner marketplace. Until fresh
-cross-repository evidence proves
-independent owner publication, complete-runtime carrier readback,
-presence/callability composition, and executor-neutral state preservation,
-those fields remain compatibility machine truth and must not be inferred away.
-No lock, payload, version/ABI solver, atomic Package closure, or shared Release
-Set should be added as a new readiness requirement.
+The owner marketplace now exposes the repository root to the configured Codex
+Plugin Manager carrier, so one native installation contains both the OMA Skill
+and the owner contracts and Agent runtime. The nested Plugin remains a local
+developer shortcut, not an ordinary install or currentness path. Ordinary
+Package currentness is per-Package owner OCI `latest-stable` to native carrier
+to fresh installed and callable readback.
+
+Installed locks, payloads, materializers, Package lifecycle receipts, LKG,
+rollback, and durable Package transactions are compatibility-to-delete and are
+not valid inputs to ordinary lifecycle, currentness, or hosted runtime. OMA's
+Foundry and domain evidence contracts remain owner truth; this cutover does not
+delete or reinterpret them.
 
 The migration must retain the public `engineer-agent` behavior, all Foundry
 semantic outputs, work-item continuity, preferences, dependency state, and
@@ -43,10 +45,11 @@ evidence; they do not become Package dependency locks. Cross-repository
 implementation and deletion status is owned by the
 [Framework platform composition migration SSOT](https://github.com/gaofeng21cn/one-person-lab/blob/main/docs/active/opl-package-platform-composition-migration.md).
 
-The current source release line is `0.4.6`; it must stay synchronized across
+The current source release line is `0.4.7`; it must stay synchronized across
 `package.json`, `package-lock.json`, `contracts/opl_agent_package_manifest.json`,
-and the Codex plugin manifest. Active status does not retain a historical commit
-or transport snapshot as current proof. A Git tag and remote ref readback prove
+root `opl-package.json`, and both Codex plugin manifests. Active status does not
+retain a historical commit or transport snapshot as current proof. A Git tag
+and remote ref readback prove
 only source transport; owner publication currentness still requires fresh
 owner-channel and exact-byte readback. Source declarations and tests alone do
 not prove publication.

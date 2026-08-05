@@ -581,8 +581,11 @@ test('package and plugin carriers project the canonical OMA skill at one version
   const npmPackage = readJson('package.json');
   const npmLock = readJson('package-lock.json');
   const agentPackage = readJson('contracts/opl_agent_package_manifest.json');
+  const rootPackage = readJson('opl-package.json');
   const carrierPackage = readJson('plugins/opl-meta-agent/opl-package.json');
+  const rootPlugin = readJson('.codex-plugin/plugin.json');
   const plugin = readJson('plugins/opl-meta-agent/.codex-plugin/plugin.json');
+  const marketplace = readJson('.agents/plugins/marketplace.json');
   const capabilityMap = readJson('contracts/capability_map.json');
   const projection = capabilityMap.primary_skill_capability.carrier_projection_contract;
   const statusDoc = fs.readFileSync(path.join(root, 'docs/status.md'), 'utf8');
@@ -595,13 +598,19 @@ test('package and plugin carriers project the canonical OMA skill at one version
     publication_ref: 'ghcr.io/gaofeng21cn/one-person-lab-packages/oma:latest-stable',
   };
 
-  assert.equal(npmPackage.version, '0.4.6');
+  assert.equal(npmPackage.version, '0.4.7');
   assert.equal(npmLock.version, npmPackage.version);
   assert.equal(npmLock.packages[''].version, npmPackage.version);
   assert.equal(agentPackage.version, npmPackage.version);
+  assert.equal(rootPackage.version, npmPackage.version);
   assert.equal(agentPackage.carrier_source_role, 'codex_plugin_default_carrier_not_package_truth');
   assert.deepEqual(agentPackage.codex_surface.configured_codex_plugin_carrier, configuredCodexPluginCarrier);
+  assert.equal(rootPlugin.version, npmPackage.version);
   assert.equal(plugin.version, npmPackage.version);
+  assert.equal(
+    fs.readFileSync(path.join(root, 'opl-package.json'), 'utf8'),
+    fs.readFileSync(path.join(root, 'contracts/opl_agent_package_manifest.json'), 'utf8'),
+  );
   assert.deepEqual(carrierPackage, {
     surface_kind: agentPackage.surface_kind,
     kind: agentPackage.kind,
@@ -629,13 +638,49 @@ test('package and plugin carriers project the canonical OMA skill at one version
   });
   assert.equal(carrierPackage.version, plugin.version);
   assert.equal(carrierPackage.codex_surface.plugin_id, plugin.name);
-  assert.match(statusDoc, /current source release line is `0\.4\.6`/);
+  assert.match(statusDoc, /current source release line is `0\.4\.7`/);
+  assert.equal(marketplace.plugins[0].source.path, './');
+  const nativeCarrierRoot = path.resolve(root, marketplace.plugins[0].source.path);
+  assert.equal(nativeCarrierRoot, root);
+  for (const relativePath of [
+    '.codex-plugin/plugin.json',
+    'opl-package.json',
+    'plugins/opl-meta-agent/skills/opl-meta-agent/SKILL.md',
+    'contracts/action_catalog.json',
+    'agent/stages/manifest.json',
+  ]) {
+    assert.ok(fs.statSync(path.join(nativeCarrierRoot, relativePath)).isFile());
+  }
+  assert.equal(rootPlugin.name, agentPackage.codex_surface.plugin_id);
+  assert.equal(rootPlugin.skills, './plugins/opl-meta-agent/skills/');
+  assert.ok(fs.statSync(path.resolve(root, rootPlugin.skills)).isDirectory());
+  assert.ok(fs.statSync(path.resolve(root, rootPlugin.interface.composerIcon)).isFile());
   assert.equal(plugin.name, 'opl-meta-agent');
   assert.equal(plugin.skills, './skills/');
   assert.deepEqual(agentPackage.codex_surface.required_skill_ids, ['opl-meta-agent']);
   assert.equal(projection.canonical_source, 'agent/primary_skill/SKILL.md');
   assert.equal(projection.carrier_skill_ref, 'plugins/opl-meta-agent/skills/opl-meta-agent/SKILL.md');
   assert.equal(projection.carrier_can_override_canonical_source, false);
+
+  const forbiddenPackageLifecycleKeys = new Set([
+    'lifecycle',
+    'release_set_receipt_ref',
+    'activation_materialization',
+    'package_lock_ref',
+  ]);
+  for (const [relativePath, descriptor] of [
+    ['contracts/opl_agent_package_manifest.json', agentPackage],
+    ['opl-package.json', rootPackage],
+    ['plugins/opl-meta-agent/opl-package.json', carrierPackage],
+  ]) {
+    walk(descriptor, (_value, pointer) => {
+      const key = pointer.split('/').at(-1);
+      assert.ok(
+        !forbiddenPackageLifecycleKeys.has(key),
+        `${relativePath} contains forbidden Package lifecycle field ${pointer}`,
+      );
+    });
+  }
 });
 
 test('active OMA surface has no retired action ABI', () => {
