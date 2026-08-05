@@ -587,11 +587,20 @@ test('package and plugin carriers project the canonical OMA skill at one version
   const projection = capabilityMap.primary_skill_capability.carrier_projection_contract;
   const statusDoc = fs.readFileSync(path.join(root, 'docs/status.md'), 'utf8');
 
-  assert.equal(npmPackage.version, '0.4.5');
+  const configuredCodexPluginCarrier = {
+    kind: 'codex_plugin_manager',
+    plugin_selector: 'opl-meta-agent@opl-meta-agent',
+    executor_route: 'codex_cli',
+    marketplace_source: 'gaofeng21cn/opl-meta-agent',
+    publication_ref: 'ghcr.io/gaofeng21cn/one-person-lab-packages/oma:latest-stable',
+  };
+
+  assert.equal(npmPackage.version, '0.4.6');
   assert.equal(npmLock.version, npmPackage.version);
   assert.equal(npmLock.packages[''].version, npmPackage.version);
   assert.equal(agentPackage.version, npmPackage.version);
   assert.equal(agentPackage.carrier_source_role, 'codex_plugin_default_carrier_not_package_truth');
+  assert.deepEqual(agentPackage.codex_surface.configured_codex_plugin_carrier, configuredCodexPluginCarrier);
   assert.equal(plugin.version, npmPackage.version);
   assert.deepEqual(carrierPackage, {
     surface_kind: agentPackage.surface_kind,
@@ -614,12 +623,13 @@ test('package and plugin carriers project the canonical OMA skill at one version
       plugin_id: agentPackage.codex_surface.plugin_id,
       plugin_source_path: '.',
       required_skill_ids: agentPackage.codex_surface.required_skill_ids,
+      configured_codex_plugin_carrier: configuredCodexPluginCarrier,
     },
     capability_dependencies: [],
   });
   assert.equal(carrierPackage.version, plugin.version);
   assert.equal(carrierPackage.codex_surface.plugin_id, plugin.name);
-  assert.match(statusDoc, /current source release line is `0\.4\.5`/);
+  assert.match(statusDoc, /current source release line is `0\.4\.6`/);
   assert.equal(plugin.name, 'opl-meta-agent');
   assert.equal(plugin.skills, './skills/');
   assert.deepEqual(agentPackage.codex_surface.required_skill_ids, ['opl-meta-agent']);
