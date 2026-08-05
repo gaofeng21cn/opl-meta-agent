@@ -27,7 +27,9 @@ current executor and its Plugin is only a carrier projection.
 
 This is not yet an implementation-complete claim. The current Package manifest
 still delegates lifecycle to `opl packages`, carries a source version, and
-describes the Codex surface. Until fresh cross-repository evidence proves
+declares the Codex Plugin Manager carrier at
+`opl-meta-agent@opl-meta-agent` from the OMA owner marketplace. Until fresh
+cross-repository evidence proves
 independent owner publication, complete-runtime carrier readback,
 presence/callability composition, and executor-neutral state preservation,
 those fields remain compatibility machine truth and must not be inferred away.
@@ -41,7 +43,7 @@ evidence; they do not become Package dependency locks. Cross-repository
 implementation and deletion status is owned by the
 [Framework platform composition migration SSOT](https://github.com/gaofeng21cn/one-person-lab/blob/main/docs/active/opl-package-platform-composition-migration.md).
 
-The current source release line is `0.4.5`; it must stay synchronized across
+The current source release line is `0.4.6`; it must stay synchronized across
 `package.json`, `package-lock.json`, `contracts/opl_agent_package_manifest.json`,
 and the Codex plugin manifest. Active status does not retain a historical commit
 or transport snapshot as current proof. A Git tag and remote ref readback prove
