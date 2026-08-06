@@ -568,6 +568,11 @@ test('all declared repo-local refs exist and primary skill mirror is exact', () 
     walk(readJson(relativePath), (value, pointer) => {
       if (typeof value !== 'string' || !/^(?:agent|contracts|docs|plugins|scripts)\//.test(value)) return;
       const localRef = value.split('#')[0];
+      if (
+        relativePath === 'contracts/opl-native-profile.json'
+        && pointer.startsWith('/owned_by_repo/')
+        && localRef.includes('*')
+      ) return;
       if (localRef.startsWith('contracts/opl-framework/')) {
         assert.ok(frameworkContractRefs.has(localRef), `${relativePath}${pointer} has unknown Framework contract ref ${value}`);
         return;
