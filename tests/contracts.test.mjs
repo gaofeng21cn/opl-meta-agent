@@ -745,15 +745,13 @@ test('package and plugin carriers project the canonical OMA skill at one version
   assert.equal(carrierPackage.version, plugin.version);
   assert.equal(carrierPackage.codex_surface.plugin_id, plugin.name);
   assert.match(statusDoc, /current source release line is `0\.4\.7`/);
-  assert.equal(marketplace.plugins[0].source.path, './');
+  assert.equal(marketplace.plugins[0].source.path, './plugins/opl-meta-agent');
   const nativeCarrierRoot = path.resolve(root, marketplace.plugins[0].source.path);
-  assert.equal(nativeCarrierRoot, root);
+  assert.equal(nativeCarrierRoot, path.resolve(root, 'plugins/opl-meta-agent'));
   for (const relativePath of [
     '.codex-plugin/plugin.json',
     'opl-package.json',
-    'plugins/opl-meta-agent/skills/opl-meta-agent/SKILL.md',
-    'contracts/action_catalog.json',
-    'agent/stages/manifest.json',
+    'skills/opl-meta-agent/SKILL.md',
   ]) {
     assert.ok(fs.statSync(path.join(nativeCarrierRoot, relativePath)).isFile());
   }
