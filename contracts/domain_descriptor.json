@@ -14,6 +14,17 @@
   "action_catalog_ref": "contracts/action_catalog.json",
   "view_refs": [],
   "internal_provider_operations": ["design", "diagnose"],
+  "source_material_consumer": {
+    "version": "opl_source_material_consumer_projection.v1",
+    "role_bindings": {
+      "reference_design": {
+        "applicability": "required",
+        "public_action_id": "engineer-agent",
+        "request_ref_field": "source_refs"
+      }
+    },
+    "provider_execution_at_ingest": "not_applicable"
+  },
   "standard_contract_refs": {
     "action_catalog": "contracts/action_catalog.json",
     "foundry_provider": "contracts/foundry_provider.json",

@@ -75,6 +75,47 @@ test('OMA exposes one public Foundry action and two internal provider operations
   });
 });
 
+test('OMA descriptor routes reference-design source refs without duplicating provider selection', () => {
+  const descriptor = readJson('contracts/domain_descriptor.json');
+  const catalog = readJson('contracts/action_catalog.json');
+  const projection = descriptor.source_material_consumer;
+
+  assert.deepEqual(projection, {
+    version: 'opl_source_material_consumer_projection.v1',
+    role_bindings: {
+      reference_design: {
+        applicability: 'required',
+        public_action_id: 'engineer-agent',
+        request_ref_field: 'source_refs',
+      },
+    },
+    provider_execution_at_ingest: 'not_applicable',
+  });
+
+  const binding = projection.role_bindings.reference_design;
+  const action = catalog.actions.find((entry) => entry.action_id === binding.public_action_id);
+  assert.ok(action);
+  assert.ok(descriptor.public_action_ids.includes(binding.public_action_id));
+  assert.equal(action.input_schema_ref, 'opl://foundry-protocol/DesignRequest');
+  assert.ok(action.required_fields.includes(binding.request_ref_field));
+  assert.deepEqual(action.execution_binding, {
+    kind: 'foundry_binding',
+    provider_manifest_ref: 'contracts/foundry_provider.json',
+  });
+
+  for (const duplicateProviderField of [
+    'provider_id',
+    'agent_id',
+    'package_id',
+    'provider_manifest_ref',
+    'provider_operation',
+    'operation',
+  ]) {
+    assert.equal(Object.hasOwn(projection, duplicateProviderField), false);
+    assert.equal(Object.hasOwn(binding, duplicateProviderField), false);
+  }
+});
+
 test('OMA adopts canonical Standard Agent principles without a second general policy body', () => {
   const adoption = readJson('contracts/standard-agent-principles-adoption.json');
   const compiler = readJson('contracts/pack_compiler_input.json');
