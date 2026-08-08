@@ -7,6 +7,18 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const readJson = (relativePath) => JSON.parse(fs.readFileSync(path.join(root, relativePath), 'utf8'));
 const epistemicDimensions = ['design_basis', 'agent_blueprint', 'evaluation_design', 'evolution'];
+const standardAgentPrincipleIds = [
+  'ai_first_execution',
+  'contract_backed_boundary',
+  'domain_truth_authority',
+  'stage_prompt_skill_tool_separation',
+  'domain_intake_mapping',
+  'workspace_source_intake_shell',
+  'owner_delta_progress',
+  'quality_budget_progress_first',
+  'parallel_executor_autonomy',
+  'module_organization',
+];
 
 function walk(value, visitor, pointer = '') {
   visitor(value, pointer);
@@ -61,6 +73,93 @@ test('OMA exposes one public Foundry action and two internal provider operations
     provider_can_view_protected_test_bodies: false,
     opl_can_write_target_domain_truth: false,
   });
+});
+
+test('OMA adopts canonical Standard Agent principles without a second general policy body', () => {
+  const adoption = readJson('contracts/standard-agent-principles-adoption.json');
+  const compiler = readJson('contracts/pack_compiler_input.json');
+  const actionCatalog = readJson('contracts/action_catalog.json');
+  const descriptor = readJson('contracts/domain_descriptor.json');
+  const provider = readJson('contracts/foundry_provider.json');
+  const manifest = readJson('agent/stages/manifest.json');
+  const projection = fs.readFileSync(
+    path.join(root, 'agent/principles/opl-standard-agent-principles.md'),
+    'utf8',
+  );
+
+  assert.equal(adoption.surface_kind, 'opl_standard_agent_principles_adoption');
+  assert.equal(adoption.version, 'standard-agent-principles-adoption.v1');
+  assert.equal(adoption.owner, 'oma');
+  assert.equal(adoption.domain_id, 'agent_engineering');
+  assert.equal(adoption.state, 'active_contract');
+  assert.equal(
+    adoption.adopted_principle_pack_ref,
+    'contracts/opl-framework/standard-agent-principles.json',
+  );
+  assert.deepEqual(adoption.adopted_principle_ids, standardAgentPrincipleIds);
+  assert.deepEqual(adoption.source_refs, {
+    opl_projection_ref: 'agent/principles/opl-standard-agent-principles.md',
+    domain_specialization_ref: 'agent/principles/domain-specialization.md',
+    stage_manifest_ref: 'agent/stages/manifest.json',
+    stage_control_plane_ref: 'opl-generated:family_stage_control_plane',
+    pack_compiler_input_ref: 'contracts/pack_compiler_input.json',
+    action_catalog_ref: 'contracts/action_catalog.json',
+    domain_descriptor_ref: 'contracts/domain_descriptor.json',
+    foundry_provider_ref: 'contracts/foundry_provider.json',
+  });
+  assert.deepEqual(adoption.domain_mapping.domain_intake, {
+    principle_id: 'domain_intake_mapping',
+    domain_stage_ref: 'agent/stages/manifest.json#/stages/0',
+    stage_id: 'mission-intake',
+    prompt_ref: 'agent/prompts/mission-intake.md',
+    is_standalone_skill: false,
+    owner_receipt_or_typed_blocker_required: false,
+    consumable_artifact_progress_receipt_allowed: true,
+  });
+  assert.equal(adoption.domain_mapping.workspace_source_intake_shell.domain_source_truth_owner, 'agent_engineering');
+  assert.deepEqual(adoption.oma_specialization, {
+    agent_id: 'oma',
+    domain_id: 'agent_engineering',
+    public_action_id: 'engineer-agent',
+    public_action_ref: 'contracts/action_catalog.json#/actions/0',
+    internal_provider_operations: ['design', 'diagnose'],
+    provider_ref: 'contracts/foundry_provider.json',
+    provider_role: 'foundry_semantic_provider',
+  });
+  assert.deepEqual(adoption.module_organization, {
+    framework_module_registry_ref: 'contracts/opl-framework/brand-module-registry.json',
+    domain_pack_root: 'agent/',
+    domain_pack_role: 'declarative_domain_pack',
+    minimal_authority_functions_ref: 'contracts/pack_compiler_input.json#/minimal_authority_functions',
+    generated_surface_handoff_ref: 'contracts/generated_surface_handoff.json',
+    capability_pack_is_not_domain_intake: true,
+  });
+  assert.deepEqual(adoption.authority_boundary, {
+    adoption_can_claim_domain_ready: false,
+    adoption_can_claim_production_ready: false,
+    opl_can_write_domain_truth: false,
+    opl_can_write_memory_body: false,
+    opl_can_authorize_quality_or_export: false,
+    opl_can_create_owner_receipt: false,
+    opl_can_create_typed_blocker: false,
+  });
+
+  assert.equal(adoption.domain_mapping.domain_intake.stage_id, manifest.stages[0].stage_id);
+  assert.equal(adoption.oma_specialization.domain_id, descriptor.domain_id);
+  assert.equal(adoption.oma_specialization.public_action_id, actionCatalog.actions[0].action_id);
+  assert.deepEqual(
+    adoption.oma_specialization.internal_provider_operations,
+    Object.keys(provider.operations),
+  );
+  assert.ok(compiler.required_domain_pack_paths.includes('contracts/standard-agent-principles-adoption.json'));
+  assert.match(projection, /Canonical authority: `contracts\/opl-framework\/standard-agent-principles\.json`/);
+  assert.match(projection, /Domain: `agent_engineering`/);
+  assert.match(projection, /Public action: `engineer-agent`/);
+  assert.doesNotMatch(projection, /Every Agent requires stable identity/);
+  assert.doesNotMatch(projection, /AI handles open-ended understanding/);
+  for (const principleId of standardAgentPrincipleIds) {
+    assert.equal(projection.includes(`\`${principleId}\``), false);
+  }
 });
 
 test('primary Skill fails closed unless the user explicitly requests Agent engineering', () => {
@@ -512,11 +611,13 @@ test('all declared repo-local refs exist and primary skill mirror is exact', () 
   const compiler = readJson('contracts/pack_compiler_input.json');
   const requiredPaths = new Set(compiler.required_domain_pack_paths);
   const frameworkContractRefs = new Set([
+    'contracts/opl-framework/brand-module-registry.json',
     'contracts/opl-framework/epistemic-review-currentness-contract.json',
     'contracts/opl-framework/epistemic-review-scope-v2.schema.json',
     'contracts/opl-framework/foundry-agent-series-contract.json',
     'contracts/opl-framework/foundry-agent-series-policy-release.json',
     'contracts/opl-framework/stage-quality-cycle-contract.json',
+    'contracts/opl-framework/standard-agent-principles.json',
     'contracts/opl-framework/standard-domain-agent-skeleton-contract.json',
   ]);
   assert.equal(requiredPaths.size, compiler.required_domain_pack_paths.length, 'duplicate required domain pack path');
