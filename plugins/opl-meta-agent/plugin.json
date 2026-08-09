@@ -1,0 +1,41 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "opl-meta-agent",
+  "version": "0.4.8",
+  "description": "OMA semantic provider for designing and evolving OPL Agents.",
+  "author": {
+    "name": "Gao Feng",
+    "url": "https://github.com/gaofeng21cn"
+  },
+  "homepage": "https://github.com/gaofeng21cn/opl-meta-agent",
+  "repository": "https://github.com/gaofeng21cn/opl-meta-agent",
+  "license": "Apache-2.0",
+  "keywords": [
+    "opl",
+    "meta-agent",
+    "codex",
+    "agent-engineering"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "OPL Meta Agent",
+        "shortDescription": "Design and evolve OPL Agents.",
+        "longDescription": "Provides OMA design and diagnosis semantics while OPL owns materialization, evaluation, versions, activation, and rollback.",
+        "developerName": "Gao Feng",
+        "category": "Productivity",
+        "capabilities": [
+          "Interactive",
+          "Write"
+        ],
+        "websiteURL": "https://github.com/gaofeng21cn/opl-meta-agent",
+        "composerIcon": "./assets/icon.svg",
+        "logo": "./assets/icon.svg",
+        "defaultPrompt": [
+          "Use OMA to create, take over, or improve an OPL-compatible Agent through engineer-agent."
+        ],
+        "brandColor": "#4F5D95"
+      }
+    }
+  }
+}

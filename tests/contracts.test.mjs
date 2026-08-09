@@ -732,6 +732,7 @@ test('package and plugin carriers project the canonical OMA skill at one version
   const carrierPackage = readJson('plugins/opl-meta-agent/opl-package.json');
   const rootPlugin = readJson('.codex-plugin/plugin.json');
   const plugin = readJson('plugins/opl-meta-agent/.codex-plugin/plugin.json');
+  const portablePlugin = readJson('plugins/opl-meta-agent/plugin.json');
   const marketplace = readJson('.agents/plugins/marketplace.json');
   const capabilityMap = readJson('contracts/capability_map.json');
   const projection = capabilityMap.primary_skill_capability.carrier_projection_contract;
@@ -745,7 +746,7 @@ test('package and plugin carriers project the canonical OMA skill at one version
     publication_ref: 'ghcr.io/gaofeng21cn/one-person-lab-packages/oma:latest-stable',
   };
 
-  assert.equal(npmPackage.version, '0.4.7');
+  assert.equal(npmPackage.version, '0.4.8');
   assert.equal(npmLock.version, npmPackage.version);
   assert.equal(npmLock.packages[''].version, npmPackage.version);
   assert.equal(agentPackage.version, npmPackage.version);
@@ -754,6 +755,18 @@ test('package and plugin carriers project the canonical OMA skill at one version
   assert.deepEqual(agentPackage.codex_surface.configured_codex_plugin_carrier, configuredCodexPluginCarrier);
   assert.equal(rootPlugin.version, npmPackage.version);
   assert.equal(plugin.version, npmPackage.version);
+  assert.equal(portablePlugin.version, npmPackage.version);
+  assert.equal(
+    portablePlugin.$schema,
+    'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json',
+  );
+  assert.equal(portablePlugin.name, plugin.name);
+  assert.deepEqual(
+    portablePlugin.extensions['com.openai'].interface,
+    plugin.interface,
+  );
+  assert.equal(Object.hasOwn(portablePlugin, 'skills'), false);
+  assert.equal(fs.existsSync(path.join(root, 'plugins/opl-meta-agent/mcp.json')), false);
   assert.equal(
     fs.readFileSync(path.join(root, 'opl-package.json'), 'utf8'),
     fs.readFileSync(path.join(root, 'contracts/opl_agent_package_manifest.json'), 'utf8'),
@@ -785,11 +798,12 @@ test('package and plugin carriers project the canonical OMA skill at one version
   });
   assert.equal(carrierPackage.version, plugin.version);
   assert.equal(carrierPackage.codex_surface.plugin_id, plugin.name);
-  assert.match(statusDoc, /current source release line is `0\.4\.7`/);
+  assert.match(statusDoc, /current source release line is `0\.4\.8`/);
   assert.equal(marketplace.plugins[0].source.path, './plugins/opl-meta-agent');
   const nativeCarrierRoot = path.resolve(root, marketplace.plugins[0].source.path);
   assert.equal(nativeCarrierRoot, path.resolve(root, 'plugins/opl-meta-agent'));
   for (const relativePath of [
+    'plugin.json',
     '.codex-plugin/plugin.json',
     'opl-package.json',
     'skills/opl-meta-agent/SKILL.md',
