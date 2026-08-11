@@ -1,7 +1,7 @@
 {
   "name": "opl-meta-agent",
-  "version": "0.4.8",
-  "description": "OMA semantic provider for designing and evolving OPL Agents.",
+  "version": "0.4.9",
+  "description": "OPL agent design, review, takeover, and evolution.",
   "author": {
     "name": "Gao Feng",
     "url": "https://github.com/gaofeng21cn"

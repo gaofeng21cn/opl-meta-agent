@@ -418,8 +418,8 @@ test('provider identity and stage routes are internally closed', () => {
       'zh-CN': packageManifest.display_name,
     },
     description_i18n: {
-      'en-US': 'Turns an Agent engineering objective into a reviewable semantic design.',
-      'zh-CN': '将智能体工程目标转化为可审查的语义设计。',
+      'en-US': 'OPL agent design, review, takeover, and evolution.',
+      'zh-CN': 'OPL 智能体的设计、评审、接管与演进。',
     },
     session_routing_summary_i18n: {
       'en-US': 'Create, take over, or improve an Agent through OPL Foundry.',
@@ -746,7 +746,7 @@ test('package and plugin carriers project the canonical OMA skill at one version
     publication_ref: 'ghcr.io/gaofeng21cn/one-person-lab-packages/oma:latest-stable',
   };
 
-  assert.equal(npmPackage.version, '0.4.8');
+  assert.equal(npmPackage.version, '0.4.9');
   assert.equal(npmLock.version, npmPackage.version);
   assert.equal(npmLock.packages[''].version, npmPackage.version);
   assert.equal(agentPackage.version, npmPackage.version);
@@ -798,7 +798,7 @@ test('package and plugin carriers project the canonical OMA skill at one version
   });
   assert.equal(carrierPackage.version, plugin.version);
   assert.equal(carrierPackage.codex_surface.plugin_id, plugin.name);
-  assert.match(statusDoc, /current source release line is `0\.4\.8`/);
+  assert.match(statusDoc, /current source release line is `0\.4\.9`/);
   assert.equal(marketplace.plugins[0].source.path, './plugins/opl-meta-agent');
   const nativeCarrierRoot = path.resolve(root, marketplace.plugins[0].source.path);
   assert.equal(nativeCarrierRoot, path.resolve(root, 'plugins/opl-meta-agent'));
