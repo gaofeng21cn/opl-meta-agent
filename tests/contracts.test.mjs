@@ -321,8 +321,8 @@ test('OMA adopts epistemic provenance without making hashes review authority', (
     surface_kind: 'opl_stage_quality_scope_budget',
     version: 'opl-stage-quality-scope-budget.v1',
     max_attempts: 3,
-    max_elapsed_ms: 21600000,
-    max_tokens: 1000000,
+    max_elapsed_ms: null,
+    max_tokens: null,
     token_budget_requires_observed_usage: true,
     foreground_execution_must_use_managed_attempt: true,
   });
