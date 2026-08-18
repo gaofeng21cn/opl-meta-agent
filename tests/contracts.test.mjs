@@ -429,7 +429,7 @@ test('provider identity and stage routes are internally closed', () => {
       shortcut_id: actionCatalog.actions[0].action_id,
       label_i18n: {
         'en-US': actionCatalog.actions[0].title,
-        'zh-CN': '设计与演进智能体',
+        'zh-CN': '构建与迭代智能体',
       },
       default_visible: true,
       user_configurable: true,
