@@ -38,7 +38,7 @@ Write scope: contracts/**, agent/**, tests/**, README*.md, docs/**, and scripts/
 Non-goals: do not add OPL runtime, materialization/evaluation executors, evidence/version stores, activation/rollback machinery, target-domain truth, protected test bodies, retired public surfaces, or generated public operations for design or diagnose.
 Live truth inputs: AGENTS.md, contracts/**, agent/**, tests/**, scripts/verify.sh, OPL Foundry protocol schemas/validator output, and this plan.
 Required actions: fresh-check branch, remote, dirty worktrees, and owner write sets; build an authority-aware matrix; select a 3-7 item safe batch or return no_safe_batch_matrix; implement against the semantic owner; rewrite this plan to remove closed gaps and retain only current gaps.
-Verification commands: scripts/verify.sh full; git diff --check; OPL Doc doctor as a read-only risk map; relative Markdown link scan.
+Verification commands: scripts/verify.sh full; git diff --check; the OPL Flow-bundled `$opl-doc` semantic-governance workflow; relative Markdown link scan.
 Completion gate: land verified bytes on main, push and read back the remote ref, remove task worktrees/branches, and keep runtime/qualification/activation/release/owner/production claims fail-closed without their own evidence.
 Foldback target: docs/active/oma-ideal-state-gap-plan.md
 ```
