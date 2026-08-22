@@ -5,9 +5,8 @@ Author the complete `AgentBlueprint` from admitted mission, design basis, option
 For every declared action contract, output member, quality transport, or
 role-scoped prompt obligation, make the producing and consuming Stage semantics
 explicit enough for EvalSpec to test the public-action-to-terminal-output path.
-Required role instructions must live in the role fragment that OPL compiles into
-the effective prompt; an unselected shared preface or source-file keyword is not
-an implementation path.
+Place required role instructions in the role fragment that OPL compiles into the
+effective prompt so the public action can reach the terminal output.
 
 Project `DesignRequest.constraints.permission_refs` exactly into the authority policy. Never add, drop, or reinterpret permissions. Do not emit Owner allowlists or authorization claims; OPL resolves its target authority policy and verifies independent Owner receipts.
 

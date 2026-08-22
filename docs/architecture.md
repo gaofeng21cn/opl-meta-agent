@@ -3,67 +3,41 @@
 Owner: `oma`
 Purpose: `architecture`
 State: `active_truth`
-Machine boundary: Human-readable ownership and protocol flow. Machine truth lives in OMA contracts and agent files plus the OPL-owned Foundry schemas and validators.
+Machine boundary: Human-readable ownership and protocol flow. Machine truth lives in OMA contracts and agent files plus OPL-owned Foundry schemas and validators.
 
-## Package composition
+## Ownership
 
-OMA is an `OPL Package(kind=agent)`. The Package is the executor-neutral owner
-unit for its stable identity, Agent-engineering capabilities, dependency
-intent, domain task semantics, and optional typed views. OPL App is a
-replaceable GUI and deployment carrier; it renders those owner surfaces but
-does not redefine them.
+OMA owns the Agent-engineering semantics: intent interpretation, design basis,
+`AgentBlueprint`, `EvalSpec`, evidence diagnosis, and `EvolutionProposal`.
 
-Package identity, publication, physical carriage, and execution are separate:
+OPL Foundry owns the run and lifecycle: materialization, evaluation execution,
+evidence persistence, versions, qualification, canary, activation, and
+rollback. Target Owners retain target-domain truth, protected tests, and
+production acceptance.
+
+## Package Composition
+
+Package identity, publication, carrier, and executor are separate surfaces:
 
 ```text
 Package     = oma identity + capabilities + dependencies + task/view descriptors
-Publication = OMA owner -> GHCR oma:latest-stable
-Carrier     = OCI, Codex Plugin, Git/local, or offline platform adapter
-Executor    = Codex CLI today; another adapter only when a real route is needed
+Publication = OMA owner channel
+Carrier     = Codex Plugin today
+Executor    = Codex CLI today
 ```
 
-Base keeps only thin OCI/native adapters and aggregates fresh platform
-readback. Each carrier reports the bytes and projections it actually owns;
-the OMA descriptor does not declare or implement a carrier adapter.
+OMA currently declares no Package dependency. Ordinary dependencies use stable
+identity presence and callability; exact refs and digests remain available for
+release integrity, frozen snapshots, and the Foundry protocol.
 
-OMA owns the complete official Package bytes and independently advances
-`ghcr.io/gaofeng21cn/one-person-lab-packages/oma:latest-stable`. A shared
-Release Set may freeze OMA for Full, offline, integration, or QA reproduction;
-it is not OMA's ordinary update authority and does not couple an OMA release to
-Base, App, or another Package.
+The Codex Plugin is a carrier projection. It exposes the canonical OMA Skill
+and package descriptors without becoming Package identity or lifecycle owner.
+The accepted publication and platform-composition migration is tracked in
+[Decisions](./decisions.md) and the [Framework migration SSOT](https://github.com/gaofeng21cn/one-person-lab/blob/main/docs/active/opl-package-platform-composition-migration.md).
 
-Ordinary Package dependencies require only a stable identity that is present
-and callable. They do not use version ranges, ABI negotiation, lock files,
-payload identities, content digests, atomic cross-Package closure, a shared
-Release Set, or central version solving as install or runtime readiness gates.
-OMA currently declares no Package dependency. A future breaking capability is
-published under a new capability identity or adapted by its owner.
+## Foundry Provider
 
-Codex is the only supported executor route today because that is the smallest
-useful implementation. The Codex Plugin is a carrier projection, not OMA's
-Package identity, complete installed truth, publication authority, or domain
-authority. A future executor change must not require reinstalling OMA or lose
-Package preferences, Agent-engineering work items, dependency state, or typed
-views. Framework may aggregate fresh carrier readback, dependency
-presence/callability, and executor-route readiness; it does not own a second
-OMA package manager.
-
-Exact refs and digests remain valid for release integrity, one frozen build, or
-Full/offline/integration/QA snapshots. Exact `DesignRequest`, blueprint, and
-evidence digests also remain part of OMA's domain protocol integrity. Neither
-case turns exact identity into ordinary Package composition or a
-cross-Package readiness lock.
-
-The repository's current manifests and source remain machine truth during
-migration. This target does not prove that independent GHCR publication,
-carrier aggregation, or executor-neutral descriptors are implemented. The
-cross-repository sequence, compatibility reads, deletion gates, and
-no-function-regression evidence live only in the
-[Framework platform composition migration SSOT](https://github.com/gaofeng21cn/one-person-lab/blob/main/docs/active/opl-package-platform-composition-migration.md).
-
-## Foundry semantic provider
-
-OMA is a pure semantic provider behind the OPL Foundry Kernel.
+OMA is a semantic provider behind OPL Foundry:
 
 ```text
 engineer-agent(DesignRequest)
@@ -74,10 +48,10 @@ engineer-agent(DesignRequest)
   -> OPL re-materialize -> re-evaluate -> qualify/canary/activate
 ```
 
-The cross-boundary protocol consists only of `DesignRequest`, `AgentBlueprint`, `EvidenceBundle`, and `EvolutionProposal`. Owner decisions remain OPL authority receipts outside the OMA protocol.
+The protocol contains `DesignRequest`, `AgentBlueprint`, `EvidenceBundle`, and
+`EvolutionProposal`. OPL owns their schemas and validators; OMA keeps refs-only
+fixtures for conformance. The eight Stages express semantic decisions, while
+OPL executes deterministic work and lifecycle transitions.
 
-OPL is the sole schema and validator authority. OMA keeps four refs-only conformance fixtures in `contracts/fixtures/foundry-protocol/`; they prove URI, identity, digest-lineage, and forbidden-field expectations but do not redefine the schemas.
-
-OMA's eight internal Stages are grouped into design and diagnosis routes. They express open semantic judgments; OPL performs deterministic work and owns every lifecycle transition.
-
-OPL retries or fails platform errors before diagnosis. When completed evidence yields no admissible semantic change, OMA returns the exact current blueprint with `semantic_diff=[]`; OPL terminates without another materialization, evaluation, or version.
+When evidence yields no admissible semantic change, OMA returns the current
+blueprint with `semantic_diff=[]` and OPL ends the run without another version.

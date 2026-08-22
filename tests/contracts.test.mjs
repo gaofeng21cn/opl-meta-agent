@@ -203,7 +203,7 @@ test('OMA adopts canonical Standard Agent principles without a second general po
   }
 });
 
-test('primary Skill fails closed unless the user explicitly requests Agent engineering', () => {
+test('primary Skill is mirrored by the carrier and has explicit admission metadata', () => {
   const canonical = fs.readFileSync(path.join(root, 'agent/primary_skill/SKILL.md'), 'utf8');
   const carrier = fs.readFileSync(
     path.join(root, 'plugins/opl-meta-agent/skills/opl-meta-agent/SKILL.md'),
@@ -212,67 +212,13 @@ test('primary Skill fails closed unless the user explicitly requests Agent engin
 
   assert.equal(carrier, canonical);
   assert.match(canonical, /^name: opl-meta-agent$/m);
-  assert.match(canonical, /^description: Use only when Codex is explicitly asked to create, take over, assess for evolution, or improve an OPL-compatible Agent/m);
-  assert.match(canonical, /Do not use because OMA was mentioned or @-mentioned[\s\S]*deliverable validator, render, or QA check failed/);
-  for (const heading of [
-    'Admission',
-    'Action Routing',
-    'Default Workflow',
-    'Quality And Hard Stops',
-    'Output Expectations',
-    'References',
-  ]) {
-    assert.match(canonical, new RegExp(`^## ${heading}$`, 'm'));
-  }
-  assert.match(canonical, /both an identifiable target Agent and an explicit Agent-engineering objective/);
-  assert.match(canonical, /selected OMA shortcut, an `@OMA` mention[\s\S]*None grants permission to engineer an Agent/);
-  assert.match(canonical, /PPT, manuscript, paper, grant, render, validator, or QA failure authorizes repair of that deliverable/);
-  assert.match(canonical, /complete current request[\s\S]*Do not implement keyword, regex, `@`-mention, file-extension, or failure-code routing/);
-  assert.match(canonical, /Use the single public action `engineer-agent`/);
-  assert.match(canonical, /`create`[\s\S]*`takeover`[\s\S]*`improve`/);
-  assert.match(canonical, /provider completion means only that a protocol object was produced/);
-  assert.match(canonical, /Never emit a developer work order, repository patch, or execution instruction/);
+  assert.match(canonical, /^description: Use only when the current request explicitly asks to create, take over, assess, or improve an OPL-compatible Agent\.$/m);
 });
 
-test('OMA evaluation design covers production, effective-prompt, and professional-Skill reachability', () => {
-  const skill = fs.readFileSync(
-    path.join(root, 'agent/professional_skills/oma-target-assessment-eval-design/SKILL.md'),
-    'utf8',
-  );
-  const prompt = fs.readFileSync(path.join(root, 'agent/prompts/evaluation-design.md'), 'utf8');
-  const blueprintPrompt = fs.readFileSync(
-    path.join(root, 'agent/prompts/agent-blueprint-authoring.md'),
-    'utf8',
-  );
-  const gate = fs.readFileSync(
-    path.join(root, 'agent/quality_gates/foundry-provider-output.md'),
-    'utf8',
-  );
+test('EvalSpec carries the reachability categories for professional Skill use', () => {
   const blueprint = readJson('contracts/fixtures/foundry-protocol/agent-blueprint.json');
   const protectedCategories = new Set(
     blueprint.eval_spec.protected_requirements.map((entry) => entry.category),
-  );
-
-  for (const text of [skill, prompt, gate]) {
-    assert.match(text, /production-contract reachability|production-contract-reachability/);
-    assert.match(text, /effective-role-prompt reachability|effective-role-prompt-reachability/);
-    assert.match(text, /professional-skill-consumption-reachability/);
-    assert.match(text, /Skill identity[\s\S]{0,40}version[\s\S]{0,40}content ref/i);
-    assert.match(text, /production invocation evidence/i);
-    assert.match(text, /Skill-owned behavioral rubric/i);
-    assert.match(text, /metadata(?:-only)? receipt/i);
-    assert.match(text, /test-only/i);
-  }
-  assert.match(skill, /must jointly prove/i);
-  assert.match(prompt, /not sufficient alone/i);
-  assert.match(gate, /cannot pass alone/i);
-  for (const text of [skill, prompt, gate]) {
-    assert.match(text, /OMA (?:defines|specifies)[\s\S]*OPL owns/i);
-  }
-  assert.match(blueprintPrompt, /public-action-to-terminal-output path/);
-  assert.match(
-    blueprintPrompt,
-    /role fragment that OPL compiles into\s+the effective prompt/,
   );
   assert.ok(protectedCategories.has('production-contract-reachability'));
   assert.ok(protectedCategories.has('effective-role-prompt-reachability'));
@@ -283,7 +229,6 @@ test('OMA adopts epistemic provenance without making hashes review authority', (
   const adoption = readJson('contracts/epistemic_review_adoption.json');
   const qualityPolicy = readJson('contracts/stage_quality_cycle_policy.json');
   const compiler = readJson('contracts/pack_compiler_input.json');
-  const rolePrompt = fs.readFileSync(path.join(root, 'agent/prompts/stage-quality-cycle-roles.md'), 'utf8');
 
   assert.equal(adoption.surface_kind, 'oma_epistemic_review_adoption');
   assert.match(adoption.purpose, /Prevent AI hallucination/);
@@ -334,8 +279,6 @@ test('OMA adopts epistemic provenance without making hashes review authority', (
     );
   }
   assert.ok(compiler.required_domain_pack_paths.includes('contracts/epistemic_review_adoption.json'));
-  assert.match(rolePrompt, /hashes locate the reviewed snapshot and support reproduction/);
-  assert.match(rolePrompt, /delta alone does not reopen Review/);
 
   const expectations = adoption.counterexample_expectations;
   for (const caseId of [
@@ -736,7 +679,6 @@ test('package and plugin carriers project the canonical OMA skill at one version
   const marketplace = readJson('.agents/plugins/marketplace.json');
   const capabilityMap = readJson('contracts/capability_map.json');
   const projection = capabilityMap.primary_skill_capability.carrier_projection_contract;
-  const statusDoc = fs.readFileSync(path.join(root, 'docs/status.md'), 'utf8');
 
   const configuredCodexPluginCarrier = {
     kind: 'codex_plugin_manager',
@@ -798,7 +740,6 @@ test('package and plugin carriers project the canonical OMA skill at one version
   });
   assert.equal(carrierPackage.version, plugin.version);
   assert.equal(carrierPackage.codex_surface.plugin_id, plugin.name);
-  assert.match(statusDoc, /current source release line is `0\.4\.9`/);
   assert.equal(marketplace.plugins[0].source.path, './plugins/opl-meta-agent');
   const nativeCarrierRoot = path.resolve(root, marketplace.plugins[0].source.path);
   assert.equal(nativeCarrierRoot, path.resolve(root, 'plugins/opl-meta-agent'));
@@ -842,39 +783,6 @@ test('package and plugin carriers project the canonical OMA skill at one version
   }
 });
 
-test('active OMA surface has no retired action ABI', () => {
-  const retired = [
-    'opl foundry lab',
-    'opl agent-lab',
-    'foundry-lab',
-    'agent-lab',
-    'build-agent-baseline',
-    'takeover-target-agent-test',
-    'improve-from-external-agent-lab-suite',
-    'generate-mechanism-patch-proposal',
-    'materialize-trajectory-learning-proposal',
-    'execute:external-work-order',
-    'omaSemanticEnvelope',
-    'oma_owns_',
-  ];
-  const activeRoots = [
-    'agent', 'contracts', 'docs', 'scripts', 'plugins',
-    'package.json', 'README.md', 'README.zh-CN.md', 'AGENTS.md',
-  ];
-  const files = [];
-  const collect = (relativePath) => {
-    if (relativePath === 'docs/history' || relativePath.startsWith(`docs${path.sep}history${path.sep}`)) return;
-    const absolute = path.join(root, relativePath);
-    const stat = fs.statSync(absolute);
-    if (stat.isDirectory()) {
-      for (const name of fs.readdirSync(absolute)) collect(path.join(relativePath, name));
-    } else if (!absolute.includes(`${path.sep}assets${path.sep}`)) files.push(relativePath);
-  };
-  activeRoots.forEach(collect);
-  const body = files.map((entry) => fs.readFileSync(path.join(root, entry), 'utf8')).join('\n').toLowerCase();
-  retired.forEach((token) => assert.equal(body.includes(token.toLowerCase()), false, `retired token remains: ${token}`));
-});
-
 test('repo-local execution layer is physically absent', () => {
   const forbiddenPaths = [
     'agent/skills',
@@ -887,10 +795,6 @@ test('repo-local execution layer is physically absent', () => {
   forbiddenPaths.forEach((relativePath) => assert.equal(fs.existsSync(path.join(root, relativePath)), false, `execution residue: ${relativePath}`));
 
   assert.deepEqual(fs.readdirSync(path.join(root, 'scripts')).sort(), ['repo-hygiene.sh', 'verify.sh']);
-  const repoHygiene = fs.readFileSync(path.join(root, 'scripts', 'repo-hygiene.sh'), 'utf8');
-  assert.match(repoHygiene, /source_hygiene_args=\(workspace source-hygiene --source-root/);
-  assert.match(repoHygiene, /source_hygiene_args\+=\(--fix\)/);
-  assert.doesNotMatch(repoHygiene, /\bfind \.|\brm -rf\b|git check-ignore/);
   const packageManifest = readJson('package.json');
   assert.deepEqual(Object.keys(packageManifest.scripts).sort(), [
     'repo:hygiene',

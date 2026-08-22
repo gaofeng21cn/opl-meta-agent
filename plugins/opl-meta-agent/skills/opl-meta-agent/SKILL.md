@@ -1,6 +1,6 @@
 ---
 name: opl-meta-agent
-description: Use only when Codex is explicitly asked to create, take over, assess for evolution, or improve an OPL-compatible Agent, including its architecture, prompts, skills, contracts, evaluations, or authority boundaries. Do not use because OMA was mentioned or @-mentioned, another Agent is producing a deliverable, or a deliverable validator, render, or QA check failed.
+description: Use only when the current request explicitly asks to create, take over, assess, or improve an OPL-compatible Agent.
 ---
 
 # OPL Meta Agent
@@ -9,11 +9,8 @@ OMA supplies Agent-engineering semantics to the OPL Foundry Kernel. OPL owns exe
 
 ## Admission
 
-- Admit OMA only when the current user request contains both an identifiable target Agent and an explicit Agent-engineering objective that maps to `create`, `takeover`, or `improve`.
-- Treat a selected OMA shortcut, an `@OMA` mention, an Agent name, or the presence of multiple Agents in context as routing context only. None grants permission to engineer an Agent.
-- Keep deliverable work with its domain owner. A PPT, manuscript, paper, grant, render, validator, or QA failure authorizes repair of that deliverable, not modification of RCA, OBF, MAS, MAG, their Skills, prompts, contracts, or source.
-- If the request mixes a deliverable objective with a possible Agent change, continue the deliverable unless the user clearly makes Agent engineering the objective. Ask only when the requested outcome would materially change.
-- Judge admission from the complete current request. Do not implement keyword, regex, `@`-mention, file-extension, or failure-code routing.
+- Admit OMA when the current request names a target Agent and an explicit Agent-engineering objective that maps to `create`, `takeover`, or `improve`.
+- An OMA mention or shortcut is context, not an engineering request. Keep unrelated deliverables with their owner unless the user makes the Agent change explicit.
 
 ## Action Routing
 
@@ -36,14 +33,14 @@ The ordinary hosted entry is `opl agents run --domain oma --action engineer-agen
 ## Quality And Hard Stops
 
 - Bind every diagnosis to the exact evidence digest. Return the current blueprint with an empty semantic diff when no admissible Agent-semantic change exists.
-- Preserve `constraints.permission_refs` exactly. OMA may raise risk, add tests, and propose stricter controls; it cannot expand permissions, lower OPL risk, remove tests, or inspect protected test bodies.
+- Preserve `constraints.permission_refs` and existing evaluation obligations. OMA may raise risk or add tests, but it cannot expand permissions, lower OPL risk, remove tests, or inspect protected test bodies.
 - Use `opl-content://sha256/...` refs for content-bearing prompts, Skills, knowledge, helpers, models, tools, and schemas. Their exact bytes must be available as SHA-bound StageRun artifacts.
-- Stop on missing target identity/version for `takeover` or `improve`, missing owner authorization for protected changes, or an authority/safety boundary. Do not turn a deliverable quality failure into an OMA run.
+- Stop on missing target identity/version for `takeover` or `improve`, missing owner authorization for protected changes, or an authority/safety boundary.
 
 ## Output Expectations
 
 - Return the OPL FoundryRun ref plus the admitted mode, exact target, scoped objective, and acceptance criteria.
-- Treat `AgentBlueprint`, `EvalSpec`, and `EvolutionProposal` as semantic protocol objects, never as file patches, repository commands, activation records, or proof of qualification.
+- Treat `AgentBlueprint`, `EvalSpec`, and `EvolutionProposal` as semantic protocol objects, not implementation instructions or proof of qualification.
 - Never emit a developer work order, repository patch, or execution instruction,
   including for professional Skill maintenance. OMA may describe the Agent
   semantics and evaluation obligations only; OPL and authorized repository
