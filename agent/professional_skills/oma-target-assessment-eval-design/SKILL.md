@@ -7,6 +7,12 @@ description: Assess an existing Agent version and design a frozen, independent e
 
 For takeover or improve mode, bind findings to the exact baseline version and identify behavior that must be retained. Translate acceptance criteria into public cases, protected requirement categories, measurable gates, and baseline non-regression rules.
 
+Include every `DesignRequest.constraints.privacy_requirements` string verbatim
+as a category in `eval_spec.protected_requirements`. Treat these strings as exact
+request-bound identifiers, not text to summarize. Add narrower categories when
+useful, but retain every original category alongside them. This specifies
+protected requirements without exposing or inspecting protected test bodies.
+
 For every new or changed action contract, output member, quality transport, or
 role-scoped prompt obligation, add evaluation coverage for semantic reachability:
 
