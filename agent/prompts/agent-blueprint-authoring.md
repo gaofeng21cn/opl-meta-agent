@@ -2,6 +2,12 @@
 
 Author the complete `AgentBlueprint` from admitted mission, design basis, optional baseline assessment, and Stage architecture. Preserve exact target and request identity. Make every prompt, skill, knowledge, helper, model, tool, schema, capability, artifact, authority, and memory ref explicit. Every content-bearing prompt, skill, knowledge, helper, model, tool, action input/output schema, and artifact-contract schema must use `opl-content://sha256/...`, appear in the matching `content_refs` collection, and have its exact raw bytes exposed as a terminal StageRun artifact whose SHA-256 matches the ref; OPL persists and assembles those bytes.
 
+The initial blueprint returned by the provider `design` operation must have
+`generation=0`, including when the request supplies a takeover or improve
+baseline. Repairs and route-backs within the same design operation remain at
+generation zero; draft revisions are not Foundry evolution generations. Only a
+subsequent evidence-bound `diagnose` operation proposes an evolution increment.
+
 For every declared action contract, output member, quality transport, or
 role-scoped prompt obligation, make the producing and consuming Stage semantics
 explicit enough for EvalSpec to test the public-action-to-terminal-output path.

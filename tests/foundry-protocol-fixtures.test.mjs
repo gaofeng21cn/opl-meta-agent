@@ -117,6 +117,20 @@ test('protocol fixtures preserve coherent OMA identity and independent review se
   );
 });
 
+test('initial design fixture starts at generation zero and preserves exact privacy categories', () => {
+  const { fixtures } = fixturesFromManifest('contracts/foundry_protocol_fixture_manifest.json');
+  const request = fixtures.DesignRequest;
+  const blueprint = fixtures.AgentBlueprint;
+
+  assert.equal(request.mode, 'create');
+  assert.equal(blueprint.generation, 0);
+  assert.ok(request.constraints.privacy_requirements.length > 0);
+  const categories = new Set(blueprint.eval_spec.protected_requirements.map((entry) => entry.category));
+  for (const category of request.constraints.privacy_requirements) {
+    assert.ok(categories.has(category), `missing exact privacy category: ${category}`);
+  }
+});
+
 test('improve fixtures bind an exact baseline and propose one non-weakening generation', () => {
   const { fixtures } = fixturesFromManifest('contracts/foundry_protocol_improve_fixture_manifest.json');
   const request = fixtures.DesignRequest;
@@ -172,6 +186,10 @@ test('improve fixtures bind an exact baseline and propose one non-weakening gene
     );
   }
   assert.deepEqual(next.eval_spec.protected_requirements, blueprint.eval_spec.protected_requirements);
+  const categories = new Set(next.eval_spec.protected_requirements.map((entry) => entry.category));
+  for (const category of request.constraints.privacy_requirements) {
+    assert.ok(categories.has(category), `missing exact privacy category: ${category}`);
+  }
   assert.deepEqual(next.eval_spec.gates, blueprint.eval_spec.gates);
   assert.deepEqual(next.eval_spec.baseline_comparison, blueprint.eval_spec.baseline_comparison);
   assert.equal(next.eval_spec.independent_evaluator_required, true);
