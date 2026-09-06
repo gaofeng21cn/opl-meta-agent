@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "opl-meta-agent",
-  "version": "0.4.9",
+  "version": "0.4.10",
   "description": "OPL agent design, review, takeover, and evolution.",
   "author": {
     "name": "Gao Feng",

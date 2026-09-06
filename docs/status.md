@@ -22,8 +22,14 @@ the Codex Plugin as its carrier projection. The owner publication target and
 cross-repository migration sequence are recorded in [Decisions](./decisions.md)
 and the [Framework migration SSOT](https://github.com/gaofeng21cn/one-person-lab/blob/main/docs/active/opl-package-platform-composition-migration.md).
 
-The current source release line is `0.4.9`; it is declared in the package
+The current source release line is `0.4.10`; it is declared in the package
 manifests and checked by the contract tests.
+
+This Astra audit release preserves the primary route and all four professional
+Skills. Their existing task-scoped evidence, conditional independent evaluation,
+no-change outcome, and OPL-owned execution boundaries already match the audited
+guidance. No new ScholarSkills dependency or runtime authority is introduced.
+Source versioning is separate from publication and installed currentness.
 
 ## Verification Boundary
 
