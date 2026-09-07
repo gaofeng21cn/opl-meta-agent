@@ -1,44 +1,30 @@
-# Decisions
+# Architectural Decisions
 
-Owner: `oma`
-Purpose: `decisions`
-State: `active_truth`
-Machine boundary: Human-readable accepted decisions. Machine truth lives in contracts, agent files, tests, and OPL protocol validation.
+This page explains why the current boundaries exist. [Architecture](./architecture.md)
+owns their implementation map; contracts and source establish current behavior.
 
-## 2026-07-24: OMA adopts presence-based OPL Package composition
+## Separate Semantics From Execution
 
-Accepted as the target architecture; implementation remains subject to current
-machine contracts and cross-repository migration gates.
+OMA is a pure Foundry semantic provider. A single `engineer-agent` public action
+keeps create, takeover, and improve in one lineage, while internal `design` and
+`diagnose` operations produce the OPL-owned protocol objects. This prevents the
+designer from becoming its own evaluator, version store, or activation owner.
+Platform failures stay with OPL; evidence with no admissible semantic change
+produces an exact unchanged blueprint and empty diff.
 
-- Treat OMA as `OPL Package(kind=agent)`, independently owned and publishable
-  from Base, App, and other Packages.
-- Separate Package identity, owner publication, carrier, and executor. OMA
-  independently advances its complete official Package at
-  `ghcr.io/gaofeng21cn/one-person-lab-packages/oma:latest-stable`.
-- Keep Codex CLI and the Codex Plugin as the only supported executor and
-  default carrier projection today, without making either OMA identity,
-  complete installed truth, publication authority, or domain authority.
-- Compose ordinary dependencies by stable identity presence and callability.
-  Do not use version/ABI solving, locks, payloads, digests, atomic closure, or
-  a shared Release Set as Package readiness gates.
-- Preserve OMA's `engineer-agent` behavior, Foundry work-item semantics,
-  preferences, dependency state, and optional typed views across carrier or
-  executor changes.
-- Restrict Package exact refs to release integrity and frozen build/snapshot
-  evidence. Preserve exact refs in the OMA Foundry protocol where they bind
-  domain inputs and evidence; those refs are not Package locks.
-- Keep compatibility reads until the Framework-owned platform composition
-  migration proves equivalent behavior and no retained consumer. This
-  decision alone does not claim the target publication or runtime path is
-  implemented.
+The 2026-07-16 cutover intentionally retired the former repository-local
+execution facade without an adapter. The [retirement record](./history/process/retired-surface-provenance.md)
+preserves the identifiers needed to recognize obsolete integrations. New work
+uses the current action and protocol, with no aliases or resumable legacy path.
 
-## 2026-07-16: OMA becomes a pure Foundry semantic provider
+## Compose By Identity And Callability
 
-Accepted.
+OMA's stable Package identity is independent of its publication, carrier, and
+executor. Ordinary dependencies declare presence and callable capabilities;
+exact refs bind frozen build evidence, release integrity, and Foundry inputs,
+not a parallel Package lock or readiness engine.
 
-- Replace the previous multi-action execution facade with one `engineer-agent` action.
-- Keep only `design` and `diagnose` as internal provider operations.
-- Use the four OPL-owned canonical protocol schemas.
-- Move all execution, evidence, version, activation, and rollback authority to OPL Foundry Kernel.
-- Keep platform failures out of OMA diagnosis and represent semantic no-change with an exact unchanged blueprint plus an empty diff.
-- Make the change as a hard pre-1.0 ABI break at OMA `0.4.0`; no compatibility adapter is retained.
+The [Package manifest](../contracts/opl_agent_package_manifest.json) declares the
+current carrier and publication locator. A locator is configuration, not evidence
+that a publication or installation occurred. The former migration narrative and
+compatibility-read instruction no longer define an OMA interface.

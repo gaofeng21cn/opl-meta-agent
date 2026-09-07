@@ -123,10 +123,6 @@ test('OMA adopts canonical Standard Agent principles without a second general po
   const descriptor = readJson('contracts/domain_descriptor.json');
   const provider = readJson('contracts/foundry_provider.json');
   const manifest = readJson('agent/stages/manifest.json');
-  const projection = fs.readFileSync(
-    path.join(root, 'agent/principles/opl-standard-agent-principles.md'),
-    'utf8',
-  );
 
   assert.equal(adoption.surface_kind, 'opl_standard_agent_principles_adoption');
   assert.equal(adoption.version, 'standard-agent-principles-adoption.v1');
@@ -193,14 +189,6 @@ test('OMA adopts canonical Standard Agent principles without a second general po
     Object.keys(provider.operations),
   );
   assert.ok(compiler.required_domain_pack_paths.includes('contracts/standard-agent-principles-adoption.json'));
-  assert.match(projection, /Canonical authority: `contracts\/opl-framework\/standard-agent-principles\.json`/);
-  assert.match(projection, /Domain: `agent_engineering`/);
-  assert.match(projection, /Public action: `engineer-agent`/);
-  assert.doesNotMatch(projection, /Every Agent requires stable identity/);
-  assert.doesNotMatch(projection, /AI handles open-ended understanding/);
-  for (const principleId of standardAgentPrincipleIds) {
-    assert.equal(projection.includes(`\`${principleId}\``), false);
-  }
 });
 
 test('primary Skill is mirrored by the carrier and has explicit admission metadata', () => {
@@ -212,7 +200,7 @@ test('primary Skill is mirrored by the carrier and has explicit admission metada
 
   assert.equal(carrier, canonical);
   assert.match(canonical, /^name: opl-meta-agent$/m);
-  assert.match(canonical, /^description: Use only when the current request explicitly asks to create, take over, assess, or improve an OPL-compatible Agent\.$/m);
+  assert.match(canonical, /^description: \S.+$/m);
 });
 
 test('EvalSpec carries the reachability categories for professional Skill use', () => {

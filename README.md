@@ -80,4 +80,4 @@ Machine truth lives in [`contracts/`](./contracts/) and [`agent/`](./agent/). Va
 scripts/verify.sh full
 ```
 
-Start with the [documentation guide](./docs/README.md). Current status, gaps, and the next development baton live in the [Active Truth plan](./docs/active/oma-ideal-state-gap-plan.md).
+Start with the [documentation guide](./docs/README.md). The [open acceptance work](./docs/active/oma-ideal-state-gap-plan.md) separates repository conformance from Foundry and target-owner acceptance.

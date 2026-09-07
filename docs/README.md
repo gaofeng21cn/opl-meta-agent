@@ -1,18 +1,39 @@
 # OMA Documentation
 
-Owner: `oma`
-Purpose: `docs_index`
-State: `active_index`
-Machine boundary: Human-readable navigation. Machine truth lives in `contracts/`, `agent/`, tests, and repository verification output; Foundry run and lifecycle truth remain in OPL.
+This index owns document navigation and lifecycle. Contracts, the semantic pack,
+and verification output establish repository behavior; OPL Foundry and target
+owners establish execution and acceptance.
 
-Read the repository in this order:
+| Document | Sole responsibility |
+| --- | --- |
+| [Repository entry](../README.md) / [中文](../README.zh-CN.md) | Product purpose, installation, public invocation, and verification entry |
+| [Architecture](./architecture.md) | Component ownership, Package composition, and protocol flow |
+| [Invariants](./invariants.md) | Semantic and authority constraints that changes must preserve |
+| [Decisions](./decisions.md) | Rationale for the current architectural choices |
+| [Open acceptance work](./active/oma-ideal-state-gap-plan.md) | Unclosed integration and acceptance evidence, its owner, and closure condition |
+| [Semantic pack](../agent/README.md) | Entry to the executable Stage, prompt, method, knowledge, and gate assets |
+| [History](./history/README.md) | Retained migration provenance, excluded from current instructions |
 
-1. [Project](./project.md): product objective and scope.
-2. [Status](./status.md): concise current implementation summary.
-3. [Active Truth plan](./active/oma-ideal-state-gap-plan.md): current state, open gaps, and next executable prompt.
-4. [Architecture](./architecture.md): OMA/OPL ownership and protocol flow.
-5. [Invariants](./invariants.md): hard semantic and authority constraints.
-6. [Decisions](./decisions.md): accepted architecture decisions.
-7. [History](./history/README.md): migration provenance and retired-surface tombstones.
+## Lifecycle
 
-Current prose belongs in the core docs and Active Truth plan. Migration details belong under `history/`; they cannot be used as current runtime, qualification, activation, or production evidence.
+Write current behavior into its existing owner in the same change as the
+contract or consumer. The two root READMEs are language peers, so their product
+and operator guidance must stay aligned. `agent/` Markdown is an input to the
+Agent, not an alternative developer guide: Stage definitions own their decision,
+prompts own invocation instructions, professional Skills own methods, and gates
+own acceptance criteria. Update carrier copies through their canonical source.
+
+An active plan contains only unresolved work with a concrete owner and closure
+condition. Remove closed items instead of appending milestones, recurring audit
+prompts, coverage claims, or release logs. Delete an empty plan and repair its
+navigation and `contracts/opl-native-profile.json` entry when the last item closes.
+
+Preserve a completed record only when it explains a still-relevant decision or
+prevents a retired surface from being restored. Transfer current instructions
+to their owner before archiving; otherwise Git history is sufficient. History
+does not provide compatibility entrypoints or establish current readiness.
+
+Before moving or deleting a page, repair Markdown links and structured document
+refs together. Validate links, referenced files, metadata, and exact generated
+copies mechanically; assess meaning against contracts and consumers. A passing
+test or a self-reported coverage list does not establish semantic correctness.

@@ -25,6 +25,29 @@ opl agents run --domain oma --action engineer-agent --workspace /absolute/worksp
 
 命令返回 OPL 持有的 `FoundryRun`。候选字节物化、独立评测、证据和版本记录、qualification、canary、激活与回滚都由 OPL 执行；OMA 只提供其中的语义判断。
 
+## Codex 安装与 Package 状态
+
+在 Codex App 的 Plugins 中添加本仓根目录为本地 marketplace，然后从 `opl-meta-agent` marketplace 安装 **OPL Meta Agent**。安装后新建任务以加载 `opl-meta-agent` Skill。
+
+对应的 CLI 安装、查看与移除命令：
+
+```bash
+codex plugin marketplace add /absolute/path/to/opl-meta-agent --json
+codex plugin marketplace list --json
+codex plugin add opl-meta-agent@opl-meta-agent --json
+codex plugin list --marketplace opl-meta-agent --available --json
+codex plugin remove opl-meta-agent@opl-meta-agent --json
+codex plugin marketplace remove opl-meta-agent --json
+```
+
+这些命令验证 Codex carrier 的发现与安装。独立的 OPL Package 状态通过只读入口查看：
+
+```bash
+opl packages status --package-id oma --json
+```
+
+Carrier 安装和 Package 状态回读不能替代 Foundry 物化、评测、qualification、激活或目标 owner 接受证据，也不会创建 Package 事务或收据 authority。
+
 <details>
 <summary>智能体和操作者边界</summary>
 
@@ -41,4 +64,4 @@ opl agents run --domain oma --action engineer-agent --workspace /absolute/worksp
 scripts/verify.sh full
 ```
 
-从[文档导览](./docs/README.md)开始阅读。当前状态、差距和下一轮执行 baton 归[唯一 Active Truth plan](./docs/active/oma-ideal-state-gap-plan.md)。
+从[文档导览](./docs/README.md)开始阅读。[未完成验收](./docs/active/oma-ideal-state-gap-plan.md)区分仓库一致性、Foundry 运行与目标 owner 接受证据。

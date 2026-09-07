@@ -14,14 +14,6 @@
       "role": "docs_entry"
     },
     {
-      "path": "docs/project.md",
-      "role": "project_positioning"
-    },
-    {
-      "path": "docs/status.md",
-      "role": "current_status"
-    },
-    {
       "path": "docs/architecture.md",
       "role": "architecture_boundary"
     },
@@ -38,14 +30,14 @@
   "flow_profile": "opl_meta_agent",
   "machine_truth_surfaces": [
     "contracts",
+    "agent",
     "tests",
     "package.json"
   ],
   "owned_by_repo": [
     "contracts/**",
-    "src/**",
+    "agent/**",
     "tests/**",
-    "docs/status.md",
     "docs/active/oma-ideal-state-gap-plan.md"
   ],
   "plugin_native_status": "profile_declared",

@@ -23,18 +23,9 @@ The following identifiers are historical only:
 
 They must not reappear as an action, command, tool, schema, package export, compatibility alias, fallback, or resumable runtime path.
 
-## Current Owner Map
-
-| Responsibility | Current owner |
-| --- | --- |
-| Public Agent engineering entry | OMA `engineer-agent` projected and hosted by OPL |
-| Design and diagnosis semantics | OMA internal `design|diagnose` provider operations |
-| Protocol schemas and validation | OPL Foundry Protocol |
-| Candidate compilation and workspace transport | OPL Foundry Kernel, Pack, Workspace, and Runway |
-| Evaluation execution and protected tests | OPL Evaluation Runtime and Target Owner |
-| Evidence, versions, qualification, activation, and rollback | OPL Ledger, StateIndex, and Foundry Kernel |
-| Domain truth, permissions, quality acceptance, and production adoption | Target Owner |
-
 ## No Resurrection
 
-Old records remain auditable through Git history but cannot be resumed into a new FoundryRun or treated as current state. Any future feature must enter through the single public action, the two internal provider operations, and the four OPL-owned protocol objects.
+Old records remain auditable through Git history but cannot be resumed into a
+new FoundryRun or treated as current state. The [current architecture](../../architecture.md)
+owns the successor map. This record retains obsolete identifiers solely to
+recognize and retire old integrations; it provides no callable surface.

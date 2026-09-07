@@ -32,8 +32,10 @@ release integrity, frozen snapshots, and the Foundry protocol.
 
 The Codex Plugin is a carrier projection. It exposes the canonical OMA Skill
 and package descriptors without becoming Package identity or lifecycle owner.
-The accepted publication and platform-composition migration is tracked in
-[Decisions](./decisions.md) and the [Framework migration SSOT](https://github.com/gaofeng21cn/one-person-lab/blob/main/docs/active/opl-package-platform-composition-migration.md).
+The [Package manifest](../contracts/opl_agent_package_manifest.json) declares
+the carrier, executor route, and publication locator. Their rationale lives in
+[Decisions](./decisions.md); publication and installed currentness require
+their own readbacks.
 
 ## Foundry Provider
 
@@ -49,9 +51,30 @@ engineer-agent(DesignRequest)
 ```
 
 The protocol contains `DesignRequest`, `AgentBlueprint`, `EvidenceBundle`, and
-`EvolutionProposal`. OPL owns their schemas and validators; OMA keeps refs-only
-fixtures for conformance. The eight Stages express semantic decisions, while
+`EvolutionProposal`. OPL owns their schemas and validators; OMA keeps
+[design](../contracts/foundry_protocol_fixture_manifest.json) and
+[improve](../contracts/foundry_protocol_improve_fixture_manifest.json) fixture
+sets for the same four objects. The eight Stages express semantic decisions, while
 OPL executes deterministic work and lifecycle transitions.
 
 When evidence yields no admissible semantic change, OMA returns the current
 blueprint with `semantic_diff=[]` and OPL ends the run without another version.
+
+## Provider Scope And Review
+
+The initial blueprint returned by `design` has generation zero, including
+takeover or improve requests with a baseline. Draft repairs and upstream
+route-backs remain inside that operation. Only an evidence-bound `diagnose`
+proposal introduces the next generation; exact no-change output preserves it.
+The request's privacy category strings and permission refs retain their exact
+identities, as defined by the [authoring prompt](../agent/prompts/agent-blueprint-authoring.md)
+and [output gate](../agent/quality_gates/foundry-provider-output.md).
+
+The Framework Foundry provider adapter supplies an operation-scoped output
+contract to StageRun. Its immutable reviewer snapshot contains the raw protocol
+object and all referenced content bytes; a review report cannot replace those
+artifacts. OMA declares review dimensions and dependency edges in
+[`epistemic_review_adoption.json`](../contracts/epistemic_review_adoption.json).
+Framework evaluates generic currentness and manages review attempts. Exact
+hashes locate transport bytes; only semantic dependency changes invalidate
+affected reviews. These source contracts do not establish live model acceptance.
