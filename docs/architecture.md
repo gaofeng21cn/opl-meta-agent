@@ -10,6 +10,14 @@ Machine boundary: Human-readable ownership and protocol flow. Machine truth live
 OMA owns the Agent-engineering semantics: intent interpretation, design basis,
 `AgentBlueprint`, `EvalSpec`, evidence diagnosis, and `EvolutionProposal`.
 
+This includes interpreting multilingual intent and recommending Profile requirements
+from the mission and admitted design evidence. Framework's `profiles select` only
+routes explicit Profile refs or exact canonical signals, or preserves a supplied
+reference-design route. Free text alone returns `semantic_profile_selection_required`;
+the existing `engineer-agent` design flow owns that judgment. Catalog Profiles are
+lower-bound conformance guardrails, not universal design templates. Profile lookup,
+ABI validation, capability resolution, and execution remain Framework responsibilities.
+
 OPL Foundry owns the run and lifecycle: materialization, evaluation execution,
 evidence persistence, versions, qualification, canary, activation, and
 rollback. Target Owners retain target-domain truth, protected tests, and
