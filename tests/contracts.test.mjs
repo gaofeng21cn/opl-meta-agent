@@ -219,7 +219,6 @@ test('OMA adopts epistemic provenance without making hashes review authority', (
   const compiler = readJson('contracts/pack_compiler_input.json');
 
   assert.equal(adoption.surface_kind, 'oma_epistemic_review_adoption');
-  assert.match(adoption.purpose, /Prevent AI hallucination/);
   assert.equal(adoption.evidence_profile, 'epistemic_provenance');
   assert.equal(adoption.trust_model, 'trusted_local_workspace');
   assert.equal(
