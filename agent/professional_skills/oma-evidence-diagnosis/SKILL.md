@@ -5,8 +5,25 @@ description: Diagnose an exact OPL EvidenceBundle without taking evaluator or ru
 
 # OMA Evidence Diagnosis
 
-Bind the diagnosis to the exact blueprint, candidate, baseline, frozen test plan, and evidence digests. Separate design defects from evaluator blocks, platform failures, target-owner rejection, safety regression, cost regression, and latency regression.
+Analyze only evidence bound to the supplied blueprint, candidate, baseline,
+frozen test plan, and evidence digests. The Stage main prompt owns the diagnosis
+task and its handoff; this Skill provides causal analysis.
 
-Each root cause must cite direct evidence refs and identify the earliest owning semantic surface. Do not infer hidden-test bodies from aggregates and do not reinterpret an OPL verdict as an OMA verdict.
+Separate the recorded observation from its interpretation. Compare the candidate
+with the relevant baseline under the supplied evaluation conditions, keeping
+absolute safety, cost, and latency observations distinct from their deltas.
+Classify design defects, evaluator blocks, platform failures, target-owner
+rejection, and safety/cost/latency regressions by their actual owner.
 
-Platform failure without a completed evaluation must remain in OPL retry/failure handling and must not enter OMA diagnosis. If completed evidence establishes no admissible Agent-semantic change, say so explicitly and do not invent one.
+For a candidate cause, identify the earliest semantic decision that could explain
+the observation. Check whether another cause fits the same evidence and what
+additional observation would distinguish them. Prefer the narrowest supported
+explanation; a symptom at a terminal output does not prove the last Stage caused
+it. Cite evidence for the causal connection and expose uncertainty when it is
+only a hypothesis.
+
+Use public results and protected aggregates at their stated granularity. Do not
+infer hidden test bodies or reinterpret an OPL verdict as an OMA verdict. A
+platform failure without completed evaluation stays with OPL retry/failure
+handling. A sound diagnosis may establish that no admissible semantic change is
+supported; it need not manufacture a root cause or repair.

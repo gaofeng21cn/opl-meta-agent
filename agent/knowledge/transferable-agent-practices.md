@@ -1,3 +1,7 @@
 # Transferable Agent Practices
 
-Transfer source practices by semantic purpose, evidence, constraints, and failure route. Do not copy source step counts mechanically. Split a top-level Stage only when it owns a distinct open judgment, owner, knowledge boundary, quality gate, or handoff.
+Transfer source practices by semantic purpose, evidence, constraints, and failure
+route. Source step counts are not target Stage counts. A distinct open judgment
+or an independently accepted handoff can justify a Stage; different tools or
+methods within the same decision do not by themselves justify a split. Preserve
+the shared OPL Standard Agent structure when adapting a source design.
