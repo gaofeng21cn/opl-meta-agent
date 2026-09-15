@@ -25,28 +25,18 @@ opl agents run --domain oma --action engineer-agent --workspace /absolute/worksp
 
 命令返回 OPL 持有的 `FoundryRun`。候选字节物化、独立评测、证据和版本记录、qualification、canary、激活与回滚都由 OPL 执行；OMA 只提供其中的语义判断。
 
-## Codex 安装与 Package 状态
+## 安装
 
-在 Codex App 的 Plugins 中添加本仓根目录为本地 marketplace，然后从 `opl-meta-agent` marketplace 安装 **OPL Meta Agent**。安装后新建任务以加载 `opl-meta-agent` Skill。
-
-对应的 CLI 安装、查看与移除命令：
+通过 OPL 的标准软件包入口安装：
 
 ```bash
-codex plugin marketplace add /absolute/path/to/opl-meta-agent --json
-codex plugin marketplace list --json
-codex plugin add opl-meta-agent@opl-meta-agent --json
-codex plugin list --marketplace opl-meta-agent --available --json
-codex plugin remove opl-meta-agent@opl-meta-agent --json
-codex plugin marketplace remove opl-meta-agent --json
-```
-
-这些命令验证 Codex carrier 的发现与安装。独立的 OPL Package 状态通过只读入口查看：
-
-```bash
+opl packages install oma --json
 opl packages status --package-id oma --json
 ```
 
-Carrier 安装和 Package 状态回读不能替代 Foundry 物化、评测、qualification、激活或目标 owner 接受证据，也不会创建 Package 事务或收据 authority。
+正式发布渠道为 `ghcr.io/gaofeng21cn/one-person-lab-packages/oma`，不可变版本用于精确引用，`latest-stable` 指向当前版本。OPL 与原生插件管理器负责安装和更新；不通过独立 GitHub Release 页面或附件分发。
+
+安装后新建任务以加载专业技能。软件包安装、运行可用性和领域验收分别记录；具体边界见[待完成验收](./docs/active/oma-ideal-state-gap-plan.md)。
 
 <details>
 <summary>智能体和操作者边界</summary>
