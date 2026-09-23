@@ -49,6 +49,11 @@
     "workspace_binding": {
       "locator_surface_kind": "opl_foundry_design_request",
       "default_profile_id": "one_off",
+      "shared_resources": [
+        { "path": "shared/sources", "role": "source_intake" },
+        { "path": "shared/memory", "role": "memory_root" },
+        { "path": "shared/style_system", "role": "style_system" }
+      ],
       "workspace_kind": "foundry_agent_engineering_workspace",
       "project_kind": "target_agent_project",
       "project_collection_label": "target_agents",
