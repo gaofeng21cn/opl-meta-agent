@@ -10,7 +10,6 @@
   "generated_surface_owner": "one-person-lab",
   "provider_manifest_ref": "contracts/foundry_provider.json",
   "functional_privatization_audit_ref": "contracts/functional_privatization_audit.json",
-  "memory_descriptor_ref": "contracts/memory_descriptor.json",
   "required_domain_pack_paths": [
     "agent/primary_skill/SKILL.md",
     "agent/professional_skills/oma-design-basis-architecture/SKILL.md",
@@ -60,14 +59,13 @@
     "contracts/fixtures/foundry-protocol/improve/evolution-proposal.json",
     "contracts/generated_surface_handoff.json",
     "contracts/functional_privatization_audit.json",
-    "contracts/memory_descriptor.json",
+    "contracts/durable_knowledge_catalog.json",
     "contracts/opl_agent_package_manifest.json",
     "contracts/opl_domain_manifest_registration.json",
     "contracts/epistemic_review_adoption.json",
     "contracts/standard-agent-principles-adoption.json",
     "contracts/stage_quality_cycle_policy.json",
-    "agent/policies/agent-engineering-authority-policy.md",
-    "contracts/durable_knowledge_catalog.json"
+    "agent/policies/agent-engineering-authority-policy.md"
   ],
   "declarative_domain_pack": [
     "capability_map_refs",
@@ -108,5 +106,6 @@
     "generated_interface_can_materialize_or_evaluate": false,
     "generated_interface_can_activate_or_rollback": false,
     "provider_completion_is_qualification": false
-  }
+  },
+  "durable_knowledge_catalog_ref": "contracts/durable_knowledge_catalog.json"
 }

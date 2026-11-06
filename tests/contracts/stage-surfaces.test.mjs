@@ -12,7 +12,6 @@ test('provider identity and stage routes are internally closed', () => {
     'contracts/foundry_provider.json',
     'contracts/foundry_protocol_fixture_manifest.json',
     'contracts/foundry_protocol_improve_fixture_manifest.json',
-    'contracts/memory_descriptor.json',
     'contracts/opl_agent_package_manifest.json',
     'contracts/opl_domain_manifest_registration.json',
     'contracts/pack_compiler_input.json',
@@ -148,7 +147,7 @@ test('generated surfaces resolve to real refs-only OMA targets without owner pro
   const audit = readJson('contracts/functional_privatization_audit.json');
   const compiler = readJson('contracts/pack_compiler_input.json');
   const descriptor = readJson('contracts/domain_descriptor.json');
-  const memory = readJson('contracts/memory_descriptor.json');
+  const memory = readJson('contracts/durable_knowledge_catalog.json');
   const registration = readJson('contracts/opl_domain_manifest_registration.json');
   const expectedSurfaceIds = [
     'cli',
@@ -225,25 +224,20 @@ test('generated surfaces resolve to real refs-only OMA targets without owner pro
   assert.equal(foundryBindingModule.module_id, 'oma_foundry_binding_descriptor_refs');
   assert.equal(foundryBindingModule.active_caller_status.includes('domain_handler'), false);
 
-  assert.deepEqual(memory.authority_boundary, {
-    domain_memory_accept_reject_owner: 'oma',
-    opl_can_write_memory_body: false,
-    opl_can_accept_or_reject_writeback: false,
-    opl_can_own_memory_verdict: false,
-    opl_can_authorize_quality_or_export: false,
-    provider_completion_is_memory_acceptance: false,
-  });
-  assert.equal(memory.memory_body_owner, 'oma');
-  assert.equal(memory.memory_body_status, 'domain_owned_not_materialized_in_repo');
-  assert.equal(memory.opl_projection_policy, 'locator_and_receipt_refs_only');
-  memory.policy_refs.forEach((relativePath) => {
-    assert.ok(fs.statSync(path.join(root, relativePath)).isFile(), `missing memory policy ref ${relativePath}`);
-  });
+  assert.equal(memory.surface_kind, 'opl_durable_knowledge_catalog');
+  assert.equal(memory.owner, 'one-person-lab');
+  assert.equal(memory.domain_id, 'agent_engineering');
+  for (const item of memory.items) {
+    assert.equal(item.layer, 'agent_pack');
+    assert.equal(item.authority_boundary.semantic_body_owner, item.owner);
+    assert.equal(item.authority_boundary.opl_role, 'catalog_recall_and_receipt_projection_only');
+    assert.ok(fs.statSync(path.join(root, item.body_ref.ref)).isFile());
+  }
   const projectionModule = moduleBySurface.get('status_read_model');
-  assert.ok(projectionModule.code_paths.includes('contracts/memory_descriptor.json'));
+  assert.ok(projectionModule.code_paths.includes('contracts/durable_knowledge_catalog.json'));
   for (const surfaceId of ['status_read_model', 'workbench_drilldown']) {
     const surface = handoff.handoff_surface_overrides.find((entry) => entry.surface_id === surfaceId);
-    assert.ok(surface.current_paths.includes('contracts/memory_descriptor.json'));
+    assert.ok(surface.current_paths.includes('contracts/durable_knowledge_catalog.json'));
   }
 
   assert.deepEqual(audit.bridge_exit_gate.physical_delete_authorization_refs, []);
@@ -262,8 +256,8 @@ test('generated surfaces resolve to real refs-only OMA targets without owner pro
   });
 
   assert.ok(compiler.required_domain_pack_paths.includes('contracts/functional_privatization_audit.json'));
-  assert.ok(compiler.required_domain_pack_paths.includes('contracts/memory_descriptor.json'));
-  assert.equal(compiler.memory_descriptor_ref, 'contracts/memory_descriptor.json');
+  assert.ok(compiler.required_domain_pack_paths.includes('contracts/durable_knowledge_catalog.json'));
+  assert.equal(compiler.durable_knowledge_catalog_ref, 'contracts/durable_knowledge_catalog.json');
   assert.ok(compiler.declarative_domain_pack.includes('memory_policy'));
   assert.ok(compiler.declarative_domain_pack.length > 0);
   assert.equal(
@@ -274,7 +268,7 @@ test('generated surfaces resolve to real refs-only OMA targets without owner pro
     registration.domain_manifest.functional_privatization_audit_ref,
     'contracts/functional_privatization_audit.json',
   );
-  assert.equal(descriptor.standard_contract_refs.memory_descriptor, 'contracts/memory_descriptor.json');
-  assert.equal(registration.domain_manifest.memory_descriptor_ref, 'contracts/memory_descriptor.json');
+  assert.equal(descriptor.standard_contract_refs.durable_knowledge_catalog, 'contracts/durable_knowledge_catalog.json');
+  assert.equal(registration.domain_manifest.durable_knowledge_catalog_ref, 'contracts/durable_knowledge_catalog.json');
 });
 }
