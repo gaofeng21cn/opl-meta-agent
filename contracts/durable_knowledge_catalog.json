@@ -1,0 +1,139 @@
+{
+  "surface_kind": "opl_durable_knowledge_catalog",
+  "version": "durable-knowledge-catalog.v1",
+  "owner": "one-person-lab",
+  "domain_id": "agent_engineering",
+  "items": [
+    {
+      "surface_kind": "opl_durable_knowledge_item",
+      "version": "durable-knowledge-item.v1",
+      "knowledge_id": "agent_engineering.opl-boundary-policy",
+      "title": "Opl Boundary Policy",
+      "layer": "agent_pack",
+      "owner": "oma",
+      "body_ref": {
+        "kind": "repo_path",
+        "ref": "agent/knowledge/opl-boundary-policy.md",
+        "sha256": "sha256:bc0ca1acb64d9c0416421e41e80b699256751981467e3a46f2c1b560ce2752af"
+      },
+      "applicability": {
+        "domains": [
+          "agent_engineering"
+        ],
+        "stages": [
+          "mission-intake",
+          "design-basis-admission",
+          "target-agent-assessment",
+          "stage-architecture",
+          "agent-blueprint-authoring",
+          "evaluation-design",
+          "evidence-diagnosis",
+          "evolution-proposal"
+        ]
+      },
+      "status": "active",
+      "reviewed_at": "2026-11-06T00:00:00+08:00",
+      "next_review_at": "2027-05-06T00:00:00+08:00",
+      "freshness_policy": "migration_preserves_existing_domain_semantics",
+      "authority_boundary": {
+        "semantic_body_owner": "oma",
+        "opl_role": "catalog_recall_and_receipt_projection_only"
+      }
+    },
+    {
+      "surface_kind": "opl_durable_knowledge_item",
+      "version": "durable-knowledge-item.v1",
+      "knowledge_id": "agent_engineering.project-maturity-signals",
+      "title": "Project Maturity Signals",
+      "layer": "agent_pack",
+      "owner": "oma",
+      "body_ref": {
+        "kind": "repo_path",
+        "ref": "agent/knowledge/project-maturity-signals.md",
+        "sha256": "sha256:357ac2229e5d07be514d6b2465fdffd6c16e19a505bfba9344e789e3090cc242"
+      },
+      "applicability": {
+        "domains": [
+          "agent_engineering"
+        ],
+        "stages": [
+          "mission-intake",
+          "target-agent-assessment",
+          "agent-blueprint-authoring",
+          "evaluation-design"
+        ]
+      },
+      "status": "active",
+      "reviewed_at": "2026-11-06T00:00:00+08:00",
+      "next_review_at": "2027-05-06T00:00:00+08:00",
+      "freshness_policy": "migration_preserves_existing_domain_semantics",
+      "authority_boundary": {
+        "semantic_body_owner": "oma",
+        "opl_role": "catalog_recall_and_receipt_projection_only"
+      }
+    },
+    {
+      "surface_kind": "opl_durable_knowledge_item",
+      "version": "durable-knowledge-item.v1",
+      "knowledge_id": "agent_engineering.transferable-agent-practices",
+      "title": "Transferable Agent Practices",
+      "layer": "agent_pack",
+      "owner": "oma",
+      "body_ref": {
+        "kind": "repo_path",
+        "ref": "agent/knowledge/transferable-agent-practices.md",
+        "sha256": "sha256:f058ecbe906cd7ddbb807a85b5a3d0c6fc5449514d1453541ecbde9ba9282dbf"
+      },
+      "applicability": {
+        "domains": [
+          "agent_engineering"
+        ],
+        "stages": [
+          "design-basis-admission",
+          "stage-architecture"
+        ]
+      },
+      "status": "active",
+      "reviewed_at": "2026-11-06T00:00:00+08:00",
+      "next_review_at": "2027-05-06T00:00:00+08:00",
+      "freshness_policy": "migration_preserves_existing_domain_semantics",
+      "authority_boundary": {
+        "semantic_body_owner": "oma",
+        "opl_role": "catalog_recall_and_receipt_projection_only"
+      }
+    },
+    {
+      "surface_kind": "opl_durable_knowledge_item",
+      "version": "durable-knowledge-item.v1",
+      "knowledge_id": "agent_engineering.evidence-learning-policy",
+      "title": "Evidence Learning Policy",
+      "layer": "agent_pack",
+      "owner": "oma",
+      "body_ref": {
+        "kind": "repo_path",
+        "ref": "agent/knowledge/evidence-learning-policy.md",
+        "sha256": "sha256:656f822d489fa9eb052e4942399b976015a8958cd76e5a00ac3efc6feca286f9"
+      },
+      "applicability": {
+        "domains": [
+          "agent_engineering"
+        ],
+        "stages": [
+          "evidence-diagnosis",
+          "evolution-proposal"
+        ]
+      },
+      "status": "active",
+      "reviewed_at": "2026-11-06T00:00:00+08:00",
+      "next_review_at": "2027-05-06T00:00:00+08:00",
+      "freshness_policy": "migration_preserves_existing_domain_semantics",
+      "authority_boundary": {
+        "semantic_body_owner": "oma",
+        "opl_role": "catalog_recall_and_receipt_projection_only"
+      }
+    }
+  ],
+  "workspace_catalog_ref": "memory/opl_durable_knowledge_catalog.json",
+  "project_catalog_ref": "memory/opl_durable_knowledge_catalog.json",
+  "dated_state_catalog_ref": "state/opl_durable_knowledge_catalog.json"
+}

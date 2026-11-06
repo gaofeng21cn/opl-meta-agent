@@ -65,7 +65,9 @@
     "contracts/opl_domain_manifest_registration.json",
     "contracts/epistemic_review_adoption.json",
     "contracts/standard-agent-principles-adoption.json",
-    "contracts/stage_quality_cycle_policy.json"
+    "contracts/stage_quality_cycle_policy.json",
+    "agent/policies/agent-engineering-authority-policy.md",
+    "contracts/durable_knowledge_catalog.json"
   ],
   "declarative_domain_pack": [
     "capability_map_refs",
@@ -80,7 +82,15 @@
     "foundry_provider_refs",
     "foundry_protocol_conformance_fixtures"
   ],
-  "generated_surfaces_requested": ["cli", "mcp", "skill", "product_entry", "openai", "ai_sdk", "status_read_model"],
+  "generated_surfaces_requested": [
+    "cli",
+    "mcp",
+    "skill",
+    "product_entry",
+    "openai",
+    "ai_sdk",
+    "status_read_model"
+  ],
   "minimal_authority_functions": [],
   "canonical_semantic_pack_root": "agent/",
   "tool_refs": [

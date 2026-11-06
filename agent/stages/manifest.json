@@ -7,7 +7,10 @@
     "semantic_route_decision_owner": "decisive_codex_attempt",
     "stage_transition_materialization_owner": "opl_stage_run_controller",
     "primary_only_decisive_attempt_role": "producer",
-    "formal_review_decisive_attempt_roles": ["reviewer", "re_reviewer"],
+    "formal_review_decisive_attempt_roles": [
+      "reviewer",
+      "re_reviewer"
+    ],
     "repairer_can_be_decisive_attempt": false,
     "codex_may_advance_skip_repeat_reverse_or_route_back": true,
     "any_declared_stage_may_start_from_any_prior_stage_result": true,
@@ -20,8 +23,11 @@
     "quality_debt_blocks_stage_transition": false,
     "quality_debt_blocks_quality_export_or_ready_claims": true,
     "hard_stop_classes": [
-      "executor_unavailable", "permission_or_credential_boundary", "explicit_human_decision",
-      "authority_boundary_violation", "irreversible_action_requires_authorization",
+      "executor_unavailable",
+      "permission_or_credential_boundary",
+      "explicit_human_decision",
+      "authority_boundary_violation",
+      "irreversible_action_requires_authorization",
       "identity_or_currentness_mismatch"
     ]
   },
@@ -30,153 +36,321 @@
       "stage_id": "mission-intake",
       "stage_kind": "intake",
       "title": "Mission intake",
-      "display_names": { "en-US": "Mission intake", "zh-CN": "任务受理" },
+      "display_names": {
+        "en-US": "Mission intake",
+        "zh-CN": "任务受理"
+      },
       "summary": "Normalize the Agent engineering mission, mode, target identity, acceptance criteria, and constraints.",
       "goal": "Produce a precise mission decision without inventing target-domain truth.",
       "policy_ref": "agent/stages/mission-intake.md",
       "prompt_ref": "agent/prompts/mission-intake.md",
-      "skill_refs": ["agent/professional_skills/oma-design-basis-architecture/SKILL.md"],
+      "skill_refs": [
+        "agent/professional_skills/oma-design-basis-architecture/SKILL.md"
+      ],
       "stage_quality_cycle_policy_ref": "contracts/stage_quality_cycle_policy.json#/stages/mission-intake",
-      "knowledge_refs": ["agent/knowledge/opl-boundary-policy.md", "agent/knowledge/project-maturity-signals.md"],
-      "quality_gate_refs": ["agent/quality_gates/foundry-provider-output.md"],
-      "allowed_action_refs": ["engineer-agent"],
-      "requires": ["design_request"],
-      "ensures": ["mission_and_identity_admitted"],
-      "next_stage_refs": ["design-basis-admission"],
-      "trust_lane": "ai_decision"
+      "knowledge_refs": [
+        "agent/knowledge/opl-boundary-policy.md",
+        "agent/knowledge/project-maturity-signals.md"
+      ],
+      "quality_gate_refs": [
+        "agent/quality_gates/foundry-provider-output.md"
+      ],
+      "allowed_action_refs": [
+        "engineer-agent"
+      ],
+      "requires": [
+        "design_request"
+      ],
+      "ensures": [
+        "mission_and_identity_admitted"
+      ],
+      "next_stage_refs": [
+        "design-basis-admission"
+      ],
+      "trust_lane": "ai_decision",
+      "policy_refs": [
+        "agent/policies/agent-engineering-authority-policy.md"
+      ]
     },
     {
       "stage_id": "design-basis-admission",
       "stage_kind": "source_preparation",
       "title": "Design basis admission",
-      "display_names": { "en-US": "Design basis admission", "zh-CN": "设计依据准入" },
+      "display_names": {
+        "en-US": "Design basis admission",
+        "zh-CN": "设计依据准入"
+      },
       "summary": "Admit traceable source evidence, reusable patterns, assumptions, and owner constraints.",
       "goal": "Define what may support the design and what remains an assumption or non-goal.",
       "policy_ref": "agent/stages/design-basis-admission.md",
       "prompt_ref": "agent/prompts/design-basis-admission.md",
-      "skill_refs": ["agent/professional_skills/oma-design-basis-architecture/SKILL.md"],
+      "skill_refs": [
+        "agent/professional_skills/oma-design-basis-architecture/SKILL.md"
+      ],
       "stage_quality_cycle_policy_ref": "contracts/stage_quality_cycle_policy.json#/stages/design-basis-admission",
-      "knowledge_refs": ["agent/knowledge/transferable-agent-practices.md", "agent/knowledge/opl-boundary-policy.md"],
-      "quality_gate_refs": ["agent/quality_gates/foundry-provider-output.md"],
-      "allowed_action_refs": ["engineer-agent"],
-      "requires": ["mission_and_identity_admitted"],
-      "ensures": ["design_basis_admitted"],
-      "next_stage_refs": ["target-agent-assessment", "stage-architecture"],
-      "trust_lane": "ai_decision"
+      "knowledge_refs": [
+        "agent/knowledge/transferable-agent-practices.md",
+        "agent/knowledge/opl-boundary-policy.md"
+      ],
+      "quality_gate_refs": [
+        "agent/quality_gates/foundry-provider-output.md"
+      ],
+      "allowed_action_refs": [
+        "engineer-agent"
+      ],
+      "requires": [
+        "mission_and_identity_admitted"
+      ],
+      "ensures": [
+        "design_basis_admitted"
+      ],
+      "next_stage_refs": [
+        "target-agent-assessment",
+        "stage-architecture"
+      ],
+      "trust_lane": "ai_decision",
+      "policy_refs": [
+        "agent/policies/agent-engineering-authority-policy.md"
+      ]
     },
     {
       "stage_id": "target-agent-assessment",
       "stage_kind": "review",
       "title": "Target Agent assessment",
-      "display_names": { "en-US": "Target Agent assessment", "zh-CN": "目标智能体评估" },
+      "display_names": {
+        "en-US": "Target Agent assessment",
+        "zh-CN": "目标智能体评估"
+      },
       "summary": "Assess an exact baseline version for takeover or improvement while preserving retained behavior.",
       "goal": "Identify version-bound strengths, gaps, and non-regression requirements.",
       "policy_ref": "agent/stages/target-agent-assessment.md",
       "prompt_ref": "agent/prompts/target-agent-assessment.md",
-      "skill_refs": ["agent/professional_skills/oma-target-assessment-eval-design/SKILL.md"],
+      "skill_refs": [
+        "agent/professional_skills/oma-target-assessment-eval-design/SKILL.md"
+      ],
       "stage_quality_cycle_policy_ref": "contracts/stage_quality_cycle_policy.json#/stages/target-agent-assessment",
-      "knowledge_refs": ["agent/knowledge/project-maturity-signals.md", "agent/knowledge/opl-boundary-policy.md"],
-      "quality_gate_refs": ["agent/quality_gates/foundry-provider-output.md"],
-      "allowed_action_refs": ["engineer-agent"],
-      "requires": ["design_basis_admitted", "exact_baseline_version_for_non_create_mode"],
-      "ensures": ["baseline_assessment_ready"],
-      "next_stage_refs": ["stage-architecture"],
-      "trust_lane": "ai_decision"
+      "knowledge_refs": [
+        "agent/knowledge/project-maturity-signals.md",
+        "agent/knowledge/opl-boundary-policy.md"
+      ],
+      "quality_gate_refs": [
+        "agent/quality_gates/foundry-provider-output.md"
+      ],
+      "allowed_action_refs": [
+        "engineer-agent"
+      ],
+      "requires": [
+        "design_basis_admitted",
+        "exact_baseline_version_for_non_create_mode"
+      ],
+      "ensures": [
+        "baseline_assessment_ready"
+      ],
+      "next_stage_refs": [
+        "stage-architecture"
+      ],
+      "trust_lane": "ai_decision",
+      "policy_refs": [
+        "agent/policies/agent-engineering-authority-policy.md"
+      ]
     },
     {
       "stage_id": "stage-architecture",
       "stage_kind": "planning",
       "title": "Stage architecture",
-      "display_names": { "en-US": "Stage architecture", "zh-CN": "阶段架构" },
+      "display_names": {
+        "en-US": "Stage architecture",
+        "zh-CN": "阶段架构"
+      },
       "summary": "Design the target Stage graph, handoffs, artifacts, capabilities, and authority boundaries.",
       "goal": "Assign one major open semantic judgment to each target Stage.",
       "policy_ref": "agent/stages/stage-architecture.md",
       "prompt_ref": "agent/prompts/stage-architecture.md",
-      "skill_refs": ["agent/professional_skills/oma-design-basis-architecture/SKILL.md"],
+      "skill_refs": [
+        "agent/professional_skills/oma-design-basis-architecture/SKILL.md"
+      ],
       "stage_quality_cycle_policy_ref": "contracts/stage_quality_cycle_policy.json#/stages/stage-architecture",
-      "knowledge_refs": ["agent/knowledge/transferable-agent-practices.md", "agent/knowledge/opl-boundary-policy.md"],
-      "quality_gate_refs": ["agent/quality_gates/foundry-provider-output.md"],
-      "allowed_action_refs": ["engineer-agent"],
-      "requires": ["design_basis_admitted"],
-      "ensures": ["stage_architecture_ready"],
-      "next_stage_refs": ["agent-blueprint-authoring"],
-      "trust_lane": "ai_decision"
+      "knowledge_refs": [
+        "agent/knowledge/transferable-agent-practices.md",
+        "agent/knowledge/opl-boundary-policy.md"
+      ],
+      "quality_gate_refs": [
+        "agent/quality_gates/foundry-provider-output.md"
+      ],
+      "allowed_action_refs": [
+        "engineer-agent"
+      ],
+      "requires": [
+        "design_basis_admitted"
+      ],
+      "ensures": [
+        "stage_architecture_ready"
+      ],
+      "next_stage_refs": [
+        "agent-blueprint-authoring"
+      ],
+      "trust_lane": "ai_decision",
+      "policy_refs": [
+        "agent/policies/agent-engineering-authority-policy.md"
+      ]
     },
     {
       "stage_id": "agent-blueprint-authoring",
       "stage_kind": "creation",
       "title": "AgentBlueprint authoring",
-      "display_names": { "en-US": "AgentBlueprint authoring", "zh-CN": "智能体蓝图编写" },
+      "display_names": {
+        "en-US": "AgentBlueprint authoring",
+        "zh-CN": "智能体蓝图编写"
+      },
       "summary": "Author the complete declarative blueprint from the admitted architecture.",
       "goal": "Produce a complete, internally consistent AgentBlueprint without materializing files.",
       "policy_ref": "agent/stages/agent-blueprint-authoring.md",
       "prompt_ref": "agent/prompts/agent-blueprint-authoring.md",
-      "skill_refs": ["agent/professional_skills/oma-design-basis-architecture/SKILL.md"],
+      "skill_refs": [
+        "agent/professional_skills/oma-design-basis-architecture/SKILL.md"
+      ],
       "stage_quality_cycle_policy_ref": "contracts/stage_quality_cycle_policy.json#/stages/agent-blueprint-authoring",
-      "knowledge_refs": ["agent/knowledge/opl-boundary-policy.md", "agent/knowledge/project-maturity-signals.md"],
-      "quality_gate_refs": ["agent/quality_gates/foundry-provider-output.md"],
-      "allowed_action_refs": ["engineer-agent"],
-      "requires": ["stage_architecture_ready"],
-      "ensures": ["agent_blueprint_draft_ready"],
-      "next_stage_refs": ["evaluation-design"],
-      "trust_lane": "ai_decision"
+      "knowledge_refs": [
+        "agent/knowledge/opl-boundary-policy.md",
+        "agent/knowledge/project-maturity-signals.md"
+      ],
+      "quality_gate_refs": [
+        "agent/quality_gates/foundry-provider-output.md"
+      ],
+      "allowed_action_refs": [
+        "engineer-agent"
+      ],
+      "requires": [
+        "stage_architecture_ready"
+      ],
+      "ensures": [
+        "agent_blueprint_draft_ready"
+      ],
+      "next_stage_refs": [
+        "evaluation-design"
+      ],
+      "trust_lane": "ai_decision",
+      "policy_refs": [
+        "agent/policies/agent-engineering-authority-policy.md"
+      ]
     },
     {
       "stage_id": "evaluation-design",
       "stage_kind": "planning",
       "title": "Evaluation design",
-      "display_names": { "en-US": "Evaluation design", "zh-CN": "评测设计" },
+      "display_names": {
+        "en-US": "Evaluation design",
+        "zh-CN": "评测设计"
+      },
       "summary": "Embed public cases, protected requirements, gates, and baseline comparison into EvalSpec.",
       "goal": "Finalize a complete AgentBlueprint whose qualification can be independently evaluated by OPL.",
       "policy_ref": "agent/stages/evaluation-design.md",
       "prompt_ref": "agent/prompts/evaluation-design.md",
-      "skill_refs": ["agent/professional_skills/oma-target-assessment-eval-design/SKILL.md"],
+      "skill_refs": [
+        "agent/professional_skills/oma-target-assessment-eval-design/SKILL.md"
+      ],
       "stage_quality_cycle_policy_ref": "contracts/stage_quality_cycle_policy.json#/stages/evaluation-design",
-      "knowledge_refs": ["agent/knowledge/project-maturity-signals.md", "agent/knowledge/opl-boundary-policy.md"],
-      "quality_gate_refs": ["agent/quality_gates/foundry-provider-output.md"],
-      "allowed_action_refs": ["engineer-agent"],
-      "requires": ["agent_blueprint_draft_ready"],
-      "ensures": ["agent_blueprint_ready"],
+      "knowledge_refs": [
+        "agent/knowledge/project-maturity-signals.md",
+        "agent/knowledge/opl-boundary-policy.md"
+      ],
+      "quality_gate_refs": [
+        "agent/quality_gates/foundry-provider-output.md"
+      ],
+      "allowed_action_refs": [
+        "engineer-agent"
+      ],
+      "requires": [
+        "agent_blueprint_draft_ready"
+      ],
+      "ensures": [
+        "agent_blueprint_ready"
+      ],
       "next_stage_refs": [],
-      "trust_lane": "ai_decision"
+      "trust_lane": "ai_decision",
+      "policy_refs": [
+        "agent/policies/agent-engineering-authority-policy.md"
+      ]
     },
     {
       "stage_id": "evidence-diagnosis",
       "stage_kind": "review",
       "title": "Evidence diagnosis",
-      "display_names": { "en-US": "Evidence diagnosis", "zh-CN": "证据诊断" },
+      "display_names": {
+        "en-US": "Evidence diagnosis",
+        "zh-CN": "证据诊断"
+      },
       "summary": "Diagnose exact OPL evidence and classify the earliest owning semantic causes.",
       "goal": "Produce evidence-bound root causes without taking evaluator or runtime authority.",
       "policy_ref": "agent/stages/evidence-diagnosis.md",
       "prompt_ref": "agent/prompts/evidence-diagnosis.md",
-      "skill_refs": ["agent/professional_skills/oma-evidence-diagnosis/SKILL.md"],
+      "skill_refs": [
+        "agent/professional_skills/oma-evidence-diagnosis/SKILL.md"
+      ],
       "stage_quality_cycle_policy_ref": "contracts/stage_quality_cycle_policy.json#/stages/evidence-diagnosis",
-      "knowledge_refs": ["agent/knowledge/evidence-learning-policy.md", "agent/knowledge/opl-boundary-policy.md"],
-      "quality_gate_refs": ["agent/quality_gates/foundry-provider-output.md"],
-      "allowed_action_refs": ["engineer-agent"],
-      "requires": ["design_request", "exact_agent_blueprint", "evidence_bundle"],
-      "ensures": ["evidence_bound_root_causes_ready"],
-      "next_stage_refs": ["evolution-proposal"],
-      "trust_lane": "ai_decision"
+      "knowledge_refs": [
+        "agent/knowledge/evidence-learning-policy.md",
+        "agent/knowledge/opl-boundary-policy.md"
+      ],
+      "quality_gate_refs": [
+        "agent/quality_gates/foundry-provider-output.md"
+      ],
+      "allowed_action_refs": [
+        "engineer-agent"
+      ],
+      "requires": [
+        "design_request",
+        "exact_agent_blueprint",
+        "evidence_bundle"
+      ],
+      "ensures": [
+        "evidence_bound_root_causes_ready"
+      ],
+      "next_stage_refs": [
+        "evolution-proposal"
+      ],
+      "trust_lane": "ai_decision",
+      "policy_refs": [
+        "agent/policies/agent-engineering-authority-policy.md"
+      ]
     },
     {
       "stage_id": "evolution-proposal",
       "stage_kind": "revision",
       "title": "EvolutionProposal authoring",
-      "display_names": { "en-US": "EvolutionProposal authoring", "zh-CN": "进化方案编写" },
+      "display_names": {
+        "en-US": "EvolutionProposal authoring",
+        "zh-CN": "进化方案编写"
+      },
       "summary": "Author a complete next blueprint, semantic diff, new tests, trade-offs, and risk hints.",
       "goal": "Return an evidence-bound EvolutionProposal without a file patch or execution instruction.",
       "policy_ref": "agent/stages/evolution-proposal.md",
       "prompt_ref": "agent/prompts/evolution-proposal.md",
-      "skill_refs": ["agent/professional_skills/oma-evolution-proposal/SKILL.md"],
+      "skill_refs": [
+        "agent/professional_skills/oma-evolution-proposal/SKILL.md"
+      ],
       "stage_quality_cycle_policy_ref": "contracts/stage_quality_cycle_policy.json#/stages/evolution-proposal",
-      "knowledge_refs": ["agent/knowledge/evidence-learning-policy.md", "agent/knowledge/opl-boundary-policy.md"],
-      "quality_gate_refs": ["agent/quality_gates/foundry-provider-output.md"],
-      "allowed_action_refs": ["engineer-agent"],
-      "requires": ["evidence_bound_root_causes_ready"],
-      "ensures": ["evolution_proposal_ready"],
+      "knowledge_refs": [
+        "agent/knowledge/evidence-learning-policy.md",
+        "agent/knowledge/opl-boundary-policy.md"
+      ],
+      "quality_gate_refs": [
+        "agent/quality_gates/foundry-provider-output.md"
+      ],
+      "allowed_action_refs": [
+        "engineer-agent"
+      ],
+      "requires": [
+        "evidence_bound_root_causes_ready"
+      ],
+      "ensures": [
+        "evolution_proposal_ready"
+      ],
       "next_stage_refs": [],
-      "trust_lane": "ai_decision"
+      "trust_lane": "ai_decision",
+      "policy_refs": [
+        "agent/policies/agent-engineering-authority-policy.md"
+      ]
     }
   ],
   "authority_boundary": {
