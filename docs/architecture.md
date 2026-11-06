@@ -18,6 +18,12 @@ the existing `engineer-agent` design flow owns that judgment. Catalog Profiles a
 lower-bound conformance guardrails, not universal design templates. Profile lookup,
 ABI validation, capability resolution, and execution remain Framework responsibilities.
 
+Design-basis admission ends when consequential choices have support or explicit
+gaps and the next semantic decision can proceed. Additional research must resolve
+a named judgment that could change the design. This keeps source review from
+turning into repeated runtime exploration or byte-attestation work; provenance
+and unresolved limitations travel with the usable basis.
+
 OPL Foundry owns the run and lifecycle: materialization, evaluation execution,
 evidence persistence, versions, qualification, canary, activation, and
 rollback. Target Owners retain target-domain truth, protected tests, and

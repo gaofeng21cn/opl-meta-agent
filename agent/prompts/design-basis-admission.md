@@ -25,3 +25,12 @@ takeover/improve needs it, or `stage-architecture` when the available context is
 adequate. If the mission itself is inconsistent, identify the decision for
 `mission-intake` to resolve. Ordinary evidence limitations remain explicit in the
 design basis rather than becoming a new execution gate.
+
+Stop source discovery when each consequential design choice has either sufficient
+support or an explicit evidence gap, and the next Stage can proceed. Deliver that
+basis now; further reading needs a named unresolved judgment whose outcome could
+change the design. Reuse already verified source refs instead of repeating their
+validation. Do not inspect runtime internals or reconstruct content digests merely
+to strengthen a semantic conclusion: Framework owns byte identity and execution
+receipts. An unavailable source or uncertain detail belongs in the open questions
+with its consequence, unless it prevents the current design decision itself.

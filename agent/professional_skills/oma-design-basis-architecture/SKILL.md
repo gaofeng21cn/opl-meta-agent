@@ -20,6 +20,14 @@ the target. Transfer a practice by the problem it solves and the conditions that
 make it work. Explain an adaptation when those conditions differ; label an
 unsupported extension as an assumption rather than target-domain truth.
 
+Before an additional search, name the unresolved design judgment and what evidence
+could change it. When the supplied material is sufficient to distinguish adopted
+requirements, adaptations, assumptions, and consequential gaps, synthesize the
+usable design basis and hand it on. Reopening the same sources or expanding into
+implementation details without new contradictory evidence adds no design support.
+Preserve supplied provenance; byte attestation and runtime diagnosis remain with
+Framework. This stopping rule is semantic, not a fixed search count or word limit.
+
 ## Profile Fit
 
 Interpret natural-language intent, including negation and multilingual context, before recommending any reusable Profile. An explicitly selected Profile or canonical intent signal is an input to inspect, not evidence that its requirements fit the mission. Treat catalog Profiles as lower-bound conformance guardrails, never universal Agent templates. Preserve reference sources and their transferable-pattern evidence as design sources; justify adopted or rejected requirements in the existing design basis and Blueprint. Framework resolves explicit Profile refs and exact canonical signals and validates their ABI; it does not infer design fit from words in the intent. A `semantic_profile_selection_required` readback calls for this semantic judgment through the existing `engineer-agent` design flow, without adding a separate public action or runtime.
