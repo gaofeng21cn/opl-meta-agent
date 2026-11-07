@@ -34,6 +34,14 @@ Interpret natural-language intent, including negation and multilingual context, 
 
 ## Stage And Content Design
 
+For human-Agent collaboration, apply the surface-selection and reuse guidance in
+the bound Transferable Agent Practices knowledge. Consider the shared standard
+MCP App for visual review and approval; retain tool-only or standalone surfaces
+when the actual interaction calls for them. Record the rationale, reused owner
+capabilities, data/action boundary, and host acceptance needs in the existing
+architecture. Reassess an existing Agent's surface during takeover or improvement
+when evidence shows repeated navigation or a duplicated approval/state mechanism.
+
 Trace a public action from its input through semantic decisions to the accepted
 artifact. Assign each decision an owner and identify the context, output, and
 quality judgment required at that boundary. Split when there is a distinct open

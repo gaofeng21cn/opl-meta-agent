@@ -82,7 +82,7 @@
       "body_ref": {
         "kind": "repo_path",
         "ref": "agent/knowledge/transferable-agent-practices.md",
-        "sha256": "sha256:f058ecbe906cd7ddbb807a85b5a3d0c6fc5449514d1453541ecbde9ba9282dbf"
+        "sha256": "sha256:17b2f26b60de276fa7216bfad26d76f67e07bbd7f51266976b236b7ee216fb6e"
       },
       "applicability": {
         "domains": [
@@ -90,12 +90,14 @@
         ],
         "stages": [
           "design-basis-admission",
-          "stage-architecture"
+          "stage-architecture",
+          "agent-blueprint-authoring",
+          "evaluation-design"
         ]
       },
       "status": "active",
-      "reviewed_at": "2026-11-06T00:00:00+08:00",
-      "next_review_at": "2027-05-06T00:00:00+08:00",
+      "reviewed_at": "2026-11-07T00:00:00+08:00",
+      "next_review_at": "2027-05-07T00:00:00+08:00",
       "freshness_policy": "review_when_sources_or_applicability_change; exclude_after_next_review_at",
       "authority_boundary": {
         "semantic_body_owner": "oma",

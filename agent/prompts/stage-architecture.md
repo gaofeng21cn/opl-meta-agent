@@ -5,6 +5,13 @@ mission. Use the design basis and any exact-baseline assessment already supplied
 Apply `oma-design-basis-architecture` to choose decision boundaries, reuse existing
 capabilities, and compare simpler alternatives.
 
+When the mission involves human collaboration, decide whether it needs visual
+review or approval. Apply the bound MCP App guidance, inspect reusable OPL
+contributions, and record the selected interaction surface and its reason.
+Carry owner data/actions, exact-target confirmation, Agent-visible state, and
+real-host acceptance needs into blueprint authoring. A separate application or
+dedicated server needs a concrete interaction requirement.
+
 For each public action, explain how its input reaches a useful terminal artifact.
 Give every Stage a distinct semantic judgment, the context it consumes, the
 result it produces, and the owner that accepts it. Specify action I/O, artifact

@@ -11,6 +11,12 @@ guide its substantive work from supplied context to the accepted result, includi
 when to apply its professional Skills and how to judge completion or further
 work. A goal sentence or a list of Skill names is not a complete main prompt.
 Keep reusable methods in the professional Skills and facts in knowledge assets.
+
+Preserve the architecture's interaction-surface decision. For MCP App designs,
+bind the owner read/action and artifact contracts plus reusable Framework
+capabilities in the existing Blueprint fields and content artifacts. Keep human
+confirmation, Agent-visible structured results, and owner receipts explicit.
+Do not substitute a custom UI runtime or add undeclared protocol fields.
 Use the standard Stage/prompt/Skill/tool separation rather than embedding a
 custom procedural runner in the generated Agent.
 

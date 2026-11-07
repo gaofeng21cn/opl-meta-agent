@@ -24,6 +24,16 @@ a named judgment that could change the design. This keeps source review from
 turning into repeated runtime exploration or byte-attestation work; provenance
 and unresolved limitations travel with the usable basis.
 
+For human-Agent collaboration, OMA considers standard MCP Apps during Stage
+architecture and carries the decision into blueprint authoring and evaluation.
+Status, artifact review, differences, and approval generally reuse the shared
+OPL contribution host. Tool-only responses and standalone applications remain
+appropriate for their respective interaction needs. The selection method and
+reuse boundaries live in
+[Transferable Agent Practices](../agent/knowledge/transferable-agent-practices.md).
+OMA specifies the semantic contracts and acceptance obligations; Framework and
+the target owner implement, render, execute, and qualify them.
+
 OPL Foundry owns the run and lifecycle: materialization, evaluation execution,
 evidence persistence, versions, qualification, canary, activation, and
 rollback. Target Owners retain target-domain truth, protected tests, and
