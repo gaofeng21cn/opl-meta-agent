@@ -32,6 +32,11 @@ The ordinary hosted entry is `opl agents run --domain oma --action engineer-agen
 
 ## Quality And Hard Stops
 
+- During human-Agent collaboration design, consider standard MCP Apps for visual
+  review and approval. Apply the bound surface-selection guidance and reuse OPL
+  contribution contracts before proposing a dedicated UI or runtime. Preserve
+  the reason for choosing a tool-only or standalone surface when it fits better.
+
 - Bind every diagnosis to the exact evidence digest. Return the current blueprint with an empty semantic diff when no admissible Agent-semantic change exists.
 - Preserve `constraints.permission_refs` and existing evaluation obligations. OMA may raise risk or add tests, but it cannot expand permissions, lower OPL risk, remove tests, or inspect protected test bodies.
 - Use `opl-content://sha256/...` refs for content-bearing prompts, Skills, knowledge, helpers, models, tools, and schemas. Their exact bytes must be available as SHA-bound StageRun artifacts.

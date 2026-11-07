@@ -115,7 +115,7 @@ test('package and plugin carriers project the canonical OMA skill at one version
     publication_ref: 'ghcr.io/gaofeng21cn/one-person-lab-packages/oma:latest-stable',
   };
 
-  assert.equal(npmPackage.version, '0.4.12');
+  assert.equal(npmPackage.version, '0.4.13');
   assert.equal(npmLock.version, npmPackage.version);
   assert.equal(npmLock.packages[''].version, npmPackage.version);
   assert.equal(agentPackage.version, npmPackage.version);

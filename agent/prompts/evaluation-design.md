@@ -13,6 +13,12 @@ requirements, and baseline non-regression obligations. Explain what a case would
 detect rather than treating schema validity, directory shape, or prompt length
 as evidence of correct behavior.
 
+For a declared MCP App, apply the collaboration acceptance guidance in the bound
+Transferable Agent Practices knowledge. Require real host evidence for rendering,
+focus, cancellation, exact-target confirmation, denied actions, and fresh owner
+readback, alongside useful Agent-visible structured results. Separate this from
+protocol checks, installed callability, release evidence, and domain acceptance.
+
 Cover production-contract and effective-role-prompt reachability for every new or
 changed action contract, output member, quality transport, or role-scoped prompt
 obligation. Evaluate whether the effective main prompt can guide the Stage to

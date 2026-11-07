@@ -212,7 +212,8 @@
       "stage_quality_cycle_policy_ref": "contracts/stage_quality_cycle_policy.json#/stages/agent-blueprint-authoring",
       "knowledge_refs": [
         "agent/knowledge/opl-boundary-policy.md",
-        "agent/knowledge/project-maturity-signals.md"
+        "agent/knowledge/project-maturity-signals.md",
+        "agent/knowledge/transferable-agent-practices.md"
       ],
       "quality_gate_refs": [
         "agent/quality_gates/foundry-provider-output.md"
@@ -252,7 +253,8 @@
       "stage_quality_cycle_policy_ref": "contracts/stage_quality_cycle_policy.json#/stages/evaluation-design",
       "knowledge_refs": [
         "agent/knowledge/project-maturity-signals.md",
-        "agent/knowledge/opl-boundary-policy.md"
+        "agent/knowledge/opl-boundary-policy.md",
+        "agent/knowledge/transferable-agent-practices.md"
       ],
       "quality_gate_refs": [
         "agent/quality_gates/foundry-provider-output.md"
