@@ -3,7 +3,7 @@
   "surface": "shared_view",
   "surface_reason": "Compare the existing plan and record a decision without copying the photo controller.",
   "reads": [
-    "photo.steward.v1#plan.exact",
+    "photo.steward.v1#plan",
     "photo.steward.v1#status"
   ],
   "action_ref": "photo.steward.v1#plan.apply",

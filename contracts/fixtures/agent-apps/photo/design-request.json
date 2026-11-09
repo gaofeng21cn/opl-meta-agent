@@ -19,7 +19,7 @@
   ],
   "constraints": {
     "capability_refs": [
-      "photo.steward.v1#plan.exact",
+      "photo.steward.v1#plan",
       "photo.steward.v1#plan.apply",
       "photo.steward.v1#status"
     ],

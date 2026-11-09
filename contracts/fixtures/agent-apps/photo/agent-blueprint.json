@@ -5,7 +5,7 @@
   "target_agent_id": "photo-steward",
   "target_domain_id": "photo_steward",
   "target_version_ref": null,
-  "design_request_digest": "sha256:9cb1da0da63e04e98776de138491abaad1312de395f7bc245b44381b21166baf",
+  "design_request_digest": "sha256:c8d7e42910c7d1728e9b7e961f5fa02dcfdb73c16c4517544693518549dc623e",
   "generation": 0,
   "stage_graph": {
     "entry_stage_id": "owner-review",
@@ -20,13 +20,13 @@
         "output_artifact_types": [
           "owner_review_result"
         ],
-        "prompt_ref": "opl-content://sha256/43c0bc6f5e1a5effc9ad6e4087743c8e300fdd15076c37e74cc1e8b6dd829d56",
+        "prompt_ref": "opl-content://sha256/83c30bbb3331715149cf9379a40d642621a0f2a84b59f3b7399889bb5d294cae",
         "skill_refs": [
           "opl-content://sha256/fbec1e913f10112cb0e078eb4bb246a78fc31b3ff284262c567360b3fecb3c64"
         ],
         "knowledge_refs": [],
         "capability_refs": [
-          "photo.steward.v1#plan.exact",
+          "photo.steward.v1#plan",
           "photo.steward.v1#plan.apply",
           "photo.steward.v1#status"
         ],
@@ -52,7 +52,7 @@
   ],
   "content_refs": {
     "prompt_refs": [
-      "opl-content://sha256/43c0bc6f5e1a5effc9ad6e4087743c8e300fdd15076c37e74cc1e8b6dd829d56"
+      "opl-content://sha256/83c30bbb3331715149cf9379a40d642621a0f2a84b59f3b7399889bb5d294cae"
     ],
     "skill_refs": [
       "opl-content://sha256/fbec1e913f10112cb0e078eb4bb246a78fc31b3ff284262c567360b3fecb3c64"
@@ -61,7 +61,7 @@
     "helper_refs": [],
     "model_refs": [],
     "tool_refs": [
-      "opl-content://sha256/60568cc5b883705a96bc87c6aab68034892e15f509902e3775b5acfd2d55f7bd"
+      "opl-content://sha256/c42af42d77e5794bf4654516989952e9730cc0b2579b22c0b0948007b14ba53b"
     ],
     "schema_refs": [
       "opl-content://sha256/75b450063a1a6e1b90ac77b1ed084b819ee370f974b90d3974a248659334f2b4",
@@ -69,7 +69,7 @@
     ]
   },
   "capability_requirements": [
-    "photo.steward.v1#plan.exact",
+    "photo.steward.v1#plan",
     "photo.steward.v1#plan.apply",
     "photo.steward.v1#status"
   ],

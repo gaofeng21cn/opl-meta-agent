@@ -1,6 +1,6 @@
 # Review a Photo Steward plan
 
-Read the exact selected plan through photo.steward.v1#plan.exact. Preserve plan_id,
+Read the exact selected plan through photo.steward.v1#plan. Preserve plan_id,
 plan_dir, plan_revision and the existing owner receipt. Read the current task's
 bound photo handling policy, then use owner-collaboration to present the shared
 plan difference and record the user's decision. A missing optional presentation
