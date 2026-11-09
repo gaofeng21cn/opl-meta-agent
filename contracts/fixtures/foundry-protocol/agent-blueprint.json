@@ -122,7 +122,71 @@
       "opl://retention/fixture-research/default"
     ],
     "write_authority_refs": [
-      "opl://owner/fixture-research"
+      "opl://owner/fixture-research",
+      "opl://owner/fixture-user",
+      "opl://owner/fixture-research-team",
+      "opl://owner/fixture-research-project"
+    ],
+    "knowledge_requirements": [
+      {
+        "requirement_id": "research-methods",
+        "scope_kind": "product",
+        "content_kind": "mechanism",
+        "semantic_owner_ref": "opl://owner/fixture-research",
+        "source_modes": [
+          "product"
+        ],
+        "requirement": "required",
+        "freshness_policy": "Review when the research method or its supporting evidence changes.",
+        "writeback_owner_ref": "opl://owner/fixture-research",
+        "derived_dependency_policy": "Preserve exact supporting source versions for derived methods.",
+        "action_critical": false
+      },
+      {
+        "requirement_id": "owner-disclosure-policy",
+        "scope_kind": "owner",
+        "content_kind": "policy",
+        "semantic_owner_ref": "opl://owner/fixture-user",
+        "source_modes": [
+          "workspace",
+          "external"
+        ],
+        "requirement": "required",
+        "freshness_policy": "Use the accepted current owner disclosure policy and recheck before export.",
+        "writeback_owner_ref": "opl://owner/fixture-user",
+        "derived_dependency_policy": "Invalidate summaries when a policy source changes or access is revoked.",
+        "action_critical": true
+      },
+      {
+        "requirement_id": "research-topic-lessons",
+        "scope_kind": "topic",
+        "content_kind": "mechanism",
+        "semantic_owner_ref": "opl://owner/fixture-research-team",
+        "source_modes": [
+          "workspace",
+          "external"
+        ],
+        "requirement": "optional",
+        "freshness_policy": "Exclude overdue or superseded lessons and record the resulting limitation.",
+        "writeback_owner_ref": "opl://owner/fixture-research-team",
+        "derived_dependency_policy": "Bind derived lessons to accepted source versions and evidence.",
+        "action_critical": false
+      },
+      {
+        "requirement_id": "project-question",
+        "scope_kind": "project",
+        "content_kind": "decision",
+        "semantic_owner_ref": "opl://owner/fixture-research-project",
+        "source_modes": [
+          "workspace",
+          "external"
+        ],
+        "requirement": "required",
+        "freshness_policy": "Use the accepted project question for this project and current task.",
+        "writeback_owner_ref": "opl://owner/fixture-research-project",
+        "derived_dependency_policy": "Re-evaluate summaries and plans when the accepted project question changes.",
+        "action_critical": false
+      }
     ]
   },
   "assumptions": [
@@ -160,6 +224,10 @@
       },
       {
         "category": "professional-skill-consumption-reachability",
+        "minimum_case_count": 1
+      },
+      {
+        "category": "knowledge-source-lifecycle",
         "minimum_case_count": 1
       }
     ],

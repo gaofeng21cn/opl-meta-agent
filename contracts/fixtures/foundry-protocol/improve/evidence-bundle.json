@@ -5,7 +5,7 @@
   "target_agent_id": "fixture-research-agent",
   "target_domain_id": "fixture_research",
   "target_version_ref": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-  "blueprint_digest": "sha256:33b4700930f5722b741b20ca1f5d58ae297e8835de65613e60c2d9523a1907a9",
+  "blueprint_digest": "sha256:302f9b1b70b0bc4f5d229b19ad7765d89883a1633cf868ee647de7ad72cb4223",
   "candidate_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "baseline_version_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "baseline_public_results": [
@@ -53,9 +53,16 @@
       "passed": 1,
       "failed": 0,
       "score": 1
+    },
+    {
+      "category": "knowledge-source-lifecycle",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "score": 1
     }
   ],
-  "frozen_test_plan_digest": "sha256:2fd237eef75a4c87be6162319dcdfb3f98564a8bc1dd981eab62239bf3e6d386",
+  "frozen_test_plan_digest": "sha256:3bafea404b6f60c3c5cd240251bd0008d505afa6813f8d34ffaef5844a5821be",
   "public_results": [
     {
       "case_id": "public-claim-support",
@@ -101,6 +108,13 @@
       "passed": 0,
       "failed": 1,
       "score": 0
+    },
+    {
+      "category": "knowledge-source-lifecycle",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "score": 1
     }
   ],
   "independent_review": {

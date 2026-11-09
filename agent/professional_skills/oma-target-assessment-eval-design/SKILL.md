@@ -61,3 +61,13 @@ invocation capture, evidence binding, independent evaluation, and the verdict.
 OMA may propose new tests and protected requirement categories. OPL owns the
 protected test bodies, existing cases and thresholds, evaluator, execution, and
 verdict; set `independent_evaluator_required=true`.
+
+For a knowledge requirement, test the source behavior that could change the
+result: equal content from permitted internal and external modes; mixed-source
+selection; permission and project isolation; required versus optional missing
+inputs; stale, superseded or revoked sources; derived-summary dependencies; and
+accepted writeback with a changed base revision. Where constraints are declared
+action-critical, test revalidation before the action. Existing run evidence must
+remain explainable without granting future access to withdrawn private content.
+Use the target's actual requirements to choose cases, not a fixed case count or
+the presence of particular policy wording.

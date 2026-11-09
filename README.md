@@ -14,6 +14,7 @@ OPL Meta Agent (OMA) turns an Agent engineering objective into a reviewable sema
 OMA provides:
 
 - an `AgentBlueprint` with the Agent's identity, authority, stages, capabilities, and embedded `EvalSpec`;
+- explicit knowledge ownership and source requirements, so existing personal libraries and project documents stay with their owners;
 - evidence-bound diagnosis and an `EvolutionProposal` for the next design;
 - explicit safeguards against leaking file patches, protected test bodies, execution coordinates, or release decisions into semantic output.
 

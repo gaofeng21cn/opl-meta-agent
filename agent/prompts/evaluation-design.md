@@ -19,6 +19,15 @@ focus, cancellation, exact-target confirmation, denied actions, and fresh owner
 readback, alongside useful Agent-visible structured results. Separate this from
 protocol checks, installed callability, release evidence, and domain acceptance.
 
+For knowledge-dependent designs, evaluate the declared ownership and source
+behavior: equivalent authorized workspace and external-library inputs, mixed
+sources, isolation from another owner or project, source drift and expiry,
+derived-summary invalidation, required-input failure, optional-input degradation,
+and accepted writeback without a second editable source. Where the design marks
+constraints action-critical, require a fresh check before the dependent action.
+Select cases that exercise the target's actual obligations; private source paths
+and bodies remain outside public fixtures and distributable Agent content.
+
 Cover production-contract and effective-role-prompt reachability for every new or
 changed action contract, output member, quality transport, or role-scoped prompt
 obligation. Evaluate whether the effective main prompt can guide the Stage to

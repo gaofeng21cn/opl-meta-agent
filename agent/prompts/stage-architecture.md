@@ -20,6 +20,15 @@ handoffs or return routes. Retain working baseline behavior and the OPL Standard
 Agent structure; a local reduction in files does not justify a private execution
 convention.
 
+Give each material knowledge need an explicit semantic requirement in the memory
+policy: ownership scope, content kind, semantic owner, allowed source modes,
+required or optional use, freshness and derivation rules, writeback owner, and
+whether changed constraints require an action-time recheck. State what useful
+work remains when an optional source is absent and which dependent action must
+stop when a required source is unavailable. Framework resolves authorized
+bindings and freezes consumed versions; the target owner accepts meanings and
+updates. Keep project artifacts distinct from disposable execution records.
+
 For each target Stage, define what its main prompt must make the Agent accomplish:
 the current objective, relevant inputs, substantive work, professional Skills to
 apply, accepted output, and completion or continuation judgment. The Stage's main
