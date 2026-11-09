@@ -1,0 +1,21 @@
+{
+  "owner": "photo-steward",
+  "surface": "shared_view",
+  "surface_reason": "Compare the existing plan and record a decision without copying the photo controller.",
+  "reads": [
+    "photo.steward.v1#plan.exact",
+    "photo.steward.v1#status"
+  ],
+  "action_ref": "photo.steward.v1#plan.apply",
+  "action_input_fields": [
+    "plan_dir",
+    "plan_revision",
+    "request_id"
+  ],
+  "connection_requirement": {
+    "required": false,
+    "reason": "Review and apply use the local Photo owner and its existing native library binding; no new provider login is needed."
+  },
+  "recovery": "Read the same plan and owner apply receipt. Unknown results are inspected under the original request_id before any retry.",
+  "no_ui": "Use the same owner read and apply-reviewed-plan entrypoints after an explicit decision."
+}

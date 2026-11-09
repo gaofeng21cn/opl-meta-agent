@@ -34,6 +34,36 @@ reuse boundaries live in
 OMA specifies the semantic contracts and acceptance obligations; Framework and
 the target owner implement, render, execute, and qualify them.
 
+The [OPL Agent App standard](https://github.com/gaofeng21cn/one-person-lab/blob/main/docs/policies/agent-native-app-policy.md)
+and [development guide](https://github.com/gaofeng21cn/one-person-lab/blob/main/docs/mcp-apps/development.md)
+are the shared design authority. OMA maps the chosen surface, connection needs
+and owner handoff into existing capability, tool-content, action/artifact schema
+and memory-policy fields. It does not introduce a MiniApp manifest. Connection
+design names the provider capability, required or optional use, trusted installed
+consumer and repair route; deployment grants and credentials remain external.
+
+The packaged [Photo](../contracts/fixtures/agent-apps/photo/agent-blueprint.json)
+and [Relay](../contracts/fixtures/agent-apps/relay/agent-blueprint.json) examples
+adapt two existing consumers: a shared plan-difference view and the dedicated
+mail editor. Both reference the exact same collaboration Skill and owner-result
+schema. Photo retains its local library owner; Relay reuses the installed
+`opl-relay` connection consumer. Private knowledge is a source requirement, not
+packaged content. The examples are source design inputs, not replacement packages
+or an activated deployment.
+
+Run the cross-owner check against a Framework checkout supporting knowledge
+requirements:
+
+```bash
+OPL_FRAMEWORK_ROOT=/path/to/one-person-lab node --test tests/integration/agent-app-materialization.test.mjs
+```
+
+This invokes Framework's real protocol validators and content-addressed compiler,
+then reads the generated action catalog, Stage route, knowledge policy and exact
+shared content. It verifies reproducible materialization and callable metadata.
+The public EvalSpec cases still require their owner execution and real-host
+evidence; this check does not execute a mailbox, photo library or model run.
+
 OPL Foundry owns the run and lifecycle: materialization, evaluation execution,
 evidence persistence, versions, qualification, canary, activation, and
 rollback. Target Owners retain target-domain truth, protected tests, and

@@ -1,0 +1,40 @@
+{
+  "type": "object",
+  "required": [
+    "workspace_root",
+    "connection_id",
+    "storage_ref",
+    "request_id"
+  ],
+  "properties": {
+    "workspace_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "connection_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "storage_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "account_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "draft_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "revision": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false
+}

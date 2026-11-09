@@ -12,6 +12,19 @@ Carry owner data/actions, exact-target confirmation, Agent-visible state, and
 real-host acceptance needs into blueprint authoring. A separate application or
 dedicated server needs a concrete interaction requirement.
 
+Map the existing connection needs before designing setup: name the provider-owned
+capability, its required or optional use, the trusted installed consumer that
+invokes it, and the useful repair/read-only path when access is absent or revoked.
+Reuse the consumer's Connect context and provider credential lifecycle. A page's
+Package selection is navigation, not a way to select an authorization identity;
+an existing grant is not approval for a new domain mutation. Designs without a
+connection need say so instead of introducing a credential dependency.
+
+Define the handoff as the same owner object, workspace/task and artifact
+revision, selected location, human decision and owner result. Closing a view
+must not change a persistent task. Prefer the existing owner action and inspect
+entrypoint for stale inputs and unknown outcomes. Include a useful no-UI route.
+
 For each public action, explain how its input reaches a useful terminal artifact.
 Give every Stage a distinct semantic judgment, the context it consumes, the
 result it produces, and the owner that accepts it. Specify action I/O, artifact

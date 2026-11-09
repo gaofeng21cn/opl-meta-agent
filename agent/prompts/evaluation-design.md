@@ -19,6 +19,17 @@ focus, cancellation, exact-target confirmation, denied actions, and fresh owner
 readback, alongside useful Agent-visible structured results. Separate this from
 protocol checks, installed callability, release evidence, and domain acceptance.
 
+Bind public cases to executable owner tests or independently observable behavior:
+open the exact object, apply one human decision through its original owner and
+read back the resulting revision; reopen without replay; reject stale input;
+inspect an unknown outcome; and use the declared no-UI path. Test a denied or
+revoked connection at its trusted consumer boundary when the design uses one,
+including rejection of a page-selected consumer identity. Knowledge cases below
+must use the same frozen task context. Declare a case inapplicable with its
+mission-specific reason when the corresponding capability is absent. A fixture
+that validates or materializes a Blueprint proves that layer only; it cannot
+satisfy a case requiring an installed host, provider or human judgment.
+
 For knowledge-dependent designs, evaluate the declared ownership and source
 behavior: equivalent authorized workspace and external-library inputs, mixed
 sources, isolation from another owner or project, source drift and expiry,

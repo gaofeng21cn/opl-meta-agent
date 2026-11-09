@@ -20,6 +20,27 @@ Do not substitute a custom UI runtime or add undeclared protocol fields.
 Use the standard Stage/prompt/Skill/tool separation rather than embedding a
 custom procedural runner in the generated Agent.
 
+Use the existing fields for Agent App integration: `capability_requirements`
+and each Stage's `capability_refs` name inspected callable capabilities;
+`content_refs.tool_refs` binds exact owner read/action and Connect affordances;
+the Stage prompt and reusable Skill explain the surface choice and handoff;
+action and artifact schemas bind the object, revision and owner result.
+Connection requirements describe provider capability and required/optional use
+in those content artifacts; they are not embedded grants, credentials or a new
+installation manifest. Carry knowledge requirements through the memory policy
+below. Never replace an installed consumer binding with UI-supplied identity.
+
+For the target's actual interaction, specify how to reopen the same object,
+reject a stale revision, read back an uncertain mutation, and continue without
+UI. Preserve the user's decision and domain receipt as owner data; do not infer
+success from a closed view, dispatch acknowledgement, or tool transport success.
+
+The packaged Photo and Relay examples under `contracts/fixtures/agent-apps/`
+show this mapping with exact raw content and one shared collaboration Skill.
+Use their structure only where the current mission and inspected owner contract
+support it. Their declared evaluation cases remain obligations, not passed
+evidence or permission to replace an existing Agent.
+
 Make every prompt, skill, knowledge, helper, model, tool, schema, capability,
 artifact, authority, and memory ref explicit. Content-bearing prompts, skills,
 knowledge, helpers, models, tools, action input/output schemas, and artifact

@@ -65,7 +65,19 @@
     "contracts/epistemic_review_adoption.json",
     "contracts/standard-agent-principles-adoption.json",
     "contracts/stage_quality_cycle_policy.json",
-    "agent/policies/agent-engineering-authority-policy.md"
+    "agent/policies/agent-engineering-authority-policy.md",
+    "contracts/fixtures/agent-apps/content/collaboration-skill.md",
+    "contracts/fixtures/agent-apps/content/owner-result.schema.json",
+    "contracts/fixtures/agent-apps/content/photo-input.schema.json",
+    "contracts/fixtures/agent-apps/content/photo-prompt.md",
+    "contracts/fixtures/agent-apps/content/photo-tools.json",
+    "contracts/fixtures/agent-apps/content/relay-input.schema.json",
+    "contracts/fixtures/agent-apps/content/relay-prompt.md",
+    "contracts/fixtures/agent-apps/content/relay-tools.json",
+    "contracts/fixtures/agent-apps/photo/agent-blueprint.json",
+    "contracts/fixtures/agent-apps/photo/design-request.json",
+    "contracts/fixtures/agent-apps/relay/agent-blueprint.json",
+    "contracts/fixtures/agent-apps/relay/design-request.json"
   ],
   "declarative_domain_pack": [
     "capability_map_refs",

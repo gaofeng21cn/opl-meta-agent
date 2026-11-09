@@ -1,0 +1,192 @@
+{
+  "surface_kind": "opl_foundry_agent_blueprint",
+  "version": "opl-foundry-protocol.v1",
+  "blueprint_id": "agent-apps-photo-example",
+  "target_agent_id": "photo-steward",
+  "target_domain_id": "photo_steward",
+  "target_version_ref": null,
+  "design_request_digest": "sha256:9cb1da0da63e04e98776de138491abaad1312de395f7bc245b44381b21166baf",
+  "generation": 0,
+  "stage_graph": {
+    "entry_stage_id": "owner-review",
+    "stages": [
+      {
+        "stage_id": "owner-review",
+        "stage_kind": "review",
+        "goal": "Review the exact owner object and preserve the conditional owner result.",
+        "input_artifact_types": [
+          "review_request"
+        ],
+        "output_artifact_types": [
+          "owner_review_result"
+        ],
+        "prompt_ref": "opl-content://sha256/43c0bc6f5e1a5effc9ad6e4087743c8e300fdd15076c37e74cc1e8b6dd829d56",
+        "skill_refs": [
+          "opl-content://sha256/fbec1e913f10112cb0e078eb4bb246a78fc31b3ff284262c567360b3fecb3c64"
+        ],
+        "knowledge_refs": [],
+        "capability_refs": [
+          "photo.steward.v1#plan.exact",
+          "photo.steward.v1#plan.apply",
+          "photo.steward.v1#status"
+        ],
+        "next_stage_ids": []
+      }
+    ]
+  },
+  "actions": [
+    {
+      "action_id": "review-owner-object",
+      "summary": "Review an existing owner object and read back the decision result.",
+      "entry_stage_id": "owner-review",
+      "input_schema_ref": "opl-content://sha256/75b450063a1a6e1b90ac77b1ed084b819ee370f974b90d3974a248659334f2b4",
+      "output_schema_ref": "opl-content://sha256/606dafb9663bee02fd875f9c8080deb0b7efa1d3bee8c4ce04f4d8d9d13a6f02"
+    }
+  ],
+  "artifact_contracts": [
+    {
+      "artifact_type": "owner_review_result",
+      "schema_ref": "opl-content://sha256/606dafb9663bee02fd875f9c8080deb0b7efa1d3bee8c4ce04f4d8d9d13a6f02",
+      "authority_owner_ref": "opl://owner/photo-steward"
+    }
+  ],
+  "content_refs": {
+    "prompt_refs": [
+      "opl-content://sha256/43c0bc6f5e1a5effc9ad6e4087743c8e300fdd15076c37e74cc1e8b6dd829d56"
+    ],
+    "skill_refs": [
+      "opl-content://sha256/fbec1e913f10112cb0e078eb4bb246a78fc31b3ff284262c567360b3fecb3c64"
+    ],
+    "knowledge_refs": [],
+    "helper_refs": [],
+    "model_refs": [],
+    "tool_refs": [
+      "opl-content://sha256/60568cc5b883705a96bc87c6aab68034892e15f509902e3775b5acfd2d55f7bd"
+    ],
+    "schema_refs": [
+      "opl-content://sha256/75b450063a1a6e1b90ac77b1ed084b819ee370f974b90d3974a248659334f2b4",
+      "opl-content://sha256/606dafb9663bee02fd875f9c8080deb0b7efa1d3bee8c4ce04f4d8d9d13a6f02"
+    ]
+  },
+  "capability_requirements": [
+    "photo.steward.v1#plan.exact",
+    "photo.steward.v1#plan.apply",
+    "photo.steward.v1#status"
+  ],
+  "authority_policy": {
+    "truth_owner_ref": "opl://owner/photo-steward",
+    "artifact_owner_ref": "opl://owner/photo-steward",
+    "quality_owner_ref": "opl://owner/photo-steward",
+    "permission_refs": [],
+    "generated_agent_can_modify_versions": false,
+    "generated_agent_can_modify_evaluation": false,
+    "generated_agent_can_modify_permissions": false,
+    "generated_agent_can_modify_activation": false
+  },
+  "memory_policy": {
+    "memory_classes": [
+      "task_observation"
+    ],
+    "retention_refs": [],
+    "write_authority_refs": [
+      "opl://owner/user"
+    ],
+    "knowledge_requirements": [
+      {
+        "requirement_id": "owner-handling-policy",
+        "scope_kind": "owner",
+        "content_kind": "policy",
+        "semantic_owner_ref": "opl://owner/user",
+        "source_modes": [
+          "workspace",
+          "external"
+        ],
+        "requirement": "required",
+        "freshness_policy": "Revalidate the accepted handling policy before an unexecuted owner mutation.",
+        "writeback_owner_ref": "opl://owner/user",
+        "derived_dependency_policy": "Invalidate summaries when source version changes or access is revoked.",
+        "action_critical": true
+      }
+    ]
+  },
+  "assumptions": [
+    "This is a source-level reference adaptation of an existing consumer, not an activated replacement."
+  ],
+  "design_evidence_refs": [
+    "https://github.com/gaofeng21cn/photo-steward/blob/main/plugins/photo-steward/opl-package.json"
+  ],
+  "eval_spec": {
+    "eval_spec_id": "agent-apps-photo-eval",
+    "public_cases": [
+      {
+        "case_id": "exact-owner-roundtrip",
+        "test_ref": "opl://test/photo-steward/agent-apps/exact-owner-roundtrip",
+        "weight": 1,
+        "required": true
+      },
+      {
+        "case_id": "stale-revision",
+        "test_ref": "opl://test/photo-steward/agent-apps/stale-revision",
+        "weight": 1,
+        "required": true
+      },
+      {
+        "case_id": "reopen",
+        "test_ref": "opl://test/photo-steward/agent-apps/reopen",
+        "weight": 1,
+        "required": true
+      },
+      {
+        "case_id": "unknown-outcome",
+        "test_ref": "opl://test/photo-steward/agent-apps/unknown-outcome",
+        "weight": 1,
+        "required": true
+      },
+      {
+        "case_id": "no-ui",
+        "test_ref": "opl://test/photo-steward/agent-apps/no-ui",
+        "weight": 1,
+        "required": true
+      },
+      {
+        "case_id": "knowledge-source-drift",
+        "test_ref": "opl://test/photo-steward/agent-apps/knowledge-source-drift",
+        "weight": 1,
+        "required": true
+      }
+    ],
+    "protected_requirements": [
+      {
+        "category": "privacy:source-and-credential-nondisclosure",
+        "minimum_case_count": 1
+      },
+      {
+        "category": "production-contract-reachability",
+        "minimum_case_count": 1
+      },
+      {
+        "category": "effective-role-prompt-reachability",
+        "minimum_case_count": 1
+      },
+      {
+        "category": "professional-skill-consumption-reachability",
+        "minimum_case_count": 1
+      }
+    ],
+    "gates": [
+      {
+        "gate_id": "all-review-cases",
+        "metric": "score",
+        "operator": "gte",
+        "threshold": 1,
+        "required": true
+      }
+    ],
+    "baseline_comparison": {
+      "required": false,
+      "regression_tolerance": 0
+    },
+    "independent_evaluator_required": true
+  },
+  "risk_hint": "medium"
+}

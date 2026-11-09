@@ -1,0 +1,40 @@
+{
+  "surface_kind": "opl_foundry_design_request",
+  "version": "opl-foundry-protocol.v1",
+  "request_id": "agent-apps-relay-example",
+  "mode": "create",
+  "target_agent_id": "opl-relay",
+  "target_domain_id": "mail",
+  "target_version_ref": null,
+  "objective": "Design the existing opl-relay owner review handoff using its current machine and UI surfaces.",
+  "acceptance_criteria": [
+    "A human reviews the exact owner object and the Agent reads back the owner result.",
+    "Reuse bound knowledge and existing connection authority where the operation needs it."
+  ],
+  "non_goals": [
+    "Publish a new package, perform a live business action or replace the domain owner."
+  ],
+  "source_refs": [
+    "https://github.com/gaofeng21cn/opl-relay/blob/main/plugins/opl-relay/opl-package.json"
+  ],
+  "constraints": {
+    "capability_refs": [
+      "relay_connections",
+      "relay_connection_request",
+      "relay_connection_read",
+      "relay_connection_reply",
+      "relay_draft",
+      "relay_save"
+    ],
+    "permission_refs": [],
+    "privacy_requirements": [
+      "privacy:source-and-credential-nondisclosure"
+    ],
+    "cost_limits": {},
+    "latency_limits": {}
+  },
+  "delivery_policy": {
+    "activation_mode": "qualify_only",
+    "max_generations": 1
+  }
+}

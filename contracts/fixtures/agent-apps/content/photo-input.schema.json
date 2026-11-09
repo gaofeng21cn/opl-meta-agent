@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "required": [
+    "workspace_root",
+    "plan_dir",
+    "plan_revision",
+    "request_id"
+  ],
+  "properties": {
+    "workspace_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "plan_dir": {
+      "type": "string",
+      "minLength": 1
+    },
+    "plan_revision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false
+}

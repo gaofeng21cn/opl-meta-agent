@@ -1,0 +1,39 @@
+{
+  "owner": "opl-relay",
+  "surface": "dedicated_mcp_app",
+  "surface_reason": "Draft body and attachments require the existing mail workbench editor.",
+  "reads": [
+    "relay_connection_read",
+    "relay_draft"
+  ],
+  "actions": [
+    "relay_connection_reply",
+    "relay_save"
+  ],
+  "draft_identity": [
+    "account_id",
+    "draft_id",
+    "revision"
+  ],
+  "save_input_fields": [
+    "account_id",
+    "draft_id",
+    "revision",
+    "body",
+    "attachment_ids"
+  ],
+  "connection_requirement": {
+    "required": true,
+    "consumer_package_id": "opl-relay",
+    "capability_ids": [
+      "mailbox.read",
+      "draft.create"
+    ],
+    "host_activation": "activateInstalledPackageConnectionContext",
+    "discovery": "relay_connections",
+    "repair": "relay_connection_request",
+    "credentials_owner": "mail provider"
+  },
+  "recovery": "Inspect the original request_id for uncertain draft creation, then read the exact draft; never send as part of review.",
+  "no_ui": "Read relay_draft, obtain the body edit as text and call relay_save with the exact revision; saving does not authorize sending."
+}
