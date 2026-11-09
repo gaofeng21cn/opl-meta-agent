@@ -28,6 +28,21 @@ collection. Supply the exact raw content bytes with the design artifacts and
 carry them to the terminal StageRun output, where their SHA-256 must match the
 refs. OPL persists those bytes and materializes the Agent Pack.
 
+Encode the architecture's requirements in `memory_policy.knowledge_requirements`.
+Each requirement carries `requirement_id`, `scope_kind`, `content_kind`,
+`semantic_owner_ref`, `source_modes`, `requirement`, `freshness_policy`,
+`writeback_owner_ref`, `derived_dependency_policy`, and `action_critical`.
+Use `product` as the source mode only for product scope; non-product requirements
+declare `workspace`, `external`, or both. An empty list explicitly means that the
+target has no persistent knowledge requirement. Product knowledge may be packaged; owner, topic, and
+project knowledge retain their existing source ownership. Private source roots,
+personal document bodies, and machine-specific bindings do not belong in the
+Blueprint or generated distribution. Declare internal, external, or mixed
+source support semantically, so authorized deployment can bind a personal
+library or ordinary workspace without inventing another copy. Preserve the
+required/optional, validity, derived-dependency, writeback-owner, and
+action-critical distinctions through the generated target's catalog and policy.
+
 The initial blueprint returned by the provider `design` operation must have
 `generation=0`, including when the request supplies a takeover or improve
 baseline. Repairs and route-backs within the same design operation remain at

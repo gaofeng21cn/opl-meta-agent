@@ -225,10 +225,15 @@ test('generated surfaces resolve to real refs-only OMA targets without owner pro
   assert.equal(foundryBindingModule.active_caller_status.includes('domain_handler'), false);
 
   assert.equal(memory.surface_kind, 'opl_durable_knowledge_catalog');
+  assert.equal(memory.version, 'durable-knowledge-catalog.v2');
   assert.equal(memory.owner, 'one-person-lab');
   assert.equal(memory.domain_id, 'agent_engineering');
   for (const item of memory.items) {
-    assert.equal(item.layer, 'agent_pack');
+    assert.equal(item.version, 'durable-knowledge-item.v2');
+    assert.deepEqual(item.scope, { kind: 'product', id: 'oma' });
+    assert.ok(['mechanism', 'policy'].includes(item.content_kind));
+    assert.equal(Object.hasOwn(item, 'layer'), false);
+    assert.equal(Object.hasOwn(item, 'projection_source'), false);
     assert.equal(item.authority_boundary.semantic_body_owner, item.owner);
     assert.equal(item.authority_boundary.opl_role, 'catalog_recall_and_receipt_projection_only');
     assert.ok(fs.statSync(path.join(root, item.body_ref.ref)).isFile());

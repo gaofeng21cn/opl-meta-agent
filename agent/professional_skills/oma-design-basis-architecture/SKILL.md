@@ -61,3 +61,27 @@ that prompt, reusable techniques in Skills, and factual context in knowledge.
 For blueprint assembly, check both directions: every required artifact has a
 producer and consumer, and every referenced content asset supports an admitted
 decision. Return semantic designs, never physical execution instructions.
+
+## Knowledge Ownership And Source Design
+
+Model product, owner or team, topic, and project scopes independently of
+mechanisms, policies, dated state, and decision records. A finance topic or
+research portfolio can outlive projects and serve several authorized Agents.
+Scope identifies the knowledge owner or business context; applicability and
+access are declared separately, without requiring a directory layout.
+
+Prefer the user's existing canonical source. An external Markdown library and
+workspace Markdown are equal source modes, and one design may use both. A source
+has one editable body; a frozen execution snapshot or derived summary is not a
+second body owner. Preserve stable identity when a source moves. Source versions
+establish what was consumed, while evidence, observed dates, and owner review
+establish what remains usable.
+
+For each requirement, identify the semantic owner, scope, content kind, required
+or optional status, source modes, freshness, derived dependencies, and writeback
+acceptance owner. Mark constraints whose change requires re-evaluating pending
+actions. Framework provides binding, isolation, exact snapshots and mechanical
+writeback primitives; the domain decides meaning and acceptance. Never design a
+parallel source registry, synchronize two editable truths, or make Persona a
+mandatory intermediary. Keep irreversible business artifacts and accepted
+knowledge outside disposable-run cleanup.

@@ -55,3 +55,34 @@ Current reuse authorities:
 - [MCP Apps specification](https://apps.extensions.modelcontextprotocol.io/)
 - [OPL MCP Apps contract and delivery boundary](https://github.com/gaofeng21cn/one-person-lab/blob/main/docs/mcp-apps/SPEC.md)
 - [OPL contribution schema](https://github.com/gaofeng21cn/one-person-lab/blob/main/contracts/opl-framework/app-contributions.schema.json)
+
+## Source-Owned Knowledge
+
+A knowledge object's owner and lifetime follow the user or business topic, not
+the Agent currently using it. Distinguish product, owner or team, topic, and
+project scopes from mechanisms, policies, state and decisions. Scope does not
+grant access and a physical directory does not establish semantic authority.
+
+An existing personal or team library remains the canonical editable source.
+Without one, ordinary workspace Markdown serves the same role. A project may
+combine both modes. Framework resolves admitted sources directly and freezes
+only consumed content. Bindings, indices, snapshots and derived summaries do
+not create another independently editable personal truth. Source identity
+survives relocation; provenance and observed time remain separate from editing
+or ingestion time.
+
+Design knowledge requirements with explicit semantic owners, supported source
+modes, required or optional use, validity and derivation dependencies, writeback
+acceptance, and action-critical constraints. Missing optional context can narrow
+an answer; missing required context blocks its dependent decision. Revoked access
+does not persist through a frozen snapshot. A material constraint change requires
+a fresh check before an unexecuted action. Derived summaries are invalidated or
+reviewed against their source versions and cannot widen access to source bodies.
+
+Only accepted improvements return to the unique source, with base-version checks
+and recovery evidence. Domain owners judge meaning; Framework supplies shared
+mechanical primitives. Do not add a private source registry or make a personal
+context Agent mandatory for ordinary source access. Project data and final
+artifacts have business lifecycles distinct from run logs and rebuildable caches.
+
+Shared authority: [OPL knowledge source and memory policy](https://github.com/gaofeng21cn/one-person-lab/blob/main/docs/policies/knowledge-source-and-memory-policy.md).

@@ -11,6 +11,15 @@ facts, target-owner requirements, reusable patterns, assumptions, and unsupporte
 claims. Preserve exact source refs. Research synthesis may inform design but
 does not establish target-domain truth.
 
+Identify the knowledge the target already owns before proposing storage. Separate
+product methods, owner or team context, persistent topic knowledge, and project
+knowledge from their content kind and validity. Admit an existing personal or
+team library as a source when authorized; ordinary workspace Markdown supports
+the same model. Mixed sources are valid. Record semantic owners, intended uses,
+required versus optional inputs, freshness and derived-source dependencies, and
+who may accept writeback. Do not turn a target user's knowledge into a second
+Agent-owned personal library or infer access from a topic label.
+
 Resolve Profile recommendations semantically against the mission and admitted
 evidence, including when Framework reports `semantic_profile_selection_required`.
 Record why requirements or patterns are adopted, adapted, or rejected. A catalog

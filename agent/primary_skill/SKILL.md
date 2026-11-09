@@ -60,19 +60,25 @@ The ordinary hosted entry is `opl agents run --domain oma --action engineer-agen
 - `contracts/stage_quality_cycle_policy.json`
 - `agent/stages/manifest.json`
 
-## Durable Knowledge And Workspace Memory
+## Source-Owned Knowledge And Memory
 
-Use OPL knowledge recall with --repo <agent-root> --domain <domain-id>
---stage <stage-id> and the authorized --workspace and --project roots.
-The hosted StageRun binds this selection once for producer, reviewer and
-repair roles. Read selected bodies and cite knowledge IDs, layers and digests.
-Agent knowledge lives in agent/knowledge/, indexed by
-contracts/durable_knowledge_catalog.json. Owner/team constraints and accepted
-cross-project lessons live in shared/memory/; project decisions and lessons
-live in the authorized project's memory/; dated facts live in its state/.
-Each workspace layer uses opl_durable_knowledge_catalog.json.
-Review freshness and keep superseded entries out of active recall. A project
-result is a candidate lesson until its domain or project owner accepts the
-evidence and scope. Private project content is never automatically promoted
-into the distributable Agent package. OPL owns validation, scoped recall and
-receipts; domain owners retain semantic acceptance.
+Use Framework knowledge preparation and explicit context reading with the
+authorized workspace and project. The hosted StageRun binds one snapshot for
+producer, reviewer and repair roles. Cite stable knowledge IDs, scope, content
+kind and consumed versions. Product methods are indexed by
+`contracts/durable_knowledge_catalog.json`; private owner, topic and project
+knowledge comes from authorized sources, including an existing Markdown library
+or ordinary workspace documents. These source modes can coexist and do not need
+intermediate editable copies.
+
+Scope is independent of content kind: mechanisms, policies, state and decisions
+have their own validity. Missing required knowledge stops the dependent work;
+missing optional knowledge remains an explicit limitation. Derived summaries
+depend on source versions and access. Recheck action-critical constraints before
+the corresponding action. Knowledge text never expands tool authority.
+
+A project observation becomes reusable knowledge only after its semantic owner
+accepts the evidence and scope. Propose updates to that source using Framework's
+version-bound writeback mechanism; do not put private bodies or local source
+bindings in the distributable package. Framework owns mechanical resolution,
+snapshots and receipts; owners retain meaning, acceptance and canonical bodies.

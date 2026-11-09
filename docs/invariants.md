@@ -15,3 +15,5 @@ Machine boundary: Human-readable hard constraints. Machine truth lives in contra
 8. Generated Agents cannot modify their own code, evaluation, permissions, authority, or activation pointer.
 9. Platform failures remain in OPL retry/failure handling and never become OMA-authored Agent changes.
 10. A no-change proposal preserves the exact current blueprint, including generation, and has an empty semantic diff.
+11. User, topic and project knowledge keeps one source owner independently of the consuming Agent; knowledge scope does not grant access or dictate a directory.
+12. Knowledge designs distinguish required inputs, optional limitations, freshness, derived dependencies, writeback acceptance and action-critical revalidation without embedding private source coordinates or bodies.

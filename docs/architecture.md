@@ -39,6 +39,26 @@ evidence persistence, versions, qualification, canary, activation, and
 rollback. Target Owners retain target-domain truth, protected tests, and
 production acceptance.
 
+## Knowledge Design
+
+OMA designs knowledge requirements without becoming their runtime source owner.
+The shared [knowledge source and memory policy](https://github.com/gaofeng21cn/one-person-lab/blob/main/docs/policies/knowledge-source-and-memory-policy.md)
+defines product, owner, topic and project scopes independently of content kind,
+source location and access. Existing personal or team libraries and ordinary
+workspace Markdown support the same model and may be combined in one project.
+
+Design-basis admission establishes the owner and applicability of needed context.
+Stage architecture records required or optional use, freshness, derived-source
+dependencies, writeback acceptance and action-critical constraints. Blueprint
+authoring carries these semantics in the OPL-owned memory-policy contract;
+evaluation design adds the corresponding source, isolation and lifecycle cases.
+Private source coordinates and bodies stay outside generated product content.
+
+Framework resolves authorized bindings and exact snapshots, and provides shared
+mechanical writeback primitives. The knowledge owner accepts meaning and retains
+the canonical editable body. OMA's own product methods use the same versioned
+catalog; their delivery does not establish the truth of target-specific content.
+
 ## Package Composition
 
 Package identity, publication, carrier, and executor are separate surfaces:

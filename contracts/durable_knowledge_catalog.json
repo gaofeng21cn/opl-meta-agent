@@ -1,15 +1,14 @@
 {
   "surface_kind": "opl_durable_knowledge_catalog",
-  "version": "durable-knowledge-catalog.v1",
+  "version": "durable-knowledge-catalog.v2",
   "owner": "one-person-lab",
   "domain_id": "agent_engineering",
   "items": [
     {
       "surface_kind": "opl_durable_knowledge_item",
-      "version": "durable-knowledge-item.v1",
+      "version": "durable-knowledge-item.v2",
       "knowledge_id": "agent_engineering.opl-boundary-policy",
       "title": "Opl Boundary Policy",
-      "layer": "agent_pack",
       "owner": "oma",
       "body_ref": {
         "kind": "repo_path",
@@ -38,14 +37,18 @@
       "authority_boundary": {
         "semantic_body_owner": "oma",
         "opl_role": "catalog_recall_and_receipt_projection_only"
-      }
+      },
+      "scope": {
+        "kind": "product",
+        "id": "oma"
+      },
+      "content_kind": "policy"
     },
     {
       "surface_kind": "opl_durable_knowledge_item",
-      "version": "durable-knowledge-item.v1",
+      "version": "durable-knowledge-item.v2",
       "knowledge_id": "agent_engineering.project-maturity-signals",
       "title": "Project Maturity Signals",
-      "layer": "agent_pack",
       "owner": "oma",
       "body_ref": {
         "kind": "repo_path",
@@ -70,19 +73,23 @@
       "authority_boundary": {
         "semantic_body_owner": "oma",
         "opl_role": "catalog_recall_and_receipt_projection_only"
-      }
+      },
+      "scope": {
+        "kind": "product",
+        "id": "oma"
+      },
+      "content_kind": "mechanism"
     },
     {
       "surface_kind": "opl_durable_knowledge_item",
-      "version": "durable-knowledge-item.v1",
+      "version": "durable-knowledge-item.v2",
       "knowledge_id": "agent_engineering.transferable-agent-practices",
       "title": "Transferable Agent Practices",
-      "layer": "agent_pack",
       "owner": "oma",
       "body_ref": {
         "kind": "repo_path",
         "ref": "agent/knowledge/transferable-agent-practices.md",
-        "sha256": "sha256:17b2f26b60de276fa7216bfad26d76f67e07bbd7f51266976b236b7ee216fb6e"
+        "sha256": "sha256:05009a235b6162e9015e3b384e7b7c3732798b42e7ead24fefec7175fac8ce4d"
       },
       "applicability": {
         "domains": [
@@ -96,20 +103,24 @@
         ]
       },
       "status": "active",
-      "reviewed_at": "2026-11-07T00:00:00+08:00",
-      "next_review_at": "2027-05-07T00:00:00+08:00",
+      "reviewed_at": "2026-11-09T00:00:00+08:00",
+      "next_review_at": "2027-05-09T00:00:00+08:00",
       "freshness_policy": "review_when_sources_or_applicability_change; exclude_after_next_review_at",
       "authority_boundary": {
         "semantic_body_owner": "oma",
         "opl_role": "catalog_recall_and_receipt_projection_only"
-      }
+      },
+      "scope": {
+        "kind": "product",
+        "id": "oma"
+      },
+      "content_kind": "mechanism"
     },
     {
       "surface_kind": "opl_durable_knowledge_item",
-      "version": "durable-knowledge-item.v1",
+      "version": "durable-knowledge-item.v2",
       "knowledge_id": "agent_engineering.evidence-learning-policy",
       "title": "Evidence Learning Policy",
-      "layer": "agent_pack",
       "owner": "oma",
       "body_ref": {
         "kind": "repo_path",
@@ -132,7 +143,12 @@
       "authority_boundary": {
         "semantic_body_owner": "oma",
         "opl_role": "catalog_recall_and_receipt_projection_only"
-      }
+      },
+      "scope": {
+        "kind": "product",
+        "id": "oma"
+      },
+      "content_kind": "policy"
     }
   ]
 }

@@ -5,6 +5,7 @@
 - Diagnosis output is a complete `EvolutionProposal` with a full next blueprint.
 - Every content-addressed prompt, skill, knowledge, or helper ref resolves to an exact terminal raw artifact with the same SHA-256; OMA does not choose candidate paths or materialize the Agent Pack.
 - Every semantic claim is traceable to admitted design evidence or the supplied `EvidenceBundle`.
+- Knowledge requirements distinguish scope, content kind, semantic owner, source modes, required or optional use, freshness and derived dependencies, writeback owner, and action-critical constraints. Existing user, topic and project sources remain their owners' canonical bodies; no private source coordinates or bodies leak into the Blueprint or package. EvalSpec covers the applicable source, isolation, stale-data, degradation and writeback behavior.
 - For human collaboration, the selected interaction surface has a mission-based reason and inspected reuse candidates. An MCP App design preserves owner read/action authority and distinguishes protocol, installation, real host interaction, and domain acceptance evidence.
 - Each target Stage's main prompt guides its substantive task from relevant context to an accepted result, with professional Skills supplying reusable methods. Assess task and output adequacy from the actual content; a goal sentence, Skill list, fixed headings, or prompt length does not establish it.
 - Existing public cases, protected requirements, gates, thresholds, and baseline comparison are not removed, weakened, or rewritten.
