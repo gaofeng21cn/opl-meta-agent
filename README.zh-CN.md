@@ -1,4 +1,12 @@
-# OPL Meta Agent
+<p align="center">
+  <img src="assets/branding/opl-meta-agent-logo.png" alt="OPL Meta Agent logo" width="132" />
+</p>
+
+<p align="center"><a href="./README.md">English</a> | <strong>中文</strong></p>
+
+<h1 align="center">OPL Meta Agent</h1>
+
+<p align="center"><strong>设计、评审与演进 OPL 智能体。</strong></p>
 
 [English](./README.md) | [中文](./README.zh-CN.md)
 

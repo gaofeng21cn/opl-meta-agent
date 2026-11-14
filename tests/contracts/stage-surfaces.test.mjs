@@ -56,6 +56,7 @@ test('provider identity and stage routes are internally closed', () => {
   assert.equal(packageManifest.action_catalog_ref, 'contracts/action_catalog.json');
   assert.deepEqual(packageManifest.view_refs, []);
   assert.deepEqual(packageManifest.presentation, {
+    icon_ref: 'assets/branding/opl-meta-agent-logo.png',
     display_name_i18n: {
       'en-US': packageManifest.display_name,
       'zh-CN': packageManifest.display_name,

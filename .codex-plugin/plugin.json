@@ -1,6 +1,6 @@
 {
   "name": "opl-meta-agent",
-  "version": "0.4.14",
+  "version": "0.4.15",
   "description": "OPL agent design, review, takeover, and evolution.",
   "author": {
     "name": "Gao Feng",
@@ -27,8 +27,8 @@
       "Write"
     ],
     "websiteURL": "https://github.com/gaofeng21cn/opl-meta-agent",
-    "composerIcon": "./plugins/opl-meta-agent/assets/icon.svg",
-    "logo": "./plugins/opl-meta-agent/assets/icon.svg",
+    "composerIcon": "./assets/branding/opl-meta-agent-logo.png",
+    "logo": "./assets/branding/opl-meta-agent-logo.png",
     "defaultPrompt": [
       "Use OMA to create, take over, or improve an OPL-compatible Agent through engineer-agent."
     ],
