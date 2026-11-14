@@ -1,0 +1,15 @@
+{
+  "strategy": "daily_patch",
+  "prepare": [],
+  "verify": [],
+  "version_files": [
+    {
+      "path": "package.json",
+      "kind": "json"
+    },
+    {
+      "path": "package-lock.json",
+      "kind": "json"
+    }
+  ]
+}
