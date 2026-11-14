@@ -8,8 +8,6 @@
 
 <p align="center"><strong>设计、评审与演进 OPL 智能体。</strong></p>
 
-[English](./README.md) | [中文](./README.zh-CN.md)
-
 <!--
 Owner: `oma`
 Purpose: `public_repository_entry`

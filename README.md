@@ -8,8 +8,6 @@
 
 <p align="center"><strong>Design, review, and evolve OPL Agents.</strong></p>
 
-[English](./README.md) | [中文](./README.zh-CN.md)
-
 <!--
 Owner: `oma`
 Purpose: `public_repository_entry`
