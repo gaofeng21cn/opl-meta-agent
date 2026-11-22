@@ -6,59 +6,22 @@
 
 <h1 align="center">OPL Meta Agent</h1>
 
-<p align="center"><strong>Design, review, and evolve OPL Agents.</strong></p>
+OPL Meta Agent helps agent developers turn a working goal into a design they can review and evaluate. It can also take over an existing agent and propose improvements based on real run evidence.
 
-<!--
-Owner: `oma`
-Purpose: `public_repository_entry`
-State: `public_entry`
-Machine boundary: Human-readable entry. Machine truth lives in `contracts/`, `agent/`, and repository verification output; Foundry run and lifecycle truth remain in OPL.
--->
+## Design for evaluation
 
-OPL Meta Agent (OMA) turns an Agent engineering objective into a reviewable semantic design. It helps create a new Agent, take over an existing one, or improve one from independent evidence without mixing design judgment with execution authority.
+When you start a new agent, OMA puts the goal, authority, stages, and evaluation criteria into a blueprint. For an existing agent, it looks at specific outcomes from a run and returns its diagnosis and a proposed revision for review. Existing knowledge and project documents stay with their owners.
 
-OMA provides:
+Maintainers define the behavior they want and the criteria they will use to accept it. OMA delivers a blueprint or an improvement proposal. OPL Foundry builds a candidate from that design, runs an independent evaluation, and records the evidence maintainers need to decide whether to activate the candidate or revise it again. [Design and execution responsibilities](docs/architecture.md)
 
-- an `AgentBlueprint` with the Agent's identity, authority, stages, capabilities, and embedded `EvalSpec`;
-- explicit knowledge ownership and source requirements, so existing personal libraries and project documents stay with their owners;
-- evidence-bound diagnosis and an `EvolutionProposal` for the next design;
-- explicit safeguards against leaking file patches, protected test bodies, execution coordinates, or release decisions into semantic output.
+## Start with an agent
 
-The public entry is `engineer-agent`, with `create`, `takeover`, and `improve` modes:
+> “Take over this agent we already use. From this run, identify where it diverged from the goal and propose an improvement with evaluation criteria that will show whether it worked.”
+
+Install **OPL Meta Agent** from the OPL Software Center. Use `engineer-agent` to create, take over, or improve an agent. The example uses a request file you prepare and returns a Foundry run you can inspect.
 
 ```bash
 opl agents run --domain oma --action engineer-agent --workspace /absolute/workspace --payload-file request.json
 ```
 
-The result is an OPL-owned `FoundryRun`. OPL materializes and evaluates candidate bytes, records evidence and versions, and controls qualification, canary, activation, and rollback. OMA only supplies the semantic decisions used inside that run.
-
-## Installation
-
-Install through the standard OPL Package entry:
-
-```bash
-opl packages install oma --json
-opl packages status --package-id oma --json
-```
-
-The publication channel is `ghcr.io/gaofeng21cn/one-person-lab-packages/oma`. Immutable versions identify exact releases; `latest-stable` selects the current version. OPL and the native plugin manager handle installation and updates. Separate GitHub Release pages and attachments are not used for distribution.
-
-Start a new task after installation to load the professional skills. Package installation, runtime callability, and domain acceptance remain separate; see [Acceptance Work](./docs/active/oma-ideal-state-gap-plan.md).
-
-<details>
-<summary>Agent and operator boundary</summary>
-
-- `design` and `diagnose` are internal provider operations invoked by OPL, not public commands or generated tools.
-- OMA owns intent interpretation, design basis, evaluation semantics, evidence diagnosis, and evolution proposals.
-- OPL Foundry Kernel owns run state, materialization, evaluation execution, evidence persistence, versions, qualification, canary, activation, and rollback.
-- Provider completion is not Agent qualification, activation, target-owner acceptance, or production adoption.
-
-</details>
-
-Machine truth lives in [`contracts/`](./contracts/) and [`agent/`](./agent/). Validate the repository with:
-
-```bash
-scripts/verify.sh full
-```
-
-Start with the [documentation guide](./docs/README.md). The [open acceptance work](./docs/active/oma-ideal-state-gap-plan.md) separates repository conformance from Foundry and target-owner acceptance.
+[Documentation](docs/README.md) · [Acceptance progress](docs/active/oma-ideal-state-gap-plan.md)
