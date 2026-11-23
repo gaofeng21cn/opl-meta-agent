@@ -7,6 +7,7 @@
 - OMA 唯一公开 action 是 `engineer-agent`；`design|diagnose` 仅供 OPL Foundry Kernel 内部调用。
 - OMA 不得输出 repo 路径、命令、队列/租约/attempt、文件 patch、执行工单、晋级记录或保护测试正文。
 - 机器真相位于 `contracts/`、`agent/` 与验证输出；默认验证入口为 `scripts/verify.sh`。
+- 模块拆分以职责内聚和调用清晰为准，在日常开发与 PR 阶段维护，不靠机械行数阈值或周期拆文件脚本：既避免把不相关职责堆成巨石文件，也禁止制造嵌套 `*-parts/*-parts`、过薄胶水切片或大段回调参数转运；重构优先消除重复与化简调用链，来源不明或储备能力默认保留（无静态调用者只作调查信号）。
 
 ## 文档维护
 
