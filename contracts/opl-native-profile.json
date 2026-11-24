@@ -45,8 +45,7 @@
   "repo_profile": "opl_meta_agent",
   "schema": "opl_native_profile.v1",
   "taxonomy_dirs": [
-    "docs/active",
-    "docs/history"
+    "docs/active"
   ],
   "verification_commands": [
     "scripts/verify.sh",

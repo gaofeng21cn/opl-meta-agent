@@ -257,9 +257,17 @@ test('generated surfaces resolve to real refs-only OMA targets without owner pro
     provider_completion_is_qualification: false,
   });
   assert.equal(audit.retired_generated_surface_provenance.length, 1);
-  audit.retired_generated_surface_provenance[0].provenance_refs.forEach((relativePath) => {
-    assert.ok(fs.statSync(path.join(root, relativePath)).isFile(), `missing retirement provenance ${relativePath}`);
-  });
+  assert.ok(audit.bridge_exit_gate.provenance_refs.length > 0);
+  for (const provenanceRef of [
+    ...audit.bridge_exit_gate.provenance_refs,
+    ...audit.retired_generated_surface_provenance[0].provenance_refs,
+  ]) {
+    assert.match(
+      provenanceRef,
+      /^https:\/\/github\.com\/gaofeng21cn\/opl-meta-agent\/blob\/[a-f0-9]{40}\//,
+      `invalid immutable retirement provenance ref ${provenanceRef}`,
+    );
+  }
 
   assert.ok(compiler.required_domain_pack_paths.includes('contracts/functional_privatization_audit.json'));
   assert.ok(compiler.required_domain_pack_paths.includes('contracts/durable_knowledge_catalog.json'));

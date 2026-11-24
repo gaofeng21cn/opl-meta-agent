@@ -51,32 +51,7 @@ schema. Photo retains its local library owner; Relay reuses the installed
 packaged content. The examples are source design inputs, not replacement packages
 or an activated deployment.
 
-Run the cross-owner check against a Framework checkout supporting knowledge
-requirements:
-
-```bash
-OPL_FRAMEWORK_ROOT=/path/to/one-person-lab node --test tests/integration/agent-app-materialization.test.mjs
-```
-
-This invokes Framework's real protocol validators and content-addressed compiler,
-then reads the generated action catalog, Stage route, knowledge policy and exact
-shared content. In a disposable registry it then registers a synthetic qualification,
-performs the real activation preflight and compare-and-swap, discovers the active
-candidate and calls `runStandardAgentAction`. A synthetic Stage executor reads the
-frozen request and returns a human decision gate. Reopening queries that same
-StageRun without another dispatch. Generated candidates use the existing Foundry
-activation route; this test does not invent a native plugin manifest for them.
-
-The same check can consume the built distribution installed into an isolated prefix:
-
-```bash
-OPL_FRAMEWORK_ROOT=/path/to/installed/one-person-lab OPL_FRAMEWORK_MODE=installed node --test tests/integration/agent-app-materialization.test.mjs
-```
-
-The public EvalSpec cases still require their real owner execution and host
-evidence. Synthetic qualification and Stage execution verify the wiring only;
-they do not establish model generation, domain acceptance or a production grant,
-and the check does not execute a mailbox or photo library operation.
+Run [`tests/integration/agent-app-materialization.test.mjs`](../tests/integration/agent-app-materialization.test.mjs) against a Framework checkout (`OPL_FRAMEWORK_ROOT=/path/to/one-person-lab`) or an installed distribution (`OPL_FRAMEWORK_MODE=installed`) to exercise Foundry protocol compilation, action routing, and synthetic Stage execution. Synthetic wiring passes do not execute live mailbox/photo operations or establish model generation, domain acceptance, or production grants; public `EvalSpec` cases still require owner execution and host evidence.
 
 OPL Foundry owns the run and lifecycle: materialization, evaluation execution,
 evidence persistence, versions, qualification, canary, activation, and

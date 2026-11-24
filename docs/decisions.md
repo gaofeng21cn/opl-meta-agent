@@ -13,9 +13,9 @@ Platform failures stay with OPL; evidence with no admissible semantic change
 produces an exact unchanged blueprint and empty diff.
 
 The 2026-07-16 cutover intentionally retired the former repository-local
-execution facade without an adapter. The [retirement record](./history/process/retired-surface-provenance.md)
-preserves the identifiers needed to recognize obsolete integrations. New work
-uses the current action and protocol, with no aliases or resumable legacy path.
+execution facade without an adapter or compatibility alias. New work uses only
+the current `engineer-agent` action and Foundry protocol; pre-cutover
+provenance remains auditable in Git history.
 
 ## Compose By Identity And Callability
 
@@ -26,5 +26,4 @@ not a parallel Package lock or readiness engine.
 
 The [Package manifest](../contracts/opl_agent_package_manifest.json) declares the
 current carrier and publication locator. A locator is configuration, not evidence
-that a publication or installation occurred. The former migration narrative and
-compatibility-read instruction no longer define an OMA interface.
+that a publication or installation occurred.

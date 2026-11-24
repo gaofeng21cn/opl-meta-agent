@@ -75,7 +75,7 @@
           "contracts/generated_surface_handoff.json#authority_boundary",
           "contracts/foundry_provider.json#authority_boundary"
         ],
-        "provenance_refs": ["docs/history/process/retired-surface-provenance.md"]
+        "provenance_refs": ["https://github.com/gaofeng21cn/opl-meta-agent/blob/f055e65fcb6fd7c81004daa08c99b73df85d89b0/docs/history/process/retired-surface-provenance.md"]
       }
     },
     {
@@ -101,7 +101,7 @@
           "contracts/generated_surface_handoff.json#authority_boundary",
           "contracts/foundry_provider.json#authority_boundary"
         ],
-        "provenance_refs": ["docs/history/process/retired-surface-provenance.md"]
+        "provenance_refs": ["https://github.com/gaofeng21cn/opl-meta-agent/blob/f055e65fcb6fd7c81004daa08c99b73df85d89b0/docs/history/process/retired-surface-provenance.md"]
       }
     },
     {
@@ -134,7 +134,7 @@
           "contracts/generated_surface_handoff.json#authority_boundary",
           "contracts/foundry_provider.json#authority_boundary"
         ],
-        "provenance_refs": ["docs/history/process/retired-surface-provenance.md"]
+        "provenance_refs": ["https://github.com/gaofeng21cn/opl-meta-agent/blob/f055e65fcb6fd7c81004daa08c99b73df85d89b0/docs/history/process/retired-surface-provenance.md"]
       }
     }
   ],
@@ -142,7 +142,7 @@
     {
       "surface_id": "legacy_repo_local_execution_facade",
       "replacement_ref": "contracts/generated_surface_handoff.json#handoff_surface_overrides",
-      "provenance_refs": ["docs/history/process/retired-surface-provenance.md"]
+      "provenance_refs": ["https://github.com/gaofeng21cn/opl-meta-agent/blob/f055e65fcb6fd7c81004daa08c99b73df85d89b0/docs/history/process/retired-surface-provenance.md"]
     }
   ],
   "bridge_exit_gate": {
@@ -151,7 +151,7 @@
       "contracts/generated_surface_handoff.json#authority_boundary",
       "contracts/foundry_provider.json#authority_boundary"
     ],
-    "provenance_refs": ["docs/history/process/retired-surface-provenance.md"]
+    "provenance_refs": ["https://github.com/gaofeng21cn/opl-meta-agent/blob/f055e65fcb6fd7c81004daa08c99b73df85d89b0/docs/history/process/retired-surface-provenance.md"]
   },
   "authority_boundary": {
     "domain_can_claim_generic_runtime_owner": false,
