@@ -123,6 +123,46 @@ OPL executes deterministic work and lifecycle transitions.
 When evidence yields no admissible semantic change, OMA returns the current
 blueprint with `semantic_diff=[]` and OPL ends the run without another version.
 
+## Hosted Work-Item Registration
+
+A work-item Agent needs the same domain identity at launch, continuation and
+inventory readback. During design, specify which actions operate on an existing
+work item, which request fields identify it, who maintains its inventory, and
+which Stage consumes the owner's answer. Carry those obligations into the
+action input schemas and the `EvalSpec` using the current Blueprint fields.
+
+Before qualifying a work-item Package, verify the target owner's source
+declarations and one representative hosted workflow.
+
+1. In the target's `contracts/action_catalog.json`, declare
+   `execution_scope: { "kind": "work_item", "alias_fields": [...] }` for actions
+   that act on an existing item, including a continuation action when it resumes
+   that item. Each alias starts with a field declared by that action. Declare an
+   inventory in the target's `contracts/domain_descriptor.json` under
+   `standard_agent_interface.inventory_projection`. Use a workspace-relative
+   JSON path, an items pointer, the required field mappings and a work-item
+   root template tied to the same identity field. [Standard Agent contract](https://github.com/gaofeng21cn/one-person-lab/blob/main/docs/specs/standard-agent-interface.md)
+2. Validate the owner Package with `opl agents check --repo <agent_repo> --json`.
+   Confirm the installed native carrier exposes the matching descriptor with
+   `opl packages status --package-id <package_id> --json`. Bind an isolated
+   workspace to that Agent and use one existing inventory row and its physical
+   work-item directory. [Domain admission contract](https://github.com/gaofeng21cn/one-person-lab/blob/main/docs/specs/opl-domain-onboarding-contract.md)
+3. Run `opl agents run --domain <domain> --action <action> --workspace <workspace> --payload-file <request.json> --json`.
+   Verify the StageRun scopes to that item, the intended knowledge sources bind,
+   and the owner's answer resumes the same item when the action supports
+   continuation. Check the same identity in the Work Items readback from
+   `opl app state --profile full --json`. Exercise missing or conflicting
+   identities and confirm that the runtime rejects them.
+
+The current Blueprint schema and compiler leave both declarations to the
+target Package source. For direct owner packaging, add the declarations there
+and build a revision for the installed-carrier and launch checks above.
+Automatic delivery through Foundry requires support in the Framework Blueprint
+protocol and candidate compiler. Preserve the bytes of any activated candidate
+and repeat acceptance on a new revision. Record construction, hosted execution
+and domain-owner acceptance from their respective readbacks.
+[Candidate construction boundary](https://github.com/gaofeng21cn/one-person-lab/blob/main/docs/delivery/foundry-package-construction-acceptance.md)
+
 ## Provider Scope And Review
 
 The initial blueprint returned by `design` has generation zero, including
