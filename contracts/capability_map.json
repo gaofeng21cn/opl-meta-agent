@@ -27,8 +27,8 @@
     },
     "carrier_projection_contract": {
       "canonical_source": "agent/primary_skill/SKILL.md",
-      "carrier_skill_ref": "plugins/opl-meta-agent/skills/opl-meta-agent/SKILL.md",
-      "carrier_materialization": "materialized_full_skill_copy",
+      "carrier_skill_ref": "agent/primary_skill/SKILL.md",
+      "carrier_materialization": "opl_pack_codex_sync_symlink",
       "carrier_can_override_canonical_source": false
     }
   },
@@ -45,12 +45,12 @@
       },
       "runtime_projection_refs": [
         {
-          "ref_kind": "repo_path",
-          "ref": "plugins/opl-meta-agent/skills/opl-meta-agent/SKILL.md",
-          "role": "codex_plugin_carrier_projection"
+          "ref_kind": "contract_ref",
+          "ref": "opl-package.json",
+          "role": "v2_package_manifest"
         }
       ],
-      "sync_policy": "repo_local_primary_skill_with_materialized_carrier",
+      "sync_policy": "repo_local_primary_skill_with_codex_sync",
       "externalization_reason": "The primary skill routes Agent engineering semantics while OPL owns Foundry execution and generated surfaces.",
       "improvement_tokens": [
         "oma",

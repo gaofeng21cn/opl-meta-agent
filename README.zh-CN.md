@@ -21,7 +21,7 @@ OPL Meta Agent 帮智能体开发者把一个工作目标变成可审阅、可�
 在 OPL 软件中心安装 **OPL Meta Agent**。使用 `engineer-agent`，从新建、接手或改进中选择本次目标。下例使用自己准备的请求文件，返回可查询的 Foundry 运行。
 
 ```bash
-opl agents run --domain oma --action engineer-agent --workspace /absolute/workspace --payload-file request.json
+opl runway start --workspace <workspace_id> --title "Engineer agent" --goal engineer-agent
 ```
 
 [文档导览](docs/README.md) · [当前验收进展](docs/active/oma-ideal-state-gap-plan.md)

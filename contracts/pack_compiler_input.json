@@ -60,7 +60,7 @@
     "contracts/generated_surface_handoff.json",
     "contracts/functional_privatization_audit.json",
     "contracts/durable_knowledge_catalog.json",
-    "contracts/opl_agent_package_manifest.json",
+    "opl-package.json",
     "contracts/opl_domain_manifest_registration.json",
     "contracts/epistemic_review_adoption.json",
     "contracts/standard-agent-principles-adoption.json",

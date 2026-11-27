@@ -13,7 +13,6 @@ case "${lane}" in
     npm run test:full
     ;;
   cleanup|fix|hygiene:fix)
-    scripts/repo-hygiene.sh --fix
     scripts/repo-hygiene.sh
     ;;
   *)

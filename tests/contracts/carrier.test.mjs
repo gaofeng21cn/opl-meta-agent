@@ -18,7 +18,7 @@ test('OMA protocol declarations contain no execution or release authority fields
   }
 });
 
-test('all declared repo-local refs exist and primary skill mirror is exact', () => {
+test('all declared repo-local refs resolve to their owners', () => {
   const compiler = readJson('contracts/pack_compiler_input.json');
   const requiredPaths = new Set(compiler.required_domain_pack_paths);
   const frameworkContractRefs = new Set([
@@ -60,10 +60,6 @@ test('all declared repo-local refs exist and primary skill mirror is exact', () 
   capabilityMap.capabilities
     .map((entry) => entry.physical_source_ref.ref)
     .forEach((relativePath) => assert.ok(requiredPaths.has(relativePath), `professional skill omitted from pack: ${relativePath}`));
-  assert.equal(
-    fs.readFileSync(path.join(root, 'agent/primary_skill/SKILL.md'), 'utf8'),
-    fs.readFileSync(path.join(root, 'plugins/opl-meta-agent/skills/opl-meta-agent/SKILL.md'), 'utf8'),
-  );
 
   const jsonFiles = [];
   const collectJson = (relativePath) => {
@@ -78,8 +74,9 @@ test('all declared repo-local refs exist and primary skill mirror is exact', () 
   collectJson('contracts');
   for (const relativePath of jsonFiles) {
     walk(readJson(relativePath), (value, pointer) => {
-      if (typeof value !== 'string' || !/^(?:agent|contracts|docs|plugins|scripts)\//.test(value)) return;
+      if (typeof value !== 'string') return;
       const localRef = value.split('#')[0];
+      if (localRef !== 'opl-package.json' && !/^(?:agent|contracts|docs|plugins|scripts)\//.test(localRef)) return;
       if (
         relativePath === 'contracts/opl-native-profile.json'
         && pointer.startsWith('/owned_by_repo/')
@@ -94,100 +91,50 @@ test('all declared repo-local refs exist and primary skill mirror is exact', () 
   }
 });
 
-test('package and plugin carriers project the canonical OMA skill at one version', () => {
+test('the OPL v2 manifest declares the canonical OMA package and Codex skill', () => {
   const npmPackage = readJson('package.json');
   const npmLock = readJson('package-lock.json');
-  const agentPackage = readJson('contracts/opl_agent_package_manifest.json');
-  const rootPackage = readJson('opl-package.json');
-  const carrierPackage = readJson('plugins/opl-meta-agent/opl-package.json');
-  const rootPlugin = readJson('.codex-plugin/plugin.json');
-  const plugin = readJson('plugins/opl-meta-agent/.codex-plugin/plugin.json');
-  const portablePlugin = readJson('plugins/opl-meta-agent/plugin.json');
-  const marketplace = readJson('.agents/plugins/marketplace.json');
+  const manifest = readJson('opl-package.json');
   const capabilityMap = readJson('contracts/capability_map.json');
-  const projection = capabilityMap.primary_skill_capability.carrier_projection_contract;
-
-  const configuredCodexPluginCarrier = {
-    kind: 'codex_plugin_manager',
-    plugin_selector: 'opl-meta-agent@opl-meta-agent',
-    executor_route: 'codex_cli',
-    marketplace_source: 'gaofeng21cn/opl-meta-agent',
-    publication_ref: 'ghcr.io/gaofeng21cn/one-person-lab-packages/oma:latest-stable',
-  };
+  const primary = capabilityMap.primary_skill_capability;
+  const capability = capabilityMap.capabilities.find((entry) => entry.capability_id === primary.capability_id);
 
   assert.match(npmPackage.version, /^\d+\.\d+\.\d+$/);
   assert.equal(npmLock.version, npmPackage.version);
   assert.equal(npmLock.packages[''].version, npmPackage.version);
-  assert.equal(agentPackage.version, npmPackage.version);
-  assert.equal(rootPackage.version, npmPackage.version);
-  assert.equal(agentPackage.carrier_source_role, 'codex_plugin_default_carrier_not_package_truth');
-  assert.deepEqual(agentPackage.codex_surface.configured_codex_plugin_carrier, configuredCodexPluginCarrier);
-  assert.equal(rootPlugin.version, npmPackage.version);
-  assert.equal(plugin.version, npmPackage.version);
-  assert.equal(portablePlugin.version, npmPackage.version);
-  assert.equal(
-    portablePlugin.$schema,
-    'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json',
-  );
-  assert.equal(portablePlugin.name, plugin.name);
-  assert.deepEqual(
-    portablePlugin.extensions['com.openai'].interface,
-    plugin.interface,
-  );
-  assert.equal(Object.hasOwn(portablePlugin, 'skills'), false);
-  assert.equal(fs.existsSync(path.join(root, 'plugins/opl-meta-agent/mcp.json')), false);
-  assert.equal(
-    fs.readFileSync(path.join(root, 'opl-package.json'), 'utf8'),
-    fs.readFileSync(path.join(root, 'contracts/opl_agent_package_manifest.json'), 'utf8'),
-  );
-  assert.deepEqual(carrierPackage, {
-    surface_kind: agentPackage.surface_kind,
-    kind: agentPackage.kind,
-    agent_id: agentPackage.agent_id,
-    package_id: agentPackage.package_id,
-    domain_id: agentPackage.domain_id,
-    display_name: agentPackage.display_name,
-    presentation: agentPackage.presentation,
-    publisher: agentPackage.publisher,
-    version: agentPackage.version,
-    source: agentPackage.source,
-    carrier_source_role: agentPackage.carrier_source_role,
-    domain_descriptor_ref: agentPackage.domain_descriptor_ref,
-    action_catalog_ref: agentPackage.action_catalog_ref,
-    view_refs: agentPackage.view_refs,
-    provider_manifest_ref: agentPackage.provider_manifest_ref,
-    entrypoints: [],
-    codex_surface: {
-      plugin_id: agentPackage.codex_surface.plugin_id,
-      plugin_source_path: '.',
-      required_skill_ids: agentPackage.codex_surface.required_skill_ids,
-      configured_codex_plugin_carrier: configuredCodexPluginCarrier,
-    },
-    capability_dependencies: [],
+  assert.equal(manifest.schema_version, 'opl.package.v2');
+  assert.equal(manifest.identity.id, 'oma');
+  assert.equal(manifest.identity.intent, 'agent');
+  assert.equal(manifest.identity.version, npmPackage.version);
+  assert.equal(manifest.identity.publisher, 'one-person-lab');
+  assert.equal(manifest.identity.license, npmPackage.license);
+  assert.equal(manifest.identity.icon, 'assets/branding/opl-meta-agent-logo.png');
+  assert.ok(fs.statSync(path.join(root, manifest.identity.icon)).isFile());
+  assert.equal(manifest.dependencies.opl_base, '^2.0.0');
+  assert.deepEqual(manifest.provides.skills, [
+    { id: 'opl-meta-agent', path: './agent/primary_skill', exposure: 'default' },
+  ]);
+  assert.deepEqual(manifest.host_hints.codex, {
+    sync_enabled: true,
+    plugin_name: 'opl-meta-agent',
+    category: 'Productivity',
+    brand_color: '#4F5D95',
+    capabilities: ['Interactive', 'Write'],
   });
-  assert.equal(carrierPackage.version, plugin.version);
-  assert.equal(carrierPackage.codex_surface.plugin_id, plugin.name);
-  assert.equal(marketplace.plugins[0].source.path, './plugins/opl-meta-agent');
-  const nativeCarrierRoot = path.resolve(root, marketplace.plugins[0].source.path);
-  assert.equal(nativeCarrierRoot, path.resolve(root, 'plugins/opl-meta-agent'));
-  for (const relativePath of [
-    'plugin.json',
-    '.codex-plugin/plugin.json',
-    'opl-package.json',
-    'skills/opl-meta-agent/SKILL.md',
-  ]) {
-    assert.ok(fs.statSync(path.join(nativeCarrierRoot, relativePath)).isFile());
-  }
-  assert.equal(rootPlugin.name, agentPackage.codex_surface.plugin_id);
-  assert.equal(rootPlugin.skills, './plugins/opl-meta-agent/skills/');
-  assert.ok(fs.statSync(path.resolve(root, rootPlugin.skills)).isDirectory());
-  assert.ok(fs.statSync(path.resolve(root, rootPlugin.interface.composerIcon)).isFile());
-  assert.equal(plugin.name, 'opl-meta-agent');
-  assert.equal(plugin.skills, './skills/');
-  assert.deepEqual(agentPackage.codex_surface.required_skill_ids, ['opl-meta-agent']);
-  assert.equal(projection.canonical_source, 'agent/primary_skill/SKILL.md');
-  assert.equal(projection.carrier_skill_ref, 'plugins/opl-meta-agent/skills/opl-meta-agent/SKILL.md');
-  assert.equal(projection.carrier_can_override_canonical_source, false);
+  assert.deepEqual(manifest.distribution, {
+    oci: 'ghcr.io/gaofeng21cn/one-person-lab-packages/oma',
+    visibility: 'public',
+  });
+
+  const skillRef = path.posix.join(manifest.provides.skills[0].path, 'SKILL.md');
+  assert.equal(primary.physical_source_ref.ref, skillRef);
+  assert.equal(capability.physical_source_ref.ref, skillRef);
+  assert.equal(primary.carrier_projection_contract.canonical_source, skillRef);
+  assert.equal(primary.carrier_projection_contract.carrier_skill_ref, skillRef);
+  assert.equal(primary.carrier_projection_contract.carrier_can_override_canonical_source, false);
+  assert.deepEqual(capability.runtime_projection_refs, [
+    { ref_kind: 'contract_ref', ref: 'opl-package.json', role: 'v2_package_manifest' },
+  ]);
 
   const forbiddenPackageLifecycleKeys = new Set([
     'lifecycle',
@@ -195,18 +142,31 @@ test('package and plugin carriers project the canonical OMA skill at one version
     'activation_materialization',
     'package_lock_ref',
   ]);
-  for (const [relativePath, descriptor] of [
-    ['contracts/opl_agent_package_manifest.json', agentPackage],
-    ['opl-package.json', rootPackage],
-    ['plugins/opl-meta-agent/opl-package.json', carrierPackage],
+  walk(manifest, (_value, pointer) => {
+    const key = pointer.split('/').at(-1);
+    assert.ok(
+      !forbiddenPackageLifecycleKeys.has(key),
+      `opl-package.json contains forbidden Package lifecycle field ${pointer}`,
+    );
+  });
+});
+
+test('retired v1 carrier artifacts and generated release lock are absent', () => {
+  for (const relativePath of [
+    'contracts/opl_agent_package_manifest.json',
+    'contracts/carrier_projection.json',
+    'plugins/opl-meta-agent',
+    '.codex-plugin',
+    'plugin.json',
+    '.agents/plugins/marketplace.json',
+    'app-contribution-adapter.json',
+    'opl-release.lock.json',
   ]) {
-    walk(descriptor, (_value, pointer) => {
-      const key = pointer.split('/').at(-1);
-      assert.ok(
-        !forbiddenPackageLifecycleKeys.has(key),
-        `${relativePath} contains forbidden Package lifecycle field ${pointer}`,
-      );
-    });
+    assert.equal(
+      fs.lstatSync(path.join(root, relativePath), { throwIfNoEntry: false }),
+      undefined,
+      `unexpected repository artifact: ${relativePath}`,
+    );
   }
 });
 }

@@ -20,7 +20,7 @@ Use the single public action `engineer-agent` through the installed OPL-generate
 - `takeover`: assess an exact existing target version and define its OPL qualification obligations.
 - `improve`: evolve an exact existing target version from evidence or an explicit improvement objective.
 
-The ordinary hosted entry is `opl agents run --domain oma --action engineer-agent`. OPL Foundry Kernel may invoke the internal provider operations `design` and `diagnose`; they are not public actions or user tools.
+The ordinary hosted entry runs through Framework v2 Runway (`opl runway start --workspace <workspace_id> --title "Engineer agent" --goal engineer-agent`). OPL Foundry Kernel may invoke the internal provider operations `design` and `diagnose`; they are not public actions or user tools.
 
 ## Default Workflow
 
