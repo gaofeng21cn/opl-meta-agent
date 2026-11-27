@@ -2,7 +2,7 @@
   "schema_version": "opl.package.v2",
   "identity": {
     "id": "oma",
-    "version": "0.4.15",
+    "version": "0.4.16",
     "intent": "agent",
     "name": {
       "zh-CN": "OPL Meta Agent",
