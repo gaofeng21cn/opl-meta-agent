@@ -91,16 +91,13 @@ test('OMA adopts canonical Standard Agent principles without a second general po
   assert.ok(compiler.required_domain_pack_paths.includes('contracts/standard-agent-principles-adoption.json'));
 });
 
-test('primary Skill is mirrored by the carrier and has explicit admission metadata', () => {
-  const canonical = fs.readFileSync(path.join(root, 'agent/primary_skill/SKILL.md'), 'utf8');
-  const carrier = fs.readFileSync(
-    path.join(root, 'plugins/opl-meta-agent/skills/opl-meta-agent/SKILL.md'),
-    'utf8',
-  );
+test('the package primary Skill has explicit admission metadata', () => {
+  const manifest = readJson('opl-package.json');
+  const [primary] = manifest.provides.skills;
+  const skill = fs.readFileSync(path.join(root, primary.path, 'SKILL.md'), 'utf8');
 
-  assert.equal(carrier, canonical);
-  assert.match(canonical, /^name: opl-meta-agent$/m);
-  assert.match(canonical, /^description: \S.+$/m);
+  assert.match(skill, /^name: opl-meta-agent$/m);
+  assert.match(skill, /^description: \S.+$/m);
 });
 
 test('EvalSpec carries the reachability categories for professional Skill use', () => {

@@ -93,11 +93,12 @@ OMA currently declares no Package dependency. Ordinary dependencies use stable
 identity presence and callability; exact refs and digests remain available for
 release integrity, frozen snapshots, and the Foundry protocol.
 
-The Codex Plugin is a carrier projection. It exposes the canonical OMA Skill
-and package descriptors without becoming Package identity or lifecycle owner.
-The [Package manifest](../contracts/opl_agent_package_manifest.json) declares
-the carrier, executor route, and publication locator. Their rationale lives in
-[Decisions](./decisions.md); publication and installed currentness require
+The Codex Plugin is a carrier projection (`carriers/codex-sync`) generated from
+root [opl-package.json](../opl-package.json) (`opl.package.v2`). It exposes the
+canonical OMA Skill and package metadata without becoming Package identity or
+lifecycle owner. [opl-package.json](../opl-package.json) declares `identity`,
+`dependencies`, `provides`, `distribution`, and `host_hints.codex`. Their rationale
+lives in [Decisions](./decisions.md); publication and installed currentness require
 their own readbacks.
 
 ## Foundry Provider
@@ -142,17 +143,17 @@ declarations and one representative hosted workflow.
    `standard_agent_interface.inventory_projection`. Use a workspace-relative
    JSON path, an items pointer, the required field mappings and a work-item
    root template tied to the same identity field. [Standard Agent contract](https://github.com/gaofeng21cn/one-person-lab/blob/main/docs/specs/standard-agent-interface.md)
-2. Validate the owner Package with `opl agents check --repo <agent_repo> --json`.
+2. Validate the owner Package with `opl pack inspect <agent_repo> --json`.
    Confirm the installed native carrier exposes the matching descriptor with
-   `opl packages status --package-id <package_id> --json`. Bind an isolated
+   `opl pack inspect <package_id> --json`. Bind an isolated
    workspace to that Agent and use one existing inventory row and its physical
    work-item directory. [Domain admission contract](https://github.com/gaofeng21cn/one-person-lab/blob/main/docs/specs/opl-domain-onboarding-contract.md)
-3. Run `opl agents run --domain <domain> --action <action> --workspace <workspace> --payload-file <request.json> --json`.
+3. Start the hosted run with `opl runway start --workspace <workspace_id> --title <title> --goal <action> --json`.
    Verify the StageRun scopes to that item, the intended knowledge sources bind,
    and the owner's answer resumes the same item when the action supports
-   continuation. Check the same identity in the Work Items readback from
-   `opl app state --profile full --json`. Exercise missing or conflicting
-   identities and confirm that the runtime rejects them.
+   continuation. Check the same identity in workspace and app state readbacks via
+   `opl workspace inspect <workspace_id> --json` (or `opld` `app.state.get`).
+   Exercise missing or conflicting identities and confirm that the runtime rejects them.
 
 The current Blueprint schema and compiler leave both declarations to the
 target Package source. For direct owner packaging, add the declarations there

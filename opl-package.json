@@ -1,64 +1,83 @@
 {
-  "surface_kind": "opl_agent_package_manifest.v1",
-  "kind": "agent",
-  "agent_id": "oma",
-  "package_id": "oma",
-  "domain_id": "agent_engineering",
-  "carrier_slug": "opl-meta-agent",
-  "display_name": "OPL Meta Agent",
-  "presentation": {
-    "display_name_i18n": {
+  "schema_version": "opl.package.v2",
+  "identity": {
+    "id": "oma",
+    "version": "0.4.15",
+    "intent": "agent",
+    "name": {
       "zh-CN": "OPL Meta Agent",
       "en-US": "OPL Meta Agent"
     },
-    "description_i18n": {
+    "summary": {
       "en-US": "OPL agent design, review, takeover, and evolution.",
       "zh-CN": "OPL 智能体的设计、评审、接管与演进。"
     },
-    "session_routing_summary_i18n": {
+    "description": {
+      "en-US": "Provides OMA design and diagnosis semantics while OPL owns materialization, evaluation, versions, activation, and rollback.",
+      "zh-CN": "提供 OMA 的设计和诊断语义，OPL 负责物化、评测、版本、激活和回滚。"
+    },
+    "publisher": "one-person-lab",
+    "license": "Apache-2.0",
+    "icon": "assets/branding/opl-meta-agent-logo.png",
+    "repository": "https://github.com/gaofeng21cn/opl-meta-agent",
+    "homepage": "https://github.com/gaofeng21cn/opl-meta-agent",
+    "keywords": [
+      "opl",
+      "meta-agent",
+      "codex",
+      "agent-engineering"
+    ],
+    "routing_summary": {
       "en-US": "Create, take over, or improve an Agent through OPL Foundry.",
       "zh-CN": "通过 OPL Foundry 创建、接管或改进智能体。"
     },
+    "default_prompts": [
+      "Use OMA to create, take over, or improve an OPL-compatible Agent through engineer-agent."
+    ],
     "home_shortcuts": [
       {
-        "shortcut_id": "engineer-agent",
-        "label_i18n": {
+        "id": "engineer-agent",
+        "label": {
           "en-US": "Engineer Agent",
           "zh-CN": "构建与迭代智能体"
         },
         "default_visible": true,
-        "user_configurable": true,
-        "route": {
-          "route_kind": "agent_package_shortcut",
-          "executor": "codex_cli",
-          "codex_visible_entry": "opl-meta-agent"
+        "target": {
+          "kind": "agent",
+          "ref": "oma"
         }
       }
-    ],
-    "icon_ref": "assets/branding/opl-meta-agent-logo.png"
+    ]
   },
-  "publisher": "one-person-lab",
-  "version": "0.4.15",
-  "source": "first_party_repo_local",
-  "carrier_source_role": "codex_plugin_default_carrier_not_package_truth",
-  "domain_descriptor_ref": "contracts/domain_descriptor.json",
-  "action_catalog_ref": "contracts/action_catalog.json",
-  "view_refs": [],
-  "provider_manifest_ref": "contracts/foundry_provider.json",
-  "codex_surface": {
-    "plugin_id": "opl-meta-agent",
-    "standalone_distribution": "repo_carrier_source",
-    "required_skill_ids": [
-      "opl-meta-agent"
-    ],
-    "user_install_action_count": 1,
-    "configured_codex_plugin_carrier": {
-      "kind": "codex_plugin_manager",
-      "plugin_selector": "opl-meta-agent@opl-meta-agent",
-      "executor_route": "codex_cli",
-      "marketplace_source": "gaofeng21cn/opl-meta-agent",
-      "publication_ref": "ghcr.io/gaofeng21cn/one-person-lab-packages/oma:latest-stable"
+  "dependencies": {
+    "opl_base": "^2.0.0"
+  },
+  "provides": {
+    "agent": {
+      "stages_ref": "agent/stages/manifest.json"
+    },
+    "skills": [
+      {
+        "id": "opl-meta-agent",
+        "path": "./agent/primary_skill",
+        "exposure": "default"
+      }
+    ]
+  },
+  "distribution": {
+    "oci": "ghcr.io/gaofeng21cn/one-person-lab-packages/oma",
+    "visibility": "public"
+  },
+  "host_hints": {
+    "codex": {
+      "sync_enabled": true,
+      "plugin_name": "opl-meta-agent",
+      "category": "Productivity",
+      "brand_color": "#4F5D95",
+      "capabilities": [
+        "Interactive",
+        "Write"
+      ]
     }
-  },
-  "capability_dependencies": []
+  }
 }

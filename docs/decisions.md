@@ -24,6 +24,6 @@ executor. Ordinary dependencies declare presence and callable capabilities;
 exact refs bind frozen build evidence, release integrity, and Foundry inputs,
 not a parallel Package lock or readiness engine.
 
-The [Package manifest](../contracts/opl_agent_package_manifest.json) declares the
-current carrier and publication locator. A locator is configuration, not evidence
-that a publication or installation occurred.
+Root [opl-package.json](../opl-package.json) declares the `opl.package.v2`
+`host_hints.codex` carrier hint and `distribution` locator. A locator is
+configuration, not evidence that a publication or installation occurred.

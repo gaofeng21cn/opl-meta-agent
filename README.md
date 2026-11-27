@@ -21,7 +21,7 @@ Maintainers define the behavior they want and the criteria they will use to acce
 Install **OPL Meta Agent** from the OPL Software Center. Use `engineer-agent` to create, take over, or improve an agent. The example uses a request file you prepare and returns a Foundry run you can inspect.
 
 ```bash
-opl agents run --domain oma --action engineer-agent --workspace /absolute/workspace --payload-file request.json
+opl runway start --workspace <workspace_id> --title "Engineer agent" --goal engineer-agent
 ```
 
 [Documentation](docs/README.md) · [Acceptance progress](docs/active/oma-ideal-state-gap-plan.md)

@@ -12,13 +12,12 @@ test('provider identity and stage routes are internally closed', () => {
     'contracts/foundry_provider.json',
     'contracts/foundry_protocol_fixture_manifest.json',
     'contracts/foundry_protocol_improve_fixture_manifest.json',
-    'contracts/opl_agent_package_manifest.json',
     'contracts/opl_domain_manifest_registration.json',
     'contracts/pack_compiler_input.json',
   ].map(readJson);
   const provider = readJson('contracts/foundry_provider.json');
   const descriptor = readJson('contracts/domain_descriptor.json');
-  const packageManifest = readJson('contracts/opl_agent_package_manifest.json');
+  const packageManifest = readJson('opl-package.json');
   const actionCatalog = readJson('contracts/action_catalog.json');
   const manifest = readJson('agent/stages/manifest.json');
   const compiler = readJson('contracts/pack_compiler_input.json');
@@ -51,41 +50,22 @@ test('provider identity and stage routes are internally closed', () => {
     assert.equal(contract.domain_id, 'agent_engineering');
     if ('carrier_slug' in contract) assert.equal(contract.carrier_slug, 'opl-meta-agent');
   }
-  assert.equal(packageManifest.kind, 'agent');
-  assert.equal(packageManifest.domain_descriptor_ref, 'contracts/domain_descriptor.json');
-  assert.equal(packageManifest.action_catalog_ref, 'contracts/action_catalog.json');
-  assert.deepEqual(packageManifest.view_refs, []);
-  assert.deepEqual(packageManifest.presentation, {
-    icon_ref: 'assets/branding/opl-meta-agent-logo.png',
-    display_name_i18n: {
-      'en-US': packageManifest.display_name,
-      'zh-CN': packageManifest.display_name,
+  assert.equal(packageManifest.identity.id, provider.package_id);
+  assert.equal(packageManifest.identity.intent, descriptor.kind);
+  assert.equal(packageManifest.provides.agent.stages_ref, descriptor.standard_contract_refs.stage_manifest);
+  assert.ok(compiler.required_domain_pack_paths.includes('opl-package.json'));
+  assert.deepEqual(packageManifest.identity.home_shortcuts, [{
+    id: actionCatalog.actions[0].action_id,
+    label: {
+      'en-US': actionCatalog.actions[0].title,
+      'zh-CN': '构建与迭代智能体',
     },
-    description_i18n: {
-      'en-US': 'OPL agent design, review, takeover, and evolution.',
-      'zh-CN': 'OPL 智能体的设计、评审、接管与演进。',
-    },
-    session_routing_summary_i18n: {
-      'en-US': 'Create, take over, or improve an Agent through OPL Foundry.',
-      'zh-CN': '通过 OPL Foundry 创建、接管或改进智能体。',
-    },
-    home_shortcuts: [{
-      shortcut_id: actionCatalog.actions[0].action_id,
-      label_i18n: {
-        'en-US': actionCatalog.actions[0].title,
-        'zh-CN': '构建与迭代智能体',
-      },
-      default_visible: true,
-      user_configurable: true,
-      route: {
-        route_kind: 'agent_package_shortcut',
-        executor: 'codex_cli',
-        codex_visible_entry: packageManifest.codex_surface.plugin_id,
-      },
-    }],
-  });
+    default_visible: true,
+    target: { kind: 'agent', ref: provider.package_id },
+  }]);
   assert.equal(descriptor.kind, 'agent');
-  assert.equal(descriptor.action_catalog_ref, packageManifest.action_catalog_ref);
+  assert.equal(descriptor.action_catalog_ref, 'contracts/action_catalog.json');
+  assert.equal(compiler.provider_manifest_ref, descriptor.standard_contract_refs.foundry_provider);
   assert.deepEqual(descriptor.view_refs, []);
   assert.deepEqual(descriptor.public_action_ids, ['engineer-agent']);
   assert.deepEqual(actionCatalog.actions.map((action) => action.action_id), ['engineer-agent']);
